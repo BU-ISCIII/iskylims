@@ -44,8 +44,8 @@ class RunStates(models.Model):
 
 class RunProcessManager(models.Manager):
     def create_new_run_from_crontab(self, run_data):
-        run_state = RunStates.objects.get(runStateName__exact="Recorded")
-        new_run = self.create(state=run_state, runName=run_data["experiment_name"])
+        run_state = RunStates.objects.get(run_state_name__exact="Recorded")
+        new_run = self.create(state=run_state, run_name=run_data["experiment_name"])
         return new_run
 
 
@@ -152,9 +152,9 @@ class RunProcess(models.Model):
 
         requested_center = str(self.center_requested_by)
         if self.run_date is None:
-            rundate = "Run NOT started"
+            run_date = "Run NOT started"
         else:
-            rundate = self.run_date.strftime("%B %d, %Y")
+            run_date = self.run_date.strftime("%B %d, %Y")
 
         if self.run_finish_date is None:
             finish_date = "Run multiplexation is not completed"
@@ -176,11 +176,11 @@ class RunProcess(models.Model):
             self.state,
             requested_center,
             generated_date,
-            rundate,
+            run_date,
             completed_date,
             bcl2fastq_date,
             finish_date,
-            self.useSpaceImgMb,
+            self.use_space_img_mb,
             self.use_space_fasta_mb,
             self.use_space_other_mb,
         )
@@ -191,7 +191,7 @@ class RunProcess(models.Model):
         return "%s" % (self.run_name)
 
     def get_disk_space_utilization(self):
-        image_size_str = "0" if self.useSpaceImgMb == "" else self.useSpaceImgMb
+        image_size_str = "0" if self.use_space_fasta_mb == "" else self.use_space_fasta_mb
         data_size_str = (
             "0" if self.use_space_fasta_mb == "" else self.use_space_fasta_mb
         )
@@ -230,20 +230,20 @@ class RunProcess(models.Model):
         self.save()
         return True
 
-    def update_sample_sheet(self, full_path, relative_path, file_name):
+    def update_sample_sheet(self, full_path, file_name):
         self.sample_sheet.save(file_name, open(full_path, "r"), save=True)
         return self
 
     def set_used_space(self, disk_utilization):
         self.use_space_fasta_mb = disk_utilization["useSpaceFastaMb"]
-        self.useSpaceImgMb = disk_utilization["useSpaceImgMb"]
+        self.use_space_img_mb = disk_utilization["useSpaceImgMb"]
         self.use_space_other_mb = disk_utilization["useSpaceOtherMb"]
         self.save()
         return True
 
     def set_run_state(self, new_state):
-        if RunStates.objects.filter(runStateName__exact=new_state).exists():
-            self.state = RunStates.objects.get(runStateName__exact=new_state)
+        if RunStates.objects.filter(run_state_name__exact=new_state).exists():
+            self.state = RunStates.objects.get(run_state_name__exact=new_state)
             self.save()
         else:
             return False
@@ -260,12 +260,12 @@ class RunProcess(models.Model):
         return True
 
     def set_run_error_code(self, error_code):
-        if RunErrors.objects.filter(errorCode__exact=error_code).exists():
-            self.run_error = RunErrors.objects.get(errorCode__exact=error_code)
+        if RunErrors.objects.filter(error_code__exact=error_code).exists():
+            self.run_error = RunErrors.objects.get(error_code__exact=error_code)
         else:
-            self.run_error = RunErrors.objects.get(errorText__exact="Undefined")
+            self.run_error = RunErrors.objects.get(error_text__exact="Undefined")
         self.state_before_error = self.state
-        self.state = RunStates.objects.get(runStateName__exact="Error")
+        self.state = RunStates.objects.get(run_state_name__exact="Error")
         self.save()
         return True
 
@@ -311,17 +311,17 @@ class LibraryKit(models.Model):
 class ProjectsManager(models.Manager):
     def create_new_empty_project(self, project_data):
         new_project = self.create(
-            user_id=project_data["user_id"], projectName=project_data["projectName"]
+            user_id=project_data["user_id"], project_name=project_data["projectName"]
         )
         return new_project
 
     def create_new_project(self, project_data):
         new_project = self.create(
             user_id=project_data["user_id"],
-            projectName=project_data["projectName"],
-            libraryKit=project_data["libraryKit"],
-            baseSpaceFile=project_data["baseSpaceFile"],
-            BaseSpaceLibrary=project_data["BaseSpaceLibrary"],
+            project_name=project_data["projectName"],
+            library_kit=project_data["libraryKit"],
+            base_space_file=project_data["baseSpaceFile"],
+            Base_space_library=project_data["BaseSpaceLibrary"],
         )
         return new_project
 
@@ -331,23 +331,23 @@ class Projects(models.Model):
     LibraryKit_id = models.ForeignKey(
         LibraryKit, on_delete=models.CASCADE, null=True, blank=True
     )
-    runProcess = models.ManyToManyField(RunProcess)
+    run_process = models.ManyToManyField(RunProcess)
 
-    BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
-    projectName = models.CharField(max_length=45)
-    libraryKit = models.CharField(max_length=125, null=True, blank=True)
-    baseSpaceFile = models.CharField(max_length=255, null=True, blank=True)
-    generatedat = models.DateTimeField(auto_now_add=True)
+    base_space_library = models.CharField(max_length=45, null=True, blank=True)
+    project_name = models.CharField(max_length=45)
+    library_kit = models.CharField(max_length=125, null=True, blank=True)
+    base_space_file = models.CharField(max_length=255, null=True, blank=True)
+    generate_dat = models.DateTimeField(auto_now_add=True)
     project_run_date = models.DateField(auto_now=False, null=True, blank=True)
 
     class Meta:
         db_table = "wetlab_projects"
 
     def __str__(self):
-        return "%s" % (self.projectName)
+        return "%s" % (self.project_name)
 
     def get_base_space_file(self):
-        return "%s" % (self.baseSpaceFile)
+        return "%s" % (self.base_space_file)
 
     def get_state(self):
         return "%s" % (self.runprocess_id.state.runStateName)
@@ -358,7 +358,7 @@ class Projects(models.Model):
         else:
             projectdate = self.project_run_date.strftime("%B %d, %Y")
         p_info = []
-        p_info.append(self.generatedat.strftime("%B %d, %Y"))
+        p_info.append(self.generate_dat.strftime("%B %d, %Y"))
         p_info.append(projectdate)
         return p_info
 
@@ -366,16 +366,16 @@ class Projects(models.Model):
         run_name = self.runprocess_id.runName
         user_name = self.user_id.username
         if self.project_run_date is None:
-            projectdate = "Run NOT started"
+            project_date = "Run NOT started"
         else:
-            projectdate = self.project_run_date.strftime("%B %d, %Y")
+            project_date = self.project_run_date.strftime("%B %d, %Y")
 
         return "%s;%s;%s;%s;%s" % (
             run_name,
-            self.projectName,
-            projectdate,
+            self.project_name,
+            project_date,
             user_name,
-            self.libraryKit,
+            self.library_kit,
         )
 
     def get_run_id(self):
@@ -392,23 +392,23 @@ class Projects(models.Model):
         return "%s" % (self.user_id.pk)
 
     def get_project_name(self):
-        return "%s" % (self.projectName)
+        return "%s" % (self.project_name)
 
     def get_index_library_name(self):
-        return "%s" % (self.libraryKit)
+        return "%s" % (self.library_kit)
 
     def get_date(self):
         if self.project_run_date is None:
-            projectdate = "No Date"
+            project_date = "No Date"
         else:
-            projectdate = self.project_run_date.strftime("%B %d, %Y")
-        return "%s" % (projectdate)
+            project_date = self.project_run_date.strftime("%B %d, %Y")
+        return "%s" % project_date
 
     def get_project_id(self):
         return "%s" % (self.id)
 
     def add_run(self, run_obj):
-        self.runProcess.add(run_obj)
+        self.run_process.add(run_obj)
         return self
 
     def set_project_run_date(self, date):
@@ -436,101 +436,101 @@ class RunningParametersManager(models.Manager):
             running_data["AnalysisWorkflowType"] = " "
 
         running_parameters = self.create(
-            runName_id=run_object,
-            RunID=running_data["RunID"],
-            ExperimentName=running_data["ExperimentName"],
-            RTAVersion=running_data["RTAVersion"],
-            SystemSuiteVersion=running_data["SystemSuiteVersion"],
-            LibraryID=running_data["LibraryID"],
-            Chemistry=running_data["Chemistry"],
-            RunStartDate=running_data["RunStartDate"],
-            AnalysisWorkflowType=running_data["AnalysisWorkflowType"],
-            RunManagementType=running_data["RunManagementType"],
-            PlannedRead1Cycles=running_data["PlannedRead1Cycles"],
-            PlannedRead2Cycles=running_data["PlannedRead2Cycles"],
-            PlannedIndex1ReadCycles=running_data["PlannedIndex1ReadCycles"],
-            PlannedIndex2ReadCycles=running_data["PlannedIndex2ReadCycles"],
-            ApplicationVersion=running_data["ApplicationVersion"],
-            NumTilesPerSwath=running_data["NumTilesPerSwath"],
-            ImageChannel=running_data["ImageChannel"],
-            Flowcell=running_data["Flowcell"],
-            ImageDimensions=running_data["ImageDimensions"],
-            FlowcellLayout=running_data["FlowcellLayout"],
+            run_name_id=run_object,
+            run_iD=running_data["RunID"],
+            experiment_name=running_data["ExperimentName"],
+            rta_version=running_data["RTAVersion"],
+            system_suite_version=running_data["SystemSuiteVersion"],
+            library_id=running_data["LibraryID"],
+            chemistry=running_data["Chemistry"],
+            run_start_date=running_data["RunStartDate"],
+            analysis_workflow_type=running_data["AnalysisWorkflowType"],
+            run_management_type=running_data["RunManagementType"],
+            planned_read1_cycles=running_data["PlannedRead1Cycles"],
+            planned_read2_cycles=running_data["PlannedRead2Cycles"],
+            planned_index1_read_cycles=running_data["PlannedIndex1ReadCycles"],
+            planned_index2_read_cycles=running_data["PlannedIndex2ReadCycles"],
+            application_version=running_data["ApplicationVersion"],
+            num_tiles_per_swath=running_data["NumTilesPerSwath"],
+            image_channel=running_data["ImageChannel"],
+            flowcell=running_data["Flowcell"],
+            image_dimensions=running_data["ImageDimensions"],
+            flowcell_layout=running_data["FlowcellLayout"],
         )
 
         return running_parameters
 
 
 class RunningParameters(models.Model):
-    runName_id = models.OneToOneField(
+    run_name_id = models.OneToOneField(
         RunProcess, on_delete=models.CASCADE, primary_key=True
     )
-    RunID = models.CharField(max_length=255)
-    ExperimentName = models.CharField(max_length=255)
-    RTAVersion = models.CharField(max_length=255, null=True, blank=True)
-    SystemSuiteVersion = models.CharField(max_length=255, null=True, blank=True)
-    LibraryID = models.CharField(max_length=255, null=True, blank=True)
-    Chemistry = models.CharField(max_length=255, null=True, blank=True)
-    RunStartDate = models.CharField(max_length=255, null=True, blank=True)
-    AnalysisWorkflowType = models.CharField(max_length=255, null=True, blank=True)
-    RunManagementType = models.CharField(max_length=255, null=True, blank=True)
-    PlannedRead1Cycles = models.CharField(max_length=255, null=True, blank=True)
-    PlannedRead2Cycles = models.CharField(max_length=255, null=True, blank=True)
-    PlannedIndex1ReadCycles = models.CharField(max_length=255, null=True, blank=True)
-    PlannedIndex2ReadCycles = models.CharField(max_length=255, null=True, blank=True)
-    ApplicationVersion = models.CharField(max_length=255, null=True, blank=True)
-    NumTilesPerSwath = models.CharField(max_length=255, null=True, blank=True)
-    ImageChannel = models.CharField(max_length=255, null=True, blank=True)
-    Flowcell = models.CharField(max_length=255, null=True, blank=True)
-    ImageDimensions = models.CharField(max_length=255, null=True, blank=True)
-    FlowcellLayout = models.CharField(max_length=255, null=True, blank=True)
+    run_id = models.CharField(max_length=255)
+    experiment_name = models.CharField(max_length=255)
+    rta_version = models.CharField(max_length=255, null=True, blank=True)
+    system_suite_version = models.CharField(max_length=255, null=True, blank=True)
+    library_id = models.CharField(max_length=255, null=True, blank=True)
+    chemistry = models.CharField(max_length=255, null=True, blank=True)
+    run_start_date = models.CharField(max_length=255, null=True, blank=True)
+    analysis_workflow_type = models.CharField(max_length=255, null=True, blank=True)
+    run_management_type = models.CharField(max_length=255, null=True, blank=True)
+    planned_read1_cycles = models.CharField(max_length=255, null=True, blank=True)
+    planned_read2_cycles = models.CharField(max_length=255, null=True, blank=True)
+    planned_index1_read_cycles = models.CharField(max_length=255, null=True, blank=True)
+    planned_index2_read_cycles = models.CharField(max_length=255, null=True, blank=True)
+    application_version = models.CharField(max_length=255, null=True, blank=True)
+    num_tiles_per_swath = models.CharField(max_length=255, null=True, blank=True)
+    image_channel = models.CharField(max_length=255, null=True, blank=True)
+    flowcell = models.CharField(max_length=255, null=True, blank=True)
+    image_dimensions = models.CharField(max_length=255, null=True, blank=True)
+    flowcell_layout = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = "wetlab_running_parameters"
 
     def __str__(self):
-        return "%s" % (self.RunID)
+        return "%s" % (self.run_id)
         # return '%s' %(self.runName_id)
 
     def get_run_chemistry(self):
-        return "%s" % (self.Chemistry)
+        return "%s" % (self.chemistry)
 
     def get_run_parameters_info(self):
         # str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
         run_parameters_data = []
-        if self.ImageChannel is None:
+        if self.image_channel is None:
             img_channel = "None"
         else:
-            img_channel = self.ImageChannel.strip("[").strip("]").replace("'", "")
+            img_channel = self.image_channel.strip("[").strip("]").replace("'", "")
 
-        if self.ImageDimensions is None:
+        if self.image_dimensions is None:
             image_dimensions = ["None"]
         else:
             image_dimensions = (
-                self.ImageDimensions.strip("{").strip("}").replace("'", "").split(",")
+                self.image_dimensions.strip("{").strip("}").replace("'", "").split(",")
             )
 
         flowcell_layout = (
-            self.FlowcellLayout.strip("{").strip("}").replace("'", "").split(",")
+            self.flowcell_layout.strip("{").strip("}").replace("'", "").split(",")
         )
 
-        run_parameters_data.append(self.RunID)
-        run_parameters_data.append(self.ExperimentName)
-        run_parameters_data.append(self.RTAVersion)
-        run_parameters_data.append(self.SystemSuiteVersion)
-        run_parameters_data.append(self.LibraryID)
-        run_parameters_data.append(self.Chemistry)
-        run_parameters_data.append(self.RunStartDate)
-        run_parameters_data.append(self.AnalysisWorkflowType)
-        run_parameters_data.append(self.RunManagementType)
-        run_parameters_data.append(self.PlannedRead1Cycles)
-        run_parameters_data.append(self.PlannedRead2Cycles)
-        run_parameters_data.append(self.PlannedIndex1ReadCycles)
-        run_parameters_data.append(self.PlannedIndex2ReadCycles)
-        run_parameters_data.append(self.ApplicationVersion)
-        run_parameters_data.append(self.NumTilesPerSwath)
+        run_parameters_data.append(self.run_id)
+        run_parameters_data.append(self.experiment_name)
+        run_parameters_data.append(self.rta_version)
+        run_parameters_data.append(self.system_suite_version)
+        run_parameters_data.append(self.library_id)
+        run_parameters_data.append(self.chemistry)
+        run_parameters_data.append(self.run_start_date)
+        run_parameters_data.append(self.analysis_workflow_type)
+        run_parameters_data.append(self.run_management_type)
+        run_parameters_data.append(self.planned_read1_cycles)
+        run_parameters_data.append(self.planned_read2_cycles)
+        run_parameters_data.append(self.planned_index1_read_cycles)
+        run_parameters_data.append(self.planned_index2_read_cycles)
+        run_parameters_data.append(self.application_version)
+        run_parameters_data.append(self.num_tiles_per_swath)
         run_parameters_data.append(img_channel)
-        run_parameters_data.append(self.Flowcell)
+        run_parameters_data.append(self.flowcell)
         run_parameters_data.append(image_dimensions)
         run_parameters_data.append(flowcell_layout)
 
@@ -538,33 +538,33 @@ class RunningParameters(models.Model):
 
     def get_number_of_lanes(self):
         match_flowcell = re.match(
-            r".*LaneCount.*'(\d+)'.*SurfaceCount.*", self.FlowcellLayout
+            r".*LaneCount.*'(\d+)'.*SurfaceCount.*", self.flowcell_layout
         )
         return match_flowcell.group(1)
 
     def get_number_of_reads(self):
         count = 0
-        if self.PlannedRead1Cycles != "0":
+        if self.planned_read1_cycles != "0":
             count += 1
-        if self.PlannedRead2Cycles != "0":
+        if self.planned_read2_cycles != "0":
             count += 1
-        if self.PlannedIndex1ReadCycles != "0":
+        if self.planned_index1_read_cycles != "0":
             count += 1
-        if self.PlannedIndex2ReadCycles != "0":
+        if self.planned_index2_read_cycles != "0":
             count += 1
         return count
 
     def get_number_of_cycles(self):
-        number_of_cycles = (
-            int(self.PlannedRead1Cycles)
-            + int(self.PlannedRead2Cycles)
-            + int(self.PlannedIndex1ReadCycles)
-            + int(self.PlannedIndex2ReadCycles)
+        cycles_number = (
+            int(self.planned_read1_cycles)
+            + int(self.planned_read2_cycles)
+            + int(self.planned_index1_read_cycles)
+            + int(self.planned_index2_read_cycles)
         )
-        return number_of_cycles
+        return cycles_number
 
     def get_run_folder(self):
-        return "%s" % (self.RunID)
+        return "%s" % (self.run_id)
 
     objects = RunningParametersManager()
 
@@ -574,12 +574,12 @@ class StatsRunSummaryManager(models.Manager):
         s_run_summary = self.create(
             runprocess_id=run_process_obj,
             level=stats_run_summary["level"],
-            yieldTotal=stats_run_summary["yieldTotal"],
-            projectedTotalYield=stats_run_summary["projectedTotalYield"],
+            yield_total=stats_run_summary["yieldTotal"],
+            projected_total_yield=stats_run_summary["projectedTotalYield"],
             aligned=stats_run_summary["aligned"],
-            errorRate=stats_run_summary["errorRate"],
-            intensityCycle=stats_run_summary["intensityCycle"],
-            biggerQ30=stats_run_summary["biggerQ30"],
+            error_rate=stats_run_summary["errorRate"],
+            intensity_cycle=stats_run_summary["intensityCycle"],
+            bigger_q30=stats_run_summary["biggerQ30"],
             stats_summary_run_date=run_process_obj.run_date,
         )
         return s_run_summary
@@ -588,13 +588,13 @@ class StatsRunSummaryManager(models.Manager):
 class StatsRunSummary(models.Model):
     runprocess_id = models.ForeignKey(RunProcess, on_delete=models.CASCADE)
     level = models.CharField(max_length=20)
-    yieldTotal = models.CharField(max_length=10)
-    projectedTotalYield = models.CharField(max_length=10)
+    yield_total = models.CharField(max_length=10)
+    projected_total_yield = models.CharField(max_length=10)
     aligned = models.CharField(max_length=10)
-    errorRate = models.CharField(max_length=10)
-    intensityCycle = models.CharField(max_length=10)
-    biggerQ30 = models.CharField(max_length=10)
-    generatedat = models.DateTimeField(auto_now_add=True)
+    error_rate = models.CharField(max_length=10)
+    intensity_cycle = models.CharField(max_length=10)
+    bigger_q30 = models.CharField(max_length=10)
+    generate_dat = models.DateTimeField(auto_now_add=True)
     stats_summary_run_date = models.DateField(auto_now=False, null=True)
 
     class Meta:
@@ -605,12 +605,12 @@ class StatsRunSummary(models.Model):
 
     def get_bin_run_summary(self):
         return "%s;%s;%s;%s;%s;%s" % (
-            self.yieldTotal,
-            self.projectedTotalYield,
+            self.yield_total,
+            self.projected_total_yield,
             self.aligned,
-            self.errorRate,
-            self.intensityCycle,
-            self.biggerQ30,
+            self.error_rate,
+            self.intensity_cycle,
+            self.bigger_q30,
         )
 
     objects = StatsRunSummaryManager()
@@ -625,20 +625,20 @@ class StatsRunReadManager(models.Manager):
             lane=stats_run_read["lane"],
             tiles=stats_run_read["tiles"],
             density=stats_run_read["density"],
-            cluster_PF=stats_run_read["cluster_PF"],
+            cluster_pf=stats_run_read["cluster_PF"],
             phas_prephas=stats_run_read["phas_prephas"],
             reads=stats_run_read["reads"],
-            reads_PF=stats_run_read["reads_PF"],
+            reads_pf=stats_run_read["reads_PF"],
             q30=stats_run_read["q30"],
             yields=stats_run_read["yields"],
-            cyclesErrRated=stats_run_read["cyclesErrRated"],
+            cycles_err_rated=stats_run_read["cyclesErrRated"],
             aligned=stats_run_read["aligned"],
-            errorRate=stats_run_read["errorRate"],
-            errorRate35=stats_run_read["errorRate35"],
-            errorRate50=stats_run_read["errorRate50"],
-            errorRate75=stats_run_read["errorRate75"],
-            errorRate100=stats_run_read["errorRate100"],
-            intensityCycle=stats_run_read["intensityCycle"],
+            error_rate=stats_run_read["errorRate"],
+            error_rate_35=stats_run_read["errorRate35"],
+            error_rate_50=stats_run_read["errorRate50"],
+            error_rate_75=stats_run_read["errorRate75"],
+            error_rate_100=stats_run_read["errorRate100"],
+            intensity_cycle=stats_run_read["intensityCycle"],
             stats_read_run_date=run_process.run_date,
         )
 
@@ -651,21 +651,21 @@ class StatsRunRead(models.Model):
     lane = models.CharField(max_length=10)
     tiles = models.CharField(max_length=10)
     density = models.CharField(max_length=40)
-    cluster_PF = models.CharField(max_length=40)
+    cluster_pf = models.CharField(max_length=40)
     phas_prephas = models.CharField(max_length=40)
     reads = models.CharField(max_length=40)
-    reads_PF = models.CharField(max_length=40)
+    reads_pf = models.CharField(max_length=40)
     q30 = models.CharField(max_length=40)
     yields = models.CharField(max_length=40)
-    cyclesErrRated = models.CharField(max_length=40)
+    cycles_err_rated = models.CharField(max_length=40)
     aligned = models.CharField(max_length=40)
-    errorRate = models.CharField(max_length=40)
-    errorRate35 = models.CharField(max_length=40)
-    errorRate50 = models.CharField(max_length=40)
-    errorRate75 = models.CharField(max_length=40)
-    errorRate100 = models.CharField(max_length=40)
-    intensityCycle = models.CharField(max_length=40)
-    generatedat = models.DateTimeField(auto_now_add=True)
+    error_rate = models.CharField(max_length=40)
+    error_rate_35 = models.CharField(max_length=40)
+    error_rate_50 = models.CharField(max_length=40)
+    error_rate_75 = models.CharField(max_length=40)
+    error_rate_100 = models.CharField(max_length=40)
+    intensity_cycle = models.CharField(max_length=40)
+    generate_dat = models.DateTimeField(auto_now_add=True)
     stats_read_run_date = models.DateField(auto_now=False, null=True)
 
     class Meta:
@@ -679,20 +679,20 @@ class StatsRunRead(models.Model):
             self.lane,
             self.tiles,
             self.density,
-            self.cluster_PF,
+            self.cluster_pf,
             self.phas_prephas,
             self.reads,
-            self.reads_PF,
+            self.reads_pf,
             self.q30,
             self.yields,
-            self.cyclesErrRated,
+            self.cycles_err_rated,
             self.aligned,
-            self.errorRate,
-            self.errorRate35,
-            self.errorRate50,
-            self.errorRate75,
-            self.errorRate100,
-            self.intensityCycle,
+            self.error_rate,
+            self.error_rate_35,
+            self.error_rate_50,
+            self.error_rate_75,
+            self.error_rate_100,
+            self.intensity_cycle,
         )
 
     objects = StatsRunReadManager()
@@ -703,13 +703,13 @@ class RawDemuxStatsManager(models.Manager):
         raw_stats = self.create(
             runprocess_id=run_object_name,
             project_id=raw_demux_stats["project_id"],
-            defaultAll=raw_demux_stats["defaultAll"],
-            rawYield=raw_demux_stats["rawYield"],
-            rawYieldQ30=raw_demux_stats["rawYieldQ30"],
-            rawQuality=raw_demux_stats["rawQuality"],
-            PF_Yield=raw_demux_stats["PF_Yield"],
-            PF_YieldQ30=raw_demux_stats["PF_YieldQ30"],
-            PF_QualityScore=raw_demux_stats["PF_QualityScore"],
+            default_all=raw_demux_stats["defaultAll"],
+            raw_yield=raw_demux_stats["rawYield"],
+            raw_yield_q30=raw_demux_stats["rawYieldQ30"],
+            raw_quality=raw_demux_stats["rawQuality"],
+            pf_yield=raw_demux_stats["PF_Yield"],
+            pf_yield_q30=raw_demux_stats["PF_YieldQ30"],
+            pf_quality_score=raw_demux_stats["PF_QualityScore"],
         )
 
         return raw_stats
@@ -721,13 +721,13 @@ class RawDemuxStats(models.Model):
         on_delete=models.CASCADE,
     )
     project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True)
-    defaultAll = models.CharField(max_length=40, null=True)
-    rawYield = models.CharField(max_length=255)
-    rawYieldQ30 = models.CharField(max_length=255)
-    rawQuality = models.CharField(max_length=255)
-    PF_Yield = models.CharField(max_length=255)
-    PF_YieldQ30 = models.CharField(max_length=255)
-    PF_QualityScore = models.CharField(max_length=255)
+    default_all = models.CharField(max_length=40, null=True)
+    raw_yield = models.CharField(max_length=255)
+    raw_yield_q30 = models.CharField(max_length=255)
+    raw_quality = models.CharField(max_length=255)
+    pf_yield = models.CharField(max_length=255)
+    pf_yield_q30 = models.CharField(max_length=255)
+    pf_quality_score = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -735,20 +735,6 @@ class RawDemuxStats(models.Model):
 
     def __str__(self):
         return "%s" % (self.runprocess_id)
-
-    def get_raw_xml_stats(self):
-        return "%s;%s;%s;%s;%s;%s;%s;%s;%s;%s" % (
-            self.project,
-            self.barcodeCount,
-            self.perfectBarcodeCount,
-            self.rawYield,
-            self.PF_Yield,
-            self.rawYieldQ30,
-            self.PF_YieldQ30,
-            self.rawQuality,
-            self.PF_Quality,
-            self.sampleNumber,
-        )
 
     objects = RawDemuxStatsManager()
 
@@ -791,11 +777,11 @@ class StatsFlSummaryManager(models.Manager):
         fl_summary = self.create(
             runprocess_id=stats_fl_summary["runprocess_id"],
             project_id=stats_fl_summary["project_id"],
-            defaultAll=stats_fl_summary["defaultAll"],
-            flowRawCluster=stats_fl_summary["flowRawCluster"],
-            flowPfCluster=stats_fl_summary["flowPfCluster"],
-            flowYieldMb=stats_fl_summary["flowYieldMb"],
-            sampleNumber=stats_fl_summary["sampleNumber"],
+            default_all=stats_fl_summary["defaultAll"],
+            flow_raw_cluster=stats_fl_summary["flowRawCluster"],
+            flow_pf_cluster=stats_fl_summary["flowPfCluster"],
+            flow_yield_mb=stats_fl_summary["flowYieldMb"],
+            sample_number=stats_fl_summary["sampleNumber"],
         )
 
         return fl_summary
@@ -806,11 +792,11 @@ class StatsFlSummary(models.Model):
     project_id = models.ForeignKey(
         Projects, on_delete=models.CASCADE, null=True, blank=True
     )
-    defaultAll = models.CharField(max_length=40, null=True)
-    flowRawCluster = models.CharField(max_length=40)
-    flowPfCluster = models.CharField(max_length=40)
-    flowYieldMb = models.CharField(max_length=40)
-    sampleNumber = models.CharField(max_length=40)
+    default_all = models.CharField(max_length=40, null=True)
+    flow_raw_cluster = models.CharField(max_length=40)
+    flow_pf_cluster = models.CharField(max_length=40)
+    flow_yield_mb = models.CharField(max_length=40)
+    sample_number = models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -818,14 +804,14 @@ class StatsFlSummary(models.Model):
 
     def get_fl_summary(self):
         data = []
-        data.append(self.flowRawCluster)
-        data.append(self.flowPfCluster)
-        data.append(self.flowYieldMb)
-        data.append(self.sampleNumber)
+        data.append(self.flow_raw_cluster)
+        data.append(self.flow_pf_cluster)
+        data.append(self.flow_yield_mb)
+        data.append(self.sample_number)
         return data
 
     def get_sample_number(self):
-        return "%s" % (self.sampleNumber)
+        return "%s" % (self.sample_number)
 
     objects = StatsFlSummaryManager()
 
@@ -835,15 +821,15 @@ class StatsLaneSummaryManager(models.Manager):
         lane_summary = self.create(
             runprocess_id=l_summary["runprocess_id"],
             project_id=l_summary["project_id"],
-            defaultAll=l_summary["defaultAll"],
+            default_all=l_summary["defaultAll"],
             lane=l_summary["lane"],
-            pfCluster=l_summary["pfCluster"],
-            percentLane=l_summary["percentLane"],
-            perfectBarcode=l_summary["perfectBarcode"],
-            oneMismatch=l_summary["oneMismatch"],
-            yieldMb=l_summary["yieldMb"],
-            biggerQ30=l_summary["biggerQ30"],
-            meanQuality=l_summary["meanQuality"],
+            pf_cluster=l_summary["pfCluster"],
+            percent_lane=l_summary["percentLane"],
+            perfect_barcode=l_summary["perfectBarcode"],
+            one_mismatch=l_summary["oneMismatch"],
+            yield_mb=l_summary["yieldMb"],
+            bigger_q30=l_summary["biggerQ30"],
+            mean_quality=l_summary["meanQuality"],
         )
 
         return lane_summary
@@ -854,15 +840,15 @@ class StatsLaneSummary(models.Model):
     project_id = models.ForeignKey(
         Projects, on_delete=models.CASCADE, null=True, blank=True
     )
-    defaultAll = models.CharField(max_length=40, null=True)
+    default_all = models.CharField(max_length=40, null=True)
     lane = models.CharField(max_length=10)
-    pfCluster = models.CharField(max_length=64)
-    percentLane = models.CharField(max_length=64)
-    perfectBarcode = models.CharField(max_length=64)
-    oneMismatch = models.CharField(max_length=64)
-    yieldMb = models.CharField(max_length=64)
-    biggerQ30 = models.CharField(max_length=64)
-    meanQuality = models.CharField(max_length=64)
+    pf_cluster = models.CharField(max_length=64)
+    percent_lane = models.CharField(max_length=64)
+    perfect_barcode = models.CharField(max_length=64)
+    one_mismatch = models.CharField(max_length=64)
+    yield_mb = models.CharField(max_length=64)
+    bigger_q30 = models.CharField(max_length=64)
+    mean_quality = models.CharField(max_length=64)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -877,21 +863,21 @@ class StatsLaneSummary(models.Model):
     def get_lane_summary(self):
         data = []
         data.append(self.lane)
-        data.append(self.pfCluster)
-        data.append(self.percentLane)
-        data.append(self.perfectBarcode)
-        data.append(self.oneMismatch)
-        data.append(self.yieldMb)
-        data.append(self.biggerQ30)
-        data.append(self.meanQuality)
+        data.append(self.pf_cluster)
+        data.append(self.percent_lane)
+        data.append(self.perfect_barcode)
+        data.append(self.one_mismatch)
+        data.append(self.yield_mb)
+        data.append(self.bigger_q30)
+        data.append(self.mean_quality)
         return data
 
     def get_stats_info(self):
         stats_info = []
-        stats_info.append(self.biggerQ30)
-        stats_info.append(self.meanQuality)
-        stats_info.append(self.yieldMb)
-        stats_info.append(self.pfCluster)
+        stats_info.append(self.bigger_q30)
+        stats_info.append(self.mean_quality)
+        stats_info.append(self.yield_mb)
+        stats_info.append(self.pf_cluster)
         return stats_info
 
     objects = StatsLaneSummaryManager()
@@ -901,13 +887,13 @@ class GraphicsStatsManager(models.Manager):
     def create_graphic_run_metrics(self, run_process_obj, run_folder):
         graphic_metric = self.create(
             runprocess_id=run_process_obj,
-            folderRunGraphic=run_folder,
-            cluserCountGraph="ClusterCount-by-lane.png",
-            flowCellGraph="flowcell-Intensity.png",
-            intensityByCycleGraph="Intensity-by-cycle.png",
-            heatMapGraph="q-heat-map.png",
-            histogramGraph="q-histogram.png",
-            sampleQcGraph="sample-qc.png",
+            folder_run_graphic=run_folder,
+            cluster_count_graph="ClusterCount-by-lane.png",
+            flowcell_graph="flowcell-Intensity.png",
+            intensity_by_cycle_graph="Intensity-by-cycle.png",
+            heatmap_graph="q-heat-map.png",
+            histogram_graph="q-histogram.png",
+            sample_qc_graph="sample-qc.png",
         )
 
         return graphic_metric
@@ -915,13 +901,13 @@ class GraphicsStatsManager(models.Manager):
 
 class GraphicsStats(models.Model):
     runprocess_id = models.ForeignKey(RunProcess, on_delete=models.CASCADE)
-    folderRunGraphic = models.CharField(max_length=255)
-    cluserCountGraph = models.CharField(max_length=255)
-    flowCellGraph = models.CharField(max_length=255)
-    intensityByCycleGraph = models.CharField(max_length=255)
-    heatMapGraph = models.CharField(max_length=255)
-    histogramGraph = models.CharField(max_length=255)
-    sampleQcGraph = models.CharField(max_length=255)
+    folder_run_graphic = models.CharField(max_length=255)
+    cluster_count_graph = models.CharField(max_length=255)
+    flowcell_graph = models.CharField(max_length=255)
+    intensity_by_cycle_graph = models.CharField(max_length=255)
+    heatmap_graph = models.CharField(max_length=255)
+    histogram_graph = models.CharField(max_length=255)
+    sample_qc_graph = models.CharField(max_length=255)
     # Fix 24/07/2018: null=True added at definition of "generated_at" to allow json load
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -929,20 +915,20 @@ class GraphicsStats(models.Model):
         db_table = "wetlab_graphics_stats"
 
     def __str__(self):
-        return "%s" % (self.folderRunGraphic)
+        return "%s" % (self.folder_run_graphic)
 
     def get_graphics(self):
         return "%s;%s;%s;%s;%s;%s" % (
-            self.cluserCountGraph,
-            self.flowCellGraph,
-            self.intensityByCycleGraph,
-            self.heatMapGraph,
-            self.histogramGraph,
-            self.sampleQcGraph,
+            self.cluster_count_graph,
+            self.flowcell_graph,
+            self.intensity_by_cycle_graph,
+            self.heatmap_graph,
+            self.histogram_graph,
+            self.sample_qc_graph,
         )
 
     def get_folder_graphic(self):
-        return "%s" % (self.folderRunGraphic)
+        return "%s" % (self.folder_run_graphic)
 
     objects = GraphicsStatsManager()
 
@@ -953,55 +939,55 @@ class SamplesInProjectManager(models.Manager):
             user_obj = User.objects.get(username__exact=sample_p_data["user_id"])
         except Exception:
             user_obj = None
-        sample_project = self.create(
-            project_id=sample_p_data["project_id"],
-            sampleName=sample_p_data["sampleName"],
-            barcodeName=sample_p_data["barcodeName"],
-            pfClusters=sample_p_data["pfClusters"],
-            percentInProject=sample_p_data["percentInProject"],
-            yieldMb=sample_p_data["yieldMb"],
-            qualityQ30=sample_p_data["qualityQ30"],
-            meanQuality=sample_p_data["meanQuality"],
-            runProcess_id=sample_p_data["runProcess_id"],
-            user_id=user_obj,
-        )
+            sample_project = self.create(
+                project_id=sample_p_data["project_id"],
+                sample_name=sample_p_data["sampleName"],
+                barcode_name=sample_p_data["barcodeName"],
+                pf_clusters=sample_p_data["pfClusters"],
+                percent_in_project=sample_p_data["percentInProject"],
+                yield_mb=sample_p_data["yieldMb"],
+                quality_q30=sample_p_data["qualityQ30"],
+                mean_quality=sample_p_data["meanQuality"],
+                run_process_id=sample_p_data["runProcess_id"],
+                user_id=user_obj,
+            )
         return sample_project
 
 
 class SamplesInProject(models.Model):
     project_id = models.ForeignKey(Projects, on_delete=models.CASCADE)
-    runProcess_id = models.ForeignKey(
+    run_process_id = models.ForeignKey(
         RunProcess, on_delete=models.CASCADE, null=True, blank=True
     )
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    sampleInCore = models.ForeignKey(
+    sample_in_core = models.ForeignKey(
         Samples, on_delete=models.CASCADE, null=True, blank=True
     )
-    sampleName = models.CharField(max_length=255)
-    barcodeName = models.CharField(max_length=255)
-    pfClusters = models.CharField(max_length=55)
-    percentInProject = models.CharField(max_length=25)
-    yieldMb = models.CharField(max_length=55)
-    qualityQ30 = models.CharField(max_length=55)
-    meanQuality = models.CharField(max_length=55)
+    sample_name = models.CharField(max_length=255)
+    barcode_name = models.CharField(max_length=255)
+    pf_clusters = models.CharField(max_length=55)
+    percent_in_project = models.CharField(max_length=25)
+    yield_mb = models.CharField(max_length=55)
+    quality_q30 = models.CharField(max_length=55)
+    mean_quality = models.CharField(max_length=55)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "wetlab_samples_in_project"
 
     def __str__(self):
-        return "%s" % (self.sampleName)
+        return "%s" % (self.sample_name)
 
     def get_basic_info(self):
         sample_info = []
         sample_info.append(self.pk)
-        sample_info.append(self.sampleName)
+        sample_info.append(self.sample_name)
         if self.project_id is not None:
             sample_info.append(self.project_id.get_project_name())
         else:
             sample_info.append("None")
-        if self.runProcess_id is not None:
-            sample_info.append(self.runProcess_id.get_run_name())
+        if self.run_process_id is not None:
+            sample_info.append(self.run_process_id.get_run_name())
         else:
             sample_info.append("None")
         sample_info.append(self.generated_at.strftime("%I:%M%p on %B %d, %Y"))
@@ -1012,35 +998,35 @@ class SamplesInProject(models.Model):
 
     def get_sample_information(self):
         data = []
-        data.append(self.sampleName)
-        data.append(self.barcodeName)
-        data.append(self.pfClusters)
-        data.append(self.percentInProject)
-        data.append(self.yieldMb)
-        data.append(self.qualityQ30)
-        data.append(self.meanQuality)
+        data.append(self.sample_name)
+        data.append(self.barcode_name)
+        data.append(self.pf_clusters)
+        data.append(self.percent_in_project)
+        data.append(self.yield_mb)
+        data.append(self.quality_q30)
+        data.append(self.mean_quality)
         return data
 
     def get_sample_information_with_project_run(self):
         data = []
-        data.append(self.sampleName)
+        data.append(self.sample_name)
         if self.project_id is not None:
             data.append(self.project_id.get_project_name())
         else:
             data.append("None")
-        if self.runProcess_id is not None:
-            data.append(self.runProcess_id.get_run_name())
+        if self.run_process_id is not None:
+            data.append(self.run_process_id.get_run_name())
         else:
             data.append("None")
         data.append(self.generated_at.strftime("%B %d, %Y"))
-        data.append(self.pfClusters)
-        data.append(self.yieldMb)
-        data.append(self.qualityQ30)
-        data.append(self.meanQuality)
+        data.append(self.pf_clusters)
+        data.append(self.yield_mb)
+        data.append(self.quality_q30)
+        data.append(self.mean_quality)
         return data
 
     def get_sample_name(self):
-        return "%s" % (self.sampleName)
+        return "%s" % (self.sample_name)
 
     def get_project_id(self):
         return "%s" % (self.project_id.pk)
@@ -1053,25 +1039,25 @@ class SamplesInProject(models.Model):
         return "%s" % (project_name)
 
     def get_run_name(self):
-        if self.runProcess_id is not None:
-            return "%s" % (self.runProcess_id.get_run_name())
+        if self.run_process_id is not None:
+            return "%s" % (self.run_process_id.get_run_name())
         else:
             return "None"
 
     def get_sequencer_used(self):
-        return "%s" % (self.runProcess_id.get_run_used_sequencer_name())
+        return "%s" % (self.run_process_id.get_run_used_sequencer_name())
 
     def get_run_obj(self):
-        return self.runProcess_id
+        return self.run_process_id
 
     def get_run_id(self):
-        return self.runProcess_id.pk
+        return self.run_process_id.pk
 
     def get_quality_sample(self):
-        return "%s" % (self.qualityQ30)
+        return "%s" % (self.quality_q30)
 
     def get_number_of_samples_in_run(self):
-        return "%s" % (self.runProcess_id.get_number_of_samples_in_run())
+        return "%s" % (self.run_process_id.get_number_of_samples_in_run())
 
     def get_sample_user_name(self):
         if self.user_id is not None:
@@ -1082,24 +1068,24 @@ class SamplesInProject(models.Model):
 
 
 class CollectionIndexKit(models.Model):
-    collectionIndexName = models.CharField(max_length=125)
+    collection_index_name = models.CharField(max_length=125)
     version = models.CharField(max_length=80, null=True)
-    plateExtension = models.CharField(max_length=125, null=True)
+    plate_extension = models.CharField(max_length=125, null=True)
     adapter1 = models.CharField(max_length=125, null=True)
     adapter2 = models.CharField(max_length=125, null=True)
-    collectionIndexFile = models.FileField(
+    collection_index_file = models.FileField(
         upload_to=wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY
     )
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    generate_dat = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         db_table = "wetlab_collection_index_kit"
 
     def __str__(self):
-        return "%s" % (self.collectionIndexName)
+        return "%s" % (self.collection_index_name)
 
     def get_collection_index_name(self):
-        return "%s" % (self.collectionIndexName)
+        return "%s" % (self.collection_index_name)
 
     def get_id(self):
         return "%s" % (self.pk)
@@ -1110,21 +1096,21 @@ class CollectionIndexKit(models.Model):
         else:
             adapter2 = self.adapter2
         collection_info = []
-        collection_info.append(self.collectionIndexName)
+        collection_info.append(self.collection_index_name)
         collection_info.append(self.version)
-        collection_info.append(self.plateExtension)
+        collection_info.append(self.plate_extension)
         collection_info.append(self.adapter1)
         collection_info.append(adapter2)
-        collection_info.append(self.collectionIndexFile)
+        collection_info.append(self.collection_index_file)
         return collection_info
 
 
 class CollectionIndexValues(models.Model):
-    collectionIndexKit_id = models.ForeignKey(
+    collection_index_kit_id = models.ForeignKey(
         CollectionIndexKit, on_delete=models.CASCADE
     )
 
-    defaultWell = models.CharField(max_length=10, null=True)
+    default_well = models.CharField(max_length=10, null=True)
     index_7 = models.CharField(max_length=25, null=True)
     i_7_seq = models.CharField(max_length=25, null=True)
     index_5 = models.CharField(max_length=25, null=True)
@@ -1135,7 +1121,7 @@ class CollectionIndexValues(models.Model):
 
     def get_index_value_information(self):
         return "%s;%s;%s;%s;%s" % (
-            self.defaultWell,
+            self.default_well,
             self.index_7,
             self.i_7_seq,
             self.index_5,
@@ -1143,10 +1129,10 @@ class CollectionIndexValues(models.Model):
         )
 
     def get_collection_index_id(self):
-        return "%s" % (self.collectionIndexKit_id.get_id())
+        return "%s" % (self.collection_index_kit_id.get_id())
 
     def get_collection_index_name(self):
-        return "%s" % (self.collectionIndexKit_id.get_collection_index_name())
+        return "%s" % (self.collection_index_kit_id.get_collection_index_name())
 
 
 class libPreparationUserSampleSheetManager(models.Manager):
@@ -1165,54 +1151,54 @@ class libPreparationUserSampleSheetManager(models.Manager):
                 collection_index_kit_id = None
         file_name = os.path.basename(user_sample_sheet_data["file_name"])
         configuration = SequencingConfiguration.objects.filter(
-            platformID__platformName__exact=user_sample_sheet_data["platform"],
-            configurationName__exact=user_sample_sheet_data["configuration"],
+            platform_id__platformName__exact=user_sample_sheet_data["platform"],
+            configuration_name__exact=user_sample_sheet_data["configuration"],
         ).last()
         new_lib_prep_user_sample_sheet = self.create(
-            registerUser=register_user_obj,
-            collectionIndexKit_id=collection_index_kit_id,
+            register_user=register_user_obj,
+            collection_index_kit_id=collection_index_kit_id,
             reads=",".join(user_sample_sheet_data["reads"]),
-            sampleSheet=file_name,
+            sample_sheet=file_name,
             application=user_sample_sheet_data["application"],
             instrument=user_sample_sheet_data["instrument type"],
             assay=user_sample_sheet_data["assay"],
             adapter1=user_sample_sheet_data["adapter1"],
             adapter2=user_sample_sheet_data["adapter2"],
-            sequencingConfiguration=configuration,
-            iemVersion=user_sample_sheet_data["iem_version"],
+            sequencing_configuration=configuration,
+            iem_version=user_sample_sheet_data["iem_version"],
         )
         return new_lib_prep_user_sample_sheet
 
 
 class libUserSampleSheet(models.Model):
-    registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
+    register_user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    collectionIndexKit_id = models.ForeignKey(
+    collection_index_kit_id = models.ForeignKey(
         CollectionIndexKit, on_delete=models.CASCADE, null=True
     )
 
-    sequencingConfiguration = models.ForeignKey(
+    sequencing_configuration = models.ForeignKey(
         SequencingConfiguration, on_delete=models.CASCADE, null=True
     )
 
-    sampleSheet = models.FileField(
+    sample_sheet = models.FileField(
         upload_to=wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
     )
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    generate_dat = models.DateTimeField(auto_now_add=True, null=True)
     application = models.CharField(max_length=70, null=True, blank=True)
     instrument = models.CharField(max_length=70, null=True, blank=True)
     adapter1 = models.CharField(max_length=70, null=True, blank=True)
     adapter2 = models.CharField(max_length=70, null=True, blank=True)
     assay = models.CharField(max_length=70, null=True, blank=True)
     reads = models.CharField(max_length=10, null=True, blank=True)
-    confirmedUsed = models.BooleanField(default=False)
-    iemVersion = models.CharField(max_length=5, null=True, blank=True)
+    confirmed_used = models.BooleanField(default=False)
+    iem_version = models.CharField(max_length=5, null=True, blank=True)
 
     class Meta:
         db_table = "wetlab_lib_user_samplesheet"
 
     def __str__(self):
-        return "%s" % (self.sampleSheet)
+        return "%s" % (self.sample_sheet)
 
     def get_assay(self):
         return "%s" % (self.assay)
@@ -1224,26 +1210,26 @@ class libUserSampleSheet(models.Model):
         return adapters
 
     def get_collection_index_kit(self):
-        if self.collectionIndexKit_id is not None:
-            return "%s" % (self.collectionIndexKit_id.get_collection_index_name())
+        if self.collection_index_kit_id is not None:
+            return "%s" % (self.collection_index_kit_id.get_collection_index_name())
         else:
             return "Not available"
 
     def get_iem_version(self):
-        return "%s" % (self.iemVersion)
+        return "%s" % (self.iem_version)
 
     def get_sequencing_configuration_platform(self):
-        return "%s" % (self.sequencingConfiguration.get_platform_name())
+        return "%s" % (self.sequencing_configuration.get_platform_name())
 
     def get_sequencing_configuration_name(self):
-        return "%s" % (self.sequencingConfiguration.get_configuration_name())
+        return "%s" % (self.sequencing_configuration.get_configuration_name())
 
     def get_user_sample_sheet_id(self):
         return "%s" % (self.pk)
 
     def get_all_data(self):
-        if self.collectionIndexKit_id is not None:
-            collection_index = self.collectionIndexKit_id.get_collection_index_name()
+        if self.collection_index_kit_id is not None:
+            collection_index = self.collection_index_kit_id.get_collection_index_name()
         else:
             collection_index = ""
         s_s_data = []
@@ -1257,7 +1243,7 @@ class libUserSampleSheet(models.Model):
         return s_s_data
 
     def update_confirm_used(self, confirmation):
-        self.confirmedUsed = confirmation
+        self.confirmed_used = confirmation
         self.save()
         return self
 
@@ -1265,16 +1251,16 @@ class libUserSampleSheet(models.Model):
 
 
 class PoolStates(models.Model):
-    poolState = models.CharField(max_length=50)
+    pool_state = models.CharField(max_length=50)
 
     class Meta:
         db_table = "wetlab_pool_states"
 
     def __str__(self):
-        return "%s" % (self.poolState)
+        return "%s" % (self.pool_state)
 
     def get_pool_state(self):
-        return "%s" % (self.poolState)
+        return "%s" % (self.pool_state)
 
 
 class LibraryPoolManager(models.Manager):
@@ -1283,41 +1269,41 @@ class LibraryPoolManager(models.Manager):
             platformName__exact=pool_data["platform"]
         ).last()
         new_library_pool = self.create(
-            registerUser=pool_data["registerUser"],
-            poolState=PoolStates.objects.get(poolState__exact="Defined"),
-            poolName=pool_data["poolName"],
-            poolCodeID=pool_data["poolCodeID"],
+            register_user=pool_data["registerUser"],
+            pool_state=PoolStates.objects.get(pool_state__exact="Defined"),
+            pool_name=pool_data["poolName"],
+            pool_code_id=pool_data["poolCodeID"],
             adapter=pool_data["adapter"],
-            pairedEnd=pool_data["pairedEnd"],
-            numberOfSamples=pool_data["n_samples"],
+            paired_end=pool_data["pairedEnd"],
+            sample_number=pool_data["n_samples"],
             platform=platform_obj,
         )
         return new_library_pool
 
 
 class LibraryPool(models.Model):
-    registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
-    poolState = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
-    runProcess_id = models.ForeignKey(
+    register_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
+    run_process_id = models.ForeignKey(
         RunProcess, on_delete=models.CASCADE, null=True, blank=True
     )
 
     platform = models.ForeignKey(
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
-    poolName = models.CharField(max_length=50)
-    numberOfSamples = models.IntegerField(default=0)
-    poolCodeID = models.CharField(max_length=50, blank=True)
+    pool_name = models.CharField(max_length=50)
+    sample_number = models.IntegerField(default=0)
+    pool_code_id = models.CharField(max_length=50, blank=True)
     adapter = models.CharField(max_length=50, null=True, blank=True)
-    pairedEnd = models.CharField(max_length=10, null=True, blank=True)
+    paired_end = models.CharField(max_length=10, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ("poolName",)
+        ordering = ("pool_name",)
         db_table = "wetlab_library_pool"
 
     def __str__(self):
-        return "%s" % (self.poolName)
+        return "%s" % (self.pool_name)
 
     def get_adapter(self):
         return "%s" % (self.adapter)
@@ -1327,22 +1313,22 @@ class LibraryPool(models.Model):
 
     def get_info(self):
         pool_info = []
-        pool_info.append(self.poolName)
-        pool_info.append(self.poolCodeID)
-        pool_info.append(self.numberOfSamples)
+        pool_info.append(self.pool_name)
+        pool_info.append(self.pool_code_id)
+        pool_info.append(self.sample_number)
         return pool_info
 
     def get_number_of_samples(self):
-        return "%s" % (self.numberOfSamples)
+        return "%s" % (self.sample_number)
 
     def get_pool_name(self):
-        return "%s" % (self.poolName)
+        return "%s" % (self.pool_name)
 
     def get_pool_code_id(self):
-        return "%s" % (self.poolCodeID)
+        return "%s" % (self.pool_code_id)
 
     def get_pool_single_paired(self):
-        return "%s" % (self.pairedEnd)
+        return "%s" % (self.paired_end)
 
     def get_platform_name(self):
         if self.platform is not None:
@@ -1351,30 +1337,30 @@ class LibraryPool(models.Model):
             return "Not defined"
 
     def get_run_name(self):
-        if self.runProcess_id is not None:
-            return "%s" % (self.runProcess_id.get_run_name())
+        if self.run_process_id is not None:
+            return "%s" % (self.run_process_id.get_run_name())
         else:
             return "Not defined yet"
 
     def get_run_id(self):
-        if self.runProcess_id is not None:
-            return "%s" % (self.runProcess_id.get_run_id())
+        if self.run_process_id is not None:
+            return "%s" % (self.run_process_id.get_run_id())
         return None
 
     def get_run_obj(self):
-        return self.runProcess_id
+        return self.run_process_id
 
     def set_pool_state(self, state):
-        self.poolState = PoolStates.objects.get(poolState__exact=state)
+        self.pool_state = PoolStates.objects.get(poolstate__exact=state)
         self.save()
 
     def update_number_samples(self, number_s_in_pool):
-        self.numberOfSamples = number_s_in_pool
+        self.sample_number = number_s_in_pool
         self.save()
         return self
 
     def update_run_name(self, run_name):
-        self.runProcess_id = run_name
+        self.run_process_id = run_name
         self.save()
         return self
 
@@ -1382,21 +1368,21 @@ class LibraryPool(models.Model):
 
 
 class LibPrepareStates(models.Model):
-    libPrepState = models.CharField(max_length=50)
+    lib_prep_state = models.CharField(max_length=50)
 
     class Meta:
         db_table = "wetlab_lib_prepare_states"
 
     def __str__(self):
-        return "%s" % (self.libPrepState)
+        return "%s" % (self.lib_prep_state)
 
     def get_lib_state(self):
-        return "%s" % (self.libPrepState)
+        return "%s" % (self.lib_prep_state)
 
 
 class libPrepareManager(models.Manager):
     def create_lib_preparation(self, lib_prep_data):
-        registerUser_obj = User.objects.get(
+        register_user_obj = User.objects.get(
             username__exact=lib_prep_data["registerUser"]
         )
         sample_obj = Samples.objects.get(pk__exact=lib_prep_data["sample_id"])
@@ -1405,22 +1391,22 @@ class libPrepareManager(models.Manager):
         )
         lib_state_obj = LibPrepareStates.objects.get(libPrepState__exact="Defined")
         new_lib_prep = self.create(
-            registerUser=registerUser_obj,
+            register_user=register_user_obj,
             molecule_id=molecule_obj,
             sample_id=sample_obj,
             protocol_id=lib_prep_data["protocol_obj"],
-            libPrepState=lib_state_obj,
-            libPrepCodeID=lib_prep_data["lib_prep_code_id"],
-            userSampleID=lib_prep_data["user_sampleID"],
-            uniqueID=lib_prep_data["uniqueID"],
-            prefixProtocol=lib_prep_data["prefixProtocol"],
-            sampleNameInSampleSheet=lib_prep_data["sampleNameInSampleSheet"],
+            lib_prep_state=lib_state_obj,
+            lib_prep_code_id=lib_prep_data["lib_prep_code_id"],
+            user_sample_id=lib_prep_data["user_sampleID"],
+            unique_id=lib_prep_data["uniqueID"],
+            prefix_protocol=lib_prep_data["prefixProtocol"],
+            samplename_in_samplesheet=lib_prep_data["sampleNameInSampleSheet"],
         )
         return new_lib_prep
 
 
 class LibPrepare(models.Model):
-    registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
+    register_user = models.ForeignKey(User, on_delete=models.CASCADE)
     molecule_id = models.ForeignKey(MoleculePreparation, on_delete=models.CASCADE)
     sample_id = models.ForeignKey(
         Samples, on_delete=models.CASCADE, null=True, blank=True
@@ -1428,11 +1414,11 @@ class LibPrepare(models.Model):
     protocol_id = models.ForeignKey(
         Protocols, on_delete=models.CASCADE, null=True, blank=True
     )
-    libPrepState = models.ForeignKey(
+    lib_prep_state = models.ForeignKey(
         LibPrepareStates, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    userLotKit_id = models.ForeignKey(
+    user_lot_kit_id = models.ForeignKey(
         UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
 
@@ -1442,30 +1428,30 @@ class LibPrepare(models.Model):
 
     pools = models.ManyToManyField(LibraryPool, blank=True)
 
-    libPrepCodeID = models.CharField(max_length=255, null=True, blank=True)
-    userSampleID = models.CharField(max_length=100, null=True, blank=True)
-    projectInSampleSheet = models.CharField(max_length=80, null=True, blank=True)
-    samplePlate = models.CharField(max_length=50, null=True, blank=True)
-    sampleWell = models.CharField(max_length=20, null=True, blank=True)
-    indexPlateWell = models.CharField(max_length=20, null=True, blank=True)
-    i7IndexID = models.CharField(max_length=25, null=True, blank=True)
-    i7Index = models.CharField(max_length=30, null=True, blank=True)
-    i5IndexID = models.CharField(max_length=25, null=True, blank=True)
-    i5Index = models.CharField(max_length=30, null=True, blank=True)
-    genomeFolder = models.CharField(max_length=180, null=True, blank=True)
+    lib_prep_code_id = models.CharField(max_length=255, null=True, blank=True)
+    user_sample_id = models.CharField(max_length=100, null=True, blank=True)
+    project_in_samplesheet = models.CharField(max_length=80, null=True, blank=True)
+    sample_plate = models.CharField(max_length=50, null=True, blank=True)
+    sample_well = models.CharField(max_length=20, null=True, blank=True)
+    index_plate_well = models.CharField(max_length=20, null=True, blank=True)
+    i7_index_id = models.CharField(max_length=25, null=True, blank=True)
+    i7_index = models.CharField(max_length=30, null=True, blank=True)
+    i5_index_id = models.CharField(max_length=25, null=True, blank=True)
+    i5_index = models.CharField(max_length=30, null=True, blank=True)
+    genome_folder = models.CharField(max_length=180, null=True, blank=True)
     manifest = models.CharField(max_length=80, null=True, blank=True)
-    numberOfReused = models.IntegerField(default=0)
-    uniqueID = models.CharField(max_length=16, null=True, blank=True)
-    userInSampleSheet = models.CharField(max_length=255, null=True, blank=True)
-    sampleNameInSampleSheet = models.CharField(max_length=255, null=True, blank=True)
-    prefixProtocol = models.CharField(max_length=25, null=True, blank=True)
+    reused_number = models.IntegerField(default=0)
+    unique_id = models.CharField(max_length=16, null=True, blank=True)
+    user_in_samplesheet = models.CharField(max_length=255, null=True, blank=True)
+    samplename_in_samplesheet = models.CharField(max_length=255, null=True, blank=True)
+    prefix_protocol = models.CharField(max_length=25, null=True, blank=True)
 
     class Meta:
         db_table = "wetlab_lib_prepare"
-        ordering = ("libPrepCodeID",)
+        ordering = ("lib_prep_code_id",)
 
     def __str__(self):
-        return "%s" % (self.libPrepCodeID)
+        return "%s" % (self.lib_prep_code_id)
 
     def get_adapters(self):
         return self.user_sample_sheet.get_adapters()
@@ -1475,86 +1461,83 @@ class LibPrepare(models.Model):
 
     def get_info_for_display(self):
         lib_info = []
-        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.lib_prep_code_id)
         lib_info.append(self.molecule_id.get_molecule_code_id())
-        lib_info.append(self.libPrepState.libPrepState)
+        lib_info.append(self.lib_prep_state.lib_prep_state)
         lib_info.append(self.protocol_id.get_name())
-        lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.i7IndexID)
-        lib_info.append(self.i5IndexID)
-        lib_info.append(self.numberOfReused)
+        lib_info.append(self.project_in_samplesheet)
+        lib_info.append(self.i7_index_id)
+        lib_info.append(self.i5_index_id)
+        lib_info.append(self.reused_number)
         return lib_info
 
     def get_info_for_selection_in_pool(self):
         lib_info = []
-        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.lib_prep_code_id)
         lib_info.append(self.sample_id.get_sample_name())
-        lib_info.append(self.registerUser.username)
+        lib_info.append(self.register_user.username)
         lib_info.append(self.user_sample_sheet.get_collection_index_kit())
-        lib_info.append(self.i7IndexID)
-        lib_info.append(self.i5IndexID)
+        lib_info.append(self.i7_index_id)
+        lib_info.append(self.i5_index_id)
         lib_info.append(self.pk)
         return lib_info
 
     def get_info_for_run_paired_end(self):
         lib_info = []
-        lib_info.append(self.uniqueID)
-        lib_info.append(self.sampleNameInSampleSheet)
-        lib_info.append(self.samplePlate)
-        lib_info.append(self.sampleWell)
-        lib_info.append(self.i7IndexID)
-        lib_info.append(self.i7Index)
-        lib_info.append(self.i5IndexID)
-        lib_info.append(self.i5Index)
-        lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.userInSampleSheet)
+        lib_info.append(self.unique_id)
+        lib_info.append(self.samplename_in_samplesheet)
+        lib_info.append(self.sample_plate)
+        lib_info.append(self.sample_well)
+        lib_info.append(self.i7_index_id)
+        lib_info.append(self.i7_index)
+        lib_info.append(self.i5_index_id)
+        lib_info.append(self.i5_index)
+        lib_info.append(self.project_in_samplesheet)
+        lib_info.append(self.user_in_samplesheet)
         return lib_info
 
     def get_info_for_run_single_read(self):
         lib_info = []
-        lib_info.append(self.uniqueID)
+        lib_info.append(self.unique_id)
         lib_info.append(self.sample_id.get_sample_name())
-        lib_info.append(self.samplePlate)
-        lib_info.append(self.sampleWell)
-        lib_info.append(self.i7IndexID)
-        lib_info.append(self.i7Index)
-        lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.userInSampleSheet)
+        lib_info.append(self.sample_plate)
+        lib_info.append(self.sample_well)
+        lib_info.append(self.i7_index_id)
+        lib_info.append(self.i7_index)
+        lib_info.append(self.project_in_samplesheet)
+        lib_info.append(self.user_in_samplesheet)
         return lib_info
 
     def get_basic_data(self):
         lib_info = []
         lib_info.append(self.sample_id.get_sample_name())
-        lib_info.append(self.uniqueID)
+        lib_info.append(self.unique_id)
         lib_info.append(self.protocol_id.get_name())
         lib_info.append(self.pk)
         return lib_info
 
     def get_info_for_display_pool(self):
-        if self.registerUser.username is None:
+        if self.register_user.username is None:
             user_name = ""
         else:
-            user_name = self.registerUser.username
+            user_name = self.register_user.username
 
         lib_info = []
-        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.lib_prep_code_id)
         lib_info.append(self.get_sample_name())
         lib_info.append(user_name)
         lib_info.append(self.get_sample_id())
         return lib_info
 
-    def get_collection_index_kit(self):
-        return "%s" % (self.collectionIndex_id.get_collection_index_name())
-
     def get_i7_index(self):
-        if self.i7IndexID is not None:
-            return "%s" % (self.i7IndexID)
+        if self.i7_index_id is not None:
+            return "%s" % (self.i7_index_id)
         else:
             return ""
 
     def get_i5_index(self):
-        if self.i5IndexID is not None:
-            return "%s" % (self.i5IndexID)
+        if self.i5_index_id is not None:
+            return "%s" % (self.i5_index_id)
         else:
             return ""
 
@@ -1566,24 +1549,24 @@ class LibPrepare(models.Model):
 
     def get_indexes(self):
         index = {}
-        if self.i5IndexID is None:
+        if self.i5_index_id is None:
             index["i5_indexID"] = ""
             index["i5_seq"] = ""
         else:
-            index["i5_indexID"] = self.i5IndexID
-            index["i5_seq"] = self.i5Index
-        index["i7_indexID"] = self.i7IndexID
-        index["i7_seq"] = self.i7Index
+            index["i5_indexID"] = self.i5_index_id
+            index["i5_seq"] = self.i5_index
+        index["i7_indexID"] = self.i7_index_id
+        index["i7_seq"] = self.i7_index
         return index
 
     def get_index_plate_well(self):
-        if self.indexPlateWell is not None:
-            return "%s" % (self.indexPlateWell)
+        if self.index_plate_well is not None:
+            return "%s" % (self.index_plate_well)
         else:
             return ""
 
     def get_lib_prep_code(self):
-        return "%s" % (self.libPrepCodeID)
+        return "%s" % (self.lib_prep_code_id)
 
     def get_lib_prep_id(self):
         return "%s" % (self.pk)
@@ -1595,8 +1578,8 @@ class LibPrepare(models.Model):
             return ""
 
     def get_genome_folder(self):
-        if self.genomeFolder is not None:
-            return "%s" % (self.genomeFolder)
+        if self.genome_folder is not None:
+            return "%s" % (self.genome_folder)
         else:
             return ""
 
@@ -1616,7 +1599,7 @@ class LibPrepare(models.Model):
         return "%s" % (self.protocol_id.pk)
 
     def get_reused_value(self):
-        return "%s" % (self.numberOfReused)
+        return "%s" % (self.reused_number)
 
     def get_sample_name(self):
         return "%s" % (self.sample_id.get_sample_name())
@@ -1628,22 +1611,22 @@ class LibPrepare(models.Model):
         return self.sample_id
 
     def get_sample_well(self):
-        return "%s" % (self.sampleWell)
+        return "%s" % (self.sample_well)
 
     def get_state(self):
-        return "%s" % (self.libPrepState.libPrepState)
+        return "%s" % (self.lib_prep_state.lib_prep_state)
 
     def get_unique_id(self):
-        return "%s" % (self.uniqueID)
+        return "%s" % (self.unique_id)
 
     def get_user_obj(self):
-        return self.registerUser
+        return self.register_user
 
     def get_user_sample_sheet_obj(self):
         return self.user_sample_sheet
 
     def set_increase_reuse(self):
-        self.numberOfReused += 1
+        self.reused_number += 1
         self.save()
         return
 
@@ -1653,62 +1636,62 @@ class LibPrepare(models.Model):
         return
 
     def set_state(self, state_value):
-        self.libPrepState = LibPrepareStates.objects.get(
-            libPrepState__exact=state_value
+        self.lib_prep_state = LibPrepareStates.objects.get(
+            lib_prep_state__exact=state_value
         )
         self.save()
         return
 
     def update_i7_index(self, i7_seq_value):
-        self.i7Index = i7_seq_value
+        self.i7_index = i7_seq_value
         self.save()
         return
 
     def update_i5_index(self, i5_seq_value):
-        self.i5Index = i5_seq_value
+        self.i5_index = i5_seq_value
         self.save()
         return
 
     def update_library_preparation_with_indexes(self, lib_prep_data):
         self.user_sample_sheet = lib_prep_data["user_sample_sheet"]
-        self.projectInSampleSheet = lib_prep_data["projectInSampleSheet"]
-        self.samplePlate = lib_prep_data["samplePlate"]
-        self.sampleWell = lib_prep_data["sampleWell"]
-        self.i7IndexID = lib_prep_data["i7IndexID"]
-        self.i7Index = lib_prep_data["i7Index"]
+        self.project_in_samplesheet = lib_prep_data["projectInSampleSheet"]
+        self.sample_plate = lib_prep_data["samplePlate"]
+        self.sample_well = lib_prep_data["sampleWell"]
+        self.i7_index_id = lib_prep_data["i7IndexID"]
+        self.i7_index = lib_prep_data["i7Index"]
         if "i5IndexID" in lib_prep_data:
-            self.i5IndexID = lib_prep_data["i5IndexID"]
+            self.i5_index_id = lib_prep_data["i5IndexID"]
         if "i5Index" in lib_prep_data:
-            self.i5Index = lib_prep_data["i5Index"]
+            self.i5_index = lib_prep_data["i5Index"]
         if "indexPlateWell" in lib_prep_data:
-            self.indexPlateWell = lib_prep_data["indexPlateWell"]
+            self.index_plate_well = lib_prep_data["indexPlateWell"]
         if "genomeFolder" in lib_prep_data:
-            self.genomeFolder = lib_prep_data["genomeFolder"]
+            self.genome_folder = lib_prep_data["genomeFolder"]
         if "manifest" in lib_prep_data:
             self.manifest = lib_prep_data["manifest"]
-        self.userInSampleSheet = lib_prep_data["userInSampleSheet"]
-        self.userSampleID = lib_prep_data["userSampleID"]
+        self.user_in_samplesheet = lib_prep_data["userInSampleSheet"]
+        self.user_sample_id = lib_prep_data["userSampleID"]
         self.save()
         return self
 
     def update_lib_preparation_info_in_reuse_state(self, lib_prep_data):
         # Update the instance with the sample sheet information
-        self.registerUser = User.objects.get(
+        self.register_user = User.objects.get(
             username__exact=lib_prep_data["registerUser"]
         )
         self.protocol_id = lib_prep_data["protocol_obj"]
         self.user_sample_sheet = lib_prep_data["user_sample_sheet"]
-        self.libPrepCodeID = lib_prep_data["lib_prep_code_id"]
-        self.projectInSampleSheet = lib_prep_data["projectInSampleSheet"]
-        self.userSampleID = lib_prep_data["userSampleID"]
-        self.samplePlate = lib_prep_data["samplePlate"]
-        self.sampleWell = lib_prep_data["sampleWell"]
-        self.indexPlateWell = lib_prep_data["indexPlateWell"]
-        self.i7IndexID = lib_prep_data["i7IndexID"]
-        self.i7Index = lib_prep_data["i7Index"]
-        self.i5IndexID = lib_prep_data["i5IndexID"]
-        self.i5Index = lib_prep_data["i5Index"]
-        self.uniqueID = lib_prep_data["uniqueID"]
+        self.lib_prep_code_id = lib_prep_data["lib_prep_code_id"]
+        self.project_in_samplesheet = lib_prep_data["projectInSampleSheet"]
+        self.user_sample_id = lib_prep_data["userSampleID"]
+        self.sample_plate = lib_prep_data["samplePlate"]
+        self.sample_well = lib_prep_data["sampleWell"]
+        self.index_plate_well = lib_prep_data["indexPlateWell"]
+        self.i7_index_id = lib_prep_data["i7IndexID"]
+        self.i7_index = lib_prep_data["i7Index"]
+        self.i5_index_id = lib_prep_data["i5_index_id"]
+        self.i5_index = lib_prep_data["i5Index"]
+        self.unique_id = lib_prep_data["uniqueID"]
         self.save()
         return self
 
@@ -1720,7 +1703,7 @@ class LibParameterValueManager(models.Manager):
         new_parameter_data = self.create(
             parameter_id=parameter_value["parameter_id"],
             library_id=parameter_value["library_id"],
-            parameterValue=parameter_value["parameterValue"],
+            parameter_value=parameter_value["parameterValue"],
         )
         return new_parameter_data
 
@@ -1728,17 +1711,17 @@ class LibParameterValueManager(models.Manager):
 class LibParameterValue(models.Model):
     parameter_id = models.ForeignKey(ProtocolParameters, on_delete=models.CASCADE)
     library_id = models.ForeignKey(LibPrepare, on_delete=models.CASCADE)
-    parameterValue = models.CharField(max_length=255)
+    parameter_value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "wetlab_lib_parameter_value"
 
     def __str__(self):
-        return "%s" % (self.parameterValue)
+        return "%s" % (self.parameter_value)
 
     def get_parameter_information(self):
-        return "%s" % (self.parameterValue)
+        return "%s" % (self.parameter_value)
 
     objects = LibParameterValueManager()
 
@@ -1746,74 +1729,74 @@ class LibParameterValue(models.Model):
 class AdditionaKitsLibPrepareManager(models.Manager):
     def create_additional_kit(self, kit_data):
         new_additional_kit = self.create(
-            registerUser=kit_data["user"],
+            register_user=kit_data["user"],
             protocol_id=kit_data["protocol_id"],
-            commercialKit_id=kit_data["commercialKit_id"],
-            kitName=kit_data["kitName"],
+            commercial_kit_id=kit_data["commercialKit_id"],
+            kit_name=kit_data["kitName"],
             description=kit_data["description"],
-            kitOrder=kit_data["kitOrder"],
-            kitUsed=kit_data["kitUsed"],
+            kit_order=kit_data["kitOrder"],
+            kit_used=kit_data["kitUsed"],
         )
         return new_additional_kit
 
 
 class AdditionaKitsLibPrepare(models.Model):
-    registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
+    register_user = models.ForeignKey(User, on_delete=models.CASCADE)
     protocol_id = models.ForeignKey(Protocols, on_delete=models.CASCADE)
-    commercialKit_id = models.ForeignKey(CommercialKits, on_delete=models.CASCADE)
-    kitName = models.CharField(max_length=255)
+    commercial_kit_id = models.ForeignKey(CommercialKits, on_delete=models.CASCADE)
+    kit_name = models.CharField(max_length=255)
     description = models.CharField(max_length=400, null=True, blank=True)
-    kitOrder = models.IntegerField()
-    kitUsed = models.BooleanField()
+    kit_order = models.IntegerField()
+    kit_used = models.BooleanField()
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "wetlab_lib_additional_kits_lib_prepare"
 
     def __str__(self):
-        return "%s" % (self.kitName)
+        return "%s" % (self.kit_name)
 
     def get_kit_name(self):
-        return "%s" % (self.kitName)
+        return "%s" % (self.kit_name)
 
     def get_add_kit_id(self):
         return "%s" % (self.pk)
 
     def get_all_kit_info(self):
         data = []
-        data.append(self.kitName)
-        data.append(self.kitOrder)
-        data.append(self.kitUsed)
-        data.append(self.commercialKit_id.get_name())
+        data.append(self.kit_name)
+        data.append(self.kit_order)
+        data.append(self.kit_used)
+        data.append(self.commercial_kit_id.get_name())
         data.append(self.description)
         return data
 
     def get_add_kit_data_for_javascript(self):
-        if self.kitUsed:
+        if self.kit_used:
             used = "true"
         else:
             used = "false"
         add_kit_data = []
-        add_kit_data.append(self.kitName)
-        add_kit_data.append(self.kitOrder)
+        add_kit_data.append(self.kit_name)
+        add_kit_data.append(self.kit_order)
         add_kit_data.append(used)
-        add_kit_data.append(self.commercialKit_id.get_name())
+        add_kit_data.append(self.commercial_kit_id.get_name())
         add_kit_data.append(self.description)
         return add_kit_data
 
     def get_commercial_kit_obj(self):
-        return self.commercialKit_id
+        return self.commercial_kit_id
 
     def get_commercial_kit_name(self):
-        return "%s" % (self.commercialKit_id.get_name())
+        return "%s" % (self.commercial_kit_id.get_name())
 
     def update_add_kit_fields(self, kit_data):
-        self.registerUser = kit_data["user"]
-        self.commercialKit_id = kit_data["commercialKit_id"]
-        self.kitName = kit_data["kitName"]
+        self.register_user = kit_data["user"]
+        self.commercial_kit_id = kit_data["commercialKit_id"]
+        self.kit_name = kit_data["kitName"]
         self.description = kit_data["description"]
-        self.kitOrder = kit_data["kitOrder"]
-        self.kitUsed = kit_data["kitUsed"]
+        self.kit_order = kit_data["kitOrder"]
+        self.kit_used = kit_data["kitUsed"]
         self.save()
         return self
 
@@ -1824,8 +1807,8 @@ class AdditionalUserLotKitManager(models.Manager):
     def create_additional_user_lot_kit(self, user_additional_kit):
         new_user_additional_kit = self.create(
             lib_prep_id=user_additional_kit["lib_prep_id"],
-            additionalLotKits=user_additional_kit["additionalLotKits"],
-            userLotKit_id=user_additional_kit["userLotKit_id"],
+            additional_lot_kits=user_additional_kit["additionalLotKits"],
+            user_lot_kit_id=user_additional_kit["userLotKit_id"],
             value=0,
         )
         return new_user_additional_kit
@@ -1833,10 +1816,10 @@ class AdditionalUserLotKitManager(models.Manager):
 
 class AdditionalUserLotKit(models.Model):
     lib_prep_id = models.ForeignKey(LibPrepare, on_delete=models.CASCADE)
-    additionalLotKits = models.ForeignKey(
+    additional_lot_kits = models.ForeignKey(
         AdditionaKitsLibPrepare, on_delete=models.CASCADE
     )
-    userLotKit_id = models.ForeignKey(
+    user_lot_kit_id = models.ForeignKey(
         UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
     value = models.CharField(max_length=255)
@@ -1850,12 +1833,12 @@ class AdditionalUserLotKit(models.Model):
 
     def get_additional_kit_info(self):
         data = []
-        data.append(self.additionalLotKits.get_kit_name())
-        data.append(self.additionalLotKits.get_commercial_kit_name())
-        if self.userLotKit_id is None:
+        data.append(self.additional_lot_kits.get_kit_name())
+        data.append(self.additional_lot_kits.get_commercial_kit_name())
+        if self.user_lot_kit_id is None:
             data.append("Not set")
         else:
-            data.append(self.userLotKit_id.get_lot_number())
+            data.append(self.user_lot_kit_id.get_lot_number())
         data.append(self.generated_at.strftime("%d %B %Y"))
         return data
 
@@ -1863,25 +1846,25 @@ class AdditionalUserLotKit(models.Model):
 
 
 class SambaConnectionData(models.Model):
-    SAMBA_APPLICATION_FOLDER_NAME = models.CharField(
+    samba_folder_name = models.CharField(
         max_length=80, null=True, blank=True
     )
-    SAMBA_DOMAIN = models.CharField(max_length=80, null=True, blank=True)
-    SAMBA_HOST_NAME = models.CharField(max_length=80, null=True, blank=True)
-    SAMBA_IP_SERVER = models.CharField(max_length=20, null=True, blank=True)
-    SAMBA_PORT_SERVER = models.CharField(max_length=10, null=True, blank=True)
-    SAMBA_REMOTE_SERVER_NAME = models.CharField(max_length=80, null=True, blank=True)
-    SAMBA_SHARED_FOLDER_NAME = models.CharField(max_length=80, null=True, blank=True)
-    SAMBA_USER_ID = models.CharField(max_length=80, null=True, blank=True)
-    SAMBA_USER_PASSWORD = models.CharField(max_length=20, null=True, blank=True)
-    IS_DIRECT_TCP = models.BooleanField(default=True)
-    SAMBA_NTLM_USED = models.BooleanField(default=True)
+    domain = models.CharField(max_length=80, null=True, blank=True)
+    host_name = models.CharField(max_length=80, null=True, blank=True)
+    ip_server = models.CharField(max_length=20, null=True, blank=True)
+    port_server = models.CharField(max_length=10, null=True, blank=True)
+    remote_server_name = models.CharField(max_length=80, null=True, blank=True)
+    shared_folder_name = models.CharField(max_length=80, null=True, blank=True)
+    user_id = models.CharField(max_length=80, null=True, blank=True)
+    user_password = models.CharField(max_length=20, null=True, blank=True)
+    is_direct_tcp = models.BooleanField(default=True)
+    ntlm_used = models.BooleanField(default=True)
 
     class Meta:
         db_table = "wetlab_samba_connection_data"
 
     def __str__(self):
-        return "%s" % (self.SAMBA_REMOTE_SERVER_NAME)
+        return "%s" % (self.remote_server_name)
 
     def get_samba_data(self):
         samba_data = {}
@@ -1890,14 +1873,14 @@ class SambaConnectionData(models.Model):
         return samba_data
 
     def get_samba_application_folder_name(self):
-        if self.SAMBA_APPLICATION_FOLDER_NAME is not None:
-            return "%s" % (self.SAMBA_APPLICATION_FOLDER_NAME)
+        if self.samba_folder_name is not None:
+            return "%s" % (self.samba_folder_name)
         else:
             return ""
 
     def get_samba_folder_name(self):
-        if self.SAMBA_SHARED_FOLDER_NAME is not None:
-            return "%s" % (self.SAMBA_SHARED_FOLDER_NAME)
+        if self.shared_folder_name is not None:
+            return "%s" % (self.shared_folder_name)
         else:
             return ""
 
@@ -1911,27 +1894,27 @@ class SambaConnectionData(models.Model):
 class ConfigSettingManager(models.Manager):
     def create_config_setting(self, configuration_name, configuration_value):
         new_config_settings = self.create(
-            configurationName=configuration_name, configurationValue=configuration_value
+            configuration_name=configuration_name, configurationValue=configuration_value
         )
         return new_config_settings
 
 
 class ConfigSetting(models.Model):
-    configurationName = models.CharField(max_length=80)
-    configurationValue = models.CharField(max_length=255, null=True, blank=True)
+    configuration_name = models.CharField(max_length=80)
+    configuration_value = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "wetlab_config_setting"
 
     def __str__(self):
-        return "%s" % (self.configurationName)
+        return "%s" % (self.configuration_name)
 
     def get_configuration_value(self):
-        return "%s" % (self.configurationValue)
+        return "%s" % (self.configuration_value)
 
     def set_configuration_value(self, new_value):
-        self.configurationValue = new_value
+        self.configuration_value = new_value
         self.save()
         return self
 
@@ -1939,20 +1922,20 @@ class ConfigSetting(models.Model):
 
 
 class RunConfigurationTest(models.Model):
-    runTestName = models.CharField(max_length=80)
-    runTestFolder = models.CharField(max_length=200)
+    run_test_name = models.CharField(max_length=80)
+    run_test_folder = models.CharField(max_length=200)
 
     class Meta:
         db_table = "wetlab_lib_run_configuration_test"
 
     def __str__(self):
-        return "%s" % (self.runTestName)
+        return "%s" % (self.run_test_name)
 
     def get_run_test_id(self):
         return "%s" % (self.pk)
 
     def get_run_test_name(self):
-        return "%s" % (self.runTestName)
+        return "%s" % (self.run_test_name)
 
     def get_run_test_folder(self):
-        return "%s" % (self.runTestFolder)
+        return "%s" % (self.run_test_folder)
