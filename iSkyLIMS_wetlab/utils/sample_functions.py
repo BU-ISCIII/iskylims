@@ -35,8 +35,8 @@ def get_codeID_for_resequencing(sample_recorded):
     for molecule_obj in molecule_objs:
         molecule_id = get_molecule_codeid_from_object (molecule_obj)
         mol_lib_prep_available[molecule_id] = ['New Library Preparation']
-        if LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj).exists():
-            libs_prep_obj =  LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj)
+        if LibPrepare.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj).exists():
+            libs_prep_obj =  LibPrepare.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj)
             for lib_prep_obj in libs_prep_obj :
                 lib_prep_available.append(lib_prep_obj.get_lib_prep_code())
                 mol_lib_prep_available[molecule_id].append(lib_prep_obj.get_lib_prep_code())
@@ -91,9 +91,9 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
         molecule_code_id = reprocess_data[0]
         lib_prep_code_id = reprocess_data[1]
 
-        if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id).exists():
+        if not LibPrepare.objects.filter(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id).exists():
             return 'Invalid options'
-        lib_prep_obj = LibraryPreparation.objects.get(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id)
+        lib_prep_obj = LibPrepare.objects.get(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id)
         sample_obj = update_sample_reused(reprocess_sample_id)
         molecule_obj = update_molecule_reused(reprocess_sample_id, molecule_code_id)
         lib_prep_obj.set_state('Reused pool')

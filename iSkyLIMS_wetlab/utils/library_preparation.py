@@ -81,8 +81,8 @@ def analyze_and_store_input_param_values(form_data):
         return stored_params
 
     stored_params = []
-    protocol_id_obj = LibraryPreparation.objects.filter(pk__exact = lib_prep_ids[0]).last().get_protocol_obj()
-    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id =  protocol_id_obj).exists():
+    protocol_id_obj = LibPrepare.objects.filter(pk__exact = lib_prep_ids[0]).last().get_protocol_obj()
+    if AdditionaKitsLibPrepare.objects.filter(protocol_id =  protocol_id_obj).exists():
         additional_kits = True
     else:
         additional_kits = False
@@ -149,7 +149,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['registerUser'] = user
         lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
         lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'],lib_prep_data['molecule_id'])
-        library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
+        library_preparation_objs.append(LibPrepare.objects.create_lib_preparation(lib_prep_data))
 
     return library_preparation_objs
 
@@ -257,8 +257,8 @@ def get_samples_for_library_preparation():
         samples_in_lib_prep['avail_samples']['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
         for samples_obj in samples_objs:
-            if LibraryPreparation.objects.filter(sample_id = samples_obj).exclude(libPrepState__libPrepState__exact = 'Completed').exists():
-                library_preparation_obj = LibraryPreparation.objects.filter(sample_id = samples_obj).last()
+            if LibPrepare.objects.filter(sample_id = samples_obj).exclude(libPrepState__libPrepState__exact = 'Completed').exists():
+                library_preparation_obj = LibPrepare.objects.filter(sample_id = samples_obj).last()
                 lib_prep_obj_state = library_preparation_obj.get_state()
 
                 if lib_prep_obj_state == 'Defined':
@@ -404,10 +404,10 @@ def validate_sample_sheet_data (input_data ):
     invalid_state_samples = []
 
     for sample in input_data['samples']:
-        if not LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample).exists():
+        if not LibPrepare.objects.filter(sampleNameInSampleSheet__exact = sample).exists():
             not_defined_samples.append(sample)
             continue
-        if not LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
+        if not LibPrepare.objects.filter(sampleNameInSampleSheet__exact = sample, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
             invalid_state_samples.append(sample)
     if len(not_defined_samples) > 0:
         if get_configuration_value('SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX') == 'TRUE':
@@ -483,8 +483,8 @@ def get_data_for_library_preparation_in_defined():
     '''
 
     lib_prep_data = []
-    if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
-        libs_preps_defined = LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').order_by('libPrepCodeID')
+    if LibPrepare.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+        libs_preps_defined = LibPrepare.objects.filter(libPrepState__libPrepState__exact = 'Defined').order_by('libPrepCodeID')
         for lib_prep in libs_preps_defined :
             lib_prep_data.append(lib_prep.get_basic_data())
     return lib_prep_data
@@ -515,11 +515,11 @@ def get_all_library_information(sample_id):
         library_information
     '''
     library_information = {}
-    if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+    if LibPrepare.objects.filter(sample_id__pk__exact = sample_id).exists():
         library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
         library_information['library_definition'] = []
         library_information['pool_information'] = []
-        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exclude(libPrepState__libPrepState__exact = 'Created for Reuse')
+        library_preparation_items = LibPrepare.objects.filter(sample_id__pk__exact = sample_id).exclude(libPrepState__libPrepState__exact = 'Created for Reuse')
         library_information['lib_prep_param_value'] = []
         library_information['lib_prep_data'] = []
         for library_item in library_preparation_items:
@@ -596,8 +596,8 @@ def get_lib_prep_to_add_parameters():
     '''
     lib_prep_parameters = {}
     lib_prep_parameters['length'] = 0
-    if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
-        samples = LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
+    if LibPrepare.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+        samples = LibPrepare.objects.filter(libPrepState__libPrepState__exact = 'Defined')
         sample_info = []
         for sample in samples:
             lib_prep_info = []
@@ -621,8 +621,8 @@ def get_protocol_from_library_id (library_prep_id):
     Return:
         protocol name or empty if library id does not exists.
     '''
-    if LibraryPreparation.objects.filter(pk__exact = library_prep_id).exists():
-         return LibraryPreparation.objects.get(pk__exact = library_prep_id).get_protocol_used()
+    if LibPrepare.objects.filter(pk__exact = library_prep_id).exists():
+         return LibPrepare.objects.get(pk__exact = library_prep_id).get_protocol_used()
     return ''
 
 
@@ -642,7 +642,7 @@ def get_samples_in_lib_prep_state ():
         samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Library preparation').order_by('sampleUser').order_by('sampleEntryDate')
 
         for sample in samples_obj :
-            if (not LibraryPreparation.objects.filter(sample_id = sample).exists()) or (LibraryPreparation.objects.filter(sample_id = sample).exclude(libPrepState__libPrepState__in = states_excluded).exists()):
+            if (not LibPrepare.objects.filter(sample_id = sample).exists()) or (LibPrepare.objects.filter(sample_id = sample).exclude(libPrepState__libPrepState__in = states_excluded).exists()):
                 sample_information = sample.get_info_in_defined_state()
                 sample_information.append(sample.get_register_user())
                 molecule_obj = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
@@ -704,17 +704,17 @@ def store_confirmation_library_preparation_index(form_data):
     json_data = json.loads(form_data['index_data'])
     heading = form_data['heading_excel'].split(',')
     store_result = {}
-    if not libPreparationUserSampleSheet.objects.filter(pk__exact = form_data['libPrepUserSampleSheetId']).exists():
+    if not libUserSampleSheet.objects.filter(pk__exact = form_data['libPrepUserSampleSheetId']).exists():
         store_result['ERROR'] = ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
         return store_result
-    user_sample_sheet_obj = libPreparationUserSampleSheet.objects.get(pk__exact = form_data['libPrepUserSampleSheetId'])
+    user_sample_sheet_obj = libUserSampleSheet.objects.get(pk__exact = form_data['libPrepUserSampleSheetId'])
     sample_name_index = heading.index('Sample_Name')
 
     for row_index in range(len(json_data)):
         lib_prep_data = {}
         sample_name = json_data[row_index][sample_name_index]
-        if LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
-            lib_prep_obj = LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').last()
+        if LibPrepare.objects.filter(sampleNameInSampleSheet__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
+            lib_prep_obj = LibPrepare.objects.filter(sampleNameInSampleSheet__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').last()
 
             for item in MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS :
                 if item[0] in heading :
@@ -761,7 +761,7 @@ def store_library_preparation_sample_sheet(sample_sheet_data, user, platform, co
     sample_sheet_data['user'] = user
     sample_sheet_data['platform'] = platform
     sample_sheet_data['configuration'] = configuration
-    new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(sample_sheet_data)
+    new_user_s_sheet_obj = libUserSampleSheet.objects.create_lib_prep_user_sample_sheet(sample_sheet_data)
 
     return new_user_s_sheet_obj
 
@@ -779,8 +779,8 @@ def get_library_code_and_unique_id (sample_id, molecule_id ):
     '''
     sample_obj = get_sample_obj_from_id(sample_id)
     molecule_obj = get_molecule_obj_from_id(molecule_id)
-    if LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exists():
-        lib_prep_obj = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).last()
+    if LibPrepare.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exists():
+        lib_prep_obj = LibPrepare.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).last()
         last_lib_prep_code_id = lib_prep_obj.get_lib_prep_code()
         split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
         index_val = int(split_code.group(2))
@@ -788,7 +788,7 @@ def get_library_code_and_unique_id (sample_id, molecule_id ):
         lib_prep_code_id = split_code.group(1) + new_index
         s_uniqueID = sample_obj.get_unique_sample_id()
         # count the number that library preparation was used on the same sample
-        lib_prep_times = str(LibraryPreparation.objects.filter(sample_id = sample_obj).count())
+        lib_prep_times = str(LibPrepare.objects.filter(sample_id = sample_obj).count())
         uniqueID = s_uniqueID + '-' + lib_prep_times
     else:
         lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
@@ -910,8 +910,8 @@ def get_lib_prep_obj_from_id (library_preparation_id):
         library_preparation_obj or None if not match
     '''
 
-    if LibraryPreparation.objects.filter(pk__exact = library_preparation_id).exists():
-        library_preparation_obj = LibraryPreparation.objects.get(pk__exact = library_preparation_id)
+    if LibPrepare.objects.filter(pk__exact = library_preparation_id).exists():
+        library_preparation_obj = LibPrepare.objects.get(pk__exact = library_preparation_id)
         return library_preparation_obj
     else:
         return 'None'
@@ -928,7 +928,7 @@ def update_batch_lib_prep_sample_state(lib_prep_ids,  sample_state):
         None
     '''
     for lib_id in lib_prep_ids:
-        lib_obj = LibraryPreparation.objects.get(pk__exact = lib_id)
+        lib_obj = LibPrepare.objects.get(pk__exact = lib_id)
         sample_obj = lib_obj.get_sample_obj().set_state(sample_state)
 
     return
@@ -944,7 +944,7 @@ def update_library_preparation_for_reuse(sample):
     Return:
         None
     '''
-    if LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample).exists():
-        lib_prep_obj = LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample).last()
+    if LibPrepare.objects.filter(sample_id__sampleName__exact = sample).exists():
+        lib_prep_obj = LibPrepare.objects.filter(sample_id__sampleName__exact = sample).last()
         lib_prep_obj.set_increase_reuse()
     return

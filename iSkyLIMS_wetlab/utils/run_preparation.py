@@ -372,7 +372,7 @@ def get_pool_duplicated_index(pool_objs):
     '''
     library_preparation_ids = []
     for pool in pool_objs :
-        lib_prep_objs = LibraryPreparation.objects.filter(pools = pool)
+        lib_prep_objs = LibPrepare.objects.filter(pools = pool)
         for lib_prep_obj in lib_prep_objs :
             library_preparation_ids.append(lib_prep_obj.get_id())
 
@@ -663,7 +663,7 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     uniqueID_list = []
     iem_version = get_iem_version_from_user_sample_sheet(lib_prep_ids)
     for lib_prep_id in lib_prep_ids:
-        lib_prep_obj =LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        lib_prep_obj =LibPrepare.objects.get(pk__exact = lib_prep_id)
         # get index 7 and index 5. then index 5 is deleted if all samples are single end
         row_data = lib_prep_obj.get_info_for_run_paired_end()
         if single_read:
@@ -776,8 +776,8 @@ def get_library_prep_in_pools (pool_ids):
     lib_prep_ids = []
 
     for pool_id in pool_ids:
-        if LibraryPreparation.objects.filter(pools__exact = pool_id).exists():
-            lib_prep_objs = LibraryPreparation.objects.filter(pools__exact = pool_id).order_by('registerUser')
+        if LibPrepare.objects.filter(pools__exact = pool_id).exists():
+            lib_prep_objs = LibPrepare.objects.filter(pools__exact = pool_id).order_by('registerUser')
             for lib_prep_obj in lib_prep_objs:
                 lib_prep_ids.append(lib_prep_obj.get_id())
     return lib_prep_ids
@@ -836,13 +836,13 @@ def get_pool_info (pools_to_update):
             for pool in protocol_objs:
                 data = pool.get_info()
                 # compare the number of samples to check that no samples are deleted
-                if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
+                if int(pool.get_number_of_samples()) == len(LibPrepare.objects.filter(pools = pool)) :
                     data.append(pool.get_id())
                     pool_data['platform'][platform].append(data)
 
                     # get the reagents kits used for the platform
                     reagents_kits[platform], commercial_kits[platform] = get_lot_reagent_commercial_kits_excluding_sequencing_configuration(platform)
-                    configutation_name = LibraryPreparation.objects.filter(pools = pool).last().get_user_sample_sheet_obj().get_sequencing_configuration_name()
+                    configutation_name = LibPrepare.objects.filter(pools = pool).last().get_user_sample_sheet_obj().get_sequencing_configuration_name()
                     user_lot_configuration_kit = get_lot_reagent_from_comercial_kit(configutation_name)
                     if len(user_lot_configuration_kit) > 0:
                         reagents_kits[platform].append(user_lot_configuration_kit)
@@ -862,7 +862,7 @@ def get_pool_info (pools_to_update):
         #run_data['r_name'] = {}
         for pool in pools_to_update['defined_runs']:
             run_name = pool.get_run_name()
-            if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
+            if int(pool.get_number_of_samples()) == len(LibPrepare.objects.filter(pools = pool)) :
 
                 if not run_name in tmp_data:
                     tmp_data[run_name] = {}
@@ -918,9 +918,9 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
     '''
     kit_data = {}
     kit_data['run_kits_from_sample'] = {}
-    if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+    if LibPrepare.objects.filter(sample_id__pk__exact = sample_id).exists():
         kit_data['heading_run_kits'] = HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
-        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).order_by('protocol_id')
+        library_preparation_items = LibPrepare.objects.filter(sample_id__pk__exact = sample_id).order_by('protocol_id')
         for lib_prep in library_preparation_items:
             pool_objs = lib_prep.pools.all()
 
@@ -1117,7 +1117,7 @@ def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list
     user_sample_sheet_data['assay'] = assay
     user_sample_sheet_data['adapter1'] = adapter1
     user_sample_sheet_data['adapter2'] = adapter2
-    new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
+    new_user_s_sheet_obj = libUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
 
 
     parameter_heading = get_protocol_parameters(protocol_obj)
@@ -1141,11 +1141,11 @@ def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list
             extracted_data['collection_index_kit_id'] = collection_index_kit_id
 
             molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
-            if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
-                lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
+            if LibPrepare.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+                lib_prep_obj = LibPrepare.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
                 molecule_obj = lib_prep_obj.get_molecule_obj()
 
-                last_lib_prep_for_molecule = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
+                last_lib_prep_for_molecule = LibPrepare.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
                 if last_lib_prep_for_molecule :
                     last_lib_prep_code_id = last_lib_prep_for_molecule.get_lib_prep_code()
                     split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
@@ -1174,7 +1174,7 @@ def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list
                 extracted_data['uniqueID'] = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
                 extracted_data['assay'] = assay
                 # Create the new library preparation object
-                new_library_preparation = LibraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                new_library_preparation = LibPrepare.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
                                         molecule_obj,  single_paired , read_length)
             lib_prep_id.append(new_library_preparation.get_id())
             data = ['']*length_heading

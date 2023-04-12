@@ -49,7 +49,7 @@ def analyze_and_store_input_additional_kits(form_data):
         for c_index in range(fixed_heading_length, full_heading_length):
 
             kit_name = heading_in_excel[c_index]
-            additional_kit_lib_obj = AdditionaKitsLibraryPreparation.objects.filter(kitName__exact = kit_name,  protocol_id = protocol_obj).last()
+            additional_kit_lib_obj = AdditionaKitsLibPrepare.objects.filter(kitName__exact = kit_name,  protocol_id = protocol_obj).last()
             commercial_kit_obj = additional_kit_lib_obj.get_commercial_kit_obj()
             if json_data[row_index][c_index] == '':
                 user_lot_commercial_obj = None
@@ -82,7 +82,7 @@ def check_if_additional_kits_exists(additional_kit_id):
     Return:
         True/False
     '''
-    if AdditionaKitsLibraryPreparation.objects.filter(commercialKit_id__exact = additional_kit_id).exists():
+    if AdditionaKitsLibPrepare.objects.filter(commercialKit_id__exact = additional_kit_id).exists():
         return True
     return False
 
@@ -127,8 +127,8 @@ def get_additional_kits_data_to_modify(protocol_id):
     '''
     add_kit_info = {}
     protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
-    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj).exists():
-        add_kit_objs = AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj).order_by('kitOrder')
+    if AdditionaKitsLibPrepare.objects.filter(protocol_id = protocol_obj).exists():
+        add_kit_objs = AdditionaKitsLibPrepare.objects.filter(protocol_id = protocol_obj).order_by('kitOrder')
         add_kit_info['add_kit_data'] = []
         for add_kit_obj in add_kit_objs:
             data = add_kit_obj.get_add_kit_data_for_javascript()
@@ -165,11 +165,11 @@ def get_additional_kits_from_lib_prep (lib_prep_ids):
     additional_kits['data'] = []
     lib_prep_code_ids = []
     kit_name_list = []
-    protocol_obj = LibraryPreparation.objects.get(pk__exact = lib_prep_ids[0]).get_protocol_obj()
+    protocol_obj = LibPrepare.objects.get(pk__exact = lib_prep_ids[0]).get_protocol_obj()
     #protocol_obj = get_protocol_obj_from_id()
     additional_kits['kit_heading'] = []
-    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj, kitUsed = True).exists():
-        additional_kits_objs = AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj, kitUsed = True).order_by('kitOrder')
+    if AdditionaKitsLibPrepare.objects.filter(protocol_id = protocol_obj, kitUsed = True).exists():
+        additional_kits_objs = AdditionaKitsLibPrepare.objects.filter(protocol_id = protocol_obj, kitUsed = True).order_by('kitOrder')
 
         for additional_kit_obj in additional_kits_objs:
             kit_name =  additional_kit_obj.get_kit_name()
@@ -219,7 +219,7 @@ def get_additional_kits_list (app_name):
                     data_prot = []
                     data_prot.append(protocol.get_name())
                     data_prot.append(protocol.pk)
-                    if AdditionaKitsLibraryPreparation.objects.filter( protocol_id = protocol).exists():
+                    if AdditionaKitsLibPrepare.objects.filter( protocol_id = protocol).exists():
                         data_prot.append('Defined')
                     else :
                         data_prot.append('')
@@ -240,10 +240,10 @@ def get_all_additional_kit_info(protocol_id):
     '''
     kit_info = {}
     protocol_obj = get_protocol_obj_from_id(protocol_id)
-    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj).exists():
+    if AdditionaKitsLibPrepare.objects.filter(protocol_id = protocol_obj).exists():
         kit_info['kit_heading'] = HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
         kit_info['kit_data'] = []
-        kits = AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj).order_by('kitOrder')
+        kits = AdditionaKitsLibPrepare.objects.filter(protocol_id = protocol_obj).order_by('kitOrder')
         for kit in kits:
             kit_info['kit_data'].append(kit.get_all_kit_info())
 
@@ -259,8 +259,8 @@ def get_additional_kit_obj_form_id(add_kit_id):
     Return:
         object of the additional kit or None
     '''
-    if AdditionaKitsLibraryPreparation.objects.filter(pk__exact = add_kit_id).exists():
-        return AdditionaKitsLibraryPreparation.objects.filter(pk__exact = add_kit_id).last()
+    if AdditionaKitsLibPrepare.objects.filter(pk__exact = add_kit_id).exists():
+        return AdditionaKitsLibPrepare.objects.filter(pk__exact = add_kit_id).last()
     else:
         return None
 
@@ -278,9 +278,9 @@ def get_additional_kits_used_in_sample(sample_id):
     '''
     kit_data = {}
     kit_data['protocols_add_kits'] = {}
-    if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+    if LibPrepare.objects.filter(sample_id__pk__exact = sample_id).exists():
         kit_data['heading_add_kits'] = HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
-        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).order_by('protocol_id')
+        library_preparation_items = LibPrepare.objects.filter(sample_id__pk__exact = sample_id).order_by('protocol_id')
         for lib_prep in library_preparation_items:
             protocol_name = lib_prep.get_protocol_used()
             if protocol_name not in kit_data['protocols_add_kits']:
@@ -331,7 +331,7 @@ def modify_fields_in_additional_kits(form_data, user):
             # new field
             kit_data['kitName'] = row_data[1]
             kit_data['protocol_id'] = protocol_obj
-            saved_fields['fields'].append(AdditionaKitsLibraryPreparation.objects.create_additional_kit(kit_data).get_all_kit_info())
+            saved_fields['fields'].append(AdditionaKitsLibPrepare.objects.create_additional_kit(kit_data).get_all_kit_info())
             continue
         if row_data[0] != '' and row_data[1] != '':
             # rename field name
@@ -371,6 +371,6 @@ def set_additional_kits (form_data, user):
         kit_data['protocol_id'] = get_protocol_obj_from_id(protocol_id)
         kit_data['commercialKit_id'] = CommercialKits.objects.filter(name__exact = kit_data['commercial_kit']).last()
         kit_data['user'] = user
-        new_additional_kit = AdditionaKitsLibraryPreparation.objects.create_additional_kit(kit_data)
+        new_additional_kit = AdditionaKitsLibPrepare.objects.create_additional_kit(kit_data)
         kit_names.append(kit_data['kitName'])
     return kit_names
