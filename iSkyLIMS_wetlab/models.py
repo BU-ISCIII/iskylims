@@ -15,12 +15,15 @@ from iSkyLIMS_core.models import (
     SequencingPlatform,
     UserLotCommercialKits,
 )
-import wetlab_config
+from . import wetlab_config
 
 
 class RunErrors(models.Model):
     error_code = models.CharField(max_length=10)
     error_text = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = "wetlab_run_errors"
 
     def __str__(self):
         return "%s" % (self.error_text)
@@ -28,6 +31,9 @@ class RunErrors(models.Model):
 
 class RunStates(models.Model):
     run_state_name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "wetlab_run_states"
 
     def __str__(self):
         return "%s" % (self.run_state_name)
@@ -81,6 +87,9 @@ class RunProcess(models.Model):
     use_space_img_mb = models.CharField(max_length=10, blank=True)
     use_space_fasta_mb = models.CharField(max_length=10, blank=True)
     use_space_other_mb = models.CharField(max_length=10, blank=True)
+
+    class Meta:
+        db_table = "wetlab_run_process"
 
     def __str__(self):
         return "%s" % (self.run_name)
@@ -292,6 +301,9 @@ class LibraryKit(models.Model):
     library_name = models.CharField(max_length=125)
     generate_dat = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "wetlab_library_kit"
+
     def get_bs_lib_name(self):
         return "%s" % (self.library_name)
 
@@ -327,6 +339,9 @@ class Projects(models.Model):
     baseSpaceFile = models.CharField(max_length=255, null=True, blank=True)
     generatedat = models.DateTimeField(auto_now_add=True)
     project_run_date = models.DateField(auto_now=False, null=True, blank=True)
+
+    class Meta:
+        db_table = "wetlab_projects"
 
     def __str__(self):
         return "%s" % (self.projectName)
@@ -470,6 +485,9 @@ class RunningParameters(models.Model):
     ImageDimensions = models.CharField(max_length=255, null=True, blank=True)
     FlowcellLayout = models.CharField(max_length=255, null=True, blank=True)
 
+    class Meta:
+        db_table = "wetlab_running_parameters"
+
     def __str__(self):
         return "%s" % (self.RunID)
         # return '%s' %(self.runName_id)
@@ -579,6 +597,9 @@ class StatsRunSummary(models.Model):
     generatedat = models.DateTimeField(auto_now_add=True)
     stats_summary_run_date = models.DateField(auto_now=False, null=True)
 
+    class Meta:
+        db_table = "wetlab_stats_run_summary"
+
     def __str__(self):
         return "%s" % (self.level)
 
@@ -647,6 +668,9 @@ class StatsRunRead(models.Model):
     generatedat = models.DateTimeField(auto_now_add=True)
     stats_read_run_date = models.DateField(auto_now=False, null=True)
 
+    class Meta:
+        db_table = "wetlab_stats_run_read"
+
     def __str__(self):
         return "%s" % (self.read)
 
@@ -706,6 +730,9 @@ class RawDemuxStats(models.Model):
     PF_QualityScore = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "wetlab_raw_demux_stats"
+
     def __str__(self):
         return "%s" % (self.runprocess_id)
 
@@ -747,6 +774,9 @@ class RawTopUnknowBarcodes(models.Model):
     sequence = models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "wetlab_raw_top_unknown_barcodes"
+
     def __str__(self):
         return "%s" % (self.lane_number)
 
@@ -782,6 +812,9 @@ class StatsFlSummary(models.Model):
     flowYieldMb = models.CharField(max_length=40)
     sampleNumber = models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "wetlab_stats_fl_summary"
 
     def get_fl_summary(self):
         data = []
@@ -831,6 +864,9 @@ class StatsLaneSummary(models.Model):
     biggerQ30 = models.CharField(max_length=64)
     meanQuality = models.CharField(max_length=64)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "wetlab_stats_lane_summary"
 
     def __str__(self):
         return "%s" % (self.runprocess_id)
@@ -889,6 +925,9 @@ class GraphicsStats(models.Model):
     # Fix 24/07/2018: null=True added at definition of "generated_at" to allow json load
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
+    class Meta:
+        db_table = "wetlab_graphics_stats"
+
     def __str__(self):
         return "%s" % (self.folderRunGraphic)
 
@@ -946,6 +985,9 @@ class SamplesInProject(models.Model):
     qualityQ30 = models.CharField(max_length=55)
     meanQuality = models.CharField(max_length=55)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "wetlab_samples_in_project"
 
     def __str__(self):
         return "%s" % (self.sampleName)
@@ -1039,12 +1081,6 @@ class SamplesInProject(models.Model):
     objects = SamplesInProjectManager()
 
 
-################################################
-################################################
-# New objets for version 2.0.0
-################################################
-
-
 class CollectionIndexKit(models.Model):
     collectionIndexName = models.CharField(max_length=125)
     version = models.CharField(max_length=80, null=True)
@@ -1055,6 +1091,9 @@ class CollectionIndexKit(models.Model):
         upload_to=wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY
     )
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        db_table = "wetlab_collection_index_kit"
 
     def __str__(self):
         return "%s" % (self.collectionIndexName)
@@ -1090,6 +1129,9 @@ class CollectionIndexValues(models.Model):
     i_7_seq = models.CharField(max_length=25, null=True)
     index_5 = models.CharField(max_length=25, null=True)
     i_5_seq = models.CharField(max_length=25, null=True)
+
+    class Meta:
+        db_table = "wetlab_collection_index_values"
 
     def get_index_value_information(self):
         return "%s;%s;%s;%s;%s" % (
@@ -1142,7 +1184,7 @@ class libPreparationUserSampleSheetManager(models.Manager):
         return new_lib_prep_user_sample_sheet
 
 
-class libPreparationUserSampleSheet(models.Model):
+class libUserSampleSheet(models.Model):
     registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
 
     collectionIndexKit_id = models.ForeignKey(
@@ -1165,6 +1207,9 @@ class libPreparationUserSampleSheet(models.Model):
     reads = models.CharField(max_length=10, null=True, blank=True)
     confirmedUsed = models.BooleanField(default=False)
     iemVersion = models.CharField(max_length=5, null=True, blank=True)
+
+    class Meta:
+        db_table = "wetlab_lib_user_samplesheet"
 
     def __str__(self):
         return "%s" % (self.sampleSheet)
@@ -1219,8 +1264,11 @@ class libPreparationUserSampleSheet(models.Model):
     objects = libPreparationUserSampleSheetManager()
 
 
-class StatesForPool(models.Model):
+class PoolStates(models.Model):
     poolState = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "wetlab_pool_states"
 
     def __str__(self):
         return "%s" % (self.poolState)
@@ -1236,7 +1284,7 @@ class LibraryPoolManager(models.Manager):
         ).last()
         new_library_pool = self.create(
             registerUser=pool_data["registerUser"],
-            poolState=StatesForPool.objects.get(poolState__exact="Defined"),
+            poolState=PoolStates.objects.get(poolState__exact="Defined"),
             poolName=pool_data["poolName"],
             poolCodeID=pool_data["poolCodeID"],
             adapter=pool_data["adapter"],
@@ -1249,7 +1297,7 @@ class LibraryPoolManager(models.Manager):
 
 class LibraryPool(models.Model):
     registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
-    poolState = models.ForeignKey(StatesForPool, on_delete=models.CASCADE)
+    poolState = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
     runProcess_id = models.ForeignKey(
         RunProcess, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -1258,21 +1306,15 @@ class LibraryPool(models.Model):
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
     poolName = models.CharField(max_length=50)
-    # sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
-    # experiment_name = models.CharField(max_length=50)
-    # plateName = models.CharField(max_length=50)
-    # containerID = models.CharField(max_length=50, null =True, blank = True)
-    # libUsedInBaseSpace = models.CharField(max_length=50)
     numberOfSamples = models.IntegerField(default=0)
     poolCodeID = models.CharField(max_length=50, blank=True)
     adapter = models.CharField(max_length=50, null=True, blank=True)
     pairedEnd = models.CharField(max_length=10, null=True, blank=True)
-    # assay = models.CharField(max_length=50, null = True, blank = True)
-    # collectionIndex = models.CharField(max_length=50, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ("poolName",)
+        db_table = "wetlab_library_pool"
 
     def __str__(self):
         return "%s" % (self.poolName)
@@ -1323,7 +1365,7 @@ class LibraryPool(models.Model):
         return self.runProcess_id
 
     def set_pool_state(self, state):
-        self.poolState = StatesForPool.objects.get(poolState__exact=state)
+        self.poolState = PoolStates.objects.get(poolState__exact=state)
         self.save()
 
     def update_number_samples(self, number_s_in_pool):
@@ -1339,8 +1381,11 @@ class LibraryPool(models.Model):
     objects = LibraryPoolManager()
 
 
-class StatesForLibraryPreparation(models.Model):
+class LibPrepareStates(models.Model):
     libPrepState = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "wetlab_lib_prepare_states"
 
     def __str__(self):
         return "%s" % (self.libPrepState)
@@ -1349,7 +1394,7 @@ class StatesForLibraryPreparation(models.Model):
         return "%s" % (self.libPrepState)
 
 
-class libraryPreparationManager(models.Manager):
+class libPrepareManager(models.Manager):
     def create_lib_preparation(self, lib_prep_data):
         registerUser_obj = User.objects.get(
             username__exact=lib_prep_data["registerUser"]
@@ -1358,9 +1403,7 @@ class libraryPreparationManager(models.Manager):
         molecule_obj = MoleculePreparation.objects.get(
             pk__exact=lib_prep_data["molecule_id"]
         )
-        lib_state_obj = StatesForLibraryPreparation.objects.get(
-            libPrepState__exact="Defined"
-        )
+        lib_state_obj = LibPrepareStates.objects.get(libPrepState__exact="Defined")
         new_lib_prep = self.create(
             registerUser=registerUser_obj,
             molecule_id=molecule_obj,
@@ -1376,7 +1419,7 @@ class libraryPreparationManager(models.Manager):
         return new_lib_prep
 
 
-class LibraryPreparation(models.Model):
+class LibPrepare(models.Model):
     registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
     molecule_id = models.ForeignKey(MoleculePreparation, on_delete=models.CASCADE)
     sample_id = models.ForeignKey(
@@ -1386,7 +1429,7 @@ class LibraryPreparation(models.Model):
         Protocols, on_delete=models.CASCADE, null=True, blank=True
     )
     libPrepState = models.ForeignKey(
-        StatesForLibraryPreparation, on_delete=models.CASCADE, null=True, blank=True
+        LibPrepareStates, on_delete=models.CASCADE, null=True, blank=True
     )
 
     userLotKit_id = models.ForeignKey(
@@ -1394,7 +1437,7 @@ class LibraryPreparation(models.Model):
     )
 
     user_sample_sheet = models.ForeignKey(
-        libPreparationUserSampleSheet, on_delete=models.CASCADE, null=True, blank=True
+        libUserSampleSheet, on_delete=models.CASCADE, null=True, blank=True
     )
 
     pools = models.ManyToManyField(LibraryPool, blank=True)
@@ -1409,12 +1452,8 @@ class LibraryPreparation(models.Model):
     i7Index = models.CharField(max_length=30, null=True, blank=True)
     i5IndexID = models.CharField(max_length=25, null=True, blank=True)
     i5Index = models.CharField(max_length=30, null=True, blank=True)
-    # Miseq fields
     genomeFolder = models.CharField(max_length=180, null=True, blank=True)
     manifest = models.CharField(max_length=80, null=True, blank=True)
-    # End Miseq fields
-    # singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
-    # lengthRead = models.CharField(max_length =5, null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
     uniqueID = models.CharField(max_length=16, null=True, blank=True)
     userInSampleSheet = models.CharField(max_length=255, null=True, blank=True)
@@ -1422,6 +1461,7 @@ class LibraryPreparation(models.Model):
     prefixProtocol = models.CharField(max_length=25, null=True, blank=True)
 
     class Meta:
+        db_table = "wetlab_lib_prepare"
         ordering = ("libPrepCodeID",)
 
     def __str__(self):
@@ -1429,11 +1469,6 @@ class LibraryPreparation(models.Model):
 
     def get_adapters(self):
         return self.user_sample_sheet.get_adapters()
-
-    """
-    def get_collection_index_name (self):
-        return '%s' %(self.collectionIndex_id.get_collection_index_name())
-    """
 
     def get_id(self):
         return "%s" % (self.pk)
@@ -1467,14 +1502,12 @@ class LibraryPreparation(models.Model):
         lib_info.append(self.sampleNameInSampleSheet)
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
-        # lib_info.append(self.indexPlateWell)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.i5IndexID)
         lib_info.append(self.i5Index)
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.userInSampleSheet)
-        # lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
     def get_info_for_run_single_read(self):
@@ -1483,12 +1516,10 @@ class LibraryPreparation(models.Model):
         lib_info.append(self.sample_id.get_sample_name())
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
-        # lib_info.append(self.indexPlateWell)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.userInSampleSheet)
-        # lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
     def get_basic_data(self):
@@ -1584,11 +1615,6 @@ class LibraryPreparation(models.Model):
     def get_protocol_id(self):
         return "%s" % (self.protocol_id.pk)
 
-    """
-    def get_reagents_kit_used(self):
-        return '%s' %(self.reagent_id.get_nick_name())
-    """
-
     def get_reused_value(self):
         return "%s" % (self.numberOfReused)
 
@@ -1627,18 +1653,11 @@ class LibraryPreparation(models.Model):
         return
 
     def set_state(self, state_value):
-        self.libPrepState = StatesForLibraryPreparation.objects.get(
+        self.libPrepState = LibPrepareStates.objects.get(
             libPrepState__exact=state_value
         )
         self.save()
         return
-
-    """
-    def set_reagent_user_kit(self, kit_value):
-        self.user_reagentKit_id = UserLotCommercialKits.objects.get(nickName__exact = kit_value)
-        self.save()
-        return
-    """
 
     def update_i7_index(self, i7_seq_value):
         self.i7Index = i7_seq_value
@@ -1693,7 +1712,7 @@ class LibraryPreparation(models.Model):
         self.save()
         return self
 
-    objects = libraryPreparationManager()
+    objects = libPrepareManager()
 
 
 class LibParameterValueManager(models.Manager):
@@ -1708,9 +1727,12 @@ class LibParameterValueManager(models.Manager):
 
 class LibParameterValue(models.Model):
     parameter_id = models.ForeignKey(ProtocolParameters, on_delete=models.CASCADE)
-    library_id = models.ForeignKey(LibraryPreparation, on_delete=models.CASCADE)
+    library_id = models.ForeignKey(LibPrepare, on_delete=models.CASCADE)
     parameterValue = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "wetlab_lib_parameter_value"
 
     def __str__(self):
         return "%s" % (self.parameterValue)
@@ -1721,7 +1743,7 @@ class LibParameterValue(models.Model):
     objects = LibParameterValueManager()
 
 
-class AdditionaKitsLibraryPreparationManager(models.Manager):
+class AdditionaKitsLibPrepareManager(models.Manager):
     def create_additional_kit(self, kit_data):
         new_additional_kit = self.create(
             registerUser=kit_data["user"],
@@ -1735,7 +1757,7 @@ class AdditionaKitsLibraryPreparationManager(models.Manager):
         return new_additional_kit
 
 
-class AdditionaKitsLibraryPreparation(models.Model):
+class AdditionaKitsLibPrepare(models.Model):
     registerUser = models.ForeignKey(User, on_delete=models.CASCADE)
     protocol_id = models.ForeignKey(Protocols, on_delete=models.CASCADE)
     commercialKit_id = models.ForeignKey(CommercialKits, on_delete=models.CASCADE)
@@ -1744,6 +1766,9 @@ class AdditionaKitsLibraryPreparation(models.Model):
     kitOrder = models.IntegerField()
     kitUsed = models.BooleanField()
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "wetlab_lib_additional_kits_lib_prepare"
 
     def __str__(self):
         return "%s" % (self.kitName)
@@ -1792,7 +1817,7 @@ class AdditionaKitsLibraryPreparation(models.Model):
         self.save()
         return self
 
-    objects = AdditionaKitsLibraryPreparationManager()
+    objects = AdditionaKitsLibPrepareManager()
 
 
 class AdditionalUserLotKitManager(models.Manager):
@@ -1807,15 +1832,18 @@ class AdditionalUserLotKitManager(models.Manager):
 
 
 class AdditionalUserLotKit(models.Model):
-    lib_prep_id = models.ForeignKey(LibraryPreparation, on_delete=models.CASCADE)
+    lib_prep_id = models.ForeignKey(LibPrepare, on_delete=models.CASCADE)
     additionalLotKits = models.ForeignKey(
-        AdditionaKitsLibraryPreparation, on_delete=models.CASCADE
+        AdditionaKitsLibPrepare, on_delete=models.CASCADE
     )
     userLotKit_id = models.ForeignKey(
         UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
     value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "wetlab_lib_additional_user_lot_kit"
 
     def __str__(self):
         return "%s" % (self.userLotKit_id)
@@ -1848,6 +1876,9 @@ class SambaConnectionData(models.Model):
     SAMBA_USER_PASSWORD = models.CharField(max_length=20, null=True, blank=True)
     IS_DIRECT_TCP = models.BooleanField(default=True)
     SAMBA_NTLM_USED = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "wetlab_samba_connection_data"
 
     def __str__(self):
         return "%s" % (self.SAMBA_REMOTE_SERVER_NAME)
@@ -1890,6 +1921,9 @@ class ConfigSetting(models.Model):
     configurationValue = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "wetlab_config_setting"
+
     def __str__(self):
         return "%s" % (self.configurationName)
 
@@ -1907,6 +1941,9 @@ class ConfigSetting(models.Model):
 class RunConfigurationTest(models.Model):
     runTestName = models.CharField(max_length=80)
     runTestFolder = models.CharField(max_length=200)
+
+    class Meta:
+        db_table = "wetlab_lib_run_configuration_test"
 
     def __str__(self):
         return "%s" % (self.runTestName)
