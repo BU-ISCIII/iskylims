@@ -16,7 +16,7 @@ def run ():
     print('Starting migration ', number_runs , ' runs were found' )
     with open ('wetlab_part_0_machines_migration.csv', 'w') as fh:
         for run_obj in run_objs :
-            if run_obj.sequencerModel != None:
+            if run_obj.sequencerModel is not None:
                 fh.write(str(str(run_obj.pk) + ',' + run_obj.sequencerModel.machineName + '\n' ))
     print('Successful fetched information for part 0\n')
     return

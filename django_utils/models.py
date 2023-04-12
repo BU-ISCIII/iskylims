@@ -47,11 +47,11 @@ class Profile(models.Model):
       	return '%s' %(self.pk)
 
     def get_clasification_area(self):
-        if self.profileClassificationArea != None:
+        if self.profileClassificationArea is not None:
             return '%s' %(self.profileClassificationArea.get_classification_area_name())
         return 'Not available'
 
     def get_profile_center_abbr(self):
-        if self.profileCenter != None:
+        if self.profileCenter is not None:
             return '%s' %(self.profileCenter.get_center_abbr())
         return 'Not defined'

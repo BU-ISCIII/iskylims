@@ -296,6 +296,9 @@ class Service(models.Model):
     def get_service_name_and_center(self):
         return [self.service_request_number, self.service_seq_center]
 
+    def get_service_information(self):
+        return [self.serviceRequestNumber, self.serviceSeqCenter]
+
     def get_service_id(self):
         return "%s" % self.pk
 
@@ -368,6 +371,11 @@ class Service(models.Model):
 
     def get_user_service_obj(self):
         return self.serviceUserId
+	
+    def get_service_requested_user(self):
+        if self.serviceUserId is not None:
+            return '%s' %(self.serviceUserId.username)
+        return 'Not available'
 
     def get_service_request_center_abbr(self):
         return "%s" % (self.serviceUserId.profile.profileCenter.centerAbbr)
@@ -715,6 +723,12 @@ class Resolution(models.Model):
         if self.resolution_estimated_date != None:
             return "%s" % (self.resolution_estimated_date)
         return "--"
+    
+    def get_resolution_state(self):
+        if self.resolutionState is not None:
+            return '%s' %(self.resolutionState.get_resolution_state())
+        else:
+            return 'Not assigned'
 
     def get_resolution_on_queued_date(self):
         if self.resolution_queued_date is not None:
@@ -724,6 +738,11 @@ class Resolution(models.Model):
 
     def get_resolution_in_progress_date_no_format(self):
         return self.resolution_in_progress_date
+    
+    def get_resolution_estimated_date(self):
+        if self.resolutionEstimatedDate is not None:
+            return '%s' %(self.resolutionEstimatedDate)
+        return 'Not yet defined'
 
     def get_resolution_request_center_abbr(self):
         return "%s" % (

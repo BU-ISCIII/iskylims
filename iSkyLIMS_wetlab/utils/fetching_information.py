@@ -414,7 +414,7 @@ def get_information_for_incompleted_run():
             data.append(run_obj.get_run_id())
             data.append(run_obj.get_run_name())
             run_date = run_obj.get_run_date_no_format()
-            if run_date == None:
+            if run_date is None:
                 # if no value stored on run date use the recorded date instead
                 run_date = run_obj.get_recorded_date_no_format().date()
             data.append(run_date.strftime("%d %B  %Y"))
@@ -432,7 +432,7 @@ def get_information_for_incompleted_run():
             data.append(run_obj.get_run_name())
 
             run_date = run_obj.get_run_date_no_format()
-            if run_date == None:
+            if run_date is None:
                 # if no value stored on run date use the recorded date instead
                 run_date = run_obj.get_recorded_date_no_format().date()
             data.append(run_date.strftime("%d %B %Y"))
@@ -450,7 +450,7 @@ def get_information_for_incompleted_run():
             data.append(run_obj.get_run_id())
             data.append(run_obj.get_run_name())
             run_date = run_obj.get_run_date_no_format()
-            if run_date == None:
+            if run_date is None:
                 # if no value stored on run date use the recorded date instead
                 run_date = run_obj.get_recorded_date_no_format().date()
             data.append(run_date.strftime("%d %B %Y"))

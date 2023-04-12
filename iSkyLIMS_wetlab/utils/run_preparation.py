@@ -926,7 +926,7 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
 
             for pool_obj in pool_objs:
                 run_obj = pool_obj.get_run_obj()
-                if run_obj != None:
+                if run_obj is not None:
                     run_name = run_obj.get_run_name()
                     kit_data['run_kits_from_sample'][run_name] = []
                     run_kit_objs = run_obj.reagent_kit.all()

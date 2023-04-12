@@ -890,10 +890,10 @@ def get_service_information(service_id, service_manager):
             resolution_serviceID=service_obj
         ).first()
         in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
-        if in_progress_date != None:
+        if in_progress_date is not None :
             time_in_queue = (in_progress_date - created_date).days
-            dates.append(["Time in Queue", time_in_queue])
-            if delivery_date != None:
+            dates.append(['Time in Queue', time_in_queue])
+            if delivery_date is not None:
                 execution_time = (delivery_date - in_progress_date).days
                 dates.append(["Execution time", execution_time])
     display_service_details["calculation_dates"] = dates

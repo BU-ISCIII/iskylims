@@ -1102,7 +1102,7 @@ def add_delivery(request):
             )
         )
         resolution_obj = delivery_recorded["delivery_resolutionID"]
-        if delivery_recorded != None:
+        if delivery_recorded is not None:
             email_data = {}
             email_data["user_email"] = request.user.email
             email_data["user_name"] = request.user.username

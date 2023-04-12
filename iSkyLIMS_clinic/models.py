@@ -169,7 +169,7 @@ class ClinicSampleRequest (models.Model):
         return patient_info
 
     def get_protocol(self):
-        if self.protocol_id != None:
+        if self.protocol_id is not None:
             return '%s' %(self.protocol_id.get_name())
         else:
             return 'Not Defined'
@@ -179,11 +179,11 @@ class ClinicSampleRequest (models.Model):
 
     def get_requested_by_information(self):
         requested_by = []
-        if self.serviceUnit_id != None:
+        if self.serviceUnit_id is not None:
             requested_by.append(self.serviceUnit_id.get_name())
         else:
             requested_by.append('Not Defined')
-        if self.doctor_id != None:
+        if self.doctor_id is not None:
             requested_by.append(self.doctor_id.get_name())
         else:
             requested_by.append('Not Defined')

@@ -154,7 +154,7 @@ def get_detail_pipeline_data(pipeline_id):
         # get the services where the pipeline was used
         """
         req_serv_objs = iSkyLIMS_drylab.utils.handling_request_services.get_requested_services_obj_from_available_service(pipeline_obj.get_pipleline_avail_service_obj())
-        if req_serv_objs != None :
+        if req_serv_objs is not None :
             detail_pipelines_data['services_using_pipeline'] = []
             detail_pipelines_data['services_using_pipeline_heading'] = drylab_config.HEADING_SERVICES_IN_PIPELINE
             for req_serv_obj in req_serv_objs:

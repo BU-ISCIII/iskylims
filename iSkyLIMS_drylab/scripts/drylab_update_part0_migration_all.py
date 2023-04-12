@@ -65,8 +65,8 @@ def get_run_information(project_id):
 def run():
     ### restore platform
     invalid = 0
-    platforms = platforms_defined()
-    if platforms != None:
+    platforms = platforms_defined ()
+    if platforms is not None:
         if SequencingPlatform.objects.all().exists():
             with open("drylab_part1_platform_to_migrate.csv", "r") as fh:
                 for line in fh.readlines():

@@ -350,7 +350,7 @@ def get_sample_with_user_owner (sample_sheet_path):
             line_split = line.split(',')
             try:
                 sample_name = line_split[index_sample_name].strip()
-                if index_description != None:
+                if index_description is not None:
                     user_id = line_split[index_description].strip()
                 else:
                     user_id = None
