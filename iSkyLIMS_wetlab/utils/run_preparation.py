@@ -494,7 +494,7 @@ def store_confirmation_sample_sheet(fields):
     fh.close()
     # store sample sheet in database
     run_obj = RunProcess.objects.get(runName = fields['run_obj'])
-    run_obj.update_sample_sheet(ss_file_full_path , ss_file_relative_path, file_name)
+    run_obj.update_sample_sheet(ss_file_full_path, file_name)
 
     os.remove(ss_file_full_path)
     return ss_file_relative_path
