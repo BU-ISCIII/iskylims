@@ -262,12 +262,13 @@ if [ $upgrade == true ]; then
 
     echo "checking for database changes"
     ./manage.py makemigrations
+    
     read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
-     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
         echo "Exiting without running migrate command."
         exit 1
-    
+    fi
     ./manage.py migrate
     ./manage.py collectstatic
     if [ $update_tables == true ]; then
