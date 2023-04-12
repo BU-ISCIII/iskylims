@@ -15,9 +15,9 @@ def get_lib_prep_adapter(lib_prep_ids):
     '''
     adapters = []
     for lib_prep_id in lib_prep_ids :
-        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
+        if not LibPrepare.objects.filter(pk__exact = lib_prep_id).exists():
             continue
-        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        lib_prep_obj =  LibPrepare.objects.get(pk__exact = lib_prep_id)
         adapters.append(lib_prep_obj.get_adapters()[0])
     adapter_list = list(set(adapters))
     return adapter_list
@@ -37,7 +37,7 @@ def check_if_duplicated_index (lib_prep_ids):
     '''
     index_values ={}
     for lib_prep_id in lib_prep_ids :
-        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        lib_prep_obj =  LibPrepare.objects.get(pk__exact = lib_prep_id)
         #lib_prep_count += 1
         lib_index = lib_prep_obj.get_indexes()
         combined_index = str(lib_index['i7_indexID'] + '_' + lib_index['i5_indexID'])
@@ -60,7 +60,7 @@ def check_if_duplicated_index (lib_prep_ids):
             if len(values) > 1:
                 s_name  = []
                 for value in values:
-                    s_name.append(LibraryPreparation.objects.get(pk__exact = value).get_sample_name())
+                    s_name.append(LibPrepare.objects.get(pk__exact = value).get_sample_name())
                 incompatible_index.append([' and  '.join(s_name), key])
         incompatible_samples['incompatible_index'] =incompatible_index
         return incompatible_samples
@@ -78,7 +78,7 @@ def get_single_paired(lib_prep_ids):
         PairedEnd or SingleRead
     '''
     for lib_prep_id in lib_prep_ids:
-        i5_index_value =  LibraryPreparation.objects.get(pk__exact = lib_prep_id).get_i5_index()
+        i5_index_value =  LibPrepare.objects.get(pk__exact = lib_prep_id).get_i5_index()
         if i5_index_value != '' :
             return 'PairedEnd'
     return 'SingleRead'
@@ -146,7 +146,7 @@ def define_new_pool(form_data, user_obj):
     new_pool = LibraryPool.objects.create_lib_pool(pool_data)
     # update pool_id in each library_preparation belongs the new pool
     for lib_prep in lib_prep_ids:
-        lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep)
+        lib_prep_obj = LibPrepare.objects.get(pk__exact = lib_prep)
         lib_prep_obj.set_pool(new_pool)
         # return back to state completed if a library prepatarion was used for reused pool
         if lib_prep_obj.get_state() == 'Reused pool':
@@ -190,8 +190,8 @@ def get_lib_prep_to_select_in_pool():
     display_list['data'] = {}
 
     from django.db.models import Q
-    if LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).exists():
-        lib_preparations =  LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).order_by('registerUser')
+    if LibPrepare.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).exists():
+        lib_preparations =  LibPrepare.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).order_by('registerUser')
         #lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
         for lib_prep in lib_preparations :
             user_sample_obj = lib_prep.get_user_sample_sheet_obj()
@@ -211,8 +211,8 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool['pool_name'] = pool_obj.get_pool_name()
     information_for_created_pool['heading_pool'] = HEADING_FOR_DISPLAY_CREATED_POOL
     lib_prep_data = []
-    if LibraryPreparation.objects.filter(pools = pool_obj).exists():
-        lib_prep_ids = LibraryPreparation.objects.filter(pools = pool_obj)
+    if LibPrepare.objects.filter(pools = pool_obj).exists():
+        lib_prep_ids = LibPrepare.objects.filter(pools = pool_obj)
         for lib_prep_obj in lib_prep_ids :
             lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
     information_for_created_pool['lib_prep_data'] = lib_prep_data
@@ -231,9 +231,9 @@ def get_lib_prep_collection_index(lib_prep_ids):
     '''
     collection_dict = {}
     for lib_prep_id in lib_prep_ids :
-        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
+        if not LibPrepare.objects.filter(pk__exact = lib_prep_id).exists():
             continue
-        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        lib_prep_obj =  LibPrepare.objects.get(pk__exact = lib_prep_id)
         collection_name = lib_prep_obj.get_collection_index_name()
         if collection_name not in collection_dict:
             collection_dict[collection_name] = 0
