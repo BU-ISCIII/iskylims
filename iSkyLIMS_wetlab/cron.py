@@ -5,7 +5,10 @@ from django.conf import settings
 import os
 import traceback
 from iSkyLIMS_wetlab import wetlab_config
-from .utils.crontab_update_run_state import search_update_new_runs, handle_not_completed_run
+from .utils.crontab_update_run_state import (
+    search_update_new_runs,
+    handle_not_completed_run,
+)
 
 from .utils.common import open_log
 
