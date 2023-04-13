@@ -1,41 +1,18 @@
 from datetime import datetime
+
 from django.core.exceptions import FieldError
 
-from iSkyLIMS_core.models import (
-    City,
-    Samples,
-    PatientCore,
-    LabRequest,
-    SampleType,
-    SampleProjects,
-    SampleProjectsFields,
-    SampleProjectsFieldsValue,
-    Species,
-    StatesForSample,
-    StateInCountry,
-    OntologyMap,
-)
-from iSkyLIMS_core.utils.handling_samples import (
-    increase_unique_value,
-    get_sample_project_information,
-    get_sample_definition_heading,
-)
-
+from iSkyLIMS_core.models import (City, LabRequest, OntologyMap, PatientCore,
+                                  SampleProjects, SampleProjectsFields,
+                                  SampleProjectsFieldsValue, Samples,
+                                  SampleType, Species, StateInCountry,
+                                  StatesForSample)
+from iSkyLIMS_core.utils.handling_samples import increase_unique_value
+from iSkyLIMS_wetlab.api.serializers import CreateSampleTypeSerializer
 from iSkyLIMS_wetlab.wetlab_config import (
-    ERROR_API_NO_SAMPLE_DEFINED,
-    ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED,
-    ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
+    ERROR_API_NO_SAMPLE_DEFINED, ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
     ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
-)
-from iSkyLIMS_wetlab.api.serializers import (
-    CreateSampleTypeSerializer,
-    SampleSerializer
-)
-
-# from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
-
-# from iSkyLIMS_wetlab.models import SamplesInProject
-# HEADING_FOR_RECORD_SAMPLES = ['Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Collection Sample Date', 'Sample Storage Location', 'Only recorded']
+    ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED)
 
 
 def create_state(state, apps_name):
@@ -56,19 +33,19 @@ def create_city(data, apps_name):
 
 def create_new_laboratory(lab_data):
     """Create new laboratory instance with the data collected in the request"""
-    if City.objects.filter(cityName__exact=lab_data["geo_loc_city"]).exists():
+    if City.objects.filter(city_name__exact=lab_data["geo_loc_city"]).exists():
         city_id = (
-            City.objects.filter(cityName__exact=lab_data["geo_loc_city"])
+            City.objects.filter(city_name__exact=lab_data["geo_loc_city"])
             .last()
             .get_city_id()
         )
     else:
         if StateInCountry.objects.filter(
-            stateName__exact=lab_data["geo_loc_state"]
+            state_name__exact=lab_data["geo_loc_state"]
         ).exists():
             lab_data["state"] = (
                 StateInCountry.objects.filter(
-                    stateName__exact=lab_data["geo_loc_state"]
+                    state_name__exact=lab_data["geo_loc_state"]
                 )
                 .last()
                 .get_state_id()
@@ -112,7 +89,7 @@ def get_sample_fields(apps_name):
     }
     if SampleType.objects.filter(apps_name__exact=apps_name).exists():
         s_type_objs = SampleType.objects.filter(apps_name__exact=apps_name).order_by(
-            "sampleType"
+            "sample_type"
         )
         sample_fields["Type of Sample"]["options"] = []
         for s_type_obj in s_type_objs:
@@ -120,7 +97,7 @@ def get_sample_fields(apps_name):
     if Species.objects.filter(apps_name__exact=apps_name).exists():
         sample_fields["Species"]["options"] = []
         species_objs = Species.objects.filter(apps_name__exact=apps_name).order_by(
-            "speciesName"
+            "species_name"
         )
         for species_obj in species_objs:
             sample_fields["Species"]["options"].append(species_obj.get_name())
@@ -187,26 +164,29 @@ def samples_match_on_parameter(req_param):
 
 def get_sample_project_obj(project_name):
     """Check if sampleProyect is defined in database"""
-    if SampleProjects.objects.filter(sampleProjectName__exact=project_name).exists():
+    if SampleProjects.objects.filter(sample_project_name__exact=project_name).exists():
         return SampleProjects.objects.filter(
-            sampleProjectName__exact=project_name
+            sample_project_name__exact=project_name
         ).last()
     return False
+
 
 def include_instances_in_sample(data, lab_data, apps_name):
     """Collect the instances before creating the sample instance
     If laboratory will be created if it is not defined
     """
-    if LabRequest.objects.filter(labName__exact=data["labRequest"]).exists():
+    if LabRequest.objects.filter(lab_name__exact=data["labRequest"]).exists():
         data["labRequest"] = (
-            LabRequest.objects.filter(labName__exact=data["labRequest"]).last().get_id()
+            LabRequest.objects.filter(lab_name__exact=data["labRequest"])
+            .last()
+            .get_id()
         )
     else:
         lab_data["apps_name"] = apps_name
         data["labRequest"] = create_new_laboratory(lab_data).get_id()
-    if SampleType.objects.filter(sampleType__exact=data["sampleType"]).exists():
+    if SampleType.objects.filter(sample_type__exact=data["sampleType"]).exists():
         data["sampleType"] = (
-            SampleType.objects.filter(sampleType__exact=data["sampleType"])
+            SampleType.objects.filter(sample_type__exact=data["sampleType"])
             .last()
             .get_sample_type_id()
         )
@@ -215,9 +195,9 @@ def include_instances_in_sample(data, lab_data, apps_name):
         sample_type_obj = create_new_sample_type(data["sampleType"], apps_name)
         data["sampleType"] = sample_type_obj.get_sample_type_id()
         # return str("sampleType " + data["sampleType"] + " is not defined in database")
-    if Species.objects.filter(speciesName__exact=data["species"]).exists():
+    if Species.objects.filter(species_name__exact=data["species"]).exists():
         data["species"] = (
-            Species.objects.filter(speciesName__exact=data["species"]).last().get_id()
+            Species.objects.filter(species_name__exact=data["species"]).last().get_id()
         )
     else:
         return str("species " + data["species"] + " is not defined in database")
@@ -231,11 +211,11 @@ def include_instances_in_sample(data, lab_data, apps_name):
                 "patientCore " + data["patientCore"] + " is not defined in database"
             )
     if SampleProjects.objects.filter(
-        sampleProjectName__exact=data["sampleProject"]
+        sample_project_name__exact=data["sampleProject"]
     ).exists():
         data["sampleProject"] = (
             SampleProjects.objects.filter(
-                sampleProjectName__exact=data["sampleProject"]
+                sample_project_name__exact=data["sampleProject"]
             )
             .last()
             .get_id()
@@ -244,12 +224,14 @@ def include_instances_in_sample(data, lab_data, apps_name):
         return str("sampleProject " + data["sampleProject"] + " is not defined")
     if data["onlyRecorded"]:
         data["sampleState"] = (
-            StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
+            StatesForSample.objects.filter(sample_state_name="Completed")
+            .last()
+            .get_id()
         )
         data["completedDate"] = datetime.now()
     else:
         data["sampleState"] = (
-            StatesForSample.objects.filter(sampleStateName="Defined").last().get_id()
+            StatesForSample.objects.filter(sample_state_name="Defined").last().get_id()
         )
         data["completedDate"] = None
     return data
@@ -272,8 +254,8 @@ def include_coding(user_name, sample):
 def get_project_fields_id_and_name(p_obj):
     """Fetch the fields defined for project"""
     fields = []
-    if SampleProjectsFields.objects.filter(sampleProjects_id=p_obj).exists():
-        p_field_objs = SampleProjectsFields.objects.filter(sampleProjects_id=p_obj)
+    if SampleProjectsFields.objects.filter(sample_projects_id=p_obj).exists():
+        p_field_objs = SampleProjectsFields.objects.filter(sample_projects_id=p_obj)
         for p_field_obj in p_field_objs:
             fields.append([p_field_obj.get_field_id(), p_field_obj.get_field_name()])
     return fields
@@ -281,8 +263,8 @@ def get_project_fields_id_and_name(p_obj):
 
 def get_patient_obj(patient):
     """Get the patient instance"""
-    if PatientCore.objects.filter(patientCode__iexact=patient).exists():
-        return PatientCore.objects.filter(patientCode__iexact=patient).last()
+    if PatientCore.objects.filter(patient_code__iexact=patient).exists():
+        return PatientCore.objects.filter(patient_code__iexact=patient).last()
     return False
 
 
@@ -311,7 +293,7 @@ def split_sample_data(data):
                 try:
                     # Check if value is in date format with - separation
                     split_data["s_data"][sample_field] = datetime.strptime(
-                    data[sample_field], "%Y-%m-%d"
+                        data[sample_field], "%Y-%m-%d"
                     )
                 except ValueError:
                     try:
@@ -327,7 +309,7 @@ def split_sample_data(data):
                 split_data["s_data"][sample_field] = data[sample_field]
         except KeyError as e:
             return str(str(e) + " is not defined in your query")
-    
+
     if split_data["s_data"]["onlyRecorded"] == "Yes":
         split_data["s_data"]["onlyRecorded"] = True
     else:
@@ -385,14 +367,14 @@ def summarize_samples(data):
     if len(sample_objs) == 0:
         return {"ERROR": ERROR_API_NO_SAMPLE_DEFINED}
     if "sampleList" in data:
-        sample_objs = sample_objs.filter(sampleName__in=data["sampleList"])
+        sample_objs = sample_objs.filter(sample_name__in=data["sampleList"])
     if "sampleState" in data:
         if not StatesForSample.object.filter(
-            sampleStateName__iexact=data["state"]
+            sample_state_name__iexact=data["state"]
         ).exists():
             return {"ERROR": ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED}
         sample_objs = sample_objs.filter(
-            sampleState__sampleStateName__iexact=data["state"]
+            sampleState__sample_state_name__iexact=data["state"]
         )
     if "startDate" in data and "endDate" in data:
         sample_objs = sample_objs.filter(
@@ -405,34 +387,36 @@ def summarize_samples(data):
 
     if "region" in data:
         sample_objs = sample_objs.filter(
-            labRequest__labCity__belongsToState__stateName__iexact=data["region"]
+            lab_request__lab_city__belongs_to_state__state_name__iexact=data["region"]
         )
     if "laboratory" in data:
-        sample_objs = sample_objs.filter(labRequest__labName__iexact=data["laboratory"])
+        sample_objs = sample_objs.filter(
+            lab_request__lab_name__iexact=data["laboratory"]
+        )
     if "sample_project_name" in data:
         if not SampleProjects.objects.filter(
-            sampleProjectName__iexact=data["sample_project_name"]
+            sample_project_name__iexact=data["sample_project_name"]
         ).exists():
             return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_DEFINED}
         s_project_obj = SampleProjects.objects.filter(
-            sampleProjectName__iexact=data["sample_project_name"]
+            sample_project_name__iexact=data["sample_project_name"]
         ).last()
         s_project_field_objs = SampleProjectsFields.objects.filter(
-            sampleProjects_id=s_project_obj
+            sample_projects_id=s_project_obj
         )
         # filter the samples for this  sample project
-        sample_objs = sample_objs.filter(sampleProject=s_project_obj)
+        sample_objs = sample_objs.filter(sample_project=s_project_obj)
         if "sample_project_field" in data:
             if not SampleProjectsFields.objects.filter(
-                sampleProjects_id=s_project_obj,
-                sampleProjectFieldDescription__iexact=data["sample_project_field"],
+                sample_projects_id=s_project_obj,
+                sample_project_field_description__iexact=data["sample_project_field"],
             ).exists():
                 return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED}
 
             s_project_field_objs = SampleProjectsFields.objects.filter(
-                sampleProjects_id=s_project_obj,
-                sampleProjectFieldDescription__iexact=data["sample_project_field"],
-            ).order_by("SampleProjectFieldClassificationID")
+                sample_projects_id=s_project_obj,
+                sample_project_field_description__iexact=data["sample_project_field"],
+            ).order_by("Sample_project_field_classification_id")
     #
     # get the sumarize infomation for the selected samples
     #
@@ -448,7 +432,7 @@ def summarize_samples(data):
         )
     for region in regions:
         summarize["region"][region] = sample_objs.filter(
-            labRequest__labCity__belongsToState__stateName__iexact=region
+            lab_request__lab_city__belongs_to_state__state_name__iexact=region
         ).count()
 
     if "laboratory" in data:
@@ -461,7 +445,7 @@ def summarize_samples(data):
         )
     for laboratory in laboratories:
         summarize["laboratory"][laboratory] = sample_objs.filter(
-            labRequest__labName__iexact=laboratory
+            lab_request__lab_name__iexact=laboratory
         ).count()
     # Show only the parameters when the sample project name is given
     if "sample_project_name" in data:
@@ -475,24 +459,24 @@ def summarize_samples(data):
             # if true then get the used values and get their numbers
             if s_project_field_obj.get_field_type() == "Options List":
                 if SampleProjectsFieldsValue.objects.filter(
-                    sampleProjecttField_id=s_project_field_obj
+                    sample_project_field_id=s_project_field_obj
                 ).exists():
                     # get the unique values to iter over them
 
                     f_values = (
                         SampleProjectsFieldsValue.objects.filter(
-                            sampleProjecttField_id=s_project_field_obj
+                            sample_project_field_id=s_project_field_obj
                         )
-                        .values_list("sampleProjectFieldValue", flat=True)
+                        .values_list("sample_project_field_value", flat=True)
                         .distinct()
                     )
                     for f_value in f_values:
                         summarize["parameters"][p_name][
                             f_value
                         ] = SampleProjectsFieldsValue.objects.filter(
-                            sampleProjecttField_id=s_project_field_obj,
-                            sampleProjectFieldValue__exact=f_value,
-                            sample_id__sampleName__in=sample_list,
+                            sample_project_field_id=s_project_field_obj,
+                            sample_project_field_value__exact=f_value,
+                            sample_id__sample_name__in=sample_list,
                         ).count()
                 else:
                     summarize["parameters"][p_name]["value"] = 0
@@ -500,8 +484,8 @@ def summarize_samples(data):
                 summarize["parameters"][p_name][
                     "value"
                 ] = SampleProjectsFieldsValue.objects.filter(
-                    sampleProjecttField_id=s_project_field_obj,
-                    sample_id__sampleName__in=sample_list,
+                    sample_project_field_id=s_project_field_obj,
+                    sample_id__sample_name__in=sample_list,
                 ).count()
             summarize["parameters"][p_name][
                 "classification"
@@ -516,11 +500,11 @@ def collect_statistics_information(data):
 
     if "sample_project_name" in data:
         if not SampleProjects.objects.filter(
-            sampleProjectName__iexact=data["sample_project_name"]
+            sample_project_name__iexact=data["sample_project_name"]
         ).exists():
             return ""
         s_project_obj = SampleProjects.objects.filter(
-            sampleProjectName__iexact=data["sample_project_name"]
+            sample_project_name__iexact=data["sample_project_name"]
         ).last()
         if "project_field" in data:
             query_params = data["project_field"].split(",")
@@ -530,8 +514,8 @@ def collect_statistics_information(data):
             stats_data = {}
             par1_values = (
                 SampleProjectsFieldsValue.objects.filter(
-                    sampleProjecttField_id__sampleProjects_id=s_project_obj,
-                    sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                    sample_project_field_id__sample_project_id=s_project_obj,
+                    sample_project_field_id__sample_project_field_name__iexact=query_params[
                         0
                     ],
                 )
@@ -540,47 +524,45 @@ def collect_statistics_information(data):
             )
 
             if len(query_params) == 2:
-
                 for par1_val in par1_values:
                     stats_data[par1_val] = {}
 
                     samples = SampleProjectsFieldsValue.objects.filter(
-                        sampleProjecttField_id__sampleProjects_id=s_project_obj,
-                        sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                        sample_project_field_id__sample_project_id=s_project_obj,
+                        sample_project_field_id__sample_project_field_name__iexact=query_params[
                             0
                         ],
-                        sampleProjectFieldValue__exact=par1_val,
+                        sample_project_field_value__exact=par1_val,
                     ).values_list("sample_id", flat=True)
                     par2_values = (
                         SampleProjectsFieldsValue.objects.filter(
                             sample_id__in=samples,
-                            sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                            sample_project_field_id__sample_project_field_name__iexact=query_params[
                                 1
                             ],
                         )
-                        .values_list("sampleProjectFieldValue", flat=True)
+                        .values_list("sample_project_field_value", flat=True)
                         .distinct()
                     )
                     for par2_val in par2_values:
-
                         # import pdb; pdb.set_trace()
                         value = SampleProjectsFieldsValue.objects.filter(
                             sample_id__in=samples,
-                            sampleProjecttField_id__sampleProjectFieldName=query_params[
+                            sample_project_field_id__sample_project_field_name=query_params[
                                 1
                             ],
-                            sampleProjectFieldValue__exact=par2_val,
+                            sample_project_field_value__exact=par2_val,
                         ).count()
                         if value > 0:
                             stats_data[par1_val][par2_val] = value
             else:
                 for par1_val in par1_values:
                     stats_data[par1_val] = SampleProjectsFieldsValue.objects.filter(
-                        sampleProjecttField_id__sampleProjects_id=s_project_obj,
-                        sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                        sample_project_field_id__sample_projects_id=s_project_obj,
+                        sample_project_field_id__sample_project_field_name__iexact=query_params[
                             0
                         ],
-                        sampleProjectFieldValue=par1_val,
+                        sample_project_field_value=par1_val,
                     ).count()
 
             return stats_data
@@ -593,23 +575,23 @@ def collect_statistics_information(data):
                 "fields_value": {},
             }
 
-            num_samples = Samples.objects.filter(sampleProject=s_project_obj).count()
+            num_samples = Samples.objects.filter(sample_project=s_project_obj).count()
             s_project_field_objs = SampleProjectsFields.objects.filter(
-                sampleProjects_id=s_project_obj
+                sample_project_id=s_project_obj
             )
             for s_project_field_obj in s_project_field_objs:
                 f_name = s_project_field_obj.get_field_name()
                 if not SampleProjectsFieldsValue.objects.filter(
-                    sampleProjecttField_id=s_project_field_obj
+                    sample_project_field_id=s_project_field_obj
                 ).exists():
                     stats_data["never_used"].append(f_name)
                     stats_data["fields_value"][f_name] = 0
                     continue
                 count_not_none = (
                     SampleProjectsFieldsValue.objects.filter(
-                        sampleProjecttField_id=s_project_field_obj
+                        sample_project_field_id=s_project_field_obj
                     )
-                    .exclude(sampleProjectFieldValue__in=["None", ""])
+                    .exclude(sample_project_field_value__in=["None", ""])
                     .count()
                 )
                 stats_data["fields_value"][f_name] = count_not_none
