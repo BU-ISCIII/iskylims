@@ -224,7 +224,7 @@ def create_sample_data(request):
             data = data.dict()
         if "sampleName" not in data or "sampleProject" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if Samples.objects.filter(sampleName__iexact=data["sampleName"]).exists():
+        if Samples.objects.filter(sample_name__iexact=data["sampleName"]).exists():
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = split_sample_data(data)
@@ -275,9 +275,9 @@ def fetch_run_information(request):
         s_data = []
         for sample in s_list:
             sample = sample.strip()
-            if SamplesInProject.objects.filter(sampleName__iexact=sample).exists():
+            if SamplesInProject.objects.filter(sample_name__iexact=sample).exists():
                 s_found_objs = SamplesInProject.objects.filter(
-                    sampleName__iexact=sample
+                    sample_name__iexact=sample
                 )
                 for s_found_obj in s_found_objs:
                     s_data.append(
@@ -298,9 +298,9 @@ def fetch_sample_information(request):
     sample_data = {}
     if "sample" in request.GET:
         sample = request.GET["sample"]
-        if not Samples.objects.filter(sampleName__iexact=sample).exists():
+        if not Samples.objects.filter(sample_name__iexact=sample).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
-        sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
+        sample_obj = Samples.objects.filter(sample_name__iexact=sample).last()
         sample_data = SampleSerializer(sample_obj, many=False).data
     else:
         if "sample_project_name" in request.GET:
@@ -309,21 +309,23 @@ def fetch_sample_information(request):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             param = request.GET["parameter"]
             if SampleProjects.objects.filter(
-                sampleProjectName__iexact=project_name
+                sample_project_name__iexact=project_name
             ).exists():
                 project_obj = SampleProjects.objects.filter(
-                    sampleProjectName__iexact=project_name
+                    sample_project_name__iexact=project_name
                 ).last()
 
                 if not SampleProjectsFields.objects.filter(
-                    sampleProjects_id=project_obj, sampleProjectFieldName__iexact=param
+                    sample_projects_id=project_obj,
+                    sample_project_field_name__iexact=param,
                 ).exists():
                     return Response(status=status.HTTP_400_BAD_REQUEST)
                 s_p_field_obj = SampleProjectsFields.objects.filter(
-                    sampleProjects_id=project_obj, sampleProjectFieldName__iexact=param
+                    sample_projects_id=project_obj,
+                    sample_project_field_name__iexact=param,
                 ).last()
                 sample_obj = SampleProjectsFieldsValue.objects.filter(
-                    sampleProjecttField_id=s_p_field_obj
+                    sample_project_field_id=s_p_field_obj
                 )
                 # import pdb; pdb.set_trace()
                 sample_data = SampleProjectParameterSerializer(
@@ -351,7 +353,7 @@ def fetch_sample_information(request):
 
 @swagger_auto_schema(
     method="get",
-    operation_description="Send the request to gen the fields that are required when storing a new sample using the API",
+    operation_description="Send request to gen the fields that are required when storing a new sample using the API",
 )
 @api_view(["GET"])
 def sample_fields(request):
@@ -396,12 +398,12 @@ def fetch_samples_on_parameter(request):
 def sample_project_fields(request):
     if "project" in request.GET:
         project = request.GET["project"].strip()
-        if SampleProjects.objects.filter(sampleProjectName__iexact=project).exists():
+        if SampleProjects.objects.filter(sample_project_name__iexact=project).exists():
             s_project_obj = SampleProjects.objects.filter(
-                sampleProjectName__iexact=project
+                sample_project_name__iexact=project
             ).last()
             s_project_field_objs = SampleProjectsFields.objects.filter(
-                sampleProjects_id=s_project_obj
+                sample_projects_id=s_project_obj
             )
             s_project_serializer = SampleProjectFieldSerializer(
                 s_project_field_objs, many=True
@@ -417,8 +419,8 @@ def sample_project_fields(request):
 def get_lab_information_contact(request):
     if "laboratory" in request.GET:
         lab_name = request.GET["laboratory"].strip()
-        if LabRequest.objects.filter(labName__iexact=lab_name).exists():
-            lab_req_obj = LabRequest.objects.filter(labName__iexact=lab_name).last()
+        if LabRequest.objects.filter(lab_name__iexact=lab_name).exists():
+            lab_req_obj = LabRequest.objects.filter(lab_name__iexact=lab_name).last()
             lab_req_serializer = LabRequestSerializer(lab_req_obj, many=False)
             return Response(lab_req_serializer.data, status=status.HTTP_200_OK)
         else:
