@@ -1,28 +1,24 @@
-import os 
-import shutil
-import re
 import logging
-from logging.config import fileConfig
-from logging.handlers import RotatingFileHandler
-from smb.SMBConnection import SMBConnection
-import socket
-import traceback
+import os
+import re
+import shutil
+import xml.etree.ElementTree as ET
 from datetime import datetime
 
-import xml.etree.ElementTree as ET
-from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, py_interop_plot
 from django.conf import settings
 from django.contrib.auth.models import User
+from interop import py_interop_run, py_interop_run_metrics, py_interop_summary
 
 from iSkyLIMS_wetlab.models import *
-from .sample_sheet_utils import *
-from .common import *
 from iSkyLIMS_wetlab.wetlab_config import *
+
+from .common import *
 from .sample_sheet_utils import *
 
-#####################################
-##### CRONTAB COMMON FUNCTIONS ######
-#####################################
+############################
+# CRONTAB COMMON FUNCTIONS #
+############################
+
 
 def get_run_disk_utilization(conn, run_folder, experiment_name):
     """
@@ -48,7 +44,7 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
 
     try:
         get_full_list = conn.listPath(shared_folder, run_folder)
-    except:
+    except Exception:
         string_message = experiment_name + " : Unable to get the folder " + run_folder
         logging_errors(string_message, True, False)
         logger.debug(
@@ -129,8 +125,12 @@ def get_size_dir(directory, conn, shared_folder):
     return count_file_size
 
 
-def assign_used_library_in_run (run_process_obj, l_sample_sheet_path, experiment_name, ):
-    '''
+def assign_used_library_in_run(
+    run_process_obj,
+    l_sample_sheet_path,
+    experiment_name,
+):
+    """
     Description:
         The function first check if the run has already assinged to projects.
         If not , it reads the sample sheet, fetch the projects and asign them to the run.
@@ -142,21 +142,21 @@ def assign_used_library_in_run (run_process_obj, l_sample_sheet_path, experiment
         get_projects_in_run # located at utils/sample_sheet_utils.py
     Return:
         None
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function assign_used_library_in_run', experiment_name)
-    if run_process_obj.get_index_library() == 'None':
+    logger.debug("%s : Starting function assign_used_library_in_run", experiment_name)
+    if run_process_obj.get_index_library() == "None":
         index_library_name = get_index_library_name(l_sample_sheet_path)
         run_process_obj.update_index_library(index_library_name)
-        logger.info('%s : Defined index library name', experiment_name)
+        logger.info("%s : Defined index library name", experiment_name)
     else:
-        logger.info('%s : Already defined index library name', experiment_name)
-    logger.debug ('%s : End function assign_used_library_in_run', experiment_name)
+        logger.info("%s : Already defined index library name", experiment_name)
+    logger.debug("%s : End function assign_used_library_in_run", experiment_name)
     return
 
 
-def assign_projects_to_run(run_process_obj, sample_sheet_file , experiment_name):
-    '''
+def assign_projects_to_run(run_process_obj, sample_sheet_file, experiment_name):
+    """
     Description:
         The function first check if the run has already assinged to projects.
         If not , it reads the sample sheet, fetch the projects and asign them to the run.
@@ -168,41 +168,45 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file , experiment_name)
         get_projects_in_run # located at utils/sample_sheet_utils.py
     Return:
         None
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function assign_projects_to_run', experiment_name)
+    logger.debug("%s : Starting function assign_projects_to_run", experiment_name)
     if run_process_obj.projects_set.all().exists():
-        logger.info('%s  : Projects already defined in the run', experiment_name)
-        logger.debug ('%s : End function assign_projects_to_run', experiment_name)
+        logger.info("%s  : Projects already defined in the run", experiment_name)
+        logger.debug("%s : End function assign_projects_to_run", experiment_name)
         return
     # fetch the project from sample sheet
     projects_objs = []
     project_with_users = get_projects_in_run(sample_sheet_file)
     for project, user in project_with_users.items():
-        if not Projects.objects.filter(projectName__exact = project).exists():
+        if not Projects.objects.filter(projectName__exact=project).exists():
             project_data = {}
-            project_data['projectName'] = project
-            if User.objects.filter(username__iexact = user).exists():
-                project_data['user_id'] = User.objects.filter(username__iexact = user).last()
+            project_data["projectName"] = project
+            if User.objects.filter(username__iexact=user).exists():
+                project_data["user_id"] = User.objects.filter(
+                    username__iexact=user
+                ).last()
             else:
-                project_data['user_id'] = None
+                project_data["user_id"] = None
             project_obj = Projects.objects.create_new_empty_project(project_data)
             projects_objs.append(project_obj)
             # assign project to runº
             project_obj.runProcess.add(run_process_obj)
-            logger.info('%s : Project name  %s added ', experiment_name, project)
+            logger.info("%s : Project name  %s added ", experiment_name, project)
         else:
-            project_obj = Projects.objects.filter(projectName__exact = project).last()
-            if not project_obj in projects_objs:
+            project_obj = Projects.objects.filter(projectName__exact=project).last()
+            if project_obj not in projects_objs:
                 projects_objs.append(project_obj)
                 project_obj.runProcess.add(run_process_obj)
-                logger.info('%s : Project name  %s added ', experiment_name, project)
-    logger.debug ('%s : End function assign_projects_to_run', experiment_name)
+                logger.info("%s : Project name  %s added ", experiment_name, project)
+    logger.debug("%s : End function assign_projects_to_run", experiment_name)
     return
 
 
-def check_sequencer_status_from_log_file(log_file_content, log_cycles, number_of_cycles, experiment_name):
-    '''
+def check_sequencer_status_from_log_file(
+    log_file_content, log_cycles, number_of_cycles, experiment_name
+):
+    """
     Description:
         The function checks in the logs if run was canceled. If not canceled, then check
         the number of created log files are the same as they expected to have when
@@ -216,39 +220,55 @@ def check_sequencer_status_from_log_file(log_file_content, log_cycles, number_of
         completed and run_completion_date in case the sequencer ends sucessfully.
         If not return status of the run (cancelled/still_running)
         ERROR returns if not able to fecth log files
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function check_sequencer_status_from_log_file', experiment_name)
-    run_completion_date = ''
+    logger.debug(
+        "%s : Starting function check_sequencer_status_from_log_file", experiment_name
+    )
+    run_completion_date = ""
 
-    if 'Cancel' in log_file_content :
-        run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name).last()
-        if run_process_obj.get_forced_continue_on_error() == True:
-            logger.warning ('%s : Forced to continue on execution that was canceled', experiment_name)
+    if "Cancel" in log_file_content:
+        run_process_obj = RunProcess.objects.filter(
+            runName__exact=experiment_name
+        ).last()
+        if run_process_obj.get_forced_continue_on_error():
+            logger.warning(
+                "%s : Forced to continue on execution that was canceled",
+                experiment_name,
+            )
         else:
-            logger.warning ('%s : Sequencer execution was canceled', experiment_name)
-            status = 'cancelled'
-            logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
+            logger.warning("%s : Sequencer execution was canceled", experiment_name)
+            status = "cancelled"
+            logger.debug(
+                "%s : End function check_sequencer_status_from_log_file",
+                experiment_name,
+            )
             return status, run_completion_date
-    elif log_cycles != number_of_cycles :
-        logger.info('%s : run sequencer is still running', experiment_name)
-        status = 'still_running'
-        logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
+    elif log_cycles != number_of_cycles:
+        logger.info("%s : run sequencer is still running", experiment_name)
+        status = "still_running"
+        logger.debug(
+            "%s : End function check_sequencer_status_from_log_file", experiment_name
+        )
         return status, run_completion_date
     # Fetch the run completcion time
-    status = 'completed'
-    logger.info('%s : run in sequencer is completed', experiment_name)
-    last_line_in_file = log_file_content.split('\n')[-2]
-    last_log_time = last_line_in_file.split(' ')[0:2]
-    last_log_time[0] = str('20'+ last_log_time[0])
-    string_completion_date = ' '.join(last_log_time)
-    run_completion_date = datetime.strptime(string_completion_date, '%Y-%m-%d %H:%M:%S.%f')
-    logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
+    status = "completed"
+    logger.info("%s : run in sequencer is completed", experiment_name)
+    last_line_in_file = log_file_content.split("\n")[-2]
+    last_log_time = last_line_in_file.split(" ")[0:2]
+    last_log_time[0] = str("20" + last_log_time[0])
+    string_completion_date = " ".join(last_log_time)
+    run_completion_date = datetime.strptime(
+        string_completion_date, "%Y-%m-%d %H:%M:%S.%f"
+    )
+    logger.debug(
+        "%s : End function check_sequencer_status_from_log_file", experiment_name
+    )
     return status, run_completion_date
 
 
 def check_sequencer_status_from_completion_file(l_run_completion, experiment_name):
-    '''
+    """
     Description:
         The function will check if the run in sequencer was successful
     Input:
@@ -260,25 +280,44 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
         COMPLETION_TAG
     Return
         True if successfuly completed
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function for check_sequencer_status_from_completion_file', experiment_name)
+    logger.debug(
+        "%s : Starting function for check_sequencer_status_from_completion_file",
+        experiment_name,
+    )
     # check if NextSEq run have been successful completed
-    status_run = find_xml_tag_text (l_run_completion, COMPLETION_TAG )
-    if  status_run not in COMPLETION_SUCCESS:
-        logger.info('%s : Run in sequencer was not completed but %s', experiment_name, status_run)
-        string_message = experiment_name + ' : Sequencer Run was not completed. Reason was ' + status_run
-        logging_warnings (string_message, False)
-        logger.debug ('%s : End function for check_sequencer_status_from_completion_file', experiment_name)
+    status_run = find_xml_tag_text(l_run_completion, COMPLETION_TAG)
+    if status_run not in COMPLETION_SUCCESS:
+        logger.info(
+            "%s : Run in sequencer was not completed but %s",
+            experiment_name,
+            status_run,
+        )
+        string_message = (
+            experiment_name
+            + " : Sequencer Run was not completed. Reason was "
+            + status_run
+        )
+        logging_warnings(string_message, False)
+        logger.debug(
+            "%s : End function for check_sequencer_status_from_completion_file",
+            experiment_name,
+        )
         return False
     else:
-        logger.info ('%s : Sequencer Run successfuly completed ', experiment_name)
-        logger.debug ('%s : End function for check_sequencer_status_from_completion_file', experiment_name)
+        logger.info("%s : Sequencer Run successfuly completed ", experiment_name)
+        logger.debug(
+            "%s : End function for check_sequencer_status_from_completion_file",
+            experiment_name,
+        )
         return True
 
 
-def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycles, experiment_name):
-    '''
+def check_sequencer_run_is_completed(
+    conn, run_folder, platform, number_of_cycles, experiment_name
+):
+    """
     Description:
 
     Input:
@@ -300,81 +339,146 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
         status and run_completion_date
         ERROR returns if not able to fecth log files or not defined the way to
         check the termination of the run in sequencer
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function check_sequencer_run_is_completed', experiment_name)
-    way_to_check =''
+    logger.debug(
+        "%s : Starting function check_sequencer_run_is_completed", experiment_name
+    )
+    way_to_check = ""
     for method in PLATFORM_WAY_TO_CHECK_RUN_COMPLETION:
         if method[0] not in platform:
             continue
         way_to_check = method[1]
 
-    if way_to_check == 'logs':
-
-        log_folder = os.path.join(get_samba_application_shared_folder(), run_folder , RUN_LOG_FOLDER)
+    if way_to_check == "logs":
+        log_folder = os.path.join(
+            get_samba_application_shared_folder(), run_folder, RUN_LOG_FOLDER
+        )
         try:
-            log_cycles, log_file_content = get_latest_run_procesing_log(conn, log_folder ,  experiment_name)
-        except :
-            string_message = experiment_name + ' : Unable to fetch the log files on run folder ' +  run_folder + '/' + log_folder
-            logging_errors( string_message, True, False)
-            logger.debug ('%s : End function check_sequencer_run_is_completed with exeception', experiment_name)
-            return {'ERROR':18}, ''
-        status , run_completion_date = check_sequencer_status_from_log_file(log_file_content ,log_cycles,number_of_cycles, experiment_name)
-        logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
-        return status , run_completion_date
+            log_cycles, log_file_content = get_latest_run_procesing_log(
+                conn, log_folder, experiment_name
+            )
+        except Exception:
+            string_message = (
+                experiment_name
+                + " : Unable to fetch the log files on run folder "
+                + run_folder
+                + "/"
+                + log_folder
+            )
+            logging_errors(string_message, True, False)
+            logger.debug(
+                "%s : End function check_sequencer_run_is_completed with exeception",
+                experiment_name,
+            )
+            return {"ERROR": 18}, ""
+        status, run_completion_date = check_sequencer_status_from_log_file(
+            log_file_content, log_cycles, number_of_cycles, experiment_name
+        )
+        logger.debug(
+            "%s : End function check_sequencer_run_is_completed", experiment_name
+        )
+        return status, run_completion_date
 
-    elif way_to_check == 'xml_file':
+    elif way_to_check == "xml_file":
         l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_XML_FILE)
-        s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, RUN_COMPLETION_XML_FILE)
+        s_run_completion = os.path.join(
+            get_samba_application_shared_folder(), run_folder, RUN_COMPLETION_XML_FILE
+        )
 
         try:
-            l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
-            logger.info('%s : Sucessfully fetch of Completion status file',experiment_name)
-        except Exception as e:
-            logger.warning ('%s : Completion status file is not present on the run folder %s', experiment_name, run_folder)
-            logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
-            return 'still_running', ''
+            l_run_completion = fetch_remote_file(
+                conn, run_folder, s_run_completion, l_run_completion
+            )
+            logger.info(
+                "%s : Sucessfully fetch of Completion status file", experiment_name
+            )
+        except Exception:
+            logger.warning(
+                "%s : Completion status file is not present on the run folder %s",
+                experiment_name,
+                run_folder,
+            )
+            logger.debug(
+                "%s : End function check_sequencer_run_is_completed", experiment_name
+            )
+            return "still_running", ""
 
-        if check_sequencer_status_from_completion_file (l_run_completion, experiment_name):
+        if check_sequencer_status_from_completion_file(
+            l_run_completion, experiment_name
+        ):
             os.remove(l_run_completion)
-            logger.info('%s : Deleted Run Completion file', experiment_name)
+            logger.info("%s : Deleted Run Completion file", experiment_name)
             shared_folder = get_samba_shared_folder()
-            conversion_attributes = conn.getAttributes( shared_folder, s_run_completion)
-            run_completion_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-            logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
-            return 'completed' , run_completion_date
+            conversion_attributes = conn.getAttributes(shared_folder, s_run_completion)
+            run_completion_date = datetime.fromtimestamp(
+                int(conversion_attributes.create_time)
+            ).strftime("%Y-%m-%d %H:%M:%S")
+            logger.debug(
+                "%s : End function for handling NextSeq run with exception",
+                experiment_name,
+            )
+            return "completed", run_completion_date
         os.remove(l_run_completion)
-        logger.info('%s : Deleted Run Completion file', experiment_name)
-        logger.debug ('%s : End function check_sequencer_run_is_completed with exception', experiment_name)
-        return 'cancelled', ''
-    elif way_to_check == 'txt_file':
-        #l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_TXT_FILE)
-        s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, RUN_COMPLETION_TXT_FILE)
+        logger.info("%s : Deleted Run Completion file", experiment_name)
+        logger.debug(
+            "%s : End function check_sequencer_run_is_completed with exception",
+            experiment_name,
+        )
+        return "cancelled", ""
+    elif way_to_check == "txt_file":
+        # l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_TXT_FILE)
+        s_run_completion = os.path.join(
+            get_samba_application_shared_folder(), run_folder, RUN_COMPLETION_TXT_FILE
+        )
 
         try:
             shared_folder = get_samba_shared_folder()
-            conversion_attributes = conn.getAttributes( shared_folder, s_run_completion)
-            logger.info('%s : Sucessfully fetch of Completion status file',experiment_name)
-        except Exception as e:
-            logger.warning ('%s : Completion status file is not present on the run folder %s', experiment_name, run_folder)
-            logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
-            return 'still_running', ''
+            conversion_attributes = conn.getAttributes(shared_folder, s_run_completion)
+            logger.info(
+                "%s : Sucessfully fetch of Completion status file", experiment_name
+            )
+        except Exception:
+            logger.warning(
+                "%s : Completion status file is not present on the run folder %s",
+                experiment_name,
+                run_folder,
+            )
+            logger.debug(
+                "%s : End function check_sequencer_run_is_completed", experiment_name
+            )
+            return "still_running", ""
         try:
-            run_completion_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-        except Exception as e:
-            run_completion_date = ''
-            logger.warning ('%s : Unable to collect date for completion file ', experiment_name)
-            logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
-        return 'completed' , run_completion_date
+            run_completion_date = datetime.fromtimestamp(
+                int(conversion_attributes.create_time)
+            ).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            run_completion_date = ""
+            logger.warning(
+                "%s : Unable to collect date for completion file ", experiment_name
+            )
+            logger.debug(
+                "%s : End function check_sequencer_run_is_completed", experiment_name
+            )
+        return "completed", run_completion_date
     else:
-        string_message = experiment_name + ' : way to check the completion run is not defined for  ' +  platform
-        logging_errors( string_message, True, False)
-        logger.debug ('%s : End function check_sequencer_run_is_completed with exeception', experiment_name)
-        return {'ERROR':25}, ''
+        string_message = (
+            experiment_name
+            + " : way to check the completion run is not defined for  "
+            + platform
+        )
+        logging_errors(string_message, True, False)
+        logger.debug(
+            "%s : End function check_sequencer_run_is_completed with exeception",
+            experiment_name,
+        )
+        return {"ERROR": 25}, ""
 
 
-def copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,experiment_name):
-    '''
+def copy_sample_sheet_to_remote_folder(
+    conn, sample_sheet_path, run_folder, experiment_name
+):
+    """
     Description:
         The functions copy the sample sheet to the remote run folder
     Input:
@@ -389,28 +493,47 @@ def copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,expe
         EMPTY_FIELDS_IN_SEQUENCER
     Return:
         new_sequencer_obj
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function copy_sample_sheet_to_remote_folder', experiment_name)
+    logger.debug(
+        "%s : Starting function copy_sample_sheet_to_remote_folder", experiment_name
+    )
 
-    logger.info('%s : Copy sample sheet to remote folder %s', experiment_name, run_folder)
-    s_sample= os.path.join(get_samba_application_shared_folder(), run_folder, SAMPLE_SHEET)
+    logger.info(
+        "%s : Copy sample sheet to remote folder %s", experiment_name, run_folder
+    )
+    s_sample = os.path.join(
+        get_samba_application_shared_folder(), run_folder, SAMPLE_SHEET
+    )
 
     try:
-        sample_sheet_copied = copy_to_remote_file  (conn, run_folder, s_sample, sample_sheet_path)
-        logger.info('%s : Sucessfully copy Sample sheet to remote folder', experiment_name)
-    except Exception as e:
-        string_message = experiment_name + ': Unable to copy the Sample Sheet to remote folder ' + run_folder
-        logging_errors (string_message, True, False)
-        handling_errors_in_run (experiment_name, '23')
-        logger.debug ('%s : End function for copy_sample_sheet_to_remote_folder with exception', experiment_name)
+        copy_to_remote_file(
+            conn, run_folder, s_sample, sample_sheet_path
+        )
+        logger.info(
+            "%s : Sucessfully copy Sample sheet to remote folder", experiment_name
+        )
+    except Exception:
+        string_message = (
+            experiment_name
+            + ": Unable to copy the Sample Sheet to remote folder "
+            + run_folder
+        )
+        logging_errors(string_message, True, False)
+        handling_errors_in_run(experiment_name, "23")
+        logger.debug(
+            "%s : End function for copy_sample_sheet_to_remote_folder with exception",
+            experiment_name,
+        )
         raise Exception
-    logger.debug ('%s : End function copy_sample_sheet_to_remote_folder', experiment_name)
+    logger.debug(
+        "%s : End function copy_sample_sheet_to_remote_folder", experiment_name
+    )
     return
 
 
-def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
-    '''
+def copy_to_remote_file(conn, run_dir, remote_file, local_file):
+    """
     Description:
         Function will fetch the file from remote server and copy on local  directory
     Input:
@@ -423,24 +546,26 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     Return:
         True if file was successfuly copy.
         Exception if file could not be fetched
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for copy file to remote')
-    with open(local_file ,'rb') as r_par_fp :
+    logger.debug("Starting function for copy file to remote")
+    with open(local_file, "rb") as r_par_fp:
         try:
             samba_folder = get_samba_shared_folder()
             conn.storeFile(samba_folder, remote_file, r_par_fp)
-            logger.info('Saving the file %s to remote server', local_file)
-        except Exception as e:
-            string_message = 'Unable to copy the ' + local_file + 'file on folder ' + run_dir
-            logging_errors (string_message, True, False)
-            raise Exception('File not copied')
-    logger.debug ('End function for copy file to remote')
+            logger.info("Saving the file %s to remote server", local_file)
+        except Exception:
+            string_message = (
+                "Unable to copy the " + local_file + "file on folder " + run_dir
+            )
+            logging_errors(string_message, True, False)
+            raise Exception("File not copied")
+    logger.debug("End function for copy file to remote")
     return True
 
 
-def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experiment_name):
-    '''
+def create_new_sequencer_lab_not_defined(sequencer_name, num_of_lanes, experiment_name):
+    """
     Description:
 
         creates a new entry in database wit only the sequencer name and the lane numbers
@@ -454,22 +579,26 @@ def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experimen
         EMPTY_FIELDS_IN_SEQUENCER
     Return:
         new_sequencer_obj
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
+    logger.debug(
+        "%s : Starting function create_new_sequencer_lab_not_defined", experiment_name
+    )
     seq_data = {}
-    for item in EMPTY_FIELDS_IN_SEQUENCER :
+    for item in EMPTY_FIELDS_IN_SEQUENCER:
         seq_data[item] = None
-    seq_data['sequencerNumberLanes'] = num_of_lanes
-    seq_data['sequencerName'] = sequencer_name
+    seq_data["sequencerNumberLanes"] = num_of_lanes
+    seq_data["sequencerName"] = sequencer_name
     new_sequencer_obj = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
-    logger.info('%s : Created the new sequencer in database' , experiment_name )
-    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
+    logger.info("%s : Created the new sequencer in database", experiment_name)
+    logger.debug(
+        "%s : End function create_new_sequencer_lab_not_defined", experiment_name
+    )
     return new_sequencer_obj
 
 
-def fetch_remote_file (conn, run_dir, remote_file, local_file) :
-    '''
+def fetch_remote_file(conn, run_dir, remote_file, local_file):
+    """
     Description:
         Function will fetch the file from remote server and copy on local
         directory
@@ -481,26 +610,33 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     Return:
         local_file if the file was successfuly copy.
         Exception if file could not be fetched
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function for fetching remote file', run_dir)
-    with open(local_file ,'wb') as r_par_fp :
+    logger.debug("%s : Starting function for fetching remote file", run_dir)
+    with open(local_file, "wb") as r_par_fp:
         try:
             samba_folder = get_samba_shared_folder()
             conn.retrieveFile(samba_folder, remote_file, r_par_fp)
-            logger.info('%s : Retrieving the remote %s file for %s ', run_dir, remote_file, local_file)
-        except Exception as e:
-            string_message = 'Unable to fetch the ' + local_file + ' file on folder : ' + run_dir
-            logging_errors (string_message, True, False)
+            logger.info(
+                "%s : Retrieving the remote %s file for %s ",
+                run_dir,
+                remote_file,
+                local_file,
+            )
+        except Exception:
+            string_message = (
+                "Unable to fetch the " + local_file + " file on folder : " + run_dir
+            )
+            logging_errors(string_message, True, False)
             os.remove(local_file)
-            logger.debug ('%s : End function for fetching remote file', run_dir)
-            raise Exception('File not found')
-    logger.debug ('%s : End function for fetching remote file', run_dir)
+            logger.debug("%s : End function for fetching remote file", run_dir)
+            raise Exception("File not found")
+    logger.debug("%s : End function for fetching remote file", run_dir)
     return local_file
 
 
-def get_latest_run_procesing_log(conn, log_folder, experiment_name) :
-    '''
+def get_latest_run_procesing_log(conn, log_folder, experiment_name):
+    """
     Description:
         The function will find the latest log file for the input folder
     Input:
@@ -512,42 +648,44 @@ def get_latest_run_procesing_log(conn, log_folder, experiment_name) :
     Return:
         number_of_cycles
         file_content
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function get_latest_run_procesing_log',  experiment_name)
+    logger.debug("%s : Starting function get_latest_run_procesing_log", experiment_name)
     shared_folder = get_samba_shared_folder()
-    folder_logs = os.path.join('/', get_samba_application_shared_folder(),log_folder )
+    folder_logs = os.path.join("/", get_samba_application_shared_folder(), log_folder)
 
-    remote_file_list = conn.listPath( shared_folder, folder_logs)
+    remote_file_list = conn.listPath(shared_folder, folder_logs)
     max_cycle = -1
-    logger.info('%s : Succesful connection to fetch logs files', experiment_name)
+    logger.info("%s : Succesful connection to fetch logs files", experiment_name)
     for sfh in remote_file_list:
         if sfh.isDirectory:
             continue
         file_remote = sfh.filename
-        if file_remote.endswith('.log') :
-            log_file = re.search('.*_Cycle(\d+)_.*',file_remote)
+        if file_remote.endswith(".log"):
+            log_file = re.search(".*_Cycle(\d+)_.*", file_remote)
 
             cycle_number = int(log_file.group(1))
-            if cycle_number > max_cycle :
+            if cycle_number > max_cycle:
                 max_cycle = cycle_number
                 latest_log = file_remote
-    logger.info('%s : Fetching the latest log file  %s  ', experiment_name, latest_log)
-    temporary_log = os.path.join(RUN_TEMP_DIRECTORY,'miseq_cycle.log')
-    s_latest_log = os.path.join(log_folder,latest_log)
+    logger.info("%s : Fetching the latest log file  %s  ", experiment_name, latest_log)
+    temporary_log = os.path.join(RUN_TEMP_DIRECTORY, "miseq_cycle.log")
+    s_latest_log = os.path.join(log_folder, latest_log)
 
-    temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
-    logger.info('%s : copied to tmp folder the log is : %s',  experiment_name, s_latest_log)
-    with open (temporary_log, 'r', encoding='utf8') as fh :
+    temporary_log = fetch_remote_file(conn, log_folder, s_latest_log, temporary_log)
+    logger.info(
+        "%s : copied to tmp folder the log is : %s", experiment_name, s_latest_log
+    )
+    with open(temporary_log, "r", encoding="utf8") as fh:
         log_file_content = fh.read()
 
     os.remove(temporary_log)
-    logger.debug ('%s : End function get_latest_run_procesing_log',  experiment_name)
+    logger.debug("%s : End function get_latest_run_procesing_log", experiment_name)
     return max_cycle, log_file_content
 
 
-def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
-    '''
+def get_new_runs_from_remote_server(processed_runs, conn, shared_folder):
+    """
     Description:
         The function fetch the folder names from the remote server and
         returns a list containing the folder names that have not been
@@ -560,30 +698,30 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
         get_samba_application_shared_folder     # located at this file
     Return:
         new runs
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug('Starting function get_new_runs_on_remote_server' )
+    logger.debug("Starting function get_new_runs_on_remote_server")
     new_runs = []
-    run_data_root_folder = os.path.join('/', get_samba_application_shared_folder() )
-    logger.debug('Shared folder  on remote server is : %s', run_data_root_folder)
-    run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
+    run_data_root_folder = os.path.join("/", get_samba_application_shared_folder())
+    logger.debug("Shared folder  on remote server is : %s", run_data_root_folder)
+    run_folder_list = conn.listPath(shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
             folder_run = sfh.filename
-            if (folder_run == '.' or folder_run == '..'):
+            if folder_run == "." or folder_run == "..":
                 continue
             # if the run folder has been already process continue searching
             if folder_run in processed_runs:
                 continue
             else:
-                logger.info (' %s  : Found new folder run ',folder_run)
+                logger.info(" %s  : Found new folder run ", folder_run)
                 new_runs.append(folder_run)
-    logger.debug('End function get_new_runs_on_remote_server' )
+    logger.debug("End function get_new_runs_on_remote_server")
     return new_runs
 
 
 def get_remote_sample_sheet(conn, new_run, experiment_name):
-    '''
+    """
     Description:
         The function will get the sample sheet from remote server, and it return the
         path of the sample sheet
@@ -600,27 +738,31 @@ def get_remote_sample_sheet(conn, new_run, experiment_name):
         get_samba_application_shared_folder     # located at this file
     Return:
         l_sample_sheet_path
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug('%s  : Starting function get_remote_sample_sheet',experiment_name )
+    logger.debug("%s  : Starting function get_remote_sample_sheet", experiment_name)
 
     l_sample_sheet_path = os.path.join(RUN_TEMP_DIRECTORY, SAMPLE_SHEET)
-    s_sample_sheet_path = os.path.join(get_samba_application_shared_folder(), new_run, SAMPLE_SHEET)
+    s_sample_sheet_path = os.path.join(
+        get_samba_application_shared_folder(), new_run, SAMPLE_SHEET
+    )
     try:
-        l_sample_sheet = fetch_remote_file (conn, new_run, s_sample_sheet_path, l_sample_sheet_path)
-        logger.info('%s : Sucessfully fetch of Sample Sheet file', experiment_name)
-    except Exception as e:
-        error_message = 'Unable to fetch Sample Sheet file for folder :' +  new_run
+        fetch_remote_file(
+            conn, new_run, s_sample_sheet_path, l_sample_sheet_path
+        )
+        logger.info("%s : Sucessfully fetch of Sample Sheet file", experiment_name)
+    except Exception:
+        error_message = "Unable to fetch Sample Sheet file for folder :" + new_run
         logging_errors(error_message, True, False)
-        logger.debug('%s  : End function get_remote_sample_sheet',experiment_name )
+        logger.debug("%s  : End function get_remote_sample_sheet", experiment_name)
         return None
 
-    logger.debug('%s  : End function get_remote_sample_sheet',experiment_name )
-    return  l_sample_sheet_path
+    logger.debug("%s  : End function get_remote_sample_sheet", experiment_name)
+    return l_sample_sheet_path
 
 
-def get_run_platform_from_file (l_run_parameter) :
-    '''
+def get_run_platform_from_file(l_run_parameter):
+    """
     Description:
         The function will get the run platform for the xml element tag in the
         file and it will return the platform used
@@ -628,84 +770,102 @@ def get_run_platform_from_file (l_run_parameter) :
         l_run_parameter  # file to find the tag
     Return:
         platform
-    '''
-    platform = find_xml_tag_text (l_run_parameter, APPLICATION_NAME_TAG)
+    """
+    platform = find_xml_tag_text(l_run_parameter, APPLICATION_NAME_TAG)
 
     return platform
 
 
 def get_run_process_obj_or_create_if_not_exists(experiment_name):
-    '''
+    """
     Description:
         The function get the run_proces obj or it is created if does not exists
     Input:
         experiment_name     # experiment name
     Return:
         run_process_obj
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug('Starting function get_run_process_obj_or_create_if_not_exists' )
-    if RunProcess.objects.filter(runName__exact = experiment_name).exists():
-        run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name).last()
+    logger.debug("Starting function get_run_process_obj_or_create_if_not_exists")
+    if RunProcess.objects.filter(runName__exact=experiment_name).exists():
+        run_process_obj = RunProcess.objects.filter(
+            runName__exact=experiment_name
+        ).last()
     else:
         run_data = {}
-        run_data['experiment_name'] = experiment_name
+        run_data["experiment_name"] = experiment_name
         run_process_obj = RunProcess.objects.create_new_run_from_crontab(run_data)
-        logger.info('%s  : New RunProcess instance created',experiment_name)
-    logger.debug('End function get_run_process_obj_or_create_if_not_exists' )
+        logger.info("%s  : New RunProcess instance created", experiment_name)
+    logger.debug("End function get_run_process_obj_or_create_if_not_exists")
     return run_process_obj
 
 
 def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name):
-    '''
+    """
     Description:
         The function get the sequencer obj or it is created if does not exists
     Input:
-        running_parameters      # dictionnary from parsing to get the information in case a new sequencer must be defined
+        running_parameters      # information in case a new sequencer must be defined
         experiment_name         # experiment name
     Functions:
         create_new_sequencer_lab_not_defined    # located at this file
     Return:
         sequencer_obj
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug('Starting function get_sequencer_obj_or_create_if_no_exists' )
-    if SequencerInLab.objects.filter(sequencerName__exact = running_parameters['instrument']).exists():
-        sequencer_obj = SequencerInLab.objects.filter(sequencerName__exact = running_parameters['instrument']).last()
+    logger.debug("Starting function get_sequencer_obj_or_create_if_no_exists")
+    if SequencerInLab.objects.filter(
+        sequencerName__exact=running_parameters["instrument"]
+    ).exists():
+        sequencer_obj = SequencerInLab.objects.filter(
+            sequencerName__exact=running_parameters["instrument"]
+        ).last()
 
     else:
-        string_message = experiment_name + ' : ' + running_parameters['instrument'] + ' no sequencer defined '
+        string_message = (
+            experiment_name
+            + " : "
+            + running_parameters["instrument"]
+            + " no sequencer defined "
+        )
         logging_errors(string_message, True, False)
-        sequencer_obj = create_new_sequencer_lab_not_defined ( running_parameters['instrument'],  running_parameters['running_data']['NumLanes'], experiment_name)
-        logger.info('%s : Continue the proccess after creating the new sequencer' ,experiment_name)
+        sequencer_obj = create_new_sequencer_lab_not_defined(
+            running_parameters["instrument"],
+            running_parameters["running_data"]["NumLanes"],
+            experiment_name,
+        )
+        logger.info(
+            "%s : Continue the proccess after creating the new sequencer",
+            experiment_name,
+        )
 
-    logger.debug('End function get_sequencer_obj_or_create_if_no_exists' )
+    logger.debug("End function get_sequencer_obj_or_create_if_no_exists")
     return sequencer_obj
 
 
 def get_samba_application_shared_folder():
-    '''
+    """
     Description:
         The function get in database the shared application folder used for samba connections
         Application folder is a sub_directory of the shared folder. In many cases this value is empty
     Return:
         samba_folder_name
-    '''
+    """
     return SambaConnectionData.objects.last().get_samba_application_folder_name()
 
 
 def get_samba_shared_folder():
-    '''
+    """
     Description:
         The function get in database the shared folder used for samba connections
     Return:
         samba_folder_name
-    '''
+    """
     return SambaConnectionData.objects.last().get_samba_folder_name()
 
 
-def handling_errors_in_run (experiment_name, error_code):
-    '''
+def handling_errors_in_run(experiment_name, error_code):
+    """
     Description:
         Function will manage the error situation where the run must be
         set to run state ERROR
@@ -714,22 +874,28 @@ def handling_errors_in_run (experiment_name, error_code):
         error_code      # Error code
     Return:
         True
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function handling_errors_in_run' , experiment_name)
-    logger.info('%s : Set run to ERROR state',  experiment_name)
-    if  RunProcess.objects.filter(runName__exact = experiment_name).exists():
-        run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name).last()
+    logger.debug("%s : Starting function handling_errors_in_run", experiment_name)
+    logger.info("%s : Set run to ERROR state", experiment_name)
+    if RunProcess.objects.filter(runName__exact=experiment_name).exists():
+        run_process_obj = RunProcess.objects.filter(
+            runName__exact=experiment_name
+        ).last()
         run_process_obj.set_run_error_code(error_code)
-        logger.info ('%s : is now on ERROR state' , experiment_name)
+        logger.info("%s : is now on ERROR state", experiment_name)
     else:
-        logger.info ('%s : experiment name is not defined yet in database' , experiment_name)
-    logger.debug ('%s : End function handling_errors_in_run' , experiment_name)
+        logger.info(
+            "%s : experiment name is not defined yet in database", experiment_name
+        )
+    logger.debug("%s : End function handling_errors_in_run", experiment_name)
     return True
 
 
-def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name) :
-    '''
+def parsing_run_info_and_parameter_information(
+    l_run_info, l_run_parameter, experiment_name
+):
+    """
     Description:
         The function is called for parsing the RunInfo and RunParameter  files.
         After parsing the RunningParameters database table will be
@@ -747,56 +913,59 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
         APPLICATION_NAME_TAG
      Return:
         parsing_data
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function parsing_run_information', experiment_name)
-    running_data={}
+    logger.debug("%s : Starting function parsing_run_information", experiment_name)
+    running_data = {}
     parsing_data = {}
-    image_channel=[]
+    image_channel = []
 
-    #################################################
-    ## parsing RunInfo.xml file
-    #################################################
-    run_data=ET.parse(l_run_info)
-    run_root=run_data.getroot()
-    logger.info('%s : parsing the runInfo.xml file ', experiment_name)
-    p_run=run_root[0]
-    ## getting the common values NextSeq and MiSeq
-    logger.info('%s  : Fetching Flowcell and FlowcellLayout data ', experiment_name)
-    running_data['Flowcell']=p_run.find('Flowcell').text
+    ############################
+    # parsing RunInfo.xml file #
+    ############################
+    run_data = ET.parse(l_run_info)
+    run_root = run_data.getroot()
+    logger.info("%s : parsing the runInfo.xml file ", experiment_name)
+    p_run = run_root[0]
+    # getting the common values NextSeq and MiSeq
+    logger.info("%s  : Fetching Flowcell and FlowcellLayout data ", experiment_name)
+    running_data["Flowcell"] = p_run.find("Flowcell").text
     try:
-        running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
-    except:
-        running_data['FlowcellLayout'] = ''
-        string_message = experiment_name + ' : Parameter  FlowcellLayout  not found in RunParameter.xml'
+        running_data["FlowcellLayout"] = p_run.find("FlowcellLayout").attrib
+    except Exception:
+        running_data["FlowcellLayout"] = ""
+        string_message = (
+            experiment_name
+            + " : Parameter  FlowcellLayout  not found in RunParameter.xml"
+        )
         logging_warnings(string_message, False)
 
-    for i in run_root.iter('Name'):
+    for i in run_root.iter("Name"):
         image_channel.append(i.text)
 
-    running_data['ImageChannel'] = image_channel
+    running_data["ImageChannel"] = image_channel
     try:
-        running_data['ImageDimensions'] = p_run.find('ImageDimensions').attrib
-    except:
-        running_data['ImageDimensions'] = ''
-        logger.debug('%s : There is no image dimesions on runInfo file', experiment_name)
-    ## get the instrument for NextSeq run
-    parsing_data['instrument'] = p_run.find('Instrument').text
+        running_data["ImageDimensions"] = p_run.find("ImageDimensions").attrib
+    except Exception:
+        running_data["ImageDimensions"] = ""
+        logger.debug(
+            "%s : There is no image dimesions on runInfo file", experiment_name
+        )
+    # get the instrument for NextSeq run
+    parsing_data["instrument"] = p_run.find("Instrument").text
 
-    #################################################
-    ## parsing RunParameter.xml file
-    #################################################
-    logger.info('%s : Parsing the runParameter.xml file  ',experiment_name )
-    parameter_data=ET.parse(l_run_parameter)
-    parameter_data_root=parameter_data.getroot()
-    p_parameter=parameter_data_root[1]
-    ## getting the common values NextSeq and MiSeq
+    # parsing RunParameter.xml file
+    
+    logger.info("%s : Parsing the runParameter.xml file  ", experiment_name)
+    parameter_data = ET.parse(l_run_parameter)
+    parameter_data_root = parameter_data.getroot()
+    # getting the common values NextSeq and MiSeq
     for field in FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
         try:
             running_data[field] = parameter_data_root.find(field).text
-        except:
-            ## get the tags item for searching when tagas are in different Caps and lower combination
-            ## because of new sintax in NovaSeq
+        except Exception:
+            # get the tags item for searching when tagas are in different Caps and lower combination
+            # because of new sintax in NovaSeq
             try:
                 tag_found_in_case_insensitive = False
                 for element in parameter_data_root.iter():
@@ -805,79 +974,115 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
                         tag_found_in_case_insensitive = True
                         break
                 if not tag_found_in_case_insensitive:
-                    running_data[field] = ''
-                    string_message = experiment_name + ' : Parameter ' + field  + ' not found looking for case insensitive in RunParameter.xml'
+                    running_data[field] = ""
+                    string_message = (
+                        experiment_name
+                        + " : Parameter "
+                        + field
+                        + " not found looking for case insensitive in RunParameter.xml"
+                    )
                     logging_warnings(string_message, False)
-            except:
-                running_data[field] = ''
-                string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
+            except Exception:
+                running_data[field] = ""
+                string_message = (
+                    experiment_name
+                    + " : Parameter "
+                    + field
+                    + " unable to fetch in RunParameter.xml"
+                )
                 logging_warnings(string_message, False)
 
-    ## get the nuber of lanes in case sequencer lab is not defined
-    if  parameter_data_root.find(SETUP_TAG):
-        param_in_setup = ['ApplicationVersion', 'NumTilesPerSwath']
+    # get the nuber of lanes in case sequencer lab is not defined
+    if parameter_data_root.find(SETUP_TAG):
+        param_in_setup = ["ApplicationVersion", "NumTilesPerSwath"]
         for i in range(len(param_in_setup)):
             try:
-                running_data[param_in_setup[i]] = parameter_data_root.find('Setup').find(param_in_setup[i]).text
-            except:
-                string_message = experiment_name + ' : Parameter ' + param_in_setup[i] + ' not found in RunParameter.xml'
+                running_data[param_in_setup[i]] = (
+                    parameter_data_root.find("Setup").find(param_in_setup[i]).text
+                )
+            except Exception:
+                string_message = (
+                    experiment_name
+                    + " : Parameter "
+                    + param_in_setup[i]
+                    + " not found in RunParameter.xml"
+                )
                 logging_warnings(string_message, False)
                 continue
         # collect information for MiSeq and NextSeq
         for setup_field in FIELDS_TO_FETCH_FROM_SETUP_TAG:
             try:
-                running_data[setup_field] = parameter_data_root.find(SETUP_TAG).find(setup_field).text
-            except:
-                running_data[setup_field] = ''
-                string_message = experiment_name + ' : Parameter in Setup -- ' + setup_field + ' unable to fetch in RunParameter.xml'
+                running_data[setup_field] = (
+                    parameter_data_root.find(SETUP_TAG).find(setup_field).text
+                )
+            except Exception:
+                running_data[setup_field] = ""
+                string_message = (
+                    experiment_name
+                    + " : Parameter in Setup -- "
+                    + setup_field
+                    + " unable to fetch in RunParameter.xml"
+                )
                 logging_warnings(string_message, False)
 
-        if 'MiSeq' in running_data[APPLICATION_NAME_TAG] :
+        if "MiSeq" in running_data[APPLICATION_NAME_TAG]:
             # initialize paramters in case there are not exists on runParameter file
             for i in range(len(READ_NUMBER_OF_CYCLES)):
-                running_data[READ_NUMBER_OF_CYCLES[i]] = ''
+                running_data[READ_NUMBER_OF_CYCLES[i]] = ""
             # get the length index number for reads and indexes for MiSeq Runs
             for run_info_read in parameter_data_root.iter(RUN_INFO_READ_TAG):
                 try:
-                    index_number = int(run_info_read.attrib[NUMBER_TAG]) -1
-                    running_data[READ_NUMBER_OF_CYCLES[index_number]] = run_info_read.attrib[NUMBER_CYCLES_TAG]
-                except:
-                    string_message = experiment_name + ' : Parameter RunInfoRead: Read Number not found in RunParameter.xml'
+                    index_number = int(run_info_read.attrib[NUMBER_TAG]) - 1
+                    running_data[
+                        READ_NUMBER_OF_CYCLES[index_number]
+                    ] = run_info_read.attrib[NUMBER_CYCLES_TAG]
+                except Exception:
+                    string_message = (
+                        experiment_name
+                        + " : Parameter RunInfoRead: Read Number not found in RunParameter.xml"
+                    )
                     logging_warnings(string_message, False)
                     continue
     else:
         # Collect information for NovaSeq
         for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
             try:
-                running_data[novaseq_field] = parameter_data_root.find(novaseq_field).text
-            except:
-                running_data[novaseq_field] = ''
-                string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
+                running_data[novaseq_field] = parameter_data_root.find(
+                    novaseq_field
+                ).text
+            except Exception:
+                running_data[novaseq_field] = ""
+                string_message = (
+                    experiment_name
+                    + " : Parameter in Setup -- "
+                    + novaseq_field
+                    + " unable to fetch in RunParameter.xml"
+                )
                 logging_warnings(string_message, False)
     # get date for miSeq and NextSeq with the format yymmdd
-    date = p_run.find('Date').text
+    date = p_run.find("Date").text
     try:
-        run_date = datetime.strptime(date, '%y%m%d')
-    except:
+        run_date = datetime.strptime(date, "%y%m%d")
+    except Exception:
         # get date for novaseq sequencer
-        date = p_run.find('Date').text.split(' ')[0]
+        date = p_run.find("Date").text.split(" ")[0]
         try:
-            run_date = datetime.strptime(date, '%m/%d/%Y')
-        except:
-            run_date = ''
+            run_date = datetime.strptime(date, "%m/%d/%Y")
+        except Exception:
+            run_date = ""
 
-    ##############################################
-    ## updating the date fetched from the Date tag for run and project
-    ##############################################
-    logger.debug('%s : Found date that was recorded the Run %s', experiment_name , date)
-    parsing_data['running_data'] = running_data
-    parsing_data['run_date'] = run_date
-    logger.debug('%s : End function nextseq_parsing_run_information', experiment_name)
+    # updating the date fetched from the Date tag for run and project
+    logger.debug("%s : Found date that was recorded the Run %s", experiment_name, date)
+    parsing_data["running_data"] = running_data
+    parsing_data["run_date"] = run_date
+    logger.debug("%s : End function nextseq_parsing_run_information", experiment_name)
     return parsing_data
 
 
-def save_run_parameters_data_to_database(run_parameters, run_process_obj, experiment_name):
-    '''
+def save_run_parameters_data_to_database(
+    run_parameters, run_process_obj, experiment_name
+):
+    """
     Description:
         The function save the run parameters if they are not store yet
     Input:
@@ -887,23 +1092,35 @@ def save_run_parameters_data_to_database(run_parameters, run_process_obj, experi
     Return:
         run_parameter_obj
 
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function save_run_parameters_data_to_database', experiment_name)
+    logger.debug(
+        "%s : Starting function save_run_parameters_data_to_database", experiment_name
+    )
 
-    if RunningParameters.objects.filter(runName_id = run_process_obj).exists():
-        run_parameter_objs = RunningParameters.objects.filter(runName_id = run_process_obj)
+    if RunningParameters.objects.filter(runName_id=run_process_obj).exists():
+        run_parameter_objs = RunningParameters.objects.filter(
+            runName_id=run_process_obj
+        )
         for run_parameter_obj in run_parameter_objs:
-            logger.info('%s  : Deleting RunParameters object from database', experiment_name)
+            logger.info(
+                "%s  : Deleting RunParameters object from database", experiment_name
+            )
             run_parameter_obj.delete()
-    run_parameter_obj = RunningParameters.objects.create_running_parameters(run_parameters, run_process_obj)
-    logger.info( '%s  : Created RunParameters object on database', experiment_name)
-    logger.debug ('%s : End function save_run_parameters_data_to_database', experiment_name)
+    run_parameter_obj = RunningParameters.objects.create_running_parameters(
+        run_parameters, run_process_obj
+    )
+    logger.info("%s  : Created RunParameters object on database", experiment_name)
+    logger.debug(
+        "%s : End function save_run_parameters_data_to_database", experiment_name
+    )
     return run_parameter_obj
 
 
-def store_sample_sheet_if_not_defined_in_run (run_process_obj, l_sample_sheet_path, experiment_name ) :
-    '''
+def store_sample_sheet_if_not_defined_in_run(
+    run_process_obj, l_sample_sheet_path, experiment_name
+):
+    """
     Description:
         The function will move the sample sheet from the local temporary
         folder to the folder destination defined in RUN_SAMPLE_SHEET_DIRECTORY
@@ -924,30 +1141,36 @@ def store_sample_sheet_if_not_defined_in_run (run_process_obj, l_sample_sheet_pa
         timestr     # Present time including 3 digits for miliseconds
     Return:
         sample_sheet_on_database
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug('%s : Starting the function store_sample_sheet_in_run', experiment_name)
+    logger.debug(
+        "%s : Starting the function store_sample_sheet_in_run", experiment_name
+    )
     # Get the present time in miliseconds to add to have an unique file name
     now = datetime.now()
     timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
-    new_sample_sheet_name = 'SampleSheet' + timestr + '.csv'
+    new_sample_sheet_name = "SampleSheet" + timestr + ".csv"
 
-    new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    logger.info('%s : new sample sheet name %s', experiment_name, new_sample_sheet_file)
+    new_sample_sheet_file = os.path.join(
+        settings.MEDIA_ROOT, RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
+    )
+    logger.info("%s : new sample sheet name %s", experiment_name, new_sample_sheet_file)
     # Path to be included in database
-    sample_sheet_on_database = os.path.join(RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    ## Move sample sheet to final folder
+    sample_sheet_on_database = os.path.join(
+        RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
+    )
+    # Move sample sheet to final folder
     os.rename(l_sample_sheet_path, new_sample_sheet_file)
     # Update the run with the sample sheet information  (full_path, relative_path, file_name)
     run_process_obj.update_sample_sheet(new_sample_sheet_file, new_sample_sheet_name)
 
-    logger.info('%s : Updated runProccess table with the sample sheet', experiment_name)
-    logger.debug('%s : End function store_sample_sheet_in_run', experiment_name)
+    logger.info("%s : Updated runProccess table with the sample sheet", experiment_name)
+    logger.debug("%s : End function store_sample_sheet_in_run", experiment_name)
     return sample_sheet_on_database
 
 
-def waiting_time_expired(run_process_obj,time_to_check, maximun_time , experiment_name):
-    '''
+def waiting_time_expired(run_process_obj, time_to_check, maximun_time, experiment_name):
+    """
     Description:
         The function get the time run was recorded to compare  with the present time.
         If the value is less that the allowed time to wait  will return False.
@@ -959,27 +1182,30 @@ def waiting_time_expired(run_process_obj,time_to_check, maximun_time , experimen
         experiment_name     # experiment name to be checked
     Return:
         True if the number of days is bigger that the maximum number of days to wait
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function waiting_time_expired', experiment_name)
+    logger.debug("%s : Starting function waiting_time_expired", experiment_name)
     today = datetime.now().date()
     number_of_days = abs((today - time_to_check).days)
-    if number_of_days > int (maximun_time):
-        logger.info('%s  : Waiting time already exceeded', experiment_name)
-        logger.debug ('%s  : End function waiting_time_expired', experiment_name)
+    if number_of_days > int(maximun_time):
+        logger.info("%s  : Waiting time already exceeded", experiment_name)
+        logger.debug("%s  : End function waiting_time_expired", experiment_name)
         return True
     else:
-        logger.info('%s  : It is allowed to waiting more time', experiment_name)
-        logger.debug ('%s  : End function waiting_time_expired', experiment_name)
+        logger.info("%s  : It is allowed to waiting more time", experiment_name)
+        logger.debug("%s  : End function waiting_time_expired", experiment_name)
         return False
 
 
-##################################
-##### RUN METRICS FUNCTIONS ######
-##################################
+#########################
+# RUN METRICS FUNCTIONS #
+#########################
 
-def create_run_metric_graphics(run_metric_folder,run_process_obj, run_folder,experiment_name):
-    '''
+
+def create_run_metric_graphics(
+    run_metric_folder, run_process_obj, run_folder, experiment_name
+):
+    """
     Description:
         The function create an entry on database with the run graphics
         by using the run metrics files
@@ -995,59 +1221,80 @@ def create_run_metric_graphics(run_metric_folder,run_process_obj, run_folder,exp
         MEDIA_ROOT
     Return:
         graphic_stats_obj
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting create_run_metric_graphics', experiment_name)
+    logger.debug("%s : Starting create_run_metric_graphics", experiment_name)
     present_working_dir = os.getcwd()
-    run_graphic_dir=os.path.join(settings.MEDIA_ROOT,RUN_IMAGES_DIRECTORY, run_folder)
+    run_graphic_dir = os.path.join(
+        settings.MEDIA_ROOT, RUN_IMAGES_DIRECTORY, run_folder
+    )
     try:
         if os.path.exists(run_graphic_dir):
             shutil.rmtree(run_graphic_dir)
         os.mkdir(run_graphic_dir)
-        logger.info('%s : created new directory %s',experiment_name, run_graphic_dir)
-    except:
-        string_message = experiment_name + ' : Unable to create folder to store graphics on ' + run_graphic_dir
+        logger.info("%s : created new directory %s", experiment_name, run_graphic_dir)
+    except Exception:
+        string_message = (
+            experiment_name
+            + " : Unable to create folder to store graphics on "
+            + run_graphic_dir
+        )
         logging_errors(string_message, True, False)
-        logger.debug ('%s : End create_run_metric_graphics with exception', experiment_name)
-        return {'ERROR':28}
+        logger.debug(
+            "%s : End create_run_metric_graphics with exception", experiment_name
+        )
+        return {"ERROR": 28}
     os.chdir(run_graphic_dir)
-    logger.info('%s : Changed working direcory to copy run metric graphics', experiment_name)
+    logger.info(
+        "%s : Changed working direcory to copy run metric graphics", experiment_name
+    )
     # create the graphics
-    logger.info('%s : Creating plot graphics for run id ',experiment_name)
+    logger.info("%s : Creating plot graphics for run id ", experiment_name)
 
-    full_path_run_processing_tmp = os.path.join(present_working_dir, RUN_TEMP_DIRECTORY_PROCESSING)
+    full_path_run_processing_tmp = os.path.join(
+        present_working_dir, RUN_TEMP_DIRECTORY_PROCESSING
+    )
     for graphic in RUN_METRIC_GRAPHIC_COMMANDS:
-        graphic_command = os.path.join(INTEROP_PATH, graphic )
-        plot_command= graphic_command + full_path_run_processing_tmp + '  | gnuplot'
-        logger.debug('%s : command used to create graphic is : %s',experiment_name, plot_command)
+        graphic_command = os.path.join(INTEROP_PATH, graphic)
+        plot_command = graphic_command + full_path_run_processing_tmp + "  | gnuplot"
+        logger.debug(
+            "%s : command used to create graphic is : %s", experiment_name, plot_command
+        )
         os.system(plot_command)
 
     os.chdir(present_working_dir)
-    logger.info('%s : Returning back the working directory', experiment_name)
+    logger.info("%s : Returning back the working directory", experiment_name)
 
-    #removing the processing_ character in the file names
+    # removing the processing_ character in the file names
     graphic_files = os.listdir(run_graphic_dir)
-    logger.info('%s : Renaming the graphic files',experiment_name)
+    logger.info("%s : Renaming the graphic files", experiment_name)
 
-    for graphic_file in graphic_files :
+    for graphic_file in graphic_files:
         old_file_name = os.path.join(run_graphic_dir, graphic_file)
-        split_file_name = graphic_file.split('_')
+        split_file_name = graphic_file.split("_")
         if not split_file_name[1].endswith(PLOT_EXTENSION):
             split_file_name[1] = split_file_name[1] + PLOT_EXTENSION
         new_file_name = os.path.join(run_graphic_dir, split_file_name[1])
-        os.rename(old_file_name , new_file_name)
-        logger.debug('%s : Renamed file from %s to %s', experiment_name, old_file_name, new_file_name)
+        os.rename(old_file_name, new_file_name)
+        logger.debug(
+            "%s : Renamed file from %s to %s",
+            experiment_name,
+            old_file_name,
+            new_file_name,
+        )
 
     # saving the graphic location in database
-    graphic_stats_obj= GraphicsStats.objects.create_graphic_run_metrics(run_process_obj,run_folder )
+    graphic_stats_obj = GraphicsStats.objects.create_graphic_run_metrics(
+        run_process_obj, run_folder
+    )
 
-    logger.info('%s : Store Graphic plots in database',experiment_name)
-    logger.debug ('%s : End function create_graphics',experiment_name)
-    return {'graph_stats_obj':graphic_stats_obj}
+    logger.info("%s : Store Graphic plots in database", experiment_name)
+    logger.debug("%s : End function create_graphics", experiment_name)
+    return {"graph_stats_obj": graphic_stats_obj}
 
 
-def delete_existing_run_metrics_table_processed (run_process_obj, experiment_name) :
-    '''
+def delete_existing_run_metrics_table_processed(run_process_obj, experiment_name):
+    """
     Description:
         The function will check if exists data stored on StatsRunSummary  and/or
         StatsRunRead for the run
@@ -1056,41 +1303,41 @@ def delete_existing_run_metrics_table_processed (run_process_obj, experiment_nam
         experiment_name     # experiment name
     Return:
         None
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function check_run_metrics_processed', experiment_name)
-    if StatsRunSummary.objects.filter(runprocess_id = run_process_obj).exists():
-        run_summary_objs = StatsRunSummary.objects.filter(runprocess_id = run_process_obj)
+    logger.debug("%s : Starting function check_run_metrics_processed", experiment_name)
+    if StatsRunSummary.objects.filter(runprocess_id=run_process_obj).exists():
+        run_summary_objs = StatsRunSummary.objects.filter(runprocess_id=run_process_obj)
         for run_summary_obj in run_summary_objs:
             run_summary_obj.delete()
-        logger.info('%s : Deleted rows on StatsRunSummary table', experiment_name )
+        logger.info("%s : Deleted rows on StatsRunSummary table", experiment_name)
 
-    if StatsRunRead.objects.filter(runprocess_id = run_process_obj).exists():
-        run_read_objs = StatsRunRead.objects.filter(runprocess_id = run_process_obj)
+    if StatsRunRead.objects.filter(runprocess_id=run_process_obj).exists():
+        run_read_objs = StatsRunRead.objects.filter(runprocess_id=run_process_obj)
         for run_read_obj in run_read_objs:
             run_read_obj.delete()
-        logger.info('%s : Deleted rows on StatsRunSummary table', experiment_name )
+        logger.info("%s : Deleted rows on StatsRunSummary table", experiment_name)
 
-    if GraphicsStats.objects.filter(runprocess_id = run_process_obj).exists():
-        graph_stats_objs = GraphicsStats.objects.filter(runprocess_id = run_process_obj)
+    if GraphicsStats.objects.filter(runprocess_id=run_process_obj).exists():
+        graph_stats_objs = GraphicsStats.objects.filter(runprocess_id=run_process_obj)
         for graph_stats_obj in graph_stats_objs:
             graph_stats_obj.delete()
-        logger.info('%s : Deleted rows on GraphicsStats table', experiment_name )
-    logger.debug('%s : End function check_run_metrics_processed', experiment_name)
+        logger.info("%s : Deleted rows on GraphicsStats table", experiment_name)
+    logger.debug("%s : End function check_run_metrics_processed", experiment_name)
     return None
 
 
-def delete_run_metric_files (experiment_name):
-    '''
+def delete_run_metric_files(experiment_name):
+    """
     Description:
         The function delete the files used for collecting the run metrics
     Input:
         experiment_name     # experiment name
     Return:
         None
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function delete_run_metric_files', experiment_name)
+    logger.debug("%s : Starting function delete_run_metric_files", experiment_name)
     local_metric_folder = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_METRIC_FOLDER)
     l_run_parameter = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_PARAMETER_FILE)
     l_run_info = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_INFO)
@@ -1099,25 +1346,27 @@ def delete_run_metric_files (experiment_name):
         if os.path.exists(local_file):
             try:
                 os.remove(local_file)
-            except:
-                string_message = experiment_name + ' : Unable to delete ' + local_file
+            except Exception:
+                string_message = experiment_name + " : Unable to delete " + local_file
                 logging_errors(string_message, True, False)
                 continue
-    logger.info('%s : Deleted temporary files',experiment_name)
+    logger.info("%s : Deleted temporary files", experiment_name)
     if os.path.exists(local_metric_folder):
         try:
             shutil.rmtree(local_metric_folder)
-            logger.info('%s : Deleted Folder %s',experiment_name, local_metric_folder)
-        except:
-            string_message = experiment_name + ' : Unable to delete  folder ' + local_metric_folder
+            logger.info("%s : Deleted Folder %s", experiment_name, local_metric_folder)
+        except Exception:
+            string_message = (
+                experiment_name + " : Unable to delete  folder " + local_metric_folder
+            )
             logging_errors(string_message, True, False)
 
-    logger.debug ('%s : End function delete_run_metric_files',experiment_name)
+    logger.debug("%s : End function delete_run_metric_files", experiment_name)
     return
 
 
-def get_run_metric_files (conn, run_folder, experiment_name):
-    '''
+def get_run_metric_files(conn, run_folder, experiment_name):
+    """
     Description:
         The function will collect the run metric files created by sequencer as part of the run process.
     Input:
@@ -1135,59 +1384,79 @@ def get_run_metric_files (conn, run_folder, experiment_name):
         fetch_remote_file                       # Located at utils.handling_crontab_common_functions.py
     Return:
         copied_files
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function get_run_metric_files', experiment_name)
+    logger.debug("%s : Starting function get_run_metric_files", experiment_name)
 
     # runInfo needed for run metrics stats
     l_run_info = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_INFO)
-    s_run_info = os.path.join(get_samba_application_shared_folder(), run_folder, RUN_INFO)
+    s_run_info = os.path.join(
+        get_samba_application_shared_folder(), run_folder, RUN_INFO
+    )
     # runParameters needed for run metrics stats
     l_run_parameter = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_PARAMETER_FILE)
-    s_run_parameter = os.path.join(get_samba_application_shared_folder(), run_folder,RUN_PARAMETER_FILE)
+    s_run_parameter = os.path.join(
+        get_samba_application_shared_folder(), run_folder, RUN_PARAMETER_FILE
+    )
     l_metric_folder = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_METRIC_FOLDER)
-    s_metric_folder = os.path.join(get_samba_application_shared_folder(), run_folder, RUN_METRIC_FOLDER)
+    s_metric_folder = os.path.join(
+        get_samba_application_shared_folder(), run_folder, RUN_METRIC_FOLDER
+    )
     copied_files = {}
 
-    if not os.path.exists(l_metric_folder) :
+    if not os.path.exists(l_metric_folder):
         try:
             os.makedirs(l_metric_folder)
-            logger.info ('%s : Created folder %s' , experiment_name, l_metric_folder)
-        except:
-            string_message = experiment_name + " : cannot create folder on " + l_metric_folder
-            logging_errors(string_message, True , False)
-            logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
-            return {'ERROR':26}
+            logger.info("%s : Created folder %s", experiment_name, l_metric_folder)
+        except Exception:
+            string_message = (
+                experiment_name + " : cannot create folder on " + l_metric_folder
+            )
+            logging_errors(string_message, True, False)
+            logger.debug(
+                "%s : End function get_run_metric_files with error", experiment_name
+            )
+            return {"ERROR": 26}
 
     try:
-        l_run_info = fetch_remote_file (conn, run_folder, s_run_info, l_run_info)
-        logger.info('%s : Sucessfully fetch of RunInfo file',experiment_name)
-    except:
-        string_message = experiment_name + ' : Unable to fetch ' + s_run_info
-        logging_errors(string_message, True , False)
-        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
-        return {'ERROR':20}
+        l_run_info = fetch_remote_file(conn, run_folder, s_run_info, l_run_info)
+        logger.info("%s : Sucessfully fetch of RunInfo file", experiment_name)
+    except Exception:
+        string_message = experiment_name + " : Unable to fetch " + s_run_info
+        logging_errors(string_message, True, False)
+        logger.debug(
+            "%s : End function get_run_metric_files with error", experiment_name
+        )
+        return {"ERROR": 20}
     copied_files[RUN_INFO] = l_run_info
 
     try:
-        l_run_parameter = fetch_remote_file (conn, run_folder, s_run_parameter, l_run_parameter)
-        logger.info('%s : Sucessfully fetch of RunParameter file',experiment_name)
-    except:
-        string_message = experiment_name + ' : Unable to fetch ' + s_run_parameter
-        logging_errors(string_message, True , False)
-        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
-        return {'ERROR':21}
+        l_run_parameter = fetch_remote_file(
+            conn, run_folder, s_run_parameter, l_run_parameter
+        )
+        logger.info("%s : Sucessfully fetch of RunParameter file", experiment_name)
+    except Exception:
+        string_message = experiment_name + " : Unable to fetch " + s_run_parameter
+        logging_errors(string_message, True, False)
+        logger.debug(
+            "%s : End function get_run_metric_files with error", experiment_name
+        )
+        return {"ERROR": 21}
     copied_files[RUN_PARAMETER_FILE] = l_run_parameter
 
     try:
-        file_list = conn.listPath( get_samba_shared_folder(), s_metric_folder)
-        logger.info('%s : InterOp folder found at  %s', experiment_name, s_metric_folder)
-    except:
-        string_message = experiment_name + ' : Unable to fetch ' + s_run_parameter
-        logging_errors(string_message, True , False)
+        file_list = conn.listPath(get_samba_shared_folder(), s_metric_folder)
+        logger.info(
+            "%s : InterOp folder found at  %s", experiment_name, s_metric_folder
+        )
+    except Exception:
+        string_message = experiment_name + " : Unable to fetch " + s_run_parameter
+        logging_errors(string_message, True, False)
         shutil.rmtree(l_metric_folder)
-        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
-        return {'ERROR':27}
+        logger.debug(
+            "%s : End function get_run_metric_files with error", experiment_name
+        )
+        return {"ERROR": 27}
     # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
     copied_files[RUN_METRIC_FOLDER] = []
     try:
@@ -1195,24 +1464,30 @@ def get_run_metric_files (conn, run_folder, experiment_name):
             if sh.isDirectory:
                 continue
             else:
-                run_metrics_file_name=sh.filename
+                run_metrics_file_name = sh.filename
                 s_run_metric_file = os.path.join(s_metric_folder, run_metrics_file_name)
                 l_run_metric_file = os.path.join(l_metric_folder, run_metrics_file_name)
-                l_run_metric_file = fetch_remote_file (conn, run_folder, s_run_metric_file, l_run_metric_file)
+                l_run_metric_file = fetch_remote_file(
+                    conn, run_folder, s_run_metric_file, l_run_metric_file
+                )
                 # copied_files[RUN_METRIC_FOLDER].append(l_run_metric_file)
-    except:
-        string_message = experiment_name + ' : Unable to fetch ' + s_run_metric_file
-        logging_errors(string_message, True , False)
+    except Exception:
+        string_message = experiment_name + " : Unable to fetch " + s_run_metric_file
+        logging_errors(string_message, True, False)
         shutil.rmtree(l_metric_folder)
-        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
-        return {'ERROR':27}
+        logger.debug(
+            "%s : End function get_run_metric_files with error", experiment_name
+        )
+        return {"ERROR": 27}
 
-    logger.debug ('%s : End function get_run_metric_files', experiment_name)
+    logger.debug("%s : End function get_run_metric_files", experiment_name)
     return copied_files
 
 
-def parsing_run_metrics_files(local_run_metric_folder, run_process_obj, experiment_name):
-    '''
+def parsing_run_metrics_files(
+    local_run_metric_folder, run_process_obj, experiment_name
+):
+    """
     Description:
         The function parse the information from the run metric files
     Input:
@@ -1228,242 +1503,504 @@ def parsing_run_metrics_files(local_run_metric_folder, run_process_obj, experime
         run_stats_read_list  # list of dictionnary with the read information
     Return:
         bin_run_stats_summary_list, run_stats_read_list
-    '''
+    """
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function parsing_run_metrics',experiment_name)
-    run_param_obj = RunningParameters.objects.get(runName_id = run_process_obj)
+    logger.debug("%s : Starting function parsing_run_metrics", experiment_name)
+    run_param_obj = RunningParameters.objects.get(runName_id=run_process_obj)
     # get the number of lanes for the run
     number_of_lanes = int(run_param_obj.get_number_of_lanes())
     # get number of reads for the run
     num_of_reads = run_param_obj.get_number_of_reads()
-    logger.info('%s : Fetched run information  needed for running metrics',experiment_name)
+    logger.info(
+        "%s : Fetched run information  needed for running metrics", experiment_name
+    )
 
     run_metrics = py_interop_run_metrics.run_metrics()
     valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
     py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
-    run_metric_folder = run_metrics.read(local_run_metric_folder)
 
     summary = py_interop_summary.run_summary()
 
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
 
     bin_run_stats_summary_list = []
-    logger.info('%s : Starts collecting data for run metric ', experiment_name)
+    logger.info("%s : Starts collecting data for run metric ", experiment_name)
     # get the Run Summary for each Read
     for read_level in range(num_of_reads):
         run_summary_stats_level = {}
         # summary yield total
-        run_summary_stats_level['yieldTotal'] = format(summary.at(read_level).summary().yield_g(),'.3f')
+        run_summary_stats_level["yieldTotal"] = format(
+            summary.at(read_level).summary().yield_g(), ".3f"
+        )
         # summary projected total yield
-        run_summary_stats_level['projectedTotalYield'] = format(summary.at(read_level).summary().projected_yield_g(),'.3f')
+        run_summary_stats_level["projectedTotalYield"] = format(
+            summary.at(read_level).summary().projected_yield_g(), ".3f"
+        )
 
         # percent yield
-        run_summary_stats_level['aligned'] = format(summary.at(read_level).summary().percent_aligned(),'.3f')
+        run_summary_stats_level["aligned"] = format(
+            summary.at(read_level).summary().percent_aligned(), ".3f"
+        )
         # Error rate
-        run_summary_stats_level['errorRate'] = format(summary.at(read_level).summary().error_rate(),'.3f')
+        run_summary_stats_level["errorRate"] = format(
+            summary.at(read_level).summary().error_rate(), ".3f"
+        )
         # intensity cycle 1
-        run_summary_stats_level['intensityCycle'] = str(round(summary.at(read_level).summary().first_cycle_intensity()))
+        run_summary_stats_level["intensityCycle"] = str(
+            round(summary.at(read_level).summary().first_cycle_intensity())
+        )
         # Q30
-        run_summary_stats_level['biggerQ30'] = format(summary.at(read_level).summary().percent_gt_q30(),'.3f')
+        run_summary_stats_level["biggerQ30"] = format(
+            summary.at(read_level).summary().percent_gt_q30(), ".3f"
+        )
 
-        run_summary_stats_level['level'] = str(read_level+1)
+        run_summary_stats_level["level"] = str(read_level + 1)
 
         bin_run_stats_summary_list.append(run_summary_stats_level)
-    logger.info('%s : Parsed run Metrics on summary level ', experiment_name)
+    logger.info("%s : Parsed run Metrics on summary level ", experiment_name)
 
     # get the run summary for Total
     run_summary_stats_level = {}
     # total summary
-    run_summary_stats_level['yieldTotal'] = format(summary.total_summary().yield_g(),'.3f')
+    run_summary_stats_level["yieldTotal"] = format(
+        summary.total_summary().yield_g(), ".3f"
+    )
     # total projected_yield_g
-    run_summary_stats_level['projectedTotalYield'] = format(summary.total_summary().projected_yield_g(),'.3f')
+    run_summary_stats_level["projectedTotalYield"] = format(
+        summary.total_summary().projected_yield_g(), ".3f"
+    )
     # total percent aligned
-    run_summary_stats_level['aligned'] = format(summary.total_summary().percent_aligned(),'.3f')
+    run_summary_stats_level["aligned"] = format(
+        summary.total_summary().percent_aligned(), ".3f"
+    )
     # total error rate
-    run_summary_stats_level['errorRate'] = format(summary.total_summary().error_rate(),'.3f')
+    run_summary_stats_level["errorRate"] = format(
+        summary.total_summary().error_rate(), ".3f"
+    )
     # total intensity cycle
-    run_summary_stats_level['intensityCycle'] = str(round(summary.total_summary().first_cycle_intensity()))
+    run_summary_stats_level["intensityCycle"] = str(
+        round(summary.total_summary().first_cycle_intensity())
+    )
     # total Q 30
-    run_summary_stats_level['biggerQ30'] = format(summary.total_summary().percent_gt_q30(),'.3f')
+    run_summary_stats_level["biggerQ30"] = format(
+        summary.total_summary().percent_gt_q30(), ".3f"
+    )
 
-    run_summary_stats_level['level'] = 'Total'
+    run_summary_stats_level["level"] = "Total"
 
-    logger.info('%s : Parsed run Metrics on Total lane',experiment_name)
+    logger.info("%s : Parsed run Metrics on Total lane", experiment_name)
 
     bin_run_stats_summary_list.append(run_summary_stats_level)
 
-     # get the run summary for non index
+    # get the run summary for non index
     run_summary_stats_level = {}
-     # non index yield
-    run_summary_stats_level['yieldTotal'] = format(summary.nonindex_summary().yield_g(),'.3f')
+    # non index yield
+    run_summary_stats_level["yieldTotal"] = format(
+        summary.nonindex_summary().yield_g(), ".3f"
+    )
     #  non index projected yield
-    run_summary_stats_level['projectedTotalYield'] =format(summary.nonindex_summary().projected_yield_g(),'.3f')
+    run_summary_stats_level["projectedTotalYield"] = format(
+        summary.nonindex_summary().projected_yield_g(), ".3f"
+    )
 
     # non index percent aligned
-    run_summary_stats_level['aligned'] = format(summary.nonindex_summary().percent_aligned(),'.3f')
+    run_summary_stats_level["aligned"] = format(
+        summary.nonindex_summary().percent_aligned(), ".3f"
+    )
     # non index percent error rate
-    run_summary_stats_level['errorRate'] = format(summary.nonindex_summary().error_rate(),'.3f')
+    run_summary_stats_level["errorRate"] = format(
+        summary.nonindex_summary().error_rate(), ".3f"
+    )
     # non index intensity cycle
-    run_summary_stats_level['intensityCycle'] = str(round(summary.nonindex_summary().first_cycle_intensity()))
+    run_summary_stats_level["intensityCycle"] = str(
+        round(summary.nonindex_summary().first_cycle_intensity())
+    )
     # non index Q 30
-    run_summary_stats_level['biggerQ30'] = format(summary.nonindex_summary().percent_gt_q30(),'.3f')
+    run_summary_stats_level["biggerQ30"] = format(
+        summary.nonindex_summary().percent_gt_q30(), ".3f"
+    )
 
-    run_summary_stats_level['level'] = 'Non Index'
-    logger.info('%s : Parsed run metric for Non Index lane', experiment_name)
+    run_summary_stats_level["level"] = "Non Index"
+    logger.info("%s : Parsed run metric for Non Index lane", experiment_name)
 
     bin_run_stats_summary_list.append(run_summary_stats_level)
 
-    ### information per reads
+    # information per reads
     run_stats_read_list = []
-    #lan_summary= py_interop_summary.lane_summary()
+    # lan_summary= py_interop_summary.lane_summary()
     # Tiles
     for read_number in range(num_of_reads):
         for lane_number in range(number_of_lanes):
-            logger.info('%s : Processing run metrics stats on Read %s and on Lane %s',experiment_name, read_number, lane_number)
-            run_read_stats_level ={}
-            run_read_stats_level['tiles'] = str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
+            logger.info(
+                "%s : Processing run metrics stats on Read %s and on Lane %s",
+                experiment_name,
+                read_number,
+                lane_number,
+            )
+            run_read_stats_level = {}
+            run_read_stats_level["tiles"] = str(
+                int(summary.at(read_number).at(lane_number).tile_count()) * 2
+            )
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
             try:
-                read_lane_density_mean=str(round(float(summary.at(read_number).at(lane_number).density().mean())/1000))
-                read_lane_density_stddev=str(round(float(summary.at(read_number).at(lane_number).density().stddev())/1000))
-            except:
-                read_lane_density_mean = 'NaN'
-                read_lane_density_stddev = 'NaN'
-                string_message = experiment_name + ' : Unable to convert to float '
-                logging_warnings (string_message, False)
-            run_read_stats_level['density'] = read_lane_density_mean + '  ' + chr(177) + '  ' +read_lane_density_stddev
+                read_lane_density_mean = str(
+                    round(
+                        float(summary.at(read_number).at(lane_number).density().mean())
+                        / 1000
+                    )
+                )
+                read_lane_density_stddev = str(
+                    round(
+                        float(
+                            summary.at(read_number).at(lane_number).density().stddev()
+                        )
+                        / 1000
+                    )
+                )
+            except Exception:
+                read_lane_density_mean = "NaN"
+                read_lane_density_stddev = "NaN"
+                string_message = experiment_name + " : Unable to convert to float "
+                logging_warnings(string_message, False)
+            run_read_stats_level["density"] = (
+                read_lane_density_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_density_stddev
+            )
             # cluster _pf  in %
             try:
-                read_lane_percent_pf_mean=format(summary.at(read_number).at(lane_number).percent_pf().mean(),'.3f')
-                read_lane_percent_pf_stddev=format(summary.at(read_number).at(lane_number).percent_pf().stddev(),'.3f')
-            except:
-                read_lane_percent_pf_mean = 'NaN'
-                read_lane_percent_pf_stddev = 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_percent_pf'
-                logging_warnings (string_message, False)
-            run_read_stats_level['cluster_PF']  = read_lane_percent_pf_mean + '  ' + chr(177) + '  ' +read_lane_percent_pf_stddev
+                read_lane_percent_pf_mean = format(
+                    summary.at(read_number).at(lane_number).percent_pf().mean(), ".3f"
+                )
+                read_lane_percent_pf_stddev = format(
+                    summary.at(read_number).at(lane_number).percent_pf().stddev(), ".3f"
+                )
+            except Exception:
+                read_lane_percent_pf_mean = "NaN"
+                read_lane_percent_pf_stddev = "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_percent_pf"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["cluster_PF"] = (
+                read_lane_percent_pf_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_percent_pf_stddev
+            )
             # phas/ prepas in %
             try:
-                read_lane_phasing_mean=format(summary.at(read_number).at(lane_number).phasing().mean(),'.3f')
-                read_lane_phasing_dev=format(summary.at(read_number).at(lane_number).phasing().stddev(),'.1f')
-                read_lane_prephasing_mean=format(summary.at(read_number).at(lane_number).prephasing().mean(),'.3f')
-                read_lane_prephasing_stddev=format(summary.at(read_number).at(lane_number).prephasing().stddev(),'.3f')
-            except:
-                read_lane_phasing_mean, read_lane_phasing_dev, read_lane_prephasing_mean, read_lane_prephasing_stddev = 'NaN', 'NaN', 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_phasing'
-                logging_warnings (string_message, False)
-            run_read_stats_level['phas_prephas']  = read_lane_phasing_mean + '  ' + chr(177) + '  ' + read_lane_phasing_dev + '  /  ' + read_lane_prephasing_mean + '  ' + chr(177) + '  ' + read_lane_prephasing_stddev
+                read_lane_phasing_mean = format(
+                    summary.at(read_number).at(lane_number).phasing().mean(), ".3f"
+                )
+                read_lane_phasing_dev = format(
+                    summary.at(read_number).at(lane_number).phasing().stddev(), ".1f"
+                )
+                read_lane_prephasing_mean = format(
+                    summary.at(read_number).at(lane_number).prephasing().mean(), ".3f"
+                )
+                read_lane_prephasing_stddev = format(
+                    summary.at(read_number).at(lane_number).prephasing().stddev(), ".3f"
+                )
+            except Exception:
+                (
+                    read_lane_phasing_mean,
+                    read_lane_phasing_dev,
+                    read_lane_prephasing_mean,
+                    read_lane_prephasing_stddev,
+                ) = ("NaN", "NaN", "NaN", "NaN")
+                string_message = (
+                    experiment_name + " : Unable to format to float read_lane_phasing"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["phas_prephas"] = (
+                read_lane_phasing_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_phasing_dev
+                + "  /  "
+                + read_lane_prephasing_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_prephasing_stddev
+            )
             # reads (M)
             try:
-                run_read_stats_level['reads'] = format(float(summary.at(read_number).at(lane_number).reads())/1000000,'.3f')
-            except:
-                run_read_stats_level['reads'] = 'NaN'
-                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[reads]'
-                logging_warnings (string_message, False)
-            #reads PF (M)
+                run_read_stats_level["reads"] = format(
+                    float(summary.at(read_number).at(lane_number).reads()) / 1000000,
+                    ".3f",
+                )
+            except Exception:
+                run_read_stats_level["reads"] = "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float run_read_stats_level[reads]"
+                )
+                logging_warnings(string_message, False)
+            # reads PF (M)
             try:
-                run_read_stats_level['reads_PF'] = format(float(summary.at(read_number).at(lane_number).reads_pf())/1000000,'.3f')
-            except:
-                run_read_stats_level['reads_PF'] = 'NaN'
-                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[reads_PF]'
-                logging_warnings (string_message, False)
+                run_read_stats_level["reads_PF"] = format(
+                    float(summary.at(read_number).at(lane_number).reads_pf()) / 1000000,
+                    ".3f",
+                )
+            except Exception:
+                run_read_stats_level["reads_PF"] = "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float run_read_stats_level[reads_PF]"
+                )
+                logging_warnings(string_message, False)
             # percent q30
             try:
-                run_read_stats_level['q30'] = format(summary.at(read_number).at(lane_number).percent_gt_q30(),'.3f')
-            except:
-                run_read_stats_level['q30'] = 'NaN'
-                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[q30]'
-                logging_warnings (string_message, False)
+                run_read_stats_level["q30"] = format(
+                    summary.at(read_number).at(lane_number).percent_gt_q30(), ".3f"
+                )
+            except Exception:
+                run_read_stats_level["q30"] = "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float run_read_stats_level[q30]"
+                )
+                logging_warnings(string_message, False)
             # yield _g
             try:
-                run_read_stats_level['yields'] = format(summary.at(read_number).at(lane_number).yield_g(),'.3f')
-            except:
-                run_read_stats_level['yields'] = 'NaN'
-                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[yields]'
-                logging_warnings (string_message, False)
+                run_read_stats_level["yields"] = format(
+                    summary.at(read_number).at(lane_number).yield_g(), ".3f"
+                )
+            except Exception:
+                run_read_stats_level["yields"] = "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float run_read_stats_level[yields]"
+                )
+                logging_warnings(string_message, False)
             # cycles err Rate
             try:
-                run_read_stats_level['cyclesErrRated'] = str(summary.at(read_number).at(lane_number).cycle_state().error_cycle_range().first_cycle())
-            except:
-                run_read_stats_level['cyclesErrRated'] = 'NaN'
-                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[cyclesErrRated]'
-                logging_warnings (string_message, False)
-            #percent_aligned
+                run_read_stats_level["cyclesErrRated"] = str(
+                    summary.at(read_number)
+                    .at(lane_number)
+                    .cycle_state()
+                    .error_cycle_range()
+                    .first_cycle()
+                )
+            except Exception:
+                run_read_stats_level["cyclesErrRated"] = "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float run_read_stats_level[cyclesErrRated]"
+                )
+                logging_warnings(string_message, False)
+            # percent_aligned
             try:
-                read_lane_percent_aligned_mean=format(summary.at(read_number).at(lane_number).percent_aligned().mean(),'.3f')
-                read_lane_percent_aligned_stddev=format(summary.at(read_number).at(lane_number).percent_aligned().stddev(),'3f')
-            except:
-                read_lane_percent_aligned_mean, read_lane_percent_aligned_stddev = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_percent_aligned_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['aligned'] = read_lane_percent_aligned_mean + '  ' + chr(177) + '  ' + read_lane_percent_aligned_stddev
-            #error rate
+                read_lane_percent_aligned_mean = format(
+                    summary.at(read_number).at(lane_number).percent_aligned().mean(),
+                    ".3f",
+                )
+                read_lane_percent_aligned_stddev = format(
+                    summary.at(read_number).at(lane_number).percent_aligned().stddev(),
+                    "3f",
+                )
+            except Exception:
+                read_lane_percent_aligned_mean, read_lane_percent_aligned_stddev = (
+                    "NaN",
+                    "NaN",
+                )
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_percent_aligned_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["aligned"] = (
+                read_lane_percent_aligned_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_percent_aligned_stddev
+            )
+            # error rate
             try:
-                read_lane_error_rate_mean=format(summary.at(read_number).at(lane_number).error_rate().mean(),'.3f')
-                read_lane_error_rate_stddev=format(summary.at(read_number).at(lane_number).error_rate().stddev(),'.3f')
-            except:
-                read_lane_error_rate_mean, read_lane_error_rate_stddev  = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['errorRate']  = read_lane_error_rate_mean+ '  ' + chr(177) + '  ' + read_lane_error_rate_stddev
-            #error rate_35
+                read_lane_error_rate_mean = format(
+                    summary.at(read_number).at(lane_number).error_rate().mean(), ".3f"
+                )
+                read_lane_error_rate_stddev = format(
+                    summary.at(read_number).at(lane_number).error_rate().stddev(), ".3f"
+                )
+            except Exception:
+                read_lane_error_rate_mean, read_lane_error_rate_stddev = "NaN", "NaN"
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_error_rate_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["errorRate"] = (
+                read_lane_error_rate_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_error_rate_stddev
+            )
+            # error rate_35
             try:
-                read_lane_error_rate_35_mean=format(summary.at(read_number).at(lane_number).error_rate_35().mean(),'.3f')
-                read_lane_error_rate_35_stddev=format(summary.at(read_number).at(lane_number).error_rate_35().stddev(),'.3f')
-            except:
-                read_lane_error_rate_35_mean, read_lane_error_rate_35_stddev  = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_35_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['errorRate35']  = read_lane_error_rate_35_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_35_stddev
-            #error rate 50
+                read_lane_error_rate_35_mean = format(
+                    summary.at(read_number).at(lane_number).error_rate_35().mean(),
+                    ".3f",
+                )
+                read_lane_error_rate_35_stddev = format(
+                    summary.at(read_number).at(lane_number).error_rate_35().stddev(),
+                    ".3f",
+                )
+            except Exception:
+                read_lane_error_rate_35_mean, read_lane_error_rate_35_stddev = (
+                    "NaN",
+                    "NaN",
+                )
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_error_rate_35_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["errorRate35"] = (
+                read_lane_error_rate_35_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_error_rate_35_stddev
+            )
+            # error rate 50
             try:
-                read_lane_error_rate_50_mean=format(summary.at(read_number).at(lane_number).error_rate_50().mean(),'.3f')
-                read_lane_error_rate_50_stddev=format(summary.at(read_number).at(lane_number).error_rate_50().stddev(),'.3f')
-            except:
-                read_lane_error_rate_50_mean, read_lane_error_rate_50_stddev  = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_50_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['errorRate50']  = read_lane_error_rate_50_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_50_stddev
-            #error rate 75
+                read_lane_error_rate_50_mean = format(
+                    summary.at(read_number).at(lane_number).error_rate_50().mean(),
+                    ".3f",
+                )
+                read_lane_error_rate_50_stddev = format(
+                    summary.at(read_number).at(lane_number).error_rate_50().stddev(),
+                    ".3f",
+                )
+            except Exception:
+                read_lane_error_rate_50_mean, read_lane_error_rate_50_stddev = (
+                    "NaN",
+                    "NaN",
+                )
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_error_rate_50_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["errorRate50"] = (
+                read_lane_error_rate_50_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_error_rate_50_stddev
+            )
+            # error rate 75
             try:
-                read_lane_error_rate_75_mean=format(summary.at(read_number).at(lane_number).error_rate_75().mean(),'.3f')
-                read_lane_error_rate_75_stddev=format(summary.at(read_number).at(lane_number).error_rate_75().stddev(),'.3f')
-            except:
-                read_lane_error_rate_75_mean, read_lane_error_rate_75_stddev  = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_75_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['errorRate75']  = read_lane_error_rate_75_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_75_stddev
-            #error rate 100
+                read_lane_error_rate_75_mean = format(
+                    summary.at(read_number).at(lane_number).error_rate_75().mean(),
+                    ".3f",
+                )
+                read_lane_error_rate_75_stddev = format(
+                    summary.at(read_number).at(lane_number).error_rate_75().stddev(),
+                    ".3f",
+                )
+            except Exception:
+                read_lane_error_rate_75_mean, read_lane_error_rate_75_stddev = (
+                    "NaN",
+                    "NaN",
+                )
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_error_rate_75_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["errorRate75"] = (
+                read_lane_error_rate_75_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_error_rate_75_stddev
+            )
+            # error rate 100
             try:
-                read_lane_error_rate_100_mean=format(summary.at(read_number).at(lane_number).error_rate_100().mean(),'.3f')
-                read_lane_error_rate_100_stddev=format(summary.at(read_number).at(lane_number).error_rate_100().stddev(),'.3f')
-            except:
-                read_lane_error_rate_100_mean, read_lane_error_rate_100_stddev  = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_100_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['errorRate100']  = read_lane_error_rate_100_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_100_stddev
+                read_lane_error_rate_100_mean = format(
+                    summary.at(read_number).at(lane_number).error_rate_100().mean(),
+                    ".3f",
+                )
+                read_lane_error_rate_100_stddev = format(
+                    summary.at(read_number).at(lane_number).error_rate_100().stddev(),
+                    ".3f",
+                )
+            except Exception:
+                read_lane_error_rate_100_mean, read_lane_error_rate_100_stddev = (
+                    "NaN",
+                    "NaN",
+                )
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_error_rate_100_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["errorRate100"] = (
+                read_lane_error_rate_100_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_error_rate_100_stddev
+            )
             # intensity cycle 1
             try:
-                read_lane_intensity_cycle_mean=format(summary.at(read_number).at(lane_number).first_cycle_intensity().mean(),'.3f') # get tiles for read 1 and lane 1
-                read_lane_intensity_cycle_stddev=format(summary.at(read_number).at(lane_number).first_cycle_intensity().stddev(),'.3f')
-            except:
-                read_lane_intensity_cycle_mean, read_lane_intensity_cycle_stddev  = 'NaN', 'NaN'
-                string_message = experiment_name + ' : Unable to format to float read_lane_intensity_cycle_mean'
-                logging_warnings (string_message, False)
-            run_read_stats_level['intensityCycle'] = read_lane_intensity_cycle_mean + '  ' + chr(177) + '  ' + read_lane_intensity_cycle_stddev
+                read_lane_intensity_cycle_mean = format(
+                    summary.at(read_number)
+                    .at(lane_number)
+                    .first_cycle_intensity()
+                    .mean(),
+                    ".3f",
+                )  # get tiles for read 1 and lane 1
+                read_lane_intensity_cycle_stddev = format(
+                    summary.at(read_number)
+                    .at(lane_number)
+                    .first_cycle_intensity()
+                    .stddev(),
+                    ".3f",
+                )
+            except Exception:
+                read_lane_intensity_cycle_mean, read_lane_intensity_cycle_stddev = (
+                    "NaN",
+                    "NaN",
+                )
+                string_message = (
+                    experiment_name
+                    + " : Unable to format to float read_lane_intensity_cycle_mean"
+                )
+                logging_warnings(string_message, False)
+            run_read_stats_level["intensityCycle"] = (
+                read_lane_intensity_cycle_mean
+                + "  "
+                + chr(177)
+                + "  "
+                + read_lane_intensity_cycle_stddev
+            )
 
-            run_read_stats_level['read'] = str(read_number+1)
-            run_read_stats_level['lane'] = str(lane_number+1)
+            run_read_stats_level["read"] = str(read_number + 1)
+            run_read_stats_level["lane"] = str(lane_number + 1)
             # append run_read_stats_level information to run_stats_read_list
             run_stats_read_list.append(run_read_stats_level)
 
-    logger.debug ('%s : End function parsing_run_metrics',experiment_name)
+    logger.debug("%s : End function parsing_run_metrics", experiment_name)
     return bin_run_stats_summary_list, run_stats_read_list
 
-##################################
-###### BCL2FASTQ FUNCTIONS #######
-##################################
+
+#######################
+# BCL2FASTQ FUNCTIONS #
+#######################
+
 
 def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
     """
@@ -1494,8 +2031,8 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
     )
 
     try:
-        file_list = conn.listPath(get_samba_shared_folder(), statistics_folder)
-    except:
+        conn.listPath(get_samba_shared_folder(), statistics_folder)
+    except Exception:
         string_message = (
             experiment_name
             + " : Unable to fetch folder demultiplexing at  "
@@ -1518,7 +2055,7 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         conversion_attributes = conn.getAttributes(
             get_samba_shared_folder(), s_conversion_stats
         )
-    except:
+    except Exception:
         string_message = experiment_name + " : Unable to fetch " + CONVERSION_STATS_FILE
         logging_errors(string_message, True, False)
         logger.debug(
@@ -1606,13 +2143,11 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function get_demultiplexing_files", experiment_name)
     statistics_folder = os.path.join(
-        get_samba_application_shared_folder(),
-        run_folder,
-        STATS_FILE_PATH
+        get_samba_application_shared_folder(), run_folder, STATS_FILE_PATH
     )
     try:
-        file_list = conn.listPath(get_samba_shared_folder(), statistics_folder)
-    except:
+        conn.listPath(get_samba_shared_folder(), statistics_folder)
+    except Exception:
         string_message = (
             experiment_name
             + " : Unable to fetch folder demultiplexing at  "
@@ -1625,21 +2160,17 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
         return {"ERROR": 29}
     # conversion stats file
     l_conversion_stats = os.path.join(RUN_TEMP_DIRECTORY, CONVERSION_STATS_FILE)
-    s_conversion_stats = os.path.join(
-        statistics_folder, CONVERSION_STATS_FILE
-    )
+    s_conversion_stats = os.path.join(statistics_folder, CONVERSION_STATS_FILE)
     # demultiplexion stats file
     l_demux_stats = os.path.join(RUN_TEMP_DIRECTORY, DEMULTIPLEXION_STATS_FILE)
-    s_demux_stats = os.path.join(
-        statistics_folder, DEMULTIPLEXION_STATS_FILE
-    )
+    s_demux_stats = os.path.join(statistics_folder, DEMULTIPLEXION_STATS_FILE)
     demux_files = {}
     try:
         demux_files["conversion_stats"] = fetch_remote_file(
             conn, run_folder, s_conversion_stats, l_conversion_stats
         )
         logger.info("%s : Sucessfully fetch of ConversionStats file", experiment_name)
-    except:
+    except Exception:
         string_message = (
             experiment_name
             + " : cannot copy or fetch the "
@@ -1656,7 +2187,7 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
             conn, run_folder, s_demux_stats, l_demux_stats
         )
         logger.info("%s : Sucessfully fetch of demultiplexing file", experiment_name)
-    except:
+    except Exception:
         string_message = (
             experiment_name
             + " : cannot copy or fetch the "
@@ -1690,7 +2221,6 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
         "%s : Starting function parsing_demux_and_conversion_files", experiment_name
     )
 
-    total_p_b_count = [0, 0, 0, 0]
     parsed_result = {}
     projects = []
     demux_parse = ET.parse(demux_files["demux_stats"])
@@ -1703,7 +2233,7 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
 
     for i in range(len(projects)):
         p_temp = root[0][i]
-        barcodeCount, perfectBarcodeCount, b_count = [], [], []
+        barcodeCount = []
         p_b_count, one_mismatch_count = [], []
         project_parsed_information = {}
 
@@ -1786,7 +2316,7 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
                             0
                         ].iter("Yield"):
                             raw_yield_value += int(c.text)
-                    except:
+                    except Exception:
                         pass
 
                     # get the yield Q30 value for RAW  and for read 1 and 2
@@ -1795,14 +2325,14 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
                             0
                         ].iter("YieldQ30"):
                             raw_yield_q30_value += int(c.text)
-                    except:
+                    except Exception:
                         pass
                     try:
                         for c in p_temp[sample_index][0][lane_index][tile_index][
                             0
                         ].iter("QualityScoreSum"):
                             raw_quality_value += int(c.text)
-                    except:
+                    except Exception:
                         pass
                     # get the yield value for PF and for read 1 and 2
                     try:
@@ -1810,7 +2340,7 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
                             1
                         ].iter("Yield"):
                             pf_yield_value += int(c.text)
-                    except:
+                    except Exception:
                         pass
                     # get the yield Q30 value for PF and for read 1 and 2
                     try:
@@ -1818,14 +2348,14 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
                             1
                         ].iter("YieldQ30"):
                             pf_yield_q30_value += int(c.text)
-                    except:
+                    except Exception:
                         pass
                     try:
                         for c in p_temp[sample_index][0][lane_index][tile_index][
                             1
                         ].iter("QualityScoreSum"):
                             pf_quality_value += int(c.text)
-                    except:
+                    except Exception:
                         pass
 
                 list_raw_yield.append(str(raw_yield_value))
@@ -1891,7 +2421,6 @@ def parsing_demux_sample_project(demux_files, number_of_lanes, experiment_name):
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function parsing_demux_sample_project", experiment_name)
 
-    total_p_b_count = [0, 0, 0, 0]
     parsed_result = {}
     demux_stat = ET.parse(demux_files["demux_stats"])
     root = demux_stat.getroot()
@@ -1952,7 +2481,6 @@ def parsing_demux_sample_project(demux_files, number_of_lanes, experiment_name):
             sample_name = samples[s_index].attrib["name"]
             if sample_name == "all":
                 continue
-            quality_per_sample = {}
             raw_yield_value = 0
             raw_yield_q30_value = 0
             raw_quality_value = 0
@@ -2026,7 +2554,6 @@ def process_and_store_fl_summary_data(
         "%s : Starting function process_and_store_fl_summary_data", experiment_name
     )
     M_BASE = 1.004361 / 1000000
-    total_cluster_lane = parsed_data["all"]["PerfectBarcodeCount"]
     run_param_obj = RunningParameters.objects.get(runName_id=run_process_obj)
     number_of_lanes = int(run_param_obj.get_number_of_lanes())
 
@@ -2119,13 +2646,13 @@ def process_and_store_lane_summary_data(
                     / int(parsed_data[project]["BarcodeCount"][i]),
                     ".3f",
                 )
-            except:
+            except Exception:
                 project_lane["perfectBarcode"] = "0"
             try:
                 project_lane["percentLane"] = format(
                     float(int(pf_cluster_int) / int(total_cluster_lane[i])) * 100, ".3f"
                 )
-            except:
+            except Exception:
                 project_lane["percentLane"] = "0"
             project_lane["oneMismatch"] = parsed_data[project][
                 "OneMismatchBarcodeCount"
@@ -2140,7 +2667,7 @@ def process_and_store_lane_summary_data(
                     / float(parsed_data[project]["PF_Yield"][i]),
                     ".3f",
                 )
-            except:
+            except Exception:
                 project_lane["biggerQ30"] = "0"
             try:
                 project_lane["meanQuality"] = format(
@@ -2148,7 +2675,7 @@ def process_and_store_lane_summary_data(
                     / float(parsed_data[project]["PF_Yield"][i]),
                     ".3f",
                 )
-            except:
+            except Exception:
                 project_lane["meanQuality"] = "0"
             if project == "all" or project == "default":
                 project_lane["project_id"] = None
@@ -2196,7 +2723,6 @@ def process_and_store_raw_demux_project_data(
         "%s : Starting function process_and_store_raw_demux_project_data",
         experiment_name,
     )
-    processed_raw_data = []
     project_list = []
     # check first if all project found in the parsing are already defined.
     if run_process_obj.projects_set.all().exists():
@@ -2254,7 +2780,7 @@ def process_and_store_raw_demux_project_data(
         project_raw_data["PF_YieldQ30"] = parsed_data[project]["PF_YieldQ30"]
         project_raw_data["PF_QualityScore"] = parsed_data[project]["PF_QualityScore"]
 
-        new_raw_obj = RawDemuxStats.objects.create_stats_run_read(
+        RawDemuxStats.objects.create_stats_run_read(
             project_raw_data, run_process_obj
         )
         logger.info(
@@ -2297,7 +2823,6 @@ def process_and_store_samples_projects_data(
     samples_with_user_ids = get_sample_with_user_owner(sample_sheet)
     # get the total number of read per lane
     M_BASE = 1.004361 / 1000000
-    processed_sample_data = []
 
     for project in parsed_data:
         # find the total number of PerfectBarcodeCount in the procjec to make percent calculations
@@ -2322,7 +2847,7 @@ def process_and_store_samples_projects_data(
                 project_sample_data["percentInProject"] = format(
                     float(perfect_barcode) * 100 / total_perfect_barcode_count, ".2f"
                 )
-            except:
+            except Exception:
                 project_sample_data["percentInProject"] = "0"
             project_sample_data["yieldMb"] = "{0:,}".format(
                 round(float(parsed_data[project][sample]["PF_Yield"]) * M_BASE)
@@ -2351,10 +2876,10 @@ def process_and_store_samples_projects_data(
             project_sample_data["runProcess_id"] = run_process_obj
             try:
                 project_sample_data["user_id"] = samples_with_user_ids[sample]
-            except KeyError as e:
+            except KeyError:
                 raise KeyError(33)
 
-            new_sample_stats = SamplesInProject.objects.create_sample_project(
+            SamplesInProject.objects.create_sample_project(
                 project_sample_data
             )
 
@@ -2391,19 +2916,18 @@ def process_and_store_unknown_barcode_data(
             logger.info("%s : Collecting TopUnknownBarcodes data ", experiment_name)
             for un_lane in range(number_of_lanes):
                 logger.info("Processing lane %s for TopUnknownBarcodes", un_lane)
-                count_top = 0
                 top_number = 1
 
                 for barcode_line in parsed_data[project][un_lane]:
                     unknow_barcode = {}
                     unknow_barcode["runprocess_id"] = run_process_obj
-                    unknow_barcode["lane_number"] = lane_number = str(un_lane + 1)
+                    unknow_barcode["lane_number"] = str(un_lane + 1)
                     unknow_barcode["top_number"] = str(top_number)
                     unknow_barcode["count"] = "{0:,}".format(int(barcode_line["count"]))
                     unknow_barcode["sequence"] = barcode_line["sequence"]
                     top_number += 1
 
-                new_unknow_barcode = RawTopUnknowBarcodes.objects.create_unknow_barcode(
+                RawTopUnknowBarcodes.objects.create_unknow_barcode(
                     unknow_barcode
                 )
 
