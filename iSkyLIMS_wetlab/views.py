@@ -1,54 +1,44 @@
-# -*- coding: utf-8 -*-
-## import django
+import datetime
+import json
+import os
+import re
 import statistics
-import re, os, shutil, json
-import datetime, time
-from .fusioncharts.fusioncharts import FusionCharts
+import time
 
-from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse
-from django.template import loader
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
-# from django.contrib.auth.models import Group
-
-from django_utils.models import Profile, Center
+from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render, redirect
+from django_utils.models import Center, Profile
 from django_utils.views import check_user_group
-from .models import *
-
-from iSkyLIMS_wetlab import wetlab_config
-
-## import methods defined on utils.py
-from .utils.sample_sheet_utils import *
-from .utils.sample_functions import *
-from .utils.stats_graphics import *
-from .utils.common import *
-from .utils.collection_index_functions import *
-from .utils.fetching_information import *
-from .utils.testing_wetlab_configuration import *
-from .utils.sample_functions import *
-from .utils.library_preparation import *
-from .utils.pool_preparation import *
-from .utils.run_preparation import *
-from .utils.additional_kits import *
-from .utils.statistics import *
-from .utils.sequencers import *
-
-from iSkyLIMS_core.utils.handling_samples import *
-from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 from iSkyLIMS_core.utils.common import (
+    get_email_data,
     get_inital_sample_settings_values,
     save_inital_sample_setting_value,
     send_test_email,
-    get_email_data,
 )
-from iSkyLIMS_core.utils.handling_protocols import display_protocol_list
 from iSkyLIMS_core.utils.handling_load_batch_samples import *
+from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
+from iSkyLIMS_core.utils.handling_protocols import display_protocol_list
+from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_wetlab import wetlab_config
 
-# from iSkyLIMS_core.utils.handling_commercial_kits import *
+from .fusioncharts.fusioncharts import FusionCharts
+from .models import *
+from .utils.additional_kits import *
+from .utils.collection_index_functions import *
+from .utils.common import *
+from .utils.fetching_information import *
+from .utils.library_preparation import *
+from .utils.pool_preparation import *
+from .utils.run_preparation import *
+from .utils.sample_functions import *
+from .utils.sample_sheet_utils import *
+from .utils.sequencers import *
+from .utils.statistics import *
+from .utils.stats_graphics import *
+from .utils.testing_wetlab_configuration import *
 
 
 def index(request):
@@ -116,7 +106,7 @@ def configuration_samba(request):
                 "iSkyLIMS_wetlab/configurationSamba.html",
                 {"succesful_settings": True},
             )
-        except:
+        except Exception:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(
                 request,
@@ -184,7 +174,7 @@ def initial_settings(request):
 
 @login_required
 def create_nextseq_run(request):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if not request.user.is_authenticated:
         # redirect to login webpage
         return redirect("/accounts/login")
@@ -195,17 +185,16 @@ def create_nextseq_run(request):
             {"content": ERROR_USER_NOT_WETLAB_MANAGER},
         )
 
-    ## FIRST STEP in collecting data from the NextSeq run. Sample Sheet and experiment name are required
+    # FIRST STEP in collecting data from the NextSeq run. Sample Sheet and experiment name are required
     if request.method == "POST" and (request.POST["action"] == "uploadFile"):
-        get_user_names = {}
         projects = []
         # run_name=request.POST['runname']
         myfile = request.FILES["myfile"]
 
-        ## CHECK if file contains the extension.
-        ## Error page is showed if file does not contain any extension
+        # CHECK if file contains the extension.
+        # Error page is showed if file does not contain any extension
         split_filename = re.search("(.*)(\.\w+$)", myfile.name)
-        if None == split_filename:
+        if split_filename is None:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -221,8 +210,8 @@ def create_nextseq_run(request):
             )
         ext_file = split_filename.group(2)
 
-        ## CHECK if file contains the csv extension.
-        ## Error page is shown if file does not contain the csv extension
+        # CHECK if file contains the csv extension.
+        # Error page is shown if file does not contain the csv extension
         if ext_file != ".csv":
             return render(
                 request,
@@ -238,7 +227,7 @@ def create_nextseq_run(request):
             )
         fs = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
-        ## including the timestamp to the sample sheet file
+        # including the timestamp to the sample sheet file
         # do not need to include the absolute path because django uses
         # the MEDIA_ROOT variable defined on settings to upload the file
         file_name = str(
@@ -248,39 +237,38 @@ def create_nextseq_run(request):
             + timestr
             + ext_file
         )
-        filename = fs.save(file_name, myfile)
-        uploaded_file_url = fs.url(filename)
+        fs.save(file_name, myfile)
 
-        ### add the document directory to read the csv file
+        # add the document directory to read the csv file
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
 
-        ## Fetch the experiment name and the library name from the sample sheet file
+        # Fetch the experiment name and the library name from the sample sheet file
         index_library_name = get_index_library_name(stored_file)
         run_name = get_experiment_name_from_file(stored_file)
 
         if run_name == "":
-            ## define an temporary unique value for the run name
+            # define an temporary unique value for the run name
             # until the real value is get from user FORM
             run_name = timestr
 
-        ## Check that runName is not already used in the database.
-        ## Error page is showed if runName is already  defined
+        # Check that runName is not already used in the database.
+        # Error page is showed if runName is already  defined
 
-        if (RunProcess.objects.filter(runName__iexact=run_name)).exists():
+        if (RunProcess.objects.filter(run_name__iexact=run_name)).exists():
             if RunProcess.objects.filter(
-                runName__iexact=run_name, state__runStateName__exact="Pre-Recorded"
+                run_name__iexact=run_name, state__runStateName__exact="Pre-Recorded"
             ).exists():
-                ## Delete the Sample Sheet file and the row in database
+                # Delete the Sample Sheet file and the row in database
                 delete_run_objs = RunProcess.objects.filter(
-                    runName__iexact=run_name, state__runStateName__exact="Pre-Recorded"
+                    run_name__iexact=run_name, state__runStateName__exact="Pre-Recorded"
                 )
                 for delete_run in delete_run_objs:
                     # sample_sheet_file = delete_run.get_sample_file()
-                    ##full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
+                    # full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
                     # os.remove(full_path_sample_sheet_file)
 
                     if Projects.objects.filter(runProcess=delete_run).exists():
-                        project_objs = Projects.objects.filter(runProcess=delete_run)
+                        project_objs = Projects.objects.filter(run_process=delete_run)
                         for project_obj in project_objs:
                             project_obj.runProcess.remove(delete_run)
 
@@ -305,14 +293,14 @@ def create_nextseq_run(request):
                     },
                 )
 
-        ## Fetch from the Sample Sheet file the projects included in
-        ## the run and the user. Error page is showed if not project/description
-        ## colunms are found
+        # Fetch from the Sample Sheet file the projects included in
+        # the run and the user. Error page is showed if not project/description
+        # colunms are found
 
         project_list = get_projects_in_run(stored_file)
 
         if len(project_list) == 0:
-            ## delete sample sheet file
+            # delete sample sheet file
             fs.delete(file_name)
             return render(
                 request,
@@ -327,8 +315,8 @@ def create_nextseq_run(request):
                 },
             )
 
-        ## Check if the projects are already defined on database.
-        ## Error page is showed if projects are already defined on database
+        # Check if the projects are already defined on database.
+        # Error page is showed if projects are already defined on database
 
         project_already_defined = []
         project_in_several_runs = get_configuration_value(
@@ -337,7 +325,7 @@ def create_nextseq_run(request):
         for key in project_list.keys():
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
-            if Projects.objects.filter(projectName__icontains=key).exists():
+            if Projects.objects.filter(project_name__icontains=key).exists():
                 if project_in_several_runs != "TRUE":
                     project_already_defined.append(key)
 
@@ -346,9 +334,9 @@ def create_nextseq_run(request):
                 head_text = "The following projects are already defined in database:"
             else:
                 head_text = "The following project is already defined in database:"
-            ## convert the list into string to display the user names on error page
+            # convert the list into string to display the user names on error page
             display_project = "  ".join(project_already_defined)
-            ## delete sample sheet file before showing the error page
+            # delete sample sheet file before showing the error page
             fs.delete(file_name)
             return render(
                 request,
@@ -367,9 +355,9 @@ def create_nextseq_run(request):
                 },
             )
 
-        ##Once the information looks good. it will be stores in runProcess and projects table
+        # Once the information looks good. it will be stores in runProcess and projects table
 
-        ## store data in runProcess table, run is in pre-recorded state
+        # store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(
             profileUserID=request.user
         ).profileCenter.id
@@ -383,8 +371,8 @@ def create_nextseq_run(request):
         new_run_obj.save()
         experiment_name = "" if run_name == timestr else run_name
 
-        ## create new project tables based on the project involved in the run and
-        ## include the project information in projects variable to build the new FORM
+        # create new project tables based on the project involved in the run and
+        # include the project information in projects variable to build the new FORM
 
         run_info_values = {}
         run_info_values["experiment_name"] = experiment_name
@@ -399,21 +387,20 @@ def create_nextseq_run(request):
                             projectName=key, user_id=userid)
             p_data.save()
             """
-            if not Projects.objects.filter(projectName__iexact=key).exists():
+            if not Projects.objects.filter(project_name__iexact=key).exists():
                 data = {}
                 data["user_id"] = user_id
                 data["projectName"] = key
                 project_obj = Projects.objects.create_new_empty_project(data)
             else:
-                project_obj = Projects.objects.filter(projectName__iexact=key).last()
+                project_obj = Projects.objects.filter(project_name__iexact=key).last()
 
             project_obj.add_run(new_run_obj)
             projects.append([key, val])
 
         run_info_values["projects_user"] = projects
         run_info_values["runname"] = run_name
-        ## Get the list of the library kit used (libraryKit)
-        used_libraries = []
+        # Get the list of the library kit used (libraryKit)
         list_libraries = LibraryKit.objects.order_by().values_list(
             "libraryName", flat=True
         )
@@ -424,25 +411,24 @@ def create_nextseq_run(request):
         for user in all_users:
             user_names.append(user.username)
         run_info_values["aval_users"] = user_names
-        ## displays the list of projects and the user names found on Sample Sheet
+        # displays the list of projects and the user names found on Sample Sheet
         return render(
             request,
             "iSkyLIMS_wetlab/CreateNextSeqRun.html",
             {"get_user_names": run_info_values},
         )
 
-    ## SECOND STEP in collecting data from the NextSeq run. Confirmation /modification of data included in Sample Sheet
+    # SECOND STEP in collecting data from the NextSeq run. Confirmation /modification of data included in Sample Sheet
     elif request.method == "POST" and (request.POST["action"] == "displayResult"):
         experiment_name = request.POST["experimentname"]
-        run_index_library_name = request.POST["runindexlibraryname"]
         run_name = request.POST["runname"]
         projects = request.POST.getlist("project")
         user_name = request.POST.getlist("username")
         library_kit = request.POST.getlist("libraryKit")
         project_index_kit = request.POST.getlist("projectindexlibraryname")
 
-        ## get the sample sheet used in the run. return error if run already exists
-        if not RunProcess.objects.filter(runName__exact=run_name).exists():
+        # get the sample sheet used in the run. return error if run already exists
+        if not RunProcess.objects.filter(run_name__exact=run_name).exists():
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -456,11 +442,10 @@ def create_nextseq_run(request):
             )
         run_p = RunProcess.objects.get(runName__exact=run_name)
         s_file = run_p.get_sample_file()
-        ## get the different type of library kit used in the run and
-        ## convert the sample sheet into Base Space. Number of converted
-        ## file will be the same as the number of different lybraries use in the run
+        # get the different type of library kit used in the run and
+        # convert the sample sheet into Base Space. Number of converted
+        # file will be the same as the number of different lybraries use in the run
         library = {}
-        bs_file = {}
         results = []
 
         in_file = os.path.join(settings.MEDIA_ROOT, s_file)
@@ -478,19 +463,17 @@ def create_nextseq_run(request):
             user_names_in_projects[projects[p_index]] = user_name[p_index]
 
         set_user_names_in_sample_sheet(in_file, user_names_in_projects)
-        ## build the project list for each project_library kit
+        # build the project list for each project_library kit
         for x in range(len(project_index_kit)):
             if project_index_kit[x] in library:
                 library[project_index_kit[x]].append(projects[x])
             else:
                 library[project_index_kit[x]] = [projects[x]]
-        ## save the project information on database
+        # save the project information on database
         for p in range(len(projects)):
             my_project = projects[p]
-            my_name = user_name[p]
-            my_libkit = library_kit[p]
             library_kit_id = LibraryKit.objects.filter(
-                libraryName__exact=library_kit[p]
+                libraryame__exact=library_kit[p]
             ).last()
             update_info_proj = Projects.objects.get(projectName=my_project)
             update_info_proj.libraryKit = project_index_kit[p]
@@ -504,9 +487,7 @@ def create_nextseq_run(request):
         run_p.set_run_state("Recorded")
         sample_sheet_lines = read_all_lines_in_sample_sheet(in_file)
         sample_names_and_data = get_samples_in_sample_sheet(sample_sheet_lines)
-        samples_reused = increase_reuse_if_samples_exists(
-            sample_names_and_data["samples"]
-        )
+        increase_reuse_if_samples_exists(sample_names_and_data["samples"])
 
         return render(
             request,
@@ -543,7 +524,6 @@ def add_basespace_library(request):
             ---['new_basespace_library'] in case a new basespace library was added.
     """
 
-    libraries_information = {}
     basespace_library_information = {}
     basespace_library = []
 
@@ -555,9 +535,9 @@ def add_basespace_library(request):
     if request.method == "POST" and request.POST["action"] == "addNewBasespaceLibrary":
         new_basespace_library_name = request.POST["newBasespaceLibrary"]
 
-        ## Check that library kit is not already defined in database
+        # Check that library kit is not already defined in database
         if LibraryKit.objects.filter(
-            libraryName__icontains=new_basespace_library_name
+            library_name__icontains=new_basespace_library_name
         ).exists():
             return render(
                 request,
@@ -651,13 +631,13 @@ def add_collection_index_kit(request):
             )
 
     if request.method == "POST" and request.POST["action"] == "addCollectionIndexKit":
-        ## fetch the file from user form and  build the file name  including
-        ## the date and time on now to store in database
+        # fetch the file from user form and  build the file name  including
+        # the date and time on now to store in database
 
         file_name = request.FILES["newCollectionIndexFile"].name
         saved_file = store_collection_kits_file(request.FILES["newCollectionIndexFile"])
 
-        ## get the libary name to check if it is already defined
+        # get the libary name to check if it is already defined
         if not check_collection_index_file_format(saved_file):
             os.remove(saved_file)
             return render(
@@ -706,7 +686,7 @@ def add_collection_index_kit(request):
         # Get the collection settings included in the file
         collection_settings = get_collection_settings(saved_file)
         new_collection_obj = store_collection_settings(collection_settings, file_name)
-        ## get the index name and index bases for the library
+        # get the index name and index bases for the library
         collection_index = get_index_values(saved_file)
         store_collection_indexes(collection_index, new_collection_obj)
 
@@ -778,10 +758,9 @@ def search_run(request):
             groups = Group.objects.get(name=wetlab_config.WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 allowed_all_runs = False
-            # return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
             else:
                 allowed_all_runs = True
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -795,9 +774,9 @@ def search_run(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    #############################################################
-    ## Search for runs that fullfil the input values
-    #############################################################
+    ########
+    # Search for runs that fullfil the input values
+    ########
     run_form_data = get_run_search_fields_form()
     error_message = ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == "POST" and (request.POST["action"] == "runsearch"):
@@ -816,7 +795,7 @@ def search_run(request):
         ):
             return render(request, "iSkyLIMS_wetlab/SearchRun.html")
 
-        ### check the right format of start and end date
+        # check the right format of start and end date
         if start_date != "":
             if not check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
@@ -834,7 +813,7 @@ def search_run(request):
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
-        ### Get all the available runs to start the filtering
+        # Get all the available runs to start the filtering
         if allowed_all_runs:
             runs_found = RunProcess.objects.all().order_by("run_date").reverse()
         else:
@@ -861,14 +840,14 @@ def search_run(request):
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
-        ### Get runs when run name is not empty
+        # Get runs when run name is not empty
         if run_name != "":
             if RunProcess.objects.filter(runName__iexact=run_name).exists():
-                run_name_found = RunProcess.objects.filter(runName__iexact=run_name)
+                run_name_found = RunProcess.objects.filter(run_name__iexact=run_name)
                 if len(run_name_found) == 1:
                     return redirect("display_run", run_id=run_name_found[0].pk)
-            if runs_found.filter(runName__icontains=run_name).exists():
-                runs_found = runs_found.filter(runName__icontains=run_name).order_by(
+            if runs_found.filter(run_name__icontains=run_name).exists():
+                runs_found = runs_found.filter(run_name__icontains=run_name).order_by(
                     "runName"
                 )
             else:
@@ -881,7 +860,7 @@ def search_run(request):
             sequencer_list = get_sequencer_names_from_platform(platform_name)
             if len(sequencer_list) > 0:
                 runs_found = runs_found.filter(
-                    usedSequencer__sequencerName__in=sequencer_list
+                    used_sequencer__sequencer_name__in=sequencer_list
                 )
             else:
                 return render(
@@ -889,12 +868,12 @@ def search_run(request):
                     "iSkyLIMS_wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
-        ### Check if state is not empty
+        # Check if state is not empty
         if run_state != "":
             s_state = RunStates.objects.get(runStateName__exact=run_state)
-            if runs_found.filter(state__runStateName__exact=s_state).exists():
+            if runs_found.filter(state__runS_state_name__exact=s_state).exists():
                 runs_found = runs_found.filter(
-                    state__runStateName__exact=s_state
+                    state__run_state_name__exact=s_state
                 ).order_by("runName")
             else:
                 return render(
@@ -902,9 +881,8 @@ def search_run(request):
                     "iSkyLIMS_wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
-        ### Check if start_date is not empty
+        # Check if start_date is not empty
         if start_date != "" and end_date != "":
-
             if runs_found.filter(run_date__range=(start_date, end_date)).exists():
                 runs_found = runs_found.filter(run_date__range=(start_date, end_date))
             else:
@@ -938,7 +916,7 @@ def search_run(request):
             return redirect("display_run", run_id=runs_found[0].pk)
 
         else:
-            ## collect the list of run that matches the run date
+            # collect the list of run that matches the run date
             run_list = []
             for run_found in runs_found:
                 run_list.append(
@@ -992,7 +970,6 @@ def search_project(request):
         user_name = request.POST["username"]
         sequencer_name = request.POST["sequencer"]
         run_state = request.POST["runstate"]
-        run_process_ids = []
         # check that some values are in the request if not return the form
         if (
             project_name == ""
@@ -1019,7 +996,7 @@ def search_project(request):
                 },
             )
 
-        ### check the right format of start and end date
+        # check the right format of start and end date
         if start_date != "":
             if not check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
@@ -1047,15 +1024,15 @@ def search_project(request):
         projects_found = Projects.objects.all()
 
         if project_name != "":
-            projects_found = projects_found.filter(projectName__icontains=project_name)
+            projects_found = projects_found.filter(project_name__icontains=project_name)
         if sequencer_name != "":
             run_objs = RunProcess.objects.filter(
-                usedSequencer__sequencerName__exact=sequencer_name
+                used_sequencer__sequencer_name__exact=sequencer_name
             )
-            projects_found = projects_found.filter(runProcess__in=run_objs)
+            projects_found = projects_found.filter(run_process__in=run_objs)
         if run_state != "":
-            run_objs = RunProcess.objects.filter(state__runStateName__exact=run_state)
-            projects_found = projects_found.filter(runProcess__in=run_objs)
+            run_objs = RunProcess.objects.filter(state__run_state_name__exact=run_state)
+            projects_found = projects_found.filter(run_process__in=run_objs)
         if user_name != "":
             # check if user has a shared user
             if user_name == request.user.username:
@@ -1067,12 +1044,12 @@ def search_project(request):
                 )
         if start_date != "" and end_date != "":
             projects_found = projects_found.filter(
-                generatedat__range=(start_date, end_date)
+                generate_dat__range=(start_date, end_date)
             )
         if start_date != "" and end_date == "":
-            projects_found = projects_found.filter(generatedat__gte=start_date)
+            projects_found = projects_found.filter(generate_dat__gte=start_date)
         if start_date == "" and end_date != "":
-            projects_found = projects_found.filter(generatedat__lte=end_date)
+            projects_found = projects_found.filter(generate_dat__lte=end_date)
         if len(projects_found) == 0:
             error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
             return render(
@@ -1113,7 +1090,6 @@ def search_project(request):
 def retry_error_run(request):
     # check user privileges
     if request.user.is_authenticated:
-
         try:
             groups = Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
@@ -1127,7 +1103,7 @@ def retry_error_run(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -1169,7 +1145,6 @@ def retry_error_run(request):
 def skip_cancel_situation(request):
     # check user privileges
     if request.user.is_authenticated:
-
         try:
             groups = Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
@@ -1183,7 +1158,7 @@ def skip_cancel_situation(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -1231,8 +1206,8 @@ def display_run(request, run_id):
     if groups not in request.user.groups.all():
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = get_allowed_user_for_sharing(request.user)
-        if Projects.objects.filter(runProcess__exact=run_id).exists():
-            projects = Projects.objects.filter(runProcess__exact=run_id)
+        if Projects.objects.filter(run_process__exact=run_id).exists():
+            projects = Projects.objects.filter(run_process__exact=run_id)
             allowed = False
             for project in projects:
                 if int(project.get_user_id()) in shared_user_ids:
@@ -1276,7 +1251,6 @@ def display_run(request, run_id):
 def last_run_by_sequencer(request):
     # check user privileges
     if request.user.is_authenticated:
-
         try:
             groups = Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
@@ -1290,7 +1264,7 @@ def last_run_by_sequencer(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -1336,7 +1310,7 @@ def incompleted_runs(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -1351,7 +1325,6 @@ def incompleted_runs(request):
         # redirect to login webpage
         return redirect("/accounts/login")
     if RunProcess.objects.all().exclude(state__runStateName="Completed").exists():
-
         display_incompleted_run = get_information_for_incompleted_run()
         return render(
             request,
@@ -1375,7 +1348,6 @@ def incompleted_runs(request):
 
 
 def check_user_access(request, project_found_id):
-
     groups = Group.objects.get(name=wetlab_config.WETLAB_MANAGER)
     # check if user belongs to WetlabManager . If true allow to see the page
     if groups not in request.user.groups.all():
@@ -1423,44 +1395,11 @@ def display_project(request, project_id):
         )
 
 
-"""
-@login_required
-def display_sample_in_run (request, sample_run_project_id):
-"""
-"""
-    Description:
-        The function will check if the requested sample id exists, then
-        it will call to get_info_sample_in_run function to collect all information
-    Input:
-        request     # contains the request dictionary sent by django
-        sample_id   # contains the sample id to display the information
-    Variables:
-        sample_data_information ={} # returned dictionary with the information
-                                to include in the web page
-        sample_found_id  # contains the object for the sample id
-    Functions:
-        get_info_sample_in_run (sample_found_id)
-    Return:
-        Return the different information depending on the execution:
-        -- Error page in case the sample id in the request does not exists.
-        -- sample_data_information with the information collected by get_info_sample_in_run()
-"""
-"""
-    if (SamplesInProject.objects.filter(pk=sample_run_project_id).exists()):
-        sample_found_obj = SamplesInProject.objects.get(pk=sample_run_project_id)
-        sample_data_information = get_info_sample_in_run (sample_found_obj)
-        return render(request, 'iSkyLIMS_wetlab/displaySampleInRun.html',{'display_one_sample': sample_data_information })
-    else:
-        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
-"""
-
-
 @login_required
 def display_collection_index(request, collection_index_id):
-
     if CollectionIndexKit.objects.filter(pk=collection_index_id).exists():
         collection_index_dict = get_collection_index_information(collection_index_id)
-        if collection_index_dict != False:
+        if collection_index_dict is not False:
             return render(
                 request,
                 "iSkyLIMS_wetlab/DisplayCollectionIndex.html",
@@ -1487,7 +1426,6 @@ def display_collection_index(request, collection_index_id):
 
 @login_required
 def search_collection_index_library(request):
-
     if request.method == "POST" and (
         request.POST["action"] == "searchcollectionindexkit"
     ):
@@ -1527,10 +1465,10 @@ def search_collection_index_library(request):
         collection_indexes = CollectionIndexKit.objects.all()
         if collection_index_kit_name != "":
             if collection_indexes.filter(
-                collectionIndexName__icontains=collection_index_kit_name
+                collection_index_name__icontains=collection_index_kit_name
             ).exists():
                 collection_indexes = collection_indexes.filter(
-                    collectionIndexName__icontains=collection_index_kit_name
+                    collection_index_name__icontains=collection_index_kit_name
                 )
                 if len(collection_indexes) == 1:
                     return redirect(
@@ -1546,9 +1484,9 @@ def search_collection_index_library(request):
                     {"error_message": error_message},
                 )
         if adapter_1 != "":
-            if collection_indexes.filter(adapter1__icontains=adapter_1).exists():
+            if collection_indexes.filter(adapter_1__icontains=adapter_1).exists():
                 collection_indexes = collection_indexes.filter(
-                    adapter1__icontains=adapter_1
+                    adapter_1__icontains=adapter_1
                 )
             else:
                 return render(
@@ -1557,9 +1495,9 @@ def search_collection_index_library(request):
                     {"not_found_matchs": "not_found_matchs"},
                 )
         if adapter_2 != "":
-            if collection_indexes.filter(adapter1__icontains=adapter_2).exists():
+            if collection_indexes.filter(adapter_1__icontains=adapter_2).exists():
                 collection_indexes = collection_indexes.filter(
-                    adapter2__icontains=adapter_2
+                    adapter_2__icontains=adapter_2
                 )
             else:
                 return render(
@@ -1573,19 +1511,19 @@ def search_collection_index_library(request):
             if index_name != "":
                 if collection_values.filter(
                     index_7_contains=index_name,
-                    collectionIndexKit_id__in=collection_indexes,
+                    collection_index_kit_id__in=collection_indexes,
                 ).exists():
                     collection_values = collection_values.filter(
                         index_7_contains=index_name,
-                        collectionIndexKit_id__in=collection_indexes,
+                        collection_index_kit_id__in=collection_indexes,
                     )
                 elif collection_values.filter(
                     index_5_contains=index_name,
-                    collectionIndexKit_id__in=collection_indexes,
+                    collection_index_kit_id__in=collection_indexes,
                 ).exists():
                     collection_values = collection_values.filter(
                         index_5_contains=index_name,
-                        collectionIndexKit_id__in=collection_indexes,
+                        collection_index_kit_id__in=collection_indexes,
                     )
                 else:
                     return render(
@@ -1601,12 +1539,12 @@ def search_collection_index_library(request):
                 if "I7" in index_found:
                     collection_values = collection_values.filter(
                         i_7_seq__icontains=sequence,
-                        collectionIndexKit_id__in=collection_indexes,
+                        collection_index_kit_id__in=collection_indexes,
                     )
                 elif "I5" in index_found:
                     collection_values = collection_values.filter(
                         i_5_seq__icontains=sequence,
-                        collectionIndexKit_id__in=collection_indexes,
+                        collection_index_kit_id__in=collection_indexes,
                     )
                 else:
                     return render(
@@ -1702,7 +1640,7 @@ def change_run_name(request, run_id):
                     "iSkyLIMS_wetlab/error_page.html",
                     {"content": ["Empty value is not allowed for the Run Name "]},
                 )
-            if RunProcess.objects.filter(runName__exact=new_run_name).exists():
+            if RunProcess.objects.filter(run_name__exact=new_run_name).exists():
                 return render(
                     request,
                     "iSkyLIMS_wetlab/error_page.html",
@@ -1969,33 +1907,33 @@ def stats_per_time(request):
     if request.method == "POST":
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
-        ### check the right format of start and end date
+        # check the right format of start and end date
         if start_date != "" and not check_valid_date_format(start_date):
-            errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
+            error_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "iSkyLIMS_wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
         if end_date != "" and not check_valid_date_format(start_date):
-            errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
+            error_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "iSkyLIMS_wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
-        #############################################################
-        #### searching for runs were match the state and start and end date
-        #############################################################
+        ########
+        # searching for runs were match the state and start and end date
+        ########
         if start_date != "" and end_date != "":
             stat_per_time = {}
             if RunProcess.objects.filter(
                 state__runStateName="Completed", run_date__range=(start_date, end_date)
             ).exists():
                 run_stats_list = RunProcess.objects.filter(
-                    state__runStateName="Completed",
+                    state__run_state_name="Completed",
                     run_date__range=(start_date, end_date),
                 ).order_by("run_date")
 
                 run_list = {}
                 run_date_name = {}
-                ## get the run names that matches de conditions
+                # get the run names that matches de conditions
                 for run in run_stats_list:
                     # run_list.append([run.get_run_name(),run.id])
                     run_date = str(run.run_date)
@@ -2013,8 +1951,8 @@ def stats_per_time(request):
                 stat_per_time["number_of_runs"] = number_of_runs
                 stat_per_time["dates"] = start_date + " and  " + end_date
                 #
-                ############################################################
-                ### define the graphics for found run in the period
+                ########
+                # define the graphics for found run in the period
                 heading = (
                     "Runs found during the period "
                     + str(start_date)
@@ -2045,26 +1983,26 @@ def stats_per_time(request):
                     data_source,
                 ).render()
 
-                ####### end creation run preparation graphics
+                # end creation run preparation graphics
 
-                #############################################################
-                ### collect statistics for Projects
+                ########
+                # collect statistics for Projects
                 if RunProcess.objects.filter(
-                    state__runStateName__exact="Completed",
+                    state__run_state_name__exact="Completed",
                     run_completed_date__range=(start_date, end_date),
                 ).exists():
                     run_objs = RunProcess.objects.filter(
-                        state__runStateName__exact="Completed",
+                        state__run_state_name__exact="Completed",
                         run_completed_date__range=(start_date, end_date),
                     )
-                    if Projects.objects.filter(runProcess__in=run_objs).exists():
+                    if Projects.objects.filter(run_process__in=run_objs).exists():
                         project_found_list = Projects.objects.filter(
-                            runProcess__in=run_objs
+                            run_process__in=run_objs
                         )
 
                         project_list = {}
                         project_date_name = {}
-                        ## get the project names that matches de conditions
+                        # get the project names that matches de conditions
                         for project in project_found_list:
                             project_run_date = str(project.project_run_date)
                             if project_run_date in project_date_name:
@@ -2085,8 +2023,8 @@ def stats_per_time(request):
                         stat_per_time["number_of_projects"] = number_of_projects
                         stat_per_time["dates"] = start_date + " and  " + end_date
                         #
-                        ############################################################
-                        ### define the graphics for found run in the period
+                        ########
+                        # define the graphics for found run in the period
                         heading = (
                             "Projects found during the period "
                             + str(start_date)
@@ -2117,9 +2055,9 @@ def stats_per_time(request):
                             data_source,
                         ).render()
 
-                ####### end creation run preparation graphics
-                #############################################################
-                ### collect statistics for unkow Barcodes
+                # end creation run preparation graphics
+                ########
+                # collect statistics for unkow Barcodes
                 # top_unbarcode_list = []
                 count_unbarcode = {}
 
@@ -2133,14 +2071,14 @@ def stats_per_time(request):
                             runprocess_id=run, lane_number__exact=lane_number
                         )
                         for lane_unbarcode in lane_unbarcodes:
-                            if not lane_number in count_unbarcode:
+                            if lane_number not in count_unbarcode:
                                 count_unbarcode[lane_number] = {}
                             (
                                 unbarcode_num,
                                 unknown_barcode,
                             ) = lane_unbarcode.get_unknow_barcodes().split(";")
                             value_unbarcode = int(unbarcode_num.replace(",", ""))
-                            if not unknown_barcode in count_unbarcode[lane_number]:
+                            if unknown_barcode not in count_unbarcode[lane_number]:
                                 count_unbarcode[lane_number][
                                     unknown_barcode
                                 ] = value_unbarcode
@@ -2148,7 +2086,7 @@ def stats_per_time(request):
                                 count_unbarcode[lane_number][
                                     unknown_barcode
                                 ] += value_unbarcode
-                            if not unknown_barcode in top_unbarcode_all_runs:
+                            if unknown_barcode not in top_unbarcode_all_runs:
                                 top_unbarcode_all_runs[
                                     unknown_barcode
                                 ] = value_unbarcode
@@ -2166,7 +2104,6 @@ def stats_per_time(request):
                     )
                     chart_number = "chart-" + str(lane_number)
                     render_number = "ex" + str(lane_number)
-                    lane_chart = "lane_chart" + str(lane_number)
                     data_source = graphic_for_unbarcodes(
                         heading, themes[lane_number], count_unbarcode[lane_number]
                     )
@@ -2195,8 +2132,8 @@ def stats_per_time(request):
                 )
                 stat_per_time["unknow_pie3d"] = unknow_pie3d.render()
 
-                #########################
-                ### Insert information for disk space utilization
+                ####
+                # Insert information for disk space utilization
                 run_disk_utilization = {}
                 for run_disk_stats in run_stats_list:
                     run_name_disk = run_disk_stats.runName
@@ -2267,13 +2204,12 @@ def stats_per_time(request):
 def get_list_of_libraries_values(
     library_found, q30_comparations, mean_comparations, n_bases_comparations
 ):
-
     for project_to_compare in library_found:
         library_to_compare_name = project_to_compare.get_index_library_name()
         # project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [], []
 
-        ### This line must changed to handle project name is reused in several runs
+        # This line must changed to handle project name is reused in several runs
         run_used_in_project = project_to_compare.runProcess.all().last()
 
         run_param_obj = RunningParameters.objects.get(runName_id=run_used_in_project)
@@ -2285,7 +2221,7 @@ def get_list_of_libraries_values(
                 lane_in_project = StatsLaneSummary.objects.get(
                     project_id=project_to_compare, lane__exact=lane_number
                 )
-            except:
+            except Exception:
                 continue
             (
                 q_30_value,
@@ -2349,7 +2285,7 @@ def stats_per_library(request):
                 {"error_message": error_message},
             )
 
-        ### check the right format of start and end date
+        # check the right format of start and end date
         if start_date != "":
             if not check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
@@ -2369,12 +2305,12 @@ def stats_per_library(request):
 
         if library_kit_name != "":
             if Projects.objects.filter(
-                libraryKit__icontains=library_kit_name,
-                runProcess__state__runStateName__exact="Completed",
+                library_kit__icontains=library_kit_name,
+                run_process__state__run_state_name__exact="Completed",
             ).exists():
                 library_found = Projects.objects.filter(
-                    libraryKit__icontains=library_kit_name,
-                    runProcess__state__runStateName__exact="Completed",
+                    library_kit__icontains=library_kit_name,
+                    run_process__state__run_state_name__exact="Completed",
                 )
             else:
                 error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
@@ -2385,7 +2321,7 @@ def stats_per_library(request):
                 )
         else:
             library_found = Projects.objects.filter(
-                runProcess__state__runStateName__exact="Completed"
+                run_process__state__run_state_name__exact="Completed"
             )
         if start_date != "" and end_date != "":
             if library_found.filter(
@@ -2429,7 +2365,6 @@ def stats_per_library(request):
         #
         library_stats = {}
         projects_name_in_library = []
-        q_30_list, mean_q_list, yield_mb_list = [], [], []
         # Getting 1 library. Library could be in several projects. Information is collected per lane and by project
         # check if only 1 library kit matches the query
         library_names = {}
@@ -2550,9 +2485,9 @@ def stats_per_library(request):
             library_stats["library_name"] = library_name
             library_stats["project_names"] = projects_name_in_library
             #
-            ########################################################################
+            #########
             # set the data for the library under study
-            ########################################################################
+            #########
             q30_comparations, mean_comparations, n_bases_comparations = {}, {}, {}
             q30_comparations[library_name] = format(statistics.mean(q30_in_lib), ".2f")
             mean_comparations[library_name] = format(
@@ -2566,14 +2501,14 @@ def stats_per_library(request):
             if start_date == "" and end_date == "":
                 if (
                     Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed"
+                        runprocess_id__state__run_state_name__exact="Completed"
                     )
                     .exclude(libraryKit__exact=library_name)
                     .exists()
                 ):
                     libraries_to_compare = Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed"
-                    ).exclude(libraryKit__exact=library_name)
+                        runprocess_id__state__run_state_name__exact="Completed"
+                    ).exclude(library_kit__exact=library_name)
                 else:
                     error_in_library_to_compare = (
                         "No other library have been found for doing the comparison. "
@@ -2582,16 +2517,16 @@ def stats_per_library(request):
             if start_date != "" and end_date == "":
                 if (
                     Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed",
-                        generatedat__gte=start_date,
+                        runprocess_id__state__run_state_name__exact="Completed",
+                        generate_dat__gte=start_date,
                     )
-                    .exclude(libraryKit__exact=library_name)
+                    .exclude(library_kit__exact=library_name)
                     .exists()
                 ):
                     libraries_to_compare = Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed",
-                        generatedat__gte=start_date,
-                    ).exclude(libraryKit__exact=library_name)
+                        runprocess_id__state__run_state_name__exact="Completed",
+                        generate_dat__gte=start_date,
+                    ).exclude(library_kit__exact=library_name)
                 else:
                     error_in_library_to_compare = (
                         "No other library have been found for doing the comparison, with the starting date  "
@@ -2601,16 +2536,16 @@ def stats_per_library(request):
             if start_date == "" and end_date != "":
                 if (
                     Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed",
-                        generatedat__lte=end_date,
+                        runprocess_id__state__run_state_name__exact="Completed",
+                        generate_dat__lte=end_date,
                     )
-                    .exclude(libraryKit__exact=library_name)
+                    .exclude(library_kit__exact=library_name)
                     .exists()
                 ):
                     libraries_to_compare = Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed",
-                        generatedat__lte=end_date,
-                    ).exclude(libraryKit__exact=library_name)
+                        runprocess_id__state__run_state_name__exact="Completed",
+                        generate_dat__lte=end_date,
+                    ).exclude(library_kit__exact=library_name)
                 else:
                     error_in_library_to_compare = (
                         "No other library have been found for doing the comparison ending with  "
@@ -2627,9 +2562,9 @@ def stats_per_library(request):
                     .exists()
                 ):
                     libraries_to_compare = Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed",
-                        generatedat__range=(start_date, end_date),
-                    ).exclude(libraryKit__exact=library_name)
+                        runprocess_id__state__run_state_name__exact="Completed",
+                        generate_dat__range=(start_date, end_date),
+                    ).exclude(library_kit__exact=library_name)
                 else:
                     error_in_library_to_compare = (
                         "No other library have been found for doing the comparison for the start date  "
@@ -2651,7 +2586,6 @@ def stats_per_library(request):
                     run_param_obj = RunningParameters.objects.get(run_id=run_obj)
                     lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     for lane_number in range(1, lanes_in_sequencer + 1):
-
                         lane_in_project = StatsLaneSummary.objects.get(
                             project_id__exact=project_to_compare_id,
                             lane__exact=lane_number,
@@ -2772,14 +2706,14 @@ def stats_per_library(request):
             # get the library names that match with the searching criteria
             for library in library_found:
                 lib_name = library.get_index_library_name()
-                if not lib_name in libraries_found_name:
+                if lib_name not in libraries_found_name:
                     libraries_found_name.append(lib_name)
             #
             library_list_stats["library_names"] = libraries_found_name
             q30_comparations, mean_comparations, n_bases_comparations = {}, {}, {}
-            ###
+            #
             # get the data for displaying the libraries found in the form request
-            ###
+            #
             get_list_of_libraries_values(
                 library_found, q30_comparations, mean_comparations, n_bases_comparations
             )
@@ -2846,26 +2780,25 @@ def stats_per_library(request):
             )
             #
             library_list_stats["comp_n_bases_graphic"] = comp_mean_lib_graphic.render()
-            ###
-            # get the data for displaying the libraries found in the form request
-            ###
+            #
+            # get data for displaying the libraries found in the request form
+            #
             all_libraries = Projects.objects.filter(
-                runProcess__state__runStateName__exact="Completed"
+                run_process__state__run_state_name__exact="Completed"
             )
             if start_date != "" and end_date != "":
                 if all_libraries.filter(
-                    generatedat__range=(start_date, end_date)
+                    generate_dat__range=(start_date, end_date)
                 ).exists():
                     library_found = library_found.filter(
-                        generatedat__range=(start_date, end_date)
+                        generate_dat__range=(start_date, end_date)
                     )
             if start_date != "" and end_date == "":
-                if all_libraries.filter(generatedat__gte=start_date).exists():
-                    all_libraries = library_found.filter(generatedat__gte=start_date)
+                if all_libraries.filter(generate_dat__gte=start_date).exists():
+                    all_libraries = library_found.filter(generate_dat__gte=start_date)
             if start_date == "" and end_date != "":
-                if all_libraries.filter(generatedat__lte=end_date).exists():
-                    #
-                    all_libraries = library_found.filter(generatedat__lte=end_date)
+                if all_libraries.filter(generate_dat__lte=end_date).exists():
+                    all_libraries = library_found.filter(generate_dat__lte=end_date)
 
             q30_comparations, mean_comparations, n_bases_comparations = {}, {}, {}
             get_list_of_libraries_values(
@@ -2940,7 +2873,7 @@ def stats_per_library(request):
             count_libraries = {}
             for library_used in all_libraries:
                 lib_name = library_used.get_index_library_name()
-                if not lib_name in count_libraries:
+                if lib_name not in count_libraries:
                     count_libraries[lib_name] = 1
                 else:
                     count_libraries[lib_name] += 1
@@ -2987,7 +2920,7 @@ def annual_report(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -3026,7 +2959,7 @@ def annual_report(request):
         #
         uncompleted_run_in_year = RunProcess.objects.filter(
             run_date__year=year_selected
-        ).exclude(state__runStateName__exact="Completed")
+        ).exclude(state__run_state_name__exact="Completed")
         if len(completed_run_in_year) == 0 and len(uncompleted_run_in_year) == 0:
             return render(
                 request,
@@ -3068,7 +3001,7 @@ def annual_report(request):
         ] = graphic_completed_run.render()
 
         #
-        ### Collecting information from StatsRunSummary
+        # Collecting information from StatsRunSummary
         run_found_bin_summary_year = StatsRunSummary.objects.filter(
             stats_summary_run_date__year=year_selected, level__exact="Total"
         )
@@ -3222,7 +3155,7 @@ def monthly_report(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -3238,14 +3171,13 @@ def monthly_report(request):
         return redirect("/accounts/login")
 
     if request.method == "POST":
-
         input_value = request.POST["month_year_selected"]
         browser_used = request.META["HTTP_USER_AGENT"]
         if "Firefox" in browser_used:
             try:
                 datetime.datetime.strptime(input_value, "%m-%Y")
                 month_selected, year_selected = input_value.split("-")
-            except:
+            except Exception:
                 return render(
                     request,
                     "iSkyLIMS_wetlab/error_page.html",
@@ -3263,7 +3195,7 @@ def monthly_report(request):
             try:
                 datetime.datetime.strptime(input_value, "%Y-%m")
                 year_selected, month_selected = input_value.split("-")
-            except:
+            except Exception:
                 return render(
                     request,
                     "iSkyLIMS_wetlab/error_page.html",
@@ -3320,7 +3252,7 @@ def monthly_report(request):
         #
         uncompleted_run_in_year_month = RunProcess.objects.filter(
             run_date__year=year_selected, run_date__month=month_selected
-        ).exclude(state__runStateName__exact="Completed")
+        ).exclude(state__run_state_name__exact="Completed")
         if (
             len(completed_run_in_year_month) == 0
             and len(uncompleted_run_in_year_month) == 0
@@ -3389,7 +3321,6 @@ def monthly_report(request):
             else:
                 project_by_user[user_name] = [investigator.get_project_name()]
         for key, value in project_by_user.items():
-
             if len(value) == 1:
                 investigator_1_project[key] = value
             elif len(value) == 2:
@@ -3443,7 +3374,7 @@ def monthly_report(request):
             "pie_p_user_monthly_graphic"
         ] = pie_p_user_monthly_graphic.render()
 
-        ### Collecting information from StatsRunSummary
+        # Collecting information from StatsRunSummary
         run_found_bin_summary_month = StatsRunSummary.objects.filter(
             stats_summary_run_date__year=year_selected,
             stats_summary_run_date__month=month_selected,
@@ -3539,7 +3470,7 @@ def quarter_report(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_wetlab/error_page.html",
@@ -3608,12 +3539,12 @@ def quarter_report(request):
 
         #
         completed_run_in_quarter = RunProcess.objects.filter(
-            run_date__range=(start_date, end_date), state__runStateName="Completed"
+            run_date__range=(start_date, end_date), state__run_state_name="Completed"
         )
         #
         uncompleted_run_in_quarter = RunProcess.objects.filter(
             run_date__range=(start_date, end_date)
-        ).exclude(state__runStateName="Completed")
+        ).exclude(state__run_state_name="Completed")
         if len(completed_run_in_quarter) == 0 and len(uncompleted_run_in_quarter) == 0:
             return render(
                 request,
@@ -3657,7 +3588,7 @@ def quarter_report(request):
         ] = graphic_completed_run.render()
 
         #
-        ### Collecting information from StatsRunSummary
+        # Collecting information from StatsRunSummary
         run_found_bin_summary_quarter = StatsRunSummary.objects.filter(
             stats_summary_run_date__range=(start_date, end_date), level__exact="Total"
         )
@@ -3815,18 +3746,6 @@ def quarter_report(request):
         return render(request, "iSkyLIMS_wetlab/QuarterReport.html")
 
 
-"""
-def open_samba_connection ():
-
-    from smb.SMBConnection import SMBConnection
-    ##conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=True)
-    ##conn.connect('172.21.7.11', 445)
-    conn.connect(wetlab_config.SAMBA_IP_SERVER, 445)
-    return conn
-"""
-
-
 def get_size_dir(
     directory,
     conn,
@@ -3847,37 +3766,12 @@ def get_size_dir(
 
 
 def update_tables(request):
-    #### Update the run date for the projects. StatsBinRunRead and  StatsRunSummary
-    #### tables when they were not updated. It takes the run date from the run date
-    """
-    run_founds = RunProcess.objects.all()
-    for run in run_founds :
-        run_id = run.id
-        run_date = run.run_date
-        projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
-        for project in projects_to_update :
-            project.project_run_date = run_date
-            project.save()
-        stats_run_to_update = StatsRunSummary.objects.filter(runprocess_id__exact = run_id)
-        for stats_run in stats_run_to_update :
-            stats_run.stats_summary_run_date = run_date
-            stats_run.save()
-        stats_read_to_update = StatsBinRunRead.objects.filter(runprocess_id__exact = run_id)
-        for  stats_read in stats_read_to_update :
-            stats_read.stats_read_run_date = run_date
-            stats_read.save()
-    return render(request, 'iSkyLIMS_wetlab/info_page.html', {'content':['The tables have been updated']})
-    """
-    ### Update the disc space used of each run
-    ### It will connect to quibitka to get the size of the file for each run
-
-    # conn=open_samba_connection()
     if RunProcess.objects.filter(
-        state__runStateName="Completed", useSpaceImgMb=0
+        state__run_state_name="Completed", useSpaceImgMb=0
     ).exists():
         conn = open_samba_connection()
         run_list_be_updated = RunProcess.objects.filter(
-            state__runStateName="Completed", useSpaceImgMb=0
+            state__run_state_name="Completed", useSpaceImgMb=0
         )
         for run_be_updated in run_list_be_updated:
             run_id = run_be_updated.id
@@ -3957,12 +3851,11 @@ def update_tables(request):
 
 def update_tables_date(request):
     if RunProcess.objects.filter(
-        state__runStateName="Completed", run_finish_date=None
+        state__run_state_name="Completed", run_finish_date=None
     ).exists():
-        #
         conn = open_samba_connection()
         run_list_be_updated = RunProcess.objects.filter(
-            state__runStateName="Completed", run_finish_date=None
+            state__run_state_name="Completed", run_finish_date=None
         )
         for run_be_updated in run_list_be_updated:
             run_id = run_be_updated.id
@@ -3977,7 +3870,7 @@ def update_tables_date(request):
                 run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(
                     int(completion_attributes.create_time)
                 ).strftime("%Y-%m-%d %H:%M:%S")
-            except:
+            except Exception:
                 pass
             conversion_stats_file = os.path.join(
                 runID_value, "Data/Intensities/BaseCalls/Stats/", "ConversionStats.xml"
@@ -3990,7 +3883,7 @@ def update_tables_date(request):
                 run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(
                     int(conversion_attributes.create_time)
                 ).strftime("%Y-%m-%d %H:%M:%S")
-            except:
+            except Exception:
                 pass
             finish_process_date = StatsRunSummary.objects.filter(
                 runprocess_id__exact=run_id
@@ -4048,7 +3941,6 @@ def configuration_test(request):
         test_results["samba_connection"] = check_samba_connection()
 
         test_results["basic_checks_ok"] = "OK"
-        # if test_results['config_file']  and test_results['attr_files']  and test_results['database_access'] and test_results['samba_connection']:
         for result in test_results:
             if test_results[result] == "NOK":
                 test_results["basic_checks_ok"] = "NOK"
@@ -4083,7 +3975,6 @@ def configuration_test(request):
             )
         run_test_result = execute_test_for_testing_run(run_test_name, run_test_folder)
         run_test_result["run_test_name"] = run_test_name
-        logger = logging.getLogger(__name__)
         if "ERROR" in run_test_result:
             log_trace = []
             with open(
@@ -4107,13 +3998,13 @@ def configuration_test(request):
             )
     elif request.method == "POST" and request.POST["action"] == "deleteTestRun":
         if RunConfigurationTest.objects.filter(
-            runTestName__exact=request.POST["deleteRun"]
+            run_test_name__exact=request.POST["deleteRun"]
         ).exists():
             if RunProcess.objects.filter(
-                runName__exact=request.POST["deleteRun"]
+                run_name__exact=request.POST["deleteRun"]
             ).exists():
                 run_test_objs = RunProcess.objects.filter(
-                    runName__exact=request.POST["deleteRun"]
+                    run_name__exact=request.POST["deleteRun"]
                 )
                 for run_test_obj in run_test_objs:
                     delete_test_run(run_test_obj)
@@ -4130,7 +4021,7 @@ def configuration_test(request):
 
 @login_required
 def create_protocol(request):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -4192,7 +4083,7 @@ def create_protocol(request):
 
 @login_required
 def define_sample_projects(request):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -4245,7 +4136,7 @@ def define_sample_projects(request):
 
 
 def define_additional_kits(request, protocol_id):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -4264,7 +4155,6 @@ def define_additional_kits(request, protocol_id):
 
     additional_kits = define_table_for_additional_kits(protocol_id)
     if request.method == "POST" and request.POST["action"] == "defineAdditionalKits":
-
         recorded_additional_kits = set_additional_kits(request.POST, request.user)
         if len(recorded_additional_kits) == 0:
             return render(
@@ -4301,7 +4191,6 @@ def define_additional_kits(request, protocol_id):
 
 @login_required
 def display_sample_project(request, sample_project_id):
-
     samples_project_data = get_info_to_display_sample_project(sample_project_id)
     if "ERROR" in samples_project_data:
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
@@ -4351,8 +4240,7 @@ def display_protocol(request, protocol_id):
 
 @login_required
 def define_protocol_parameters(request, protocol_id):
-
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -4373,7 +4261,6 @@ def define_protocol_parameters(request, protocol_id):
         request.method == "POST"
         and request.POST["action"] == "define_protocol_parameters"
     ):
-
         recorded_prot_parameters = set_protocol_parameters(request)
 
         return render(
@@ -4412,7 +4299,6 @@ def add_commercial_kit(request):
 
     if request.method == "POST" and request.POST["action"] == "addCommercialKit":
         if get_commercial_kit_id(request.POST["kitName"]):
-
             return render(
                 request,
                 "iSkyLIMS_wetlab/addCommercialKit.html",
@@ -4492,7 +4378,7 @@ def record_samples(request):
         analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
         get_info_for_reprocess_samples : located at iSkyLIMS_core/utils/handling_samples.py
     """
-    ## Record new samples
+    # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
         sample_recorded = analyze_input_samples(request, __package__)
         # if no samples are in any of the options, displays the inital page
@@ -4529,10 +4415,8 @@ def record_samples(request):
             {"sample_recorded": sample_recorded},
         )
 
-    ## Request to reprocess the samples
+    # Request to reprocess the samples
     elif request.method == "POST" and request.POST["action"] == "reprocessSamples":
-        samples = {}
-
         to_be_reprocessed_ids = request.POST["invalidSamplesID"].split(",")
         reprocess_id = request.POST["sampleIDforAction"]
         json_data = json.loads(request.POST["reprocess_data"])
@@ -4549,7 +4433,6 @@ def record_samples(request):
             sample_recorded["reprocess_result"] = "False"
         else:
             if to_be_reprocessed_ids[0] == "":
-
                 return render(
                     request,
                     "iSkyLIMS_wetlab/recordSample.html",
@@ -4560,7 +4443,6 @@ def record_samples(request):
                 sample_recorded = get_info_for_reprocess_samples(
                     to_be_reprocessed_ids, next_to_be_process_id
                 )
-                sample_processed_id = to_be_reprocessed_ids.pop()
                 sample_recorded["invalid_samples_id"] = ",".join(to_be_reprocessed_ids)
                 sample_recorded["sample_id_for_action"] = next_to_be_process_id
                 sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
@@ -4571,6 +4453,8 @@ def record_samples(request):
                     {"sample_recorded": sample_recorded},
                 )
 
+        # NOT WORKING.This is not working so commented for now. require_to_update not defined anywhere.
+        """
         if len(require_to_update) > 0:
             for key, value in require_to_update.items():
                 if value == "newLibPreparation":
@@ -4585,14 +4469,15 @@ def record_samples(request):
                     pass
                 else:
                     continue
+        """
 
         return render(
             request,
             "iSkyLIMS_wetlab/recordSample.html",
-            {"reprocess_result": reprocess_result},
+            {"reprocess_result": sample_recorded["reprocess_result"]},
         )
 
-    ## display the form to show the samples in pre-defined state that user requested to complete
+    # display the form to show the samples in pre-defined state that user requested to complete
     elif (
         request.method == "POST"
         and request.POST["action"] == "select_samples_pre_defined"
@@ -4606,7 +4491,7 @@ def record_samples(request):
             {"sample_recorded": sample_recorded},
         )
 
-    ## Add the additional information related to the project
+    # Add the additional information related to the project
     elif request.method == "POST" and request.POST["action"] == "sampleprojectdata":
         sample_recorded = analyze_input_sample_project_fields(request.POST)
 
@@ -4627,7 +4512,7 @@ def record_samples(request):
                 "iSkyLIMS_wetlab/recordSample.html",
                 {"sample_recorded": sample_recorded},
             )
-    ## Load batch file
+    # Load batch file
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
         sample_information = prepare_sample_input_table(__package__)
         if "samplesExcel" in request.FILES:
@@ -4671,7 +4556,7 @@ def record_samples(request):
                     "successfuly_batch_load": "ok",
                 },
             )
-    ## Form to get the new samples
+    # Form to get the new samples
     else:
         sample_information = prepare_sample_input_table(__package__)
         return render(
@@ -4683,7 +4568,7 @@ def record_samples(request):
 
 @login_required
 def define_sample_projects_fields(request, sample_project_id):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -4823,7 +4708,7 @@ def modify_additional_kits(request, protocol_id):
 
 @login_required
 def modify_protocol_fields(request, protocol_id):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -4869,7 +4754,7 @@ def modify_protocol_fields(request, protocol_id):
 
 @login_required
 def modify_sample_project_fields(request, sample_project_id):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
 
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
@@ -4964,7 +4849,7 @@ def display_sample(request, sample_id):
         get_sample_in_project_obj_from_sample_name  # located at iSkyLIMS_wetlab/utils/sample_functions.py
     """
     sample_information = get_all_sample_information(sample_id, True)
-    if not "Error" in sample_information:
+    if "Error" not in sample_information:
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
         sample_information.update(get_additional_kits_used_in_sample(sample_id))
@@ -5056,7 +4941,7 @@ def handling_library_preparations(request):
             return render(
                 request,
                 "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
-                {"stored_lib_prep": stored_lib_prep},
+                {"stored_lib_prep": samples_in_lib_prep},
             )
         library_preparation_objs = create_library_preparation_instance(
             samples_in_lib_prep_protocol, request.user
@@ -5087,7 +4972,6 @@ def handling_library_preparations(request):
 
     # store the parameter library preparation protocol
     if request.method == "POST" and request.POST["action"] == "recordProtocolParamters":
-
         stored_params = analyze_and_store_input_param_values(request.POST)
         if "ERROR" in stored_params:
             error_message = stored_params["ERROR"]
@@ -5146,7 +5030,7 @@ def handling_library_preparations(request):
                     request,
                     "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
                     {
-                        "ERROR": user_id_list["ERROR"],
+                        "ERROR": user_id_in_s_sheet["ERROR"],
                         "samples_in_lib_prep": samples_in_lib_prep,
                     },
                 )
@@ -5174,7 +5058,6 @@ def handling_library_preparations(request):
         lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(
             sample_sheet_data, request.user, platform, configuration
         )
-        # stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
         display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
         display_sample_sheet[
             "lib_prep_user_sample_sheet"
@@ -5207,7 +5090,9 @@ def handling_library_preparations(request):
             {"stored_index": stored_index},
         )
 
-    if request.method == "POST" and request.POST["action"] == "libpreparationdefined":
+        # NOT WORKING. get_library_preparation_heading_for_samples does not exits.
+        """
+        if request.method == "POST" and request.POST["action"] == "libpreparationdefined":
         lib_prep_defined = request.POST.getlist("libpreparation")
         lib_protocols = get_protocol_from_library_id(lib_prep_defined[0])
         stored_lib_prep = get_library_preparation_heading_for_samples(
@@ -5218,8 +5103,8 @@ def handling_library_preparations(request):
             "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
             {"stored_lib_prep": stored_lib_prep},
         )
+        """
 
-        # return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
     if request.method == "POST" and request.POST["action"] == "assignAdditionalKits":
         lib_prep_ids = request.POST.getlist("libpreparation")
         additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
@@ -5248,7 +5133,6 @@ def handling_library_preparations(request):
             {"stored_additional_kits": stored_additional_kits},
         )
     else:
-
         return render(
             request,
             "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
@@ -5301,7 +5185,7 @@ def handling_molecules(request):
             )
             molecule_recorded["molecule_ids"] += "," + request.POST["molecule_ids"]
         if "incomplete_sample_ids" in molecule_recorded:
-            ## collect the information to select in the option fields
+            # collect the information to select in the option fields
             molecule_recorded.update(
                 get_table_record_molecule(
                     molecule_recorded["incomplete_sample_ids"], __package__
@@ -5325,19 +5209,12 @@ def handling_molecules(request):
                 "show_molecule_parameters": show_molecule_parameters,
             },
         )
-        #     added_molecule_protocol_parameters, sample_updated_list = add_molecule_protocol_parameters(request)
-        # if 'pending' in request.POST :
-        # molecules = request.POST['pending'].split(',')
-        # show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)
-        # return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters, 'show_molecule_parameters':show_molecule_parameters})
-        # else:
-        # return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
 
     elif (
         request.method == "POST" and request.POST["action"] == "selectedOwnerMolecules"
     ):
         # If no samples are selected , call again this function to display again the sample list
-        if not "molecules" in request.POST:
+        if "molecules" not in request.POST:
             return redirect("handling_molecules")
         molecules = request.POST.getlist("molecules")
         # Set to true to reuse the html Code
@@ -5427,7 +5304,6 @@ def repeat_library_preparation(request):
         request.method == "POST"
         and request.POST["action"] == "repeat_library_preparation"
     ):
-        lib_prep_id = request.POST["lib_prep_id"]
         molecule_code_id = request.POST["molecule_code_id"]
         sample_id = request.POST["sample_id"]
         result = analyze_reprocess_data(
@@ -5488,7 +5364,6 @@ def repeat_pool(request):
     analyze_reprocess_data  : located at utils/sample_functions.py
     """
     if request.method == "POST" and request.POST["action"] == "repeat_pool":
-
         lib_prep_obj = get_lib_prep_obj_from_id(request.POST["lib_prep_id"])
         lib_prep_code_id = lib_prep_obj.get_lib_prep_code()
         molecule_code_id = lib_prep_obj.get_molecule_code_id()
@@ -5563,7 +5438,7 @@ def search_sample(request):
                     ]
                 },
             )
-        ### check the right format of start and end date
+        # check the right format of start and end date
 
         if start_date != "" and not check_valid_date_format(start_date):
             return render(
@@ -5589,7 +5464,7 @@ def search_sample(request):
                     ]
                 },
             )
-        ### Get projects when sample name is not empty
+        # Get projects when sample name is not empty
         sample_list = search_samples(
             sample_name, user_name, sample_state, start_date, end_date
         )
@@ -5668,10 +5543,9 @@ def set_molecule_values(request):
     elif (
         request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
     ):
-
         molecule_recorded = record_molecules(request)
 
-        if not "heading" in molecule_recorded:
+        if "heading" not in molecule_recorded:
             samples = request.POST["samples"].split(",")
             molecule_protocol = get_table_record_molecule(samples, __package__)
             molecule_protocol["data"] = molecule_recorded["incomplete_molecules"]
@@ -5748,177 +5622,9 @@ def set_molecule_values(request):
     return render(request, "iSkyLIMS_wetlab/setMoleculeValues.html", {})
 
 
-"""   Replaced by handling_library_preparations
-@login_required
-def set_library_preparation(request):
-
-    if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
-        #protocol = request.POST['lib_protocols']
-        #single_paired = request.POST['singlePairedEnd']
-        #read_length = request.POST['readlength']
-        extension_file = '.csv'
-        reg_user = request.user.username
-        stored_file , file_name = store_user_input_file(request.FILES['importsamplesheet'], extension_file)
-        samples_in_s_sheet = get_samples_in_sample_sheet(stored_file)
-        not_defined_samples = []
-        not_allowed_lib_prep = []
-        # Check if samples inside sample sheet file are valid to add the library preparation data
-        for sample in samples_in_s_sheet['sample_names']:
-            sample_obj = get_sample_instance (sample, reg_user)
-            if not sample_obj :
-                not_defined_samples.append(sample)
-                continue
-
-            if LibraryPreparation.objects.filter(sample_id = sample_obj , libPrepState__libPrepState__exact = 'Defined').exists():
-                not_allowed_lib_prep.append(sample)
-
-        if (not_defined_samples or not_allowed_lib_prep):
-            not_defined_samples_str, not_allowed_lib_prep_str = '' , ''
-            if not_defined_samples:
-                not_defined_samples_str = 'Samples not defined: ' + ', '.join(not_defined_samples)
-            if not_allowed_lib_prep:
-                not_allowed_lib_prep_str = 'Samples in wrong state : ' + ', '.join(not_allowed_lib_prep)
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':[not_defined_samples_str , not_allowed_lib_prep_str ]})
-
-
-
-        #index_adapters = get_indexes_adapters (stored_file)
-        if not CollectionIndexKit.objects.filter(collectionIndexName__iexact = index_adapters).exists():
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['Collection Index Kit ' , index_adapters , 'is not defined' ]})
-
-        library_prep_workflow = get_index_library_name(stored_file)
-        adapter1, adapter2 = get_adapters(stored_file)
-        assay = get_assay_from_file (stored_file)
-        # store user sample sheet in database
-        #user_sample_sheet_data = {}
-        #stored_lib_prep = {}
-        #stored_lib_prep['data'] = []
-
-
-        extracted_data_list = extract_sample_data (samples_in_s_sheet)
-        # Check if exists duplicate index in sample sheet
-        duplicate_index = find_duplicate_index(extracted_data_list)
-        if duplicate_index:
-            detail_description = {}
-            detail_description ['heading'] = ['Index', 'Samples']
-            detail_description['information'] =  duplicate_index
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['Found some samples, has the same index' ],
-                'detail_description': detail_description })
-
-
-        stored_lib_prep = prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list,
-                                    file_name, assay, adapter1, adapter2)
-
-        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
-
-    elif request.method == 'POST' and request.POST['action'] == 'addLibPrepParam':
-
-        if  'lib_prep_in_list' in request.POST:
-            lib_prep_ids = request.POST.getlist('lib_prep_id')
-            if len('lib_prep_in_list') == 1:
-                lib_prep_ids = list(request.POST['lib_prep_id'])
-        else:
-            lib_prep_ids = request.POST['lib_prep_id'].split(',')
-        stored_lib_prep ={}
-        stored_lib_prep['data'] =[]
-
-        protocol_obj = LibraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
-        parameter_heading = get_protocol_parameters(protocol_obj)
-        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
-        for lib_id in lib_prep_ids:
-            library_preparation_obj = LibraryPreparation.objects.get(pk = lib_id)
-            data = ['']*length_heading
-            data[0] = library_preparation_obj.get_sample_name()
-            data[1] = library_preparation_obj.get_lib_prep_code()
-            #data[2] = library_preparation_obj.get_collection_index_kit()
-
-            stored_lib_prep['data'].append(data)
-        stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_ids)
-        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
-        stored_lib_prep['par_heading'] = parameter_heading
-        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
-        register_user_obj = User.objects.get(username__exact = request.user.username)
-        stored_lib_prep['reagents_kits'] = get_lot_commercial_kits(register_user_obj, protocol_obj)
-
-        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
-
-    elif request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
-
-        stored_params = analyze_input_param_values (request)
-
-        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_params':stored_params})
-
-    elif request.method == 'POST' and request.POST['action'] == 'addLibraryProtocol':
-        if  'molecules_in_list' in request.POST:
-            molecules = request.POST.getlist('molecules')
-        else:
-            molecules = request.POST['molecules'].split(',')
-        prot_lib_json_data = json.loads(request.POST['protocol_data'])
-        heading_in_excel = request.POST['heading_in_excel'].split(',')
-
-
-        for i in range(len(molecules)) :
-            valid_molecules = []
-            protocol_name = prot_lib_json_data[i][heading_in_excel.index('Protocol used')]
-            if protocol_name == '':
-                continue
-            if not Protocols.objects.filter(name__exact = protocol_name).exists():
-                continue
-            protocol_obj = Protocols.objects.get(name__exact = protocol_name)
-            if not ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj).exists():
-                continue
-            valid_molecules.append(molecules[i])
-            prot_lib_parameters = ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj)
-
-"""
-
-
-@login_required
-def set_library_values(request):
-    fix_headings = ["DNA Code ID", "Protocol", "Extraction Kit"]
-
-    if request.method == "POST" and request.POST["action"] == "continueWithDNA":
-        lib_preparation_data = {}
-    else:
-        register_user = request.user.username
-        grouped_samples_obj = get_samples_for_library_definition(register_user)
-        s_list = []
-        all_sample_list = []
-        display_list = {}
-
-        for key in grouped_samples_obj.keys():
-            s_list = []
-            for sample in grouped_samples_obj[key]:
-                s_info = sample.get_sample_definition_information().split(";")
-                s_info.append(str(sample.pk))
-                s_list.append(s_info)
-            all_sample_list.append(s_list)
-
-        display_list["lib_kits"] = get_available_lib_kit(register_user)
-
-        display_list["list_of_samples"] = all_sample_list
-        display_list["heading"] = [
-            "Registered date ",
-            "Sample Code ID",
-            "Type",
-            "DNA/RNA",
-            "Protocol",
-            "Library Kit",
-        ]
-
-        return render(
-            request,
-            "iSkyLIMS_wetlab/setLibraryValues.html",
-            {"display_list": display_list},
-        )
-
-
 @login_required
 def create_pool(request):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render(
@@ -5980,7 +5686,7 @@ def create_new_run(request):
 
     if request.method == "POST" and request.POST["action"] == "createNewRun":
         display_pools_for_run = display_available_pools()
-        if not "poolID" in request.POST:
+        if "poolID" not in request.POST:
             error_message = wetlab_config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
             return render(
                 request,
@@ -6016,7 +5722,7 @@ def create_new_run(request):
     elif request.method == "POST" and request.POST["action"] == "continueWithRun":
         run_id = request.POST["run_ids"]
         experiment_name = get_experiment_name(run_id)
-        pool_objs = LibraryPool.objects.filter(runProcess_id__exact=run_id)
+        pool_objs = LibraryPool.objects.filter(run_process_id__exact=run_id)
         pool_ids = []
         for pool in pool_objs:
             pool_ids.append(pool.get_id())
@@ -6066,19 +5772,12 @@ def create_new_run(request):
                     "ERROR": projects_objs["ERROR"],
                 },
             )
-        ## store data in runProcess table, run is in pre-recorded state
-        # center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-        # center_requested_by = Center.objects.get(pk = center_requested_id)
-
-        # update_run_with_sample_sheet(request.POST['run_process_id'], run_data['sample_sheet'])
-
-        # run_obj = run_data['run_obj']
 
         run_obj.set_run_state("Recorded")
 
         sample_sheet_name = store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
-        pools_obj = LibraryPool.objects.filter(runProcess_id=run_obj)
+        pools_obj = LibraryPool.objects.filter(run_process_id=run_obj)
 
         for pool_obj in pools_obj:
             pool_obj.set_pool_state("Used")
