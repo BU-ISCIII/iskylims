@@ -1145,7 +1145,7 @@ class libPreparationUserSampleSheetManager(models.Manager):
         else:
             try:
                 collection_index_kit_id = CollectionIndexKit.objects.filter(
-                    collectionIndexName__exact=user_sample_sheet_data["index_adapters"]
+                    collection_index_name__exact=user_sample_sheet_data["index_adapters"]
                 ).last()
             except Exception:
                 collection_index_kit_id = None
@@ -1266,7 +1266,7 @@ class PoolStates(models.Model):
 class LibraryPoolManager(models.Manager):
     def create_lib_pool(self, pool_data):
         platform_obj = SequencingPlatform.objects.filter(
-            platformName__exact=pool_data["platform"]
+            platform_name__exact=pool_data["platform"]
         ).last()
         new_library_pool = self.create(
             register_user=pool_data["registerUser"],
@@ -1351,7 +1351,7 @@ class LibraryPool(models.Model):
         return self.run_process_id
 
     def set_pool_state(self, state):
-        self.pool_state = PoolStates.objects.get(poolstate__exact=state)
+        self.pool_state = PoolStates.objects.get(pool_state__exact=state)
         self.save()
 
     def update_number_samples(self, number_s_in_pool):
@@ -1389,7 +1389,7 @@ class libPrepareManager(models.Manager):
         molecule_obj = MoleculePreparation.objects.get(
             pk__exact=lib_prep_data["molecule_id"]
         )
-        lib_state_obj = LibPrepareStates.objects.get(libPrepState__exact="Defined")
+        lib_state_obj = LibPrepareStates.objects.get(lib_prep_state__exact="Defined")
         new_lib_prep = self.create(
             register_user=register_user_obj,
             molecule_id=molecule_obj,
