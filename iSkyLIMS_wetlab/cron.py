@@ -5,7 +5,7 @@ from django.conf import settings
 import os
 import traceback
 from iSkyLIMS_wetlab import wetlab_config
-from .utils.update_run_state import search_update_new_runs, handle_not_completed_run
+from .utils.crontab_update_run_state import search_update_new_runs, handle_not_completed_run
 
 from .utils.common import open_log
 
@@ -117,7 +117,7 @@ def delete_invalid_run():
         days=int(wetlab_config.RETENTION_TIME)
     )
     run_found_for_deleting = RunProcess.objects.filter(
-        state__runStateName="Pre-Recorded", generatedat__lte=date_for_removing
+        state__run_state_name="Pre-Recorded", generatedat__lte=date_for_removing
     )
 
     for run_found in run_found_for_deleting:
