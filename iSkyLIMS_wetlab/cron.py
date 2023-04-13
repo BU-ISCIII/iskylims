@@ -120,7 +120,7 @@ def delete_invalid_run():
         days=int(wetlab_config.RETENTION_TIME)
     )
     run_found_for_deleting = RunProcess.objects.filter(
-        state__run_state_name="Pre-Recorded", generatedat__lte=date_for_removing
+        state__run_state_name="Pre-Recorded", generate_dat__lte=date_for_removing
     )
 
     for run_found in run_found_for_deleting:
