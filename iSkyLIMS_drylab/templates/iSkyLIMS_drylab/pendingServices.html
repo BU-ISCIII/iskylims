@@ -39,7 +39,9 @@
                     <div class="col-sm-12">
                         <div class="tab">
                             {% for key, values in pending_services.data.items %}
+                                {% if values != "" %}
                                 <button class="tablinks2" onclick="opentabinsidetab(event, '{{key}}')">{{key}} Services</button>
+                                {% endif %}
                             {% endfor %}
 
                             {% comment %} <button class="tablinks2" onclick="opentabinsidetab(event, 'queued')">Services in Queued</button>
@@ -48,7 +50,7 @@
                             <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicUnitServices')">Pending per Unit</button>
                         </div> <!--  end tabs -->
                         {% for key, values in pending_services.data.items %}
-                            <div id={{key}} class="tabcontent2">
+                            <div id="{{key}}" class="tabcontent2">
                                 <div class="row row-space-2 margin-b-4">
                                     <div class="col-sm-11">  <!-- first column with list of pending services in state Recorded and Approved -->
                                         <div class="panel panel-default">
@@ -70,11 +72,15 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% for s_id, serv, user, c_date, r_id, res, handle, q_date, e_date  in values %}
+                                                                {% for s_id, serv, user, c_date, res, handle, q_date, e_date  in values %}
                                                                     <tr>
                                                                             <td><a href="/drylab/display_service={{ s_id }}">{{ serv }}</a> </td>
                                                                             <td>{{user}}</td>
                                                                             <td>{{c_date}}</td>
+                                                                            <td>{{res}}</td>
+                                                                            <td>{{handle}}</td>
+                                                                            <td>{{q_date}}</td>
+                                                                            <td>{{e_date}}</td>
                                                                     </tr>
                                                                 {% endfor %}
                                                             </tbody>
@@ -203,9 +209,10 @@
                             </div> <!--// end col-sm-12  In Progress  pending services  -->
                             </div> <!--// end row -->
                         </div><!-- // end of tab inprogress Services -->
+                        {% endcomment %}
                     </div> <!--// end col-sm-12  -->
                 </div><!-- // end of tab pending_services -->
- {% endcomment %}
+ 
                 <div id="my_pendings" class="tabcontent">
 
                     {% if not user_pending_services.heading_in_queued  and not user_pending_services.heading_in_progress %}

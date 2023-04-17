@@ -52,12 +52,12 @@ def allow_to_service_update_state(resolution_obj, new_state):
     service_obj = resolution_obj.get_service_obj()
     if (
         Resolution.objects.filter(resolutionServiceID=service_obj)
-        .exclude(resolutionState__resolutionStateName__exact="Queued")
+        .exclude(resolutionState__state_value__exact="Queued")
         .exists()
     ):
         all_resolution_objs = Resolution.objects.filter(
             resolutionServiceID=service_obj
-        ).exclude(resolutionState__resolutionStateName__exact="Queued")
+        ).exclude(resolutionState__state_value__exact="Queued")
         avail_services_handled = []
         for all_resolution_obj in all_resolution_objs:
             if new_state == "delivered":

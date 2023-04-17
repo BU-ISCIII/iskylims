@@ -691,7 +691,7 @@ class Resolution(models.Model):
         resolution_info.append(self.resolutionPdfFile)
 
         return resolution_info
-    """
+
     def get_information_for_pending_resolutions(self):
         if self.resolutionOnQueuedDate is None:
             on_queued_date = "Not defined"
@@ -713,7 +713,7 @@ class Resolution(models.Model):
         data.append(on_queued_date)
         data.append(on_estimated_date)
         return data
-    """
+
     def get_service_obj(self):
         return self.resolutionServiceID
 
