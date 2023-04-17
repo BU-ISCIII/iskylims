@@ -56,7 +56,7 @@
         "state_value": "delivered",
         "state_display": "Delivered",
         "description": "Service wascompleted and results were sent to the user",
-        "show_in_stats": true
+        "show_in_stats": false
     }
 },
 {
