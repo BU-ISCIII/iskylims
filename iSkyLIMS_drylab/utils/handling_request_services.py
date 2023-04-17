@@ -254,7 +254,7 @@ def get_data_for_service_confirmation(service_requested):
     service = Service.objects.filter(
         serviceRequestNumber__exact=service_requested
     ).last()
-    service_number, center = service.get_service_name_id()
+    service_number, center = service.get_service_name_and_center()
     information["service_number"] = service_number
     information["requested_date"] = service.get_service_creation_time()
     information["nodes"] = service.serviceAvailableService.all()
@@ -788,7 +788,9 @@ def get_service_information(service_id, service_manager):
                 execution_time = (delivery_date - in_progress_date).days
                 dates.append(["Execution time", execution_time])
     display_service_details["calculation_dates"] = dates
-
+    # Allow that service could set on hold if state is other than delivery
+    if display_service_details["state"].lower() != "delivered":
+        display_service_details["allowed_waiting_info"] = "allowed"
     return display_service_details
 
 
@@ -936,6 +938,23 @@ def send_service_creation_confirmation_email(email_data):
         return drylab_config.ERROR_UNABLE_TO_SEND_EMAIL
     return "OK"
 
+
+def set_service_waiting_for_user(service_id):
+    """
+    Description:
+        Function set the service to waiting info for user
+    Input:
+        service_id
+    Output:
+        Return service_name or None if no service_id is defined
+    """
+    service_obj = get_service_obj_from_id(service_id)
+    if service_obj is not None:
+        service_obj.update_service_state("waiting_information")
+        return service_obj.get_service_request_number()
+    return None
+        
+    
 
 def stored_samples_for_sequencing_request_service(form_data, new_service):
     """
