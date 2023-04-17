@@ -318,8 +318,12 @@ def get_pending_services_information():
         pending_services_details
     """
     # pending_services_details = {}
-    stat_services = list(ServiceState.objects.filter(show_in_stats=True).values_list("state_display",flat=True))
-    # fileds_to_show = ["serviceOnApprovedDate"] 
+    stat_services = list(
+        ServiceState.objects.filter(show_in_stats=True).values_list(
+            "state_display", flat=True
+        )
+    )
+    # fileds_to_show = ["serviceOnApprovedDate"]
     """
         variable_column = 'serviceOnApprovedDate'
         search_type = 'contains'
@@ -333,7 +337,9 @@ def get_pending_services_information():
     pending_services_graphics = {}
     for stat_service in stat_services:
         info_for_stat_service[stat_service] = []
-        service_objs = Service.objects.filter(service_state__state_display__exact=stat_service).order_by("-serviceCreatedOnDate")
+        service_objs = Service.objects.filter(
+            service_state__state_display__exact=stat_service
+        ).order_by("-serviceCreatedOnDate")
         number_of_services[stat_service] = len(service_objs)
         for service_obj in service_objs:
             # fetch service id and name
@@ -345,14 +351,16 @@ def get_pending_services_information():
             service_data.append(service_obj.get_service_creation_time())
             # fetch latest resolution for the service
             if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
-                resolution_obj = Resolution.objects.filter(resolutionServiceID=service_obj).last()
+                resolution_obj = Resolution.objects.filter(
+                    resolutionServiceID=service_obj
+                ).last()
                 service_data.append(resolution_obj.get_resolution_number())
                 service_data.append(resolution_obj.get_resolution_handler_user())
                 service_data.append(resolution_obj.get_resolution_on_queued_date())
                 service_data.append(resolution_obj.get_resolution_estimated_date())
             else:
                 # set empty values when no resolution are defined for service
-                service_data += ["--" , "--", "--", "--"]
+                service_data += ["--", "--", "--", "--"]
             info_for_stat_service[stat_service].append(service_data)
             # calculate the number of services per center
             unit_req_serv = service_obj.get_service_request_center_name()
@@ -361,7 +369,7 @@ def get_pending_services_information():
             if stat_service not in pending_services_per_unit[unit_req_serv]:
                 pending_services_per_unit[unit_req_serv][stat_service] = 0
             pending_services_per_unit[unit_req_serv][stat_service] += 1
-            
+
         pending_services_details[stat_service] = info_for_stat_service
     pending_services_details["data"] = info_for_stat_service
 
@@ -372,7 +380,7 @@ def get_pending_services_information():
         "pie3d", "ex1", "740", "600", "chart-1", "json", data_source
     )
     pending_services_graphics["all_state"] = graphic_pending_services.render()
-    
+
     data_source = graphic_multi_level_pie(
         "Pending Services per Unit",
         drylab_config.MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE,
