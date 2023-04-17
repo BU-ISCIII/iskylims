@@ -1885,7 +1885,7 @@ def stats_per_researcher(request):
 
         researcher_statistics = get_researcher_statistics(r_name, start_date, end_date)
         if "ERROR" in researcher_statistics:
-            error_message = researcher_statistics
+            error_message = researcher_statistics["ERROR"]
             return render(
                 request,
                 "iSkyLIMS_wetlab/StatsPerResearcher.html",
