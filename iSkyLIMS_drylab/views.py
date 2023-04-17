@@ -34,7 +34,7 @@ def index(request):
         r_service_objs =  Service.objects.filter(serviceStatus__exact = 'recorded').order_by('serviceCreatedOnDate')
         service_list['recorded'] = []
         for r_service_obj in r_service_objs:
-            s_info = r_service_obj.get_service_information()
+            s_info = r_service_obj.get_service_name_and_center()
             s_info.append(r_service_obj.get_service_requested_user())
             service_list['recorded'].append(s_info)
 
@@ -42,7 +42,7 @@ def index(request):
         ongoing_services_objs = Service.objects.all().exclude(serviceStatus__exact = 'delivered').exclude(serviceOnApprovedDate = None).order_by('serviceOnApprovedDate')
         service_list['ongoing'] = []
         for ongoing_services_obj in ongoing_services_objs:
-            s_info = ongoing_services_obj.get_service_information()
+            s_info = ongoing_services_obj.get_service_name_and_center()
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list['ongoing'].append(s_info)
     org_name = get_configuration_from_database("ORGANIZATION_NAME")
@@ -203,7 +203,7 @@ def add_samples_in_service(request):
         service_data_information = add_requested_samples_in_service(request)
         service_data_information['service_id'] = request.POST['service_id']
         return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'service_data_information': service_data_information}))
-    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+    return redirect ('/drylab/displayService=' + str(request.POST['service_id']))
 
 
 
@@ -221,11 +221,11 @@ def delete_samples_in_service(request):
         if not Service.objects.filter(pk__exact = request.POST['service_id']).exists():
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
         if  not 'sampleId' in request.POST :
-            return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+            return redirect ('/drylab/displayService=' + str(request.POST['service_id']))
         deleted_samples = delete_requested_samples_in_service(request.POST.getlist('sampleId'))
         service_data ={'service_id':request.POST['service_id'],'service_name':get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
         return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
-    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+    return redirect ('/drylab/displayService=' + str(request.POST['service_id']))
 
 
 
@@ -237,7 +237,7 @@ def display_service (request, service_id):
     if Service.objects.filter(pk=service_id).exists():
         service_manager = is_service_manager(request)
         display_service_details = get_service_information(service_id, service_manager)
-        return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
+        return render (request,'iSkyLIMS_drylab/displayService.html',{'display_service': display_service_details})
     else:
 	    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
 
@@ -288,7 +288,7 @@ def search_service (request):
             # check if the requested service in the form matches exactly with the existing service in DB
             if Service.objects.filter(serviceRequestNumber__exact = service_number_request).exists():
                 services_found = Service.objects.get(serviceRequestNumber__exact = service_number_request)
-                redirect_page = '/drylab/display_service=' + str(services_found.id)
+                redirect_page = '/drylab/displayService=' + str(services_found.id)
                 return redirect (redirect_page)
             if Service.objects.filter(serviceRequestNumber__icontains = service_number_request).exists():
                 services_found = Service.objects.filter(serviceRequestNumber__icontains = service_number_request)
@@ -339,7 +339,7 @@ def search_service (request):
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
         #If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1 :
-            redirect_page = '/drylab/display_service=' + str(services_found[0].get_service_id())
+            redirect_page = '/drylab/displayService=' + str(services_found[0].get_service_id())
             return redirect (redirect_page)
         else:
             display_multiple_services ={}
@@ -372,6 +372,24 @@ def pending_services (request):
     pending_services_details = get_pending_services_information()
     user_pending_services = get_user_pending_services_information(request.user.username)
     return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details, 'user_pending_services':user_pending_services})
+
+@login_required
+def service_in_waiting_info (request):
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
+            if groups not in request.user.groups.all():
+                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method == "POST" and request.POST['action'] == 'serviceInWaitingInfo' :
+        service_name = set_service_waiting_for_user(request.POST["service_id"])
+        if service_name is not None :
+            return render (request,'iSkyLIMS_drylab/serviceInWaitingInfo.html', {"service_name": service_name})
+    return render (request,'iSkyLIMS_drylab/serviceInWaitingInfo.html', {"ERROR": "ERROR"})
 
 @login_required
 def add_resolution (request):
@@ -498,6 +516,8 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 
     return True
 '''
+
+
 
 @login_required
 def add_in_progress (request):

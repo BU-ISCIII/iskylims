@@ -315,7 +315,7 @@ class Service(models.Model):
     def __str__(self):
         return "%s" % (self.serviceRequestNumber)
 
-    def get_service_name_id(self):
+    def get_service_name_and_center(self):
         """
         if self.serviceSequencingPlatform == None :
             platform = "Not Provided"
