@@ -1,7 +1,7 @@
 {% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 {% block content %}
-{% csrf_token %}
+
 {% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
 <style>
     .scrolling-wrapper {
@@ -38,64 +38,69 @@
                 <div id="pending_services" class="tabcontent">
                     <div class="col-sm-12">
                         <div class="tab">
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'recorded')">Recorded Services</button>
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'queued')">Services in Queued</button>
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'inprogress')">Services in Progress</button>
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicServices')" id="defaultOpen2">Services Pending Graphic</button>
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicUnitServices')">Pending Services per Unit</button>
-                        </div> <!--  end tabs -->
+                            {% for key, values in pending_services.data.items %}
+                                <button class="tablinks2" onclick="opentabinsidetab(event, '{{key}}')">{{key}} Services</button>
+                            {% endfor %}
 
-                        <div id="recorded" class="tabcontent2">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-8">  <!-- first column with list of pending services in state Recorded and Approved -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">List of Services in Recorded State</h3></div>
-                                        <div class="panel-body">
-                                            {% if pending_services.recorded %}
-                                                <div class="scrolling-wrapper">
-                                                    <table class="table table-hover">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Services Request ID</th>
-                                                                <th>Requested Center</th>
-                                                                <th>Created by</th>
-                                                                <th>Creation Date</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for key, values in pending_services.recorded.items %}
+                            {% comment %} <button class="tablinks2" onclick="opentabinsidetab(event, 'queued')">Services in Queued</button>
+                            <button class="tablinks2" onclick="opentabinsidetab(event, 'inprogress')">Services in Progress</button> {% endcomment %}
+                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicServices')" id="defaultOpen2"> Graphic</button>
+                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicUnitServices')">Pending per Unit</button>
+                        </div> <!--  end tabs -->
+                        {% for key, values in pending_services.data.items %}
+                            <div id={{key}} class="tabcontent2">
+                                <div class="row row-space-2 margin-b-4">
+                                    <div class="col-sm-11">  <!-- first column with list of pending services in state Recorded and Approved -->
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h3 style="text-align:center">List of Services in {{key}} State</h3></div>
+                                            <div class="panel-body">
+                                                {% if values %}
+                                                    <div class="scrolling-wrapper">
+                                                        <table class="table table-hover">
+                                                            <thead>
                                                                 <tr>
-                                                                    {% for requestID, center, user, date in values %}
-                                                                        <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
-                                                                        <td> {{ center }} </td>
-                                                                        <td>{{user}}</td>
-                                                                        <td>{{date}}</td>
-                                                                    {% endfor %}
+                                                                    <th>Services Request ID</th>
+                                                                    <th>Created by</th>
+                                                                    <th>Creation Date</th>
+                                                                    <th>Resolution</th>
+                                                                    <th>Handled by</th>
+                                                                    <th>Date on Queued</th>
+                                                                    <th>Extimated Date</th>
+
                                                                 </tr>
-                                                            {%endfor%}
-                                                        </tbody>
-                                                    </table>
-                                                </div> <!--  end of scrolling wrapper -->
-                                            {% else %}
-                                                There is not pending services in <b>RECORDED</b> state.
-                                            {% endif%}
-                                        </div> <!--// end panel body -->
-                                    </div> <!--// end panel -->
-                                </div> <!--// end col-sm-7  list of pending services in state Recorded and Approved -->
-                            </div> <!--// end row -->
-                        </div><!-- // end of tab Recorded Services -->
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for s_id, serv, user, c_date, r_id, res, handle, q_date, e_date  in values %}
+                                                                    <tr>
+                                                                            <td><a href="/drylab/display_service={{ s_id }}">{{ serv }}</a> </td>
+                                                                            <td>{{user}}</td>
+                                                                            <td>{{c_date}}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div> <!--  end of scrolling wrapper -->
+                                                {% else %}
+                                                    There is not pending services in <b>{{ key }}</b> state.
+                                                {% endif %}
+                                            </div> <!--// end panel body -->
+                                        </div> <!--// end panel -->
+                                    </div> <!--// end col-sm-11  list of pending services in state Recorded and Approved -->
+                                </div> <!--// end row -->
+                            </div><!-- // end of tab Recorded Services -->
+                        {% endfor %}
 
                         <div id="graphicServices" class="tabcontent2">
                             <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-8 col-sm-offset-2"> <!-- Graphic -->
-                                    {% if pending_services.graphic_pending_services %}
+                                <div class="col-sm-10 col-sm-offset-1"> <!-- Graphic -->
+                                    {% if pending_services.graphics.all_state %}
                                         <div class="panel panel-default">
                                             <div class="panel-heading"><h3>Percentage of pending Services.</h3></div>
                                             <div class="panel-body">
                                             <!-- Pie chart for number of pending Services chart will start here-->
                                                 <div id="chart-1"> </div>
                                                 <!-- dumping JavaScript code here -->
-                                                {{ pending_services.graphic_pending_services |safe }}
+                                                {{ pending_services.graphics.all_state |safe }}
                                             </div> <!--  end of panel body -->
                                         </div> <!--  end of panel  -->
                                     {% endif %}
@@ -105,15 +110,15 @@
 
                         <div id="graphicUnitServices" class="tabcontent2">
                             <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-8 col-sm-offset-2"> <!-- Graphic -->
-                                    {% if pending_services.graphic_pending_services %}
+                                <div class="col-sm-10 col-sm-offset-1"> <!-- Graphic -->
+                                    {% if pending_services.graphics %}
                                         <div class="panel panel-default">
                                             <div class="panel-heading"><h3>Pending Services per Unit.</h3></div>
                                             <div class="panel-body">
                                             <!-- Pie chart for number of pending Services chart will start here-->
                                                 <div id="chart-2"> </div>
                                                 <!-- dumping JavaScript code here -->
-                                                {{ pending_services.graphic_pending_unit_services |safe }}
+                                                {{ pending_services.graphics.graphic_pending_unit_services |safe }}
                                             </div> <!--  end of panel body -->
                                         </div> <!--  end of panel  -->
                                     {% endif %}
@@ -121,7 +126,7 @@
                             </div> <!--// end row -->
                         </div><!-- // end of tab Graphic Services -->
 
-                        <div id="queued" class="tabcontent2">
+                        {% comment %} <div id="queued" class="tabcontent2">
                             <div class="row row-space-2 margin-b-4">
                                 <div class="col-sm-12">  <!-- Queued  pending services -->
                                     <div class="panel panel-default">
@@ -200,7 +205,7 @@
                         </div><!-- // end of tab inprogress Services -->
                     </div> <!--// end col-sm-12  -->
                 </div><!-- // end of tab pending_services -->
-
+ {% endcomment %}
                 <div id="my_pendings" class="tabcontent">
 
                     {% if not user_pending_services.heading_in_queued  and not user_pending_services.heading_in_progress %}
@@ -294,25 +299,25 @@
 
 <script>
     function opentabinsidetab(evt, tabName) {
-  // Declare all variables
-  var i, tabcontent, tablinks;
+        // Declare all variables
+        var i, tabcontent, tablinks;
 
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("tabcontent2");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
+        // Get all elements with class="tabcontent" and hide them
+        tabcontent = document.getElementsByClassName("tabcontent2");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
 
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("tablinks2");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablinks2");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
 
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(tabName).style.display = "block";
-  evt.currentTarget.className += " active";
-}
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
 </script>
 <script>
     // Get the element with id="defaultOpen" and click on it
