@@ -43,16 +43,13 @@
                                 <button class="tablinks2" onclick="opentabinsidetab(event, '{{key}}')">{{key}} Services</button>
                                 {% endif %}
                             {% endfor %}
-
-                            {% comment %} <button class="tablinks2" onclick="opentabinsidetab(event, 'queued')">Services in Queued</button>
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'inprogress')">Services in Progress</button> {% endcomment %}
                             <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicServices')" id="defaultOpen2"> Graphic</button>
                             <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicUnitServices')">Pending per Unit</button>
                         </div> <!--  end tabs -->
                         {% for key, values in pending_services.data.items %}
                             <div id="{{key}}" class="tabcontent2">
                                 <div class="row row-space-2 margin-b-4">
-                                    <div class="col-sm-11">  <!-- first column with list of pending services in state Recorded and Approved -->
+                                    <div class="col-sm-11"> 
                                         <div class="panel panel-default">
                                             <div class="panel-heading"><h3 style="text-align:center">List of Services in {{key}} State</h3></div>
                                             <div class="panel-body">
@@ -74,7 +71,7 @@
                                                             <tbody>
                                                                 {% for s_id, serv, user, c_date, res, handle, q_date, e_date  in values %}
                                                                     <tr>
-                                                                            <td><a href="/drylab/display_service={{ s_id }}">{{ serv }}</a> </td>
+                                                                            <td><a href="/drylab/displayService={{ s_id }}">{{ serv }}</a> </td>
                                                                             <td>{{user}}</td>
                                                                             <td>{{c_date}}</td>
                                                                             <td>{{res}}</td>
@@ -93,7 +90,7 @@
                                         </div> <!--// end panel -->
                                     </div> <!--// end col-sm-11  list of pending services in state Recorded and Approved -->
                                 </div> <!--// end row -->
-                            </div><!-- // end of tab Recorded Services -->
+                            </div><!-- // end of tab {{key}} Services -->
                         {% endfor %}
 
                         <div id="graphicServices" class="tabcontent2">
@@ -131,85 +128,6 @@
                                 </div> <!--  end of col-sm-8  -->
                             </div> <!--// end row -->
                         </div><!-- // end of tab Graphic Services -->
-
-                        {% comment %} <div id="queued" class="tabcontent2">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-12">  <!-- Queued  pending services -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">List of Services in Queued State</h3></div>
-                                        <div class="panel-body">
-                                            {% if pending_services.heading_queued %}
-                                                <div class="scrolling-wrapper">
-                                                    <table class="table table-hover">
-                                                        <thead>
-                                                            <tr>
-                                                                {% for column in pending_services.heading_queued %}
-                                                                    <th>{{column}}</th>
-                                                                {% endfor %}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.queued %}
-                                                                <tr>
-                                                                    <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
-                                                                    <td> {{ res_name }}</td>
-                                                                    <td> {{ s_acronym }}</td>
-                                                                    <td> {{ assigned }}</td>
-                                                                    <td> {{ queued_date }}</td>
-                                                                    <td> {{ estimated_date }} </td>
-                                                                </tr>
-                                                            {%endfor%}
-                                                        </tbody>
-                                                    </table>
-                                                </div> <!--  end of scrolling wrapper -->
-                                            {% else %}
-                                                There is not pending services in <b>QUEUED</b> state.
-                                          {% endif%}
-                                        </div> <!--// end panel body -->
-                                    </div> <!--// end panel -->
-                                </div> <!--// end col-sm-12  Queued  pending services  -->
-                            </div> <!--// end row -->
-                        </div><!-- // end of tab Queued Services -->
-
-                        <div id="inprogress" class="tabcontent2">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-12">  <!-- In Progress  pending services -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">List of Services in In Progress State</h3></div>
-                                        <div class="panel-body">
-                                            {% if pending_services.in_progress %}
-                                                <div class="scrolling-wrapper">
-                                                    <table class="table table-hover">
-                                                        <thead>
-                                                            <tr>
-                                                                 {% for column in pending_services.heading_in_progress %}
-                                                                     <th>{{column}}</th>
-                                                                 {% endfor %}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.in_progress %}
-                                                                <tr>
-                                                                    <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
-                                                                    <td> {{ res_name }}</td>
-                                                                    <td> {{ s_acronym }}</td>
-                                                                    <td> {{ assigned }}</td>
-                                                                    <td> {{ queued_date }}</td>
-                                                                    <td> {{ estimated_date }} </td>
-                                                                </tr>
-                                                            {%endfor%}
-                                                        </tbody>
-                                                    </table>
-                                                </div> <!--  end of scrolling wrapper -->
-                                            {% else %}
-                                                There is not pending services in <b>IN PROGRESS</b> state.
-                                            {% endif%}
-                                        </div> <!--// end panel body -->
-                                    </div> <!--// end panel -->
-                            </div> <!--// end col-sm-12  In Progress  pending services  -->
-                            </div> <!--// end row -->
-                        </div><!-- // end of tab inprogress Services -->
-                        {% endcomment %}
                     </div> <!--// end col-sm-12  -->
                 </div><!-- // end of tab pending_services -->
  
@@ -245,7 +163,7 @@
                                                     <tbody>
                                                         {% for s_id, s_name, res_name , s_acronym,  queued_date, estimated_date in user_pending_services.queued %}
                                                             <tr>
-                                                                <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
+                                                                <td><a href="/drylab/displayService={{ s_id }}">{{ s_name }}</a> </td>
                                                                 <td> {{ res_name }}</td>
                                                                 <td> {{ s_acronym }}</td>
                                                                 <td> {{ queued_date }}</td>
@@ -281,7 +199,7 @@
                                                     <tbody>
                                                         {% for s_id, s_name, res_name , s_acronym,  queued_date, estimated_date in user_pending_services.in_progress %}
                                                             <tr>
-                                                                <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
+                                                                <td><a href="/drylab/displayService={{ s_id }}">{{ s_name }}</a> </td>
                                                                 <td> {{ res_name }}</td>
                                                                 <td> {{ s_acronym }}</td>
                                                                 <td> {{ queued_date }}</td>
