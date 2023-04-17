@@ -1337,42 +1337,42 @@
     "model": "iSkyLIMS_drylab.resolutionstates",
     "pk": 1,
     "fields": {
-        "resolutionStateName": "Recorded"
+        "state_value": "Recorded"
     }
 },
 {
     "model": "iSkyLIMS_drylab.resolutionstates",
     "pk": 2,
     "fields": {
-        "resolutionStateName": "In Progress"
+        "state_value": "In Progress"
     }
 },
 {
     "model": "iSkyLIMS_drylab.resolutionstates",
     "pk": 3,
     "fields": {
-        "resolutionStateName": "Delivery"
+        "state_value": "Delivery"
     }
 },
 {
     "model": "iSkyLIMS_drylab.resolutionstates",
     "pk": 4,
     "fields": {
-        "resolutionStateName": "Cancelled"
+        "state_value": "Cancelled"
     }
 },
 {
     "model": "iSkyLIMS_drylab.resolutionstates",
     "pk": 5,
     "fields": {
-        "resolutionStateName": "Rejected"
+        "state_value": "Rejected"
     }
 },
 {
     "model": "iSkyLIMS_drylab.resolutionstates",
     "pk": 6,
     "fields": {
-        "resolutionStateName": "Queued"
+        "state_value": "Queued"
     }
 },
 {
@@ -20032,6 +20032,86 @@
     "pk": 7,
     "fields": {
         "clinicState": "Invalid"
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 1,
+    "fields": {
+        "state_value": "recorded",
+        "state_display": "Recorded",
+        "description": "Service has been successful recorded in iSkyLIMS",
+        "show_in_stats": true
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 2,
+    "fields": {
+        "state_value": "approved",
+        "state_display": "Approved",
+        "description": "Service request has been accepted",
+        "show_in_stats": false
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 3,
+    "fields": {
+        "state_value": "rejected",
+        "state_display": "Rejected",
+        "description": "Service can not be handle because is not in porfoloio or for any other reason",
+        "show_in_stats": false
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 4,
+    "fields": {
+        "state_value": "queued",
+        "state_display": "Queued",
+        "description": "Service is the the list, waiting for a bioinformatic to be handled",
+        "show_in_stats": true
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 5,
+    "fields": {
+        "state_value": "in_progress",
+        "state_display": "In Progress",
+        "description": "Bioinformatic is working on the service",
+        "show_in_stats": true
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 6,
+    "fields": {
+        "state_value": "delivered",
+        "state_display": "Delivered",
+        "description": "Service wascompleted and results were sent to the user",
+        "show_in_stats": false
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 7,
+    "fields": {
+        "state_value": "archived",
+        "state_display": "Archived",
+        "description": null,
+        "show_in_stats": false
+    }
+},
+{
+    "model": "iSkyLIMS_drylab.servicestate",
+    "pk": 8,
+    "fields": {
+        "state_value": "waiting_information",
+        "state_display": "Waiting Information",
+        "description": "Service is on hold, waiting for user provides more information",
+        "show_in_stats": true
     }
 }
 ]
