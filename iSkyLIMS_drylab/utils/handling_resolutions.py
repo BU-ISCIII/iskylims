@@ -278,7 +278,7 @@ def create_new_resolution(resolution_data_form):
             if len(resolution_data_form["select_available_services"]) == len(
                 service_obj.get_child_services()
             ):
-                service_obj.update_service_status("queued")
+                service_obj.update_service_state("queued")
             elif Resolution.objects.filter(resolutionServiceID=service_obj).exists():
                 resolution_objs = Resolution.objects.filter(
                     resolutionServiceID=service_obj
@@ -291,12 +291,12 @@ def create_new_resolution(resolution_data_form):
                 if len(set(avail_services_handled)) == len(
                     service_obj.get_child_services()
                 ):
-                    service_obj.update_service_status("queued")
+                    service_obj.update_service_state("queued")
         else:
-            service_obj.update_service_status("queued")
+            service_obj.update_service_state("queued")
         service_obj.update_approved_date(date.today())
     else:
-        service_obj.update_service_status("rejected")
+        service_obj.update_service_state("rejected")
         service_obj.update_rejected_date(date.today())
 
     return new_resolution
