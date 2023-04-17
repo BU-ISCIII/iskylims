@@ -359,14 +359,14 @@ def create_nextseq_run(request):
 
         # store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(
-            profileUserID=request.user
-        ).profileCenter.id
+            profile_user_id=request.user
+        ).profile_center.id
         center_requested_by = Center.objects.get(pk=center_requested_id)
         new_run_obj = RunProcess(
-            runName=run_name,
-            sampleSheet=file_name,
-            state=RunStates.objects.get(runStateName__exact="Pre-Recorded"),
-            centerRequestedBy=center_requested_by,
+            run_name=run_name,
+            sample_sheet=file_name,
+            state=RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
+            center_requested_by=center_requested_by,
         )
         new_run_obj.save()
         experiment_name = "" if run_name == timestr else run_name
@@ -382,11 +382,7 @@ def create_nextseq_run(request):
                 user_id = User.objects.get(username__exact=val)
             else:
                 user_id = None
-            """
-            p_data = Projects(runprocess_id=RunProcess.objects.get(runName =run_name),
-                            projectName=key, user_id=userid)
-            p_data.save()
-            """
+    
             if not Projects.objects.filter(project_name__iexact=key).exists():
                 data = {}
                 data["user_id"] = user_id
@@ -440,7 +436,7 @@ def create_nextseq_run(request):
                     ]
                 },
             )
-        run_p = RunProcess.objects.get(runName__exact=run_name)
+        run_p = RunProcess.objects.get(run_name__exact=run_name)
         s_file = run_p.get_sample_file()
         # get the different type of library kit used in the run and
         # convert the sample sheet into Base Space. Number of converted
@@ -475,7 +471,7 @@ def create_nextseq_run(request):
             library_kit_id = LibraryKit.objects.filter(
                 libraryame__exact=library_kit[p]
             ).last()
-            update_info_proj = Projects.objects.get(projectName=my_project)
+            update_info_proj = Projects.objects.get(project_name=my_project)
             update_info_proj.libraryKit = project_index_kit[p]
             # removed the link to base space file
             # update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
@@ -870,7 +866,7 @@ def search_run(request):
                 )
         # Check if state is not empty
         if run_state != "":
-            s_state = RunStates.objects.get(runStateName__exact=run_state)
+            s_state = RunStates.objects.get(run_state_name__exact=run_state)
             if runs_found.filter(state__runS_state_name__exact=s_state).exists():
                 runs_found = runs_found.filter(
                     state__run_state_name__exact=s_state
@@ -2063,7 +2059,7 @@ def stats_per_time(request):
 
                 for run in run_stats_list:
                     run_obj = run.get_run_id()
-                    run_param_obj = RunningParameters.objects.get(runName_id=run_obj)
+                    run_param_obj = RunningParameters.objects.get(run_name_id=run_obj)
                     lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     top_unbarcode_all_runs = {}
                     for lane_number in range(1, lanes_in_sequencer + 1):
@@ -2212,7 +2208,7 @@ def get_list_of_libraries_values(
         # This line must changed to handle project name is reused in several runs
         run_used_in_project = project_to_compare.runProcess.all().last()
 
-        run_param_obj = RunningParameters.objects.get(runName_id=run_used_in_project)
+        run_param_obj = RunningParameters.objects.get(run_name_id=run_used_in_project)
         # get the number of lanes by quering the SequencerModel in the RunProcess
         # number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
         number_of_lanes = int(run_param_obj.get_number_of_lanes())

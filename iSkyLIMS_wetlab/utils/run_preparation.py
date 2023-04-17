@@ -90,7 +90,7 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
     new_run_obj = RunProcess(
         runName=form_data["experimentName"],
         sampleSheet="",
-        state=RunStates.objects.get(runStateName__exact="Pre-Recorded"),
+        state=RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
         centerRequestedBy=center_requested_by,
     )
     new_run_obj.save()
@@ -518,7 +518,7 @@ def store_confirmation_sample_sheet(fields):
         fh.write(",".join(sample) + "\n")
     fh.close()
     # store sample sheet in database
-    run_obj = RunProcess.objects.get(runName=fields["run_obj"])
+    run_obj = RunProcess.objects.get(run_name=fields["run_obj"])
     run_obj.update_sample_sheet(ss_file_full_path, file_name)
 
     os.remove(ss_file_full_path)
@@ -664,23 +664,6 @@ def get_stored_user_sample_sheet(lib_prep_ids):
         else:
             sample_sheet_data[fields[i]] = data[i]
     return sample_sheet_data
-
-    # def get_type_read_sequencing(pool_ids):
-    """
-    Description:
-        The function returns the value of th pool singlePaired
-    Input:
-        pool_ids        # pool id list
-    Return:
-        PairedEnd or SingleRead
-    """
-    """
-    for pool_id in pool_ids :
-        single_paired = LibraryPool.objects.get(pk__exact = pool_id).get_pool_single_paired()
-        if single_paired == 'PairedEnd':
-            return 'PairedEnd'
-    return 'SingleRead'
-    """
 
 
 def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):

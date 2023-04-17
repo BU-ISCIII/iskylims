@@ -618,7 +618,7 @@ class StatsRunSummary(models.Model):
 
 class StatsRunReadManager(models.Manager):
     def create_stats_run_read(self, stats_run_read, experiment_name):
-        run_process = RunProcess.objects.get(runName__exact=experiment_name)
+        run_process = RunProcess.objects.get(run_name__exact=experiment_name)
         s_run_read = self.create(
             runprocess_id=run_process,
             read=stats_run_read["read"],

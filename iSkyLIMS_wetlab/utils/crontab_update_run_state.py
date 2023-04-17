@@ -145,7 +145,7 @@ def search_update_new_runs(request_reason):
             if RunProcess.objects.filter(runName__exact=experiment_name).exclude(state__runStateName__in=exclude_states).exists():
                 # This situation should not occurr. The run_processed file should  have this value. To avoid new iterations with this run
                 # we update the run process file with this run and continue  with the next item
-                run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
+                run_state = RunProcess.objects.get(run_name__exact = experiment_name).get_state()
                 string_message = new_run  + ' :  experiment name  state ' + experiment_name + ' in incorrect state. Run state is ' + run_state
                 logging_errors( string_message, False, False)
                 logger.info('%s : Deleting temporary runParameter file' , experiment_name)
@@ -192,7 +192,7 @@ def search_update_new_runs(request_reason):
                 if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE and  'NextSeq' in running_parameters['running_data'][wetlab_config.APPLICATION_NAME_TAG]:
                     sample_sheet = run_process_obj.get_sample_file()
                     sample_sheet_path = os.path.join(settings.MEDIA_ROOT, sample_sheet)
-                    run_folder = RunningParameters.objects.get( runName_id__exact = run_process_obj).get_run_folder()
+                    run_folder = RunningParameters.objects.get( run_name_id__exact = run_process_obj).get_run_folder()
                     try:
                         copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder,experiment_name)
                     except Exception as e:
@@ -510,7 +510,7 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
     for run_process_obj in run_process_objs:
         experiment_name = run_process_obj.get_run_name()
         logger.info('%s : Start handling in manage_run_in_processing_bcl2fastq_state function', experiment_name)
-        run_folder = RunningParameters.objects.get(runName_id = run_process_obj).get_run_folder()
+        run_folder = RunningParameters.objects.get(run_name_id = run_process_obj).get_run_folder()
 
         bcl2fastq_finish_date = check_demultiplexing_folder_exists(conn, run_folder, experiment_name)
         if 'ERROR' in bcl2fastq_finish_date:
@@ -575,7 +575,7 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
     for run_process_obj in run_process_objs:
         experiment_name = run_process_obj.get_run_name()
         logger.info('%s : Start handling in manage_run_in_processed_bcl2fastq_state function', experiment_name)
-        run_param_obj = RunningParameters.objects.get(runName_id = run_process_obj)
+        run_param_obj = RunningParameters.objects.get(run_name_id = run_process_obj)
         run_folder = run_param_obj.get_run_folder()
         # delete existing information to avoid having duplicated tables
         delete_existing_bcl2fastq_table_processed(run_process_obj, experiment_name)
