@@ -525,11 +525,11 @@ def add_in_progress (request):
         # check if services can change to "in progress"
         if allow_to_service_update_state (resolution_obj, 'in_progress'):
             # update the service status and in_porgress date
-            service_obj = service_obj.update_service_status('in_progress')
+            service_obj = service_obj.update_service_state('in_progress')
             service_obj = service_obj.update_service_delivered_date(date.today())
         email_data = {}
         email_data['user_email'] = service_obj.get_user_email()
-        email_data['user_name'] = service_obj.get_username()
+        email_data['user_name'] = service_obj.get_service_requested_user()
         email_data['resolution_number'] = resolution_number
         send_resolution_in_progress_email(email_data)
         in_progress_resolution = {}
@@ -574,7 +574,7 @@ def add_delivery (request ):
             send_delivery_service_email(email_data)
             if allow_to_service_update_state (resolution_obj, 'delivered'):
                 service_obj = resolution_obj.get_service_obj()
-                service_obj.update_service_status('delivered')
+                service_obj.update_service_state('delivered')
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_recorded': delivery_recorded})
 
     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})

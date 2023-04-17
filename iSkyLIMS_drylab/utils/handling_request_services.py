@@ -346,14 +346,13 @@ def get_pending_services_information():
             # fetch latest resolution for the service
             if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
                 resolution_obj = Resolution.objects.filter(resolutionServiceID=service_obj).last()
-                service_data.append(resolution_obj.get_resolution_id())
                 service_data.append(resolution_obj.get_resolution_number())
                 service_data.append(resolution_obj.get_resolution_handler_user())
                 service_data.append(resolution_obj.get_resolution_on_queued_date())
                 service_data.append(resolution_obj.get_resolution_estimated_date())
             else:
                 # set empty values when no resolution are defined for service
-                service_data += ["None", "--" , "--", "--", "--"]
+                service_data += ["--" , "--", "--", "--"]
             info_for_stat_service[stat_service].append(service_data)
             # calculate the number of services per center
             unit_req_serv = service_obj.get_service_request_center_name()
@@ -363,85 +362,8 @@ def get_pending_services_information():
                 pending_services_per_unit[unit_req_serv][stat_service] = 0
             pending_services_per_unit[unit_req_serv][stat_service] += 1
             
-            
         pending_services_details[stat_service] = info_for_stat_service
     pending_services_details["data"] = info_for_stat_service
-    
-    
-    """
-    
-    recorded, queued, in_progress = {}, [], []
-   
-    if Service.objects.filter(service_state__state_value__exact="recorded").exists():
-        services_in_request = Service.objects.filter(
-            service_state__state_value__exact="recorded"
-        ).order_by("-serviceCreatedOnDate")
-        for services in services_in_request:
-            service_data = services.get_service_name_id()
-            service_data.append(services.get_service_requested_user())
-            service_data.append(services.get_service_creation_time())
-            recorded[services.id] = [service_data]
-        pending_services_details["recorded"] = recorded
-        for service_unit in services_in_request:
-            try:
-                unit_serv = service_unit.get_service_request_center_name()
-            except:
-                continue
-            if unit_serv not in pending_services_per_unit:
-                pending_services_per_unit[unit_serv] = {"recorded": 0}
-            pending_services_per_unit[unit_serv]["recorded"] += 1
-
-    # Resolution  in queued state
-    if Resolution.objects.filter(resolutionState__state_value__exact="Queued").exists():
-        resolution_recorded_objs = Resolution.objects.filter(
-            resolutionState__state_value__exact="Queued"
-        ).order_by("-resolutionServiceID")
-        for resolution_recorded_obj in resolution_recorded_objs:
-            queued.append(
-                resolution_recorded_obj.get_information_for_pending_resolutions()
-            )
-        pending_services_details["queued"] = queued
-        pending_services_details[
-            "heading_queued"
-        ] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
-        for resolution_in_q_unit in resolution_recorded_objs:
-            try:
-                unit_res = resolution_in_q_unit.get_resolution_request_center_name()
-            except:
-                continue
-            if not unit_res in pending_services_per_unit:
-                pending_services_per_unit[unit_res] = {}
-            if not "queued" in pending_services_per_unit[unit_res]:
-                pending_services_per_unit[unit_res]["queued"] = 0
-            pending_services_per_unit[unit_res]["queued"] += 1
-
-    # Resolution in progress
-    if Resolution.objects.filter(
-        resolutionState__state_value__exact="In Progress"
-    ).exists():
-        resolution_recorded_objs = Resolution.objects.filter(
-            resolutionState__state_value__exact="In Progress"
-        ).order_by("-resolutionServiceID")
-        for resolution_recorded_obj in resolution_recorded_objs:
-            in_progress.append(
-                resolution_recorded_obj.get_information_for_pending_resolutions()
-            )
-        pending_services_details["in_progress"] = in_progress
-        pending_services_details[
-            "heading_in_progress"
-        ] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
-        for resolution_in_q_unit in resolution_recorded_objs:
-            try:
-                unit_res = resolution_in_q_unit.get_resolution_request_center_name()
-            except:
-                continue
-            if not unit_res in pending_services_per_unit:
-                pending_services_per_unit[unit_res] = {}
-            if not "in_progress" in pending_services_per_unit[unit_res]:
-                pending_services_per_unit[unit_res]["in_progress"] = 0
-            pending_services_per_unit[unit_res]["in_progress"] += 1
-    """
-    
 
     data_source = graphic_3D_pie(
         "Number of Pending Services", "", "", "", "fint", number_of_services
@@ -518,7 +440,6 @@ def get_user_pending_services_information(user_name):
         user_pending_services_details[
             "heading_in_progress"
         ] = drylab_config.HEADING_USER_PENDING_SERVICE_QUEUED
-
     return user_pending_services_details
 
 
