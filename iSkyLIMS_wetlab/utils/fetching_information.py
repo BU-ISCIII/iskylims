@@ -329,7 +329,7 @@ def get_run_summary_data(run_object, num_of_reads):
         run_summary_values and per_read_run_summary     # contain a tupla list with text and its value
     """
 
-    run_parameters = RunningParameters.objects.get(runName_id__exact=run_object)
+    run_parameters = RunningParameters.objects.get(run_name_id__exact=run_object)
     num_of_reads = run_parameters.get_number_of_reads()
     index_run_summary = [i + 1 for i in range(num_of_reads)]
     index_run_summary.append("Non Index")
@@ -372,7 +372,7 @@ def get_running_parameters(run_object):
     """
     rp_info = []
     # finding the running parameters index for the run
-    running_parameter_object = RunningParameters.objects.get(runName_id=run_object)
+    running_parameter_object = RunningParameters.objects.get(run_name_id=run_object)
 
     # Adding the Run Parameters information
     rp_list = [
@@ -718,7 +718,7 @@ def get_information_run(run_object):
 
     # get the run metric  statistics if they are already processed
     if StatsRunSummary.objects.filter(runprocess_id__exact=run_object).exists():
-        run_parameters = RunningParameters.objects.get(runName_id__exact=run_object)
+        run_parameters = RunningParameters.objects.get(run_name_id__exact=run_object)
         num_of_reads = run_parameters.get_number_of_reads()
         number_of_lanes = int(run_parameters.get_number_of_lanes())
 
@@ -952,7 +952,7 @@ def get_information_project(project_id, request):
     for run_obj in run_objs:
         run_names.append([run_obj.get_run_id(), run_obj.get_run_name()])
     # run_name = project_id.runprocess_id.runName
-    groups = Group.objects.get(name=WETLAB_MANAGER)
+    groups = Group.objects.get(name=wetlab_config.WETLAB_MANAGER)
 
     if groups in request.user.groups.all():
         project_info_dict["manager_display_runs"] = True
@@ -1133,8 +1133,8 @@ def get_sequencers_run_from_time_interval(sequencer, start_date, end_date):
         runs_using_sequencer
     """
     runs_using_sequencer = {}
-    if SequencerInLab.objects.filter(sequencerName__exact=sequencer).exists():
-        sequencer_obj = SequencerInLab.objects.get(sequencerName__exact=sequencer)
+    if SequencerInLab.objects.filter(sequencer_name__exact=sequencer).exists():
+        sequencer_obj = SequencerInLab.objects.get(sequencer_name__exact=sequencer)
         if RunProcess.objects.filter(
             used_sequencer=sequencer_obj, run_date__range=(start_date, end_date)
         ).exists():

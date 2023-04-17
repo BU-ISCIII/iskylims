@@ -97,7 +97,7 @@ def analyze_and_store_input_param_values(form_data):
             lib_parameter_value = {}
             lib_parameter_value["parameter_id"] = ProtocolParameters.objects.get(
                 protocol_id__exact=form_data["protocol_id"],
-                parameterName__exact=headings[p_index],
+                parameter_name__exact=headings[p_index],
             )
             lib_parameter_value["library_id"] = library_prep_obj
             lib_parameter_value["parameterValue"] = json_data[row_index][p_index]
@@ -1021,50 +1021,6 @@ def format_sample_sheet_to_display_in_form(sample_sheet_data):
     #    display_data['no_user_defined'] = True
 
     return display_data
-
-    """
-    stored_lib_prep_data = {}
-    stored_lib_prep_data['data'] = []
-    valid_lib_prep_ids = []
-    lib_prep_code_ids =  []
-    user_list = []
-    protocol_obj = Protocols.objects.get(name__exact = protocol)
-    parameter_heading = get_protocol_parameters(protocol_obj)
-    length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
-
-    for lib_prep in lib_prep_ids :
-        lib_prep_obj = get_lib_prep_obj_from_id (lib_prep)
-        if lib_prep_obj == 'None':
-            continue
-
-        lib_prep_code = lib_prep_obj.get_lib_prep_code()
-        data = ['']*length_heading
-        data[0] = lib_prep_obj.get_sample_name()
-        data[1] = lib_prep_code
-
-        stored_lib_prep_data['data'].append(data)
-        valid_lib_prep_ids.append(lib_prep)
-        lib_prep_code_ids.append(lib_prep_code)
-        user_obj = lib_prep_obj.get_user_obj()
-        if not user_obj in user_list:
-            user_list.append(user_obj)
-    # collect the reagents kits from the user in the sample_sheet
-
-    reagents_kits = []
-    for user_obj in user_list:
-        reagents_kits += get_lot_commercial_kits(user_obj, protocol_obj)
-    # get only unique regents Kits
-    unique_reagents_kits = list(set(reagents_kits))
-    stored_lib_prep_data['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
-    stored_lib_prep_data['param_heading'] = parameter_heading
-    stored_lib_prep_data['lib_prep_ids'] = ','.join(valid_lib_prep_ids)
-    stored_lib_prep_data['lib_prep_code_ids'] = ','.join(lib_prep_code_ids)
-    stored_lib_prep_data['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
-    stored_lib_prep_data['protocol_id'] = protocol_obj.get_protocol_id()
-    stored_lib_prep_data['reagents_kits'] = unique_reagents_kits
-
-    return stored_lib_prep_data
-    """
 
 
 def get_lib_prep_obj_from_id(library_preparation_id):

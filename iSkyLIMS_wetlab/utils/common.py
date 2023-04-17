@@ -49,7 +49,7 @@ def get_run_in_same_year_to_compare(run_object):
     """
     # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
     chem_high_mid = RunningParameters.objects.get(
-        runName_id__exact=run_object
+        run_name_id__exact=run_object
     ).get_run_chemistry()
     run_different_chemistry = RunningParameters.objects.all().exclude(
         chemistry__exact=chem_high_mid

@@ -176,7 +176,6 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
     lib_prep_code_ids = []
     kit_name_list = []
     protocol_obj = LibPrepare.objects.get(pk__exact=lib_prep_ids[0]).get_protocol_obj()
-    # protocol_obj = get_protocol_obj_from_id()
     additional_kits["kit_heading"] = []
     if AdditionaKitsLibPrepare.objects.filter(
         protocol_id=protocol_obj, kitUsed=True

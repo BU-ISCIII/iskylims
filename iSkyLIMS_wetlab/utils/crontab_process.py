@@ -1506,7 +1506,7 @@ def parsing_run_metrics_files(
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function parsing_run_metrics", experiment_name)
-    run_param_obj = RunningParameters.objects.get(runName_id=run_process_obj)
+    run_param_obj = RunningParameters.objects.get(run_name_id=run_process_obj)
     # get the number of lanes for the run
     number_of_lanes = int(run_param_obj.get_number_of_lanes())
     # get number of reads for the run
