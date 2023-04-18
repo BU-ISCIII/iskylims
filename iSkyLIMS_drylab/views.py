@@ -22,8 +22,9 @@ import iSkyLIMS_drylab.utils.handling_request_services
 import iSkyLIMS_drylab.utils.handling_resolutions
 #
 #
-from iSkyLIMS_drylab.utils.handling_multiple_files import *
-from iSkyLIMS_core.utils.common import send_test_email, get_email_data
+from iSkyLIMS_core.utils.generic_functions import send_test_email, get_email_data
+import iSkyLIMS_drylab.utils.handling_deliveries
+import iSkyLIMS_drylab.utils.handling_multiple_files
 
 
 @login_required
@@ -91,7 +92,7 @@ def request_sequencing_service(request):
 
 	if request.POST and request.FILES :
 		if 'file' in request.FILES:
-			data = get_and_save_service_file(request)
+			data = iSkyLIMS_drylab.utils.handling_multiple_files.get_and_save_service_file(request)
 			response = JSONResponse(data, mimetype='application/json')
 			response['Content-Disposition'] = 'inline; filename=files.json'
 			return response
@@ -1330,12 +1331,12 @@ def detail_pipeline(request, pipeline_id):
 
 
 ###################### Delete upload service file  #########################
-def upload_service_file_delete(request, file_id):
-    if request.method == "DELETE":
-        if not check_if_file_is_linked_to_service(file_id):
-            delete_service_file(file_id)
-            response = JSONResponse(True, mimetype="application/json")
-            response["Content-Disposition"] = "inline; filename=files.json"
+def upload_service_file_delete(request,file_id):
+    if request.method == 'DELETE':
+        if not iSkyLIMS_drylab.utils.handling_multiple_files.check_if_file_is_linked_to_service(file_id):
+            iSkyLIMS_drylab.utils.handling_multiple_files.delete_service_file(file_id)
+            response = JSONResponse(True, mimetype='application/json')
+            response['Content-Disposition'] = 'inline; filename=files.json'
 
             return response
         return HttpResponse(
