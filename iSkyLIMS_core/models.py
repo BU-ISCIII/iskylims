@@ -5,6 +5,7 @@ from django.db import models
 
 
 class StateInCountryManager(models.Manager):
+
     def create_new_state(self, data):
         new_state = self.create(state_name=data["state"], apps_name=data["apps_name"])
         return new_state
@@ -13,6 +14,9 @@ class StateInCountryManager(models.Manager):
 class StateInCountry(models.Model):
     state_name = models.CharField(max_length=80)
     apps_name = models.CharField(max_length=40, null=True)
+
+    class Meta:
+        db_table = "core_state_in_country"
 
     def __str__(self):
         return "%s" % (self.state_name)
@@ -29,6 +33,9 @@ class StateInCountry(models.Model):
 class Contact(models.Model):
     contact_name = models.CharField(max_length=80)
     contact_mail = models.CharField(max_length=40, null=True)
+
+    class Meta:
+        db_table = "core_contact"
 
     def __str__(self):
         return "%s" % (self.contact_name)
@@ -64,6 +71,9 @@ class City(models.Model):
     geo_loc_latitude = models.CharField(max_length=80)
     geo_loc_longitude = models.CharField(max_length=80)
     apps_name = models.CharField(max_length=40, null=True)
+
+    class Meta:
+        db_table = "core_city"
 
     def __str__(self):
         return "%s" % (self.city_name)
@@ -111,8 +121,10 @@ class LabRequest(models.Model):
     lab_phone = models.CharField(max_length=20)
     lab_email = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
-
     apps_name = models.CharField(max_length=40, null=True)
+
+    class Meta:
+        db_table = "core_lab_request"
 
     def __str__(self):
         return "%s" % (self.lab_name)
@@ -173,6 +185,9 @@ class MoleculeType(models.Model):
     molecule_type = models.CharField(max_length=30)
     apps_name = models.CharField(max_length=40, null=True)
 
+    class Meta:
+        db_table = "core_molecule_type"
+
     def __str__(self):
         return "%s" % (self.molecule_type)
 
@@ -209,6 +224,9 @@ class ProtocolType(models.Model):
     protocol_type = models.CharField(max_length=40)
     apps_name = models.CharField(max_length=40)
 
+    class Meta:
+        db_table = "core_protocol_type"
+
     def __str__(self):
         return "%s" % (self.protocol_type)
 
@@ -231,6 +249,9 @@ class Protocols(models.Model):
     type = models.ForeignKey(ProtocolType, on_delete=models.CASCADE)
     name = models.CharField(max_length=40)
     description = models.CharField(max_length=160, null=True, blank=True)
+
+    class Meta:
+        db_table = "core_protocols"
 
     def __str__(self):
         return "%s" % (self.name)
@@ -271,6 +292,9 @@ class ProtocolParameters(models.Model):
     parameter_option_values = models.CharField(max_length=400, null=True, blank=True)
     parameter_max_value = models.CharField(max_length=50, null=True, blank=True)
     parameter_min_value = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        db_table = "core_protocol_parameters"
 
     def __str__(self):
         return "%s" % (self.parameter_name)
@@ -333,6 +357,9 @@ class ProtocolParameters(models.Model):
 class StatesForSample(models.Model):
     sample_state_name = models.CharField(max_length=50)
 
+    class Meta:
+        db_table = "core_states_for_sample"
+
     def __str__(self):
         return "%s" % (self.sample_state_name)
 
@@ -345,6 +372,9 @@ class StatesForSample(models.Model):
 
 class StatesForMolecule(models.Model):
     molecule_state_name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "core_states_for_molecule"
 
     def __str__(self):
         return "%s" % (self.molecule_state_name)
@@ -368,6 +398,9 @@ class SampleType(models.Model):
     apps_name = models.CharField(max_length=50)
     optional_fields = models.CharField(max_length=50, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        db_table = "core_sample_type"
 
     def __str__(self):
         return "%s" % (self.sample_type)
@@ -401,6 +434,9 @@ class Species(models.Model):
     apps_name = models.CharField(max_length=50, null=True)
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
+    class Meta:
+        db_table = "core_species"
+
     def __str__(self):
         return "%s" % (self.species_name)
 
@@ -417,6 +453,9 @@ class SequencingPlatform(models.Model):
     platform_name = models.CharField(max_length=30)
     company_name = models.CharField(max_length=30)
     sequencing_technology = models.CharField(max_length=30)
+
+    class Meta:
+        db_table = "core_sequencing_platform"
 
     def __str__(self):
         return "%s" % (self.platform_name)
@@ -451,7 +490,6 @@ class CommercialKitsManager(models.Manager):
 
 class CommercialKits(models.Model):
     protocol_kits = models.ManyToManyField(Protocols, blank=True)
-
     platform_kits = models.ForeignKey(
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -466,6 +504,9 @@ class CommercialKits(models.Model):
     cat_number = models.CharField(max_length=40, null=True, blank=True)
     description = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        db_table = "core_commercial_kits"
 
     def __str__(self):
         return "%s" % (self.name)
@@ -533,13 +574,15 @@ class UserLotCommercialKits(models.Model):
     based_commercial = models.ForeignKey(
         CommercialKits, on_delete=models.CASCADE, null=True
     )
-
     uses_number = models.IntegerField(null=True, default=0)
     chip_lot = models.CharField(max_length=50)
     latest_used_date = models.DateTimeField(null=True, blank=True)
     expiration_date = models.DateField(auto_now_add=False)
     run_out = models.BooleanField(default=False)
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        db_table = "core_user_lot_commercial_kits"
 
     def __str__(self):
         return "%s" % (self.chip_lot)
@@ -615,6 +658,9 @@ class PatientProjects(models.Model):
     apps_name = models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "core_patient_projects"
+
     def __str__(self):
         return "%s" % (self.project_name)
 
@@ -657,6 +703,9 @@ class PatientProjectsFields(models.Model):
     project_field_order = models.IntegerField()
     project_field_used = models.BooleanField()
 
+    class Meta:
+        db_table = "core_patient_projects_fields"
+
     def __str__(self):
         return "%s" % (self.project_field_name)
 
@@ -688,6 +737,9 @@ class PatientProjectsFields(models.Model):
 class PatientSex(models.Model):
     sex = models.CharField(max_length=16)
 
+    class Meta:
+        db_table = "core_patient_sex"
+
     def __str__(self):
         return "%s" % (self.sex)
 
@@ -718,6 +770,9 @@ class PatientCore(models.Model):
     patient_sex = models.ForeignKey(
         PatientSex, on_delete=models.CASCADE, null=True, blank=True
     )
+
+    class Meta:
+        db_table = "core_patient_core"
 
     def __str__(self):
         return "%s" % (self.patient_code)
@@ -760,6 +815,9 @@ class PatientProjectFieldValue(models.Model):
     project_field_value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "core_patient_project_field_value"
+
     def __str__(self):
         return "%s" % (self.project_field_value)
 
@@ -788,6 +846,9 @@ class SampleProjects(models.Model):
     sample_project_description = models.CharField(max_length=255, null=True, blank=True)
     apps_name = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "core_sample_projects"
 
     def __str__(self):
         return "%s" % (self.sample_project_name)
@@ -835,6 +896,9 @@ class SampleProjectFieldClassification(models.Model):
     classification_name = models.CharField(max_length=80)
     classification_display = models.CharField(max_length=100)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "core_sample_projects_field_classification"
 
     def __str__(self):
         return "%s" % (self.classification_name)
@@ -886,6 +950,9 @@ class SampleProjectsFields(models.Model):
     sample_project_option_list = models.CharField(max_length=255, null=True, blank=True)
     sample_project_searchable = models.BooleanField(default=False)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "core_sample_projects_fields"
 
     def __str__(self):
         return "%s" % (self.sample_project_field_name)
@@ -996,6 +1063,9 @@ class SamplesProjectsTableOptions(models.Model):
         related_name="opt_value_prop",
     )
     option_value = models.CharField(max_length=120)
+
+    class Meta:
+        db_table = "core_sample_projects_table_options"
 
     def __str__(self):
         return "%s" % (self.option_value)
@@ -1156,6 +1226,9 @@ class Samples(models.Model):
     only_recorded = models.BooleanField(
         default=False, null=True, blank=True, verbose_name="Only recorded?"
     )
+
+    class Meta:
+        db_table = "core_samples"
 
     def __str__(self):
         return "%s" % (self.sample_name)
@@ -1350,6 +1423,9 @@ class SampleProjectsFieldsValue(models.Model):
     sample_project_field_value = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "core_sample_projects_fields_value"
+
     def __str__(self):
         return "%s" % (self.sample_project_field_value)
 
@@ -1373,6 +1449,9 @@ class MoleculeUsedFor(models.Model):
     used_for = models.CharField(max_length=50)
     apps_name = models.CharField(max_length=50)
     massive_use = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "core_molecule_used_for"
 
     def __str__(self):
         return "%s" % (self.usedFor)
@@ -1435,6 +1514,9 @@ class MoleculePreparation(models.Model):
     reused_number = models.IntegerField(default=0)
     used_for_massive_sequencing = models.BooleanField(null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "core_molecule_preparation"
 
     def __str__(self):
         return "%s" % (self.molecule_code_id)
@@ -1541,6 +1623,9 @@ class MoleculeParameterValue(models.Model):
     parameter_value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "core_molecule_parameter_value"
+
     def __str__(self):
         return "%s" % (self.parameter_value)
 
@@ -1567,6 +1652,9 @@ class SequencingConfiguration(models.Model):
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
     configuration_name = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = "core_sequencing_configuration"
 
     def __str__(self):
         return "%s" % (self.configuration_name)
@@ -1619,6 +1707,9 @@ class SequencerInLab(models.Model):
     )
     sequencer_operation_end = models.DateField(auto_now_add=False, null=True, blank=True)
     sequencer_number_lanes = models.CharField(max_length=5, null=True, blank=True)
+
+    class Meta:
+        db_table = "core_sequencer_in_lab"
 
     def __str__(self):
         return "%s" % (self.sequencer_name)
@@ -1675,6 +1766,9 @@ class SequencerInLab(models.Model):
 class OntologyMap(models.Model):
     label = models.CharField(max_length=255)
     ontology = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        db_table = "core_ontology_map"
 
     def __str__(self):
         return "%s" % (self.label)
