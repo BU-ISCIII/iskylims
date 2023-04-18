@@ -624,7 +624,7 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 def add_in_progress(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
+            groups = Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -685,7 +685,7 @@ def add_in_progress(request):
 def add_delivery(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
+            groups = Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -758,7 +758,7 @@ def add_delivery(request):
 def stats_by_user(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
+            groups = Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -887,7 +887,7 @@ def stats_by_user(request):
 def stats_by_services_request(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
+            groups = Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
