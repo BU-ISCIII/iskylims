@@ -2,8 +2,8 @@ import json
 
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.models import *
-from iSkyLIMS_clinic.utils.managed_samples import *
-from iSkyLIMS_core.utils.handling_protocols import *
+from iSkyLIMS_clinic.utils.samples import *
+from iSkyLIMS_core.utils.protocols import *
 
 
 def add_result_protocol_parameters(request):

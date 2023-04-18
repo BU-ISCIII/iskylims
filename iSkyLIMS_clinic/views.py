@@ -6,14 +6,14 @@ from django.shortcuts import redirect, render
 
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.models import *
-from iSkyLIMS_clinic.utils.managed_patient import *
-from iSkyLIMS_clinic.utils.managed_projects import *
-from iSkyLIMS_clinic.utils.managed_results import *
-from iSkyLIMS_clinic.utils.managed_samples import *
-from iSkyLIMS_core.utils.handling_commercial_kits import *
-from iSkyLIMS_core.utils.handling_patient_projects import *
-from iSkyLIMS_core.utils.handling_protocols import *
-from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_clinic.utils.patient import *
+from iSkyLIMS_clinic.utils.projects import *
+from iSkyLIMS_clinic.utils.results import *
+from iSkyLIMS_clinic.utils.samples import *
+from iSkyLIMS_core.utils.commercial_kits import *
+from iSkyLIMS_core.utils.patient_projects import *
+from iSkyLIMS_core.utils.protocols import *
+from iSkyLIMS_core.utils.samples import *
 
 
 def index(request):

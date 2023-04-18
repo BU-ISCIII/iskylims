@@ -1,5 +1,5 @@
 from iSkyLIMS_core.utils.common import get_friend_list
-from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.samples import *
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 

@@ -7,9 +7,9 @@ from django.contrib.auth.models import User
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.common import get_friend_list
-from iSkyLIMS_core.utils.handling_commercial_kits import \
+from iSkyLIMS_core.utils.commercial_kits import \
     get_lot_commercial_kits
-from iSkyLIMS_core.utils.handling_protocols import *
+from iSkyLIMS_core.utils.protocols import *
 
 
 def create_table_to_select_molecules(samples_list):

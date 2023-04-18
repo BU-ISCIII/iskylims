@@ -33,7 +33,7 @@ from iSkyLIMS_core.models import (LabRequest, MoleculeParameterValue,
                                   SampleProjectsFieldsValue, Samples,
                                   SamplesProjectsTableOptions, SampleType,
                                   Species, UserLotCommercialKits)
-from iSkyLIMS_core.utils.handling_samples import (
+from iSkyLIMS_core.utils.samples import (
     check_if_sample_already_defined, check_patient_code_exists,
     create_empty_patient, get_sample_project_obj_from_id,
     increase_unique_value)
