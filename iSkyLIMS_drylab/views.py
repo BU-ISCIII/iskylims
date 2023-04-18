@@ -262,9 +262,9 @@ def search_service(request):
     center_list_abbr = []
     center_availables = iSkyLIMS_drylab.models.Center.objects.all().order_by ('centerAbbr')
     for center in center_availables:
-        center_list_abbr.append(center.centerAbbr)
-    services_search_list["centers"] = center_list_abbr
-    services_search_list["status"] = STATUS_CHOICES
+        center_list_abbr.append (center.centerAbbr)
+    services_search_list ['centers'] = center_list_abbr
+    services_search_list ['status'] = iSkyLIMS_drylab.models.STATUS_CHOICES
 
     if "iSkyLIMS_wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
