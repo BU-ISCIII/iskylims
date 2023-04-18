@@ -1,24 +1,31 @@
 #!/bin/bash
 
-ISKYLIMS_VERSION="2.0.x"
+ISKYLIMS_VERSION="2.x.x"
 
 usage() {
 cat << EOF
-    This script install and upgrade the iskylims application.
+This script install and upgrade the iskylims application.
 
-    usage : $0 --upgrade --dev --conf
-        Optional input data:
-        --upgrade | Upgrade the iskylims application
-        --dev     | Use the develop version instead of main release
-        --conf    | Select configuration file
+usage : $0 --upgrade --dev --conf
+    Optional input data:
+    --install | Define the type of installation full/dependencies/application
+    --upgrade | Upgrade the iskylims application
+    --dev     | Use the develop version instead of main release
+    --conf    | Select configuration file
 
 
-    Examples:
-        To install iskylims application with the main release
-        sudo $0
+Examples:
+    To install iskylims application with the main release
+    sudo $0 --install dependencies
 
-        To upgrade using develop code
-        $0 --upgrade --dev
+    To install only iSkyLIMS platform application
+    $0 --install application
+
+    To upgrade using develop code
+    $0 --upgrade --dev
+
+    To upgrade running migration script and update initial tables
+    $0 --upgrade --script <migration_script> --tables
 EOF
 }
 
@@ -86,6 +93,19 @@ python_check(){
     fi
 }
 
+root_check(){
+    if [[ $EUID -ne 0 ]]; then
+        printf "\n\n%s"
+        printf "${RED}------------------${NC}\n"
+        printf "%s"
+        printf "${RED}Exiting installation. This script must be run as root ${NC}\n"
+        printf "\n\n%s"
+        printf "${RED}------------------${NC}\n"
+        printf "%s"
+        exit 1
+    fi
+}
+
 #================================================================
 #SET TEMINAL COLORS
 #================================================================
@@ -107,7 +127,10 @@ do
     fi
     case "$arg" in
     ##OPTIONAL
+        --install)  set -- "$@"	-i ;;
 		--upgrade)	set -- "$@"	-u ;;
+        --script)   set -- "$@"	-s ;;
+        --tables)   set -- "$@"	-t ;;
         --dev)      set -- "$@" -d ;;
         --conf)     set -- "$@" -c ;;
 
@@ -128,8 +151,17 @@ conf_file="./install_settings.txt"
 options=":c:duvh"
 while getopts $options opt; do
 	case $opt in
+        i ) type_installation=$OPTARG
+            ;;
 		u )
 			upgrade=true
+			;;
+        s )
+			run_script=true
+            migration_script=$OPTARG
+			;;
+        t )
+			update_tables=true
 			;;
 		d )
 			git_branch="develop"
@@ -232,6 +264,13 @@ if [ $upgrade == true ]; then
     ./manage.py makemigrations
     ./manage.py migrate
     ./manage.py collectstatic
+    if [ $update_tables == true ]; then
+        ./manage.py loaddata conf/first_install_tables.json
+    fi
+    if [ $run_script == true ]; then
+        ./manage.py runscript $migration_script
+    fi
+
     #Linux distribution
     linux_distribution=$(lsb_release -i | cut -f 2-)
 
@@ -268,23 +307,6 @@ printf "${YELLOW}------------------${NC}\n\n"
 #================================================================
 #CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
 #================================================================
-# Check that script is run as root
-if [[ $EUID -ne 0 ]]; then
-    printf "\n\n%s"
-    printf "${RED}------------------${NC}\n"
-    printf "%s"
-    printf "${RED}Exiting installation. This script must be run as root ${NC}\n"
-    printf "\n\n%s"
-    printf "${RED}------------------${NC}\n"
-    printf "%s"
-    exit 1
-fi
-
-user=$SUDO_USER
-group=$(groups | cut -d" " -f1)
-
-#Linux distribution
-linux_distribution=$(lsb_release -i | cut -f 2-)
 
 echo "Checking main requirements"
 python_check
@@ -295,193 +317,260 @@ apache_check
 printf "${BLUE}Successful check for apache${NC}\n"
 
 #================================================================
-## move to develop branch if --dev param
-
-##git checkout develop
-
+# INSTALL REPOSITORY REQUIRED SOFTWARE AND PYTHON VIRTUAL ENVIRONMENT
 #================================================================
 
-read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
-echo    # (optional) move to a new line
-if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-    echo "Exiting without running iskylims installation"
-    exit 1
-fi
+if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
+    # Check if installation script is run as root
+    root_check
 
-echo "Installing Interop"
-if [ -d /opt/interop ]; then
-    echo "There is already an interop installation"
-    echo "Skipping Interop installation"
-else
-    cd /opt
-    echo "Downloading interop software"
-    wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
-    tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
-    ln -s InterOp-1.1.15-Linux-GNU interop
-    rm InterOp-1.1.15-Linux-GNU.tar.gz
-    echo "Interop is now installed"
-    cd -
-fi
+    user=$SUDO_USER
+    group=$(groups | cut -d" " -f1)
 
-echo "Starting iSkyLIMS installation"
-if [ -d $INSTALL_PATH ]; then
-    echo "There already is an installation of iskylims in $INSTALL_PATH."
-    read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
+    # Find out server Linux distribution
+    linux_distribution=$(lsb_release -i | cut -f 2-)
+
+    read -p "Are you sure you want to install repository Software required for iSkyLIMS? (Y/N) " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            echo "Exiting without installing required software for iSkyLIMS installation"
+            exit 1
+        fi
+
+
+    #================================================================
+    ## move to develop branch if --dev param
+
+    ##git checkout develop
+
+    #================================================================
+
+    read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        echo "Exiting without running iSkyLIMS installation"
+        echo "Exiting without running iskylims installation"
         exit 1
+    fi
+
+    echo "Installing Interop"
+    if [ -d /opt/interop ]; then
+        echo "There is already an interop installation"
+        echo "Skipping Interop installation"
     else
-        rm -rf $INSTALL_PATH
+        cd /opt
+        echo "Downloading interop software"
+        wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
+        tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
+        ln -s InterOp-1.1.15-Linux-GNU interop
+        rm InterOp-1.1.15-Linux-GNU.tar.gz
+        echo "Interop is now installed"
+        cd -
+    fi
+
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        echo "Software installation for Ubuntu"
+        apt-get update && apt-get upgrade -y
+        apt-get install -y \
+            apt-utils wget \
+            libmysqlclient-dev apache2-dev \
+            python3-venv mariadb-server \
+            gcc libpq-dev \
+            python3-dev python3-pip python3-wheel
+    fi
+
+    if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+        echo "Software installation for Centos/RedHat"
+        yum groupinstall "Development tools"
+        yum install zlib-devel bzip2-devel openssl-devel \
+                    wget httpd-devel mysql-libs sqlite sqlite-devel \
+                    mariadb mariadb-devel libffi-devel
+    fi
+
+    # install virtual environment
+    echo "Creating virtual environment"
+    if [ -d $INSTALL_PATH/virtualenv ]; then
+        echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
+        read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            rm -rf $INSTALL_PATH/virtualenv
+            bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+        else
+            echo "virtualenv alredy defined. Skipping."
+        fi
+    else
+        bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+    fi
+
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+
+    # Install python packages required for iSkyLIMS
+    echo "Installing required python packages"
+    python3 -m pip install wheel
+    python3 -m pip install -r conf/requirements.txt
+
+
+    ## Create apache group if it does not exist.
+    if ! grep -q apache /etc/group
+    then
+        groupadd apache
+    fi
+
+    if [ type_installation == "full" || type_installation == "application" ]; then
+        echo "Software dependencies are successfuly installed"
+    else
+        printf "\n\n%s"
+        printf "${BLUE}------------------${NC}\n"
+        printf "%s"
+        printf "${BLUE}Software dependencies are successfuly installed${NC}\n"
+        printf "%s"
+        printf "${BLUE}------------------${NC}\n\n"
+        exit 0
     fi
 fi
 
-if [[ $linux_distribution == "Ubuntu" ]]; then
-    echo "Software installation for Ubuntu"
-    apt-get update && apt-get upgrade -y
-    apt-get install -y \
-        apt-utils wget \
-        libmysqlclient-dev apache2-dev \
-        python3-venv mariadb-server \
-        gcc libpq-dev \
-        python3-dev python3-pip python3-wheel
-fi
+#================================================================
+# INSTALL iSkyLIMS PLATFORM APPLICATION
+#================================================================
 
-if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-    echo "Software installation for Centos/RedHat"
-    yum groupinstall "Development tools"
-    yum install zlib-devel bzip2-devel openssl-devel \
-                wget httpd-devel mysql-libs sqlite sqlite-devel \
-                mariadb mariadb-devel libffi-devel
-fi
+if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]; then
 
-## Create the installation folder
-mkdir -p $INSTALL_PATH
-
-rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
-        iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
-
-cd $INSTALL_PATH
-
-## Create apache group if it does not exist.
-if ! grep -q apache /etc/group
-then
-    groupadd apache
-fi
-
-## Fix permissions and owners
-
-if [ $LOG_TYPE == "symbolic_link" ]; then
-    if [ -d $LOG_PATH ]; then
-        ln -s $LOG_PATH  $INSTALL_PATH/logs
-    chmod 775 $LOG_PATH
-    else
-        echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
-    exit 1
-    fi
-else
-    mkdir -p $INSTALL_PATH/logs
-    chown $user:apache $INSTALL_PATH/logs
-    chmod 775 $INSTALL_PATH/logs
-fi
-
-# Create necessary folders
-echo "Created documents structure"
-mkdir -p $INSTALL_PATH/documents/wetlab/tmp
-mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
-mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
-chown $user:apache $INSTALL_PATH/documents
-chmod 775 $INSTALL_PATH/documents
-chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
-chmod 775 $INSTALL_PATH/documents/wetlab/tmp
-chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
-chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
-chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
-chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
-mkdir -p $INSTALL_PATH/documents/drylab
-chown $user:apache $INSTALL_PATH/documents/drylab
-chmod 775 $INSTALL_PATH/documents/drylab
-
-
-# install virtual environment
-echo "Creating virtual environment"
-if [ -d $INSTALL_PATH/virtualenv ]; then
-    echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
-    read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+    read -p "Are you sure you want to install iSkyLIMS application in this server? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        rm -rf $INSTALL_PATH/virtualenv
-        bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
-    else
-        echo "virtualenv alredy defined. Skipping."
+        echo "Exiting without installing required software for iSkyLIMS installation"
+        exit 1
     fi
-else
-    bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+    ## Fix permissions and owners
+
+    if [ $LOG_TYPE == "symbolic_link" ]; then
+        if [ -d $LOG_PATH ]; then
+            ln -s $LOG_PATH  $INSTALL_PATH/logs
+        chmod 775 $LOG_PATH
+        else
+            echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
+        exit 1
+        fi
+    else
+        mkdir -p $INSTALL_PATH/logs
+        chown $user:apache $INSTALL_PATH/logs
+        chmod 775 $INSTALL_PATH/logs
+    fi
+
+
+    echo "Starting iSkyLIMS installation"
+    if [ -d $INSTALL_PATH ]; then
+        echo "There already is an installation of iskylims in $INSTALL_PATH."
+        read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            echo "Exiting without running iSkyLIMS installation"
+            exit 1
+        else
+            rm -rf $INSTALL_PATH
+        fi
+    fi
+
+    ## Create the installation folder
+    mkdir -p $INSTALL_PATH
+
+    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
+            iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
+
+    cd $INSTALL_PATH
+
+    # Create necessary folders
+    echo "Created documents structure"
+    mkdir -p $INSTALL_PATH/documents/wetlab/tmp
+    mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
+    mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
+    chown $user:apache $INSTALL_PATH/documents
+    chmod 775 $INSTALL_PATH/documents
+    chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
+    chmod 775 $INSTALL_PATH/documents/wetlab/tmp
+    chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
+    chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
+    chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
+    chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
+    mkdir -p $INSTALL_PATH/documents/drylab
+    chown $user:apache $INSTALL_PATH/documents/drylab
+    chmod 775 $INSTALL_PATH/documents/drylab
+
+
+
+
+    # Starting iSkyLIMS
+        echo "activate the virtualenv"
+        source virtualenv/bin/activate
+    echo "Creating iskylims project"
+    django-admin startproject iSkyLIMS .
+    grep ^SECRET iSkyLIMS/settings.py > ~/.secret
+
+    # Copying config files and script
+    cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
+    cp conf/urls.py $INSTALL_PATH/iSkyLIMS
+
+    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+
+    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+
+    echo "Creating the database structure for iSkyLIMS"
+    python3 manage.py migrate
+    python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
+    python3 manage.py migrate
+
+    echo "Run collectstatic"
+    python3 manage.py collectstatic
+
+    echo "Loading in database initial data"
+    python3 manage.py loaddata conf/first_install_tables.json
+
+    echo "Running crontab"
+    ## TODO: CHECK THIS.
+    python3 manage.py crontab add
+    mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
+    chown www-data /var/spool/cron/crontabs/www-data
+
+    echo "Updating Apache configuration"
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        cp conf/iskylims_apache_ubuntu.conf /etc/apache2/sites-available/000-default.conf
+    fi
+
+    if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+        cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
+    fi
+
+    echo "Creating super user "
+    python3 manage.py createsuperuser --username admin
+
+    printf "\n\n%s"
+    printf "${BLUE}------------------${NC}\n"
+    printf "%s"
+    printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
+    printf "%s"
+    printf "${BLUE}------------------${NC}\n\n"
+
+    echo "Installation completed"
+    exit 0
 fi
-
-echo "activate the virtualenv"
-source virtualenv/bin/activate
-
-# Starting iSkyLIMS
-python3 -m pip install wheel
-python3 -m pip install -r conf/requirements.txt
-echo ""
-echo "Creating iskylims project"
-django-admin startproject iSkyLIMS .
-grep ^SECRET iSkyLIMS/settings.py > ~/.secret
-
-# Copying config files and script
-cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
-cp conf/urls.py $INSTALL_PATH/iSkyLIMS
-
-sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-
-sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-
-echo "Creating the database structure for iSkyLIMS"
-python3 manage.py migrate
-python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
-python3 manage.py migrate
-
-echo "Run collectstatic"
-python3 manage.py collectstatic
-
-echo "Loading in database initial data"
-python3 manage.py loaddata conf/first_install_tables.json
-
-echo "Running crontab"
-## TODO: CHECK THIS.
-python3 manage.py crontab add
-mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
-chown www-data /var/spool/cron/crontabs/www-data
-
-echo "Updating Apache configuration"
-if [[ $linux_distribution == "Ubuntu" ]]; then
-    cp conf/iskylims_apache_ubuntu.conf /etc/apache2/sites-available/000-default.conf
-fi
-
-if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-    cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
-fi
-
-echo "Creating super user "
-python3 manage.py createsuperuser --username admin
 
 printf "\n\n%s"
-printf "${BLUE}------------------${NC}\n"
+printf "${RED}------------------${NC}\n"
 printf "%s"
-printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
+printf "${RED}Invalid installation parameters${NC}\n"
 printf "%s"
-printf "${BLUE}------------------${NC}\n\n"
-
-echo "Installation completed"
+printf "${RED}------------------${NC}\n\n"
+echo "See the usage examples"
+usage
+exit 1
