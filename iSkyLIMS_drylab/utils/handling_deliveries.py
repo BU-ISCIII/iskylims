@@ -27,7 +27,7 @@ def prepare_delivery_form(resolution_id):
         ] = resolution_obj.get_available_services_ids()
         delivery_data_form["resolution_id"] = resolution_id
         delivery_data_form["resolution_number"] = resolution_obj.get_resolution_number()
-        req_available_services_id = resolution_obj.get_available_services_ids()
+        # req_available_services_id = resolution_obj.get_available_services_ids()
 
         delivery_data_form["pipelines_data"] = get_pipelines_for_resolution(
             resolution_obj
