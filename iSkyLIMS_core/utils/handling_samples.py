@@ -1,12 +1,15 @@
+import datetime
 import json
 import re
-import datetime
+
+from django.contrib.auth.models import User
+
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.common import get_friend_list
-from iSkyLIMS_core.utils.handling_commercial_kits import get_lot_commercial_kits
+from iSkyLIMS_core.utils.handling_commercial_kits import \
+    get_lot_commercial_kits
 from iSkyLIMS_core.utils.handling_protocols import *
-from django.contrib.auth.models import User
 
 
 def create_table_to_select_molecules(samples_list):
@@ -70,8 +73,8 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
             ).exists():
                 selected_protocol = protocol_used
                 protocol_parameters = ProtocolParameters.objects.filter(
-                    protocol_id__exact=protocol_used_obj, parameterUsed=True
-                ).order_by("parameterOrder")
+                    protocol_id__exact=protocol_used_obj, parameter_used=True
+                ).order_by("parameter_order")
 
                 for parameter in protocol_parameters:
                     parameter_list.append(parameter.get_parameter_name())
@@ -85,13 +88,10 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
                 molecule_recorded[
                     "protocol_parameters_heading_type"
                 ] = get_protocol_parameters_and_type(protocol_used_obj)
-                # if Protocols.objects.filter(name__exact = selected_protocol).exists():
-                # protocol_obj = Protocols.objects.get(name__exact = selected_protocol)
                 molecule_recorded["lot_kit"] = get_lot_commercial_kits(
                     protocol_used_obj
                 )
-                # else:
-                #     molecule_recorded['lot_kit'] = ''
+
         if protocol_used == selected_protocol:
             showed_molecule.append(molecule)
             data = [""] * length_heading
@@ -125,7 +125,6 @@ def add_molecule_protocol_parameters(form_data):
 
     molecule_parameter_value = {}
     molecule_updated_list = []
-    sample_updated_list = []
 
     molecule_json_data = json.loads(form_data["parameters_data"])
     molecule_ids = form_data["molecules"].split(",")
@@ -134,13 +133,9 @@ def add_molecule_protocol_parameters(form_data):
     parameters_length = len(molecule_json_data[0])
     fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
 
-    # user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(chipLot__exact = molecule_json_data[0][1])
-    # protocol_used_obj = user_lot_commercial_kit_obj.get_protocol_obj_for_kit()
-
-    # protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
     for row_index in range(len(molecule_json_data)):
         user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(
-            chipLot__exact=molecule_json_data[row_index][1]
+            chip_lot__exact=molecule_json_data[row_index][1]
         )
         # increase the number of use and updated the last use date
         user_lot_commercial_kit_obj.set_increase_use()
@@ -160,23 +155,19 @@ def add_molecule_protocol_parameters(form_data):
                 "moleculeParameter_id"
             ] = ProtocolParameters.objects.get(
                 protocol_id=protocol_used_obj,
-                parameterName__exact=parameter_heading[p_index - fixed_heading_length],
+                parameter_name__exact=parameter_heading[p_index - fixed_heading_length],
             )
             molecule_parameter_value["molecule_id"] = molecule_obj
             molecule_parameter_value["parameterValue"] = molecule_json_data[row_index][
                 p_index
             ]
-            new_parameters_data = (
-                MoleculeParameterValue.objects.create_molecule_parameter_value(
+            MoleculeParameterValue.objects.create_molecule_parameter_value(
                     molecule_parameter_value
                 )
-            )
 
         # Update sample state
         sample_obj = molecule_obj.get_sample_obj()
         sample_obj.set_state("Pending for use")
-        # Update sample list
-        # sample_updated_list.append(sample_obj.get_sample_id())
 
     return molecule_updated_list
 
@@ -245,12 +236,9 @@ def analyze_input_samples(request, app_name):
 
             for i in range(len(heading_in_form)):
                 sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
-            # optional_fields = []
 
-            # for opt_field in OPTIONAL_SAMPLES_FIELDS:
-            #    optional_fields.append(HEADING_FOR_RECORD_SAMPLES.index(opt_field))
             optional_fields = SampleType.objects.get(
-                sampleType__exact=sample_type, apps_name__exact=app_name
+                sample_type__exact=sample_type, apps_name__exact=app_name
             ).get_optional_values()
 
             # check_empty_fields does not consider if the optional values are empty
@@ -258,7 +246,8 @@ def analyze_input_samples(request, app_name):
                 incomplete_samples.append(row)
                 sample_recorded["all_samples_defined"] = False
                 continue
-            # Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
+            # Check if patient code  already exists on database,
+            # If not if will be created giving a sequencial dummy value
             if sample_data["p_code_id"] != "":
                 patient_obj = check_patient_code_exists(sample_data["p_code_id"])
                 if patient_obj is False:
@@ -269,13 +258,13 @@ def analyze_input_samples(request, app_name):
             sample_data["patient"] = patient_obj
             sample_data["user"] = reg_user
             sample_data["sample_id"] = str(reg_user + "_" + sample_name)
-            if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
+            if not Samples.objects.exclude(unique_sample_id__isnull=True).exists():
                 sample_data["new_unique_value"] = "AAA-0001"
             else:
                 last_unique_value = (
-                    Samples.objects.exclude(uniqueSampleID__isnull=True)
+                    Samples.objects.exclude(unique_sample_id__isnull=True)
                     .last()
-                    .uniqueSampleID
+                    .unique_sample_id
                 )
                 sample_data["new_unique_value"] = increase_unique_value(
                     last_unique_value
@@ -291,10 +280,10 @@ def analyze_input_samples(request, app_name):
                     sample_data["sampleState"] = "Defined"
             else:
                 sample_data["sampleProject"] = SampleProjects.objects.get(
-                    sampleProjectName__exact=sample_data["project_service"]
+                    sample_project_name__exact=sample_data["project_service"]
                 )
                 if SampleProjectsFields.objects.filter(
-                    sampleProjects_id=sample_data["sampleProject"]
+                    sample_projects_id=sample_data["sampleProject"]
                 ).exists():
                     sample_recorded["all_samples_defined"] = False
                     sample_data["sampleState"] = "Pre-Defined"
@@ -316,27 +305,27 @@ def analyze_input_samples(request, app_name):
         else:  # get the invalid sample to displays information to user
             sample_recorded["all_samples_defined"] = False
             sample_id = Samples.objects.get(
-                sampleName__exact=sample_name
+                sample_name__exact=sample_name
             ).get_sample_id()
-            if not "sample_id_for_action" in sample_recorded:
+            if "sample_id_for_action" not in sample_recorded:
                 # get the first no valid sample to ask user for new action on the sample
                 sample_recorded["sample_data_for_action"] = Samples.objects.get(
-                    sampleName__exact=sample_name
+                    sample_name__exact=sample_name
                 ).get_sample_definition_information()
                 sample_recorded["sample_id_for_action"] = sample_id
                 invalid_samples.append(
                     Samples.objects.get(
-                        sampleName__exact=sample_name
+                        sample_name__exact=sample_name
                     ).get_sample_definition_information()
                 )
             else:
                 invalid_samples_id.append(sample_id)
                 invalid_samples.append(
                     Samples.objects.get(
-                        sampleName__exact=sample_name
+                        sample_name__exact=sample_name
                     ).get_sample_definition_information()
                 )
-    ## Add already recorded sample in Pre-defined that were not processed because incomplete informatio in samples
+    # Add already recorded sample in Pre-defined that were not processed because incomplete informatio in samples
     if "pre_defined_id" in request.POST:
         old_pre_defined_list = request.POST["pre_defined_id"].split(",")
         for old_pre_defined in old_pre_defined_list:
@@ -349,7 +338,7 @@ def analyze_input_samples(request, app_name):
             sample_obj = get_sample_obj_from_id(old_pending_pre_defined)
             pre_defined_samples.append(sample_obj.get_sample_name())
             pre_defined_samples_id.append(old_pending_pre_defined)
-    ##   collect data into sample_recorded
+    # collect data into sample_recorded
     if len(defined_samples) > 0:
         sample_recorded["defined_samples"] = defined_samples
     if len(invalid_samples) > 0:
@@ -382,7 +371,6 @@ def analyze_input_molecules(request):
     Return:
         molecule_recorded.
     """
-    # excel_data = request.POST['table_data']
     molecule_json_data = json.loads(request.POST["molecule_data"])
     samples = request.POST["samples"].split(",")
     heading_in_excel = [
@@ -393,24 +381,20 @@ def analyze_input_molecules(request):
         "protocol_type",
         "protocol_used",
     ]
-
     molecule_recorded = {}
     showed_molecule = []
     pending_molecule = []
     prot_used_in_display = ""
     molecule_recorded["molecule_id"] = []
     molecule_recorded["data"] = []
-    incomplete_molecules = []
     incomplete_molecules_ids = []
     for row_index in range(len(molecule_json_data)):
-
         molecule_data = {}
         if not Samples.objects.filter(pk=int(samples[row_index])).exists():
             continue
         sample_obj = Samples.objects.get(pk=int(samples[row_index]))
         # check_empty_fields does not consider if the optional values are empty
         if check_empty_fields(molecule_json_data[row_index], [""]):
-            incomplete_samples.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(int(samples[row_index]))
             continue
         if MoleculePreparation.objects.filter(sample=sample_obj).exists():
@@ -431,7 +415,7 @@ def analyze_input_molecules(request):
         ]
         protocol_used_obj = Protocols.objects.get(name__exact=protocol_used)
         molecule_type_obj = MoleculeType.objects.get(
-            moleculeType__exact=molecule_json_data[row_index][
+            molecule_type__exact=molecule_json_data[row_index][
                 heading_in_excel.index("molecule_type")
             ]
         )
@@ -457,8 +441,8 @@ def analyze_input_molecules(request):
             ).exists():
                 prot_used_in_display = protocol_used
                 protocol_parameters = ProtocolParameters.objects.filter(
-                    protocol_id__exact=protocol_used_obj, parameterUsed=True
-                ).order_by("parameterOrder")
+                    protocol_id__exact=protocol_used_obj, parameter_used=True
+                ).order_by("parameter_order")
                 parameter_list = []
                 for parameter in protocol_parameters:
                     parameter_list.append(parameter.get_parameter_name())
@@ -489,13 +473,10 @@ def analyze_input_sample_project_fields(form_data):
     """
     Description:
         The function analyze the user data to assign values to the sample project field.
-
-
     Input:
         form_data
     Functions:
         get_sample_obj_from_id   : located at this file
-
     Return:
         sample_to_display.
     """
@@ -503,7 +484,7 @@ def analyze_input_sample_project_fields(form_data):
     field_value_json_data = json.loads(form_data["table_data"])
     samples_name = form_data["pre_defined_samples"].split(",")
     samples_ids = form_data["pre_defined_id"].split(",")
-    pending_ids = form_data["pending_pre_defined"].split(",")
+    # pending_ids = form_data["pending_pre_defined"].split(",")
     heading_list = form_data["pre_defined_heading"].split(",")
     sample_to_display = []
     for i in range(len(samples_ids)):
@@ -512,18 +493,18 @@ def analyze_input_sample_project_fields(form_data):
         sample_project_obj = sample_obj.get_sample_project_obj()
         for j in range(len(heading_list)):
             sample_project_field = SampleProjectsFields.objects.get(
-                sampleProjects_id=sample_project_obj,
-                sampleProjectFieldName__exact=heading_list[j],
+                sample_projects_id=sample_project_obj,
+                sample_project_field_name__exact=heading_list[j],
             )
             field_value = {}
             field_value["sample_id"] = sample_obj
             field_value["sampleProjecttField_id"] = sample_project_field
             field_value["sampleProjectFieldValue"] = field_value_json_data[i][j + 1]
-            new_sample_project_f_value = (
-                SampleProjectsFieldsValue.objects.create_project_field_value(
+
+            SampleProjectsFieldsValue.objects.create_project_field_value(
                     field_value
                 )
-            )
+
         sample_to_display.append([field_value_json_data[i][0], right_id])
         if sample_obj.is_only_recorded():
             sample_obj.set_state("Completed")
@@ -563,7 +544,7 @@ def build_record_sample_form(app_name):
 
 def check_if_sample_already_defined(sample_name, reg_user):
     if Samples.objects.filter(
-        sampleName__exact=sample_name, sampleUser__username__exact=reg_user
+        sample_name__exact=sample_name, sample_user__username__exact=reg_user
     ).exists():
         return True
     else:
@@ -587,7 +568,7 @@ def check_if_sample_project_exists(sample_project, app_name):
         False is sample project does not exists. True if sample project exists
     """
     if SampleProjects.objects.filter(
-        sampleProjectName__iexact=sample_project, apps_name__exact=app_name
+        sample_project_name__iexact=sample_project, apps_name__exact=app_name
     ).exists():
         return True
     return False
@@ -620,8 +601,8 @@ def check_patient_code_exists(p_code_id):
     Return:
         False is user is not define or patient_obj is patient exists
     """
-    if PatientCore.objects.filter(patientCode__iexact=p_code_id).exists():
-        patient_obj = PatientCore.objects.get(patientCode__iexact=p_code_id)
+    if PatientCore.objects.filter(patient_code__iexact=p_code_id).exists():
+        patient_obj = PatientCore.objects.get(patient_code__iexact=p_code_id)
     else:
         return False
 
@@ -706,10 +687,10 @@ def create_table_pending_use(sample_list, app_name):
     use_type["heading"] = HEADING_FOR_SELECTING_MOLECULE_USE
     length_heading = len(HEADING_FOR_SELECTING_MOLECULE_USE)
     if MoleculePreparation.objects.filter(
-        moleculeUsedFor=None, state__moleculeStateName__exact="Completed"
+        molecule_used_for=None, state__molecule_state_name__exact="Completed"
     ).exists():
         molecules = MoleculePreparation.objects.filter(
-            moleculeUsedFor=None, state__moleculeStateName__exact="Completed"
+            molecule_used_for=None, state__molecule_state_name__exact="Completed"
         )
         for molecule in molecules:
             molecule_code_id = molecule.get_molecule_code_id()
@@ -834,7 +815,7 @@ def save_type_of_sample(form_data, app_name):
     save_s_type = {}
     mandatory_index_field_list = []
     if SampleType.objects.filter(
-        sampleType__exact=form_data["sampleTypeName"], apps_name__exact=app_name
+        sample_type__exact=form_data["sampleTypeName"], apps_name__exact=app_name
     ).exists():
         save_s_type["ERROR"] = ERROR_TYPE_OF_SAMPLE_EXISTS
         return save_s_type
@@ -845,7 +826,7 @@ def save_type_of_sample(form_data, app_name):
             continue
         mandatory_index_field_list.append(HEADING_FOR_RECORD_SAMPLES.index(m_field))
     for field in HEADING_FOR_RECORD_SAMPLES:
-        if not field in form_data:
+        if field not in form_data:
             continue
         mandatory_index_field_list.append(HEADING_FOR_RECORD_SAMPLES.index(field))
     # get the index that are optional
@@ -876,22 +857,22 @@ def get_sample_project_information(sample_project_obj, sample_obj):
     s_project_info = {}
     s_project_info["sample_project_name"] = sample_project_obj.get_sample_project_name()
     if SampleProjectsFields.objects.filter(
-        sampleProjects_id=sample_project_obj
+        sample_projects_id=sample_project_obj
     ).exists():
         s_project_info["sample_project_field_heading"] = []
         s_project_info["sample_project_field_value"] = []
         sample_project_fields = SampleProjectsFields.objects.filter(
-            sampleProjects_id=sample_project_obj
+            sample_projects_id=sample_project_obj
         )
         for s_p_field in sample_project_fields:
             s_project_info["sample_project_field_heading"].append(
                 s_p_field.get_description()
             )
             if SampleProjectsFieldsValue.objects.filter(
-                sample_id=sample_obj, sampleProjecttField_id=s_p_field
+                sample_id=sample_obj, sample_project_field_id=s_p_field
             ).exists():
                 field_value = SampleProjectsFieldsValue.objects.get(
-                    sample_id=sample_obj, sampleProjecttField_id=s_p_field
+                    sample_id=sample_obj, sample_project_field_id=s_p_field
                 ).get_field_value()
                 if s_p_field.get_field_type() == "Date":
                     field_value = field_value.replace(" 00:00:00", "")
@@ -909,7 +890,6 @@ def get_sample_definition_heading():
 def get_all_sample_information(sample_id, massive):
     sample_information = {}
     sample_information["sample_id"] = sample_id
-    parameter_heading_values = []
     if not Samples.objects.filter(pk__exact=sample_id).exists():
         return "Error"
     sample_obj = Samples.objects.get(pk__exact=sample_id)
@@ -941,7 +921,7 @@ def get_all_sample_information(sample_id, massive):
             ).exists():
                 parameter_names = ProtocolParameters.objects.filter(
                     protocol_id=protocol_used_obj
-                ).order_by("parameterOrder")
+                ).order_by("parameter_order")
                 molecule_param_heading = ["Molecule CodeID"]
                 mol_param_value = [molecule.get_molecule_code_id()]
                 for p_name in parameter_names:
@@ -952,7 +932,7 @@ def get_all_sample_information(sample_id, massive):
                         try:
                             mol_param_value.append(
                                 MoleculeParameterValue.objects.get(
-                                    molecule_id=molecule, moleculeParameter_id=p_name
+                                    molecule_id=molecule, molecule_parameter_id=p_name
                                 ).get_param_value()
                             )
                         except MoleculeParameterValue.DoesNotExist:
@@ -988,12 +968,12 @@ def get_defined_samples(register_user):
     defined_samples["heading"] = HEADING_FOR_DEFINED_SAMPLES_STATE
     sample_information = []
     if Samples.objects.filter(
-        sampleState__sampleStateName__exact="Defined",
-        sampleUser__username__exact=register_user,
+        sample_state__sample_state_name__exact="Defined",
+        sample_user__username__exact=register_user,
     ).exists():
         sample_list = Samples.objects.filter(
-            sampleState__sampleStateName__exact="Defined",
-            sampleUser__username__exact=register_user,
+            sample_state__sample_state_name__exact="Defined",
+            sample_user__username__exact=register_user,
         ).order_by("generated_at")
         for sample in sample_list:
             sample_information.append(sample.get_info_in_defined_state())
@@ -1013,7 +993,7 @@ def get_extraction_kits(username):
         laboratories.
     """
     kits = 1
-    return
+    return kits
 
 
 def get_lab_requested():
@@ -1051,11 +1031,11 @@ def get_info_to_display_sample_project(sample_project_id):
         )
 
         if SampleProjectsFields.objects.filter(
-            sampleProjects_id=sample_project_obj
+            sample_projects_id=sample_project_obj
         ).exists():
             sample_project_fields = SampleProjectsFields.objects.filter(
-                sampleProjects_id=sample_project_obj
-            ).order_by("sampleProjectFieldOrder")
+                sample_projects_id=sample_project_obj
+            ).order_by("sample_project_field_order")
             s_project_fields_list = []
             for sample_project_field in sample_project_fields:
                 s_project_fields_list.append(
@@ -1078,8 +1058,8 @@ def get_only_recorded_samples_and_dates():
         samples_data
     """
     samples_data = []
-    if Samples.objects.filter(onlyRecorded=True).exists():
-        sample_objs = Samples.objects.filter(onlyRecorded=True).order_by("generated_at")
+    if Samples.objects.filter(only_recorded=True).exists():
+        sample_objs = Samples.objects.filter(only_recorded=True).order_by("generated_at")
         for sample_obj in sample_objs:
             data = [sample_obj.get_sample_name()]
             data.append(sample_obj.get_sample_project())
@@ -1105,11 +1085,11 @@ def get_parameters_sample_project(sample_project_id):
     if SampleProjects.objects.filter(pk__exact=sample_project_id).exists():
         sample_project_obj = SampleProjects.objects.get(pk__exact=sample_project_id)
         if SampleProjectsFields.objects.filter(
-            sampleProjects_id=sample_project_obj
+            sample_projects_id=sample_project_obj
         ).exists():
             sample_project_fields = SampleProjectsFields.objects.filter(
-                sampleProjects_id=sample_project_obj
-            ).order_by("sampleProjectFieldOrder")
+                sample_projects_id=sample_project_obj
+            ).order_by("sample_project_field_order")
             s_project_fields_list = []
             parameter_ids = []
             parameter_names = []
@@ -1148,7 +1128,7 @@ def get_info_for_defined_sample_projects(app_name):
         for s_project in s_projects:
             s_project_data = s_project.get_info_to_display()
             if SampleProjectsFields.objects.filter(
-                sampleProjects_id=s_project
+                sample_projects_id=s_project
             ).exists():
                 s_project_data.append(True)
             else:
@@ -1241,28 +1221,28 @@ def get_molecule_in_state(state, user):
     if user != "":
         user_friend_list = get_friend_list(user)
         if MoleculePreparation.objects.filter(
-            state__moleculeStateName__exact=state, moleculeUser__in=user_friend_list
+            state__molecule_state_name__exact=state, molecule_user__in=user_friend_list
         ).exists():
             molecule_objs = MoleculePreparation.objects.filter(
-                state__moleculeStateName__exact=state, moleculeUser__in=user_friend_list
+                state__molecule_state_name__exact=state, molecule_user__in=user_friend_list
             ).order_by("generated_at")
 
     else:
         if MoleculePreparation.objects.filter(
-            state__moleculeStateName__exact=state
+            state__molecule_state_name__exact=state
         ).exists():
             molecule_objs = (
                 MoleculePreparation.objects.filter(
-                    state__moleculeStateName__exact=state
+                    state__molecule_state_name__exact=state
                 )
-                .order_by("moleculeUser")
+                .order_by("molecule_user")
                 .order_by("generated_at")
             )
 
     return molecule_objs
 
 
-##### For each state get samples per user
+# For each state get samples per user
 def get_samples_in_defined_state(user):
     """
     Description:
@@ -1281,14 +1261,12 @@ def get_samples_in_defined_state(user):
         user_friend_list = get_friend_list(user)
 
         if Samples.objects.filter(
-            sampleState__sampleStateName__exact="Defined",
-            sampleUser__in=user_friend_list,
+            sample_state__sample_state_name__exact="Defined",
+            sample_user__in=user_friend_list,
         ).exists():
-            # if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
-            # samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
             samples_obj = Samples.objects.filter(
-                sampleState__sampleStateName__exact="Defined",
-                sampleUser__in=user_friend_list,
+                sample_state__sample_state_name__exact="Defined",
+                sample_user__in=user_friend_list,
             )
             for sample_obj in samples_obj:
                 sample_information.append(sample_obj.get_info_in_defined_state())
@@ -1302,12 +1280,12 @@ def get_samples_in_defined_state(user):
             return samples_in_state
     else:
         if Samples.objects.filter(
-            sampleState__sampleStateName__exact="Defined"
+            sample_state__sample_state_name__exact="Defined"
         ).exists():
             samples_obj = (
-                Samples.objects.filter(sampleState__sampleStateName__exact="Defined")
-                .order_by("sampleUser")
-                .order_by("sampleEntryDate")
+                Samples.objects.filter(sample_state__sample_state_same__exact="Defined")
+                .order_by("sample_user")
+                .order_by("sample_entry_date")
             )
             for sample_obj in samples_obj:
                 sample_data = sample_obj.get_info_in_defined_state()
@@ -1325,7 +1303,7 @@ def get_samples_in_defined_state(user):
             return samples_in_state
 
 
-##### For each state get molecules per user
+# For each state get molecules per user
 def get_samples_in_extracted_molecule_state(user):
     """
     Description:
@@ -1343,13 +1321,12 @@ def get_samples_in_extracted_molecule_state(user):
     if user != "":
         user_friend_list = get_friend_list(user)
         if Samples.objects.filter(
-            sampleState__sampleStateName__exact="Extract molecule",
-            sampleUser__in=user_friend_list,
+            sample_state__sample_state_name__exact="Extract molecule",
+            sample_user__in=user_friend_list,
         ).exists():
-            # if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
             samples_obj = Samples.objects.filter(
-                sampleState__sampleStateName__exact="Extract molecule",
-                sampleUser__in=user_friend_list,
+                sample_state__sample_state_name__exact="Extract molecule",
+                sample_user__in=user_friend_list,
             )
             for sample_obj in samples_obj:
                 molecules = MoleculePreparation.objects.filter(sample=sample_obj)
@@ -1373,14 +1350,14 @@ def get_samples_in_extracted_molecule_state(user):
             return molecule_state
     else:
         if Samples.objects.filter(
-            sampleState__sampleStateName__exact="Extract molecule"
+            sample_state__sample_state_name__exact="Extract molecule"
         ).exists():
             samples_obj = (
                 Samples.objects.filter(
-                    sampleState__sampleStateName__exact="Extract molecule"
+                    sample_state__sample_state_name__exact="Extract molecule"
                 )
-                .order_by("sampleUser")
-                .order_by("sampleEntryDate")
+                .order_by("sample_user")
+                .order_by("sample_entry_date")
             )
             for sample_obj in samples_obj:
                 molecules = MoleculePreparation.objects.filter(sample=sample_obj)
@@ -1403,12 +1380,12 @@ def get_samples_in_extracted_molecule_state(user):
             return molecule_state
 
 
-##### End of getting samples by state
+# End of getting samples by state
 
 
 def get_sample_obj_from_sample_name(sample_name):
-    if Samples.objects.filter(sampleName__exact=sample_name).exists():
-        sample_obj = Samples.objects.get(sampleName__exact=sample_name)
+    if Samples.objects.filter(sample_name__exact=sample_name).exists():
+        sample_obj = Samples.objects.get(sample_name__exact=sample_name)
         return sample_obj
     return
 
@@ -1472,8 +1449,8 @@ def get_samples_in_state(state):
     Return:
         sample_objs. False if no samples found in the requested state.
     """
-    if Samples.objects.filter(sampleState__sampleStateName__exact=state).exists():
-        sample_objs = Samples.objects.filter(sampleState__sampleStateName__exact=state)
+    if Samples.objects.filter(sample_state__sample_state_name__exact=state).exists():
+        sample_objs = Samples.objects.filter(sample_state__sample_state_name__exact=state)
         return sample_objs
     else:
         return False
@@ -1490,7 +1467,7 @@ def get_selected_recorded_samples(form_data):
     selected_samples = []
     samples_json_data = json.loads(form_data)
     for row_index in range(len(samples_json_data)):
-        if samples_json_data[row_index][-1] == True:
+        if samples_json_data[row_index][-1] is True:
             selected_samples.append(samples_json_data[row_index][-2])
 
     return selected_samples
@@ -1589,15 +1566,10 @@ def get_molecule_protocols(apps_name):
     for p_type in p_types:
         protocol_types.append(p_type.get_name())
     for protocol_type in p_types:
-        # if protocol_type.get_name() not in protocols :
-        #    protocols[protocol_type.get_molecule_type()] = []
-        # protocols[protocol_type.get_name()] = []
         protocols_in_type = Protocols.objects.filter(type=protocol_type)
-        # protocols_in_type = Protocols.objects.filter(type__protocol_type__exact = protocol_type)
         for p_in_type in protocols_in_type:
             protocol_name = p_in_type.get_name()
             protocols[protocol_type.get_molecule_type()].append(protocol_name)
-            # protocols[protocol_type.get_name()].append(protocol_name)
             protocol_list.append(protocol_name)
 
     return protocols, protocol_list
@@ -1723,7 +1695,7 @@ def record_molecule_use(from_data, app_name):
     """
     molecule_use_information = {}
     if MoleculeUsedFor.objects.filter(
-        usedFor__exact=from_data["moleculeUseName"]
+        used_for__exact=from_data["moleculeUseName"]
     ).exists():
         molecule_use_information["ERROR"] = ERROR_MOLECULE_USE_FOR_EXISTS
         return molecule_use_information
@@ -1734,7 +1706,7 @@ def record_molecule_use(from_data, app_name):
         molecule_use_data["massiveUse"] = True
     else:
         molecule_use_data["massiveUse"] = False
-    new_molecule_use = MoleculeUsedFor.objects.create_molecule_use_for(
+    MoleculeUsedFor.objects.create_molecule_use_for(
         molecule_use_data
     )
     molecule_use_information["new_defined_molecule_use"] = from_data["moleculeUseName"]
@@ -1789,7 +1761,6 @@ def record_molecules(form_data, user, app_name):
         protocol_used = molecule_json_data[row_index][
             heading_in_excel.index("Protocol to be used")
         ]
-        # if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
         if MoleculePreparation.objects.filter(sample=sample_obj).exists():
             last_molecule_code = (
                 MoleculePreparation.objects.filter(sample=sample_obj)
@@ -1801,10 +1772,9 @@ def record_molecules(form_data, user, app_name):
             number_code += 1
             molecule_code_id = code_split.group(1) + str(number_code)
         else:
-            protocol_code = protocol_used.replace(" ", "-")
+            protocol_used = protocol_used.replace(" ", "-")
             molecule_code_id = sample_obj.get_sample_code() + "_E1"
 
-        # protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
         molecule_used = molecule_json_data[row_index][
             heading_in_excel.index("Molecule type")
         ]
@@ -1851,8 +1821,9 @@ def prepare_sample_project_input_table(pre_defined_samples_id):
     """
     Description:    The function collects the sample project fields for the samples in the input variable.
             It return the fields heading of the sample project
-            In case that samples do not have the same project then it grouped store in database the new molecule and molecule_updated_list
-                    the sample state to Extracted molecule.
+            In case that samples do not have the same project then it
+            grouped store in database the new molecule and molecule_updated_list
+            the sample state to Extracted molecule.
     Input:
         pre_defined_samples_id  # sample_id list to be processed
     Variables:
@@ -1875,9 +1846,9 @@ def prepare_sample_project_input_table(pre_defined_samples_id):
         if selected_sample_project == "":
             selected_sample_project = s_project_obj.get_sample_project_name()
             s_project_fields = (
-                SampleProjectsFields.objects.filter(sampleProjects_id=s_project_obj)
-                .exclude(sampleProjectFieldUsed=None)
-                .order_by("sampleProjectFieldOrder")
+                SampleProjectsFields.objects.filter(sample_projects_id=s_project_obj)
+                .exclude(sample_project_field_used=None)
+                .order_by("sample_project_field_order")
             )
             for s_project_field in s_project_fields:
                 heading_item = []
@@ -1956,7 +1927,7 @@ def get_table_record_molecule(samples, apps_name):
         try:
             if Samples.objects.filter(pk__exact=int(sample)).exists():
                 valid_samples.append(int(sample))
-        except:
+        except Exception:
             continue
         if len(valid_samples) == 0:
             molecule_information["ERROR"] = True
@@ -1967,7 +1938,6 @@ def get_table_record_molecule(samples, apps_name):
         sample_obj = get_sample_obj_from_id(sample)
         sample_code_id = sample_obj.get_sample_code()
         sample_code_ids.append(sample_code_id)
-        # sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
         data = [""] * len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
         data[0] = sample_code_id
         data[1] = sample_obj.get_sample_type()
@@ -2002,26 +1972,26 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date):
         if User.objects.filter(username__exact=user_name).exists():
             user_name_obj = User.objects.filter(username__exact=user_name).last()
             user_friend_list = get_friend_list(user_name_obj)
-            if not sample_founds.filter(sampleUser__in=user_friend_list).exists():
+            if not sample_founds.filter(sample_user__in=user_friend_list).exists():
                 return sample_list
             else:
-                sample_founds = sample_founds.filter(sampleUser__in=user_friend_list)
+                sample_founds = sample_founds.filter(sample_user__in=user_friend_list)
         else:
             return sample_list
     if sample_name != "":
-        if sample_founds.filter(sampleName__exact=sample_name).exists():
-            sample_founds = sample_founds.filter(sampleName__exact=sample_name)
+        if sample_founds.filter(sample_name__exact=sample_name).exists():
+            sample_founds = sample_founds.filter(sample_name__exact=sample_name)
             if len(sample_founds) == 1:
                 sample_list.append(sample_founds[0].pk)
                 return sample_list
 
-        elif sample_founds.filter(sampleName__icontains=sample_name).exists():
-            sample_founds = sample_founds.filter(sampleName__icontains=sample_name)
+        elif sample_founds.filter(sample_name__icontains=sample_name).exists():
+            sample_founds = sample_founds.filter(sample_name__icontains=sample_name)
         else:
             return sample_list
     if sample_state != "":
         sample_founds = sample_founds.filter(
-            sampleState__sampleStateName__exact=sample_state
+            sample_state__sample_state_name__exact=sample_state
         )
 
     if start_date != "" and end_date != "":
@@ -2061,11 +2031,9 @@ def set_molecule_use(form_data, app_name):
     molecule_code_ids = form_data["molecule_code_ids"].split(",")
     molecule_update = {}
     molecule_update["data"] = []
-    molecules_length = len(molecule_json_data[0])
+
     for row_index in range(len(molecule_json_data)):
         if molecule_json_data[row_index][2] != "":
-            data = []
-
             right_id = molecule_ids[
                 molecule_code_ids.index(molecule_json_data[row_index][1])
             ]
@@ -2107,11 +2075,11 @@ def modify_fields_in_sample_project(form_data):
     # is easier to remmmve all and created again instaed of infividual checking
 
     if SamplesProjectsTableOptions.objects.filter(
-        sampleProjectField__sampleProjects_id=sample_project_obj
+        sample_project_field__sample_projects_id=sample_project_obj
     ).exists():
         # Delete existing information
         s_p_option_objs = SamplesProjectsTableOptions.objects.filter(
-            sampleProjectField__sampleProjects_id=sample_project_obj
+            sample_project_field__sample_projects_id=sample_project_obj
         )
         for s_p_option_obj in s_p_option_objs:
             s_p_option_obj.delete()
@@ -2185,11 +2153,11 @@ def set_sample_project_fields(data_form):
         classification_name = row_data[fields.index("Classification")]
         if classification_name != "":
             if SampleProjectFieldClassification.objects.filter(
-                sampleProjects_id=sample_project_obj,
+                sample_projects_id=sample_project_obj,
                 classification_name__iexact=classification_name,
             ).exists():
                 classification_obj = SampleProjectFieldClassification.objects.filter(
-                    sampleProjects_id=sample_project_obj,
+                    sample_projects_id=sample_project_obj,
                     classification_name__iexact=classification_name,
                 ).last()
             else:
@@ -2197,8 +2165,10 @@ def set_sample_project_fields(data_form):
                     "sample_project_id": sample_project_obj,
                     "classification_name": classification_name,
                 }
-                classification_obj = SampleProjectFieldClassification.objects.create_sample_project_field_classification(
-                    c_data
+                classification_obj = (
+                    SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                        c_data
+                    )
                 )
             s_p_fields["SampleProjectFieldClassificationID"] = classification_obj
         else:
@@ -2240,9 +2210,9 @@ def update_molecule_reused(sample_id, molecule_code_id):
     sample_obj = get_sample_obj_from_id(sample_id)
     try:
         molecule_obj = MoleculePreparation.objects.get(
-            sample=sample_obj, moleculeCodeId__exact=molecule_code_id
+            sample=sample_obj, molecule_code_id__exact=molecule_code_id
         )
-    except:
+    except Exception:
         return None
     molecule_obj.set_increase_reuse()
     return molecule_obj

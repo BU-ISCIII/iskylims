@@ -1,59 +1,42 @@
-import pandas as pd
-from datetime import datetime
 import json
-import jsonschema
-from jsonschema import Draft202012Validator
 import re
+from datetime import datetime
+
+import jsonschema
+import pandas as pd
+from jsonschema import Draft202012Validator
+
 from iSkyLIMS_core.core_config import (
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED,
-    ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE,
+    ERROR_FIELD_NOT_EXIST_IN_SCHEMA, ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE,
-    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_PROTOCOL,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL,
-    ERROR_MESSAGE_INVALID_JSON_SCHEMA,
-    ERROR_FIELD_NOT_EXIST_IN_SCHEMA,
-    SUCCESSFUL_JSON_SCHEMA,
-)
-from iSkyLIMS_core.models import (
-    LabRequest,
-    MoleculeType,
-    MoleculeParameterValue,
-    MoleculePreparation,
-    OntologyMap,
-    Protocols,
-    ProtocolParameters,
-    Samples,
-    SampleProjects,
-    SampleProjectsFields,
-    SampleProjectFieldClassification,
-    SampleProjectsFieldsValue,
-    SamplesProjectsTableOptions,
-    SampleType,
-    Species,
-    UserLotCommercialKits
-
-)
-
-
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED,
+    ERROR_MESSAGE_INVALID_JSON_SCHEMA, SUCCESSFUL_JSON_SCHEMA)
+from iSkyLIMS_core.models import (LabRequest, MoleculeParameterValue,
+                                  MoleculePreparation, MoleculeType,
+                                  OntologyMap, ProtocolParameters, Protocols,
+                                  SampleProjectFieldClassification,
+                                  SampleProjects, SampleProjectsFields,
+                                  SampleProjectsFieldsValue, Samples,
+                                  SamplesProjectsTableOptions, SampleType,
+                                  Species, UserLotCommercialKits)
 from iSkyLIMS_core.utils.handling_samples import (
-    check_if_sample_already_defined,
-    check_patient_code_exists,
-    create_empty_patient,
-    increase_unique_value,
-    get_sample_project_obj_from_id
-)
+    check_if_sample_already_defined, check_patient_code_exists,
+    create_empty_patient, get_sample_project_obj_from_id,
+    increase_unique_value)
 
 
 def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
@@ -78,7 +61,8 @@ def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
 def check_defined_option_values_in_samples(sample_batch_df, package):
     """
     Description:
-        The Function checks if values (related to new sample creation) inside data frame are already defined in database.
+        The Function checks if values (related to new sample creation) inside data frame are already defined
+        in database.
         It also checks if the mandatory parameters in the type of sample are in dataframe
     Input:
         sample_batch_df     # sample data in dataframe
@@ -98,7 +82,7 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
     if not LabRequest.objects.all().exists():
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED
     lab_requested_values = list(
-        LabRequest.objects.all().values_list("labNameCoding", flat=True)
+        LabRequest.objects.all().values_list("lab_name_coding", flat=True)
     )
     for lab_request in unique_lab_request:
         if lab_request not in lab_requested_values:
@@ -109,7 +93,7 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES
     sample_type_values = list(
         SampleType.objects.filter(apps_name=package).values_list(
-            "sampleType", flat=True
+            "sample_type", flat=True
         )
     )
     unique_sample_types = sample_batch_df["Type of Sample"].unique().tolist()
@@ -121,7 +105,7 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
     if not Species.objects.filter(apps_name=package).exists():
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES
     species_values = list(
-        Species.objects.filter(apps_name=package).values_list("speciesName", flat=True)
+        Species.objects.filter(apps_name=package).values_list("species_name", flat=True)
     )
     unique_species = sample_batch_df["Species"].unique().tolist()
     for specie in unique_species:
@@ -134,7 +118,7 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS
     sample_project_values = list(
         SampleProjects.objects.filter(apps_name=package).values_list(
-            "sampleProjectName", flat=True
+            "sample_project_name", flat=True
         )
     )
     unique_sample_projects = sample_batch_df["Project/Service"].unique().tolist()
@@ -146,12 +130,12 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
 
     # check if additional sample Project parameters are include in bathc file
     if SampleProjectsFields.objects.filter(
-        sampleProjects_id__sampleProjectName__exact=sample_project,
-        sampleProjects_id__apps_name=package,
+        sample_projects_id__sample_project_name__exact=sample_project,
+        sample_projects_id__apps_name=package,
     ).exists():
         sample_project_fields_objs = SampleProjectsFields.objects.filter(
-            sampleProjects_id__sampleProjectName__exact=sample_project,
-            sampleProjects_id__apps_name=package,
+            sample_projects_id__sample_project_name__exact=sample_project,
+            sample_projects_id__apps_name=package,
         )
         for sample_project_fields_obj in sample_project_fields_objs:
             if not sample_project_fields_obj.get_field_name() in sample_batch_df:
@@ -193,7 +177,7 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES
     molecule_values = list(
         MoleculeType.objects.filter(apps_name__exact=package).values_list(
-            "moleculeType", flat=True
+            "molecule_type", flat=True
         )
     )
     unique_molecule_types = sample_batch_df["Molecule Type"].unique().tolist()
@@ -203,13 +187,13 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
             error_cause.insert(1, molecule_type)
             return error_cause
     if not Protocols.objects.filter(
-        type__molecule__moleculeType__exact=molecule_type,
+        type__molecule__molecule_type__exact=molecule_type,
         type__molecule__apps_name__exact=package,
     ).exists():
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_PROTOCOL
     protocol_values = list(
         Protocols.objects.filter(
-            type__molecule__moleculeType__exact=molecule_type,
+            type__molecule__molecule_type__exact=molecule_type,
             type__molecule__apps_name__exact=package,
         ).values_list("name", flat=True)
     )
@@ -240,7 +224,6 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     """
 
     sample_new = {}
-    samples_already_recorded = []
     # Check if sample alredy  defined for this user
     if not check_if_sample_already_defined(sample_data["Sample Name"], reg_user):
         if sample_data["Type of Sample"] == "":
@@ -252,7 +235,7 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     #  Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
     if sample_data["Patient Code ID"] != "":
         patient_obj = check_patient_code_exists(sample_data["Patient Code ID"])
-        if patient_obj == False:
+        if patient_obj is False:
             # Define the new patient only Patient code is defined
             sample_new["patient"] = create_empty_patient(sample_data["Patient Code ID"])
         else:
@@ -267,15 +250,15 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     sample_new["sampleLocation"] = sample_data["Sample storage"]
     sample_new["sampleEntryDate"] = str(sample_data["Date sample reception"])
     sample_new["sampleProject"] = SampleProjects.objects.filter(
-        sampleProjectName__exact=sample_data["Project/Service"], apps_name=package
+        sample_project_name__exact=sample_data["Project/Service"], apps_name=package
     ).last()
     sample_new["user"] = reg_user
     sample_new["sample_id"] = str(reg_user + "_" + sample_data["Sample Name"])
-    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
+    if not Samples.objects.exclude(unique_sample_id__isnull=True).exists():
         sample_new["new_unique_value"] = "AAA-0001"
     else:
         sample_new["new_unique_value"] = increase_unique_value(
-            Samples.objects.exclude(uniqueSampleID__isnull=True)
+            Samples.objects.exclude(unique_sample_id__isnull=True)
             .last()
             .get_unique_sample_id()
         )
@@ -305,18 +288,16 @@ def create_sample_project_fields_value(sample_obj, sample_data, package):
     s_project_field_data = {}
     s_project_field_data["sample_id"] = sample_obj
     sample_project_fields_objs = SampleProjectsFields.objects.filter(
-        sampleProjects_id__sampleProjectName__exact=sample_data["Project/Service"],
-        sampleProjects_id__apps_name=package,
+        sample_projects_id__sample_project_name__exact=sample_data["Project/Service"],
+        sample_projects_id__apps_name=package,
     )
     for sample_project_fields_obj in sample_project_fields_objs:
         s_project_field_data["sampleProjecttField_id"] = sample_project_fields_obj
         s_project_field_data["sampleProjectFieldValue"] = sample_data[
             sample_project_fields_obj.get_field_name()
         ]
-        s_project_fild_obj = (
-            SampleProjectsFieldsValue.objects.create_project_field_value(
-                s_project_field_data
-            )
+        SampleProjectsFieldsValue.objects.create_project_field_value(
+            s_project_field_data
         )
     return
 
@@ -334,17 +315,6 @@ def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
         new_molecule
     """
     molecule_data = {}
-    """
-    if MoleculePreparation.objects.filter(sample = sample_obj).exists():
-            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
-            code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
-            number_code = int(code_split.group(2))
-            number_code +=1
-            molecule_code_id = code_split.group(1) + str(number_code)
-    else:
-            number_code = 1
-            molecule_code_id = sample_obj.get_sample_code() + '_E1'
-    """
     molecule_data["protocolUsed"] = sample_data["ProtocolName"]
     molecule_data["moleculeType"] = sample_data["Molecule Type"]
     molecule_data["sample"] = sample_obj
@@ -370,7 +340,7 @@ def create_molecule_parameter_from_file(molecule_obj, sample_data):
     """
     # add user commercial kit and increase usage
     user_lot_commercial_kit_obj = UserLotCommercialKits.objects.filter(
-        chipLot__exact=sample_data["Lot Commercial Kit"]
+        chip_lot__exact=sample_data["Lot Commercial Kit"]
     ).last()
     molecule_obj.set_user_lot_kit_obj(user_lot_commercial_kit_obj)
     user_lot_commercial_kit_obj.set_increase_use()
@@ -378,12 +348,12 @@ def create_molecule_parameter_from_file(molecule_obj, sample_data):
         user_lot_commercial_kit_obj.set_latest_use(
             datetime.strptime(sample_data["Extraction data"], "%Y-%m-%d").date()
         )
-    except:
+    except Exception:
         user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
 
     protocol_used_obj = molecule_obj.get_protocol_obj()
     protocol_parameters_objs = ProtocolParameters.objects.filter(
-        protocol_id__exact=protocol_used_obj, parameterUsed=True
+        protocol_id__exact=protocol_used_obj, parameter_used=True
     )
 
     for p_parameter_obj in protocol_parameters_objs:
@@ -393,12 +363,9 @@ def create_molecule_parameter_from_file(molecule_obj, sample_data):
         molecule_parameter_value["parameterValue"] = sample_data[
             p_parameter_obj.get_parameter_name()
         ]
-        new_molecule_parameter_obj = (
-            MoleculeParameterValue.objects.create_molecule_parameter_value(
+        MoleculeParameterValue.objects.create_molecule_parameter_value(
                 molecule_parameter_value
             )
-        )
-
     return
 
 
@@ -413,8 +380,7 @@ def read_batch_sample_file(batch_file):
     """
 
     sample_batch_df = pd.read_excel(batch_file, sheet_name=0)
-    sample_batch_heading = sample_batch_df.columns.values
-    num_rows, num_cols = sample_batch_df.shape
+    num_rows, _ = sample_batch_df.shape
     if num_rows == 0:
         sample_data = {}
         sample_data["ERROR"] = ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
@@ -544,7 +510,9 @@ def store_schema(schema, field, valid_fields, s_project_id):
             else:
                 schema_dict["Field type"] = "String"
             if "classification" in schema["properties"][property]:
-                schema_dict["classification"] = schema["properties"][property]["classification"]
+                schema_dict["classification"] = schema["properties"][property][
+                    "classification"
+                ]
             else:
                 schema_dict["classification"] = None
             property_list.append(schema_dict)
@@ -561,11 +529,11 @@ def store_schema(schema, field, valid_fields, s_project_id):
         # create classification if not exists
         if property["classification"] != "":
             if SampleProjectFieldClassification.objects.filter(
-                sampleProjects_id=s_project_obj,
+                sample_projects_id=s_project_obj,
                 classification_name__iexact=property["classification"],
             ).exists():
                 classification_obj = SampleProjectFieldClassification.objects.filter(
-                    sampleProjects_id=s_project_obj,
+                    sample_projects_id=s_project_obj,
                     classification_name__iexact=property["classification"],
                 ).last()
             else:
@@ -573,7 +541,7 @@ def store_schema(schema, field, valid_fields, s_project_id):
                     "sample_project_id": s_project_obj,
                     "classification_name": property["classification"],
                 }
-                classification_obj = SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                SampleProjectFieldClassification.objects.create_sample_project_field_classification(
                     c_data
                 )
             property["SampleProjectFieldClassificationID"] = classification_obj
@@ -590,11 +558,12 @@ def store_schema(schema, field, valid_fields, s_project_id):
         )
         if "enum" in property:
             for opt in property["enum"]:
-
                 data = {"s_proj_obj": new_s_project_prop}
                 data["opt_value"] = opt
                 try:
-                    SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
-                except:
-                    import pdb; pdb.set_trace()
+                    SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(
+                        data
+                    )
+                except Exception:
+                    raise Exception
     return {"Success": SUCCESSFUL_JSON_SCHEMA}
