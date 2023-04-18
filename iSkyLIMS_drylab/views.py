@@ -638,7 +638,7 @@ def add_in_progress(request):
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
 
-        resolution_obj = get_resolution_obj_from_id(resolution_id)
+        resolution_obj = iSkyLIMS_drylab.utils.handling_resolutions.get_resolution_obj_from_id(resolution_id)
         resolution_obj.update_resolution_in_progress_date()
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
