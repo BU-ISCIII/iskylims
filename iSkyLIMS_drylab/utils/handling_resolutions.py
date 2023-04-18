@@ -154,21 +154,21 @@ def get_data_for_resolution(service_obj, resolution_obj):
         information["nodes"] = service_obj.service_available_service.all()
     else:
         information["nodes"] = resolution_obj.available_services.all()
-    user["name"] = service_obj.serviceUserId.first_name
-    user["surname"] = service_obj.serviceUserId.last_name
+    user["name"] = service_obj.service_user_id.first_name
+    user["surname"] = service_obj.service_user_id.last_name
 
     user["area"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profileArea
+        profile_user_id=user_id
+    ).profile_area
     user["center"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profileCenter
+        profile_user_id=user_id
+    ).profile_center
     user["position"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
+        profile_user_id=user_id
     ).profilePosition
     user["phone"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profileExtension
+        profile_user_id=user_id
+    ).profile_extension
     user["email"] = service_obj.get_user_email()
     information["user"] = user
     resolution_info_split = resolution_info[2].split("_")

@@ -103,12 +103,12 @@ def create_new_save_sequencing_service_request(request):
     else:
         request_user = request.user
 
-    if django_utils.models.Profile.objects.filter(profileUserID=request_user).exists():
+    if django_utils.models.Profile.objects.filter(profile_user_id=request_user).exists():
         try:
             service_data["service_seq_center"] = (
-                django_utils.models.Profile.objects.filter(profileUserID=request_user)
+                django_utils.models.Profile.objects.filter(profile_user_id=request_user)
                 .last()
-                .profileCenter.get_center_name()
+                .profile_center.get_center_name()
             )
         except:
             service_data[
@@ -311,18 +311,18 @@ def get_data_for_service_confirmation(service_requested):
 
     user_id = service.serviceUserId.id
     user["area"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profileArea
+        profile_user_id=user_id
+    ).profile_area
     user["center"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profileCenter
+        profile_user_id=user_id
+    ).profile_center
     user["phone"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profileExtension
+        profile_user_id=user_id
+    ).profile_extension
     user["position"] = django_utils.models.Profile.objects.get(
-        profileUserID=user_id
-    ).profilePosition
-    user["email"] = service.serviceUserId.email
+        profile_user_id=user_id
+    ).profile_position
+    user["email"] = service.service_user_id.email
     information["user"] = user
     service_data["projects"] = get_projects_in_requested_samples(service)
     # service_data['platform'] = platform

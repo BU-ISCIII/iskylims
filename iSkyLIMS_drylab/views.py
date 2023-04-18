@@ -476,7 +476,7 @@ def search_service(request):
     center_list_abbr = []
     center_availables = django_utils.models.Center.objects.all().order_by("centerAbbr")
     for center in center_availables:
-        center_list_abbr.append(center.centerAbbr)
+        center_list_abbr.append(center.center_abbr)
     services_search_list["centers"] = center_list_abbr
     services_search_list[
         "states"
@@ -1586,14 +1586,14 @@ def stats_by_services_request(request):
                 user_id = service.serviceUserId.id
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
-                    profileUserID=user_id
+                    profile_user_id=user_id
                 ).exists():
                     user_area = django_utils.models.Profile.objects.get(
-                        profileUserID=user_id
-                    ).profileArea
+                        profile_user_id=user_id
+                    ).profile_area
                 else:
                     user_center = "Not defined"
-                if not date_service in time_values_dict:
+                if date_service not in time_values_dict:
                     time_values_dict[date_service] = 1
                 if user_area in user_area_services_period:
                     if date_service in user_area_services_period[user_area]:
