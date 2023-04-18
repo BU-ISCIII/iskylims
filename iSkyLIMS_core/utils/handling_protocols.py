@@ -1,7 +1,7 @@
-import json, re
+import json
+
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
-from django.contrib.auth.models import User
 
 
 def create_new_protocol(new_protocol, protocol_type, description, apps_name):
@@ -239,7 +239,7 @@ def get_all_protocol_info(protocol_id):
         protocol_data["protocol_name"] = protocol_obj.get_name()
         protocol_parameters = ProtocolParameters.objects.filter(
             protocol_id=protocol_obj
-        ).order_by("parameterOrder")
+        ).order_by("parameter_order")
         for parameter in protocol_parameters:
             protocol_data["parameters"].append(parameter.get_all_parameter_info())
         protocol_data["protocol_id"] = protocol_id
@@ -274,7 +274,7 @@ def get_protocol_fields(protocol_id):
     if ProtocolParameters.objects.filter(protocol_id__exact=protocol_obj).exists():
         protocol_parameter_objs = ProtocolParameters.objects.filter(
             protocol_id__exact=protocol_obj
-        ).order_by("parameterOrder")
+        ).order_by("parameter_order")
         parameter_list = []
         for protocol_parameter_obj in protocol_parameter_objs:
             parameter_data = protocol_parameter_obj.get_protocol_fields_for_javascript()
@@ -300,8 +300,8 @@ def get_protocol_parameters(protocol_obj):
     protocol_parameter_list = []
     if ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
         protocol_parameters = ProtocolParameters.objects.filter(
-            protocol_id=protocol_obj, parameterUsed=True
-        ).order_by("parameterOrder")
+            protocol_id=protocol_obj, parameter_used=True
+        ).order_by("parameter_order")
         for protocol_parameter in protocol_parameters:
             protocol_parameter_list.append(protocol_parameter.get_parameter_name())
     return protocol_parameter_list
@@ -317,8 +317,8 @@ def get_protocol_parameters_and_type(protocol_obj):
     protocol_parameter_type_list = []
     if ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
         protocol_parameters = ProtocolParameters.objects.filter(
-            protocol_id=protocol_obj, parameterUsed=True
-        ).order_by("parameterOrder")
+            protocol_id=protocol_obj, parameter_used=True
+        ).order_by("parameter_order")
         for protocol_parameter in protocol_parameters:
             heading_item = []
             heading_item.append(protocol_parameter.get_parameter_name())
@@ -431,7 +431,6 @@ def set_protocol_parameters(request):
     saved_parameters = []
     stored_parameters = {}
     for row_data in json_data:
-
         if row_data[0] == "":
             continue
         prot_parameters = {}

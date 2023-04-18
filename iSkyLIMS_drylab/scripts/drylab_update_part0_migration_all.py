@@ -22,7 +22,7 @@ def platforms_defined():
         platform_dict = {}
         plat_objs = SequencingPlatform.objects.all()
         for plat_obj in plat_objs:
-            platform_dict[plat_obj.platformName] = plat_obj
+            platform_dict[plat_obj.platform_name] = plat_obj
         return platform_dict
     else:
         return None
