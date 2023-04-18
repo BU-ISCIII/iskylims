@@ -276,7 +276,7 @@ def get_list_of_collection_kits():
     collection_kit_list = []
     if CollectionIndexKit.objects.all().exists():
         collection_objs = CollectionIndexKit.objects.all().order_by(
-            "collectionIndexName"
+            "collection_index_name"
         )
         for collection in collection_objs:
             collection_kit_list.append(collection.get_collection_index_name())

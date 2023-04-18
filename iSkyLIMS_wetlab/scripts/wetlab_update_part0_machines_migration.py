@@ -10,7 +10,7 @@ The csv file contains "run_id, sequencer_name"
 def get_list_defined_sequencers ():
     if SequencerInLab.objects.all().exists():
         sequencers = {}
-        sequencer_objs = SequencerInLab.objects.all().order_by('sequencerName')
+        sequencer_objs = SequencerInLab.objects.all().order_by('sequencer_name')
         for sequencer_obj in sequencer_objs:
             sequencers[sequencer_obj.get_sequencer_name()] = sequencer_obj
     else:
