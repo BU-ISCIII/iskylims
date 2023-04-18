@@ -4,9 +4,9 @@ from Bio.Seq import Seq
 from django.contrib.auth.models import User
 
 from iSkyLIMS_core.models import MoleculePreparation, Protocols, Samples
-from iSkyLIMS_core.utils.handling_commercial_kits import *
-from iSkyLIMS_core.utils.handling_protocols import *
-from iSkyLIMS_core.utils.handling_samples import (get_molecule_obj_from_id,
+from iSkyLIMS_core.utils.commercial_kits import *
+from iSkyLIMS_core.utils.protocols import *
+from iSkyLIMS_core.utils.samples import (get_molecule_obj_from_id,
                                                   get_sample_obj_from_id)
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.utils.common import *

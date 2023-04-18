@@ -7,7 +7,7 @@ from iSkyLIMS_core.models import (City, LabRequest, OntologyMap, PatientCore,
                                   SampleProjectsFieldsValue, Samples,
                                   SampleType, Species, StateInCountry,
                                   StatesForSample)
-from iSkyLIMS_core.utils.handling_samples import increase_unique_value
+from iSkyLIMS_core.utils.samples import increase_unique_value
 from iSkyLIMS_wetlab.api.serializers import CreateSampleTypeSerializer
 from iSkyLIMS_wetlab.wetlab_config import (
     ERROR_API_NO_SAMPLE_DEFINED, ERROR_API_NO_SAMPLE_PROJECT_DEFINED,

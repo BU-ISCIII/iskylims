@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
-from iSkyLIMS_core.utils.handling_protocols import get_protocol_obj_from_name
+from iSkyLIMS_core.utils.protocols import get_protocol_obj_from_name
 
 
 def get_commercial_kit_id(kit_name):

@@ -8,9 +8,9 @@ from django.conf import settings
 
 from django_utils.models import Center, Profile
 from iSkyLIMS_core.models import SequencingConfiguration
-from iSkyLIMS_core.utils.handling_commercial_kits import *
-from iSkyLIMS_core.utils.handling_protocols import *
-from iSkyLIMS_core.utils.handling_samples import (
+from iSkyLIMS_core.utils.commercial_kits import *
+from iSkyLIMS_core.utils.protocols import *
+from iSkyLIMS_core.utils.samples import (
     get_molecule_objs_from_sample, get_sample_obj_from_sample_name,
     update_molecule_reused, update_sample_reused)
 from iSkyLIMS_wetlab.models import *

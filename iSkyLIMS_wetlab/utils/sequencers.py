@@ -1,5 +1,5 @@
 from iSkyLIMS_core.models import SequencerInLab, SequencingConfiguration
-from iSkyLIMS_core.utils.handling_platforms import *
+from iSkyLIMS_core.utils.platforms import *
 from iSkyLIMS_wetlab.wetlab_config import (
     ERROR_SEQUENCER_ALREADY_DEFINED,
     ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED)

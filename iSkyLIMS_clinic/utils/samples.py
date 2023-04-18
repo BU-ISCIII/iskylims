@@ -3,7 +3,7 @@ import json
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.utils.common import *
-from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.samples import *
 
 
 def analyze_and_store_patient_data(user_post, user):
