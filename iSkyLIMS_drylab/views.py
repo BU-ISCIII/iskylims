@@ -22,7 +22,7 @@ import iSkyLIMS_drylab.utils.handling_request_services
 import iSkyLIMS_drylab.utils.handling_resolutions
 import iSkyLIMS_drylab.utils.handling_deliveries
 import iSkyLIMS_drylab.utils.handling_multiple_files
-import iSkyLIMS_core.utils.generic_functions
+import iSkyLIMS_core.utils.common
 
 
 @login_required
@@ -55,12 +55,12 @@ def index(request):
 def configuration_email(request):
     if request.user.username != 'admin':
         return redirect('/wetlab')
-    email_conf_data = iSkyLIMS_core.utils.generic_functions.get_email_data()
+    email_conf_data = iSkyLIMS_core.utils.common.get_email_data()
     email_conf_data['EMAIL_ISKYLIMS'] = iSkyLIMS_drylab.utils.drylab_common_functions.get_configuration_from_database('EMAIL_FOR_NOTIFICATIONS')
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
-        result_email = iSkyLIMS_core.utils.generic_functions.send_test_email(request.POST)
+        result_email = iSkyLIMS_core.utils.common.send_test_email(request.POST)
         if result_email != 'OK':
-            email_conf_data = iSkyLIMS_core.utils.generic_functions.get_email_data()
+            email_conf_data = iSkyLIMS_core.utils.common.get_email_data()
             email_conf_data['EMAIL_ISKYLIMS'] = request.POST['EMAIL_ISKYLIMS']
             email_conf_data['test_email'] = request.POST['test_email']
             return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'ERROR':result_email, 'email_conf_data': email_conf_data})
