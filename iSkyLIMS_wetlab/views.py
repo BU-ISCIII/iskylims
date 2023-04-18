@@ -4186,7 +4186,7 @@ def define_additional_kits(request, protocol_id):
 def display_sample_project(request, sample_project_id):
     samples_project_data = get_info_to_display_sample_project(sample_project_id)
     if "ERROR" in samples_project_data:
-        error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
+        error_message = samples_project_data["ERROR"]
         return render(
             request, "iSkyLIMS_wetlab/error_page.html", {"content": error_message}
         )

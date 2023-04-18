@@ -1044,7 +1044,8 @@ def get_info_to_display_sample_project(sample_project_id):
             info_s_project["fields"] = s_project_fields_list
         info_s_project["heading"] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
     else:
-        return "ERROR"
+        info_s_project["ERROR"] = "Sample project does not exists"
+        return info_s_project
 
     return info_s_project
 
