@@ -132,6 +132,7 @@ def create_new_save_sequencing_service_request(request):
     new_service = Service.objects.create_service(service_data)
 
     # Save files
+    """
     if "uploadfile" in request.FILES:
         path = os.path.join(drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY)
         files = request.FILES.getlist("uploadfile")
@@ -141,7 +142,7 @@ def create_new_save_sequencing_service_request(request):
                 file_data
             )
             # service_data['serviceFile'] = full_path_file_name
-
+    """
     # Save the many-to-many data for the form
     for av_service_obj in available_service_objs:
         new_service.serviceAvailableService.add(av_service_obj)
@@ -668,9 +669,12 @@ def get_service_information(service_id, service_manager):
                             )
                     elif resolution_obj.get_state() == "Delivery":
                         display_service_details["resolution_delivered"] = True
+                        """
+                        # allow to display all requested service because issue #116
                         delivered_services = (
                             resolution_obj.get_available_services_and_ids()
                         )
+                        
                         if not "None" in delivered_services:
                             for delivered_service in delivered_services:
                                 if (
@@ -680,7 +684,7 @@ def get_service_information(service_id, service_manager):
                                     display_service_details["children_services"].remove(
                                         delivered_service
                                     )
-
+                        """
                 if len(available_services_ids) < len(
                     display_service_details["children_services"]
                 ):
