@@ -886,7 +886,6 @@ def add_in_progress(request):
         if allow_to_service_update_state(resolution_obj, "in_progress"):
             # update the service status and in_porgress date
             service_obj = service_obj.update_service_state("in_progress")
-            service_obj = service_obj.update_service_delivered_date(date.today())
         email_data = {}
         email_data["user_email"] = service_obj.get_user_email()
         email_data["user_name"] = service_obj.get_service_requested_user()
@@ -976,7 +975,8 @@ def add_delivery(request):
             send_delivery_service_email(email_data)
             if allow_to_service_update_state(resolution_obj, "delivered"):
                 service_obj = resolution_obj.get_service_obj()
-                service_obj.update_service_state("delivered")
+                service_obj = service_obj.update_service_state("delivered")
+                service_obj.update_service_delivered_date(date.today())
             return render(
                 request,
                 "iSkyLIMS_drylab/addDelivery.html",

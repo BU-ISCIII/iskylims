@@ -234,7 +234,6 @@ class ServiceManager(models.Manager):
         ).last()
         new_service = self.create(
             serviceUserId=data["serviceUserId"],
-            serviceFileExt=serviceFileExt,
             serviceSequencingPlatform=serviceSequencingPlatform,
             serviceRunSpecs=serviceRunSpecs,
             serviceSeqCenter=data["serviceSeqCenter"],
