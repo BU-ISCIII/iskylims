@@ -1,19 +1,10 @@
 from django.contrib import admin
 from iSkyLIMS_drylab.models import *
 from django_mptt_admin.admin import DjangoMpttAdmin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
-
 
 class ResolutionStatesAdmin(admin.ModelAdmin):
     list_display = ["state_value"]
 
-
-class FileExtAdmin(admin.ModelAdmin):
-    list_display = ("fileExt",)
-
-
-# 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceStateAdmin(admin.ModelAdmin):
     list_display = ["state_value", "state_display", "description", "show_in_stats"]
 
@@ -98,26 +89,15 @@ class ConfigSettingAdmin(admin.ModelAdmin):
     list_display = ["configurationName", "configurationValue"]
 
 
-"""
-class JobStatesManager(admin.ModelAdmin):
-	list_display = ['jobStateName']
-
-class PipelineExternalDataJobsManager(admin.ModelAdmin):
-	list_display = ['pipeline', 'availableService', 'serviceRequestNumber', 'folderData', 'jobState', 'lastRequestedTime', 'pipelineName', 'pipelineVersion']
-"""
 admin.site.register(ServiceState, ServiceStateAdmin)
 admin.site.register(ResolutionStates, ResolutionStatesAdmin)
-admin.site.register(FileExt, FileExtAdmin)
 admin.site.register(Service, ServiceAdmin)
 admin.site.register(UploadServiceFile, UploadServiceFileAdmin)
 admin.site.register(ResolutionParameters, ResolutionParametersAdmin)
-# admin.site.register(RequestedProjectInServices, RequestedProjectInServicesAdmin)
 admin.site.register(RequestedSamplesInServices, RequestedSamplesInServicesAdmin)
 admin.site.register(AvailableService, AvailableServiceAdmin)
 admin.site.register(Resolution, ResolutionAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
-
 admin.site.register(Pipelines, PipelinesManager)
 admin.site.register(ParameterPipeline, ParameterPipelineManager)
-
 admin.site.register(ConfigSetting, ConfigSettingAdmin)

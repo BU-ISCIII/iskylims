@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from iSkyLIMS_core.models import Samples, SequencingPlatform
 from iSkyLIMS_drylab import drylab_config
 
-
+# STATUS_CHOICES will be deprecated from release 2.4.0 or higher
 STATUS_CHOICES = (
     ("recorded", _("Recorded")),
     ("approved", _("Approved")),
@@ -27,7 +27,6 @@ STATUS_CHOICES = (
     ("delivered", _("Delivered")),
     ("archived", _("Archived")),
 )
-
 
 def service_files_upload(instance, filename):
     now = timezone_now()
@@ -46,7 +45,7 @@ class ServiceState(models.Model):
     show_in_stats = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "service_state"
+        db_table = "drylab_service_state"
 
     def __str__(self):
         return "%s" % (self.state_value)
@@ -66,6 +65,9 @@ class ResolutionStates(models.Model):
     state_display = models.CharField(max_length=80, null=True, blank=True)
     description = models.CharField(max_length=255, null=True, blank=True)
 
+    class Meta:
+        db_table = "drylab_resolution_states"
+
     def __str__(self):
         return "%s" % (self.state_value)
 
@@ -79,37 +81,15 @@ class ResolutionStates(models.Model):
         return "%s" % (self.description)
 
 
-class FileExt(models.Model):
-    fileExt = models.CharField(_("File extension"), max_length=10)
-
-    def __str__(self):
-        return "%s" % (self.fileExt)
-
-    def get_file_extension(self):
-        return "%s" % (self.fileExt)
-
-    def get_file_extension_id(self):
-        return "%s" % (self.pk)
-
-
-"""
-class Platform(models.Model):
-    platformName=models.CharField(_("Sequencing platform"),max_length=20)
-
-    def __str__ (self):
-         return '%s' %(self.platformName)
-
-    def get_platform_name(self):
-        return '%s'  %(self.platformName)
-"""
-
-
 class AvailableService(MPTTModel):
     availServiceDescription = models.CharField(_("Available services"), max_length=100)
     parent = TreeForeignKey("self", models.SET_NULL, null=True, blank=True)
     inUse = models.BooleanField(default=True)
     serviceId = models.CharField(max_length=40, null=True, blank=True)
     description = models.CharField(max_length=200, null=True, blank=True)
+
+    class Meta:
+        db_table = "drylab_available_service"
 
     def __str__(self):
         return "%s" % (self.availServiceDescription)
@@ -153,6 +133,9 @@ class Pipelines(models.Model):
     pipelineUrl = models.CharField(max_length=200, null=True, blank=True)
     pipelineDescription = models.CharField(max_length=500, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "drylab_pipelines"
 
     def __str__(self):
         return "%s_%s" % (self.pipelineName, self.pipelineVersion)
@@ -217,6 +200,9 @@ class ParameterPipeline(models.Model):
     parameterValue = models.CharField(max_length=200, null=True, blank=True)
     parameterType = models.CharField(max_length=20, null=True, blank=True)
 
+    class Meta:
+        db_table = "drylab_parameter_pipeline"
+
     def __str__(self):
         return "%s" % (self.parameterName)
 
@@ -266,13 +252,6 @@ class Service(models.Model):
     # 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
     #  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
     serviceUserId = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    serviceFileExt = models.ForeignKey(
-        FileExt,
-        on_delete=models.CASCADE,
-        verbose_name=_("File extension"),
-        blank=True,
-        null=True,
-    )
     serviceSequencingPlatform = models.ForeignKey(
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -312,16 +291,13 @@ class Service(models.Model):
 
     serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True, blank=True)
 
+    class Meta:
+        db_table = "drylab_service"
+
     def __str__(self):
         return "%s" % (self.serviceRequestNumber)
 
     def get_service_name_and_center(self):
-        """
-        if self.serviceSequencingPlatform == None :
-            platform = "Not Provided"
-        else:
-            platform = self.serviceSequencingPlatform.get_platform_name()
-        """
         return [self.serviceRequestNumber, self.serviceSeqCenter]
 
     def get_service_id(self):
@@ -497,6 +473,9 @@ class RequestedSamplesInServices(models.Model):
     onlyRecordedSample = models.BooleanField(default=False)
     generated_at = models.DateField(auto_now_add=True)
 
+    class Meta:
+        db_table = "drylab_request_samples_in_services"
+
     def __str__(self):
         return "%s" % (self.sampleName)
 
@@ -535,6 +514,9 @@ class UploadServiceFile(models.Model):
     )
     uploadFileName = models.CharField(null=True, blank=True, max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "drylab_upload_service_file"
 
     def __str__(self):
         return "%s" % (self.uploadFile)
@@ -616,6 +598,9 @@ class Resolution(models.Model):
     resolutionPdfFile = models.FileField(
         upload_to=drylab_config.RESOLUTION_FILES_DIRECTORY, null=True, blank=True
     )
+
+    class Meta:
+        db_table = "drylab_resolution"
 
     def __str__(self):
         return "%s" % (self.resolutionNumber)
@@ -812,6 +797,9 @@ class ResolutionParameters(models.Model):
     resolutionParamNotes = models.CharField(max_length=200, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "drylab_resolution_parameters"
+
     def __str__(self):
         return "%s" % (self.resolutionParameter)
 
@@ -850,6 +838,9 @@ class Delivery(models.Model):
     permanentUsedSpace = models.CharField(max_length=80, null=True, blank=True)
     temporaryUsedSpace = models.CharField(max_length=80, null=True, blank=True)
 
+    class Meta:
+        db_table = "drylab_delivery"
+
     def __str__(self):
         return "%s" % (self.deliveryResolutionID)
 
@@ -879,6 +870,9 @@ class ConfigSetting(models.Model):
     configurationValue = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "drylab_config_setting"
+
     def __str__(self):
         return "%s" % (self.configurationName)
 
@@ -892,82 +886,3 @@ class ConfigSetting(models.Model):
 
     objects = ConfigSettingManager()
 
-
-"""
-class RunIDFolder (models.Model):
-    servicerequest = models.ForeignKey(
-                Service,
-                on_delete = models.CASCADE)
-    run_id_Folder = models.CharField(max_length = 50)
-
-    def __str__ (self):
-        return '%s' %(self.run_id_Folder)
-"""
-
-"""
-class JobStates (models.Model):
-    jobStateName = models.CharField(max_length = 20)
-
-    def __str__ (self):
-        return '%s' %(self.jobStateName)
-
-    def get_job_state (self):
-        return '%s' %(self.jobStateName)
-"""
-"""
-class PipelineExternalDataJobsManager(models.Manager):
-    def create_pipeline_external_data_job (self, preparation_data):
-        jobState = JobStates.objects.get(jobStateName__exact = 'Queued')
-        new_preparation_pipeline = self.create(pipeline = preparation_data['pipeline'],
-                availableService = preparation_data['availableService'], jobState =  jobState,
-                pipelineName = preparation_data['pipelineName'],  pipelineVersion = preparation_data['pipelineVersion'],
-                serviceRequestNumber = preparation_data ['serviceRequestNumber'], pendingToSetFolder = preparation_data['pendingToSetFolder'],
-                folderData = preparation_data['folderData'] )
-        return new_preparation_pipeline
-
-class PipelineExternalDataJobs (models.Model):
-    pipeline = models.ForeignKey(
-                Pipelines,
-                on_delete = models.CASCADE)
-    availableService = models.ForeignKey(
-                AvailableService,
-                on_delete = models.CASCADE)
-    jobState =  models.ForeignKey(
-                JobStates,
-                on_delete = models.CASCADE)
-
-    pipelineName = models.CharField(max_length = 50)
-    pipelineVersion = models.CharField(max_length = 10)
-    serviceRequestNumber =  models.CharField(max_length = 20, null = True, blank = True)
-    pendingToSetFolder = models.BooleanField(default = False)
-    folderData = models.CharField(max_length = 80, null = True, blank = True)
-    generated_at = models.DateTimeField(auto_now_add = True)
-    lastRequestedTime = models.DateTimeField(auto_now_add = False, null = True, blank = True)
-
-    def __str__ (self):
-        return '%s_%s' %(self.pipeline, self.availableService)
-
-    def update_state(self, state):
-        self.jobState = state
-        self.save()
-        return self
-
-    objects = PipelineExternalDataJobsManager()
-"""
-"""
-class ExternalParameterData (models.Model):
-    serviceRequest = models.ForeignKey(
-                    Service,
-                    on_delete = models.CASCADE)
-    availableServiceID = models.CharField(max_length = 20)
-    serviceName =  models.CharField(max_length = 50)
-    parameterName = models.CharField(max_length = 50)
-    parameterValue = models.CharField(max_length = 100)
-    generated_at = models.DateTimeField(auto_now_add = True)
-
-    def __str__ (self):
-        return '%s' %(self.serviceRequest)
-
-    def get_service_request(self):
-        return '%s' %(self.serviceRequest)
-"""

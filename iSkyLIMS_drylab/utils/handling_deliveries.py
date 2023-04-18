@@ -1,13 +1,12 @@
 from datetime import datetime
 from django.core.mail import send_mail
-from django.conf import settings
 from iSkyLIMS_drylab.models import *
-from iSkyLIMS_drylab.utils.handling_request_services import get_available_service_obj_from_id
 from iSkyLIMS_drylab.utils.handling_resolutions import get_resolution_obj_from_id
-from iSkyLIMS_drylab.utils.handling_pipelines import get_pipelines_for_resolution, get_pipeline_obj_from_id
+from iSkyLIMS_drylab.utils.handling_pipelines import get_pipelines_for_resolution
+
 
 def prepare_delivery_form(resolution_id):
-    '''
+    """
     Description:
         The function get the services handled by the resolution to display them
         in the user form
@@ -19,23 +18,26 @@ def prepare_delivery_form(resolution_id):
         get_available_service_obj_from_id       # located at iSkyLIMS_drylab.utils.handling_request_services
     Return:
         delivery_data_form
-    '''
-    delivery_data_form ={}
-    pipelines_data = []
+    """
+    delivery_data_form = {}
     resolution_obj = get_resolution_obj_from_id(resolution_id)
-    if resolution_obj != None :
-        delivery_data_form['available_services'] = resolution_obj.get_available_services_ids()
-        delivery_data_form['resolution_id'] = resolution_id
-        delivery_data_form['resolution_number'] = resolution_obj.get_resolution_number()
+    if resolution_obj != None:
+        delivery_data_form[
+            "available_services"
+        ] = resolution_obj.get_available_services_ids()
+        delivery_data_form["resolution_id"] = resolution_id
+        delivery_data_form["resolution_number"] = resolution_obj.get_resolution_number()
         req_available_services_id = resolution_obj.get_available_services_ids()
 
-        delivery_data_form['pipelines_data'] = get_pipelines_for_resolution(resolution_obj)
+        delivery_data_form["pipelines_data"] = get_pipelines_for_resolution(
+            resolution_obj
+        )
 
     return delivery_data_form
 
 
 def store_resolution_delivery(form_data):
-    '''
+    """
     Description:
         The function get the information from the user from and create a new
         resolution delivery with the information
@@ -47,40 +49,39 @@ def store_resolution_delivery(form_data):
         get_pipeline_obj_from_id       # located at iSkyLIMS_drylab.utils.handling_pipelines
     Return:
         delivery_data
-    '''
+    """
     delivery_data = None
-    resolution_obj = get_resolution_obj_from_id(form_data['resolution_id'])
-    if resolution_obj != None :
+    resolution_obj = get_resolution_obj_from_id(form_data["resolution_id"])
+    if resolution_obj != None:
         delivery_data = {}
-        if form_data['startdate'] != '':
-            delivery_data['executionStartDate'] = datetime.strptime(form_data['startdate'], '%Y-%m-%d')
+        if form_data["startdate"] != "":
+            delivery_data["executionStartDate"] = datetime.strptime(
+                form_data["startdate"], "%Y-%m-%d"
+            )
         else:
-            delivery_data['executionStartDate'] = None
-        if form_data['startdate'] != '':
-            delivery_data['executionEndDate'] = datetime.strptime(form_data['enddate'], '%Y-%m-%d')
+            delivery_data["executionStartDate"] = None
+        if form_data["startdate"] != "":
+            delivery_data["executionEndDate"] = datetime.strptime(
+                form_data["enddate"], "%Y-%m-%d"
+            )
         else:
-            delivery_data['executionEndDate'] = None
-        delivery_data['deliveryResolutionID'] = resolution_obj
-        delivery_data['executionTime'] = form_data['time']
-        delivery_data['permanentUsedSpace'] = form_data['pspace']
-        delivery_data['temporaryUsedSpace'] = form_data['tspace']
-        delivery_data['deliveryNotes'] = form_data['deliveryNotes']
+            delivery_data["executionEndDate"] = None
+        delivery_data["deliveryResolutionID"] = resolution_obj
+        delivery_data["executionTime"] = form_data["time"]
+        delivery_data["permanentUsedSpace"] = form_data["pspace"]
+        delivery_data["temporaryUsedSpace"] = form_data["tspace"]
+        delivery_data["deliveryNotes"] = form_data["deliveryNotes"]
 
-        new_delivery = Delivery.objects.create_delivery(delivery_data)
-        '''
-        if 'pipelines' in form_data:
-            pipelines_ids = form_data.getlist('pipelines')
-            for pipeline_id in pipelines_ids:
-                new_delivery.pipelinesInDelivery.add(get_pipeline_obj_from_id(pipeline_id))
-        '''
+        Delivery.objects.create_delivery(delivery_data)
+
         resolution_obj.update_resolution_in_delivered()
-        service_obj = resolution_obj.get_service_obj()
 
-        delivery_data['resolution_number'] = resolution_obj.get_resolution_number()
+        delivery_data["resolution_number"] = resolution_obj.get_resolution_number()
     return delivery_data
 
-def send_delivery_service_email (email_data):
-    '''
+
+def send_delivery_service_email(email_data):
+    """
     Description:
         The function send the email for delivery service to user.
         Functions uses the send_email django core function to send the email
@@ -92,20 +93,36 @@ def send_delivery_service_email (email_data):
         USER_EMAIL
     Return:
         None
-    '''
+    """
     subject_tmp = drylab_config.SUBJECT_RESOLUTION_DELIVERED.copy()
-    subject_tmp.insert(1, email_data['resolution_number'])
-    subject = ' '.join(subject_tmp)
+    subject_tmp.insert(1, email_data["resolution_number"])
+    subject = " ".join(subject_tmp)
 
-    body_preparation = list(map(lambda st: str.replace(st, 'RESOLUTION_NUMBER', email_data['resolution_number']), drylab_config.BODY_RESOLUTION_DELIVERED))
-    body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
+    body_preparation = list(
+        map(
+            lambda st: str.replace(
+                st, "RESOLUTION_NUMBER", email_data["resolution_number"]
+            ),
+            drylab_config.BODY_RESOLUTION_DELIVERED,
+        )
+    )
+    body_preparation = list(
+        map(
+            lambda st: str.replace(st, "USER_NAME", email_data["user_name"]),
+            body_preparation,
+        )
+    )
 
-    body_message = '\n'.join(body_preparation)
-    notification_user = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last().get_configuration_value()
+    body_message = "\n".join(body_preparation)
+    notification_user = (
+        ConfigSetting.objects.filter(configurationName__exact="EMAIL_FOR_NOTIFICATIONS")
+        .last()
+        .get_configuration_value()
+    )
     from_user = notification_user
-    to_users = [email_data['user_email'],email_data['user_email'], notification_user]
+    to_users = [email_data["user_email"], email_data["user_email"], notification_user]
     try:
-        send_mail (subject, body_message, from_user, to_users)
+        send_mail(subject, body_message, from_user, to_users)
     except:
         pass
     return

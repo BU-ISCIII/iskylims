@@ -4,15 +4,12 @@ import re, os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from iSkyLIMS_drylab import drylab_config
-#from smb.SMBConnection import SMBConnection
 from iSkyLIMS_drylab.models import *
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 
-#from iSkyLIMS_drylab.utils.handling_request_services import *
-#from iSkyLIMS_drylab.utils.handling_resolutions import *
 
 def check_valid_date_format (date):
     try:
@@ -20,23 +17,6 @@ def check_valid_date_format (date):
         return True
     except:
         return False
-'''
-def create_pdf(absolute_url,information, template_file, pdf_file_name , out_dir):
-    from weasyprint import HTML, CSS
-    from django.template.loader import get_template
-    from django.template.loader import render_to_string
-    from weasyprint.fonts import FontConfiguration
-
-    #font_config = FontConfiguration()
-    html_string = render_to_string(template_file, {'information': information})
-    pdf_dir =  os.path.join (settings.BASE_DIR, out_dir)
-    if not os.path.exists(pdf_dir):
-        os.makedirs(pdf_dir)
-    pdf_file = os.path.join(pdf_dir, pdf_file_name)
-    html = HTML(string=html_string, base_url=absolute_url).write_pdf(pdf_file,stylesheets=[CSS(settings.BASE_DIR + drylab_config.CSS_FOR_PDF)])
-
-    return pdf_file
-'''
 
 def create_service_id (service_number,user_name):
     '''
