@@ -8,6 +8,9 @@ class Center(models.Model):
     center_name = models.CharField(_("Center"), max_length=50)
     center_abbr = models.CharField(_("Acronym"), max_length=25)
 
+    class Meta:
+        db_table = "utils_center"
+
     def __str__(self):
         return "%s" % (self.center_abbr)
 
@@ -23,6 +26,9 @@ class ClassificationArea(models.Model):
     classification_area_description = models.CharField(
         max_length=255, null=True, blank=True
     )
+
+    class Meta:
+        db_table = "utils_classification_area"
 
     def __str__(self):
         return "%s" % (self.classification_area_name)
@@ -44,6 +50,9 @@ class Profile(models.Model):
     profile_position = models.CharField(_("Position"), max_length=50)
     profile_area = models.CharField(_("Area / Unit"), max_length=50)
     profile_extension = models.CharField(_("Phone extension"), max_length=5)
+
+    class Meta:
+        db_table = "utils_profile"
 
     def __str__(self):
         return "%s" % (self.pk)
