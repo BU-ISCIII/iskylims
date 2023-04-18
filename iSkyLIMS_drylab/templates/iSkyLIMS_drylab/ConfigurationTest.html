@@ -160,34 +160,6 @@ p {
     </div> <!--// end row  -->
     
     
-    
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Samba connection
-                {% if test_results.samba_connection == 'OK' %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                 <div class="panel-body">
-                    <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
-                        <div class="col-sm-12">
-                            {% if test_results.samba_connection %}
-                                <h4>Success to connect via Samba</h4>
-                            {% else %}
-                                <h4>Unable to connect via Samba</h4>
-                            {% endif %}
-                        </div> <!--// end col-sm-12  -->
-                    </div> <!-- //wrapper  -->
-                </div> <!--// end panel body -->
-
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-    
-    
     {% if test_results.basic_checks_ok == 'OK' %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
