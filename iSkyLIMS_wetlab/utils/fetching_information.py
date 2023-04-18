@@ -548,12 +548,12 @@ def get_information_for_incompleted_run():
 
     exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "Pre-Recorded"]
 
-    if RunProcess.objects.all().exclude(state__runStateName__in=exclude_state).exists():
+    if RunProcess.objects.all().exclude(state__run_state_name__in=exclude_state).exists():
         run_information["other"] = []
         run_objs = (
             RunProcess.objects.all()
-            .exclude(state__runStateName__in=exclude_state)
-            .order_by("state__runStateName")
+            .exclude(state__run_state_name__in=exclude_state)
+            .order_by("state__run_state_name")
         )
         for run_obj in run_objs:
             data = []
@@ -1149,7 +1149,7 @@ def get_sequencers_run_from_time_interval(sequencer, start_date, end_date):
             for item in query_completed:
                 runs_using_sequencer["completed_run_objs"].append(item)
             query_not_completed = run_objs_found.exclude(
-                state__runStateName__exact="Completed"
+                state__run_state_name__exact="Completed"
             )
             for item in query_not_completed:
                 runs_using_sequencer["not_completed_run_objs"].append(item)
@@ -1166,7 +1166,7 @@ def get_sequencer_installed_names():
     """
     sequencer_list = []
     if SequencerInLab.objects.all().exists():
-        sequencers = SequencerInLab.objects.all().order_by("platformID")
+        sequencers = SequencerInLab.objects.all().order_by("platform_id")
         for sequencer in sequencers:
             sequencer_list.append(sequencer.get_sequencer_name())
     return sequencer_list

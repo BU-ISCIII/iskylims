@@ -123,7 +123,7 @@ def get_defined_sequencers():
     """
     sequencer_names = {}
     if SequencerInLab.objects.all().exists():
-        sequencer_objs = SequencerInLab.objects.all().order_by("platformID")
+        sequencer_objs = SequencerInLab.objects.all().order_by("platform_id")
         for sequencer_obj in sequencer_objs:
             seq_platform = sequencer_obj.get_sequencing_platform_name()
             if seq_platform not in sequencer_names:
@@ -167,7 +167,7 @@ def get_list_sequencer_configuration():
     ] = get_platform_name_of_defined_sequencers()
     if SequencingConfiguration.objects.all().exists():
         sequencer_data = {}
-        seq_conf_objs = SequencingConfiguration.objects.all().order_by("platformID")
+        seq_conf_objs = SequencingConfiguration.objects.all().order_by("platform_id")
         for seq_conf_obj in seq_conf_objs:
             platform_name = seq_conf_obj.get_platform_name()
             if platform_name not in sequencer_data:
@@ -189,7 +189,7 @@ def get_sequencer_inventory_data():
     """
     sequencer_data = {}
     if SequencerInLab.objects.all().exists():
-        sequencer_objs = SequencerInLab.objects.all().order_by("platformID")
+        sequencer_objs = SequencerInLab.objects.all().order_by("platform_id")
         for sequencer_obj in sequencer_objs:
             platform_name = sequencer_obj.get_sequencing_platform_name()
             if platform_name not in sequencer_data:

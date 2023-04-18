@@ -310,7 +310,7 @@ def get_samples_for_library_preparation():
         for samples_obj in samples_objs:
             if (
                 LibPrepare.objects.filter(sample_id=samples_obj)
-                .exclude(libPrepState__libPrepState__exact="Completed")
+                .exclude(lib_prep_state__lib_prep_state__exact="Completed")
                 .exists()
             ):
                 library_preparation_obj = LibPrepare.objects.filter(
@@ -580,7 +580,7 @@ def get_data_for_library_preparation_in_defined():
     if LibPrepare.objects.filter(libPrepState__libPrepState__exact="Defined").exists():
         libs_preps_defined = LibPrepare.objects.filter(
             libPrepState__libPrepState__exact="Defined"
-        ).order_by("libPrepCodeID")
+        ).order_by("lib_prep_code_id")
         for lib_prep in libs_preps_defined:
             lib_prep_data.append(lib_prep.get_basic_data())
     return lib_prep_data
@@ -623,7 +623,7 @@ def get_all_library_information(sample_id):
         library_information["pool_information"] = []
         library_preparation_items = LibPrepare.objects.filter(
             sample_id__pk__exact=sample_id
-        ).exclude(libPrepState__libPrepState__exact="Created for Reuse")
+        ).exclude(lib_prep_state__lib_prep_state__exact="Created for Reuse")
         library_information["lib_prep_param_value"] = []
         library_information["lib_prep_data"] = []
         for library_item in library_preparation_items:
@@ -635,7 +635,7 @@ def get_all_library_information(sample_id):
             ).exists():
                 parameter_names = ProtocolParameters.objects.filter(
                     protocol_id=protocol_used_obj
-                ).order_by("parameterOrder")
+                ).order_by("parameter_order")
                 lib_prep_param_heading = ["Lib Preparation CodeID"]
                 lib_prep_param_value = [library_item.get_lib_prep_code()]
                 for p_name in parameter_names:
@@ -769,14 +769,14 @@ def get_samples_in_lib_prep_state():
             Samples.objects.filter(
                 sampleState__sampleStateName__exact="Library preparation"
             )
-            .order_by("sampleUser")
-            .order_by("sampleEntryDate")
+            .order_by("sample_user")
+            .order_by("sample_entry_date")
         )
 
         for sample in samples_obj:
             if (not LibPrepare.objects.filter(sample_id=sample).exists()) or (
                 LibPrepare.objects.filter(sample_id=sample)
-                .exclude(libPrepState__libPrepState__in=states_excluded)
+                .exclude(lib_prep_state__lib_prep_state__in=states_excluded)
                 .exists()
             ):
                 sample_information = sample.get_info_in_defined_state()

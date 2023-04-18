@@ -103,14 +103,14 @@ def get_sample_fields(apps_name):
             sample_fields["Species"]["options"].append(species_obj.get_name())
     if LabRequest.objects.all().exists():
         sample_fields["Lab Requested"]["options"] = []
-        lab_request_objs = LabRequest.objects.all().order_by("labName")
+        lab_request_objs = LabRequest.objects.all().order_by("lab_name")
         for lab_request_obj in lab_request_objs:
             sample_fields["Lab Requested"]["options"].append(lab_request_obj.get_name())
     if SampleProjects.objects.filter(apps_name__exact=apps_name).exists():
         sample_fields["Project/Service"]["options"] = []
         s_proj_objs = SampleProjects.objects.filter(
             apps_name__exact=apps_name
-        ).order_by("sampleProjectName")
+        ).order_by("sample_project_name")
         for s_proj_obj in s_proj_objs:
             sample_fields["Project/Service"]["options"].append(
                 s_proj_obj.get_sample_project_name()
@@ -240,11 +240,11 @@ def include_instances_in_sample(data, lab_data, apps_name):
 def include_coding(user_name, sample):
     """Include Unique_id and Code_"""
     c_data = {}
-    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
+    if not Samples.objects.exclude(unique_sample_id__isnull=True).exists():
         c_data["uniqueSampleID"] = "AAA-0001"
     else:
         last_unique_value = (
-            Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
+            Samples.objects.exclude(unique_sample_id__isnull=True).last().unique_sample_id
         )
         c_data["uniqueSampleID"] = increase_unique_value(last_unique_value)
     c_data["sampleCodeID"] = str(user_name + "_" + sample)
@@ -416,7 +416,7 @@ def summarize_samples(data):
             s_project_field_objs = SampleProjectsFields.objects.filter(
                 sample_projects_id=s_project_obj,
                 sample_project_field_description__iexact=data["sample_project_field"],
-            ).order_by("Sample_project_field_classification_id")
+            ).order_by("sample_project_field_classification_id")
     #
     # get the sumarize infomation for the selected samples
     #

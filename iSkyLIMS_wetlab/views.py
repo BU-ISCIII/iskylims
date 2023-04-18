@@ -398,7 +398,7 @@ def create_nextseq_run(request):
         run_info_values["runname"] = run_name
         # Get the list of the library kit used (libraryKit)
         list_libraries = LibraryKit.objects.order_by().values_list(
-            "libraryName", flat=True
+            "library_name", flat=True
         )
         run_info_values["used_libraryKit"] = list_libraries
 
@@ -844,7 +844,7 @@ def search_run(request):
                     return redirect("display_run", run_id=run_name_found[0].pk)
             if runs_found.filter(run_name__icontains=run_name).exists():
                 runs_found = runs_found.filter(run_name__icontains=run_name).order_by(
-                    "runName"
+                    "run_name"
                 )
             else:
                 return render(
@@ -870,7 +870,7 @@ def search_run(request):
             if runs_found.filter(state__runS_state_name__exact=s_state).exists():
                 runs_found = runs_found.filter(
                     state__run_state_name__exact=s_state
-                ).order_by("runName")
+                ).order_by("run_name")
             else:
                 return render(
                     request,
@@ -1320,16 +1320,13 @@ def incompleted_runs(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if RunProcess.objects.all().exclude(state__runStateName="Completed").exists():
+    if RunProcess.objects.all().exclude(state__run_state_name="Completed").exists():
         display_incompleted_run = get_information_for_incompleted_run()
         return render(
             request,
             "iSkyLIMS_wetlab/incompletedRuns.html",
             {"display_incompleted_run": display_incompleted_run},
         )
-        # unfinished_runs = RunProcess.objects.all().exclude(state__runStateName = 'Completed').order_by('runName')
-        # for run in unfinished_runs:
-        # display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
     else:
         return render(
             request,
@@ -2554,7 +2551,7 @@ def stats_per_library(request):
                         runprocess_id__state__runStateName__exact="Completed",
                         generatedat__range=(start_date, end_date),
                     )
-                    .exclude(libraryKit__exact=library_name)
+                    .exclude(library_kit__exact=library_name)
                     .exists()
                 ):
                     libraries_to_compare = Projects.objects.filter(
