@@ -1183,7 +1183,7 @@ def configuration_test(request):
     if request.method == "POST" and request.POST["action"] == "basicTest":
         test_results = {}
         test_results['basic_checks_ok'] = 'OK'
-        iSkyLIMS_drylab.drylab_config_file = os.path.join(settings.BASE_DIR, 'iSkyLIMS_drylab', 'drylab_config.py')
+        drylab_config_file = os.path.join(settings.BASE_DIR, 'iSkyLIMS_drylab', 'drylab_config.py')
         # check if access to databases are defined
         try:
             access_db = iSkyLIMS_drylab.models.Service.objects.all()
