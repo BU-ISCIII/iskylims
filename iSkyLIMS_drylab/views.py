@@ -388,7 +388,7 @@ def search_service(request):
                 data.append(service_item.get_service_request_number())
                 data.append(service_item.get_service_state())
                 data.append(service_item.get_service_dates())
-                data.append(service_item.get_service_request_center())
+                data.append(service_item.get_service_request_center_name())
                 data.append(iSkyLIMS_drylab.utils.handling_request_services.get_projects_in_requested_samples(service_item))
                 data.append(iSkyLIMS_drylab.utils.handling_request_services.get_run_in_requested_samples(service_item))
                 s_list [service_id]=[data]
