@@ -22,7 +22,6 @@ import iSkyLIMS_drylab.utils.handling_request_services
 import iSkyLIMS_drylab.utils.handling_resolutions
 #
 #
-from iSkyLIMS_drylab.utils.handling_deliveries import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
 from iSkyLIMS_core.utils.common import send_test_email, get_email_data
 
@@ -712,26 +711,26 @@ def add_delivery(request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     if request.method == 'POST' and request.POST['action'] == 'deliveryResolutionService':
-        delivery_data = prepare_delivery_form (request.POST['resolution_id'])
+        delivery_data = iSkyLIMS_drylab.utils.handling_deliveries.prepare_delivery_form (request.POST['resolution_id'])
 
         return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data})
 
     if request.method == 'POST' and request.POST['action'] == 'addDeliveryResolution':
 
         if (request.POST['startdate'] != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(request.POST['startdate'])) or  (request.POST['enddate'] != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(request.POST['enddate'])):
-            delivery_data = prepare_delivery_form (request.POST['resolution_id'])
+            delivery_data = iSkyLIMS_drylab.utils.handling_deliveries.prepare_delivery_form (request.POST['resolution_id'])
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_INCORRECT_FORMAT_DATE
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'ERROR': error_message})
 
-        delivery_recorded = store_resolution_delivery (request.POST)
+        delivery_recorded = iSkyLIMS_drylab.utils.handling_deliveries.store_resolution_delivery (request.POST)
         resolution_obj = delivery_recorded['deliveryResolutionID']
         if delivery_recorded != None :
             email_data = {}
-            email_data["user_email"] = request.user.email
-            email_data["user_name"] = request.user.username
-            email_data["resolution_number"] = delivery_recorded["resolution_number"]
-            email_data["service_owner_email"] = resolution_obj.get_service_owner_email()
-            send_delivery_service_email(email_data)
+            email_data['user_email'] = request.user.email
+            email_data['user_name'] = request.user.username
+            email_data['resolution_number'] = delivery_recorded['resolution_number']
+            email_data['service_owner_email'] = resolution_obj.get_service_owner_email()
+            iSkyLIMS_drylab.utils.handling_deliveries.send_delivery_service_email(email_data)
             if iSkyLIMS_drylab.utils.handling_resolutions.allow_to_service_update_state (resolution_obj, 'delivered'):
                 service_obj = resolution_obj.get_service_obj()
                 service_obj = service_obj.update_service_state("delivered")
