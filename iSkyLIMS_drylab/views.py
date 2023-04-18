@@ -194,7 +194,7 @@ def add_samples_in_service(request):
     if request.method == 'POST' and request.POST['action'] == 'addeSamplesInService':
         if not iSkyLIMS_drylab.models.Service.objects.filter(pk__exact = request.POST['service_id']).exists():
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
-        service_obj = iSkyLIMS_drylab.utils.handling_resolutions.get_service_obj_from_id(request.POST['service_id'])
+        service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(request.POST['service_id'])
         samples_added = {}
         samples_added['samples'] = iSkyLIMS_drylab.utils.handling_request_services.stored_samples_for_sequencing_request_service(request.POST, service_obj)
         samples_added['service_name'] = service_obj.get_service_request_number()
@@ -223,8 +223,8 @@ def delete_samples_in_service(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
         if  not 'sampleId' in request.POST :
             return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
-        service_data ={'service_id':request.POST['service_id'],'service_name':iSkyLIMS_drylab.utils.handling_resolutions.get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
         deleted_samples = iSkyLIMS_drylab.utils.handling_request_services.delete_requested_samples_in_service(request.POST.getlist('sampleId'))
+        service_data ={'service_id':request.POST['service_id'],'service_name':iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
         return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
     return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
 
