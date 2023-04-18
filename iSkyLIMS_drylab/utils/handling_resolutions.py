@@ -60,8 +60,8 @@ def allow_to_service_update_state(resolution_obj, new_state):
         for all_resolution_obj in all_resolution_objs:
             if new_state == "delivered":
                 if not (
-                    all_resolution_obj.get_resolution_state() == "Delivered"
-                    or all_resolution_obj.get_resolution_state() == "Cancelled"
+                    all_resolution_obj.get_state() == "Delivered"
+                    or all_resolution_obj.get_state() == "Cancelled"
                     or all_resolution_obj == resolution_obj
                 ):
                     continue
