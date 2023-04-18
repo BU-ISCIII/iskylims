@@ -1209,12 +1209,12 @@ def configuration_test(request):
         return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'test_results': test_results})
     elif request.method=='POST' and request.POST['action'] == 'resolutionTest':
         if 'Delete' in request.POST :
-            iSkyLIMS_drylab.utils.testing_iSkyLIMS_drylab.drylab_configuration.delete_test_service ('SRVTEST-IIER001')
+            iSkyLIMS_drylab.utils.testing_drylab_configuration.delete_test_service('SRVTEST-IIER001')
             return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')
 
         resolution_results = {}
         service_requested = 'SRVTEST-IIER001'
-        resolution_results['CreateService'], result = iSkyLIMS_drylab.utils.testing_iSkyLIMS_drylab.drylab_configuration.create_service_test(service_requested)
+        resolution_results['CreateService'], result = iSkyLIMS_drylab.utils.testing_drylab_configuration.create_service_test(service_requested)
 
         if result == 'NOK' :
             resolution_results['create_service_ok'] = 'NOK'
@@ -1223,7 +1223,7 @@ def configuration_test(request):
         else:
             resolution_results['create_service_ok'] = 'OK'
             resolution_number = 'SRVTEST-IIER001.1'
-            resolution_results ['resolution_test'] = iSkyLIMS_drylab.utils.testing_iSkyLIMS_drylab.drylab_configuration.create_resolution_test (resolution_number, service_requested)
+            resolution_results ['resolution_test'] =  iSkyLIMS_drylab.utils.testing_drylab_configuration.create_resolution_test(resolution_number, service_requested)
             resolution_results['create_resolution_ok'] = 'OK'
 
             resolution_results['completed_ok']= 'OK'
