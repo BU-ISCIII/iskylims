@@ -35,8 +35,8 @@ def create_service_id(service_number, user_name):
     if get_configuration_from_database("USER_CENTER_USED_FOR_NAMING_SERVICE") == "True":
         try:
             user_center = django_utils.models.Profile.objects.get(
-                profileUserID=user_name
-            ).profileCenter.centerAbbr
+                profile_user_id=user_name
+            ).profile_center.center_abbr
         except ValueError:
             user_center = (
                 iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
@@ -105,8 +105,8 @@ def increment_service_number(request_user):
     """
     try:
         user_center = django_utils.models.Profile.objects.get(
-            profileUserID=request_user
-        ).profileCenter.centerAbbr
+            profile_user_id=request_user
+        ).profile_center.center_abbr
     except:
         user_center = iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
