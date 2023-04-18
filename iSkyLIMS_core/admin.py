@@ -1,88 +1,72 @@
 from django.contrib import admin
-from iSkyLIMS_core.models import (
-    CommercialKits,
-    City,
-    LabRequest,
-    MoleculePreparation,
-    MoleculeParameterValue,
-    MoleculeType,
-    MoleculeUsedFor,
-    PatientCore,
-    PatientProjects,
-    PatientSex,
-    Protocols,
-    ProtocolParameters,
-    ProtocolType,
-    Samples,
-    SampleProjects,
-    SampleProjectsFields,
-    SampleProjectFieldClassification,
-    SamplesProjectsTableOptions,
-    SampleProjectsFieldsValue,
-    SampleType,
-    SequencerInLab,
-    SequencingConfiguration,
-    SequencingPlatform,
-    Species,
-    StatesForMolecule,
-    StatesForSample,
-    StateInCountry,
-    UserLotCommercialKits,
-    OntologyMap,
-    Contact
-)
+
+from iSkyLIMS_core.models import (City, CommercialKits, Contact, LabRequest,
+                                  MoleculeParameterValue, MoleculePreparation,
+                                  MoleculeType, MoleculeUsedFor, OntologyMap,
+                                  PatientCore, PatientProjects, PatientSex,
+                                  ProtocolParameters, Protocols, ProtocolType,
+                                  SampleProjectFieldClassification,
+                                  SampleProjects, SampleProjectsFields,
+                                  SampleProjectsFieldsValue, Samples,
+                                  SamplesProjectsTableOptions, SampleType,
+                                  SequencerInLab, SequencingConfiguration,
+                                  SequencingPlatform, Species, StateInCountry,
+                                  StatesForMolecule, StatesForSample,
+                                  UserLotCommercialKits)
+
 
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ["contactName", "contactMail"]
+    list_display = ["contact_name", "contact_mail"]
+
 
 class StateInCountryAdmin(admin.ModelAdmin):
-    list_display = ["stateName", "apps_name"]
+    list_display = ["state_name", "apps_name"]
 
 
 class CityAdmin(admin.ModelAdmin):
-    list_display = ["cityName", "apps_name"]
+    list_display = ["city_name", "apps_name"]
 
 
 class CommercialKitsAdmin(admin.ModelAdmin):
-    list_display = ("name", "provider", "platformKits", "cat_number")
+    list_display = ("name", "provider", "platform_kits", "cat_number")
 
 
 class LabRequestAdmin(admin.ModelAdmin):
     list_display = [
-        "labName",
-        "labNameCoding",
-        "labContactName",
-        "labPhone",
-        "labEmail",
+        "lab_name",
+        "lab_name_coding",
+        "lab_contact_name",
+        "lab_phone",
+        "lab_email",
     ]
 
 
 class MoleculeTypeAdmin(admin.ModelAdmin):
-    list_display = ("moleculeType",)
+    list_display = ("molecule_type",)
 
 
 class MoleculeParameterValueAdmin(admin.ModelAdmin):
-    list_display = ("moleculeParameter_id", "molecule_id", "parameterValue")
+    list_display = ("molecule_parameter_id", "molecule_id", "parameter_value")
 
 
 class MoleculePreparationAdmin(admin.ModelAdmin):
     list_display = (
-        "moleculeCodeId",
+        "molecule_code_id",
         "state",
         "sample",
-        "moleculeType",
-        "extractionType",
-        "protocolUsed",
-        "moleculeExtractionDate",
-        "moleculeUsedFor",
-        "numberOfReused",
+        "molecule_type",
+        "extraction_type",
+        "protocol_used",
+        "molecule_extraction_date",
+        "molecule_used_for",
+        "reused_number",
     )
     list_filter = ("generated_at",)
     search_fields = ("sample__startswith",)
 
 
 class MoleculeUsedForAdmin(admin.ModelAdmin):
-    list_display = ["usedFor", "apps_name", "massiveUse"]
+    list_display = ["used_for", "apps_name", "massive_use"]
 
 
 class OntologyMapAdmin(admin.ModelAdmin):
@@ -90,8 +74,8 @@ class OntologyMapAdmin(admin.ModelAdmin):
 
 
 class PatientCoreAdmin(admin.ModelAdmin):
-    list_display = ("patientCode", "patientName", "patientSurname", "patientSex")
-    search_fields = ("patientCode__icontains",)
+    list_display = ("patient_code", "patient_name", "patient_surname", "patient_sex")
+    search_fields = ("patient_code__icontains",)
 
 
 class PatientSexAdmin(admin.ModelAdmin):
@@ -99,7 +83,7 @@ class PatientSexAdmin(admin.ModelAdmin):
 
 
 class PatientProjectsAdmin(admin.ModelAdmin):
-    list_display = ("projectName", "projectDescription")
+    list_display = ("project_name", "project_description")
 
 
 class ProtocolsAdmin(admin.ModelAdmin):
@@ -113,58 +97,58 @@ class ProtocolTypeAdmin(admin.ModelAdmin):
 class ProtocolParametersAdmin(admin.ModelAdmin):
     list_display = (
         "protocol_id",
-        "parameterName",
-        "parameterOrder",
-        "parameterUsed",
-        "parameterMinValue",
-        "parameterMaxValue",
-        "parameterDescription",
+        "parameter_name",
+        "parameter_order",
+        "parameter_used",
+        "parameter_min_value",
+        "parameter_max_value",
+        "parameter_description",
     )
     list_filter = ("protocol_id",)
-    search_fields = ("parameterName__startswith",)
+    search_fields = ("parameter_name__startswith",)
 
 
 class SamplesAdmin(admin.ModelAdmin):
     list_display = (
-        "sampleCodeID",
-        "sampleName",
-        "sampleState",
-        "labRequest",
-        "sampleType",
-        "sampleUser",
+        "sample_code_id",
+        "sample_name",
+        "sample_state",
+        "lab_request",
+        "sample_type",
+        "sample_user",
         "species",
-        "sampleProject",
-        "sampleEntryDate",
-        "uniqueSampleID",
-        "numberOfReused",
-        "sequencingDate",
+        "sample_project",
+        "sample_entry_date",
+        "unique_sample_id",
+        "reused_number",
+        "sequencing_date",
     )
     list_filter = ("generated_at",)
-    search_fields = ("sampleName__icontains",)
+    search_fields = ("sample_name__icontains",)
 
 
 class SampleTypeAdmin(admin.ModelAdmin):
-    list_display = ("sampleType", "apps_name", "optional_fields")
+    list_display = ("sample_type", "apps_name", "optional_fields")
 
 
 class SampleProjectsAdmin(admin.ModelAdmin):
     list_display = [
-        "sampleProjectName",
-        "sampleProjectManager",
-        "sampleProjectContact",
-        "sampleProjectDescription",
+        "sample_project_name",
+        "sample_project_manager",
+        "sample_project_contact",
+        "sample_project_description",
         "apps_name",
     ]
 
 
 class SampleProjectsFieldsAdmin(admin.ModelAdmin):
     list_display = [
-        "sampleProjects_id",
-        "sampleProjectFieldName",
-        "sampleProjectFieldType",
-        "sampleProjectOptionList",
-        "sampleProjectFieldOrder",
-        "sampleProjectFieldUsed",
+        "sample_projects_id",
+        "sample_project_field_name",
+        "sample_project_field_type",
+        "sample_project_option_list",
+        "sample_project_field_order",
+        "sample_project_field_used",
     ]
 
 
@@ -173,58 +157,61 @@ class SampleProjectFieldClassificationAdmin(admin.ModelAdmin):
 
 
 class SamplesProjectsTableOptionsAdmin(admin.ModelAdmin):
-    list_display = ["sampleProjectField", "optionValue"]
+    list_display = ["sample_project_field", "option_value"]
 
 
 class SampleProjectsFieldsValueAdmin(admin.ModelAdmin):
-    list_display = ["sample_id", "sampleProjecttField_id", "sampleProjectFieldValue"]
+    list_display = ["sample_id", "sample_project_field_id", "sample_project_field_value"]
     list_filter = ["sample_id"]
-    search_fields = ("sampleProjecttField_id__sampleProjectFieldName", "sampleProjectFieldValue")
+    search_fields = (
+        "sample_project_field_id__sample_project_field_name",
+        "sample_project_field_value",
+    )
 
 
 class SequencingPlatformAdmin(admin.ModelAdmin):
-    list_display = ("platformName", "companyName", "sequencingTecnology")
+    list_display = ("platform_name", "company_name", "sequencing_technology")
 
 
 class SequencingConfigurationAdmin(admin.ModelAdmin):
-    list_display = ["platformID", "configurationName"]
+    list_display = ["platform_id", "configuration_name"]
 
 
 class SequencerInLabAdmin(admin.ModelAdmin):
     list_display = (
-        "sequencerName",
-        "platformID",
-        "sequencerDescription",
-        "sequencerLocation",
-        "sequencerSerialNumber",
-        "sequencerState",
-        "sequencerOperationStart",
-        "sequencerOperationEnd",
-        "sequencerNumberLanes",
+        "sequencer_name",
+        "platform_id",
+        "sequencer_description",
+        "sequencer_location",
+        "sequencer_serial_number",
+        "sequencer_state",
+        "sequencer_operation_start",
+        "sequencer_operation_end",
+        "sequencer_number_lanes",
     )
 
 
 class SpeciesAdmin(admin.ModelAdmin):
-    list_display = ("speciesName", "refGenomeName", "refGenomeSize", "refGenomeID")
+    list_display = ("species_name", "ref_genome_name", "ref_genome_size", "ref_genome_id")
 
 
 class StatesForMoleculeAdmin(admin.ModelAdmin):
-    list_display = ("moleculeStateName",)
+    list_display = ("molecule_state_name",)
 
 
 class StatesForSampleAdmin(admin.ModelAdmin):
-    list_display = ("sampleStateName",)
+    list_display = ("sample_state_name",)
 
 
 class UserLotCommercialKitsAdmin(admin.ModelAdmin):
     list_display = (
         "user",
-        "basedCommercial",
-        "runOut",
-        "numberOfuses",
-        "chipLot",
-        "latestUsedDate",
-        "expirationDate",
+        "based_commercial",
+        "run_out",
+        "use_number",
+        "chip_lot",
+        "latest_used_date",
+        "expiration_date",
     )
 
 
@@ -246,7 +233,9 @@ admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(SampleProjects, SampleProjectsAdmin)
-admin.site.register(SampleProjectFieldClassification, SampleProjectFieldClassificationAdmin)
+admin.site.register(
+    SampleProjectFieldClassification, SampleProjectFieldClassificationAdmin
+)
 admin.site.register(SampleProjectsFields, SampleProjectsFieldsAdmin)
 admin.site.register(SamplesProjectsTableOptions, SamplesProjectsTableOptionsAdmin)
 admin.site.register(SampleProjectsFieldsValue, SampleProjectsFieldsValueAdmin)
@@ -258,4 +247,3 @@ admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)
 admin.site.register(UserLotCommercialKits, UserLotCommercialKitsAdmin)
 admin.site.register(Contact, ContactAdmin)
-
