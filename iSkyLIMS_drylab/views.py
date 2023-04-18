@@ -78,21 +78,21 @@ def request_sequencing_service(request):
 			response['Content-Disposition'] = 'inline; filename=files.json'
 			return response
 		else:
-			service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_service_sequencing(request)
+			service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_service_sequencing(request)
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
 	if request.method == 'POST' and request.POST['subAction'] == 'createservice':
 		# check that at some services have been requested
 		if len(request.POST.getlist('RequestedServices')) == 0 :
-			service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_service_sequencing(request)
+			service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_service_sequencing(request)
 			error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
 
-		new_service = iSkyLIMS_drylab.utils.drylab_common_functions.create_new_save_sequencing_service_request(request)
-		sample_stored = iSkyLIMS_drylab.utils.drylab_common_functions.stored_samples_for_sequencing_request_service(request.POST, new_service)
+		new_service = iSkyLIMS_drylab.utils.handling_request_services.create_new_save_sequencing_service_request(request)
+		sample_stored = iSkyLIMS_drylab.utils.handling_request_services.stored_samples_for_sequencing_request_service(request.POST, new_service)
 		if 'files' in request.POST:
-			iSkyLIMS_drylab.utils.drylab_common_functions.add_files_to_service(request.POST.getlist('files'), new_service)
+			iSkyLIMS_drylab.utils.handling_request_services.add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab notification email
 		email_data = {}
 		if 'requestedForUserid' in request.POST and request.POST['requestedForUserid'] != '':
@@ -103,7 +103,7 @@ def request_sequencing_service(request):
 			email_data['user_email'] = request.user.email
 			email_data['user_name'] = request.user.username
 		email_data['service_number'] = new_service.get_service_request_number()
-		email_result = iSkyLIMS_drylab.utils.drylab_common_functions.send_service_creation_confirmation_email(email_data)
+		email_result = iSkyLIMS_drylab.utils.handling_request_services.send_service_creation_confirmation_email(email_data)
 		# PDF preparation file for confirmation of service request
 		confirmation_result = {}
 		''' removed creation of pdf file when creating a new service
@@ -117,7 +117,7 @@ def request_sequencing_service(request):
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result, 'error_message':email_result})
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
 	else:
-		service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_service_sequencing(request)
+		service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_service_sequencing(request)
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
 
@@ -127,18 +127,18 @@ def counseling_request(request):
     if request.method == "POST" and request.POST["action"] == "createService":
         # check that at some services have been requested
         if len(request.POST.getlist('RequestedServices')) == 0 :
-            service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_counseling_service()
+            service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_counseling_service()
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information,
                            'error_message':error_message})
 
-        new_service = iSkyLIMS_drylab.utils.drylab_common_functions.create_new_save_counseling_infrastructure_service_request(request)
+        new_service = iSkyLIMS_drylab.utils.handling_request_services.create_new_save_counseling_infrastructure_service_request(request)
 
         email_data = {}
         email_data['user_email'] = request.user.email
         email_data['user_name'] = request.user.username
         email_data['service_number'] = new_service.get_service_request_number()
-        iSkyLIMS_drylab.utils.drylab_common_functions.send_service_creation_confirmation_email(email_data)
+        iSkyLIMS_drylab.utils.handling_request_services.send_service_creation_confirmation_email(email_data)
         confirmation_result = {}
         # confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
@@ -148,7 +148,7 @@ def counseling_request(request):
         return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
 
     else:
-        service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_counseling_service()
+        service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_counseling_service()
         return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information})
 
 
@@ -158,18 +158,18 @@ def infrastructure_request(request):
     if request.method == "POST" and request.POST["action"] == "createService":
         # check that at some services have been requested
         if len(request.POST.getlist('RequestedServices')) == 0 :
-            service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_infrastructure_service()
+            service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_infrastructure_service()
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information,
                            'error_message':error_message})
 
-        new_service = iSkyLIMS_drylab.utils.drylab_common_functions.create_new_save_counseling_infrastructure_service_request(request)
+        new_service = iSkyLIMS_drylab.utils.handling_request_services.create_new_save_counseling_infrastructure_service_request(request)
 
         email_data = {}
         email_data['user_email'] = request.user.email
         email_data['user_name'] = request.user.username
         email_data['service_number'] = new_service.get_service_request_number()
-        iSkyLIMS_drylab.utils.drylab_common_functions.send_service_creation_confirmation_email(email_data)
+        iSkyLIMS_drylab.utils.handling_request_services.send_service_creation_confirmation_email(email_data)
         confirmation_result = {}
         # confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
@@ -178,7 +178,7 @@ def infrastructure_request(request):
 
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
     else:
-        service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.prepare_form_data_request_infrastructure_service()
+        service_data_information = iSkyLIMS_drylab.utils.handling_request_services.prepare_form_data_request_infrastructure_service()
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})
 
 @login_required
@@ -196,12 +196,12 @@ def add_samples_in_service(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
         service_obj = iSkyLIMS_drylab.utils.handling_resolutions.get_service_obj_from_id(request.POST['service_id'])
         samples_added = {}
-        samples_added['samples'] = iSkyLIMS_drylab.utils.drylab_common_functions.stored_samples_for_sequencing_request_service(request.POST, service_obj)
+        samples_added['samples'] = iSkyLIMS_drylab.utils.handling_request_services.stored_samples_for_sequencing_request_service(request.POST, service_obj)
         samples_added['service_name'] = service_obj.get_service_request_number()
         samples_added['service_id'] = request.POST['service_id']
         return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'samples_added': samples_added}))
     else:
-        service_data_information = iSkyLIMS_drylab.utils.drylab_common_functions.add_requested_samples_in_service(request)
+        service_data_information = iSkyLIMS_drylab.utils.handling_request_services.add_requested_samples_in_service(request)
         service_data_information['service_id'] = request.POST['service_id']
         return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'service_data_information': service_data_information}))
     return redirect ('/drylab/displayService=' + str(request.POST['service_id']))
@@ -223,8 +223,8 @@ def delete_samples_in_service(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
         if  not 'sampleId' in request.POST :
             return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
-        deleted_samples = iSkyLIMS_drylab.utils.drylab_common_functions.delete_requested_samples_in_service(request.POST.getlist('sampleId'))
         service_data ={'service_id':request.POST['service_id'],'service_name':iSkyLIMS_drylab.utils.handling_resolutions.get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
+        deleted_samples = iSkyLIMS_drylab.utils.handling_request_services.delete_requested_samples_in_service(request.POST.getlist('sampleId'))
         return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
     return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
 
@@ -237,7 +237,7 @@ def display_service(request, service_id):
         return redirect ('/accounts/login')
     if iSkyLIMS_drylab.models.Service.objects.filter(pk=service_id).exists():
         service_manager = iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request)
-        display_service_details = iSkyLIMS_drylab.utils.drylab_common_functions.get_service_information(service_id, service_manager)
+        display_service_details = iSkyLIMS_drylab.utils.handling_request_services.get_service_information(service_id, service_manager)
         return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
     else:
         return render(
@@ -389,8 +389,8 @@ def search_service(request):
                 data.append(service_item.get_service_state())
                 data.append(service_item.get_service_dates())
                 data.append(service_item.get_service_request_center())
-                data.append(iSkyLIMS_drylab.utils.drylab_common_functions.get_projects_in_requested_samples(service_item))
-                data.append(iSkyLIMS_drylab.utils.drylab_common_functions.get_run_in_requested_samples(service_item))
+                data.append(iSkyLIMS_drylab.utils.handling_request_services.get_projects_in_requested_samples(service_item))
+                data.append(iSkyLIMS_drylab.utils.handling_request_services.get_run_in_requested_samples(service_item))
                 s_list [service_id]=[data]
             display_multiple_services['s_list'] = s_list
             return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
@@ -411,8 +411,8 @@ def pending_services(request):
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    pending_services_details = iSkyLIMS_drylab.utils.drylab_common_functions.get_pending_services_information()
-    user_pending_services = iSkyLIMS_drylab.utils.drylab_common_functions.get_user_pending_services_information(request.user.username)
+    pending_services_details = iSkyLIMS_drylab.utils.handling_request_services.get_pending_services_information()
+    user_pending_services = iSkyLIMS_drylab.utils.handling_request_services.get_user_pending_services_information(request.user.username)
     return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details, 'user_pending_services':user_pending_services})
 
 @login_required
