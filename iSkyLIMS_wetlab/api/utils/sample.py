@@ -545,7 +545,6 @@ def collect_statistics_information(data):
                         .distinct()
                     )
                     for par2_val in par2_values:
-                        # import pdb; pdb.set_trace()
                         value = SampleProjectsFieldsValue.objects.filter(
                             sample_id__in=samples,
                             sample_project_field_id__sample_project_field_name=query_params[

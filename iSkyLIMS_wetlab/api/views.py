@@ -327,7 +327,6 @@ def fetch_sample_information(request):
                 sample_obj = SampleProjectsFieldsValue.objects.filter(
                     sample_project_field_id=s_p_field_obj
                 )
-                # import pdb; pdb.set_trace()
                 sample_data = SampleProjectParameterSerializer(
                     sample_obj, many=True, context={"parameter": param}
                 ).data

@@ -161,7 +161,7 @@ def get_boxplot_comparation_runs(run_object):
     x_axis_name = "Quatilty measures (normalized data)"
     y_axis_name = "Normalized values "
     series = [
-        [run_object.runName, "#0075c2", "#1aaf5d"],
+        [run_object.run_name, "#0075c2", "#1aaf5d"],
         ["All runs", "#f45b00", "#f2c500"],
     ]
     data = [
@@ -703,7 +703,7 @@ def get_information_run(run_object):
         # p_info = []
         # p_library_kit_list = []
         for p in range(len(p_list)):
-            p_info.append([p_list[p].projectName, p_list[p].id])
+            p_info.append([p_list[p].project_name, p_list[p].id])
             # get information about the library kits used for this run
             lib_kit = p_list[p].get_index_library_name()
             if lib_kit not in p_library_kits:
@@ -785,11 +785,10 @@ def get_information_run(run_object):
             )
             percent_lane = []
             for lane in lanes_for_percent_graphic:
-                percent_lane.append(float(lane.percentLane))
-            percent_projects[project_demultiplexion.projectName] = format(
+                percent_lane.append(float(lane.percent_lane))
+            percent_projects[project_demultiplexion.project_name] = format(
                 statistics.mean(percent_lane), "2f"
             )
-            # series.append(project_demultiplexion.projectName)
 
         # get the demultiplexion information for the default
 
@@ -799,7 +798,7 @@ def get_information_run(run_object):
             runprocess_id__exact=run_object, default_all__exact="default"
         )
         for default_lane in default_lanes_for_percent_graphic:
-            percent_default_lane.append(float(default_lane.percentLane))
+            percent_default_lane.append(float(default_lane.percent_lane))
 
         percent_projects["Unable to identify the project"] = format(
             statistics.mean(percent_default_lane), "2f"
@@ -913,9 +912,9 @@ def get_information_run(run_object):
         info_dict["match_unknows"] = match_unkownbarcodes_with_index(unknow_dict)
 
         # get te samples included in the run
-        if SamplesInProject.objects.filter(runProcess_id=run_object).exists():
+        if SamplesInProject.objects.filter(run_process_id=run_object).exists():
             sample_objs = SamplesInProject.objects.filter(
-                runProcess_id=run_object
+                run_process_id=run_object
             ).order_by("project_id")
             sample_run_data = []
             for sample_obj in sample_objs:
@@ -948,10 +947,9 @@ def get_information_project(project_id, request):
     # project_info_dict['project_id'] = project_id.id
     project_info_dict["p_name"] = project_id.get_project_name()
     project_info_dict["user_id"] = project_id.get_user_name()
-    run_objs = project_id.runProcess.all()
+    run_objs = project_id.run_process.all()
     for run_obj in run_objs:
         run_names.append([run_obj.get_run_id(), run_obj.get_run_name()])
-    # run_name = project_id.runprocess_id.runName
     groups = Group.objects.get(name=wetlab_config.WETLAB_MANAGER)
 
     if groups in request.user.groups.all():
@@ -997,7 +995,7 @@ def get_information_project(project_id, request):
 
         # prepare the data for sample information
         if SamplesInProject.objects.filter(
-            project_id__exact=project_id, runProcess_id=run_obj
+            project_id__exact=project_id, run_process_id=run_obj
         ).exists():
             sample_objs = SamplesInProject.objects.filter(
                 project_id__exact=project_id, run_process_id=run_obj
@@ -1059,7 +1057,7 @@ def get_info_sample_in_run(sample_run_obj):
     sample_info_dict["data_samples_info"] = sample_run_obj.get_sample_information()
     # Quality graphic
     quality_sample = sample_run_obj.get_quality_sample()
-    heading_chart_quality = "Quality for the Sample " + sample_run_obj.sampleName
+    heading_chart_quality = "Quality for the Sample " + sample_run_obj.sample_name
     data_source = graphic_for_quality_angular(heading_chart_quality, quality_sample)
     quality_sample_angular = FusionCharts(
         "angulargauge", "ex1", "350", "200", "chart-1", "json", data_source
@@ -1068,7 +1066,7 @@ def get_info_sample_in_run(sample_run_obj):
     percentage_in_project = {}
     samples_in_project = SamplesInProject.objects.filter(project_id__exact=project_id)
     for sample in samples_in_project:
-        percentage_in_project[sample.sampleName] = sample.percentInProject
+        percentage_in_project[sample.sample_name] = sample.percent_in_project
     heading_samples_in_project = "Samples belonging to the same project"
     sub_caption = ""
     x_axis_name = "Samples in project " + sample_run_obj.get_project_name()
@@ -1081,7 +1079,7 @@ def get_info_sample_in_run(sample_run_obj):
         y_axis_name,
         theme,
         percentage_in_project,
-        sample_run_obj.sampleName,
+        sample_run_obj.sample_name,
     )
     #
     percentage_chart = FusionCharts(

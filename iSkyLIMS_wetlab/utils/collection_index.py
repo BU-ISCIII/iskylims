@@ -344,7 +344,6 @@ def store_collection_settings(collection_settings, file_name):
         collection_settings["adapters"] = [""] * 2
     elif len(collection_settings["adapters"]) == 1:
         collection_settings["adapters"].append("")
-    import pdb; pdb.set_trace()
     new_collection_settings = CollectionIndexKit(
         collection_index_name=collection_settings["name"],
         version=collection_settings["version"],

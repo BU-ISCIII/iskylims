@@ -298,14 +298,14 @@ def get_samples_for_library_preparation():
     samples_names = []
 
     if Samples.objects.filter(
-        sampleState__sampleStateName__exact="Library preparation"
+        sample_state__sample_state_name__exact="Library preparation"
     ).exists():
         # data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
         samples_in_lib_prep["avail_samples"][
             "heading"
         ] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(
-            sampleState__sampleStateName__exact="Library preparation"
+            sample_state__sample_state_name__exact="Library preparation"
         )
         for samples_obj in samples_objs:
             if (
@@ -367,13 +367,13 @@ def get_samples_for_library_preparation():
                 data[0] = sample_name
                 if MoleculePreparation.objects.filter(
                     sample=samples_obj,
-                    state__moleculeStateName__exact="Completed",
-                    usedForMassiveSequencing=True,
+                    state__molecule_state_name__exact="Completed",
+                    used_for_massive_sequencing=True,
                 ).exists():
                     molecule_obj = MoleculePreparation.objects.filter(
                         sample=samples_obj,
-                        state__moleculeStateName__exact="Completed",
-                        usedForMassiveSequencing=True,
+                        state__molecule_state_name__exact="Completed",
+                        used_for_massive_sequencing=True,
                     ).last()
                     data[1] = molecule_obj.get_molecule_code_id()
                     samples_in_lib_prep["avail_samples"]["data"].append(data)
@@ -491,7 +491,7 @@ def validate_sample_sheet_data(input_data):
             continue
         if not LibPrepare.objects.filter(
             sampleNameInSampleSheet__exact=sample,
-            libPrepState__libPrepState__exact="Updated additional kits",
+            lib_prep_state__lib_prep_state__exact="Updated additional kits",
         ).exists():
             invalid_state_samples.append(sample)
     if len(not_defined_samples) > 0:
@@ -577,9 +577,9 @@ def get_data_for_library_preparation_in_defined():
     """
 
     lib_prep_data = []
-    if LibPrepare.objects.filter(libPrepState__libPrepState__exact="Defined").exists():
+    if LibPrepare.objects.filter(lib_prep_state__lib_prep_state__exact="Defined").exists():
         libs_preps_defined = LibPrepare.objects.filter(
-            libPrepState__libPrepState__exact="Defined"
+            lib_prep_state__lib_prep_state__exact="Defined"
         ).order_by("lib_prep_code_id")
         for lib_prep in libs_preps_defined:
             lib_prep_data.append(lib_prep.get_basic_data())
@@ -718,8 +718,8 @@ def get_lib_prep_to_add_parameters():
     """
     lib_prep_parameters = {}
     lib_prep_parameters["length"] = 0
-    if LibPrepare.objects.filter(libPrepState__libPrepState__exact="Defined").exists():
-        samples = LibPrepare.objects.filter(libPrepState__libPrepState__exact="Defined")
+    if LibPrepare.objects.filter(lib_prep_state__lib_prep_state__exact="Defined").exists():
+        samples = LibPrepare.objects.filter(lib_prep_state__lib_prep_state__exact="Defined")
         sample_info = []
         for sample in samples:
             lib_prep_info = []
@@ -763,11 +763,11 @@ def get_samples_in_lib_prep_state():
     lib_prep_data = []
     states_excluded = ["Completed", "Reused pool"]
     if Samples.objects.filter(
-        sampleState__sampleStateName__exact="Library preparation"
+        sample_state__sample_state_name__exact="Library preparation"
     ).exists():
         samples_obj = (
             Samples.objects.filter(
-                sampleState__sampleStateName__exact="Library preparation"
+                sample_state__sample_state_name__exact="Library preparation"
             )
             .order_by("sample_user")
             .order_by("sample_entry_date")
@@ -782,7 +782,7 @@ def get_samples_in_lib_prep_state():
                 sample_information = sample.get_info_in_defined_state()
                 sample_information.append(sample.get_register_user())
                 molecule_obj = MoleculePreparation.objects.filter(
-                    sample=sample, state__moleculeStateName="Completed"
+                    sample=sample, state__molecule_state_name="Completed"
                 ).last()
                 if molecule_obj:
                     molecule_data = molecule_obj.get_molecule_information()
@@ -857,11 +857,11 @@ def store_confirmation_library_preparation_index(form_data):
         sample_name = json_data[row_index][sample_name_index]
         if LibPrepare.objects.filter(
             sampleNameInSampleSheet__exact=sample_name,
-            libPrepState__libPrepState__exact="Updated additional kits",
+            lib_prep_state__lib_prep_state__exact="Updated additional kits",
         ).exists():
             lib_prep_obj = LibPrepare.objects.filter(
                 sampleNameInSampleSheet__exact=sample_name,
-                libPrepState__libPrepState__exact="Updated additional kits",
+                lib_prep_state__lib_prep_state__exact="Updated additional kits",
             ).last()
 
             for item in MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS:
