@@ -35,7 +35,7 @@ class UploadServiceFileAdmin(admin.ModelAdmin):
 
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
-    list_display = ["availServiceDescription", "serviceId", "inUse"]
+    list_display = ["avail_service_description", "serviceId", "inUse"]
 
 
 class ResolutionAdmin(admin.ModelAdmin):
