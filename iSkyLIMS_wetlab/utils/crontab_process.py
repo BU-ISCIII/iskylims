@@ -179,7 +179,7 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file, experiment_name):
     projects_objs = []
     project_with_users = get_projects_in_run(sample_sheet_file)
     for project, user in project_with_users.items():
-        if not Projects.objects.filter(projectName__exact=project).exists():
+        if not Projects.objects.filter(project_name__exact=project).exists():
             project_data = {}
             project_data["projectName"] = project
             if User.objects.filter(username__iexact=user).exists():
@@ -190,14 +190,14 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file, experiment_name):
                 project_data["user_id"] = None
             project_obj = Projects.objects.create_new_empty_project(project_data)
             projects_objs.append(project_obj)
-            # assign project to runº
-            project_obj.runProcess.add(run_process_obj)
+            # assign project to run
+            project_obj.run_process.add(run_process_obj)
             logger.info("%s : Project name  %s added ", experiment_name, project)
         else:
-            project_obj = Projects.objects.filter(projectName__exact=project).last()
+            project_obj = Projects.objects.filter(project_name__exact=project).last()
             if project_obj not in projects_objs:
                 projects_objs.append(project_obj)
-                project_obj.runProcess.add(run_process_obj)
+                project_obj.run_process.add(run_process_obj)
                 logger.info("%s : Project name  %s added ", experiment_name, project)
     logger.debug("%s : End function assign_projects_to_run", experiment_name)
     return
@@ -229,7 +229,7 @@ def check_sequencer_status_from_log_file(
 
     if "Cancel" in log_file_content:
         run_process_obj = RunProcess.objects.filter(
-            runName__exact=experiment_name
+            run_name__exact=experiment_name
         ).last()
         if run_process_obj.get_forced_continue_on_error():
             logger.warning(
@@ -787,9 +787,9 @@ def get_run_process_obj_or_create_if_not_exists(experiment_name):
     """
     logger = logging.getLogger(__name__)
     logger.debug("Starting function get_run_process_obj_or_create_if_not_exists")
-    if RunProcess.objects.filter(runName__exact=experiment_name).exists():
+    if RunProcess.objects.filter(run_name__exact=experiment_name).exists():
         run_process_obj = RunProcess.objects.filter(
-            runName__exact=experiment_name
+            run_name__exact=experiment_name
         ).last()
     else:
         run_data = {}
@@ -815,10 +815,10 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
     logger = logging.getLogger(__name__)
     logger.debug("Starting function get_sequencer_obj_or_create_if_no_exists")
     if SequencerInLab.objects.filter(
-        sequencerName__exact=running_parameters["instrument"]
+        sequencer_name__exact=running_parameters["instrument"]
     ).exists():
         sequencer_obj = SequencerInLab.objects.filter(
-            sequencerName__exact=running_parameters["instrument"]
+            sequencer_name__exact=running_parameters["instrument"]
         ).last()
 
     else:
@@ -861,7 +861,7 @@ def get_samba_shared_folder():
     Return:
         samba_folder_name
     """
-    return SambaConnectionData.objects.last().get_samba_folder_name()
+    return SambaConnectionData.objects.last().get_samba_shared_folder_name()
 
 
 def handling_errors_in_run(experiment_name, error_code):
@@ -878,9 +878,9 @@ def handling_errors_in_run(experiment_name, error_code):
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function handling_errors_in_run", experiment_name)
     logger.info("%s : Set run to ERROR state", experiment_name)
-    if RunProcess.objects.filter(runName__exact=experiment_name).exists():
+    if RunProcess.objects.filter(run_name__exact=experiment_name).exists():
         run_process_obj = RunProcess.objects.filter(
-            runName__exact=experiment_name
+            run_name__exact=experiment_name
         ).last()
         run_process_obj.set_run_error_code(error_code)
         logger.info("%s : is now on ERROR state", experiment_name)
@@ -1098,9 +1098,9 @@ def save_run_parameters_data_to_database(
         "%s : Starting function save_run_parameters_data_to_database", experiment_name
     )
 
-    if RunningParameters.objects.filter(runName_id=run_process_obj).exists():
+    if RunningParameters.objects.filter(run_name_id=run_process_obj).exists():
         run_parameter_objs = RunningParameters.objects.filter(
-            runName_id=run_process_obj
+            run_name_id=run_process_obj
         )
         for run_parameter_obj in run_parameter_objs:
             logger.info(
@@ -1518,9 +1518,8 @@ def parsing_run_metrics_files(
     run_metrics = py_interop_run_metrics.run_metrics()
     valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
     py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
-
+    run_metrics.read(local_run_metric_folder)
     summary = py_interop_summary.run_summary()
-
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
 
     bin_run_stats_summary_list = []
@@ -2109,9 +2108,9 @@ def delete_existing_bcl2fastq_table_processed(run_process_obj, experiment_name):
         for stats_lane_summary_obj in stats_lane_summary_objs:
             stats_lane_summary_obj.delete()
         logger.info("%s : Deleted StatsLaneSummary tables ", experiment_name)
-    if SamplesInProject.objects.filter(runProcess_id=run_process_obj).exists():
+    if SamplesInProject.objects.filter(run_process_id=run_process_obj).exists():
         sample_in_project_objs = SamplesInProject.objects.filter(
-            runProcess_id=run_process_obj
+            run_process_id=run_process_obj
         )
         for sample_in_project_obj in sample_in_project_objs:
             sample_in_project_obj.delete()
@@ -2554,7 +2553,7 @@ def process_and_store_fl_summary_data(
         "%s : Starting function process_and_store_fl_summary_data", experiment_name
     )
     M_BASE = 1.004361 / 1000000
-    run_param_obj = RunningParameters.objects.get(runName_id=run_process_obj)
+    run_param_obj = RunningParameters.objects.get(run_name_id=run_process_obj)
     number_of_lanes = int(run_param_obj.get_number_of_lanes())
 
     for project in parsed_data.keys():
@@ -2588,7 +2587,7 @@ def process_and_store_fl_summary_data(
             project_flowcell["defaultAll"] = project
         else:
             project_flowcell["project_id"] = Projects.objects.filter(
-                projectName__iexact=project
+                project_name__iexact=project
             ).last()
             project_flowcell["defaultAll"] = None
         project_flowcell["runprocess_id"] = run_process_obj
@@ -2682,7 +2681,7 @@ def process_and_store_lane_summary_data(
                 project_lane["defaultAll"] = project
             else:
                 project_lane["project_id"] = Projects.objects.filter(
-                    projectName__exact=project
+                    project_name__exact=project
                 ).last()
                 project_lane["defaultAll"] = None
 
@@ -2736,13 +2735,13 @@ def process_and_store_raw_demux_project_data(
         if project not in project_list:
             # create project and link to the run
             # check if project exists yet
-            if not Projects.objects.filter(projectName__exact=project).exists():
+            if not Projects.objects.filter(project_name__exact=project).exists():
                 new_project_obj = Projects.objects.create_new_empty_project(
                     {"user_id": None, "projectName": project}
                 )
             else:
                 new_project_obj = Projects.objects.filter(
-                    projectName__exact=project
+                    project_name__exact=project
                 ).last()
             new_project_obj.runProcess.add(run_process_obj)
             string_message = (
@@ -2769,7 +2768,7 @@ def process_and_store_raw_demux_project_data(
             project_raw_data["defaultAll"] = project
         else:
             project_raw_data["project_id"] = Projects.objects.filter(
-                projectName__exact=project
+                project_name__exact=project
             ).last()
             project_raw_data["defaultAll"] = None
 
@@ -2871,7 +2870,7 @@ def process_and_store_samples_projects_data(
             project_sample_data["qualityQ30"] = bigger_q30
             project_sample_data["meanQuality"] = mean_quality
             project_sample_data["project_id"] = Projects.objects.filter(
-                projectName__exact=project
+                project_name__exact=project
             ).last()
             project_sample_data["runProcess_id"] = run_process_obj
             try:
