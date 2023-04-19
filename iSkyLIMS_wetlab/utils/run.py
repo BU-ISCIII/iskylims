@@ -14,10 +14,10 @@ from iSkyLIMS_core.utils.samples import (
     get_molecule_objs_from_sample, get_sample_obj_from_sample_name,
     update_molecule_reused, update_sample_reused)
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_wetlab.utils.library_preparation import (
+from iSkyLIMS_wetlab.utils.library import (
     get_iem_version_for_library_prep_ids, get_lib_prep_obj_from_id,
     update_library_preparation_for_reuse)
-from iSkyLIMS_wetlab.utils.pool_preparation import check_if_duplicated_index
+from iSkyLIMS_wetlab.utils.pool import check_if_duplicated_index
 from iSkyLIMS_wetlab.wetlab_config import *
 
 
@@ -1117,7 +1117,7 @@ def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
     Constants:
         MEDIA_ROOT
         RUN_TEMP_DIRECTORY_RECORDED
-    Return:
+    Return:LibUserSampleSheet
         sample_sheet_relative
     """
     """

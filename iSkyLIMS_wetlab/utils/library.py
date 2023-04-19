@@ -7,14 +7,14 @@ from iSkyLIMS_core.models import MoleculePreparation, Protocols, Samples
 from iSkyLIMS_core.utils.commercial_kits import *
 from iSkyLIMS_core.utils.protocols import *
 from iSkyLIMS_core.utils.samples import (get_molecule_obj_from_id,
-                                                  get_sample_obj_from_id)
+                                         get_sample_obj_from_id)
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.utils.common import *
-from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
+from iSkyLIMS_wetlab.utils.samplesheet import *
 from iSkyLIMS_wetlab.utils.sequencers import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
-from .stats_graphics import *
+from .stats_graphs import *
 
 
 def check_empty_fields(data):
@@ -842,12 +842,12 @@ def store_confirmation_library_preparation_index(form_data):
     json_data = json.loads(form_data["index_data"])
     heading = form_data["heading_excel"].split(",")
     store_result = {}
-    if not libUserSampleSheet.objects.filter(
+    if not LibUserSampleSheet.objects.filter(
         pk__exact=form_data["libPrepUserSampleSheetId"]
     ).exists():
         store_result["ERROR"] = ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
         return store_result
-    user_sample_sheet_obj = libUserSampleSheet.objects.get(
+    user_sample_sheet_obj = LibUserSampleSheet.objects.get(
         pk__exact=form_data["libPrepUserSampleSheetId"]
     )
     sample_name_index = heading.index("Sample_Name")
@@ -913,7 +913,7 @@ def store_library_preparation_sample_sheet(
     sample_sheet_data["user"] = user
     sample_sheet_data["platform"] = platform
     sample_sheet_data["configuration"] = configuration
-    new_user_s_sheet_obj = libUserSampleSheet.objects.create_lib_prep_user_sample_sheet(
+    new_user_s_sheet_obj = LibUserSampleSheet.objects.create_lib_prep_user_sample_sheet(
         sample_sheet_data
     )
 
@@ -971,9 +971,9 @@ def get_user_for_sample_sheet():
 def format_sample_sheet_to_display_in_form(sample_sheet_data):
     """
     Description:
-        The function gets the information to display the library preparation to assing 
+        The function gets the information to display the library preparation to assing
         the protocol parameter values sample names, extracted data from sample sheet, index, .
-        Then store the libraryPreparation data for each sample and update the sample state to 
+        Then store the libraryPreparation data for each sample and update the sample state to
         "library Preparation"
     Input:
         lib_prep_ids   # Library preparation ids

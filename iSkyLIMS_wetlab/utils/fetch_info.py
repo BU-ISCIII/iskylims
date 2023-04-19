@@ -12,7 +12,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 
 from ..fusioncharts.fusioncharts import FusionCharts
 from .common import get_run_in_same_year_to_compare, normalized_data
-from .stats_graphics import *
+from .stats_graphs import *
 
 
 def get_boxplot_comparation_runs(run_object):

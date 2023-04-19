@@ -2,11 +2,9 @@ import statistics
 
 from iSkyLIMS_wetlab.fusioncharts.fusioncharts import FusionCharts
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_wetlab.utils.common import (check_valid_date_format,
-                                          get_configuration_value)
-from iSkyLIMS_wetlab.utils.fetching_information import \
-    get_sequencer_installed_names
-from iSkyLIMS_wetlab.utils.stats_graphics import (column_graphic_simple,
+from iSkyLIMS_wetlab.utils.common import *
+from iSkyLIMS_wetlab.utils.fetch_info import *
+from iSkyLIMS_wetlab.utils.stats_graphs import (column_graphic_simple,
                                                   column_graphic_tupla)
 from iSkyLIMS_wetlab.wetlab_config import *
 

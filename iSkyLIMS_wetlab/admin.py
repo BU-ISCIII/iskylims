@@ -232,8 +232,8 @@ class GraphicsStatsAdmin(admin.ModelAdmin):
     list_display = (
         "runprocess_id",
         "folder_run_graphic",
-        "cluser_count_graph",
-        "flow_cell_graph",
+        "cluster_count_graph",
+        "flowcell_graph",
         "intensity_by_cycle_graph",
         "heatmap_graph",
         "histogram_graph",
@@ -262,7 +262,7 @@ class RunConfigurationTestAdmin(admin.ModelAdmin):
 admin.site.register(LibPrepare, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 admin.site.register(LibraryPool, LibraryPoolAdmin)
-admin.site.register(libUserSampleSheet, libPreparationUserSampleSheetAdmin)
+admin.site.register(LibUserSampleSheet, libPreparationUserSampleSheetAdmin)
 admin.site.register(AdditionaKitsLibPrepare, AdditionaKitsLibraryPreparationAdmin)
 admin.site.register(AdditionalUserLotKit, AdditionalUserLotKitAdmin)
 admin.site.register(RunningParameters, RunningParametersAdmin)
