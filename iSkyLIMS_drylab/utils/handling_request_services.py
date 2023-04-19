@@ -108,20 +108,20 @@ def create_new_save_sequencing_service_request(request):
 
     if Profile.objects.filter(profileUserID=request_user).exists():
         try:
-            service_data["serviceSeqCenter"] = (
+            service_data["service_seq_center"] = (
                 Profile.objects.filter(profileUserID=request_user)
                 .last()
                 .profileCenter.get_center_name()
             )
         except:
-            service_data["serviceSeqCenter"] = drylab_config.INTERNAL_SEQUENCING_UNIT
+            service_data["service_seq_center"] = drylab_config.INTERNAL_SEQUENCING_UNIT
 
-    service_data["serviceNotes"] = request.POST["description"]
+    service_data["service_notes"] = request.POST["description"]
     service_data["serviceUserId"] = request_user
-    service_data["serviceRequestInt"] = increment_service_number(request_user)
+    service_data["service_request_int"] = increment_service_number(request_user)
 
-    service_data["serviceRequestNumber"] = create_service_id(
-        service_data["serviceRequestInt"], request_user
+    service_data["service_request_number"] = create_service_id(
+        service_data["service_request_int"], request_user
     )
 
     # Save the new service
@@ -141,7 +141,7 @@ def create_new_save_sequencing_service_request(request):
     """
     # Save the many-to-many data for the form
     for av_service_obj in available_service_objs:
-        new_service.serviceAvailableService.add(av_service_obj)
+        new_service.service_available_service.add(av_service_obj)
     return new_service
 
 
@@ -160,22 +160,22 @@ def create_new_save_counseling_infrastructure_service_request(request):
     available_service_objs = []
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj_from_id(av_service))
-    service_data["serviceSeqCenter"] = drylab_config.INTERNAL_SEQUENCING_UNIT
-    service_data["serviceNotes"] = request.POST["description"]
-    service_data["serviceRunSpecs"] = ""
+    service_data["service_seq_center"] = drylab_config.INTERNAL_SEQUENCING_UNIT
+    service_data["service_notes"] = request.POST["description"]
+    service_data["service_run_specs"] = ""
     service_data["service_sequencing_platform"] = ""
     service_data["serviceFileExt"] = ""
-    service_data["serviceRunSpecs"] = ""
+    service_data["service_run_specs"] = ""
     service_data["serviceUserId"] = request.user
-    service_data["serviceRequestInt"] = increment_service_number(request.user.id)
-    service_data["serviceRequestNumber"] = create_service_id(
-        service_data["serviceRequestInt"], request.user.id
+    service_data["service_request_int"] = increment_service_number(request.user.id)
+    service_data["service_request_number"] = create_service_id(
+        service_data["service_request_int"], request.user.id
     )
     # Save the new service
     new_service = Service.objects.create_service(service_data)
     # Save the many-to-many data for the form
     for av_service_obj in available_service_objs:
-        new_service.serviceAvailableService.add(av_service_obj)
+        new_service.service_available_service.add(av_service_obj)
 
     return new_service
 
@@ -249,12 +249,12 @@ def get_data_for_service_confirmation(service_requested):
     user = {}
     service_data = {}
     service = Service.objects.filter(
-        serviceRequestNumber__exact=service_requested
+        service_request_number__exact=service_requested
     ).last()
     service_number, center = service.get_service_name_and_center()
     information["service_number"] = service_number
     information["requested_date"] = service.get_service_creation_time()
-    information["nodes"] = service.serviceAvailableService.all()
+    information["nodes"] = service.service_available_service.all()
     user["name"] = service.serviceUserId.first_name
     user["surname"] = service.serviceUserId.last_name
 
@@ -320,9 +320,9 @@ def get_pending_services_information():
             "state_display", flat=True
         )
     )
-    # fileds_to_show = ["serviceOnApprovedDate"]
+    # fileds_to_show = ["service_approved_date"]
     """
-        variable_column = 'serviceOnApprovedDate'
+        variable_column = 'service_approved_date'
         search_type = 'contains'
         filter = variable_column + '__' + search_type
         info=members.filter(**{ filter: search_string })
@@ -336,7 +336,7 @@ def get_pending_services_information():
         info_for_stat_service[stat_service] = []
         service_objs = Service.objects.filter(
             service_state__state_display__exact=stat_service
-        ).order_by("-serviceCreatedOnDate")
+        ).order_by("-service_created_date")
         number_of_services[stat_service] = len(service_objs)
         for service_obj in service_objs:
             # fetch service id and name
@@ -516,9 +516,9 @@ def get_requested_services_obj_from_available_service(avail_service_obj):
         request_service_objs
     """
     request_service_objs = None
-    if Service.objects.filter(serviceAvailableService=avail_service_obj).exists():
+    if Service.objects.filter(service_available_service=avail_service_obj).exists():
         request_service_objs = Service.objects.filter(
-            serviceAvailableService=avail_service_obj
+            service_available_service=avail_service_obj
         )
     return request_service_objs
 
@@ -543,10 +543,10 @@ def get_service_information(service_id, service_manager):
     display_service_details["service_id"] = service_id
     # get the list of samples
     if RequestedSamplesInServices.objects.filter(
-        samplesInService=service_obj, onlyRecordedSample__exact=False
+        samplesInService=service_obj, only_recorded_sample__exact=False
     ).exists():
         samples_in_service = RequestedSamplesInServices.objects.filter(
-            samplesInService=service_obj, onlyRecordedSample__exact=False
+            samplesInService=service_obj, only_recorded_sample__exact=False
         )
         display_service_details["samples_sequenced"] = []
         for sample in samples_in_service:
@@ -560,10 +560,10 @@ def get_service_information(service_id, service_manager):
                 ]
             )
     if RequestedSamplesInServices.objects.filter(
-        samplesInService=service_obj, onlyRecordedSample__exact=True
+        samplesInService=service_obj, only_recorded_sample__exact=True
     ).exists():
         samples_in_service = RequestedSamplesInServices.objects.filter(
-            samplesInService=service_obj, onlyRecordedSample__exact=True
+            samplesInService=service_obj, only_recorded_sample__exact=True
         )
         display_service_details["only_recorded_samples"] = []
         for sample in samples_in_service:
@@ -595,7 +595,7 @@ def get_service_information(service_id, service_manager):
         resolution_estimated_date = last_resolution.get_resolution_estimated_date()
 
     # get all services
-    display_service_details["nodes"] = service_obj.serviceAvailableService.all()
+    display_service_details["nodes"] = service_obj.service_available_service.all()
     display_service_details[
         "children_services"
     ] = get_available_children_services_and_id(display_service_details["nodes"])

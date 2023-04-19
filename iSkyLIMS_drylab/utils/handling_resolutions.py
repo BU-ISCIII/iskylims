@@ -138,7 +138,7 @@ def get_data_for_resolution(service_obj, resolution_obj):
     information["requested_date"] = service_obj.get_service_creation_time()
     information["resolution_date"] = resolution_info[4]
     if resolution_obj.availableServices.all() == ["None"]:
-        information["nodes"] = service_obj.serviceAvailableService.all()
+        information["nodes"] = service_obj.service_available_service.all()
     else:
         information["nodes"] = resolution_obj.availableServices.all()
     user["name"] = service_obj.serviceUserId.first_name
@@ -333,7 +333,7 @@ def prepare_form_data_add_resolution(form_data):
         list_of_ch_services = False
     service_obj = get_service_obj_from_id(form_data["service_id"])
     resolution_form_data["service_number"] = service_obj.get_service_request_number()
-    all_tree_services = service_obj.serviceAvailableService.all()
+    all_tree_services = service_obj.service_available_service.all()
     all_children_services = get_available_children_services_and_id(all_tree_services)
 
     if list_of_ch_services:
