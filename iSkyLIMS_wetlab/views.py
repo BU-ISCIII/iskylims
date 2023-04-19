@@ -634,7 +634,7 @@ def add_collection_index_kit(request):
         saved_file = store_collection_kits_file(request.FILES["newCollectionIndexFile"])
 
         # get the libary name to check if it is already defined
-        if not check_collection_index_file_format(saved_file):
+        if not check_collection_index_file_format(os.path.join(settings.MEDIA_ROOT,saved_file)):
             os.remove(saved_file)
             return render(
                 request,
@@ -648,7 +648,7 @@ def add_collection_index_kit(request):
                 },
             )
 
-        collection_name = get_collection_index_name(saved_file)
+        collection_name = get_collection_index_name(os.path.join(settings.MEDIA_ROOT,saved_file))
         if collection_name == "":
             # removing the uploaded file
             os.remove(saved_file)
@@ -680,10 +680,10 @@ def add_collection_index_kit(request):
                 },
             )
         # Get the collection settings included in the file
-        collection_settings = get_collection_settings(saved_file)
-        new_collection_obj = store_collection_settings(collection_settings, file_name)
+        collection_settings = get_collection_settings(os.path.join(settings.MEDIA_ROOT,saved_file))
+        new_collection_obj = store_collection_settings(collection_settings, saved_file)
         # get the index name and index bases for the library
-        collection_index = get_index_values(saved_file)
+        collection_index = get_index_values(os.path.join(settings.MEDIA_ROOT,saved_file))
         store_collection_indexes(collection_index, new_collection_obj)
 
         collection_index_information["collection_index_names"] = collection_settings[
@@ -3966,7 +3966,7 @@ def configuration_test(request):
                 "iSkyLIMS_wetlab/ConfigurationTest.html",
                 {"error": wetlab_config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
             )
-        run_test_result = execute_test_for_testing_run(run_test_name, run_test_folder)
+        run_test_result = execute_test_for_testing_run(run_test_name)
         run_test_result["run_test_name"] = run_test_name
         if "ERROR" in run_test_result:
             log_trace = []
