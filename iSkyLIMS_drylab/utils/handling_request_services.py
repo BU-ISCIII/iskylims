@@ -833,7 +833,7 @@ def prepare_form_data_request_service_sequencing(request):
             avail_service_description__exact="Genomic data analysis"
         )
         .get_descendants(include_self=True)
-        .exclude(inUse=False)
+        .exclude(service_in_use=False)
     )
 
     if wetlab_api_available:

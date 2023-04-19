@@ -772,7 +772,7 @@
     "fields": {
         "avail_service_description": "Genomic Data Analysis",
         "parent": null,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 1,
@@ -787,7 +787,7 @@
     "fields": {
         "avail_service_description": "Bioinformatics consulting and training",
         "parent": null,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 1,
@@ -802,7 +802,7 @@
     "fields": {
         "avail_service_description": "User support",
         "parent": null,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 1,
@@ -817,7 +817,7 @@
     "fields": {
         "avail_service_description": "Download and quality analysis",
         "parent": 1,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 2,
@@ -832,7 +832,7 @@
     "fields": {
         "avail_service_description": "Next Generation Sequencing data analysis",
         "parent": 1,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 10,
@@ -847,7 +847,7 @@
     "fields": {
         "avail_service_description": "Bioinformatics analysis consulting",
         "parent": 2,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 2,
@@ -862,7 +862,7 @@
     "fields": {
         "avail_service_description": "In-house and outer course organization",
         "parent": 2,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 4,
@@ -877,7 +877,7 @@
     "fields": {
         "avail_service_description": "Student training in colaboration: Master thesis, research visit,...",
         "parent": 2,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 6,
@@ -892,7 +892,7 @@
     "fields": {
         "avail_service_description": "Installation and support of bioinformatic software on Linux OS",
         "parent": 3,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 2,
@@ -907,7 +907,7 @@
     "fields": {
         "avail_service_description": "Installation and access to Virtual machines in the Unit server containing bioinformatic software",
         "parent": 3,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 4,
@@ -922,7 +922,7 @@
     "fields": {
         "avail_service_description": "Code snippets development",
         "parent": 3,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 6,
@@ -937,7 +937,7 @@
     "fields": {
         "avail_service_description": "DNAseq: Exome sequencing (WES) / Genome sequencing (WGS) / Target (Amplicon, probes)  / Direct seq",
         "parent": 1,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 12,
@@ -952,7 +952,7 @@
     "fields": {
         "avail_service_description": "RNAseq: Transcriptome sequencing",
         "parent": 1,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 34,
@@ -967,7 +967,7 @@
     "fields": {
         "avail_service_description": "Amplicon sequencing (Deep sequencing)",
         "parent": 1,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 52,
@@ -982,7 +982,7 @@
     "fields": {
         "avail_service_description": "Metagenomics",
         "parent": 1,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 40,
@@ -997,7 +997,7 @@
     "fields": {
         "avail_service_description": "Data download",
         "parent": 4,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 3,
@@ -1012,7 +1012,7 @@
     "fields": {
         "avail_service_description": "Sequence quality analysis",
         "parent": 4,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 5,
@@ -1027,7 +1027,7 @@
     "fields": {
         "avail_service_description": "Sequence pre-processing (quality filtering)",
         "parent": 4,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 7,
@@ -1042,7 +1042,7 @@
     "fields": {
         "avail_service_description": "Human: Trio/family variant calling, annotation and priorization",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "exome_pipeline",
         "description": null,
         "lft": 13,
@@ -1057,7 +1057,7 @@
     "fields": {
         "avail_service_description": "Diploid organisms: Variant calling, annotation and prioritization",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "sarek_exomiser_vep",
         "description": null,
         "lft": 17,
@@ -1072,7 +1072,7 @@
     "fields": {
         "avail_service_description": "Haploid organisms: mapping, variant calling, annotation and snp-based analysis (p.e outbreak)",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "snippy",
         "description": null,
         "lft": 19,
@@ -1087,7 +1087,7 @@
     "fields": {
         "avail_service_description": "Bacteria: wg/cgMLST calling",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "chewbbaca",
         "description": null,
         "lft": 21,
@@ -1102,7 +1102,7 @@
     "fields": {
         "avail_service_description": "Bacteria: MLST + virulence + AMR + plasmid analysis",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "ariba_srst2",
         "description": null,
         "lft": 23,
@@ -1117,7 +1117,7 @@
     "fields": {
         "avail_service_description": "Bacteria: Assembly + automatic annotation",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "assembly_annotation",
         "description": null,
         "lft": 25,
@@ -1132,7 +1132,7 @@
     "fields": {
         "avail_service_description": "Bacteria: plasmidID pipeline - strain plasmid characterization",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "plasmidid",
         "description": null,
         "lft": 27,
@@ -1147,7 +1147,7 @@
     "fields": {
         "avail_service_description": "miRNA known detection, prediction and/or differential expression",
         "parent": 13,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "mirdeep2_deseq",
         "description": null,
         "lft": 35,
@@ -1162,7 +1162,7 @@
     "fields": {
         "avail_service_description": "mRNA/totalRNA alignment, quantification and/or differential expression",
         "parent": 13,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "rnaseq_nextflow",
         "description": null,
         "lft": 37,
@@ -1177,7 +1177,7 @@
     "fields": {
         "avail_service_description": "Human: Low frequency variant analysis and annotation",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "low_freq",
         "description": null,
         "lft": 15,
@@ -1192,7 +1192,7 @@
     "fields": {
         "avail_service_description": "Virus: consensus, assembly and minor variants detection - Viralrecon (with reference)",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "viralrecon",
         "description": null,
         "lft": 29,
@@ -1207,7 +1207,7 @@
     "fields": {
         "avail_service_description": "Ribosomal amplicons (16S/18S/ITR) taxonomic profiling",
         "parent": 15,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "qiime2",
         "description": null,
         "lft": 41,
@@ -1222,7 +1222,7 @@
     "fields": {
         "avail_service_description": "Viral: shotgun metagenomics profiling - Pikavirus",
         "parent": 15,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": "pikavirus",
         "description": null,
         "lft": 43,
@@ -1237,7 +1237,7 @@
     "fields": {
         "avail_service_description": "CHIP-SEQ",
         "parent": 1,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 48,
@@ -1252,7 +1252,7 @@
     "fields": {
         "avail_service_description": "Peak detection and annotation",
         "parent": 32,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 49,
@@ -1267,7 +1267,7 @@
     "fields": {
         "avail_service_description": "Shotgun metagenomics - Virus genome reconstruction",
         "parent": 15,
-        "inUse": false,
+        "service_in_use": false,
         "serviceId": null,
         "description": null,
         "lft": 45,
@@ -1282,7 +1282,7 @@
     "fields": {
         "avail_service_description": "OT-2 robots",
         "parent": 3,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": null,
         "description": null,
         "lft": 8,
@@ -1297,7 +1297,7 @@
     "fields": {
         "avail_service_description": "Flu: consensus, assembly and minor variants detection (IRMA)",
         "parent": 12,
-        "inUse": true,
+        "service_in_use": true,
         "serviceId": "irma",
         "description": null,
         "lft": 31,

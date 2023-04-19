@@ -58,9 +58,9 @@ def get_all_defined_pipelines(only_in_used):
     defined_pipelines = []
     pipeline_objs = False
     if only_in_used:
-        if Pipelines.objects.filter(pipelineInUse=True).exists():
+        if Pipelines.objects.filter(pipeline_in_use=True).exists():
             pipeline_objs = (
-                Pipelines.objects.filter(pipelineInUse=True)
+                Pipelines.objects.filter(pipeline_in_use=True)
                 .order_by("pipelineName")
                 .order_by("pipelineVersion")
             )
@@ -185,7 +185,7 @@ def get_pipelines_for_manage():
     """
     pipeline_data = {}
     if Pipelines.objects.all().exists():
-        pipelines_objs = Pipelines.objects.filter(pipelineInUse__exact=True).order_by(
+        pipelines_objs = Pipelines.objects.filter(pipeline_in_use__exact=True).order_by(
             "pipelineName"
         )
         pipeline_data["data"] = []

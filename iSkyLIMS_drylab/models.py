@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from django_utils.models import Profile, Center
 from django.contrib.auth.models import User
 
-from iSkyLIMS_core.models import Samples, SequencingPlatform
+from iSkyLIMS_core.models import SequencingPlatform
 from iSkyLIMS_drylab import drylab_config
 
 # STATUS_CHOICES will be deprecated from release 2.4.0 or higher
@@ -82,9 +82,9 @@ class ResolutionStates(models.Model):
 
 
 class AvailableService(MPTTModel):
-    availServiceDescription = models.CharField(_("Available services"), max_length=100)
+    avail_service_description = models.CharField(_("Available services"), max_length=100)
     parent = TreeForeignKey("self", models.SET_NULL, null=True, blank=True)
-    inUse = models.BooleanField(default=True)
+    service_in_use = models.BooleanField(default=True)
     serviceId = models.CharField(max_length=40, null=True, blank=True)
     description = models.CharField(max_length=200, null=True, blank=True)
 
@@ -92,10 +92,10 @@ class AvailableService(MPTTModel):
         db_table = "drylab_available_service"
 
     def __str__(self):
-        return "%s" % (self.availServiceDescription)
+        return "%s" % (self.avail_service_description)
 
     def get_service_description(self):
-        return "%s" % (self.availServiceDescription)
+        return "%s" % (self.avail_service_description)
 
     class Meta:
         ordering = ["tree_id", "lft"]
@@ -108,7 +108,7 @@ class PipelinesManager(models.Manager):
         new_pipeline = self.create(
             userName=data["userName"],
             pipelineName=data["pipelineName"],
-            pipelineInUse=True,
+            pipeline_in_use=True,
             pipelineVersion=data["pipelineVersion"],
             pipelineFile=os.path.join(
                 drylab_config.PIPELINE_FILE_DIRECTORY, data["filename"]
@@ -126,7 +126,7 @@ class Pipelines(models.Model):
     userName = models.ForeignKey(User, on_delete=models.CASCADE)
     pipelineName = models.CharField(max_length=50)
     pipelineVersion = models.CharField(max_length=10)
-    pipelineInUse = models.BooleanField(default=True)
+    pipeline_in_use = models.BooleanField(default=True)
     pipelineFile = models.FileField(
         upload_to=drylab_config.PIPELINE_FILE_DIRECTORY, null=True, blank=True
     )
@@ -163,7 +163,7 @@ class Pipelines(models.Model):
         data.append(self.pipelineName)
         data.append(self.pipelineVersion)
         data.append(self.generated_at.strftime("%B %d, %Y"))
-        data.append(self.pipelineInUse)
+        data.append(self.pipeline_in_use)
         # data.append(self.availableService.get_service_description())
         return data
 
@@ -177,7 +177,7 @@ class Pipelines(models.Model):
         data.append(self.pipelineName)
         data.append(self.pipelineVersion)
         data.append(self.generated_at.strftime("%d/ %B/ %Y"))
-        data.append(self.pipelineInUse)
+        data.append(self.pipeline_in_use)
         data.append(self.pk)
         return data
 
@@ -226,15 +226,14 @@ class ParameterPipeline(models.Model):
 
 class ServiceManager(models.Manager):
     def create_service(self, data):
-        serviceFileExt = None
-        serviceSequencingPlatform = None
+        service_sequencing_platform = None
         serviceRunSpecs = ""
         service_state_obj = ServiceState.objects.filter(
             state_value__iexact="recorded"
         ).last()
         new_service = self.create(
             serviceUserId=data["serviceUserId"],
-            serviceSequencingPlatform=serviceSequencingPlatform,
+            service_sequencing_platform=service_sequencing_platform,
             serviceRunSpecs=serviceRunSpecs,
             serviceSeqCenter=data["serviceSeqCenter"],
             serviceRequestNumber=data["serviceRequestNumber"],
@@ -251,7 +250,7 @@ class Service(models.Model):
     # 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
     #  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
     serviceUserId = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    serviceSequencingPlatform = models.ForeignKey(
+    service_sequencing_platform = models.ForeignKey(
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
     serviceAvailableService = TreeManyToManyField(
@@ -434,7 +433,7 @@ class Service(models.Model):
         return self
 
     def update_sequencing_platform(self, data):
-        self.serviceSequencingPlatform = data
+        self.service_sequencing_platform = data
         self.save()
         return self
 

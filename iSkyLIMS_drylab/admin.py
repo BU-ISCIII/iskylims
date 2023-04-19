@@ -35,7 +35,7 @@ class UploadServiceFileAdmin(admin.ModelAdmin):
 
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
-    list_display = ["avail_service_description", "serviceId", "inUse"]
+    list_display = ["avail_service_description", "serviceId", "service_in_use"]
 
 
 class ResolutionAdmin(admin.ModelAdmin):
@@ -78,7 +78,7 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 
 class PipelinesManager(admin.ModelAdmin):
-    list_display = ["pipelineName", "pipelineVersion", "pipelineInUse", "pipelineFile"]
+    list_display = ["pipelineName", "pipelineVersion", "pipeline_in_use", "pipelineFile"]
 
 
 class ParameterPipelineManager(admin.ModelAdmin):
