@@ -437,7 +437,7 @@ class RunningParametersManager(models.Manager):
 
         running_parameters = self.create(
             run_name_id=run_object,
-            run_iD=running_data["RunID"],
+            run_id=running_data["RunID"],
             experiment_name=running_data["ExperimentName"],
             rta_version=running_data["RTAVersion"],
             system_suite_version=running_data["SystemSuiteVersion"],
@@ -939,18 +939,19 @@ class SamplesInProjectManager(models.Manager):
             user_obj = User.objects.get(username__exact=sample_p_data["user_id"])
         except Exception:
             user_obj = None
-            sample_project = self.create(
-                project_id=sample_p_data["project_id"],
-                sample_name=sample_p_data["sampleName"],
-                barcode_name=sample_p_data["barcodeName"],
-                pf_clusters=sample_p_data["pfClusters"],
-                percent_in_project=sample_p_data["percentInProject"],
-                yield_mb=sample_p_data["yieldMb"],
-                quality_q30=sample_p_data["qualityQ30"],
-                mean_quality=sample_p_data["meanQuality"],
-                run_process_id=sample_p_data["runProcess_id"],
-                user_id=user_obj,
-            )
+
+        sample_project = self.create(
+            project_id=sample_p_data["project_id"],
+            sample_name=sample_p_data["sampleName"],
+            barcode_name=sample_p_data["barcodeName"],
+            pf_clusters=sample_p_data["pfClusters"],
+            percent_in_project=sample_p_data["percentInProject"],
+            yield_mb=sample_p_data["yieldMb"],
+            quality_q30=sample_p_data["qualityQ30"],
+            mean_quality=sample_p_data["meanQuality"],
+            run_process_id=sample_p_data["runProcess_id"],
+            user_id=user_obj,
+        )
         return sample_project
 
 
@@ -1074,7 +1075,7 @@ class CollectionIndexKit(models.Model):
     adapter_1 = models.CharField(max_length=125, null=True)
     adapter_2 = models.CharField(max_length=125, null=True)
     collection_index_file = models.FileField(
-        upload_to=wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY
+        upload_to=wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY, max_length=500
     )
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -1878,7 +1879,7 @@ class SambaConnectionData(models.Model):
         else:
             return ""
 
-    def get_samba_folder_name(self):
+    def get_samba_shared_folder_name(self):
         if self.shared_folder_name is not None:
             return "%s" % (self.shared_folder_name)
         else:

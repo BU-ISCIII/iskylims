@@ -83,7 +83,6 @@ def get_samba_connection_data():
     if SambaConnectionData.objects.all().exists():
         samba_connection_obj = SambaConnectionData.objects.all().last()
         samba_data = samba_connection_obj.get_samba_data()
-
     return samba_data
 
 
@@ -122,34 +121,30 @@ def open_samba_connection():
         string_message = "Samba connection data on database is empty"
         logging_errors(string_message, True, False)
         sys.exit(1)
-    if samba_data["SAMBA_APPLICATION_FOLDER_NAME"] != "":
-        samba_data["SAMBA_SHARED_FOLDER_NAME"] = os.path.join(
-            samba_data["SAMBA_SHARED_FOLDER_NAME"],
-            samba_data["SAMBA_APPLICATION_FOLDER_NAME"],
+    if samba_data["samba_folder_name"] != "":
+        samba_data["shared_folder_name"] = os.path.join(
+            samba_data["shared_folder_name"],
+            samba_data["samba_folder_name"],
         )
     conn = SMBConnection(
-        samba_data["SAMBA_USER_ID"],
-        samba_data["SAMBA_USER_PASSWORD"],
-        samba_data["SAMBA_SHARED_FOLDER_NAME"],
-        samba_data["SAMBA_REMOTE_SERVER_NAME"],
-        use_ntlm_v2=samba_data["SAMBA_NTLM_USED"],
-        domain=samba_data["SAMBA_DOMAIN"],
-        is_direct_tcp=samba_data["IS_DIRECT_TCP"],
+        samba_data["user_id"],
+        samba_data["user_password"],
+        samba_data["shared_folder_name"],
+        samba_data["remote_server_name"],
+        use_ntlm_v2=samba_data["ntlm_used"],
+        domain=samba_data["domain"],
+        is_direct_tcp=samba_data["is_direct_tcp"],
     )
-    # try:
-    if samba_data["SAMBA_HOST_NAME"]:
+
+    if samba_data["host_name"]:
         conn.connect(
-            socket.gethostbyname(samba_data["SAMBA_HOST_NAME"]),
-            int(samba_data["SAMBA_PORT_SERVER"]),
+            socket.gethostbyname(samba_data["host_name"]),
+            int(samba_data["port_server"]),
         )
     else:
         conn.connect(
-            samba_data["SAMBA_IP_SERVER"], int(samba_data["SAMBA_PORT_SERVER"])
+            samba_data["ip_server"], int(samba_data["port_server"])
         )
-    # except:
-    # string_message = 'Unable to connect to remote server'
-    # logging_errors (string_message, True, True)
-    #    raise IOError ('Samba connection error')
 
     logger.debug("End function open_samba_connection")
     return conn
@@ -274,6 +269,7 @@ def get_experiment_name_from_file(l_run_parameter):
     Return:
         experiment_name
     """
+
     experiment_name = find_xml_tag_text(
         l_run_parameter, wetlab_config.EXPERIMENT_NAME_TAG
     )

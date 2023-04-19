@@ -147,7 +147,7 @@ def delete_test_run(run_obj):
     return
 
 
-def execute_test_for_testing_run(run_test_name, run_test_folder):
+def execute_test_for_testing_run(run_test_name):
     """
     Description:
         The funtion call the functions used in the crontab to collect run information
@@ -164,7 +164,6 @@ def execute_test_for_testing_run(run_test_name, run_test_folder):
         True if folder exists
     """
     run_result = {}
-
     if RunProcess.objects.filter(run_name__exact=run_test_name).exists():
         run_obj = RunProcess.objects.filter(run_name__exact=run_test_name).last()
         run_obj.delete()

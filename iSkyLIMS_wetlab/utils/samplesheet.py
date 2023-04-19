@@ -548,28 +548,6 @@ def get_projects_in_run(in_file):
     return projects
 
 
-def get_experiment_name_from_file (in_file):
-    experiment_name = ''
-
-    import codecs
-    fh = codecs.open(in_file, 'r', 'utf-8')
-
-    for line in fh:
-        line = line.rstrip()
-        if line == '':
-            continue
-        found_experiment = re.search('^Experiment Name',line)
-
-        if found_experiment :
-            experiment_value = line.split(',')
-            if experiment_value[1]:
-                experiment_name = experiment_value[1]
-                found_experiment = 0
-    fh.close()
-
-    return experiment_name
-
-
 def get_index_library_name (in_file):
     '''
     Description:

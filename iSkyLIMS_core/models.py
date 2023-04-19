@@ -870,7 +870,7 @@ class SampleProjects(models.Model):
         s_project_info = []
         s_project_info.append(self.sample_project_name)
         s_project_info.append(self.sample_project_manager)
-        s_project_info.append(self.sampleProjectContact)
+        s_project_info.append(self.sample_project_contact)
         s_project_info.append(self.sample_project_description)
         return s_project_info
 
@@ -916,7 +916,7 @@ class SampleProjectsFieldsManager(models.Manager):
     def create_sample_project_fields(self, project_field_data):
         new_project_field = self.create(
             sample_projects_id=project_field_data["sample_project_id"],
-            Sample_project_field_classification_id=project_field_data[
+            sample_project_field_classification_id=project_field_data[
                 "SampleProjectFieldClassificationID"
             ],
             sample_project_field_name=project_field_data["Field name"],
@@ -1454,10 +1454,10 @@ class MoleculeUsedFor(models.Model):
         db_table = "core_molecule_used_for"
 
     def __str__(self):
-        return "%s" % (self.usedFor)
+        return "%s" % (self.used_for)
 
     def get_molecule_use_name(self):
-        return "%s" % (self.usedFor)
+        return "%s" % (self.used_for)
 
     def get_massive(self):
         return "%s" % (self.massive_use)

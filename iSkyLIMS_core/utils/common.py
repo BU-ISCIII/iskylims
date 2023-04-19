@@ -230,7 +230,7 @@ def save_inital_sample_setting_value(apps_name, data):
             protocol_type_data["molecule"] = data["protocol_type"][1]
         if ProtocolType.objects.filter(
             protocol_type__iexact=protocol_type_data["protocol_type"],
-            molecule__moleculeType__iexact=protocol_type_data["molecule"],
+            molecule__molecule_type__iexact=protocol_type_data["molecule"],
             apps_name__exact=protocol_type_data["apps_name"],
         ).exists():
             setting_defined["ERROR"] = [
