@@ -106,15 +106,15 @@ class AvailableService(MPTTModel):
 class PipelinesManager(models.Manager):
     def create_pipeline(self, data):
         new_pipeline = self.create(
-            userName=data["userName"],
-            pipelineName=data["pipelineName"],
+            user_name=data["user_name"],
+            pipeline_name=data["pipeline_name"],
             pipeline_in_use=True,
-            pipelineVersion=data["pipelineVersion"],
-            pipelineFile=os.path.join(
+            pipeline_version=data["pipeline_version"],
+            pipeline_file=os.path.join(
                 drylab_config.PIPELINE_FILE_DIRECTORY, data["filename"]
             ),
-            pipelineUrl=data["url"],
-            pipelineDescription=data["description"],
+            pipeline_url=data["url"],
+            pipeline_description=data["description"],
         )
         return new_pipeline
 
@@ -123,59 +123,57 @@ class Pipelines(models.Model):
     # availableService = models.ForeignKey(
     # 			AvailableService,
     # 			on_delete = models.CASCADE)
-    userName = models.ForeignKey(User, on_delete=models.CASCADE)
-    pipelineName = models.CharField(max_length=50)
-    pipelineVersion = models.CharField(max_length=10)
+    user_name = models.ForeignKey(User, on_delete=models.CASCADE)
+    pipeline_name = models.CharField(max_length=50)
+    pipeline_version = models.CharField(max_length=10)
     pipeline_in_use = models.BooleanField(default=True)
-    pipelineFile = models.FileField(
+    pipeline_file = models.FileField(
         upload_to=drylab_config.PIPELINE_FILE_DIRECTORY, null=True, blank=True
     )
-    pipelineUrl = models.CharField(max_length=200, null=True, blank=True)
-    pipelineDescription = models.CharField(max_length=500, null=True, blank=True)
+    pipeline_url = models.CharField(max_length=200, null=True, blank=True)
+    pipeline_description = models.CharField(max_length=500, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "drylab_pipelines"
 
     def __str__(self):
-        return "%s_%s" % (self.pipelineName, self.pipelineVersion)
+        return "%s_%s" % (self.pipeline_name, self.pipeline_version)
 
     def get_pipeline_name(self):
-        return "%s" % (self.pipelineName)
+        return "%s" % (self.pipeline_name)
 
     def get_pipeline_id(self):
         return "%s" % (self.pk)
 
     def get_pipeline_version(self):
-        return "%s" % (self.pipelineVersion)
+        return "%s" % (self.pipeline_version)
 
     def get_pipeline_additional(self):
         data = []
-        data.append(self.userName.username)
-        data.append(self.pipelineUrl)
-        data.append(self.pipelineFile)
-        data.append(self.pipelineDescription)
+        data.append(self.user_name.username)
+        data.append(self.pipeline_url)
+        data.append(self.pipeline_file)
+        data.append(self.pipeline_description)
 
         return data
 
     def get_pipeline_basic(self):
         data = []
-        data.append(self.pipelineName)
-        data.append(self.pipelineVersion)
+        data.append(self.pipeline_name)
+        data.append(self.pipeline_version)
         data.append(self.generated_at.strftime("%B %d, %Y"))
         data.append(self.pipeline_in_use)
-        # data.append(self.availableService.get_service_description())
         return data
 
     def get_pipeline_description(self):
-        return "%s" % (self.pipelineDescription)
+        return "%s" % (self.pipeline_description)
 
     def get_pipeline_info(self):
         data = []
-        # data.append(self.availableService.get_service_description())
-        data.append(self.userName.username)
-        data.append(self.pipelineName)
-        data.append(self.pipelineVersion)
+        data.append(self.user_name.username)
+        data.append(self.pipeline_name)
+        data.append(self.pipeline_version)
         data.append(self.generated_at.strftime("%d/ %B/ %Y"))
         data.append(self.pipeline_in_use)
         data.append(self.pk)
@@ -187,38 +185,38 @@ class Pipelines(models.Model):
 class ParameterPipelineManager(models.Manager):
     def create_pipeline_parameters(self, pipeline_parameters):
         new_parameter_action_pipeline = self.create(
-            parameterPipeline=pipeline_parameters["parameterPipeline"],
-            parameterName=pipeline_parameters["parameterName"],
-            parameterType=pipeline_parameters["parameterType"],
+            parameter_pipeline=pipeline_parameters["parameter_pipeline"],
+            parameter_name=pipeline_parameters["parameter_name"],
+            parameter_type=pipeline_parameters["parameter_type"],
         )
         return new_parameter_action_pipeline
 
 
 class ParameterPipeline(models.Model):
-    parameterPipeline = models.ForeignKey(Pipelines, on_delete=models.CASCADE)
-    parameterName = models.CharField(max_length=80)
-    parameterValue = models.CharField(max_length=200, null=True, blank=True)
-    parameterType = models.CharField(max_length=20, null=True, blank=True)
+    parameter_pipeline = models.ForeignKey(Pipelines, on_delete=models.CASCADE)
+    parameter_name = models.CharField(max_length=80)
+    parameter_value = models.CharField(max_length=200, null=True, blank=True)
+    parameter_type = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         db_table = "drylab_parameter_pipeline"
 
     def __str__(self):
-        return "%s" % (self.parameterName)
+        return "%s" % (self.parameter_name)
 
     def get_pipeline_parameter_name(self):
-        return "%s" % (self.parameterName)
+        return "%s" % (self.parameter_name)
 
     def get_pipeline_parameter_type(self):
-        return "%s" % (self.parameterType)
+        return "%s" % (self.parameter_type)
 
     def get_pipeline_parameter_value(self):
-        return "%s" % (self.parameterValue)
+        return "%s" % (self.parameter_value)
 
     def get_pipeline_parameters(self):
         data = []
-        data.append(self.parameterName)
-        data.append(self.parameterValue)
+        data.append(self.parameter_name)
+        data.append(self.parameter_value)
         return data
 
     objects = ParameterPipelineManager()
@@ -227,20 +225,20 @@ class ParameterPipeline(models.Model):
 class ServiceManager(models.Manager):
     def create_service(self, data):
         service_sequencing_platform = None
-        serviceRunSpecs = ""
+        service_run_specs = ""
         service_state_obj = ServiceState.objects.filter(
             state_value__iexact="recorded"
         ).last()
         new_service = self.create(
             serviceUserId=data["serviceUserId"],
             service_sequencing_platform=service_sequencing_platform,
-            serviceRunSpecs=serviceRunSpecs,
-            serviceSeqCenter=data["serviceSeqCenter"],
-            serviceRequestNumber=data["serviceRequestNumber"],
-            serviceRequestInt=data["serviceRequestInt"],
+            service_run_specs=service_run_specs,
+            service_seq_center=data["service_seq_center"],
+            service_request_number=data["service_request_number"],
+            service_request_int=data["service_request_int"],
             service_state=service_state_obj,
             serviceStatus="Recorded",
-            serviceNotes=data["serviceNotes"],
+            service_notes=data["service_notes"],
         )
         return new_service
 
@@ -253,11 +251,11 @@ class Service(models.Model):
     service_sequencing_platform = models.ForeignKey(
         SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
-    serviceAvailableService = TreeManyToManyField(
+    service_available_service = TreeManyToManyField(
         AvailableService, verbose_name=_("AvailableServices")
     )
 
-    serviceProjectNames = models.ManyToManyField(
+    service_project_names = models.ManyToManyField(
         "iSkyLIMS_wetlab.Projects", verbose_name=_("User's projects"), blank=True
     )
     service_state = models.ForeignKey(
@@ -267,53 +265,53 @@ class Service(models.Model):
         null=True,
         blank=True,
     )
-    serviceSeqCenter = models.CharField(
+    service_seq_center = models.CharField(
         _("Sequencing center"), max_length=50, blank=False, null=True
     )
-    serviceRequestNumber = models.CharField(max_length=80, null=True)
-    serviceRequestInt = models.CharField(max_length=80, null=True)
-    serviceRunSpecs = models.CharField(
+    service_request_number = models.CharField(max_length=80, null=True)
+    service_request_int = models.CharField(max_length=80, null=True)
+    service_run_specs = models.CharField(
         _("Run specifications"), max_length=10, blank=True, null=True
     )
-    # serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
+    # Not changed in refactorization because it will be deprecated from next release
     serviceStatus = models.CharField(
         _("Service status"), max_length=15, choices=STATUS_CHOICES
     )
-    serviceNotes = models.TextField(
+    service_notes = models.TextField(
         _("Service Notes"), max_length=2048, null=True, blank=True
     )
-    serviceCreatedOnDate = models.DateField(auto_now_add=True, null=True)
+    service_created_date = models.DateField(auto_now_add=True, null=True)
 
-    serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True, blank=True)
-    serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True, blank=True)
+    service_approved_date = models.DateField(auto_now_add=False, null=True, blank=True)
+    service_rejected_date = models.DateField(auto_now_add=False, null=True, blank=True)
 
-    serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True, blank=True)
+    service_delivered_date = models.DateField(auto_now_add=False, null=True, blank=True)
 
     class Meta:
         db_table = "drylab_service"
 
     def __str__(self):
-        return "%s" % (self.serviceRequestNumber)
+        return "%s" % (self.service_request_number)
 
     def get_service_name_and_center(self):
-        return [self.serviceRequestNumber, self.serviceSeqCenter]
+        return [self.service_request_number, self.service_seq_center]
 
     def get_service_id(self):
         return "%s" % self.pk
 
     def get_service_dates(self):
         service_dates = []
-        service_dates.append(self.serviceCreatedOnDate.strftime("%d %B, %Y"))
+        service_dates.append(self.service_created_date.strftime("%d %B, %Y"))
         try:
-            service_dates.append(self.serviceOnApprovedDate.strftime("%d %B, %Y"))
+            service_dates.append(self.service_approved_date.strftime("%d %B, %Y"))
         except (TypeError, AttributeError):
             service_dates.append("--")
         try:
-            service_dates.append(self.serviceOnRejectedDate.strftime("%d %B, %Y"))
+            service_dates.append(self.service_rejected_date.strftime("%d %B, %Y"))
         except (TypeError, AttributeError):
             service_dates.append("--")
         try:
-            service_dates.append(self.serviceOnDeliveredDate.strftime("%d %B, %Y"))
+            service_dates.append(self.service_delivered_date.strftime("%d %B, %Y"))
         except (TypeError, AttributeError):
             service_dates.append("--")
         return service_dates
@@ -321,47 +319,47 @@ class Service(models.Model):
     def get_stats_information(self):
         stats_information = []
         stats_information.append(self.id)
-        stats_information.append(self.serviceRequestNumber)
+        stats_information.append(self.service_request_number)
         stats_information.append(self.service_state.get_state(to_display=True))
         # stats_information.append(self.serviceStatus)
 
-        stats_information.append(self.serviceCreatedOnDate.strftime("%d %B, %Y"))
-        if self.serviceOnApprovedDate is None:
-            if self.serviceOnRejectedDate is None:
+        stats_information.append(self.service_created_date.strftime("%d %B, %Y"))
+        if self.service_approved_date is None:
+            if self.service_rejected_date is None:
                 stats_information.append("--")
             else:
                 stats_information.append(
-                    self.serviceOnRejectedDate.strftime("%d %B, %Y")
+                    self.service_rejected_date.strftime("%d %B, %Y")
                 )
         else:
-            stats_information.append(self.serviceOnApprovedDate.strftime("%d %B, %Y"))
-        if self.serviceOnDeliveredDate is None:
+            stats_information.append(self.service_approved_date.strftime("%d %B, %Y"))
+        if self.service_delivered_date is None:
             stats_information.append("--")
         else:
-            stats_information.append(self.serviceOnDeliveredDate.strftime("%d %B, %Y"))
+            stats_information.append(self.service_delivered_date.strftime("%d %B, %Y"))
 
         return stats_information
 
     def get_service_creation_time(self):
-        return self.serviceCreatedOnDate.strftime("%d %B, %Y")
+        return self.service_created_date.strftime("%d %B, %Y")
 
     def get_service_creation_time_no_format(self):
-        return self.serviceCreatedOnDate
+        return self.service_created_date
 
     def get_service_delivery_time_no_format(self):
-        return self.serviceOnDeliveredDate
+        return self.service_delivered_date
 
     def get_delivery_date(self):
-        if self.serviceOnDeliveredDate:
-            return self.serviceOnDeliveredDate.strftime("%d %B, %Y")
+        if self.service_delivered_date:
+            return self.service_delivered_date.strftime("%d %B, %Y")
         else:
             return "Not yet defined"
 
     def get_service_request_integer(self):
-        return "%s" % (self.serviceRequestInt)
+        return "%s" % (self.service_request_int)
 
     def get_service_request_number(self):
-        return "%s" % (self.serviceRequestNumber)
+        return "%s" % (self.service_request_number)
 
     def get_service_requested_user(self):
         if self.serviceUserId != None:
@@ -381,14 +379,14 @@ class Service(models.Model):
         return "%s" % (self.serviceUserId.profile.profileCenter.centerName)
 
     def get_service_user_notes(self):
-        return "%s" % (self.serviceNotes)
+        return "%s" % (self.service_notes)
 
     def get_time_to_delivery(self):
-        if self.serviceOnDeliveredDate == self.serviceCreatedOnDate:
+        if self.service_delivered_date == self.service_created_date:
             return 1
         else:
             number_days, time = str(
-                self.serviceOnDeliveredDate - self.serviceCreatedOnDate
+                self.service_delivered_date - self.service_created_date
             ).split(",")
             number, string_value = number_days.split(" ")
         return number
@@ -398,7 +396,7 @@ class Service(models.Model):
 
     def get_child_services(self):
         children_services = []
-        all_services = self.serviceAvailableService.all()
+        all_services = self.service_available_service.all()
         for service in all_services:
             if not service.get_children().exists():
                 children_services.append(
@@ -407,7 +405,7 @@ class Service(models.Model):
         return children_services
 
     def update_approved_date(self, date):
-        self.serviceOnApprovedDate = date
+        self.service_approved_date = date
         self.save()
         return self
 
@@ -418,17 +416,17 @@ class Service(models.Model):
         return self
 
     def update_service_approved_date(self, date):
-        self.serviceOnApprovedDate = date
+        self.service_approved_date = date
         self.save()
         return self
 
     def update_service_delivered_date(self, date):
-        self.serviceOnDeliveredDate = date
+        self.service_delivered_date = date
         self.save()
         return self
 
     def update_service_rejected_date(self, date):
-        self.serviceOnRejectedDate = date
+        self.service_rejected_date = date
         self.save()
         return self
 
@@ -444,14 +442,14 @@ class RequestedSamplesInServicesManager(models.Manager):
     def create_request_sample(self, data):
         new_req_sample_service = self.create(
             samplesInService=data["samplesInService"],
-            runName=data["run_name"],
-            runNameKey=data["run_id"],
-            projectName=data["project_name"],
-            projectKey=data["project_id"],
-            sampleName=data["sample_name"],
-            sampleKey=data["sample_id"],
-            onlyRecordedSample=data["only_recorded"],
-            samplePath=data["sample_path"],
+            run_name=data["run_name"],
+            run_name_key=data["run_id"],
+            project_name=data["project_name"],
+            project_key=data["project_id"],
+            sample_name=data["sample_name"],
+            sample_key=data["sample_id"],
+            only_recorded_sample=data["only_recorded"],
+            sample_path=data["sample_path"],
         )
         return new_req_sample_service
 
@@ -461,36 +459,36 @@ class RequestedSamplesInServices(models.Model):
         Service, on_delete=models.CASCADE, related_name="samples"
     )
 
-    sampleKey = models.CharField(max_length=15, null=True, blank=True)
-    sampleName = models.CharField(max_length=50, null=True, blank=True)
-    samplePath = models.CharField(max_length=250, null=True, blank=True)
-    runNameKey = models.CharField(max_length=15, null=True, blank=True)
-    runName = models.CharField(max_length=50, null=True, blank=True)
-    projectKey = models.CharField(max_length=15, null=True, blank=True)
-    projectName = models.CharField(max_length=50, null=True, blank=True)
-    onlyRecordedSample = models.BooleanField(default=False)
+    sample_key = models.CharField(max_length=15, null=True, blank=True)
+    sample_name = models.CharField(max_length=50, null=True, blank=True)
+    sample_path = models.CharField(max_length=250, null=True, blank=True)
+    run_name_key = models.CharField(max_length=15, null=True, blank=True)
+    run_name = models.CharField(max_length=50, null=True, blank=True)
+    project_key = models.CharField(max_length=15, null=True, blank=True)
+    project_name = models.CharField(max_length=50, null=True, blank=True)
+    only_recorded_sample = models.BooleanField(default=False)
     generated_at = models.DateField(auto_now_add=True)
 
     class Meta:
         db_table = "drylab_request_samples_in_services"
 
     def __str__(self):
-        return "%s" % (self.sampleName)
+        return "%s" % (self.sample_name)
 
     def get_requested_sample_id(self):
         return "%s" % (self.pk)
 
     def get_sample_name(self):
-        return "%s" % (self.sampleName)
+        return "%s" % (self.sample_name)
 
     def get_sample_id(self):
-        return "%s" % (self.sampleKey)
+        return "%s" % (self.sample_key)
 
     def get_project_name(self):
-        return "%s" % (self.projectName)
+        return "%s" % (self.project_name)
 
     def get_run_name(self):
-        return "%s" % (self.runName)
+        return "%s" % (self.run_name)
 
     objects = RequestedSamplesInServicesManager()
 
@@ -538,7 +536,6 @@ class UploadServiceFile(models.Model):
 
 class ResolutionManager(models.Manager):
     def create_resolution(self, resolution_data):
-        today = date.today()
         resolutionAsignedUser = User.objects.get(
             pk__exact=resolution_data["resolutionAsignedUser"]
         )

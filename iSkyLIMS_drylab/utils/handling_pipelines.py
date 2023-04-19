@@ -19,9 +19,9 @@ def analyze_input_pipelines(request):
     pipeline_data = {}
     additional_param_dict = {}
 
-    pipeline_data["userName"] = request.user
-    pipeline_data["pipelineName"] = request.POST["pipelineName"]
-    pipeline_data["pipelineVersion"] = request.POST["pipelineVersion"]
+    pipeline_data["user_name"] = request.user
+    pipeline_data["pipeline_name"] = request.POST["pipeline_name"]
+    pipeline_data["pipeline_version"] = request.POST["pipeline_version"]
     pipeline_data["url"] = request.POST["urlLocation"]
     pipeline_data["description"] = request.POST["description"]
     pipeline_json_data = json.loads(request.POST["pipeline_data"])
@@ -61,15 +61,15 @@ def get_all_defined_pipelines(only_in_used):
         if Pipelines.objects.filter(pipeline_in_use=True).exists():
             pipeline_objs = (
                 Pipelines.objects.filter(pipeline_in_use=True)
-                .order_by("pipelineName")
-                .order_by("pipelineVersion")
+                .order_by("pipeline_name")
+                .order_by("pipeline_version")
             )
     else:
         if Pipelines.objects.all().exists():
             pipeline_objs = (
                 Pipelines.objects.all()
-                .order_by("pipelineName")
-                .order_by("pipelineVersion")
+                .order_by("pipeline_name")
+                .order_by("pipeline_version")
             )
     if pipeline_objs:
         for pipeline_obj in pipeline_objs:
@@ -126,9 +126,9 @@ def get_detail_pipeline_data(pipeline_id):
         )
 
         # pipeline_obj = get_pipeline_obj_from_id (pipeline_id)
-        if ParameterPipeline.objects.filter(parameterPipeline=pipeline_obj).exists():
+        if ParameterPipeline.objects.filter(parameter_pipeline=pipeline_obj).exists():
             parameter_objs = ParameterPipeline.objects.filter(
-                parameterPipeline=pipeline_obj
+                parameter_pipeline=pipeline_obj
             )
             detail_pipelines_data[
                 "parameter_heading"
@@ -186,7 +186,7 @@ def get_pipelines_for_manage():
     pipeline_data = {}
     if Pipelines.objects.all().exists():
         pipelines_objs = Pipelines.objects.filter(pipeline_in_use__exact=True).order_by(
-            "pipelineName"
+            "pipeline_name"
         )
         pipeline_data["data"] = []
         for pipeline in pipelines_objs:
@@ -245,7 +245,7 @@ def pipeline_version_exists(pipeline_name, pipeline_version):
         True if already exists
     """
     if Pipelines.objects.filter(
-        pipelineName__iexact=pipeline_name, pipelineVersion__iexact=pipeline_version
+        pipeline_name__iexact=pipeline_name, pipeline_version__iexact=pipeline_version
     ).exists():
         return True
     return False
@@ -261,9 +261,9 @@ def get_pipeline_parameters(pipeline_obj):
         pipeline_parameters
     """
     pipeline_parameters = []
-    if ParameterPipeline.objects.filter(parameterPipeline=pipeline_obj).exists():
+    if ParameterPipeline.objects.filter(parameter_pipeline=pipeline_obj).exists():
         parameter_objs = ParameterPipeline.objects.filter(
-            parameterPipeline=pipeline_obj
+            parameter_pipeline=pipeline_obj
         )
         for parameter_obj in parameter_objs:
             pipeline_parameters.append(parameter_obj.get_pipeline_parameters())
@@ -283,9 +283,9 @@ def store_parameters_pipeline(pipeline_obj, parameters):
 
     for item, value in parameters.items():
         parameter_pipeline = {}
-        parameter_pipeline["parameterPipeline"] = pipeline_obj
-        parameter_pipeline["parameterName"] = item
-        parameter_pipeline["parameterType"] = value
+        parameter_pipeline["parameter_pipeline"] = pipeline_obj
+        parameter_pipeline["parameter_name"] = item
+        parameter_pipeline["parameter_type"] = value
         ParameterPipeline.objects.create_pipeline_parameters(parameter_pipeline)
 
     return None

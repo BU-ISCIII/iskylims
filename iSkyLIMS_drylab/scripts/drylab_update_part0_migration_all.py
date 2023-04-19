@@ -25,7 +25,7 @@ def get_samples_info_for_migration(project_id):
     if Projects.objects.filter(pk__exact = project_id).exists():
         if SamplesInProject.objects.filter(project_id__exact = project_id).exists():
             sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id)
-            return [[sample_obj.sampleName, sample_obj.pk] for sample_obj in sample_objs]
+            return [[sample_obj.sample_name, sample_obj.pk] for sample_obj in sample_objs]
     return None
 
 def get_run_information(project_id):

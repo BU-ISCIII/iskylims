@@ -49,8 +49,8 @@ def get_iSkyLIMS_settings():
 def create_service_test(service_requested):
     service_results = []
     # Check if test service exists
-    if Service.objects.filter(serviceRequestNumber__exact = service_requested).exists():
-        delete_service =  Service.objects.get(serviceRequestNumber__exact = service_requested)
+    if Service.objects.filter(service_request_number__exact = service_requested).exists():
+        delete_service =  Service.objects.get(service_request_number__exact = service_requested)
         delete_service.delete()
 
     # Check user is defined in database
@@ -80,7 +80,7 @@ def create_service_test(service_requested):
         if 'NOK' in service_results[i]:
             return service_results, 'NOK'
     try:
-        new_test_service = Service(serviceRequestNumber = service_requested, serviceUserId = user_name,
+        new_test_service = Service(service_request_number = service_requested, serviceUserId = user_name,
                     servicePlatform = service_platform, serviceFileExt = service_file_ext,
                     serviceStatus = 'recorded')
         new_test_service.save()
@@ -100,7 +100,7 @@ def create_resolution_test (resolution_number, service_requested):
 
     resolution_test = []
     # get service object
-    service = Service.objects.get(serviceRequestNumber = service_requested)
+    service = Service.objects.get(service_request_number = service_requested)
     
     # Create resolution object
     try:
@@ -121,7 +121,7 @@ def create_resolution_test (resolution_number, service_requested):
     information['resolution_number'] = resolution_number
     information['requested_date'] = service.get_service_creation_time()
     information['resolution_date'] = resolution_info[4]
-    information['nodes']= service.serviceAvailableService.all()
+    information['nodes']= service.service_available_service.all()
     user['name'] = service.serviceUserId.first_name
     user['surname'] = service.serviceUserId.last_name
 
@@ -137,7 +137,7 @@ def create_resolution_test (resolution_number, service_requested):
     resolution_data['estimated_date'] = resolution_info[3]
     resolution_data['notes'] = resolution_info[6]
     resolution_data['decission'] = service.serviceStatus
-    information['service_data'] = service.serviceNotes
+    information['service_data'] = service.service_notes
 
     resolution_data['folder'] = resolution_info[1]
     information['resolution_data'] = resolution_data
@@ -159,7 +159,7 @@ def create_resolution_test (resolution_number, service_requested):
 
 def delete_test_service(service_name):
     try:
-        d_service = Service.objects.get(serviceRequestNumber__exact = service_name)
+        d_service = Service.objects.get(service_request_number__exact = service_name)
         d_service.delete()
     except:
         return

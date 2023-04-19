@@ -131,19 +131,19 @@ def service_list(request):
     service_objs = Service.objects.all()
     if "state" in request.GET:
         service_objs = service_objs.filter(serviceStatus__iexact=state).order_by(
-            "serviceRequestNumber"
+            "service_request_number"
         )
     if "date_from" in request.GET and "date_until" in request.GET:
         service_objs = service_objs.filter(
-            serviceOnDeliveredDate__range=(date_from, date_until)
-        ).order_by("serviceRequestNumber")
+            service_delivered_date__range=(date_from, date_until)
+        ).order_by("service_request_number")
         if len(service_objs) == 0:
             return Response(status=status.HTTP_204_NO_CONTENT)
     elif "date_from" in request.GET:
         date_until = datetime.today()
         service_objs = service_objs.filter(
-            serviceOnDeliveredDate__range=(date_from, date_until)
-        ).order_by("serviceRequestNumber")
+            service_delivered_date__range=(date_from, date_until)
+        ).order_by("service_request_number")
         if len(service_objs) == 0:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -186,10 +186,10 @@ def resolution_data(request):
 def samples_in_service(request):
     if "service" in request.GET:
         if RequestedSamplesInServices.objects.filter(
-            samplesInService__serviceRequestNumber__iexact=request.GET["service"]
+            samplesInService__service_request_number__iexact=request.GET["service"]
         ).exists():
             sample_objs = RequestedSamplesInServices.objects.filter(
-                samplesInService__serviceRequestNumber__iexact=request.GET["service"]
+                samplesInService__service_request_number__iexact=request.GET["service"]
             )
             sample_serializers = RequestedSamplesInServicesSerializer(
                 sample_objs, many=True
@@ -218,11 +218,11 @@ def service_full_data(request):
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if Service.objects.filter(serviceRequestNumber__iexact=service).exists():
+    if Service.objects.filter(service_request_number__iexact=service).exists():
         service_full_data = {}
 
         service_obj = service_obj.filter(
-            serviceRequestNumber__iexact=service
+            service_request_number__iexact=service
         ).last()
 
         service_full_data = ServiceSerializer(
@@ -270,7 +270,7 @@ def update_state(request):
                     "resolutionOnInProgressDate" : datetime.today().strftime("%Y-%m-%d")
                 }
                 data_service = {
-                    "serviceRequestNumber" : service_obj.serviceRequestNumber,
+                    "service_request_number" : service_obj.service_request_number,
                     "serviceStatus" : "in_progress"
                 }
                 # Send email in progress
@@ -283,9 +283,9 @@ def update_state(request):
                     "resolutionDeliveryDate" : datetime.today().strftime("%Y-%m-%d")
                 }
                 data_service = {
-                    "serviceRequestNumber" : service_obj.serviceRequestNumber,
+                    "service_request_number" : service_obj.service_request_number,
                     "serviceStatus" : "delivered",
-                    "serviceOnDeliveredDate" : datetime.today().strftime("%Y-%m-%d")
+                    "service_delivered_date" : datetime.today().strftime("%Y-%m-%d")
                 }
                     # Send email
                 send_delivery_service_email(email_data)
@@ -354,7 +354,7 @@ def create_delivery(request):
         resolution_pk = Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"]).last().pk
 
         if "pipelinesInDelivery" in data:
-            pipelines = [ Pipelines.objects.filter(pipelineName__exact=pip).last().pk for pip in data["pipelinesInDelivery"]]
+            pipelines = [ Pipelines.objects.filter(pipeline_name__exact=pip).last().pk for pip in data["pipelinesInDelivery"]]
             data["pipelinesInDelivery"] = pipelines
 
         data.pop("resolutionNumber")

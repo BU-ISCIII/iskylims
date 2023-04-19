@@ -48,7 +48,7 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
 
-        fields = ["serviceRequestNumber", "serviceOnDeliveredDate", "serviceStatus"]
+        fields = ["service_request_number", "service_delivered_date", "serviceStatus"]
 
 class ProfileUserSerializer(serializers.ModelSerializer):
     profileClassificationArea= serializers.StringRelatedField()
@@ -79,8 +79,8 @@ class PipelinesSerializer(serializers.ModelSerializer):
     class Meta:
         model=Pipelines
         fields = [
-            "pipelineName",
-            "pipelineVersion"
+            "pipeline_name",
+            "pipeline_version"
         ]
 
 class DeliverySerializer(serializers.ModelSerializer):
@@ -128,7 +128,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestedSamplesInServices
-        fields = ["runName", "projectName", "sampleName", "samplePath"]
+        fields = ["run_name", "project_name", "sample_name", "sample_path"]
 
 
 class ServiceListSerializer(serializers.ModelSerializer):
@@ -136,31 +136,31 @@ class ServiceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = [
-            "serviceRequestNumber",
+            "service_request_number",
             "serviceStatus",
-            "serviceCreatedOnDate",
-            "serviceOnDeliveredDate",
+            "service_created_date",
+            "service_delivered_date",
             ]
 
 class ServiceSerializer(serializers.ModelSerializer):
     serviceFileExt = serializers.StringRelatedField(many=False)
     serviceUserId = UserIDSerializer(many=False)
-    serviceAvailableService = serializers.StringRelatedField(many=True)
+    service_available_service = serializers.StringRelatedField(many=True)
     resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
     samples = RequestedSamplesInServicesSerializer(many=True)
 
     class Meta:
         model = Service
         fields = [
-            "serviceRequestNumber",
+            "service_request_number",
             "serviceStatus",
             "serviceUserId",
-            "serviceCreatedOnDate",
-            "serviceOnDeliveredDate",
-            "serviceSeqCenter",
-            "serviceAvailableService",
+            "service_created_date",
+            "service_delivered_date",
+            "service_seq_center",
+            "service_available_service",
             "serviceFileExt",
-            "serviceNotes",
+            "service_notes",
             "resolutions",
             "samples"
             ]

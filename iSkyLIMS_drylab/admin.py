@@ -11,25 +11,25 @@ class ServiceStateAdmin(admin.ModelAdmin):
 
 class ServiceAdmin(admin.ModelAdmin):
     list_display = (
-        "serviceRequestNumber",
-        "serviceSeqCenter",
+        "service_request_number",
+        "service_seq_center",
         "serviceUserId",
         "service_state",
-        "serviceCreatedOnDate",
-        "serviceOnDeliveredDate",
+        "service_created_date",
+        "service_delivered_date",
     )
-    list_filter = ["serviceCreatedOnDate"]
-    search_fields = ["serviceRequestNumber__icontains"]
+    list_filter = ["service_created_date"]
+    search_fields = ["service_request_number__icontains"]
 
 
 class RequestedSamplesInServicesAdmin(admin.ModelAdmin):
-    list_display = ["samplesInService", "sampleName", "projectName", "runName"]
+    list_display = ["samplesInService", "sample_name", "project_name", "run_name"]
 
 
 class UploadServiceFileAdmin(admin.ModelAdmin):
     list_display = ["uploadService", "uploadFile", "uploadFileName"]
     search_fields = (
-        "uploadService__serviceRequestNumber__icontains",
+        "uploadService__service_request_number__icontains",
         "uploadFileName__icontains",
     )
 
@@ -78,11 +78,11 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 
 class PipelinesManager(admin.ModelAdmin):
-    list_display = ["pipelineName", "pipelineVersion", "pipeline_in_use", "pipelineFile"]
+    list_display = ["pipeline_name", "pipeline_version", "pipeline_in_use", "pipeline_file"]
 
 
 class ParameterPipelineManager(admin.ModelAdmin):
-    list_display = ["parameterPipeline", "parameterName", "parameterValue"]
+    list_display = ["parameter_pipeline", "parameter_name", "parameter_value"]
 
 
 class ConfigSettingAdmin(admin.ModelAdmin):

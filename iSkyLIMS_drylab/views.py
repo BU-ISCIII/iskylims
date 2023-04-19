@@ -38,7 +38,7 @@ def index(request):
     if Service.objects.filter(serviceStatus__exact="recorded").exists():
         r_service_objs = Service.objects.filter(
             serviceStatus__exact="recorded"
-        ).order_by("serviceCreatedOnDate")
+        ).order_by("service_created_date")
         service_list["recorded"] = []
         for r_service_obj in r_service_objs:
             s_info = r_service_obj.get_service_name_and_center()
@@ -48,14 +48,14 @@ def index(request):
     if (
         Service.objects.all()
         .exclude(serviceStatus__exact="delivered")
-        .exclude(serviceOnApprovedDate=None)
+        .exclude(service_approved_date=None)
         .exists()
     ):
         ongoing_services_objs = (
             Service.objects.all()
             .exclude(serviceStatus__exact="delivered")
-            .exclude(serviceOnApprovedDate=None)
-            .order_by("serviceOnApprovedDate")
+            .exclude(service_approved_date=None)
+            .order_by("service_approved_date")
         )
         service_list["ongoing"] = []
         for ongoing_services_obj in ongoing_services_objs:
@@ -481,18 +481,18 @@ def search_service(request):
         if service_number_request != "":
             # check if the requested service in the form matches exactly with the existing service in DB
             if Service.objects.filter(
-                serviceRequestNumber__exact=service_number_request
+                service_request_number__exact=service_number_request
             ).exists():
                 services_found = Service.objects.get(
-                    serviceRequestNumber__exact=service_number_request
+                    service_request_number__exact=service_number_request
                 )
                 redirect_page = "/drylab/displayService=" + str(services_found.id)
                 return redirect(redirect_page)
             if Service.objects.filter(
-                serviceRequestNumber__icontains=service_number_request
+                service_request_number__icontains=service_number_request
             ).exists():
                 services_found = Service.objects.filter(
-                    serviceRequestNumber__icontains=service_number_request
+                    service_request_number__icontains=service_number_request
                 )
             else:
                 return render(
@@ -512,15 +512,15 @@ def search_service(request):
             services_found = services_found.filter(serviceStatus__exact=service_state)
         if start_date != "" and end_date != "":
             services_found = services_found.filter(
-                serviceCreatedOnDate__range=(start_date, end_date)
+                service_created_date__range=(start_date, end_date)
             )
         if start_date != "" and end_date == "":
-            services_found = services_found.filter(serviceCreatedOnDate__gte=start_date)
+            services_found = services_found.filter(service_created_date__gte=start_date)
         if start_date == "" and end_date != "":
-            services_found = services_found.filter(serviceCreatedOnDate__lte=end_date)
+            services_found = services_found.filter(service_created_date__lte=end_date)
         if center != "":
             services_found = services_found.filter(
-                serviceRequestNumber__icontains=center
+                service_request_number__icontains=center
             )
         if user_name != "":
             services_found = services_found.filter(
@@ -549,14 +549,14 @@ def search_service(request):
             for services_handled_by_obj in services_handled_by_objs:
                 services_handled_by.append(services_handled_by_obj.get_service_name())
             services_found = services_found.filter(
-                serviceRequestNumber__in=services_handled_by
+                service_request_number__in=services_handled_by
             )
 
         if project_name != "" or run_name != "" or sample_name != "":
             samples_in_services = RequestedSamplesInServices.objects.all()
             if project_name != "":
                 samples_in_services = RequestedSamplesInServices.objects.filter(
-                    projectName__icontains=project_name,
+                    project_name__icontains=project_name,
                     samplesInService__in=services_found,
                 )
             else:
@@ -565,11 +565,11 @@ def search_service(request):
                 )
             if run_name != "":
                 samples_in_services = samples_in_services.filter(
-                    runName__icontains=run_name
+                    run_name__icontains=run_name
                 )
             if sample_name != "":
                 samples_in_services = samples_in_services.filter(
-                    sampleName__icontains=sample_name
+                    sample_name__icontains=sample_name
                 )
             service_list = []
             for samples_in_service in samples_in_services:
@@ -771,7 +771,7 @@ def test (request):
 
     information, user, resolution_data = {}, {}, {}
     # get service object
-    service = Service.objects.get(serviceRequestNumber = service_requested)
+    service = Service.objects.get(service_request_number = service_requested)
     service_number ,run_specs, center, platform = service.get_service_information().split(';')
     # get resolution object
     resolution = Resolution.objects.get(resolutionNumber = resolution_number)
@@ -782,7 +782,7 @@ def test (request):
     information['resolution_number'] = resolution_number
     information['requested_date'] = service.get_service_creation_time()
     information['resolution_date'] = resolution_info[4]
-    information['nodes']= service.serviceAvailableService.all()
+    information['nodes']= service.service_available_service.all()
     user['name'] = service.serviceUserId.first_name
     user['surname'] = service.serviceUserId.last_name
 
@@ -798,7 +798,7 @@ def test (request):
     resolution_data['estimated_date'] = resolution_info[3]
     resolution_data['notes'] = resolution_info[6]
     resolution_data['decission'] = service.serviceStatus
-    information['service_data'] = service.serviceNotes
+    information['service_data'] = service.service_notes
 
     resolution_data['folder'] = resolution_info[1]
     information['resolution_data'] = resolution_data
@@ -1059,12 +1059,12 @@ def stats_by_user(request):
             )
 
         service_objs = Service.objects.filter(serviceUserId__exact=user_id).order_by(
-            "-serviceRequestNumber"
+            "-service_request_number"
         )
         if start_date != "":
-            service_objs = service_objs.filter(serviceCreatedOnDate__gte=start_date)
+            service_objs = service_objs.filter(service_created_date__gte=start_date)
         if end_date != "":
-            service_objs = service_objs.filter(serviceCreatedOnDate__lte=end_date)
+            service_objs = service_objs.filter(service_created_date__lte=end_date)
         if len(service_objs) == 0:
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render(
@@ -1124,7 +1124,7 @@ def stats_by_user(request):
 
         service_dict = {}
         for service_available in service_objs:
-            service_list = service_available.serviceAvailableService.filter(level=3)
+            service_list = service_available.service_available_service.filter(level=3)
             for service in service_list:
                 service_name = service.avail_service_description
                 if service_name in service_dict:
@@ -1148,7 +1148,7 @@ def stats_by_user(request):
         # getting statistics for requested per time
         service_time_dict = {}
         for service_per_time in service_objs:
-            date_service = service_per_time.serviceCreatedOnDate.strftime("%m_%Y")
+            date_service = service_per_time.service_created_date.strftime("%m_%Y")
             if date_service in service_time_dict:
                 service_time_dict[date_service] += 1
             else:
@@ -1226,11 +1226,11 @@ def stats_by_services_request(request):
         end_date_format = datetime.strptime(end_date, "%Y-%m-%d")
 
         if Service.objects.filter(
-            serviceCreatedOnDate__range=(start_date, end_date)
+            service_created_date__range=(start_date, end_date)
         ).exists():
             services_found = Service.objects.filter(
-                serviceCreatedOnDate__range=(start_date, end_date)
-            ).order_by("-serviceCreatedOnDate")
+                service_created_date__range=(start_date, end_date)
+            ).order_by("-service_created_date")
             services_stats_info = {}
             # preparing stats for services request by users
             user_services = {}
@@ -1362,7 +1362,7 @@ def stats_by_services_request(request):
             time_values_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+                date_service = service.service_created_date.strftime(period_year_month)
                 if Profile.objects.filter(profileUserID=user_service_obj).exists():
                     user_center = Profile.objects.get(
                         profileUserID=user_service_obj
@@ -1408,7 +1408,7 @@ def stats_by_services_request(request):
             time_values_dict = {}
             for service in services_found:
                 user_id = service.serviceUserId.id
-                date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+                date_service = service.service_created_date.strftime(period_year_month)
                 if Profile.objects.filter(profileUserID=user_id).exists():
                     user_area = Profile.objects.get(profileUserID=user_id).profileArea
                 else:
@@ -1453,7 +1453,7 @@ def stats_by_services_request(request):
 
             service_dict = {}
             for service in services_found:
-                service_request_list = service.serviceAvailableService.filter(level=2)
+                service_request_list = service.service_available_service.filter(level=2)
                 for service_requested in service_request_list:
                     service_name = service_requested.avail_service_description
                     if service_name in service_dict:
@@ -1476,7 +1476,7 @@ def stats_by_services_request(request):
 
             service_dict = {}
             for service in services_found:
-                service_request_list = service.serviceAvailableService.filter(level=3)
+                service_request_list = service.service_available_service.filter(level=3)
                 for service_requested in service_request_list:
                     service_name = service_requested.avail_service_description
                     if service_name in service_dict:
@@ -1686,7 +1686,7 @@ def define_pipeline_service(request):
 
         pipeline_data_form = analyze_input_pipelines(request)
         if pipeline_version_exists(
-            request.POST["pipelineName"], request.POST["pipelineVersion"]
+            request.POST["pipeline_name"], request.POST["pipeline_version"]
         ):
             error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
             data_pipeline.update(pipeline_data_form)
@@ -1704,9 +1704,9 @@ def define_pipeline_service(request):
             )
             pipeline_data_form["filename"] = fs.save(
                 str(
-                    pipeline_data_form["pipelineName"]
+                    pipeline_data_form["pipeline_name"]
                     + "_"
-                    + pipeline_data_form["pipelineVersion"]
+                    + pipeline_data_form["pipeline_version"]
                 ),
                 request.FILES["pipelinefile"],
             )
