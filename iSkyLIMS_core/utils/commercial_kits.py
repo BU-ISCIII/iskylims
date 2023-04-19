@@ -78,7 +78,7 @@ def get_data_for_commercial_kits(platform):
             data_kits = []
             commercial_kit_name = kit.get_name()
 
-            protocol_objs = kit.protocolKits.all()
+            protocol_objs = kit.protocol_kits.all()
             protocols = []
             for protocol_obj in protocol_objs:
                 protocols.append(protocol_obj.get_name())
@@ -465,7 +465,7 @@ def store_commercial_kit(kit_data):
     new_kit = CommercialKits.objects.create_commercial_kit(commercial_kit_values)
     if not "platform" in kit_data:
         for protocol in kit_data.getlist("protocol"):
-            new_kit.protocolKits.add(get_protocol_obj_from_name(protocol))
+            new_kit.protocol_kits.add(get_protocol_obj_from_name(protocol))
     return new_kit
 
 
