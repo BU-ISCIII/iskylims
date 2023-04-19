@@ -117,10 +117,6 @@ def create_new_save_sequencing_service_request(request):
             service_data["serviceSeqCenter"] = drylab_config.INTERNAL_SEQUENCING_UNIT
 
     service_data["serviceNotes"] = request.POST["description"]
-    # service_data['serviceRunSpecs'] = request.POST['runSpecification']
-    # service_data['serviceSequencingPlatform'] = request.POST['sequencingPlatform']
-    # service_data['serviceFileExt'] = request.POST['fileExtension']
-    # service_data['serviceRunSpecs'] = request.POST['runSpecification']
     service_data["serviceUserId"] = request_user
     service_data["serviceRequestInt"] = increment_service_number(request_user)
 
@@ -167,7 +163,7 @@ def create_new_save_counseling_infrastructure_service_request(request):
     service_data["serviceSeqCenter"] = drylab_config.INTERNAL_SEQUENCING_UNIT
     service_data["serviceNotes"] = request.POST["description"]
     service_data["serviceRunSpecs"] = ""
-    service_data["serviceSequencingPlatform"] = ""
+    service_data["service_sequencing_platform"] = ""
     service_data["serviceFileExt"] = ""
     service_data["serviceRunSpecs"] = ""
     service_data["serviceUserId"] = request.user
@@ -834,7 +830,7 @@ def prepare_form_data_request_service_sequencing(request):
         service_data_information["users"] = get_defined_username_and_ids()
     service_data_information["nodes"] = (
         AvailableService.objects.filter(
-            availServiceDescription__exact="Genomic data analysis"
+            avail_service_description__exact="Genomic data analysis"
         )
         .get_descendants(include_self=True)
         .exclude(inUse=False)
@@ -877,7 +873,7 @@ def prepare_form_data_request_counseling_service():
     """
     service_data_information = {}
     service_data_information["nodes"] = AvailableService.objects.filter(
-        availServiceDescription__exact="Bioinformatics consulting and training"
+        avail_service_description__exact="Bioinformatics consulting and training"
     ).get_descendants(include_self=True)
     return service_data_information
 
@@ -893,7 +889,7 @@ def prepare_form_data_request_infrastructure_service():
     """
     service_data_information = {}
     service_data_information["nodes"] = AvailableService.objects.filter(
-        availServiceDescription__exact="User support"
+        avail_service_description__exact="User support"
     ).get_descendants(include_self=True)
     return service_data_information
 

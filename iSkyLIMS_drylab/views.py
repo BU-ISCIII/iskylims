@@ -1126,7 +1126,7 @@ def stats_by_user(request):
         for service_available in service_objs:
             service_list = service_available.serviceAvailableService.filter(level=3)
             for service in service_list:
-                service_name = service.availServiceDescription
+                service_name = service.avail_service_description
                 if service_name in service_dict:
                     service_dict[service_name] += 1
                 else:
@@ -1455,7 +1455,7 @@ def stats_by_services_request(request):
             for service in services_found:
                 service_request_list = service.serviceAvailableService.filter(level=2)
                 for service_requested in service_request_list:
-                    service_name = service_requested.availServiceDescription
+                    service_name = service_requested.avail_service_description
                     if service_name in service_dict:
                         service_dict[service_name] += 1
                     else:
@@ -1478,7 +1478,7 @@ def stats_by_services_request(request):
             for service in services_found:
                 service_request_list = service.serviceAvailableService.filter(level=3)
                 for service_requested in service_request_list:
-                    service_name = service_requested.availServiceDescription
+                    service_name = service_requested.avail_service_description
                     if service_name in service_dict:
                         service_dict[service_name] += 1
                     else:

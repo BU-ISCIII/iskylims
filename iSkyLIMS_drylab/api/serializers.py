@@ -67,7 +67,7 @@ class UserIDSerializer(serializers.ModelSerializer):
 
 class CustomAvailableServiceField(serializers.RelatedField):
     def to_representation(self, service):
-        data = {"availServiceDescription": service.availServiceDescription}
+        data = {"avail_service_description": service.avail_service_description}
         if service.serviceId:
             data["serviceId"] = service.serviceId
         else:

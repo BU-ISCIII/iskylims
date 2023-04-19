@@ -770,7 +770,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 1,
     "fields": {
-        "availServiceDescription": "Genomic Data Analysis",
+        "avail_service_description": "Genomic Data Analysis",
         "parent": null,
         "inUse": true,
         "serviceId": null,
@@ -785,7 +785,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 2,
     "fields": {
-        "availServiceDescription": "Bioinformatics consulting and training",
+        "avail_service_description": "Bioinformatics consulting and training",
         "parent": null,
         "inUse": true,
         "serviceId": null,
@@ -800,7 +800,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 3,
     "fields": {
-        "availServiceDescription": "User support",
+        "avail_service_description": "User support",
         "parent": null,
         "inUse": true,
         "serviceId": null,
@@ -815,7 +815,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 4,
     "fields": {
-        "availServiceDescription": "Download and quality analysis",
+        "avail_service_description": "Download and quality analysis",
         "parent": 1,
         "inUse": false,
         "serviceId": null,
@@ -830,7 +830,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 5,
     "fields": {
-        "availServiceDescription": "Next Generation Sequencing data analysis",
+        "avail_service_description": "Next Generation Sequencing data analysis",
         "parent": 1,
         "inUse": false,
         "serviceId": null,
@@ -845,7 +845,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 6,
     "fields": {
-        "availServiceDescription": "Bioinformatics analysis consulting",
+        "avail_service_description": "Bioinformatics analysis consulting",
         "parent": 2,
         "inUse": true,
         "serviceId": null,
@@ -860,7 +860,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 7,
     "fields": {
-        "availServiceDescription": "In-house and outer course organization",
+        "avail_service_description": "In-house and outer course organization",
         "parent": 2,
         "inUse": true,
         "serviceId": null,
@@ -875,7 +875,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 8,
     "fields": {
-        "availServiceDescription": "Student training in colaboration: Master thesis, research visit,...",
+        "avail_service_description": "Student training in colaboration: Master thesis, research visit,...",
         "parent": 2,
         "inUse": true,
         "serviceId": null,
@@ -890,7 +890,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 9,
     "fields": {
-        "availServiceDescription": "Installation and support of bioinformatic software on Linux OS",
+        "avail_service_description": "Installation and support of bioinformatic software on Linux OS",
         "parent": 3,
         "inUse": true,
         "serviceId": null,
@@ -905,7 +905,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 10,
     "fields": {
-        "availServiceDescription": "Installation and access to Virtual machines in the Unit server containing bioinformatic software",
+        "avail_service_description": "Installation and access to Virtual machines in the Unit server containing bioinformatic software",
         "parent": 3,
         "inUse": true,
         "serviceId": null,
@@ -920,7 +920,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 11,
     "fields": {
-        "availServiceDescription": "Code snippets development",
+        "avail_service_description": "Code snippets development",
         "parent": 3,
         "inUse": true,
         "serviceId": null,
@@ -935,7 +935,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 12,
     "fields": {
-        "availServiceDescription": "DNAseq: Exome sequencing (WES) / Genome sequencing (WGS) / Target (Amplicon, probes)  / Direct seq",
+        "avail_service_description": "DNAseq: Exome sequencing (WES) / Genome sequencing (WGS) / Target (Amplicon, probes)  / Direct seq",
         "parent": 1,
         "inUse": true,
         "serviceId": null,
@@ -950,7 +950,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 13,
     "fields": {
-        "availServiceDescription": "RNAseq: Transcriptome sequencing",
+        "avail_service_description": "RNAseq: Transcriptome sequencing",
         "parent": 1,
         "inUse": true,
         "serviceId": null,
@@ -965,7 +965,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 14,
     "fields": {
-        "availServiceDescription": "Amplicon sequencing (Deep sequencing)",
+        "avail_service_description": "Amplicon sequencing (Deep sequencing)",
         "parent": 1,
         "inUse": false,
         "serviceId": null,
@@ -980,7 +980,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 15,
     "fields": {
-        "availServiceDescription": "Metagenomics",
+        "avail_service_description": "Metagenomics",
         "parent": 1,
         "inUse": true,
         "serviceId": null,
@@ -995,7 +995,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 16,
     "fields": {
-        "availServiceDescription": "Data download",
+        "avail_service_description": "Data download",
         "parent": 4,
         "inUse": false,
         "serviceId": null,
@@ -1010,7 +1010,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 17,
     "fields": {
-        "availServiceDescription": "Sequence quality analysis",
+        "avail_service_description": "Sequence quality analysis",
         "parent": 4,
         "inUse": false,
         "serviceId": null,
@@ -1025,7 +1025,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 18,
     "fields": {
-        "availServiceDescription": "Sequence pre-processing (quality filtering)",
+        "avail_service_description": "Sequence pre-processing (quality filtering)",
         "parent": 4,
         "inUse": false,
         "serviceId": null,
@@ -1040,7 +1040,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 19,
     "fields": {
-        "availServiceDescription": "Human: Trio/family variant calling, annotation and priorization",
+        "avail_service_description": "Human: Trio/family variant calling, annotation and priorization",
         "parent": 12,
         "inUse": true,
         "serviceId": "exome_pipeline",
@@ -1055,7 +1055,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 20,
     "fields": {
-        "availServiceDescription": "Diploid organisms: Variant calling, annotation and prioritization",
+        "avail_service_description": "Diploid organisms: Variant calling, annotation and prioritization",
         "parent": 12,
         "inUse": true,
         "serviceId": "sarek_exomiser_vep",
@@ -1070,7 +1070,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 21,
     "fields": {
-        "availServiceDescription": "Haploid organisms: mapping, variant calling, annotation and snp-based analysis (p.e outbreak)",
+        "avail_service_description": "Haploid organisms: mapping, variant calling, annotation and snp-based analysis (p.e outbreak)",
         "parent": 12,
         "inUse": true,
         "serviceId": "snippy",
@@ -1085,7 +1085,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 22,
     "fields": {
-        "availServiceDescription": "Bacteria: wg/cgMLST calling",
+        "avail_service_description": "Bacteria: wg/cgMLST calling",
         "parent": 12,
         "inUse": true,
         "serviceId": "chewbbaca",
@@ -1100,7 +1100,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 23,
     "fields": {
-        "availServiceDescription": "Bacteria: MLST + virulence + AMR + plasmid analysis",
+        "avail_service_description": "Bacteria: MLST + virulence + AMR + plasmid analysis",
         "parent": 12,
         "inUse": true,
         "serviceId": "ariba_srst2",
@@ -1115,7 +1115,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 24,
     "fields": {
-        "availServiceDescription": "Bacteria: Assembly + automatic annotation",
+        "avail_service_description": "Bacteria: Assembly + automatic annotation",
         "parent": 12,
         "inUse": true,
         "serviceId": "assembly_annotation",
@@ -1130,7 +1130,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 25,
     "fields": {
-        "availServiceDescription": "Bacteria: plasmidID pipeline - strain plasmid characterization",
+        "avail_service_description": "Bacteria: plasmidID pipeline - strain plasmid characterization",
         "parent": 12,
         "inUse": true,
         "serviceId": "plasmidid",
@@ -1145,7 +1145,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 26,
     "fields": {
-        "availServiceDescription": "miRNA known detection, prediction and/or differential expression",
+        "avail_service_description": "miRNA known detection, prediction and/or differential expression",
         "parent": 13,
         "inUse": true,
         "serviceId": "mirdeep2_deseq",
@@ -1160,7 +1160,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 27,
     "fields": {
-        "availServiceDescription": "mRNA/totalRNA alignment, quantification and/or differential expression",
+        "avail_service_description": "mRNA/totalRNA alignment, quantification and/or differential expression",
         "parent": 13,
         "inUse": true,
         "serviceId": "rnaseq_nextflow",
@@ -1175,7 +1175,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 28,
     "fields": {
-        "availServiceDescription": "Human: Low frequency variant analysis and annotation",
+        "avail_service_description": "Human: Low frequency variant analysis and annotation",
         "parent": 12,
         "inUse": true,
         "serviceId": "low_freq",
@@ -1190,7 +1190,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 29,
     "fields": {
-        "availServiceDescription": "Virus: consensus, assembly and minor variants detection - Viralrecon (with reference)",
+        "avail_service_description": "Virus: consensus, assembly and minor variants detection - Viralrecon (with reference)",
         "parent": 12,
         "inUse": true,
         "serviceId": "viralrecon",
@@ -1205,7 +1205,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 30,
     "fields": {
-        "availServiceDescription": "Ribosomal amplicons (16S/18S/ITR) taxonomic profiling",
+        "avail_service_description": "Ribosomal amplicons (16S/18S/ITR) taxonomic profiling",
         "parent": 15,
         "inUse": true,
         "serviceId": "qiime2",
@@ -1220,7 +1220,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 31,
     "fields": {
-        "availServiceDescription": "Viral: shotgun metagenomics profiling - Pikavirus",
+        "avail_service_description": "Viral: shotgun metagenomics profiling - Pikavirus",
         "parent": 15,
         "inUse": false,
         "serviceId": "pikavirus",
@@ -1235,7 +1235,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 32,
     "fields": {
-        "availServiceDescription": "CHIP-SEQ",
+        "avail_service_description": "CHIP-SEQ",
         "parent": 1,
         "inUse": false,
         "serviceId": null,
@@ -1250,7 +1250,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 33,
     "fields": {
-        "availServiceDescription": "Peak detection and annotation",
+        "avail_service_description": "Peak detection and annotation",
         "parent": 32,
         "inUse": false,
         "serviceId": null,
@@ -1265,7 +1265,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 34,
     "fields": {
-        "availServiceDescription": "Shotgun metagenomics - Virus genome reconstruction",
+        "avail_service_description": "Shotgun metagenomics - Virus genome reconstruction",
         "parent": 15,
         "inUse": false,
         "serviceId": null,
@@ -1280,7 +1280,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 35,
     "fields": {
-        "availServiceDescription": "OT-2 robots",
+        "avail_service_description": "OT-2 robots",
         "parent": 3,
         "inUse": true,
         "serviceId": null,
@@ -1295,7 +1295,7 @@
     "model": "iSkyLIMS_drylab.availableservice",
     "pk": 36,
     "fields": {
-        "availServiceDescription": "Flu: consensus, assembly and minor variants detection (IRMA)",
+        "avail_service_description": "Flu: consensus, assembly and minor variants detection (IRMA)",
         "parent": 12,
         "inUse": true,
         "serviceId": "irma",
