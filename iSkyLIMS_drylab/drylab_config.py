@@ -108,7 +108,7 @@ ERROR_RESOLUTION_DOES_NOT_EXISTS =['The resolution that you are trying to upadat
 
 HEADING_PIPELINES_SELECTION_IN_RESOLUTION = ['Pipeline name', 'Pipeline version', 'Pipeline ID']
 
-MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolutionParameter', 'Parameter name'),('resolutionParamValue', 'Parameter value'),('resolutionParamNotes', 'Notes')]
+MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolution_parameter', 'Parameter name'),('resolution_param_value', 'Parameter value'),('resolution_param_notes', 'Notes')]
 
 ################ EMAIL TEXT   ##################################
 SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']

@@ -14,28 +14,28 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
         fields = [
-            "deliveryResolutionID",
-            "pipelinesInDelivery",
-            "deliveryDate",
+            "delivery_resolutionID",
+            "pipelines_in_delivery",
+            "delivery_date",
             "executionStartDate",
-            "executionEndDate",
-            "permanentUsedSpace",
-            "temporaryUsedSpace",
+            "execution_end_date",
+            "permanent_used_space",
+            "temporary_used_space",
             "deliveryNotes"
             ]
 
 
 class UpdateResolutionStateSerializer(serializers.ModelSerializer):
-    #resolutionState = serializers.StringRelatedField(many=False)
+    #resolution_state = serializers.StringRelatedField(many=False)
 
     class Meta:
         model = Resolution
 
-        fields = ["resolutionNumber", "resolutionOnInProgressDate", "resolutionDeliveryDate","resolutionState"]
+        fields = ["resolutionNumber", "resolutionOnInProgressDate", "resolutionDeliveryDate","resolution_state"]
 
     def update(self, instance, validated_data):
         instance.resolutionNumber = validated_data["resolutionNumber"]
-        instance.resolutionState = validated_data["resolutionState"]
+        instance.resolution_state = validated_data["resolution_state"]
         if "resolutionOnInProgressDate" in validated_data:
             instance.resolutionOnInProgressDate = validated_data["resolutionOnInProgressDate"]
         if "resolutionDeliveryDate" in validated_data:
@@ -84,38 +84,38 @@ class PipelinesSerializer(serializers.ModelSerializer):
         ]
 
 class DeliverySerializer(serializers.ModelSerializer):
-    deliveryResolutionID = serializers.StringRelatedField(many=False)
-    pipelinesInDelivery = PipelinesSerializer(many=True)
+    delivery_resolutionID = serializers.StringRelatedField(many=False)
+    pipelines_in_delivery = PipelinesSerializer(many=True)
 
     class Meta:
         model= Delivery
         fields = [
-            "deliveryResolutionID",
-            "pipelinesInDelivery",
-            "deliveryDate",
+            "delivery_resolutionID",
+            "pipelines_in_delivery",
+            "delivery_date",
             "executionStartDate",
-            "executionEndDate",
-            "permanentUsedSpace",
-            "temporaryUsedSpace",
+            "execution_end_date",
+            "permanent_used_space",
+            "temporary_used_space",
             "deliveryNotes"
-        ]
+    ]
 
 class ResolutionSerializer(serializers.ModelSerializer):
-    resolutionState=serializers.StringRelatedField(many=False)
-    resolutionPipelines = serializers.StringRelatedField(many=True)
-    availableServices = CustomAvailableServiceField(many=True, read_only=True)
-    resolutionServiceID = serializers.StringRelatedField(many=False)
+    resolution_state=serializers.StringRelatedField(many=False)
+    resolution_pipelines = serializers.StringRelatedField(many=True)
+    available_services = CustomAvailableServiceField(many=True, read_only=True)
+    resolution_serviceID = serializers.StringRelatedField(many=False)
     delivery = DeliverySerializer(many=True)
 
     class Meta:
         model = Resolution
         fields = [
             "resolutionNumber",
-            "resolutionFullNumber",
-            "resolutionState",
+            "resolution_full_number",
+            "resolution_state",
             "resolutionDate",
             "resolutionEstimatedDate",
-            "resolutionServiceID",
+            "resolution_serviceID",
             "resolutionOnQueuedDate",
             "resolutionOnInProgressDate",
             "resolutionDeliveryDate",

@@ -87,8 +87,8 @@ def run():
             if split_line[1] == 'recorded':
                 continue
             s_id = split_line[0]
-            if Resolution.objects.filter(resolutionServiceID__pk__exact = s_id).exists():
-                resolution_objs = Resolution.objects.filter(resolutionServiceID__pk__exact = s_id)
+            if Resolution.objects.filter(resolution_serviceID__pk__exact = s_id).exists():
+                resolution_objs = Resolution.objects.filter(resolution_serviceID__pk__exact = s_id)
                 for resolution_obj in resolution_objs:
                     resolution_obj.update_resolution_state(map_state[split_line[1]])
         print('Successfully restore resolution state migration')
@@ -145,7 +145,7 @@ def run():
             project_obj = Projects.objects.get(pk__exact = proj_id)
             data['project_name'] = project_obj.projectName
             data['project_id'] = proj_id
-            data['samplesInService'] = serv_obj
+            data['samples_in_service'] = serv_obj
             data['only_recorded'] = False
             data['run_name'], data['run_id'] , data['sample_path'] = get_run_information(proj_id)
             samples_data = get_samples_info_for_migration(proj_id)

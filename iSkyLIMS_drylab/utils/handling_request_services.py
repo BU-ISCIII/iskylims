@@ -347,9 +347,9 @@ def get_pending_services_information():
             # get date creation service
             service_data.append(service_obj.get_service_creation_time())
             # fetch latest resolution for the service
-            if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+            if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
                 resolution_obj = Resolution.objects.filter(
-                    resolutionServiceID=service_obj
+                    resolution_serviceID=service_obj
                 ).last()
                 service_data.append(resolution_obj.get_resolution_number())
                 service_data.append(resolution_obj.get_resolution_handler_user())
@@ -410,13 +410,13 @@ def get_user_pending_services_information(user_name):
     user_pending_services_details = {}
     res_in_queued, res_in_progress = [], []
     if Resolution.objects.filter(
-        resolutionAsignedUser__username__exact=user_name,
-        resolutionState__state_value__exact="Recorded",
+        resolution_asigned_user__username__exact=user_name,
+        resolution_state__state_value__exact="Recorded",
     ).exists():
         resolution_recorded_objs = Resolution.objects.filter(
-            resolutionAsignedUser__username__exact=user_name,
-            resolutionState__state_value__exact="Recorded",
-        ).order_by("-resolutionServiceID")
+            resolution_asigned_user__username__exact=user_name,
+            resolution_state__state_value__exact="Recorded",
+        ).order_by("-resolution_serviceID")
         for resolution_recorded_obj in resolution_recorded_objs:
             resolution_data = (
                 resolution_recorded_obj.get_information_for_pending_resolutions()
@@ -428,13 +428,13 @@ def get_user_pending_services_information(user_name):
             "heading_in_queued"
         ] = drylab_config.HEADING_USER_PENDING_SERVICE_QUEUED
     if Resolution.objects.filter(
-        resolutionAsignedUser__username__exact=user_name,
-        resolutionState__state_value__exact="In Progress",
+        resolution_asigned_user__username__exact=user_name,
+        resolution_state__state_value__exact="In Progress",
     ).exists():
         resolution_recorded_objs = Resolution.objects.filter(
-            resolutionAsignedUser__username__exact=user_name,
-            resolutionState__state_value__exact="In Progress",
-        ).order_by("-resolutionServiceID")
+            resolution_asigned_user__username__exact=user_name,
+            resolution_state__state_value__exact="In Progress",
+        ).order_by("-resolution_serviceID")
         for resolution_recorded_obj in resolution_recorded_objs:
             resolution_data = (
                 resolution_recorded_obj.get_information_for_pending_resolutions()
@@ -458,10 +458,10 @@ def get_projects_in_requested_samples(service_obj):
         project_unique_list
     """
     project_unique_list = []
-    if RequestedSamplesInServices.objects.filter(samplesInService=service_obj).exists():
+    if RequestedSamplesInServices.objects.filter(samples_in_service=service_obj).exists():
         project_list = []
         req_sample_objs = RequestedSamplesInServices.objects.filter(
-            samplesInService=service_obj
+            samples_in_service=service_obj
         )
         for req_sample_obj in req_sample_objs:
             project_list.append(req_sample_obj.get_project_name())
@@ -479,10 +479,10 @@ def get_run_in_requested_samples(service_obj):
         run_unique_list
     """
     run_unique_list = []
-    if RequestedSamplesInServices.objects.filter(samplesInService=service_obj).exists():
+    if RequestedSamplesInServices.objects.filter(samples_in_service=service_obj).exists():
         run_list = []
         req_sample_objs = RequestedSamplesInServices.objects.filter(
-            samplesInService=service_obj
+            samples_in_service=service_obj
         )
         for req_sample_obj in req_sample_objs:
             run_list.append(req_sample_obj.get_run_name())
@@ -543,10 +543,10 @@ def get_service_information(service_id, service_manager):
     display_service_details["service_id"] = service_id
     # get the list of samples
     if RequestedSamplesInServices.objects.filter(
-        samplesInService=service_obj, only_recorded_sample__exact=False
+        samples_in_service=service_obj, only_recorded_sample__exact=False
     ).exists():
         samples_in_service = RequestedSamplesInServices.objects.filter(
-            samplesInService=service_obj, only_recorded_sample__exact=False
+            samples_in_service=service_obj, only_recorded_sample__exact=False
         )
         display_service_details["samples_sequenced"] = []
         for sample in samples_in_service:
@@ -560,10 +560,10 @@ def get_service_information(service_id, service_manager):
                 ]
             )
     if RequestedSamplesInServices.objects.filter(
-        samplesInService=service_obj, only_recorded_sample__exact=True
+        samples_in_service=service_obj, only_recorded_sample__exact=True
     ).exists():
         samples_in_service = RequestedSamplesInServices.objects.filter(
-            samplesInService=service_obj, only_recorded_sample__exact=True
+            samples_in_service=service_obj, only_recorded_sample__exact=True
         )
         display_service_details["only_recorded_samples"] = []
         for sample in samples_in_service:
@@ -585,9 +585,9 @@ def get_service_information(service_id, service_manager):
         drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates()
     )
     # get the proposal for the delivery date for the last resolution
-    if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
         last_resolution = Resolution.objects.filter(
-            resolutionServiceID=service_obj
+            resolution_serviceID=service_obj
         ).last()
         display_service_details[
             "resolution_folder"
@@ -607,10 +607,10 @@ def get_service_information(service_id, service_manager):
             service_obj.serviceStatus != "rejected"
             or service_obj.serviceStatus != "archived"
         ):
-            if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+            if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
                 ## get informtaion from the defined Resolutions
                 resolution_objs = Resolution.objects.filter(
-                    resolutionServiceID=service_obj
+                    resolution_serviceID=service_obj
                 )
                 display_service_details["resolution_for_progress"] = []
                 display_service_details["resolution_for_delivery"] = []
@@ -704,8 +704,8 @@ def get_service_information(service_id, service_manager):
                 display_service_details["add_resolution_action"] = service_id
                 if len(display_service_details["children_services"]) > 1:
                     display_service_details["multiple_services"] = True
-                    # if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-                    #    resolutions = Resolution.objects.filter(resolutionServiceID = service_obj)
+                    # if Resolution.objects.filter(resolution_serviceID = service_obj).exists():
+                    #    resolutions = Resolution.objects.filter(resolution_serviceID = service_obj)
                     #    for resolution in resolutions:
                     #        pass
                     # else:
@@ -713,21 +713,21 @@ def get_service_information(service_id, service_manager):
 
         if service_obj.get_service_state(None) == "queued":
             resolution_id = (
-                Resolution.objects.filter(resolutionServiceID=service_obj).last().id
+                Resolution.objects.filter(resolution_serviceID=service_obj).last().id
             )
             display_service_details["add_in_progress_action"] = resolution_id
         if service_obj.get_service_state(None) == "in_progress":
-            if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+            if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
                 resolution_id = (
-                    Resolution.objects.filter(resolutionServiceID=service_obj).last().id
+                    Resolution.objects.filter(resolution_serviceID=service_obj).last().id
                 )
                 display_service_details["add_delivery_action"] = resolution_id
 
-    if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
         resolution_heading = drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
         resolution_objs = Resolution.objects.filter(
-            resolutionServiceID=service_obj
-        ).order_by("resolutionState")
+            resolution_serviceID=service_obj
+        ).order_by("resolution_state")
         resolution_info = []
         for resolution_obj in resolution_objs:
             resolution_info.append(
@@ -745,9 +745,9 @@ def get_service_information(service_id, service_manager):
 
         delivery_info = []
         for resolution_obj in resolution_objs:
-            if Delivery.objects.filter(deliveryResolutionID=resolution_obj).exists():
+            if Delivery.objects.filter(delivery_resolutionID=resolution_obj).exists():
                 delivery = Delivery.objects.filter(
-                    deliveryResolutionID=resolution_obj
+                    delivery_resolutionID=resolution_obj
                 ).last()
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details["delivery"] = delivery_info
@@ -776,9 +776,9 @@ def get_service_information(service_id, service_manager):
     created_date = service_obj.get_service_creation_time_no_format()
     delivery_date = service_obj.get_service_delivery_time_no_format()
     dates = []
-    if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
         resolution_obj = Resolution.objects.filter(
-            resolutionServiceID=service_obj
+            resolution_serviceID=service_obj
         ).first()
         in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
         if in_progress_date != None:
@@ -926,7 +926,7 @@ def send_service_creation_confirmation_email(email_data):
     )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configurationName__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
         .last()
         .get_configuration_value()
     )
@@ -987,7 +987,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
                 data = {}
                 for i in range(len(heading)):
                     data[heading[i]] = row[i]
-                data["samplesInService"] = new_service
+                data["samples_in_service"] = new_service
                 data["only_recorded"] = False
                 req_samp_obj = RequestedSamplesInServices.objects.create_request_sample(
                     data
@@ -1005,7 +1005,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
             data["sample_name"] = row[0]
             data["project_name"] = row[1]
             data["sample_id"] = row[5]
-            data["samplesInService"] = new_service
+            data["samples_in_service"] = new_service
             data["only_recorded"] = True
             ext_samp_obj = RequestedSamplesInServices.objects.create_request_sample(
                 data

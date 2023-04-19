@@ -51,8 +51,8 @@ def get_configuration_from_database(configuration_name):
         configuration_name      # configuration settings name
     '''
     configuration_value = ''
-    if ConfigSetting.objects.filter(configurationName__exact = configuration_name).exists():
-        configuration_settings_obj = ConfigSetting.objects.filter(configurationName__exact = configuration_name).last()
+    if ConfigSetting.objects.filter(configuration_name__exact = configuration_name).exists():
+        configuration_settings_obj = ConfigSetting.objects.filter(configuration_name__exact = configuration_name).last()
         configuration_value = configuration_settings_obj.get_configuration_value()
     return configuration_value
 
@@ -201,11 +201,11 @@ def save_database_configuration_value(configuration_name, configuration_value):
     Description:
         The function saves configuration setting value. If not exists function create the configuration name
     Input:
-        configurationName       # configuration setting name
+        configuration_name       # configuration setting name
         configuration_value     # value for this configuration settings
     '''
-    if ConfigSetting.objects.filter(configurationName__exact = configuration_name).exists():
-        config_settings_obj = ConfigSetting.objects.filter(configurationName__exact = configuration_name).last()
+    if ConfigSetting.objects.filter(configuration_name__exact = configuration_name).exists():
+        config_settings_obj = ConfigSetting.objects.filter(configuration_name__exact = configuration_name).last()
         config_settings_obj.set_configuration_value(configuration_value)
     else:
         config_settings_obj = ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)

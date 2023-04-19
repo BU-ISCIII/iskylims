@@ -23,14 +23,14 @@ class ServiceAdmin(admin.ModelAdmin):
 
 
 class RequestedSamplesInServicesAdmin(admin.ModelAdmin):
-    list_display = ["samplesInService", "sample_name", "project_name", "run_name"]
+    list_display = ["samples_in_service", "sample_name", "project_name", "run_name"]
 
 
 class UploadServiceFileAdmin(admin.ModelAdmin):
-    list_display = ["uploadService", "uploadFile", "uploadFileName"]
+    list_display = ["upload_service", "upload_file", "upload_file_name"]
     search_fields = (
-        "uploadService__service_request_number__icontains",
-        "uploadFileName__icontains",
+        "upload_service__service_request_number__icontains",
+        "upload_file_name__icontains",
     )
 
 
@@ -40,40 +40,40 @@ class AvailableServiceAdmin(DjangoMpttAdmin):
 
 class ResolutionAdmin(admin.ModelAdmin):
     list_display = (
-        "resolutionServiceID",
-        "resolutionNumber",
-        "resolutionState",
-        "resolutionDate",
-        "resolutionEstimatedDate",
-        "resolutionFullNumber",
-        "resolutionAsignedUser",
+        "resolution_serviceID",
+        "resolution_number",
+        "resolution_state",
+        "resolution_date",
+        "resolution_estimated_date",
+        "resolution_full_number",
+        "resolution_asigned_user",
     )
-    list_filter = ["resolutionDate"]
+    list_filter = ["resolution_date"]
     search_fields = [
         "resolutionNumber__icontains",
-        "resolutionAsignedUser__username__icontains",
+        "resolution_asigned_user__username__icontains",
     ]
 
 
 class ResolutionParametersAdmin(admin.ModelAdmin):
     list_display = [
         "resolution",
-        "resolutionParameter",
-        "resolutionParamValue",
-        "resolutionParamNotes",
+        "resolution_parameter",
+        "resolution_param_value",
+        "resolution_param_notes",
     ]
 
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = [
-        "deliveryResolutionID",
-        "deliveryDate",
-        "executionStartDate",
-        "executionEndDate",
-        "executionTime",
-        "permanentUsedSpace",
-        "temporaryUsedSpace",
-        "deliveryNotes",
+        "delivery_resolutionID",
+        "delivery_date",
+        "execution_start_date",
+        "execution_end_date",
+        "execution_time",
+        "permanent_used_space",
+        "temporary_used_space",
+        "delivery_notes",
     ]
 
 
@@ -86,7 +86,7 @@ class ParameterPipelineManager(admin.ModelAdmin):
 
 
 class ConfigSettingAdmin(admin.ModelAdmin):
-    list_display = ["configurationName", "configurationValue"]
+    list_display = ["configuration_name", "configuration_value"]
 
 
 admin.site.register(ServiceState, ServiceStateAdmin)

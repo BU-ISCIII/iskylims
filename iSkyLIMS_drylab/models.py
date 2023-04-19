@@ -441,7 +441,7 @@ class Service(models.Model):
 class RequestedSamplesInServicesManager(models.Manager):
     def create_request_sample(self, data):
         new_req_sample_service = self.create(
-            samplesInService=data["samplesInService"],
+            samples_in_service=data["samples_in_service"],
             run_name=data["run_name"],
             run_name_key=data["run_id"],
             project_name=data["project_name"],
@@ -455,7 +455,7 @@ class RequestedSamplesInServicesManager(models.Manager):
 
 
 class RequestedSamplesInServices(models.Model):
-    samplesInService = models.ForeignKey(
+    samples_in_service = models.ForeignKey(
         Service, on_delete=models.CASCADE, related_name="samples"
     )
 
@@ -496,38 +496,38 @@ class RequestedSamplesInServices(models.Model):
 class UploadServiceFileManager(models.Manager):
     def create_upload_file(self, data):
         new_upload_file = self.create(
-            uploadFile=data["file"], uploadFileName=data["file_name"]
+            upload_file=data["file"], upload_file_name=data["file_name"]
         )
         return new_upload_file
 
 
 class UploadServiceFile(models.Model):
-    uploadService = models.ForeignKey(
+    upload_service = models.ForeignKey(
         Service, on_delete=models.CASCADE, null=True, blank=True
     )
-    uploadFile = models.FileField(
+    upload_file = models.FileField(
         upload_to=drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY
     )
-    uploadFileName = models.CharField(null=True, blank=True, max_length=255)
+    upload_file_name = models.CharField(null=True, blank=True, max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "drylab_upload_service_file"
 
     def __str__(self):
-        return "%s" % (self.uploadFile)
+        return "%s" % (self.upload_file)
 
-    def get_uploadFile_full_path_and_name(self):
-        return "%s" % (self.uploadFile)
+    def get_upload_file_full_path_and_name(self):
+        return "%s" % (self.upload_file)
 
-    def get_uploadFile_name(self):
-        return "%s" % (self.uploadFileName)
+    def get_upload_file_name(self):
+        return "%s" % (self.upload_file_name)
 
-    def get_uploadFile_id(self):
+    def get_upload_file_id(self):
         return "%s" % (self.pk)
 
     def update_service_id(self, service_obj):
-        self.uploadService = service_obj
+        self.upload_service = service_obj
         self.save()
         return self
 
@@ -536,61 +536,61 @@ class UploadServiceFile(models.Model):
 
 class ResolutionManager(models.Manager):
     def create_resolution(self, resolution_data):
-        resolutionAsignedUser = User.objects.get(
-            pk__exact=resolution_data["resolutionAsignedUser"]
+        resolution_asigned_user = User.objects.get(
+            pk__exact=resolution_data["resolution_asigned_user"]
         )
-        resolutionServiceID = Service.objects.get(
+        resolution_serviceID = Service.objects.get(
             pk__exact=resolution_data["service_id"]
         )
         state = ResolutionStates.objects.get(state_value__exact="Queued")
         new_resolution = self.create(
-            resolutionServiceID=resolutionServiceID,
-            resolutionAsignedUser=resolutionAsignedUser,
-            resolutionNumber=resolution_data["resolutionNumber"],
-            resolutionEstimatedDate=resolution_data["resolutionEstimatedDate"],
-            resolutionOnQueuedDate=date.today(),
-            resolutionNotes=resolution_data["resolutionNotes"],
-            resolutionFullNumber=resolution_data["resolutionFullNumber"],
-            resolutionState=state,
+            resolution_serviceID=resolution_serviceID,
+            resolution_asigned_user=resolution_asigned_user,
+        resolution_number=resolution_data["resolutionNumber"],
+        resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
+        resolution_queued_date=date.today(),
+        resolution_notes=resolution_data["resolutionNotes"],
+            resolution_full_number=resolution_data["resolution_full_number"],
+            resolution_state=state,
         )
         return new_resolution
 
 
 class Resolution(models.Model):
-    resolutionServiceID = models.ForeignKey(
+    resolution_serviceID = models.ForeignKey(
         Service, on_delete=models.CASCADE, related_name="resolutions"
     )
-    resolutionAsignedUser = models.ForeignKey(
+    resolution_asigned_user = models.ForeignKey(
         User, related_name="groups+", on_delete=models.CASCADE, null=True, blank=True
     )
-    resolutionState = models.ForeignKey(
+    resolution_state = models.ForeignKey(
         ResolutionStates, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    resolutionPipelines = models.ManyToManyField(Pipelines, blank=True)
+    resolution_pipelines = models.ManyToManyField(Pipelines, blank=True)
 
-    availableServices = models.ManyToManyField(AvailableService, blank=True)
-    resolutionNumber = models.CharField(
+    available_services = models.ManyToManyField(AvailableService, blank=True)
+    resolution_number = models.CharField(
         _("Resolutions name"), max_length=255, null=True
     )
-    resolutionEstimatedDate = models.DateField(
+    resolution_estimated_date = models.DateField(
         _(" Estimated resolution date"), null=True, blank=False
     )
-    resolutionDate = models.DateField(
+    resolution_date = models.DateField(
         _("Resolution date"), auto_now_add=True, blank=True
     )
-    resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True, blank=True)
-    resolutionOnInProgressDate = models.DateField(
+    resolution_queued_date = models.DateField(auto_now_add=False, null=True, blank=True)
+    resolution_in_progress_date = models.DateField(
         auto_now_add=False, null=True, blank=True
     )
-    resolutionDeliveryDate = models.DateField(auto_now_add=False, null=True, blank=True)
-    resolutionNotes = models.TextField(
+    resolution_delivery_date = models.DateField(auto_now_add=False, null=True, blank=True)
+    resolution_notes = models.TextField(
         _("Resolution notes"), max_length=1000, null=True, blank=True
     )
-    resolutionFullNumber = models.CharField(
+    resolution_full_number = models.CharField(
         _("Acronym Name"), max_length=255, null=True, blank=True
     )
-    resolutionPdfFile = models.FileField(
+    resolution_pdf_file = models.FileField(
         upload_to=drylab_config.RESOLUTION_FILES_DIRECTORY, null=True, blank=True
     )
 
@@ -598,17 +598,17 @@ class Resolution(models.Model):
         db_table = "drylab_resolution"
 
     def __str__(self):
-        return "%s" % (self.resolutionNumber)
+        return "%s" % (self.resolution_number)
 
     def get_resolution_number(self):
-        return "%s" % self.resolutionNumber
+        return "%s" % self.resolution_number
 
     def get_service_request_number(self):
-        return "%s" % self.resolutionServiceID.get_service_request_number()
+        return "%s" % self.resolution_serviceID.get_service_request_number()
 
     def get_available_services(self):
-        if self.availableServices.all().exists():
-            avail_services = self.availableServices.all()
+        if self.available_services.all().exists():
+            avail_services = self.available_services.all()
             service_list = []
             for avail_service in avail_services:
                 service_list.append(avail_service.get_service_description())
@@ -616,8 +616,8 @@ class Resolution(models.Model):
         return ["None"]
 
     def get_available_services_ids(self):
-        if self.availableServices.all().exists():
-            avail_services = self.availableServices.all()
+        if self.available_services.all().exists():
+            avail_services = self.available_services.all()
             service_ids_list = []
             for avail_service in avail_services:
                 service_ids_list.append(avail_service.pk)
@@ -625,8 +625,8 @@ class Resolution(models.Model):
         return ["None"]
 
     def get_available_services_and_ids(self):
-        if self.availableServices.all().exists():
-            avail_services = self.availableServices.all()
+        if self.available_services.all().exists():
+            avail_services = self.available_services.all()
             service_list = []
             for avail_service in avail_services:
                 service_list.append(
@@ -641,112 +641,112 @@ class Resolution(models.Model):
     def get_resolution_information(self):
         resolution_info = []
         resolution_info.append(self.get_available_services())
-        if self.resolutionState != None:
-            resolution_info.append(self.resolutionState.get_state())
+        if self.resolution_state != None:
+            resolution_info.append(self.resolution_state.get_state())
         else:
             resolution_info.append("Not assigned")
-        resolution_info.append(self.resolutionFullNumber)
-        if self.resolutionAsignedUser != None:
-            resolution_info.append(self.resolutionAsignedUser.username)
+        resolution_info.append(self.resolution_full_number)
+        if self.resolution_asigned_user != None:
+            resolution_info.append(self.resolution_asigned_user.username)
         else:
             resolution_info.append("Not assigned")
-        if self.resolutionEstimatedDate is not None:
-            resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
+        if self.resolution_estimated_date is not None:
+            resolution_info.append(self.resolution_estimated_date.strftime("%d %B, %Y"))
         else:
             resolution_info.append("Not defined yet")
 
-        if self.resolutionOnQueuedDate is not None:
-            resolution_info.append(self.resolutionOnQueuedDate.strftime("%d %B, %Y"))
+        if self.resolution_queued_date is not None:
+            resolution_info.append(self.resolution_queued_date.strftime("%d %B, %Y"))
         else:
             resolution_info.append("Not defined yet")
 
-        if self.resolutionOnInProgressDate is None:
+        if self.resolution_in_progress_date is None:
             resolution_info.append("--")
         else:
             resolution_info.append(
-                self.resolutionOnInProgressDate.strftime("%d %B, %Y")
+                self.resolution_in_progress_date.strftime("%d %B, %Y")
             )
 
-        resolution_info.append(self.resolutionNotes)
-        resolution_info.append(self.resolutionPdfFile)
+        resolution_info.append(self.resolution_notes)
+        resolution_info.append(self.resolution_pdf_file)
 
         return resolution_info
 
     def get_information_for_pending_resolutions(self):
-        if self.resolutionOnQueuedDate is None:
+        if self.resolution_queued_date is None:
             on_queued_date = "Not defined"
         else:
-            on_queued_date = self.resolutionOnQueuedDate.strftime("%d %B, %Y")
-        if self.resolutionEstimatedDate is None:
+            on_queued_date = self.resolution_queued_date.strftime("%d %B, %Y")
+        if self.resolution_estimated_date is None:
             on_estimated_date = "Not defined"
         else:
-            on_estimated_date = self.resolutionEstimatedDate.strftime("%d %B, %Y")
+            on_estimated_date = self.resolution_estimated_date.strftime("%d %B, %Y")
         data = []
-        data.append(self.resolutionServiceID.get_service_id())
-        data.append(self.resolutionServiceID.get_service_request_number())
-        data.append(self.resolutionNumber)
-        data.append(self.resolutionFullNumber)
-        if self.resolutionAsignedUser is None:
+        data.append(self.resolution_serviceID.get_service_id())
+        data.append(self.resolution_serviceID.get_service_request_number())
+        data.append(self.resolution_number)
+        data.append(self.resolution_full_number)
+        if self.resolution_asigned_user is None:
             data.append("Not assigned yet")
         else:
-            data.append(self.resolutionAsignedUser.username)
+            data.append(self.resolution_asigned_user.username)
         data.append(on_queued_date)
         data.append(on_estimated_date)
         return data
 
     def get_service_obj(self):
-        return self.resolutionServiceID
+        return self.resolution_serviceID
 
     def get_service_name(self):
-        return "%s" % (self.resolutionServiceID.get_service_request_number())
+        return "%s" % (self.resolution_serviceID.get_service_request_number())
 
     def get_state(self):
-        if self.resolutionState != None:
-            return "%s" % (self.resolutionState.get_state())
+        if self.resolution_state != None:
+            return "%s" % (self.resolution_state.get_state())
         else:
             return "Not assigned"
 
     def get_resolution_full_number(self):
-        return "%s" % (self.resolutionFullNumber)
+        return "%s" % (self.resolution_full_number)
 
     def get_resolution_estimated_date(self):
-        if self.resolutionEstimatedDate != None:
-            return "%s" % (self.resolutionEstimatedDate)
+        if self.resolution_estimated_date != None:
+            return "%s" % (self.resolution_estimated_date)
         return "--"
 
     def get_resolution_on_queued_date(self):
-        if self.resolutionOnQueuedDate is not None:
-            return self.resolutionOnQueuedDate.strftime("%d %B, %Y")
+        if self.resolution_queued_date is not None:
+            return self.resolution_queued_date.strftime("%d %B, %Y")
         else:
             return "--"
 
     def get_resolution_in_progress_date_no_format(self):
-        return self.resolutionOnInProgressDate
+        return self.resolution_in_progress_date
 
     def get_resolution_request_center_abbr(self):
         return "%s" % (
-            self.resolutionServiceID.serviceUserId.profile.profileCenter.centerAbbr
+            self.resolution_serviceID.serviceUserId.profile.profileCenter.centerAbbr
         )
 
     def get_resolution_request_center_abbr(self):
         return "%s" % (
-            self.resolutionServiceID.serviceUserId.profile.profileCenter.centerName
+            self.resolution_serviceID.serviceUserId.profile.profileCenter.centerName
         )
 
     def get_resolution_handler_user(self):
-        if self.resolutionAsignedUser is not None:
-            return self.resolutionAsignedUser.username
+        if self.resolution_asigned_user is not None:
+            return self.resolution_asigned_user.username
         return "--"
 
     def get_service_owner_email(self):
-        if self.resolutionServiceID != None:
-            return self.resolutionServiceID.get_user_email()
+        if self.resolution_serviceID != None:
+            return self.resolution_serviceID.get_user_email()
         return ""
 
     def update_resolution_in_progress_date(self):
         today = date.today()
-        self.resolutionOnInProgressDate = today
-        self.resolutionState = ResolutionStates.objects.get(
+        self.resolution_in_progress_date = today
+        self.resolution_state = ResolutionStates.objects.get(
             state_value__exact="In Progress"
         )
         self.save()
@@ -754,20 +754,20 @@ class Resolution(models.Model):
 
     def update_resolution_in_delivered(self):
         today = date.today()
-        self.resolutionDeliveryDate = today
-        self.resolutionState = ResolutionStates.objects.get(
+        self.resolution_delivery_date = today
+        self.resolution_state = ResolutionStates.objects.get(
             state_value__exact="Delivery"
         )
         self.save()
         return self
 
     def update_resolution_file(self, file):
-        self.resolutionPdfFile = file
+        self.resolution_pdf_file = file
         self.save()
         return self
 
     def update_resolution_state(self, state):
-        self.resolutionState = ResolutionStates.objects.get(state_value__exact=state)
+        self.resolution_state = ResolutionStates.objects.get(state_value__exact=state)
         self.save()
         return self
 
@@ -778,28 +778,28 @@ class ResolutionParametersManager(models.Manager):
     def create_resolution_parameters(self, data):
         new_resolution_parameter = self.create(
             resolution=data["resolution"],
-            resolutionParameter=data["resolutionParameter"],
-            resolutionParamValue=data["resolutionParamValue"],
-            resolutionParamNotes=data["resolutionParamNotes"],
+            resolution_parameter=data["resolution_parameter"],
+            resolution_param_value=data["resolution_param_value"],
+            resolution_param_notes=data["resolution_param_notes"],
         )
         return new_resolution_parameter
 
 
 class ResolutionParameters(models.Model):
     resolution = models.ForeignKey(Resolution, on_delete=models.CASCADE)
-    resolutionParameter = models.CharField(max_length=50)
-    resolutionParamValue = models.CharField(max_length=80)
-    resolutionParamNotes = models.CharField(max_length=200, null=True, blank=True)
+    resolution_parameter = models.CharField(max_length=50)
+    resolution_param_value = models.CharField(max_length=80)
+    resolution_param_notes = models.CharField(max_length=200, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "drylab_resolution_parameters"
 
     def __str__(self):
-        return "%s" % (self.resolutionParameter)
+        return "%s" % (self.resolution_parameter)
 
     def get_resolution_parameter_name(self):
-        return "%s" % (self.resolutionParameter)
+        return "%s" % (self.resolution_parameter)
 
     objects = ResolutionParametersManager()
 
@@ -807,47 +807,47 @@ class ResolutionParameters(models.Model):
 class DeliveryManager(models.Manager):
     def create_delivery(self, delivery_data):
         new_delivery = self.create(
-            deliveryResolutionID=delivery_data["deliveryResolutionID"],
-            deliveryNotes=delivery_data["deliveryNotes"],
-            executionStartDate=delivery_data["executionStartDate"],
-            executionEndDate=delivery_data["executionEndDate"],
-            executionTime=delivery_data["executionTime"],
-            permanentUsedSpace=delivery_data["permanentUsedSpace"],
-            temporaryUsedSpace=delivery_data["temporaryUsedSpace"],
+            delivery_resolutionID=delivery_data["delivery_resolutionID"],
+        delivery_notes=delivery_data["deliveryNotes"],
+        execution_start_date=delivery_data["executionStartDate"],
+            execution_end_date=delivery_data["execution_end_date"],
+            execution_time=delivery_data["execution_time"],
+            permanent_used_space=delivery_data["permanent_used_space"],
+            temporary_used_space=delivery_data["temporary_used_space"],
         )
         return new_delivery
 
 
 class Delivery(models.Model):
-    deliveryResolutionID = models.ForeignKey(
+    delivery_resolutionID = models.ForeignKey(
         Resolution, on_delete=models.CASCADE, related_name="delivery"
     )
-    pipelinesInDelivery = models.ManyToManyField(Pipelines, blank=True)
+    pipelines_in_delivery = models.ManyToManyField(Pipelines, blank=True)
 
-    deliveryDate = models.DateField(auto_now_add=True, null=True, blank=True)
+    delivery_date = models.DateField(auto_now_add=True, null=True, blank=True)
 
-    deliveryNotes = models.TextField(max_length=1000, null=True, blank=True)
-    executionStartDate = models.DateField(null=True, blank=True)
-    executionEndDate = models.DateField(null=True, blank=True)
-    executionTime = models.CharField(max_length=80, null=True, blank=True)
-    permanentUsedSpace = models.CharField(max_length=80, null=True, blank=True)
-    temporaryUsedSpace = models.CharField(max_length=80, null=True, blank=True)
+    delivery_notes = models.TextField(max_length=1000, null=True, blank=True)
+    execution_start_date = models.DateField(null=True, blank=True)
+    execution_end_date = models.DateField(null=True, blank=True)
+    execution_time = models.CharField(max_length=80, null=True, blank=True)
+    permanent_used_space = models.CharField(max_length=80, null=True, blank=True)
+    temporary_used_space = models.CharField(max_length=80, null=True, blank=True)
 
     class Meta:
         db_table = "drylab_delivery"
 
     def __str__(self):
-        return "%s" % (self.deliveryResolutionID)
+        return "%s" % (self.delivery_resolutionID)
 
     def get_delivery_information(self):
         delivery_info = []
-        delivery_info.append(self.deliveryResolutionID.resolutionNumber)
-        delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
-        delivery_info.append(self.deliveryNotes)
+        delivery_info.append(self.delivery_resolutionID.resolution_number)
+        delivery_info.append(self.delivery_date.strftime("%d %B, %Y"))
+        delivery_info.append(self.delivery_notes)
         return delivery_info
 
     def get_resolution_obj(self):
-        return self.deliveryResolutionID
+        return self.delivery_resolutionID
 
     objects = DeliveryManager()
 
@@ -855,27 +855,27 @@ class Delivery(models.Model):
 class ConfigSettingManager(models.Manager):
     def create_config_setting(self, configuration_name, configuration_value):
         new_config_settings = self.create(
-            configurationName=configuration_name, configurationValue=configuration_value
+            configuration_name=configuration_name, configuration_value=configuration_value
         )
         return new_config_settings
 
 
 class ConfigSetting(models.Model):
-    configurationName = models.CharField(max_length=80)
-    configurationValue = models.CharField(max_length=255, null=True, blank=True)
+    configuration_name = models.CharField(max_length=80)
+    configuration_value = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "drylab_config_setting"
 
     def __str__(self):
-        return "%s" % (self.configurationName)
+        return "%s" % (self.configuration_name)
 
     def get_configuration_value(self):
-        return "%s" % (self.configurationValue)
+        return "%s" % (self.configuration_value)
 
     def set_configuration_value(self, new_value):
-        self.configurationValue = new_value
+        self.configuration_value = new_value
         self.save()
         return self
 

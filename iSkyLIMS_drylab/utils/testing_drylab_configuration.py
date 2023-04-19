@@ -104,7 +104,7 @@ def create_resolution_test (resolution_number, service_requested):
     
     # Create resolution object
     try:
-        test_resolution = Resolution(resolutionServiceID = service, resolutionNumber = resolution_number, resolutionFullNumber = str('Test_'+ resolution_number))
+        test_resolution = Resolution(resolution_serviceID = service, resolutionNumber = resolution_number, resolution_full_number = str('Test_'+ resolution_number))
         resolution_test.append(('Resolution creation', 'OK'))
     except:
         resolution_test.append(('Resolution creation', 'NOK'))
