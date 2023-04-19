@@ -3,7 +3,7 @@ import pandas as pd
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_core.models import PatientCore, PatientProjects, PatientSex
-from iSkyLIMS_core.utils.patient_core import *
+from iSkyLIMS_core.utils.patient import *
 from iSkyLIMS_core.utils.patient_projects import *
 from iSkyLIMS_core.utils.samples import *
 
