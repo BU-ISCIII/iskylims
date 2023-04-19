@@ -42,11 +42,11 @@
 				                	<div class="col-sm-5"><input class="form-control" required = "required" type="date" name="resolutionEstimatedDate" id="resolutionEstimatedDate"></div>
 				                	<br><br>
 									<label class="col-sm-5 control-label" for="acronymName" >Acronym Service Name</label>
-				                	<div class="col-sm-5"><input class="form-control" required = "required" type="text" name="acronymName" id="acronymName" value="{{resolution_form_data.resolutionFullNumber}}"></div>
+				                	<div class="col-sm-5"><input class="form-control" required = "required" type="text" name="acronymName" id="acronymName" value="{{resolution_form_data.resolution_full_number}}"></div>
 				                	<br><br>
-									<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Assign to user</label>
+									<label class="col-sm-5 control-label" for="resolution_asigned_user" >Assign to user</label>
 									<div class="col-sm-5">
-										<select class="form-control"  required = "required" name="resolutionAsignedUser" id="resolutionAsignedUser">
+										<select class="form-control"  required = "required" name="resolution_asigned_user" id="resolution_asigned_user">
 			                                {% for id , name in resolution_form_data.assigned_user %}
 			                                    <option value="{{id}}">{{name}}</option>
 			                                {% endfor %}

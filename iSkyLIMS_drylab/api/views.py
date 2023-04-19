@@ -161,16 +161,16 @@ def resolution_data(request):
         resolution = request.GET["resolution"].strip()
         if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
             resolution_obj = Resolution.objects.filter(
-                resolutionNumber__exact=resolution
+            resolution_number__exact=resolution
             ).last()
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     elif "state" in request.GET:
         if Resolution.objects.filter(
-            resolutionState__resolutionStateName__exact=request.GET["state"]
+            resolution_state__resolution_stateName__exact=request.GET["state"]
         ).exists():
             resolution_objs = Resolution.objects.filter(
-                resolutionState__resolutionStateName__exact=request.GET["state"]
+                resolution_state__resolution_stateName__exact=request.GET["state"]
             )
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -186,10 +186,10 @@ def resolution_data(request):
 def samples_in_service(request):
     if "service" in request.GET:
         if RequestedSamplesInServices.objects.filter(
-            samplesInService__service_request_number__iexact=request.GET["service"]
+            samples_in_service__service_request_number__iexact=request.GET["service"]
         ).exists():
             sample_objs = RequestedSamplesInServices.objects.filter(
-                samplesInService__service_request_number__iexact=request.GET["service"]
+                samples_in_service__service_request_number__iexact=request.GET["service"]
             )
             sample_serializers = RequestedSamplesInServicesSerializer(
                 sample_objs, many=True
@@ -211,7 +211,7 @@ def service_full_data(request):
         )
     elif "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
-        service = Resolution.objects.filter(resolutionNumber__iexact= resolution).last().resolutionServiceID
+        service = Resolution.objects.filter(resolutionNumber__iexact= resolution).last().resolution_serviceID
         service_obj = Service.objects.prefetch_related(
             Prefetch('resolutions', queryset=Resolution.objects.filter(resolutionNumber__iexact=resolution), to_attr='filtered_resolutions')
         )
@@ -238,7 +238,7 @@ def service_full_data(request):
 @api_view(["PUT"])
 def update_state(request):
     def all_resolutions_delivered(service,state):
-        if Resolution.objects.filter(resolutionServiceID=service).exclude(resolutionState=state).exists():
+        if Resolution.objects.filter(resolution_serviceID=service).exclude(resolution_state=state).exists():
             return False
         else:
             return True
@@ -250,7 +250,7 @@ def update_state(request):
             state = request.query_params["state"].strip()
             try:
                 state_obj = ResolutionStates.objects.get(
-                    resolutionStateName__iexact=state
+                    resolution_stateName__iexact=state
                 )
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -266,7 +266,7 @@ def update_state(request):
             if state == "In Progress":
                 data_resolution = {
                     "resolutionNumber" : resolution,
-                    "resolutionState" : state_obj.pk,
+                    "resolution_state" : state_obj.pk,
                     "resolutionOnInProgressDate" : datetime.today().strftime("%Y-%m-%d")
                 }
                 data_service = {
@@ -279,7 +279,7 @@ def update_state(request):
             elif state == "Delivery":
                 data_resolution = {
                     "resolutionNumber" : resolution,
-                    "resolutionState" : state_obj.pk,
+                    "resolution_state" : state_obj.pk,
                     "resolutionDeliveryDate" : datetime.today().strftime("%Y-%m-%d")
                 }
                 data_service = {
@@ -317,22 +317,22 @@ def update_state(request):
             "resolutionNumber": openapi.Schema(
                 type=openapi.TYPE_STRING, description="resolutionNumber. pe. SRVCNM123.1"
             ),
-            "pipelinesInDelivery": openapi.Schema(
+            "pipelines_in_delivery": openapi.Schema(
                 type=openapi.TYPE_ARRAY, items = openapi.Items(type="string"), description="resolutionNumber. pe. ['viralrecon']"
             ),
-            "deliveryDate": openapi.Schema(
+            "delivery_date": openapi.Schema(
                 type=openapi.TYPE_STRING, description="delivery date. pe. 2022-01-01"
             ),
             "executionStartDate": openapi.Schema(
                 type=openapi.TYPE_STRING, description="execution start date. pe. 2022-01-01"
             ),
-            "executionEndDate": openapi.Schema(
+            "execution_end_date": openapi.Schema(
                 type=openapi.TYPE_STRING, description="execution end date. pe. 2022-01-01"
             ),
-            "permanentUsedSpace": openapi.Schema(
+            "permanent_used_space": openapi.Schema(
                 type=openapi.TYPE_INTEGER, description="permanent used space in GB. pe. 134"
             ),
-            "temporaryUsedSpace": openapi.Schema(
+            "temporary_used_space": openapi.Schema(
                 type=openapi.TYPE_INTEGER, description="temporary used space in GB. pe. SRVCNM123.1"
             ),
             "deliveryNotes": openapi.Schema(
@@ -353,15 +353,15 @@ def create_delivery(request):
 
         resolution_pk = Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"]).last().pk
 
-        if "pipelinesInDelivery" in data:
-            pipelines = [ Pipelines.objects.filter(pipeline_name__exact=pip).last().pk for pip in data["pipelinesInDelivery"]]
-            data["pipelinesInDelivery"] = pipelines
+        if "pipelines_in_delivery" in data:
+            pipelines = [ Pipelines.objects.filter(pipeline_name__exact=pip).last().pk for pip in data["pipelines_in_delivery"]]
+            data["pipelines_in_delivery"] = pipelines
 
         data.pop("resolutionNumber")
-        data["deliveryResolutionID"] = resolution_pk
+        data["delivery_resolutionID"] = resolution_pk
 
-        if Delivery.objects.filter(deliveryResolutionID__exact=resolution_pk).exists():
-            delivery_obj = Delivery.objects.filter(deliveryResolutionID__exact=resolution_pk).last()
+        if Delivery.objects.filter(delivery_resolutionID__exact=resolution_pk).exists():
+            delivery_obj = Delivery.objects.filter(delivery_resolutionID__exact=resolution_pk).last()
             serializer = CreateDeliveryPostSerializer(delivery_obj, data=data)
         else:
             serializer = CreateDeliveryPostSerializer(data=data)

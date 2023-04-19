@@ -529,7 +529,7 @@ def search_service(request):
         if handeld_user != "":
 
             if not Resolution.objects.filter(
-                resolutionAsignedUser__username__icontains=user_name
+                resolution_asigned_user__username__icontains=user_name
             ).exists():
                 error_message = (
                     drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
@@ -544,7 +544,7 @@ def search_service(request):
                 )
             services_handled_by = []
             services_handled_by_objs = Resolution.objects.filter(
-                resolutionAsignedUser__username__icontains=user_name
+                resolution_asigned_user__username__icontains=user_name
             )
             for services_handled_by_obj in services_handled_by_objs:
                 services_handled_by.append(services_handled_by_obj.get_service_name())
@@ -557,11 +557,11 @@ def search_service(request):
             if project_name != "":
                 samples_in_services = RequestedSamplesInServices.objects.filter(
                     project_name__icontains=project_name,
-                    samplesInService__in=services_found,
+                    samples_in_service__in=services_found,
                 )
             else:
                 samples_in_services = RequestedSamplesInServices.objects.filter(
-                    samplesInService__in=services_found
+                    samples_in_service__in=services_found
                 )
             if run_name != "":
                 samples_in_services = samples_in_services.filter(
@@ -573,7 +573,7 @@ def search_service(request):
                 )
             service_list = []
             for samples_in_service in samples_in_services:
-                service_list.append(samples_in_service.samplesInService.pk)
+                service_list.append(samples_in_service.samples_in_service.pk)
             services_found = services_found.filter(pk__in=service_list)
         if len(services_found) == 0:
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
@@ -965,7 +965,7 @@ def add_delivery(request):
             )
 
         delivery_recorded = store_resolution_delivery(request.POST)
-        resolution_obj = delivery_recorded["deliveryResolutionID"]
+        resolution_obj = delivery_recorded["delivery_resolutionID"]
         if delivery_recorded != None:
             email_data = {}
             email_data["user_email"] = request.user.email

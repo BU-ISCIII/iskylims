@@ -1310,8 +1310,8 @@
     "model": "iSkyLIMS_drylab.configsetting",
     "pk": 1,
     "fields": {
-        "configurationName": "EMAIL_FOR_NOTIFICATIONS",
-        "configurationValue": "smonzon@isciii.es",
+        "configuration_name": "EMAIL_FOR_NOTIFICATIONS",
+        "configuration_value": "smonzon@isciii.es",
         "generated_at": "2021-06-12T19:44:41.771"
     }
 },
@@ -1319,8 +1319,8 @@
     "model": "iSkyLIMS_drylab.configsetting",
     "pk": 2,
     "fields": {
-        "configurationName": "USER_CENTER_USED_FOR_NAMING_SERVICE",
-        "configurationValue": "True",
+        "configuration_name": "USER_CENTER_USED_FOR_NAMING_SERVICE",
+        "configuration_value": "True",
         "generated_at": "2023-01-23T17:15:09.543"
     }
 },
@@ -1328,8 +1328,8 @@
     "model": "iSkyLIMS_drylab.configsetting",
     "pk": 3,
     "fields": {
-        "configurationName": "ABBREVIATION_USED_FOR_SERVICE_REQUEST",
-        "configurationValue": "SRV",
+        "configuration_name": "ABBREVIATION_USED_FOR_SERVICE_REQUEST",
+        "configuration_value": "SRV",
         "generated_at": "2023-01-23T17:15:24.556"
     }
 },

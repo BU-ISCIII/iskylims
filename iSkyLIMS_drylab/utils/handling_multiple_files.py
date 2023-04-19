@@ -67,9 +67,9 @@ def get_and_save_service_file(request):
         # store the file
 
         new_upload_file_obj = UploadServiceFile.objects.create_upload_file(file_data)
-        files[0]["file_id"] = new_upload_file_obj.get_uploadFile_id()
+        files[0]["file_id"] = new_upload_file_obj.get_upload_file_id()
         files[0]["deleteUrl"] = str(
-            "uploadServiceFileDelete=" + new_upload_file_obj.get_uploadFile_id()
+            "upload_serviceFileDelete=" + new_upload_file_obj.get_upload_file_id()
         )
 
     data = {"files": files}
@@ -86,10 +86,10 @@ def get_uploaded_files_for_service(service_obj):
         file_list with file stored on database
     """
     file_list = []
-    if UploadServiceFile.objects.filter(uploadService=service_obj).exists():
-        file_objs = UploadServiceFile.objects.filter(uploadService=service_obj)
+    if UploadServiceFile.objects.filter(upload_service=service_obj).exists():
+        file_objs = UploadServiceFile.objects.filter(upload_service=service_obj)
         for file_obj in file_objs:
-            file_list.append(file_obj.get_uploadFile_full_path_and_name())
+            file_list.append(file_obj.get_upload_file_full_path_and_name())
     return file_list
 
 
@@ -103,13 +103,13 @@ def get_uploaded_files_and_file_name_for_service(service_obj):
         with file and file name stored  on database
     """
     file_list = []
-    if UploadServiceFile.objects.filter(uploadService=service_obj).exists():
-        file_objs = UploadServiceFile.objects.filter(uploadService=service_obj)
+    if UploadServiceFile.objects.filter(upload_service=service_obj).exists():
+        file_objs = UploadServiceFile.objects.filter(upload_service=service_obj)
         for file_obj in file_objs:
             file_list.append(
                 [
-                    file_obj.get_uploadFile_full_path_and_name(),
-                    file_obj.get_uploadFile_name(),
+                    file_obj.get_upload_file_full_path_and_name(),
+                    file_obj.get_upload_file_name(),
                 ]
             )
     return file_list
@@ -140,7 +140,7 @@ def check_if_file_is_linked_to_service(file_id):
     """
     if (
         UploadServiceFile.objects.filter(pk__exact=file_id)
-        .exclude(uploadService=None)
+        .exclude(upload_service=None)
         .exists()
     ):
         return True

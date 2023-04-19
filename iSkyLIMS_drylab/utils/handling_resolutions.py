@@ -49,13 +49,13 @@ def allow_to_service_update_state(resolution_obj, new_state):
     """
     service_obj = resolution_obj.get_service_obj()
     if (
-        Resolution.objects.filter(resolutionServiceID=service_obj)
-        .exclude(resolutionState__state_value__exact="Queued")
+        Resolution.objects.filter(resolution_serviceID=service_obj)
+        .exclude(resolution_state__state_value__exact="Queued")
         .exists()
     ):
         all_resolution_objs = Resolution.objects.filter(
-            resolutionServiceID=service_obj
-        ).exclude(resolutionState__state_value__exact="Queued")
+            resolution_serviceID=service_obj
+        ).exclude(resolution_state__state_value__exact="Queued")
         avail_services_handled = []
         for all_resolution_obj in all_resolution_objs:
             if new_state == "delivered":
@@ -87,9 +87,9 @@ def get_assign_resolution_full_number(service_id, acronymName):
         resolution_full_number
     """
     service_obj = get_service_obj_from_id(service_id)
-    if Resolution.objects.filter(resolutionServiceID=service_id).exists():
+    if Resolution.objects.filter(resolution_serviceID=service_id).exists():
         resolution_full_number = (
-            Resolution.objects.filter(resolutionServiceID=service_obj)
+            Resolution.objects.filter(resolution_serviceID=service_obj)
             .last()
             .get_resolution_number()
         )
@@ -116,9 +116,9 @@ def create_resolution_number(service_id):
     """
     service_obj = get_service_obj_from_id(service_id)
     service_request_number = service_obj.get_service_request_number()
-    if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
         resolution_count = Resolution.objects.filter(
-            resolutionServiceID=service_obj
+            resolution_serviceID=service_obj
         ).count()
         resolution_number = service_request_number + "." + str(resolution_count + 1)
     else:
@@ -181,7 +181,7 @@ def get_add_resolution_data_form(form_data):
         form_data["resolutionEstimatedDate"], "%Y-%m-%d"
     ).date()
     resolution_data_form["acronymName"] = form_data["acronymName"]
-    resolution_data_form["resolutionAsignedUser"] = form_data["resolutionAsignedUser"]
+    resolution_data_form["resolution_asigned_user"] = form_data["resolution_asigned_user"]
     resolution_data_form["serviceAccepted"] = form_data["serviceAccepted"]
     resolution_data_form["resolutionNotes"] = form_data["resolutionNotes"]
 
@@ -231,15 +231,15 @@ def create_new_resolution(resolution_data_form):
         new_resolution
     """
     service_obj = get_service_obj_from_id(resolution_data_form["service_id"])
-    if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
-        resolution_data_form["resolutionFullNumber"] = (
-            Resolution.objects.filter(resolutionServiceID=service_obj)
+    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+        resolution_data_form["resolution_full_number"] = (
+            Resolution.objects.filter(resolution_serviceID=service_obj)
             .last()
             .get_resolution_full_number()
         )
     else:
         resolution_data_form[
-            "resolutionFullNumber"
+            "resolution_full_number"
         ] = get_assign_resolution_full_number(
             resolution_data_form["service_id"], resolution_data_form["acronymName"]
         )
@@ -277,9 +277,9 @@ def create_new_resolution(resolution_data_form):
                 service_obj.get_child_services()
             ):
                 service_obj.update_service_state("queued")
-            elif Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+            elif Resolution.objects.filter(resolution_serviceID=service_obj).exists():
                 resolution_objs = Resolution.objects.filter(
-                    resolutionServiceID=service_obj
+                    resolution_serviceID=service_obj
                 )
                 avail_services_handled = []
                 for resolution_obj in resolution_objs:
@@ -347,12 +347,12 @@ def prepare_form_data_add_resolution(form_data):
                 "selected_avail_services_data"
             ] = selected_children_services
 
-    if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
         existing_resolution = Resolution.objects.filter(
-            resolutionServiceID=service_obj
+            resolution_serviceID=service_obj
         ).last()
         resolution_form_data[
-            "resolutionFullNumber"
+            "resolution_full_number"
         ] = existing_resolution.get_resolution_full_number()
     users = User.objects.filter(groups__name=drylab_config.SERVICE_MANAGER)
     resolution_form_data["assigned_user"] = []
@@ -448,7 +448,7 @@ def send_resolution_creation_email(email_data):
         )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configurationName__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
         .last()
         .get_configuration_value()
     )
@@ -498,7 +498,7 @@ def send_resolution_in_progress_email(email_data):
     )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configurationName__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
         .last()
         .get_configuration_value()
     )

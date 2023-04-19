@@ -61,15 +61,15 @@ def store_resolution_delivery(form_data):
         else:
             delivery_data["executionStartDate"] = None
         if form_data["startdate"] != "":
-            delivery_data["executionEndDate"] = datetime.strptime(
+            delivery_data["execution_end_date"] = datetime.strptime(
                 form_data["enddate"], "%Y-%m-%d"
             )
         else:
-            delivery_data["executionEndDate"] = None
-        delivery_data["deliveryResolutionID"] = resolution_obj
-        delivery_data["executionTime"] = form_data["time"]
-        delivery_data["permanentUsedSpace"] = form_data["pspace"]
-        delivery_data["temporaryUsedSpace"] = form_data["tspace"]
+            delivery_data["execution_end_date"] = None
+        delivery_data["delivery_resolutionID"] = resolution_obj
+        delivery_data["execution_time"] = form_data["time"]
+        delivery_data["permanent_used_space"] = form_data["pspace"]
+        delivery_data["temporary_used_space"] = form_data["tspace"]
         delivery_data["deliveryNotes"] = form_data["deliveryNotes"]
 
         Delivery.objects.create_delivery(delivery_data)
@@ -115,7 +115,7 @@ def send_delivery_service_email(email_data):
 
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configurationName__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
         .last()
         .get_configuration_value()
     )
