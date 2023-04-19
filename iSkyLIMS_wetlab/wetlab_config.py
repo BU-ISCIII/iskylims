@@ -172,10 +172,6 @@ COLLECTION_INDEX_HEADING = [
 MIGRATION_DIRECTORY_FILES = "wetlab/BaseSpaceMigrationFiles/"
 
 ##############################################################
-# SAMPLE_SHEET_MISEQ_VERSION_4_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
-# SAMPLE_SHEET_MISEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
-# SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_WITH_WELPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_two_adapters_with_wellplate_template.csv'
-# SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_two_adapters_template.csv'
 
 SAMPLE_SHEET_MISEQ_VERSION_4_TEMPLATE_NAME = (
     "miseq_version_4_sample_sheet_one_adapters_template.csv"
@@ -183,7 +179,6 @@ SAMPLE_SHEET_MISEQ_VERSION_4_TEMPLATE_NAME = (
 SAMPLE_SHEET_MISEQ_VERSION_5_TEMPLATE_NAME = (
     "miseq_version_5_sample_sheet_one_adapters_template.csv"
 )
-# SAMPLE_SHEET_NEXTSEQ_VERSION_5_WITH_WELLPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_one_index_with_wellplate_template.csv'
 SAMPLE_SHEET_NEXTSEQ_VERSION_5_TEMPLATE_NAME = (
     "nextseq_version_5_sample_sheet_template.csv"
 )
@@ -205,16 +200,10 @@ HEADING_FOR_MODIFYING_ADDITIONAL_KITS = [
     "Description",
 ]
 
-##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############
-# ######## FILE TO BASESPACE FORMAT     #######################
+# CONFIGURATION FOR SAMPLE SHEET CONVERSION #
+# FILE TO BASESPACE FORMAT     #
 # column names when sample sheet has only one index
-"""
-BASESPACE_FILE_ONE_INDEX = ['SampleID','Name','Species','Project','NucleicAcid',
-               'Well','Index1Name','Index1Sequence']
-# colum names when sample sheet has two index
-BASESPACE_FILE_TWO_INDEX = ['SampleID','Name','Species','Project','NucleicAcid',
-               'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
-"""
+
 HEADING_FOR_SAMPLE_SHEET_ONE_INDEX = [
     "Unique_Sample_ID",
     "Sample_Name",
@@ -242,14 +231,6 @@ HEADING_FOR_SAMPLE_SHEET_TWO_INDEX = [
 ]
 
 
-# mapping structure when sample sheet contains only one index
-"""
-MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
-                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
-# mapping structure when sample sheet contains two index
-MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
-                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
-"""
 # ######## MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ = [
     ("Sample_ID", "userSampleID"),
@@ -345,23 +326,6 @@ MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
     ("Manifest", "manifest"),
     ("GenomeFolder", "genomeFolder"),
 ]
-
-"""
-MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
-            ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
-            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
-
-MAP_USER_NEXTSEQ_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
-            ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
-            ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
-"""
-
-# mapping structure when sample sheet contains only one index
-# MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
-#                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
-# mapping structure when sample sheet contains two index
-# MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
-#                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
 # Sections to check in the IEM file created by user
 SECTIONS_IN_IEM_SAMPLE_SHEET = ["[Header]", "[Reads]", "[Settings]", "[Data]"]
@@ -594,8 +558,6 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5 = [
     "Description",
 ]
 
-# HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description']
-
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 
@@ -815,7 +777,7 @@ ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = [
 ERROR_NO_SAMPLES_SELECTED = ["They were not selected any Sample on your request"]
 
 ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
-    "There are no results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
+    "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
 ]
 
 # ########################  Sequencer errors #####################################
@@ -869,17 +831,17 @@ EMAIL_CONFIGURATION_FIELDS = [
 
 # ############### SAMBA CONFIGURATION FIELDS ###############################
 SAMBA_CONFIGURATION_FIELDS = [
-    "SAMBA_USER_ID",
-    "SAMBA_USER_PASSWORD",
-    "SAMBA_SHARED_FOLDER_NAME",
-    "SAMBA_APPLICATION_FOLDER_NAME",
-    "SAMBA_REMOTE_SERVER_NAME",
-    "SAMBA_NTLM_USED",
-    "SAMBA_IP_SERVER",
-    "SAMBA_HOST_NAME",
-    "SAMBA_PORT_SERVER",
-    "IS_DIRECT_TCP",
-    "SAMBA_DOMAIN",
+    "user_id",
+    "user_password",
+    "shared_folder_name",
+    "samba_folder_name",
+    "remote_server_name",
+    "ntlm_used",
+    "ip_server",
+    "host_name",
+    "port_server",
+    "is_direct_tcp",
+    "domain",
 ]
 
 # ######## PROJECT HEADING  #########################################
