@@ -18,7 +18,7 @@ from iSkyLIMS_core.utils.common import (
     save_inital_sample_setting_value,
     send_test_email,
 )
-from iSkyLIMS_core.utils.load_batch_samples import *
+from iSkyLIMS_core.utils.load_batch import *
 from iSkyLIMS_core.utils.platforms import get_defined_platforms_and_ids
 from iSkyLIMS_core.utils.protocols import display_protocol_list
 from iSkyLIMS_core.utils.samples import *

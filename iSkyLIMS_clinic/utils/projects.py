@@ -1,6 +1,6 @@
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_core.models import PatientProjectFieldValue
-from iSkyLIMS_core.utils.patient_core import *
+from iSkyLIMS_core.utils.patient import *
 from iSkyLIMS_core.utils.patient_projects import *
 
 

@@ -34,7 +34,7 @@ from .serializers import (
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from .utils.lab_request import get_laboratory_instance
+from .utils.lab import get_laboratory_instance
 
 from .utils.sample import (
     collect_statistics_information,
