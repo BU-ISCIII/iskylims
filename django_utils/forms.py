@@ -12,10 +12,10 @@ class ProfileCreationForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = [
-            "profilePosition",
-            "profileCenter",
-            "profileArea",
-            "profileExtension",
+            "profile_position",
+            "profile_center",
+            "profile_area",
+            "profile_extension",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -25,9 +25,9 @@ class ProfileCreationForm(forms.ModelForm):
         self.helper.form_method = "POST"
         self.helper.form_tag = False
         self.helper.csrf = False
-        self.fields["profilePosition"].required = True
-        self.fields["profileCenter"].required = True
-        self.fields["profileArea"].required = True
+        self.fields["profile_position"].required = True
+        self.fields["profile_center"].required = True
+        self.fields["profile_area"].required = True
 
         self.helper.layout = layout.Layout(
             layout.Div(
