@@ -1284,7 +1284,7 @@ def get_samples_in_defined_state(user):
             sample_state__sample_state_name__exact="Defined"
         ).exists():
             samples_obj = (
-                Samples.objects.filter(sample_state__sample_state_same__exact="Defined")
+                Samples.objects.filter(sample_state__sample_state_name__exact="Defined")
                 .order_by("sample_user")
                 .order_by("sample_entry_date")
             )
@@ -1773,7 +1773,6 @@ def record_molecules(form_data, user, app_name):
             number_code += 1
             molecule_code_id = code_split.group(1) + str(number_code)
         else:
-            protocol_used = protocol_used.replace(" ", "-")
             molecule_code_id = sample_obj.get_sample_code() + "_E1"
 
         molecule_used = molecule_json_data[row_index][

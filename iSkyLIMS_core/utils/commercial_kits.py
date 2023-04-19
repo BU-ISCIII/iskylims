@@ -1,7 +1,3 @@
-from datetime import date
-
-from django.contrib.auth.models import User
-
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.protocols import get_protocol_obj_from_name
@@ -98,7 +94,9 @@ def get_data_for_commercial_kits(platform):
     if platform != "":
         if CommercialKits.objects.all().exclude(platform_kits=None).exists():
             kits = (
-                CommercialKits.objects.all().exclude(platform_kits=None).order_by("name")
+                CommercialKits.objects.all()
+                .exclude(platform_kits=None)
+                .order_by("name")
             )
             data_commercial_kits["platform"] = {}
             data_commercial_kits["platform"]["data"] = {}
@@ -195,7 +193,7 @@ def get_expired_lot_user_kit(register_user_obj):
             data_kit.append(user_kit.get_lot_number())
             data_kit.append(user_kit.get_expiration_date())
             data_kit.append(user_kit.get_number_of_uses())
-            if not c_kit in user_expired_kits["data"]:
+            if c_kit not in user_expired_kits["data"]:
                 user_expired_kits["data"][c_kit] = []
             user_expired_kits["data"][c_kit].append(data_kit)
     user_expired_kits["headings"] = HEADING_FOR_RUNOUT_USER_LOT_INVENTORY
@@ -235,7 +233,7 @@ def get_valid_lot_user_kit(register_user_obj):
             data_kit.append(user_kit.get_expiration_date())
             data_kit.append(user_kit.get_number_of_uses())
             data_kit.append(user_kit.get_user_lot_kit_id())
-            if not c_kit in valid_kits["data"]:
+            if c_kit not in valid_kits["data"]:
                 valid_kits["data"][c_kit] = []
             valid_kits["data"][c_kit].append(data_kit)
         valid_kits["headings"] = HEADING_FOR_USER_LOT_INVENTORY
@@ -266,7 +264,7 @@ def get_lot_commercial_kits(protocol_obj):
     if CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
         commercial_kits = CommercialKits.objects.filter(protocol_kits=protocol_obj)
         if UserLotCommercialKits.objects.filter(
-            based_commercial__in=commercial_kits, runOut=False
+            based_commercial__in=commercial_kits, run_out=False
         ).exists():
             user_kits = UserLotCommercialKits.objects.filter(
                 based_commercial__in=commercial_kits, run_out=False
@@ -288,7 +286,6 @@ def get_lot_reagent_from_comercial_kit(configuration_name):
     """
     user_commercial_list = []
     user_conf_kit_list = []
-    commercial_kit_names = []
     if CommercialKits.objects.filter(name__exact=configuration_name).exists():
         commercial_obj = CommercialKits.objects.filter(
             name__exact=configuration_name
@@ -463,7 +460,7 @@ def store_commercial_kit(kit_data):
         commercial_kit_values["platform"] = kit_data["platform"]
 
     new_kit = CommercialKits.objects.create_commercial_kit(commercial_kit_values)
-    if not "platform" in kit_data:
+    if "platform" not in kit_data:
         for protocol in kit_data.getlist("protocol"):
             new_kit.protocol_kits.add(get_protocol_obj_from_name(protocol))
     return new_kit
