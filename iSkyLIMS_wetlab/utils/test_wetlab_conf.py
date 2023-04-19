@@ -8,7 +8,7 @@ from django.conf import settings
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.utils.common import *
 from iSkyLIMS_wetlab.utils.crontab_process import *
-from iSkyLIMS_wetlab.utils.crontab_update_run_state import *
+from iSkyLIMS_wetlab.utils.crontab_update_run import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 

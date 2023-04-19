@@ -4,7 +4,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from ..fusioncharts.fusioncharts import FusionCharts
-from .stats_graphics import *
+from .stats_graphs import *
 
 
 def get_codeID_for_resequencing(sample_recorded):

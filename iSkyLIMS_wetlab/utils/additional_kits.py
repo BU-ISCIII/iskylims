@@ -3,7 +3,7 @@ import json
 from iSkyLIMS_core.models import CommercialKits, Protocols, ProtocolType, UserLotCommercialKits
 from iSkyLIMS_core.utils.protocols import get_protocol_obj_from_id
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_wetlab.utils.library_preparation import get_lib_prep_obj_from_id
+from iSkyLIMS_wetlab.utils.library import get_lib_prep_obj_from_id
 from iSkyLIMS_wetlab.wetlab_config import *
 
 

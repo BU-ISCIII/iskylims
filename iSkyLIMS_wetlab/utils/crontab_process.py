@@ -13,7 +13,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from .common import *
-from .sample_sheet_utils import *
+from .samplesheet import *
 
 ############################
 # CRONTAB COMMON FUNCTIONS #

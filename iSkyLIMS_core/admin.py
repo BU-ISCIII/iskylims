@@ -208,7 +208,7 @@ class UserLotCommercialKitsAdmin(admin.ModelAdmin):
         "user",
         "based_commercial",
         "run_out",
-        "use_number",
+        "uses_number",
         "chip_lot",
         "latest_used_date",
         "expiration_date",

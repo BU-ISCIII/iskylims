@@ -27,18 +27,18 @@ from iSkyLIMS_wetlab import wetlab_config
 from .fusioncharts.fusioncharts import FusionCharts
 from .models import *
 from .utils.additional_kits import *
-from .utils.collection_index_functions import *
+from .utils.collection_index import *
 from .utils.common import *
-from .utils.fetching_information import *
-from .utils.library_preparation import *
-from .utils.pool_preparation import *
-from .utils.run_preparation import *
-from .utils.sample_functions import *
-from .utils.sample_sheet_utils import *
+from .utils.fetch_info import *
+from .utils.library import *
+from .utils.pool import *
+from .utils.run import *
+from .utils.sample import *
+from .utils.samplesheet import *
 from .utils.sequencers import *
 from .utils.statistics import *
-from .utils.stats_graphics import *
-from .utils.testing_wetlab_configuration import *
+from .utils.stats_graphs import *
+from .utils.test_wetlab_conf import *
 
 
 def index(request):

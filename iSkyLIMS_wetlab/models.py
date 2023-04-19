@@ -299,7 +299,7 @@ class RunProcess(models.Model):
 
 class LibraryKit(models.Model):
     library_name = models.CharField(max_length=125)
-    generate_dat = models.DateTimeField(auto_now_add=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "wetlab_library_kit"
@@ -328,7 +328,7 @@ class ProjectsManager(models.Manager):
 
 class Projects(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    LibraryKit_id = models.ForeignKey(
+    library_kit_id = models.ForeignKey(
         LibraryKit, on_delete=models.CASCADE, null=True, blank=True
     )
     run_process = models.ManyToManyField(RunProcess)
@@ -337,7 +337,7 @@ class Projects(models.Model):
     project_name = models.CharField(max_length=45)
     library_kit = models.CharField(max_length=125, null=True, blank=True)
     base_space_file = models.CharField(max_length=255, null=True, blank=True)
-    generate_dat = models.DateTimeField(auto_now_add=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
     project_run_date = models.DateField(auto_now=False, null=True, blank=True)
 
     class Meta:
@@ -358,7 +358,7 @@ class Projects(models.Model):
         else:
             projectdate = self.project_run_date.strftime("%B %d, %Y")
         p_info = []
-        p_info.append(self.generate_dat.strftime("%B %d, %Y"))
+        p_info.append(self.generated_at.strftime("%B %d, %Y"))
         p_info.append(projectdate)
         return p_info
 
@@ -594,7 +594,7 @@ class StatsRunSummary(models.Model):
     error_rate = models.CharField(max_length=10)
     intensity_cycle = models.CharField(max_length=10)
     bigger_q30 = models.CharField(max_length=10)
-    generate_dat = models.DateTimeField(auto_now_add=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
     stats_summary_run_date = models.DateField(auto_now=False, null=True)
 
     class Meta:
@@ -665,7 +665,7 @@ class StatsRunRead(models.Model):
     error_rate_75 = models.CharField(max_length=40)
     error_rate_100 = models.CharField(max_length=40)
     intensity_cycle = models.CharField(max_length=40)
-    generate_dat = models.DateTimeField(auto_now_add=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
     stats_read_run_date = models.DateField(auto_now=False, null=True)
 
     class Meta:
@@ -1071,12 +1071,12 @@ class CollectionIndexKit(models.Model):
     collection_index_name = models.CharField(max_length=125)
     version = models.CharField(max_length=80, null=True)
     plate_extension = models.CharField(max_length=125, null=True)
-    adapter1 = models.CharField(max_length=125, null=True)
-    adapter2 = models.CharField(max_length=125, null=True)
+    adapter_1 = models.CharField(max_length=125, null=True)
+    adapter_2 = models.CharField(max_length=125, null=True)
     collection_index_file = models.FileField(
         upload_to=wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY
     )
-    generate_dat = models.DateTimeField(auto_now_add=True, null=True)
+    generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         db_table = "wetlab_collection_index_kit"
@@ -1091,15 +1091,15 @@ class CollectionIndexKit(models.Model):
         return "%s" % (self.pk)
 
     def get_collection_index_information(self):
-        if self.adapter2 == "":
+        if self.adapter_2 == "":
             adapter2 = "Not used on this collection"
         else:
-            adapter2 = self.adapter2
+            adapter2 = self.adapter_2
         collection_info = []
         collection_info.append(self.collection_index_name)
         collection_info.append(self.version)
         collection_info.append(self.plate_extension)
-        collection_info.append(self.adapter1)
+        collection_info.append(self.adapter_1)
         collection_info.append(adapter2)
         collection_info.append(self.collection_index_file)
         return collection_info
@@ -1135,7 +1135,7 @@ class CollectionIndexValues(models.Model):
         return "%s" % (self.collection_index_kit_id.get_collection_index_name())
 
 
-class libPreparationUserSampleSheetManager(models.Manager):
+class LibPreparationUserSampleSheetManager(models.Manager):
     def create_lib_prep_user_sample_sheet(self, user_sample_sheet_data):
         register_user_obj = User.objects.get(
             username__exact=user_sample_sheet_data["user"]
@@ -1170,7 +1170,7 @@ class libPreparationUserSampleSheetManager(models.Manager):
         return new_lib_prep_user_sample_sheet
 
 
-class libUserSampleSheet(models.Model):
+class LibUserSampleSheet(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     collection_index_kit_id = models.ForeignKey(
@@ -1184,11 +1184,11 @@ class libUserSampleSheet(models.Model):
     sample_sheet = models.FileField(
         upload_to=wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
     )
-    generate_dat = models.DateTimeField(auto_now_add=True, null=True)
+    generated_at = models.DateTimeField(auto_now_add=True, null=True)
     application = models.CharField(max_length=70, null=True, blank=True)
     instrument = models.CharField(max_length=70, null=True, blank=True)
-    adapter1 = models.CharField(max_length=70, null=True, blank=True)
-    adapter2 = models.CharField(max_length=70, null=True, blank=True)
+    adapter_1 = models.CharField(max_length=70, null=True, blank=True)
+    adapter_2 = models.CharField(max_length=70, null=True, blank=True)
     assay = models.CharField(max_length=70, null=True, blank=True)
     reads = models.CharField(max_length=10, null=True, blank=True)
     confirmed_used = models.BooleanField(default=False)
@@ -1206,7 +1206,7 @@ class libUserSampleSheet(models.Model):
     def get_adapters(self):
         adapters = []
         adapters.append(self.adapter1)
-        adapters.append(self.adapter2)
+        adapters.append(self.adapter_2)
         return adapters
 
     def get_collection_index_kit(self):
@@ -1237,7 +1237,7 @@ class libUserSampleSheet(models.Model):
         s_s_data.append(self.application)
         s_s_data.append(self.instrument)
         s_s_data.append(self.adapter1)
-        s_s_data.append(self.adapter2)
+        s_s_data.append(self.adapter_2)
         s_s_data.append(self.assay)
         s_s_data.append(self.reads.split(",")[0])
         return s_s_data
@@ -1247,7 +1247,7 @@ class libUserSampleSheet(models.Model):
         self.save()
         return self
 
-    objects = libPreparationUserSampleSheetManager()
+    objects = LibPreparationUserSampleSheetManager()
 
 
 class PoolStates(models.Model):
@@ -1380,7 +1380,7 @@ class LibPrepareStates(models.Model):
         return "%s" % (self.lib_prep_state)
 
 
-class libPrepareManager(models.Manager):
+class LibPrepareManager(models.Manager):
     def create_lib_preparation(self, lib_prep_data):
         register_user_obj = User.objects.get(
             username__exact=lib_prep_data["registerUser"]
@@ -1423,7 +1423,7 @@ class LibPrepare(models.Model):
     )
 
     user_sample_sheet = models.ForeignKey(
-        libUserSampleSheet, on_delete=models.CASCADE, null=True, blank=True
+        LibUserSampleSheet, on_delete=models.CASCADE, null=True, blank=True
     )
 
     pools = models.ManyToManyField(LibraryPool, blank=True)
@@ -1695,7 +1695,7 @@ class LibPrepare(models.Model):
         self.save()
         return self
 
-    objects = libPrepareManager()
+    objects = LibPrepareManager()
 
 
 class LibParameterValueManager(models.Manager):
