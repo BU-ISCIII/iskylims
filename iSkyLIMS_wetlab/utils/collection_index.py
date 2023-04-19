@@ -332,7 +332,7 @@ def store_collection_kits_file(collection_file):
     # using the MEDIA_ROOT variable defined on settings to upload the file
     file_name = os.path.join(index_directory, str(f_name + "_" + timestr + f_extension))
     fs_index_lib.save(file_name, collection_file)
-    saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
+    saved_file = os.path.join(file_name)
 
     return saved_file
 
@@ -344,13 +344,14 @@ def store_collection_settings(collection_settings, file_name):
         collection_settings["adapters"] = [""] * 2
     elif len(collection_settings["adapters"]) == 1:
         collection_settings["adapters"].append("")
+    import pdb; pdb.set_trace()
     new_collection_settings = CollectionIndexKit(
-        collectionIndexName=collection_settings["name"],
+        collection_index_name=collection_settings["name"],
         version=collection_settings["version"],
-        plateExtension=collection_settings["plate_extension"],
-        adapter1=collection_settings["adapters"][0],
-        adapter2=collection_settings["adapters"][1],
-        collectionIndexFile=file_name,
+        plate_extension=collection_settings["plate_extension"],
+        adapter_1=collection_settings["adapters"][0],
+        adapter_2=collection_settings["adapters"][1],
+        collection_index_file=file_name,
     )
     new_collection_settings.save()
     return new_collection_settings
@@ -365,8 +366,8 @@ def store_collection_indexes(collection_index, new_collection_obj):
     # saving index values into database
     for row in collection_index:
         index_to_store = CollectionIndexValues(
-            collectionIndexKit_id=new_collection_obj,
-            defaultWell=row[0],
+            collection_index_kit_id=new_collection_obj,
+            default_well=row[0],
             index_7=row[1],
             i_7_seq=row[2],
             index_5=row[3],
