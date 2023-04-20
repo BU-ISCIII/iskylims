@@ -116,7 +116,9 @@ def send_delivery_service_email(email_data):
 
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(
+            configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
+        )
         .last()
         .get_configuration_value()
     )

@@ -6,8 +6,8 @@ from iSkyLIMS_drylab.models import (
     Resolution,
     RequestedSamplesInServices,
     Delivery,
-    Pipelines
-    )
+    Pipelines,
+)
 
 
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):
@@ -21,42 +21,51 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
             "execution_end_date",
             "permanent_used_space",
             "temporary_used_space",
-            "deliveryNotes"
-            ]
+            "deliveryNotes",
+        ]
 
 
 class UpdateResolutionStateSerializer(serializers.ModelSerializer):
-    #resolution_state = serializers.StringRelatedField(many=False)
+    # resolution_state = serializers.StringRelatedField(many=False)
 
     class Meta:
         model = Resolution
 
-        fields = ["resolutionNumber", "resolutionOnInProgressDate", "resolutionDeliveryDate","resolution_state"]
+        fields = [
+            "resolutionNumber",
+            "resolutionOnInProgressDate",
+            "resolutionDeliveryDate",
+            "resolution_state",
+        ]
 
     def update(self, instance, validated_data):
         instance.resolutionNumber = validated_data["resolutionNumber"]
         instance.resolution_state = validated_data["resolution_state"]
         if "resolutionOnInProgressDate" in validated_data:
-            instance.resolutionOnInProgressDate = validated_data["resolutionOnInProgressDate"]
+            instance.resolutionOnInProgressDate = validated_data[
+                "resolutionOnInProgressDate"
+            ]
         if "resolutionDeliveryDate" in validated_data:
             instance.resolutionDeliveryDate = validated_data["resolutionDeliveryDate"]
         instance.save()
         return instance
 
-class UpdateServiceStateSerializer(serializers.ModelSerializer):
 
+class UpdateServiceStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
 
         fields = ["service_request_number", "service_delivered_date", "serviceStatus"]
 
+
 class ProfileUserSerializer(serializers.ModelSerializer):
-    profileClassificationArea= serializers.StringRelatedField()
+    profileClassificationArea = serializers.StringRelatedField()
     profileCenter = serializers.StringRelatedField()
 
     class Meta:
         model = Profile
         fields = ["profileClassificationArea", "profileCenter"]
+
 
 class UserIDSerializer(serializers.ModelSerializer):
     profile = ProfileUserSerializer(many=False)
@@ -64,6 +73,7 @@ class UserIDSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email", "profile"]
+
 
 class CustomAvailableServiceField(serializers.RelatedField):
     def to_representation(self, service):
@@ -74,21 +84,19 @@ class CustomAvailableServiceField(serializers.RelatedField):
             data["serviceId"] = None
         return data
 
-class PipelinesSerializer(serializers.ModelSerializer):
 
+class PipelinesSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Pipelines
-        fields = [
-            "pipeline_name",
-            "pipeline_version"
-        ]
+        model = Pipelines
+        fields = ["pipeline_name", "pipeline_version"]
+
 
 class DeliverySerializer(serializers.ModelSerializer):
     delivery_resolutionID = serializers.StringRelatedField(many=False)
     pipelines_in_delivery = PipelinesSerializer(many=True)
 
     class Meta:
-        model= Delivery
+        model = Delivery
         fields = [
             "delivery_resolutionID",
             "pipelines_in_delivery",
@@ -97,11 +105,12 @@ class DeliverySerializer(serializers.ModelSerializer):
             "execution_end_date",
             "permanent_used_space",
             "temporary_used_space",
-            "deliveryNotes"
-    ]
+            "deliveryNotes",
+        ]
+
 
 class ResolutionSerializer(serializers.ModelSerializer):
-    resolution_state=serializers.StringRelatedField(many=False)
+    resolution_state = serializers.StringRelatedField(many=False)
     resolution_pipelines = serializers.StringRelatedField(many=True)
     available_services = CustomAvailableServiceField(many=True, read_only=True)
     resolution_serviceID = serializers.StringRelatedField(many=False)
@@ -122,8 +131,9 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "resolutionNotes",
             "resolutionPipelines",
             "availableServices",
-            "delivery"
-            ]
+            "delivery",
+        ]
+
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -132,7 +142,6 @@ class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
 
 
 class ServiceListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Service
         fields = [
@@ -140,7 +149,8 @@ class ServiceListSerializer(serializers.ModelSerializer):
             "serviceStatus",
             "service_created_date",
             "service_delivered_date",
-            ]
+        ]
+
 
 class ServiceSerializer(serializers.ModelSerializer):
     serviceFileExt = serializers.StringRelatedField(many=False)
@@ -162,5 +172,5 @@ class ServiceSerializer(serializers.ModelSerializer):
             "serviceFileExt",
             "service_notes",
             "resolutions",
-            "samples"
-            ]
+            "samples",
+        ]
