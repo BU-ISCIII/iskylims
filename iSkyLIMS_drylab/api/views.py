@@ -42,6 +42,7 @@ from iSkyLIMS_drylab.utils.handling_deliveries import (
     send_delivery_service_email,
 )
 
+
 def check_valid_date_format(date):
     try:
         datetime.strptime(date, "%Y-%m-%d")
@@ -107,7 +108,8 @@ resolution_state_mand = openapi.Parameter(
 
 
 @swagger_auto_schema(
-    method="get", manual_parameters=[service_state_param, date_from_param, date_until_param]
+    method="get",
+    manual_parameters=[service_state_param, date_from_param, date_until_param],
 )
 @api_view(["GET"])
 def service_list(request):
@@ -161,7 +163,7 @@ def resolution_data(request):
         resolution = request.GET["resolution"].strip()
         if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
             resolution_obj = Resolution.objects.filter(
-            resolution_number__exact=resolution
+                resolution_number__exact=resolution
             ).last()
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -189,7 +191,9 @@ def samples_in_service(request):
             samples_in_service__service_request_number__iexact=request.GET["service"]
         ).exists():
             sample_objs = RequestedSamplesInServices.objects.filter(
-                samples_in_service__service_request_number__iexact=request.GET["service"]
+                samples_in_service__service_request_number__iexact=request.GET[
+                    "service"
+                ]
             )
             sample_serializers = RequestedSamplesInServicesSerializer(
                 sample_objs, many=True
@@ -201,19 +205,33 @@ def samples_in_service(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get", manual_parameters=[service_name_param, resolution_number_param])
+@swagger_auto_schema(
+    method="get", manual_parameters=[service_name_param, resolution_number_param]
+)
 @api_view(["GET"])
 def service_full_data(request):
     if "service" in request.GET:
         service = request.GET["service"].strip()
         service_obj = Service.objects.prefetch_related(
-            Prefetch('resolutions', queryset=Resolution.objects.all(), to_attr='filtered_resolutions')
+            Prefetch(
+                "resolutions",
+                queryset=Resolution.objects.all(),
+                to_attr="filtered_resolutions",
+            )
         )
     elif "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
-        service = Resolution.objects.filter(resolutionNumber__iexact= resolution).last().resolution_serviceID
+        service = (
+            Resolution.objects.filter(resolutionNumber__iexact=resolution)
+            .last()
+            .resolution_serviceID
+        )
         service_obj = Service.objects.prefetch_related(
-            Prefetch('resolutions', queryset=Resolution.objects.filter(resolutionNumber__iexact=resolution), to_attr='filtered_resolutions')
+            Prefetch(
+                "resolutions",
+                queryset=Resolution.objects.filter(resolutionNumber__iexact=resolution),
+                to_attr="filtered_resolutions",
+            )
         )
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -221,24 +239,25 @@ def service_full_data(request):
     if Service.objects.filter(service_request_number__iexact=service).exists():
         service_full_data = {}
 
-        service_obj = service_obj.filter(
-            service_request_number__iexact=service
-        ).last()
+        service_obj = service_obj.filter(service_request_number__iexact=service).last()
 
-        service_full_data = ServiceSerializer(
-            service_obj, many=False
-        ).data
+        service_full_data = ServiceSerializer(service_obj, many=False).data
         return Response(service_full_data, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @swagger_auto_schema(
     method="put", manual_parameters=[resolution_number_param, resolution_state_param]
 )
 @api_view(["PUT"])
 def update_state(request):
-    def all_resolutions_delivered(service,state):
-        if Resolution.objects.filter(resolution_serviceID=service).exclude(resolution_state=state).exists():
+    def all_resolutions_delivered(service, state):
+        if (
+            Resolution.objects.filter(resolution_serviceID=service)
+            .exclude(resolution_state=state)
+            .exists()
+        ):
             return False
         else:
             return True
@@ -255,7 +274,6 @@ def update_state(request):
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
             service_obj = resolution_obj.get_service_obj()
 
             email_data = {}
@@ -265,43 +283,48 @@ def update_state(request):
 
             if state == "In Progress":
                 data_resolution = {
-                    "resolutionNumber" : resolution,
-                    "resolution_state" : state_obj.pk,
-                    "resolutionOnInProgressDate" : datetime.today().strftime("%Y-%m-%d")
+                    "resolutionNumber": resolution,
+                    "resolution_state": state_obj.pk,
+                    "resolutionOnInProgressDate": datetime.today().strftime("%Y-%m-%d"),
                 }
                 data_service = {
-                    "service_request_number" : service_obj.service_request_number,
-                    "serviceStatus" : "in_progress"
+                    "service_request_number": service_obj.service_request_number,
+                    "serviceStatus": "in_progress",
                 }
                 # Send email in progress
                 send_resolution_in_progress_email(email_data)
 
             elif state == "Delivery":
                 data_resolution = {
-                    "resolutionNumber" : resolution,
-                    "resolution_state" : state_obj.pk,
-                    "resolutionDeliveryDate" : datetime.today().strftime("%Y-%m-%d")
+                    "resolutionNumber": resolution,
+                    "resolution_state": state_obj.pk,
+                    "resolutionDeliveryDate": datetime.today().strftime("%Y-%m-%d"),
                 }
                 data_service = {
-                    "service_request_number" : service_obj.service_request_number,
-                    "serviceStatus" : "delivered",
-                    "service_delivered_date" : datetime.today().strftime("%Y-%m-%d")
+                    "service_request_number": service_obj.service_request_number,
+                    "serviceStatus": "delivered",
+                    "service_delivered_date": datetime.today().strftime("%Y-%m-%d"),
                 }
-                    # Send email
+                # Send email
                 send_delivery_service_email(email_data)
 
-            resolution_serializer = UpdateResolutionStateSerializer(resolution_obj, data=data_resolution)
+            resolution_serializer = UpdateResolutionStateSerializer(
+                resolution_obj, data=data_resolution
+            )
             if resolution_serializer.is_valid(raise_exception=True):
                 resolution_serializer.save()
 
-            if (state=="Delivery" and all_resolutions_delivered(service_obj,state_obj)) or state=="In Progress":
-                serializer_services = UpdateServiceStateSerializer(service_obj,data=data_service)
+            if (
+                state == "Delivery"
+                and all_resolutions_delivered(service_obj, state_obj)
+            ) or state == "In Progress":
+                serializer_services = UpdateServiceStateSerializer(
+                    service_obj, data=data_service
+                )
                 if serializer_services.is_valid(raise_exception=True):
                     serializer_services.save()
 
-            return Response(
-                resolution_serializer.data, status=status.HTTP_200_OK
-            )
+            return Response(resolution_serializer.data, status=status.HTTP_200_OK)
 
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -315,28 +338,36 @@ def update_state(request):
         type=openapi.TYPE_OBJECT,
         properties={
             "resolutionNumber": openapi.Schema(
-                type=openapi.TYPE_STRING, description="resolutionNumber. pe. SRVCNM123.1"
+                type=openapi.TYPE_STRING,
+                description="resolutionNumber. pe. SRVCNM123.1",
             ),
             "pipelines_in_delivery": openapi.Schema(
-                type=openapi.TYPE_ARRAY, items = openapi.Items(type="string"), description="resolutionNumber. pe. ['viralrecon']"
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(type="string"),
+                description="resolutionNumber. pe. ['viralrecon']",
             ),
             "delivery_date": openapi.Schema(
                 type=openapi.TYPE_STRING, description="delivery date. pe. 2022-01-01"
             ),
             "executionStartDate": openapi.Schema(
-                type=openapi.TYPE_STRING, description="execution start date. pe. 2022-01-01"
+                type=openapi.TYPE_STRING,
+                description="execution start date. pe. 2022-01-01",
             ),
             "execution_end_date": openapi.Schema(
-                type=openapi.TYPE_STRING, description="execution end date. pe. 2022-01-01"
+                type=openapi.TYPE_STRING,
+                description="execution end date. pe. 2022-01-01",
             ),
             "permanent_used_space": openapi.Schema(
-                type=openapi.TYPE_INTEGER, description="permanent used space in GB. pe. 134"
+                type=openapi.TYPE_INTEGER,
+                description="permanent used space in GB. pe. 134",
             ),
             "temporary_used_space": openapi.Schema(
-                type=openapi.TYPE_INTEGER, description="temporary used space in GB. pe. SRVCNM123.1"
+                type=openapi.TYPE_INTEGER,
+                description="temporary used space in GB. pe. SRVCNM123.1",
             ),
             "deliveryNotes": openapi.Schema(
-                type=openapi.TYPE_INTEGER, description="delivery notes with brief results description."
+                type=openapi.TYPE_INTEGER,
+                description="delivery notes with brief results description.",
             ),
         },
     ),
@@ -351,17 +382,26 @@ def create_delivery(request):
         if isinstance(data, QueryDict):
             data = data.dict()
 
-        resolution_pk = Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"]).last().pk
+        resolution_pk = (
+            Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"])
+            .last()
+            .pk
+        )
 
         if "pipelines_in_delivery" in data:
-            pipelines = [ Pipelines.objects.filter(pipeline_name__exact=pip).last().pk for pip in data["pipelines_in_delivery"]]
+            pipelines = [
+                Pipelines.objects.filter(pipeline_name__exact=pip).last().pk
+                for pip in data["pipelines_in_delivery"]
+            ]
             data["pipelines_in_delivery"] = pipelines
 
         data.pop("resolutionNumber")
         data["delivery_resolutionID"] = resolution_pk
 
         if Delivery.objects.filter(delivery_resolutionID__exact=resolution_pk).exists():
-            delivery_obj = Delivery.objects.filter(delivery_resolutionID__exact=resolution_pk).last()
+            delivery_obj = Delivery.objects.filter(
+                delivery_resolutionID__exact=resolution_pk
+            ).last()
             serializer = CreateDeliveryPostSerializer(delivery_obj, data=data)
         else:
             serializer = CreateDeliveryPostSerializer(data=data)

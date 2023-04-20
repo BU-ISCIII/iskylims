@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-from django_utils.models import Profile,Center
+from django_utils.models import Profile, Center
 from django.contrib.auth.models import User
 
 from iSkyLIMS_core.models import SequencingPlatform
@@ -24,6 +24,7 @@ STATUS_CHOICES = (
     ("delivered", _("Delivered")),
     ("archived", _("Archived")),
 )
+
 
 def service_files_upload(instance, filename):
     now = timezone_now()
@@ -79,7 +80,9 @@ class ResolutionStates(models.Model):
 
 
 class AvailableService(MPTTModel):
-    avail_service_description = models.CharField(_("Available services"), max_length=100)
+    avail_service_description = models.CharField(
+        _("Available services"), max_length=100
+    )
     parent = TreeForeignKey("self", models.SET_NULL, null=True, blank=True)
     service_in_use = models.BooleanField(default=True)
     serviceId = models.CharField(max_length=40, null=True, blank=True)
@@ -543,10 +546,10 @@ class ResolutionManager(models.Manager):
         new_resolution = self.create(
             resolution_serviceID=resolution_serviceID,
             resolution_asigned_user=resolution_asigned_user,
-        resolution_number=resolution_data["resolutionNumber"],
-        resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
-        resolution_queued_date=date.today(),
-        resolution_notes=resolution_data["resolutionNotes"],
+            resolution_number=resolution_data["resolutionNumber"],
+            resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
+            resolution_queued_date=date.today(),
+            resolution_notes=resolution_data["resolutionNotes"],
             resolution_full_number=resolution_data["resolution_full_number"],
             resolution_state=state,
         )
@@ -580,7 +583,9 @@ class Resolution(models.Model):
     resolution_in_progress_date = models.DateField(
         auto_now_add=False, null=True, blank=True
     )
-    resolution_delivery_date = models.DateField(auto_now_add=False, null=True, blank=True)
+    resolution_delivery_date = models.DateField(
+        auto_now_add=False, null=True, blank=True
+    )
     resolution_notes = models.TextField(
         _("Resolution notes"), max_length=1000, null=True, blank=True
     )
@@ -805,8 +810,8 @@ class DeliveryManager(models.Manager):
     def create_delivery(self, delivery_data):
         new_delivery = self.create(
             delivery_resolutionID=delivery_data["delivery_resolutionID"],
-        delivery_notes=delivery_data["deliveryNotes"],
-        execution_start_date=delivery_data["executionStartDate"],
+            delivery_notes=delivery_data["deliveryNotes"],
+            execution_start_date=delivery_data["executionStartDate"],
             execution_end_date=delivery_data["execution_end_date"],
             execution_time=delivery_data["execution_time"],
             permanent_used_space=delivery_data["permanent_used_space"],
@@ -852,7 +857,8 @@ class Delivery(models.Model):
 class ConfigSettingManager(models.Manager):
     def create_config_setting(self, configuration_name, configuration_value):
         new_config_settings = self.create(
-            configuration_name=configuration_name, configuration_value=configuration_value
+            configuration_name=configuration_name,
+            configuration_value=configuration_value,
         )
         return new_config_settings
 

@@ -2,8 +2,10 @@ from django.contrib import admin
 from iSkyLIMS_drylab.models import *
 from django_mptt_admin.admin import DjangoMpttAdmin
 
+
 class ResolutionStatesAdmin(admin.ModelAdmin):
     list_display = ["state_value"]
+
 
 class ServiceStateAdmin(admin.ModelAdmin):
     list_display = ["state_value", "state_display", "description", "show_in_stats"]
@@ -78,7 +80,12 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 
 class PipelinesManager(admin.ModelAdmin):
-    list_display = ["pipeline_name", "pipeline_version", "pipeline_in_use", "pipeline_file"]
+    list_display = [
+        "pipeline_name",
+        "pipeline_version",
+        "pipeline_in_use",
+        "pipeline_file",
+    ]
 
 
 class ParameterPipelineManager(admin.ModelAdmin):

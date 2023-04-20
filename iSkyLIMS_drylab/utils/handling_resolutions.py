@@ -181,7 +181,9 @@ def get_add_resolution_data_form(form_data):
         form_data["resolutionEstimatedDate"], "%Y-%m-%d"
     ).date()
     resolution_data_form["acronymName"] = form_data["acronymName"]
-    resolution_data_form["resolution_asigned_user"] = form_data["resolution_asigned_user"]
+    resolution_data_form["resolution_asigned_user"] = form_data[
+        "resolution_asigned_user"
+    ]
     resolution_data_form["serviceAccepted"] = form_data["serviceAccepted"]
     resolution_data_form["resolutionNotes"] = form_data["resolutionNotes"]
 
@@ -448,7 +450,9 @@ def send_resolution_creation_email(email_data):
         )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(
+            configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
+        )
         .last()
         .get_configuration_value()
     )
@@ -498,7 +502,9 @@ def send_resolution_in_progress_email(email_data):
     )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(
+            configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
+        )
         .last()
         .get_configuration_value()
     )
@@ -525,7 +531,6 @@ def store_resolution_additional_parameter(additional_parameters, resolution_obj)
     """
 
     for additional_parameter in additional_parameters:
-
         parameter = {}
         parameter["resolution"] = resolution_obj
         for field in drylab_config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:

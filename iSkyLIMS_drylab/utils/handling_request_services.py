@@ -461,7 +461,9 @@ def get_projects_in_requested_samples(service_obj):
         project_unique_list
     """
     project_unique_list = []
-    if RequestedSamplesInServices.objects.filter(samples_in_service=service_obj).exists():
+    if RequestedSamplesInServices.objects.filter(
+        samples_in_service=service_obj
+    ).exists():
         project_list = []
         req_sample_objs = RequestedSamplesInServices.objects.filter(
             samples_in_service=service_obj
@@ -482,7 +484,9 @@ def get_run_in_requested_samples(service_obj):
         run_unique_list
     """
     run_unique_list = []
-    if RequestedSamplesInServices.objects.filter(samples_in_service=service_obj).exists():
+    if RequestedSamplesInServices.objects.filter(
+        samples_in_service=service_obj
+    ).exists():
         run_list = []
         req_sample_objs = RequestedSamplesInServices.objects.filter(
             samples_in_service=service_obj
@@ -722,7 +726,9 @@ def get_service_information(service_id, service_manager):
         if service_obj.get_service_state(None) == "in_progress":
             if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
                 resolution_id = (
-                    Resolution.objects.filter(resolution_serviceID=service_obj).last().id
+                    Resolution.objects.filter(resolution_serviceID=service_obj)
+                    .last()
+                    .id
                 )
                 display_service_details["add_delivery_action"] = resolution_id
 
@@ -929,7 +935,9 @@ def send_service_creation_confirmation_email(email_data):
     )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(configuration_name__exact="EMAIL_FOR_NOTIFICATIONS")
+        ConfigSetting.objects.filter(
+            configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
+        )
         .last()
         .get_configuration_value()
     )
@@ -956,8 +964,7 @@ def set_service_waiting_for_user(service_id):
         service_obj.update_service_state("waiting_information")
         return service_obj.get_service_request_number()
     return None
-        
-    
+
 
 def stored_samples_for_sequencing_request_service(form_data, new_service):
     """
