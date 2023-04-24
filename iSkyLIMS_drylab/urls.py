@@ -78,6 +78,7 @@ urlpatterns = [
     ),
     path("searchService", iSkyLIMS_drylab.views.search_service, name="search_service"),
     # path('service_request_<str:serviceRequestType>',views.service_request, name='service_request'),
+    path("serviceInWaitingInfo", iSkyLIMS_drylab.views.service_in_waiting_info, name="service_in_waiting_info"),
     path("statsByUser", iSkyLIMS_drylab.views.stats_by_user, name="stats_by_user"),
     path(
         "statsByServicesRequest",

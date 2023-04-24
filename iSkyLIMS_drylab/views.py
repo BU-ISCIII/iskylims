@@ -751,7 +751,7 @@ def service_in_waiting_info(request):
         # redirect to login webpage
         return redirect("/accounts/login")
     if request.method == "POST" and request.POST["action"] == "serviceInWaitingInfo":
-        service_name = set_service_waiting_for_user(request.POST["service_id"])
+        service_name = iSkyLIMS_drylab.utils.handling_request_services.set_service_waiting_for_user(request.POST["service_id"])
         if service_name is not None:
             return render(
                 request,
