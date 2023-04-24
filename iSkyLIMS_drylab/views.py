@@ -57,7 +57,7 @@ def index(request):
             s_info = ongoing_services_obj.get_service_name_and_center()
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list["ongoing"].append(s_info)
-    org_name = get_configuration_from_database("ORGANIZATION_NAME")
+    org_name = iSkyLIMS_drylab.utils.drylab_common_functions.get_configuration_from_database("ORGANIZATION_NAME")
     return render(
         request,
         "iSkyLIMS_drylab/index.html",
@@ -110,7 +110,7 @@ def request_sequencing_service(request):
                     request
                 )
             )
-            response = JSONResponse(data, mimetype="application/json")
+            response = iSkyLIMS_drylab.utils.handling_multiple_files.JSONResponse(data, mimetype="application/json")
             response["Content-Disposition"] = "inline; filename=files.json"
             return response
         else:
@@ -479,7 +479,7 @@ def search_service(request):
 
     if "iSkyLIMS_wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
-    if not is_service_manager(request):
+    if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
         services_search_list["username"] = request.user.username
 
     if request.method == "POST" and request.POST["action"] == "searchservice":
@@ -766,7 +766,7 @@ def service_in_waiting_info(request):
 @login_required
 def add_resolution(request):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
@@ -1154,7 +1154,7 @@ def stats_by_user(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    user_list = get_users_requested_services()
+    user_list = iSkyLIMS_drylab.utils.drylab_common_functions.get_users_requested_services()
     if request.method == "POST" and request.POST["action"] == "userStatistics":
         # validate the input data in the form
         user_id = request.POST["userID"]
@@ -1361,10 +1361,10 @@ def stats_by_services_request(request):
     if request.method == "POST" and request.POST["action"] == "serviceStatistics":
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
-        if start_date != "" and not check_valid_date_format(start_date):
+        if start_date != "" and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(start_date):
             return render(request, "iSkyLIMS_drylab/statsByServicesRequest.html")
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(end_date):
                 return render(request, "iSkyLIMS_drylab/statsByServicesRequest.html")
         else:
             end_date = date.today().strftime("%Y-%m-%d")
@@ -1963,7 +1963,7 @@ def upload_service_file_delete(request, file_id):
             file_id
         ):
             iSkyLIMS_drylab.utils.handling_multiple_files.delete_service_file(file_id)
-            response = JSONResponse(True, mimetype="application/json")
+            response = iSkyLIMS_drylab.utils.handling_multiple_files.JSONResponse(True, mimetype="application/json")
             response["Content-Disposition"] = "inline; filename=files.json"
 
             return response
