@@ -71,7 +71,7 @@
                                                             <tbody>
                                                                 {% for s_id, serv, user, c_date, res, handle, q_date, e_date  in values %}
                                                                     <tr>
-                                                                            <td><a href="/drylab/displayService={{ s_id }}">{{ serv }}</a> </td>
+                                                                            <td><a href="/drylab/display_service={{ s_id }}">{{ serv }}</a> </td>
                                                                             <td>{{user}}</td>
                                                                             <td>{{c_date}}</td>
                                                                             <td>{{res}}</td>
@@ -163,7 +163,7 @@
                                                     <tbody>
                                                         {% for s_id, s_name, res_name , s_acronym,  queued_date, estimated_date in user_pending_services.queued %}
                                                             <tr>
-                                                                <td><a href="/drylab/displayService={{ s_id }}">{{ s_name }}</a> </td>
+                                                                <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
                                                                 <td> {{ res_name }}</td>
                                                                 <td> {{ s_acronym }}</td>
                                                                 <td> {{ queued_date }}</td>
@@ -199,7 +199,7 @@
                                                     <tbody>
                                                         {% for s_id, s_name, res_name , s_acronym,  queued_date, estimated_date in user_pending_services.in_progress %}
                                                             <tr>
-                                                                <td><a href="/drylab/displayService={{ s_id }}">{{ s_name }}</a> </td>
+                                                                <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
                                                                 <td> {{ res_name }}</td>
                                                                 <td> {{ s_acronym }}</td>
                                                                 <td> {{ queued_date }}</td>
