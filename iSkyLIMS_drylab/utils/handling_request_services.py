@@ -763,7 +763,7 @@ def get_service_information(service_id, service_manager):
 
         display_service_details["piplelines_data"] = {}
         for resolution_obj in resolution_objs:
-            pipelines_objs = resolution_obj.resolutionPipelines.all()
+            pipelines_objs = resolution_obj.resolution_pipelines.all()
             if pipelines_objs:
                 for pipelines_obj in pipelines_objs:
                     pipeline_name = pipelines_obj.get_pipeline_name()

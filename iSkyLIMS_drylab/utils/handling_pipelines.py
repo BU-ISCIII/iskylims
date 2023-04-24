@@ -221,7 +221,7 @@ def get_pipelines_for_resolution(resolution_obj):
     """
     pipeline_data = {}
     pipeline_data["pipelines"] = []
-    pipeline_objs = resolution_obj.resolutionPipelines.all()
+    pipeline_objs = resolution_obj.resolution_pipelines.all()
     for pipeline_obj in pipeline_objs:
         pipeline_data["pipelines"].append(pipeline_obj.get_pipeline_info())
     if len(pipeline_data["pipelines"]) > 0:

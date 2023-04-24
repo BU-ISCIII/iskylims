@@ -137,10 +137,10 @@ def get_data_for_resolution(service_obj, resolution_obj):
     information["resolution_number"] = resolution_obj.get_resolution_number()
     information["requested_date"] = service_obj.get_service_creation_time()
     information["resolution_date"] = resolution_info[4]
-    if resolution_obj.availableServices.all() == ["None"]:
+    if resolution_obj.available_services.all() == ["None"]:
         information["nodes"] = service_obj.service_available_service.all()
     else:
-        information["nodes"] = resolution_obj.availableServices.all()
+        information["nodes"] = resolution_obj.available_services.all()
     user["name"] = service_obj.serviceUserId.first_name
     user["surname"] = service_obj.serviceUserId.last_name
 
@@ -261,7 +261,7 @@ def create_new_resolution(resolution_data_form):
     # Add selected available services to the new resolution
     for avail_sarvice in resolution_data_form["select_available_services"]:
         avail_service_obj = get_available_service_obj_from_id(avail_sarvice)
-        new_resolution.availableServices.add(avail_service_obj)
+        new_resolution.available_services.add(avail_service_obj)
 
     if "pipelines" in resolution_data_form:
         for pipeline in resolution_data_form["pipelines"]:
@@ -297,7 +297,7 @@ def create_new_resolution(resolution_data_form):
         service_obj.update_approved_date(date.today())
     else:
         service_obj.update_service_state("rejected")
-        service_obj.update_rejected_date(date.today())
+        service_obj.update_service_rejected_date(date.today())
 
     return new_resolution
 
