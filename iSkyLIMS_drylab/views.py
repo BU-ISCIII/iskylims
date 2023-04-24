@@ -376,7 +376,7 @@ def add_samples_in_service(request):
             "iSkyLIMS_drylab/addSamplesInService.html",
             {"service_data_information": service_data_information},
         )
-    return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
+    return redirect("/drylab/display_service=" + str(request.POST["service_id"]))
 
 
 @login_required
@@ -1088,7 +1088,7 @@ def add_delivery(request):
                 request.POST
             )
         )
-        resolution_obj = delivery_recorded["deliveryResolutionID"]
+        resolution_obj = delivery_recorded["delivery_resolutionID"]
         if delivery_recorded != None:
             email_data = {}
             email_data["user_email"] = request.user.email
