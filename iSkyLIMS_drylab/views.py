@@ -770,7 +770,7 @@ def add_resolution(request):
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
+                {"content": iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED},
             )
     else:
         # redirect to login webpage
@@ -779,7 +779,7 @@ def add_resolution(request):
         return render(
             request,
             "iSkyLIMS_drylab/error_page.html",
-            {"content": drylab_config.ERROR_SERVICE_ID_NOT_FOUND},
+            {"content": iSkyLIMS_drylab.drylab_config.ERROR_SERVICE_ID_NOT_FOUND},
         )
 
     if request.method == "POST" and request.POST["action"] == "addResolutionService":
@@ -1686,8 +1686,8 @@ def open_sessions(request):
         return redirect("")
 
     user_connected = {}
-    if get_current_users().exists():
-        user_list_connected = get_current_users()
+    if iSkyLIMS_drylab.utils.drylab_common_functions.get_current_users().exists():
+        user_list_connected = iSkyLIMS_drylab.utils.drylab_common_functions.get_current_users()
         user_data = []
         for user in user_list_connected:
             user_data.append(
