@@ -382,7 +382,7 @@ def add_samples_in_service(request):
             "iSkyLIMS_drylab/addSamplesInService.html",
             {"service_data_information": service_data_information},
         )
-    return redirect("/drylab/display_service=" + str(request.POST["service_id"]))
+    return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
 
 
 @login_required
@@ -416,7 +416,7 @@ def delete_samples_in_service(request):
             )
         if not "sampleId" in request.POST:
             return redirect(
-                "/drylab/display_service=" + str(request.POST["service_id"])
+                "/drylab/displayService=" + str(request.POST["service_id"])
             )
         deleted_samples = iSkyLIMS_drylab.utils.handling_request_services.delete_requested_samples_in_service(
             request.POST.getlist("sampleId")
@@ -432,7 +432,7 @@ def delete_samples_in_service(request):
             "iSkyLIMS_drylab/deleteSamplesInService.html",
             {"deleted_samples": deleted_samples, "service_data": service_data},
         )
-    return redirect("/drylab/display_service=" + str(request.POST["service_id"]))
+    return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
 
 
 @login_required
@@ -549,7 +549,7 @@ def search_service(request):
                 services_found = iSkyLIMS_drylab.models.Service.objects.get(
                     service_request_number__exact=service_number_request
                 )
-                redirect_page = "/drylab/display_service=" + str(services_found.id)
+                redirect_page = "/drylab/displayService=" + str(services_found.id)
                 return redirect(redirect_page)
             if iSkyLIMS_drylab.models.Service.objects.filter(
                 service_request_number__icontains=service_number_request
@@ -654,7 +654,7 @@ def search_service(request):
             )
         # If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1:
-            redirect_page = "/drylab/display_service=" + str(
+            redirect_page = "/drylab/displayService=" + str(
                 services_found[0].get_service_id()
             )
             return redirect(redirect_page)
