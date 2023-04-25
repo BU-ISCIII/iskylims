@@ -4,8 +4,8 @@ from django.http import HttpResponse
 import json
 
 # Local imports
-from iSkyLIMS_drylab.models import UploadServiceFile
-from iSkyLIMS_drylab import drylab_config
+import iSkyLIMS_drylab.models
+import iSkyLIMS_drylab.drylab_config
 
 
 # def response_mimetype(request):
@@ -62,13 +62,13 @@ def get_and_save_service_file(request):
             "deleteType": "DELETE",
         }
     ]
-    if request.FILES["file"].size > drylab_config.MAX_UPLOAD_SIZE:
+    if request.FILES["file"].size > iSkyLIMS_drylab.drylab_config.MAX_UPLOAD_SIZE:
         files[0]["errors"] = "maxFileSize"
-        files[0]["error_detail"] = drylab_config.ERROR_FILE_TOO_BIG
+        files[0]["error_detail"] = iSkyLIMS_drylab.drylab_config.ERROR_FILE_TOO_BIG
     else:
         # store the file
 
-        new_upload_file_obj = UploadServiceFile.objects.create_upload_file(file_data)
+        new_upload_file_obj = iSkyLIMS_drylab.models.UploadServiceFile.objects.create_upload_file(file_data)
         files[0]["file_id"] = new_upload_file_obj.get_upload_file_id()
         files[0]["deleteUrl"] = str(
             "upload_serviceFileDelete=" + new_upload_file_obj.get_upload_file_id()
@@ -88,8 +88,8 @@ def get_uploaded_files_for_service(service_obj):
         file_list with file stored on database
     """
     file_list = []
-    if UploadServiceFile.objects.filter(upload_service=service_obj).exists():
-        file_objs = UploadServiceFile.objects.filter(upload_service=service_obj)
+    if iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj).exists():
+        file_objs = iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj)
         for file_obj in file_objs:
             file_list.append(file_obj.get_upload_file_full_path_and_name())
     return file_list
@@ -105,8 +105,8 @@ def get_uploaded_files_and_file_name_for_service(service_obj):
         with file and file name stored  on database
     """
     file_list = []
-    if UploadServiceFile.objects.filter(upload_service=service_obj).exists():
-        file_objs = UploadServiceFile.objects.filter(upload_service=service_obj)
+    if iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj).exists():
+        file_objs = iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj)
         for file_obj in file_objs:
             file_list.append(
                 [
@@ -126,8 +126,8 @@ def update_upload_file_with_service(file_id, service_obj):
     Return:
         None
     """
-    if UploadServiceFile.objects.filter(pk__exact=file_id).exists():
-        UploadServiceFile.objects.get(pk__exact=file_id).update_service_id(service_obj)
+    if iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(pk__exact=file_id).exists():
+        iSkyLIMS_drylab.models.UploadServiceFile.objects.get(pk__exact=file_id).update_service_id(service_obj)
     return
 
 
@@ -141,7 +141,7 @@ def check_if_file_is_linked_to_service(file_id):
         True if file is used by a service
     """
     if (
-        UploadServiceFile.objects.filter(pk__exact=file_id)
+        iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(pk__exact=file_id)
         .exclude(upload_service=None)
         .exists()
     ):
@@ -158,6 +158,6 @@ def delete_service_file(file_id):
     Return:
         None
     """
-    if UploadServiceFile.objects.filter(pk__exact=file_id).exists():
-        UploadServiceFile.objects.filter(pk__exact=file_id).delete()
+    if iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(pk__exact=file_id).exists():
+        iSkyLIMS_drylab.models.UploadServiceFile.objects.filter(pk__exact=file_id).delete()
     return None
