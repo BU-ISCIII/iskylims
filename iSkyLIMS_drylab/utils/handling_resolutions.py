@@ -31,7 +31,7 @@ def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
         None
     """
     for pipeline_id in pipeline_ids:
-        resolution_obj.resolutionPipelines.add(get_pipeline_obj_from_id(pipeline_id))
+        resolution_obj.resolution_pipelines.add(get_pipeline_obj_from_id(pipeline_id))
 
     return None
 
