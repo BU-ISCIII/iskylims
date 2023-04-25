@@ -1,13 +1,10 @@
 # Generic imports
 import os
 from django.conf import settings
+import django.contrib.auth.models
 
 # Local imports
-from iSkyLIMS_drylab import drylab_config
 import iSkyLIMS_drylab.models
-
-from django.contrib.auth.models import User
-
 
 def get_config_file(config_file):
     c_file = []
@@ -61,15 +58,15 @@ def create_service_test(service_requested):
         delete_service.delete()
 
     # Check user is defined in database
-    if not User.objects.filter(username__exact="test_userDrylab").exists():
-        user = User.objects.create_user(
+    if not django.contrib.auth.models.User.objects.filter(username__exact="test_userDrylab").exists():
+        user = django.contrib.auth.models.User.objects.create_user(
             username="test_userDrylab",
             email="test_userDrylab@iSkyLIMS.com",
             password="test_userD",
         )
 
     try:
-        user_name = User.objects.get(username__exact="test_userDrylab")
+        user_name = django.contrib.auth.models.User.objects.get(username__exact="test_userDrylab")
         service_results.append(("User defined", "OK"))
     except:
         service_results.append(("User defined", "NOK"))
