@@ -84,7 +84,7 @@
                             <div class="col-sm-4">
                                 <select class="form-control" name="servicestate" id="servicestate">
                                     <option value="">Choose a value  </option>
-                                    {% for key, value in services_search_list.status %}
+                                    {% for key, value in services_search_list.states %}
                                         <option value="{{ key }}">{{value}}</option>
                                     {% endfor %}
                                 </select>

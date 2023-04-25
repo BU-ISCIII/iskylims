@@ -229,6 +229,31 @@ def get_available_service_obj_from_id(available_service_id):
         ).last()
     return avail_service_obj
 
+def get_available_service_states(add_internal_value=False):
+    """_summary_
+
+    Parameters
+    ----------
+    add_internal_value : bool, optional
+        _description_, by default False
+
+    Returns
+    -------
+    state_values : list
+        If add_internal_value is set to True returns a list of tuples when for 
+        each item the first value is the internal string and the second the
+        one to display
+        If False each item only contains the string to display
+    """    
+    if add_internal_value :
+        # include a tuple were the first index is the internal value and the
+        # second the one to display
+        state_values = list(iSkyLIMS_drylab.models.ServiceState.objects.all().values_list("state_value", "state_display"))
+    else :
+        # return only the display values in a list
+        state_values = list(iSkyLIMS_drylab.models.ServiceState.objects.all().values_list("state_display", flat=True))
+    return state_values
+
 
 def get_data_for_service_confirmation(service_requested):
     """
