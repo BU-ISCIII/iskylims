@@ -11,7 +11,7 @@ import django.contrib.auth.models
 import django_utils.models
 
 # Local imports
-from iSkyLIMS_drylab import drylab_config
+import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 
 
@@ -107,7 +107,7 @@ def increment_service_number(request_user):
             profileUserID=request_user
         ).profileCenter.centerAbbr
     except:
-        user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
+        user_center = iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
 
     if iSkyLIMS_drylab.models.Service.objects.filter(
