@@ -641,7 +641,7 @@ def search_service(request):
                 )
             service_list = []
             for samples_in_service in samples_in_services:
-                service_list.append(samples_in_service.samplesInService.pk)
+                service_list.append(samples_in_service.samples_in_service.pk)
             services_found = services_found.filter(pk__in=service_list)
         if len(services_found) == 0:
             error_message = (
