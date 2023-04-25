@@ -1453,7 +1453,7 @@ def stats_by_services_request(request):
             user_area_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if Profile.objects.filter(profileUserID=user_service_obj).exists():
+                if django_utils.models.Profile.objects.filter(profileUserID=user_service_obj).exists():
                     user_classification_area = Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_clasification_area()
@@ -1484,8 +1484,8 @@ def stats_by_services_request(request):
             user_center_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if Profile.objects.filter(profileUserID=user_service_obj).exists():
-                    user_center = Profile.objects.get(
+                if django_utils.models.Profile.objects.filter(profileUserID=user_service_obj).exists():
+                    user_center = django_utils.models.Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_profile_center_abbr()
                 else:
@@ -1527,8 +1527,8 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if Profile.objects.filter(profileUserID=user_service_obj).exists():
-                    user_center = Profile.objects.get(
+                if django_utils.models.Profile.objects.filter(profileUserID=user_service_obj).exists():
+                    user_center = django_utils.models.Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_profile_center_abbr()
                 else:
@@ -1573,8 +1573,8 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_id = service.serviceUserId.id
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if Profile.objects.filter(profileUserID=user_id).exists():
-                    user_area = Profile.objects.get(profileUserID=user_id).profileArea
+                if django_utils.models.Profile.objects.filter(profileUserID=user_id).exists():
+                    user_area = django_utils.models.Profile.objects.get(profileUserID=user_id).profileArea
                 else:
                     user_center = "Not defined"
                 if not date_service in time_values_dict:
