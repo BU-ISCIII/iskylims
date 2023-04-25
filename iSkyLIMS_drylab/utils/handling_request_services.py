@@ -13,7 +13,7 @@ import django.contrib.auth.models
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.utils
-# from iSkyLIMS_core.models import Samples, SequencingPlatform
+import iSkyLIMS_core.utils
 
 #### API from Wetlab ######
 try:
@@ -367,7 +367,7 @@ def get_pending_services_information():
         pending_services_details[stat_service] = info_for_stat_service
     pending_services_details["data"] = info_for_stat_service
 
-    data_source = graphic_3D_pie(
+    data_source = iSkyLIMS_drylab.utils.graphics.graphic_3D_pie(
         "Number of Pending Services", "", "", "", "fint", number_of_services
     )
     graphic_pending_services = FusionCharts(
