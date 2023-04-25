@@ -1,11 +1,9 @@
 # Generic imports
 import json
-from datetime import datetime
 import os
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.mail import send_mail
-from django_utils.fusioncharts.fusioncharts import FusionCharts
+import django.conf
+import django.core.mail
+import django_utils.fusioncharts.fusioncharts
 import django_utils.models
 import django.contrib.auth.models
 
@@ -17,7 +15,7 @@ import iSkyLIMS_core.utils
 
 #### API from Wetlab ######
 try:
-    from iSkyLIMS_wetlab.utils.api.wetlab_api import *
+    import iSkyLIMS_wetlab.utils.api.wetlab_api
 
     wetlab_api_available = True
 except:
@@ -38,7 +36,9 @@ def add_files_to_service(file_ids, service_obj):
     """
     for file_id in file_ids:
         if file_id != "undefined":
-            iSkyLIMS_drylab.utils.handling_multiple_files.update_upload_file_with_service(file_id, service_obj)
+            iSkyLIMS_drylab.utils.handling_multiple_files.update_upload_file_with_service(
+                file_id, service_obj
+            )
     return
 
 
@@ -111,13 +111,21 @@ def create_new_save_sequencing_service_request(request):
                 .profileCenter.get_center_name()
             )
         except:
-            service_data["service_seq_center"] = iSkyLIMS_drylab.drylab_config.INTERNAL_SEQUENCING_UNIT
+            service_data[
+                "service_seq_center"
+            ] = iSkyLIMS_drylab.drylab_config.INTERNAL_SEQUENCING_UNIT
 
     service_data["service_notes"] = request.POST["description"]
     service_data["serviceUserId"] = request_user
-    service_data["service_request_int"] = iSkyLIMS_drylab.utils.drylab_common_functions.increment_service_number(request_user)
+    service_data[
+        "service_request_int"
+    ] = iSkyLIMS_drylab.utils.drylab_common_functions.increment_service_number(
+        request_user
+    )
 
-    service_data["service_request_number"] = iSkyLIMS_drylab.utils.drylab_common_functions.create_service_id(
+    service_data[
+        "service_request_number"
+    ] = iSkyLIMS_drylab.utils.drylab_common_functions.create_service_id(
         service_data["service_request_int"], request_user
     )
 
@@ -157,15 +165,23 @@ def create_new_save_counseling_infrastructure_service_request(request):
     available_service_objs = []
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj_from_id(av_service))
-    service_data["service_seq_center"] = iSkyLIMS_drylab.drylab_config.INTERNAL_SEQUENCING_UNIT
+    service_data[
+        "service_seq_center"
+    ] = iSkyLIMS_drylab.drylab_config.INTERNAL_SEQUENCING_UNIT
     service_data["service_notes"] = request.POST["description"]
     service_data["service_run_specs"] = ""
     service_data["service_sequencing_platform"] = ""
     service_data["serviceFileExt"] = ""
     service_data["service_run_specs"] = ""
     service_data["serviceUserId"] = request.user
-    service_data["service_request_int"] = iSkyLIMS_drylab.utils.drylab_common_functions.increment_service_number(request.user.id)
-    service_data["service_request_number"] = iSkyLIMS_drylab.utils.drylab_common_functions.create_service_id(
+    service_data[
+        "service_request_int"
+    ] = iSkyLIMS_drylab.utils.drylab_common_functions.increment_service_number(
+        request.user.id
+    )
+    service_data[
+        "service_request_number"
+    ] = iSkyLIMS_drylab.utils.drylab_common_functions.create_service_id(
         service_data["service_request_int"], request.user.id
     )
     # Save the new service
@@ -187,8 +203,10 @@ def delete_requested_samples_in_service(sample_list):
         deleted_sample_names
     """
     deleted_sample_names = []
-    samples_in_services_objs = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
-        pk__in=sample_list
+    samples_in_services_objs = (
+        iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
+            pk__in=sample_list
+        )
     )
     for samples_in_services_obj in samples_in_services_objs:
         deleted_sample_names.append(samples_in_services_obj.get_sample_name())
@@ -223,11 +241,14 @@ def get_available_service_obj_from_id(available_service_id):
         avail_service_obj
     """
     avail_service_obj = None
-    if iSkyLIMS_drylab.models.AvailableService.objects.filter(pk__exact=available_service_id).exists():
+    if iSkyLIMS_drylab.models.AvailableService.objects.filter(
+        pk__exact=available_service_id
+    ).exists():
         avail_service_obj = iSkyLIMS_drylab.models.AvailableService.objects.filter(
             pk__exact=available_service_id
         ).last()
     return avail_service_obj
+
 
 def get_available_service_states(add_internal_value=False):
     """_summary_
@@ -240,18 +261,26 @@ def get_available_service_states(add_internal_value=False):
     Returns
     -------
     state_values : list
-        If add_internal_value is set to True returns a list of tuples when for 
+        If add_internal_value is set to True returns a list of tuples when for
         each item the first value is the internal string and the second the
         one to display
         If False each item only contains the string to display
-    """    
-    if add_internal_value :
+    """
+    if add_internal_value:
         # include a tuple were the first index is the internal value and the
         # second the one to display
-        state_values = list(iSkyLIMS_drylab.models.ServiceState.objects.all().values_list("state_value", "state_display"))
-    else :
+        state_values = list(
+            iSkyLIMS_drylab.models.ServiceState.objects.all().values_list(
+                "state_value", "state_display"
+            )
+        )
+    else:
         # return only the display values in a list
-        state_values = list(iSkyLIMS_drylab.models.ServiceState.objects.all().values_list("state_display", flat=True))
+        state_values = list(
+            iSkyLIMS_drylab.models.ServiceState.objects.all().values_list(
+                "state_display", flat=True
+            )
+        )
     return state_values
 
 
@@ -281,10 +310,18 @@ def get_data_for_service_confirmation(service_requested):
     user["surname"] = service.serviceUserId.last_name
 
     user_id = service.serviceUserId.id
-    user["area"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profileArea
-    user["center"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profileCenter
-    user["phone"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profileExtension
-    user["position"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profilePosition
+    user["area"] = django_utils.models.Profile.objects.get(
+        profileUserID=user_id
+    ).profileArea
+    user["center"] = django_utils.models.Profile.objects.get(
+        profileUserID=user_id
+    ).profileCenter
+    user["phone"] = django_utils.models.Profile.objects.get(
+        profileUserID=user_id
+    ).profileExtension
+    user["position"] = django_utils.models.Profile.objects.get(
+        profileUserID=user_id
+    ).profilePosition
     user["email"] = service.serviceUserId.email
     information["user"] = user
     service_data["projects"] = get_projects_in_requested_samples(service)
@@ -292,7 +329,11 @@ def get_data_for_service_confirmation(service_requested):
     # service_data['run_specifications'] = run_specs
     service_data["center"] = center
     service_data["notes"] = service.get_service_user_notes()
-    files = iSkyLIMS_drylab.utils.handling_multiple_files.get_uploaded_files_for_service(service)
+    files = (
+        iSkyLIMS_drylab.utils.handling_multiple_files.get_uploaded_files_for_service(
+            service
+        )
+    )
     if len(files) > 0:
         service_data["file"] = files
     else:
@@ -338,9 +379,9 @@ def get_pending_services_information():
     """
     # pending_services_details = {}
     stat_services = list(
-        iSkyLIMS_drylab.models.ServiceState.objects.filter(show_in_stats=True).values_list(
-            "state_display", flat=True
-        )
+        iSkyLIMS_drylab.models.ServiceState.objects.filter(
+            show_in_stats=True
+        ).values_list("state_display", flat=True)
     )
     # fileds_to_show = ["service_approved_date"]
     """
@@ -369,7 +410,9 @@ def get_pending_services_information():
             # get date creation service
             service_data.append(service_obj.get_service_creation_time())
             # fetch latest resolution for the service
-            if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+            if iSkyLIMS_drylab.models.Resolution.objects.filter(
+                resolution_serviceID=service_obj
+            ).exists():
                 resolution_obj = iSkyLIMS_drylab.models.Resolution.objects.filter(
                     resolution_serviceID=service_obj
                 ).last()
@@ -395,7 +438,7 @@ def get_pending_services_information():
     data_source = iSkyLIMS_drylab.utils.graphics.graphic_3D_pie(
         "Number of Pending Services", "", "", "", "fint", number_of_services
     )
-    graphic_pending_services = FusionCharts(
+    graphic_pending_services = django_utils.fusioncharts.fusioncharts.FusionCharts(
         "pie3d", "ex1", "740", "600", "chart-1", "json", data_source
     )
     pending_services_graphics["all_state"] = graphic_pending_services.render()
@@ -408,7 +451,7 @@ def get_pending_services_information():
         iSkyLIMS_drylab.drylab_config.COLORS_MULTI_LEVEL_PIE,
         pending_services_per_unit,
     )
-    graphic_unit_pending_services = FusionCharts(
+    graphic_unit_pending_services = django_utils.fusioncharts.fusioncharts.FusionCharts(
         "multilevelpie", "ex2", "740", "600", "chart-2", "json", data_source
     )
     pending_services_graphics[
@@ -484,8 +527,10 @@ def get_projects_in_requested_samples(service_obj):
         samples_in_service=service_obj
     ).exists():
         project_list = []
-        req_sample_objs = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
-            samples_in_service=service_obj
+        req_sample_objs = (
+            iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
+                samples_in_service=service_obj
+            )
         )
         for req_sample_obj in req_sample_objs:
             project_list.append(req_sample_obj.get_project_name())
@@ -507,8 +552,10 @@ def get_run_in_requested_samples(service_obj):
         samples_in_service=service_obj
     ).exists():
         run_list = []
-        req_sample_objs = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
-            samples_in_service=service_obj
+        req_sample_objs = (
+            iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
+                samples_in_service=service_obj
+            )
         )
         for req_sample_obj in req_sample_objs:
             run_list.append(req_sample_obj.get_run_name())
@@ -527,7 +574,9 @@ def get_service_obj_from_id(service_id):
     """
     service_obj = None
     if iSkyLIMS_drylab.models.Service.objects.filter(pk__exact=service_id).exists():
-        service_obj = iSkyLIMS_drylab.models.Service.objects.filter(pk__exact=service_id).last()
+        service_obj = iSkyLIMS_drylab.models.Service.objects.filter(
+            pk__exact=service_id
+        ).last()
     return service_obj
 
 
@@ -542,7 +591,9 @@ def get_requested_services_obj_from_available_service(avail_service_obj):
         request_service_objs
     """
     request_service_objs = None
-    if iSkyLIMS_drylab.models.Service.objects.filter(service_available_service=avail_service_obj).exists():
+    if iSkyLIMS_drylab.models.Service.objects.filter(
+        service_available_service=avail_service_obj
+    ).exists():
         request_service_objs = iSkyLIMS_drylab.models.Service.objects.filter(
             service_available_service=avail_service_obj
         )
@@ -571,8 +622,10 @@ def get_service_information(service_id, service_manager):
     if iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
         samples_in_service=service_obj, only_recorded_sample__exact=False
     ).exists():
-        samples_in_service = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
-            samples_in_service=service_obj, only_recorded_sample__exact=False
+        samples_in_service = (
+            iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
+                samples_in_service=service_obj, only_recorded_sample__exact=False
+            )
         )
         display_service_details["samples_sequenced"] = []
         for sample in samples_in_service:
@@ -588,8 +641,10 @@ def get_service_information(service_id, service_manager):
     if iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
         samples_in_service=service_obj, only_recorded_sample__exact=True
     ).exists():
-        samples_in_service = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
-            samples_in_service=service_obj, only_recorded_sample__exact=True
+        samples_in_service = (
+            iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(
+                samples_in_service=service_obj, only_recorded_sample__exact=True
+            )
         )
         display_service_details["only_recorded_samples"] = []
         for sample in samples_in_service:
@@ -598,20 +653,28 @@ def get_service_information(service_id, service_manager):
             )
 
     display_service_details["user_name"] = service_obj.get_service_requested_user()
-    user_input_files = iSkyLIMS_drylab.utils.handling_multiple_files.get_uploaded_files_and_file_name_for_service(service_obj)
+    user_input_files = iSkyLIMS_drylab.utils.handling_multiple_files.get_uploaded_files_and_file_name_for_service(
+        service_obj
+    )
     if user_input_files:
         display_service_details["file"] = []
         for input_file in user_input_files:
             display_service_details["file"].append(
-                [os.path.join(settings.MEDIA_URL, input_file[0]), input_file[1]]
+                [
+                    os.path.join(django.conf.settings.MEDIA_URL, input_file[0]),
+                    input_file[1],
+                ]
             )
     display_service_details["state"] = service_obj.get_service_state(True)
     display_service_details["service_notes"] = service_obj.get_service_user_notes()
     display_service_details["service_dates"] = zip(
-        iSkyLIMS_drylab.drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates()
+        iSkyLIMS_drylab.drylab_config.HEADING_SERVICE_DATES,
+        service_obj.get_service_dates(),
     )
     # get the proposal for the delivery date for the last resolution
-    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(
+        resolution_serviceID=service_obj
+    ).exists():
         last_resolution = iSkyLIMS_drylab.models.Resolution.objects.filter(
             resolution_serviceID=service_obj
         ).last()
@@ -633,7 +696,9 @@ def get_service_information(service_id, service_manager):
             service_obj.serviceStatus != "rejected"
             or service_obj.serviceStatus != "archived"
         ):
-            if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+            if iSkyLIMS_drylab.models.Resolution.objects.filter(
+                resolution_serviceID=service_obj
+            ).exists():
                 ## get informtaion from the defined Resolutions
                 resolution_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(
                     resolution_serviceID=service_obj
@@ -739,20 +804,32 @@ def get_service_information(service_id, service_manager):
 
         if service_obj.get_service_state(None) == "queued":
             resolution_id = (
-                iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).last().id
+                iSkyLIMS_drylab.models.Resolution.objects.filter(
+                    resolution_serviceID=service_obj
+                )
+                .last()
+                .id
             )
             display_service_details["add_in_progress_action"] = resolution_id
         if service_obj.get_service_state(None) == "in_progress":
-            if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+            if iSkyLIMS_drylab.models.Resolution.objects.filter(
+                resolution_serviceID=service_obj
+            ).exists():
                 resolution_id = (
-                    iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj)
+                    iSkyLIMS_drylab.models.Resolution.objects.filter(
+                        resolution_serviceID=service_obj
+                    )
                     .last()
                     .id
                 )
                 display_service_details["add_delivery_action"] = resolution_id
 
-    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
-        resolution_heading = iSkyLIMS_drylab.drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(
+        resolution_serviceID=service_obj
+    ).exists():
+        resolution_heading = (
+            iSkyLIMS_drylab.drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
+        )
         resolution_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(
             resolution_serviceID=service_obj
         ).order_by("resolution_state")
@@ -773,7 +850,9 @@ def get_service_information(service_id, service_manager):
 
         delivery_info = []
         for resolution_obj in resolution_objs:
-            if iSkyLIMS_drylab.models.Delivery.objects.filter(delivery_resolutionID=resolution_obj).exists():
+            if iSkyLIMS_drylab.models.Delivery.objects.filter(
+                delivery_resolutionID=resolution_obj
+            ).exists():
                 delivery = iSkyLIMS_drylab.models.Delivery.objects.filter(
                     delivery_resolutionID=resolution_obj
                 ).last()
@@ -804,7 +883,9 @@ def get_service_information(service_id, service_manager):
     created_date = service_obj.get_service_creation_time_no_format()
     delivery_date = service_obj.get_service_delivery_time_no_format()
     dates = []
-    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(
+        resolution_serviceID=service_obj
+    ).exists():
         resolution_obj = iSkyLIMS_drylab.models.Resolution.objects.filter(
             resolution_serviceID=service_obj
         ).first()
@@ -855,7 +936,9 @@ def prepare_form_data_request_service_sequencing(request):
     """
 
     if iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
-        service_data_information["users"] = iSkyLIMS_drylab.utils.drylab_common_functions.get_defined_username_and_ids()
+        service_data_information[
+            "users"
+        ] = iSkyLIMS_drylab.utils.drylab_common_functions.get_defined_username_and_ids()
     service_data_information["nodes"] = (
         iSkyLIMS_drylab.models.AvailableService.objects.filter(
             avail_service_description__exact="Genomic data analysis"
@@ -866,9 +949,15 @@ def prepare_form_data_request_service_sequencing(request):
 
     if wetlab_api_available:
         ## get samples which have sequencing data in iSkyLIMS
-        user_sharing_list = iSkyLIMS_drylab.utils.drylab_common_functions.get_user_sharing_list(request.user)
+        user_sharing_list = (
+            iSkyLIMS_drylab.utils.drylab_common_functions.get_user_sharing_list(
+                request.user
+            )
+        )
 
-        service_data_information["samples_data"] = get_runs_projects_samples_and_dates(
+        service_data_information[
+            "samples_data"
+        ] = iSkyLIMS_wetlab.utils.api.wetlab_api.get_runs_projects_samples_and_dates(
             user_sharing_list
         )
 
@@ -900,9 +989,13 @@ def prepare_form_data_request_counseling_service():
         service_data_information
     """
     service_data_information = {}
-    service_data_information["nodes"] = iSkyLIMS_drylab.models.AvailableService.objects.filter(
+    service_data_information[
+        "nodes"
+    ] = iSkyLIMS_drylab.models.AvailableService.objects.filter(
         avail_service_description__exact="Bioinformatics consulting and training"
-    ).get_descendants(include_self=True)
+    ).get_descendants(
+        include_self=True
+    )
     return service_data_information
 
 
@@ -916,9 +1009,13 @@ def prepare_form_data_request_infrastructure_service():
         service_data_information
     """
     service_data_information = {}
-    service_data_information["nodes"] = iSkyLIMS_drylab.models.AvailableService.objects.filter(
+    service_data_information[
+        "nodes"
+    ] = iSkyLIMS_drylab.models.AvailableService.objects.filter(
         avail_service_description__exact="User support"
-    ).get_descendants(include_self=True)
+    ).get_descendants(
+        include_self=True
+    )
     return service_data_information
 
 
@@ -963,7 +1060,7 @@ def send_service_creation_confirmation_email(email_data):
     from_user = notification_user
     to_users = [email_data["user_email"], notification_user]
     try:
-        send_mail(subject, body_message, from_user, to_users)
+        django.core.mail.send_mail(subject, body_message, from_user, to_users)
     except:
         return iSkyLIMS_drylab.drylab_config.ERROR_UNABLE_TO_SEND_EMAIL
     return "OK"
