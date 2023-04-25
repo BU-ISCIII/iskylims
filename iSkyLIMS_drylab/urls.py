@@ -51,7 +51,7 @@ urlpatterns = [
         name="define_pipeline_service",
     ),
     path(
-        "display_service=<int:service_id>/",
+        "displayService=<int:service_id>/",
         iSkyLIMS_drylab.views.display_service,
         name="display_service",
     ),
