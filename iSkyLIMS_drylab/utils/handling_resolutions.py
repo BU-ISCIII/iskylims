@@ -4,21 +4,14 @@ import json
 from smtplib import SMTPException
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
-from django_utils.models import Profile
+import django_utils.models
+import django.contrib.auth.models
 
 # Local imports
-from iSkyLIMS_drylab.models import Resolution, ConfigSetting, ResolutionParameters
-from iSkyLIMS_drylab import drylab_config
-from iSkyLIMS_drylab.utils.handling_request_services import (
-    get_service_obj_from_id,
-    get_available_service_obj_from_id,
-    get_available_children_services_and_id,
-)
-from iSkyLIMS_drylab.utils.handling_pipelines import (
-    get_pipeline_obj_from_id,
-    get_all_defined_pipelines,
-)
-
+import iSkyLIMS_drylab.models
+import iSkyLIMS_drylab.drylab_config
+import iSkyLIMS_drylab.utils.handling_request_services
+import iSkyLIMS_drylab.utils.handling_pipelines
 
 def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
     """
@@ -31,7 +24,7 @@ def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
         None
     """
     for pipeline_id in pipeline_ids:
-        resolution_obj.resolution_pipelines.add(get_pipeline_obj_from_id(pipeline_id))
+        resolution_obj.resolution_pipelines.add(iSkyLIMS_drylab.utils.handling_pipelines.get_pipeline_obj_from_id(pipeline_id))
 
     return None
 
@@ -49,11 +42,11 @@ def allow_to_service_update_state(resolution_obj, new_state):
     """
     service_obj = resolution_obj.get_service_obj()
     if (
-        Resolution.objects.filter(resolution_serviceID=service_obj)
+        iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj)
         .exclude(resolution_state__state_value__exact="Queued")
         .exists()
     ):
-        all_resolution_objs = Resolution.objects.filter(
+        all_resolution_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(
             resolution_serviceID=service_obj
         ).exclude(resolution_state__state_value__exact="Queued")
         avail_services_handled = []
@@ -86,10 +79,10 @@ def get_assign_resolution_full_number(service_id, acronymName):
     Return:
         resolution_full_number
     """
-    service_obj = get_service_obj_from_id(service_id)
-    if Resolution.objects.filter(resolution_serviceID=service_id).exists():
+    service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(service_id)
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_id).exists():
         resolution_full_number = (
-            Resolution.objects.filter(resolution_serviceID=service_obj)
+            iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj)
             .last()
             .get_resolution_number()
         )
@@ -114,10 +107,10 @@ def create_resolution_number(service_id):
     Return:
         resolution_number
     """
-    service_obj = get_service_obj_from_id(service_id)
+    service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(service_id)
     service_request_number = service_obj.get_service_request_number()
-    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
-        resolution_count = Resolution.objects.filter(
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+        resolution_count = iSkyLIMS_drylab.models.Resolution.objects.filter(
             resolution_serviceID=service_obj
         ).count()
         resolution_number = service_request_number + "." + str(resolution_count + 1)
@@ -144,10 +137,10 @@ def get_data_for_resolution(service_obj, resolution_obj):
     user["name"] = service_obj.serviceUserId.first_name
     user["surname"] = service_obj.serviceUserId.last_name
 
-    user["area"] = Profile.objects.get(profileUserID=user_id).profileArea
-    user["center"] = Profile.objects.get(profileUserID=user_id).profileCenter
-    user["position"] = Profile.objects.get(profileUserID=user_id).profilePosition
-    user["phone"] = Profile.objects.get(profileUserID=user_id).profileExtension
+    user["area"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profileArea
+    user["center"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profileCenter
+    user["position"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profilePosition
+    user["phone"] = django_utils.models.Profile.objects.get(profileUserID=user_id).profileExtension
     user["email"] = service_obj.get_user_email()
     information["user"] = user
     resolution_info_split = resolution_info[2].split("_")
@@ -211,7 +204,7 @@ def check_if_resolution_exists(resolution_id):
     Return:
         True or False
     """
-    if Resolution.objects.filter(pk__exact=resolution_id).exists():
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
         return True
     return False
 
@@ -232,10 +225,10 @@ def create_new_resolution(resolution_data_form):
     Return:
         new_resolution
     """
-    service_obj = get_service_obj_from_id(resolution_data_form["service_id"])
-    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+    service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(resolution_data_form["service_id"])
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
         resolution_data_form["resolution_full_number"] = (
-            Resolution.objects.filter(resolution_serviceID=service_obj)
+            iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj)
             .last()
             .get_resolution_full_number()
         )
@@ -250,7 +243,7 @@ def create_new_resolution(resolution_data_form):
     )
 
     # service_request_number = service_obj.get_service_request_number()
-    new_resolution = Resolution.objects.create_resolution(resolution_data_form)
+    new_resolution = iSkyLIMS_drylab.models.Resolution.objects.create_resolution(resolution_data_form)
     if "select_available_services" not in resolution_data_form:
         # include all services in the resolution
         resolution_data_form["select_available_services"] = []
@@ -260,13 +253,13 @@ def create_new_resolution(resolution_data_form):
 
     # Add selected available services to the new resolution
     for avail_sarvice in resolution_data_form["select_available_services"]:
-        avail_service_obj = get_available_service_obj_from_id(avail_sarvice)
+        avail_service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_available_service_obj_from_id(avail_sarvice)
         new_resolution.available_services.add(avail_service_obj)
 
     if "pipelines" in resolution_data_form:
         for pipeline in resolution_data_form["pipelines"]:
             if pipeline != "":
-                pipeline_obj = get_pipeline_obj_from_id(pipeline)
+                pipeline_obj = iSkyLIMS_drylab.utils.handling_pipelines.get_pipeline_obj_from_id(pipeline)
                 new_resolution.servicePipelines.add(pipeline_obj)
 
     if "additional_parameters" in resolution_data_form:
@@ -279,8 +272,8 @@ def create_new_resolution(resolution_data_form):
                 service_obj.get_child_services()
             ):
                 service_obj.update_service_state("queued")
-            elif Resolution.objects.filter(resolution_serviceID=service_obj).exists():
-                resolution_objs = Resolution.objects.filter(
+            elif iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+                resolution_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(
                     resolution_serviceID=service_obj
                 )
                 avail_services_handled = []
@@ -312,8 +305,8 @@ def get_resolution_obj_from_id(resolution_id):
         resolution_obj
     """
     resolution_obj = None
-    if Resolution.objects.filter(pk__exact=resolution_id).exists():
-        resolution_obj = Resolution.objects.filter(pk__exact=resolution_id).last()
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
+        resolution_obj = iSkyLIMS_drylab.models.Resolution.objects.filter(pk__exact=resolution_id).last()
     return resolution_obj
 
 
@@ -333,15 +326,15 @@ def prepare_form_data_add_resolution(form_data):
         list_of_ch_services = form_data.getlist("childrenServices")
     else:
         list_of_ch_services = False
-    service_obj = get_service_obj_from_id(form_data["service_id"])
+    service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(form_data["service_id"])
     resolution_form_data["service_number"] = service_obj.get_service_request_number()
     all_tree_services = service_obj.service_available_service.all()
-    all_children_services = get_available_children_services_and_id(all_tree_services)
+    all_children_services = iSkyLIMS_drylab.utils.handling_request_services.get_available_children_services_and_id(all_tree_services)
 
     if list_of_ch_services:
         if len(list_of_ch_services) != len(all_children_services):
             for children in list_of_ch_services:
-                avail_serv_obj = get_available_service_obj_from_id(children)
+                avail_serv_obj = iSkyLIMS_drylab.utils.handling_request_services.get_available_service_obj_from_id(children)
                 selected_children_services.append(
                     [children, avail_serv_obj.get_service_description()]
                 )
@@ -349,14 +342,14 @@ def prepare_form_data_add_resolution(form_data):
                 "selected_avail_services_data"
             ] = selected_children_services
 
-    if Resolution.objects.filter(resolution_serviceID=service_obj).exists():
-        existing_resolution = Resolution.objects.filter(
+    if iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_serviceID=service_obj).exists():
+        existing_resolution = iSkyLIMS_drylab.models.Resolution.objects.filter(
             resolution_serviceID=service_obj
         ).last()
         resolution_form_data[
             "resolution_full_number"
         ] = existing_resolution.get_resolution_full_number()
-    users = User.objects.filter(groups__name=drylab_config.SERVICE_MANAGER)
+    users = django.contrib.auth.models.User.objects.filter(groups__name=iSkyLIMS_drylab.rylab_config.SERVICE_MANAGER)
     resolution_form_data["assigned_user"] = []
     for user in users:
         resolution_form_data["assigned_user"].append([user.pk, user.username])
@@ -376,10 +369,10 @@ def prepare_form_data_add_resolution(form_data):
     #    data = get_pipeline_and_versions_for_available_service(avail_service)
     #    if data :
     #        pipelines_data.append([ get_available_service_obj_from_id(avail_service).get_service_description() , data])
-    resolution_form_data["pipelines_data"] = get_all_defined_pipelines(True)
+    resolution_form_data["pipelines_data"] = iSkyLIMS_drylab.utils.handling_pipelines.get_all_defined_pipelines(True)
     resolution_form_data[
         "pipelines_heading"
-    ] = drylab_config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
+    ] = iSkyLIMS_drylab.drylab_config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
 
     return resolution_form_data
 
@@ -399,7 +392,7 @@ def send_resolution_creation_email(email_data):
     Return:
         None
     """
-    subject_tmp = drylab_config.SUBJECT_RESOLUTION_QUEUED.copy()
+    subject_tmp = iSkyLIMS_drylab.drylab_config.SUBJECT_RESOLUTION_QUEUED.copy()
     subject_tmp.insert(1, email_data["service_number"])
     subject = " ".join(subject_tmp)
     if email_data["status"] == "Accepted":
@@ -409,7 +402,7 @@ def send_resolution_creation_email(email_data):
                 lambda st: str.replace(
                     st, "SERVICE_NUMBER", email_data["service_number"]
                 ),
-                drylab_config.BODY_RESOLUTION_ACCEPTED,
+                iSkyLIMS_drylab.drylab_config.BODY_RESOLUTION_ACCEPTED,
             )
         )
         body_preparation = list(
@@ -433,7 +426,7 @@ def send_resolution_creation_email(email_data):
                 lambda st: str.replace(
                     st, "SERVICE_NUMBER", email_data["service_number"]
                 ),
-                drylab_config.BODY_RESOLUTION_REJECTED,
+                iSkyLIMS_drylab.drylab_config.BODY_RESOLUTION_REJECTED,
             )
         )
         body_preparation = list(
@@ -450,7 +443,7 @@ def send_resolution_creation_email(email_data):
         )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(
+        iSkyLIMS_drylab.models.ConfigSetting.objects.filter(
             configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
         )
         .last()
@@ -483,7 +476,7 @@ def send_resolution_in_progress_email(email_data):
     Return:
         None
     """
-    subject_tmp = drylab_config.SUBJECT_RESOLUTION_IN_PROGRESS.copy()
+    subject_tmp = iSkyLIMS_drylab.drylab_config.SUBJECT_RESOLUTION_IN_PROGRESS.copy()
     subject_tmp.insert(1, email_data["resolution_number"])
     subject = " ".join(subject_tmp)
     body_preparation = list(
@@ -491,7 +484,7 @@ def send_resolution_in_progress_email(email_data):
             lambda st: str.replace(
                 st, "RESOLUTION_NUMBER", email_data["resolution_number"]
             ),
-            drylab_config.BODY_RESOLUTION_IN_PROGRESS,
+            iSkyLIMS_drylab.drylab_config.BODY_RESOLUTION_IN_PROGRESS,
         )
     )
     body_preparation = list(
@@ -502,7 +495,7 @@ def send_resolution_in_progress_email(email_data):
     )
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(
+        iSkyLIMS_drylab.models.ConfigSetting.objects.filter(
             configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
         )
         .last()
@@ -533,6 +526,6 @@ def store_resolution_additional_parameter(additional_parameters, resolution_obj)
     for additional_parameter in additional_parameters:
         parameter = {}
         parameter["resolution"] = resolution_obj
-        for field in drylab_config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:
+        for field in iSkyLIMS_drylab.drylab_config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:
             parameter[field[0]] = additional_parameter[field[1]]
-        ResolutionParameters.objects.create_resolution_parameters(parameter)
+        iSkyLIMS_drylab.models.ResolutionParameters.objects.create_resolution_parameters(parameter)
