@@ -3,7 +3,8 @@
 import os, re
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
+import django.contrib.auth.models
+import django_utils.models
 from django.conf import settings
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 from django.http import HttpResponse
@@ -161,7 +162,7 @@ def request_sequencing_service(request):
             "requestedForUserid" in request.POST
             and request.POST["requestedForUserid"] != ""
         ):
-            user_obj = iSkyLIMS_drylab.models.User.objects.filter(
+            user_obj = django.contrib.auth.models.User.objects.filter(
                 pk__exact=request.POST["requestedForUserid"]
             ).last()
             email_data["user_name"] = user_obj.username
@@ -475,7 +476,7 @@ def search_service(request):
     services_search_list = {}
 
     center_list_abbr = []
-    center_availables = iSkyLIMS_drylab.models.Center.objects.all().order_by(
+    center_availables = django_utils.models.Center.objects.all().order_by(
         "centerAbbr"
     )
     for center in center_availables:
@@ -728,7 +729,7 @@ def pending_services(request):
 def service_in_waiting_info(request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(
+            groups = django.contrib.auth.models.Group.objects.get(
                 name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER
             )
             if groups not in request.user.groups.all():
@@ -944,7 +945,7 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 def add_in_progress(request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(
+            groups = django.contrib.auth.models.Group.objects.get(
                 name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER
             )
             if groups not in request.user.groups.all():
@@ -1027,7 +1028,7 @@ def add_in_progress(request):
 def add_delivery(request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(
+            groups = django.contrib.auth.models.Group.objects.get(
                 name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER
             )
             if groups not in request.user.groups.all():
@@ -1136,7 +1137,7 @@ def add_delivery(request):
 def stats_by_user(request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(
+            groups = django.contrib.auth.models.Group.objects.get(
                 name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER
             )
             if groups not in request.user.groups.all():
@@ -1200,7 +1201,7 @@ def stats_by_user(request):
         else:
             end_date = date.today().strftime("%Y-%m-%d")
 
-        if not iSkyLIMS_drylab.models.User.objects.filter(pk__exact=user_id).exists():
+        if not django.contrib.auth.models.User.objects.filter(pk__exact=user_id).exists():
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_DEFINED
             return render(
                 request,
@@ -1228,7 +1229,7 @@ def stats_by_user(request):
         stats_info = {}
         stats_info["service_by_user"] = []
         stats_info["user_name"] = (
-            iSkyLIMS_drylab.models.User.objects.filter(pk__exact=user_id)
+            django.contrib.auth.models.User.objects.filter(pk__exact=user_id)
             .last()
             .username
         )
@@ -1342,7 +1343,7 @@ def stats_by_user(request):
 def stats_by_services_request(request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(
+            groups = django.contrib.auth.models.Group.objects.get(
                 name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER
             )
             if groups not in request.user.groups.all():
@@ -1454,11 +1455,11 @@ def stats_by_services_request(request):
             user_area_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if iSkyLIMS_drylab.models.Profile.objects.filter(
+                if Profile.objects.filter(
                     profileUserID=user_service_obj
                 ).exists():
                     user_classification_area = (
-                        iSkyLIMS_drylab.models.Profile.objects.get(
+                        Profile.objects.get(
                             profileUserID=user_service_obj
                         ).get_clasification_area()
                     )
@@ -1489,10 +1490,10 @@ def stats_by_services_request(request):
             user_center_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if iSkyLIMS_drylab.models.Profile.objects.filter(
+                if Profile.objects.filter(
                     profileUserID=user_service_obj
                 ).exists():
-                    user_center = iSkyLIMS_drylab.models.Profile.objects.get(
+                    user_center = Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_profile_center_abbr()
                 else:
@@ -1534,10 +1535,10 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if iSkyLIMS_drylab.models.Profile.objects.filter(
+                if Profile.objects.filter(
                     profileUserID=user_service_obj
                 ).exists():
-                    user_center = iSkyLIMS_drylab.models.Profile.objects.get(
+                    user_center = Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_profile_center_abbr()
                 else:
@@ -1582,10 +1583,10 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_id = service.serviceUserId.id
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if iSkyLIMS_drylab.models.Profile.objects.filter(
+                if Profile.objects.filter(
                     profileUserID=user_id
                 ).exists():
-                    user_area = iSkyLIMS_drylab.models.Profile.objects.get(
+                    user_area = Profile.objects.get(
                         profileUserID=user_id
                     ).profileArea
                 else:
@@ -1732,7 +1733,7 @@ def user_login(request):
 
     user_data = []
     login_data = {}
-    user_list = iSkyLIMS_drylab.models.User.objects.all().order_by("-last_login")
+    user_list = django.contrib.auth.models.User.objects.all().order_by("-last_login")
     for user in user_list:
         user_data.append(
             [
