@@ -416,9 +416,7 @@ def delete_samples_in_service(request):
                 {"content": ["The service that you are trying to get does not exist "]},
             )
         if not "sampleId" in request.POST:
-            return redirect(
-                "/drylab/displayService=" + str(request.POST["service_id"])
-            )
+            return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
         deleted_samples = iSkyLIMS_drylab.utils.handling_request_services.delete_requested_samples_in_service(
             request.POST.getlist("sampleId")
         )
@@ -476,9 +474,7 @@ def search_service(request):
     services_search_list = {}
 
     center_list_abbr = []
-    center_availables = django_utils.models.Center.objects.all().order_by(
-        "centerAbbr"
-    )
+    center_availables = django_utils.models.Center.objects.all().order_by("centerAbbr")
     for center in center_availables:
         center_list_abbr.append(center.centerAbbr)
     services_search_list["centers"] = center_list_abbr
@@ -1201,7 +1197,9 @@ def stats_by_user(request):
         else:
             end_date = date.today().strftime("%Y-%m-%d")
 
-        if not django.contrib.auth.models.User.objects.filter(pk__exact=user_id).exists():
+        if not django.contrib.auth.models.User.objects.filter(
+            pk__exact=user_id
+        ).exists():
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_DEFINED
             return render(
                 request,
@@ -1455,14 +1453,10 @@ def stats_by_services_request(request):
             user_area_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if Profile.objects.filter(
-                    profileUserID=user_service_obj
-                ).exists():
-                    user_classification_area = (
-                        Profile.objects.get(
-                            profileUserID=user_service_obj
-                        ).get_clasification_area()
-                    )
+                if Profile.objects.filter(profileUserID=user_service_obj).exists():
+                    user_classification_area = Profile.objects.get(
+                        profileUserID=user_service_obj
+                    ).get_clasification_area()
                 else:
                     user_classification_area = "No_user_area"
 
@@ -1490,9 +1484,7 @@ def stats_by_services_request(request):
             user_center_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if Profile.objects.filter(
-                    profileUserID=user_service_obj
-                ).exists():
+                if Profile.objects.filter(profileUserID=user_service_obj).exists():
                     user_center = Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_profile_center_abbr()
@@ -1535,9 +1527,7 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if Profile.objects.filter(
-                    profileUserID=user_service_obj
-                ).exists():
+                if Profile.objects.filter(profileUserID=user_service_obj).exists():
                     user_center = Profile.objects.get(
                         profileUserID=user_service_obj
                     ).get_profile_center_abbr()
@@ -1583,12 +1573,8 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_id = service.serviceUserId.id
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if Profile.objects.filter(
-                    profileUserID=user_id
-                ).exists():
-                    user_area = Profile.objects.get(
-                        profileUserID=user_id
-                    ).profileArea
+                if Profile.objects.filter(profileUserID=user_id).exists():
+                    user_area = Profile.objects.get(profileUserID=user_id).profileArea
                 else:
                     user_center = "Not defined"
                 if not date_service in time_values_dict:
