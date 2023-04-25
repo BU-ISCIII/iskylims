@@ -348,7 +348,7 @@ def prepare_form_data_add_resolution(form_data):
         resolution_form_data[
             "resolution_full_number"
         ] = existing_resolution.get_resolution_full_number()
-    users = django.contrib.auth.models.User.objects.filter(groups__name=iSkyLIMS_drylab.rylab_config.SERVICE_MANAGER)
+    users = django.contrib.auth.models.User.objects.filter(groups__name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
     resolution_form_data["assigned_user"] = []
     for user in users:
         resolution_form_data["assigned_user"].append([user.pk, user.username])
