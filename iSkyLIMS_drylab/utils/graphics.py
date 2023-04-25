@@ -142,6 +142,28 @@ def column_graphic_dict(
 def column_graphic_tupla(
     heading, sub_caption, x_axis_name, y_axis_name, theme, source_data
 ):
+    """_summary_
+
+    Parameters
+    ----------
+    heading : string
+        Heading text to display
+    sub_caption : string
+        Sub title to display
+    x_axis_name : string
+        label to display in the x axis
+    y_axis_name : string
+        label to display in the y axis
+    theme : string
+        one of the theme available
+    source_data : Dict
+        data containg values to display
+
+    Returns
+    -------
+    data_source : Dict
+       Variable with data to display the column graphic
+    """
     data_source = {}
     data_source["chart"] = {
         "caption": heading,

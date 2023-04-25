@@ -1,9 +1,10 @@
 # Generic imports
-import json, os
+import json
 
 # Local imports
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
+
 
 def analyze_input_pipelines(request):
     """

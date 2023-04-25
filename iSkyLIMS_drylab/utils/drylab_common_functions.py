@@ -1,12 +1,9 @@
 # Generic imports
 import time
-from datetime import datetime
-import re, os
-from django.conf import settings
-from django.contrib.auth.models import Group, User
-from django.template.loader import render_to_string
-from django.core.mail import send_mail
-from django.core.files.storage import FileSystemStorage
+import datetime
+import re
+import os
+import django.core.files.storage
 import django.contrib.auth.models
 import django_utils.models
 
@@ -17,7 +14,7 @@ import iSkyLIMS_drylab.models
 
 def check_valid_date_format(date):
     try:
-        datetime.strptime(date, "%Y-%m-%d")
+        datetime.datetime.strptime(date, "%Y-%m-%d")
         return True
     except:
         return False
@@ -41,7 +38,9 @@ def create_service_id(service_number, user_name):
                 profileUserID=user_name
             ).profileCenter.centerAbbr
         except ValueError:
-            user_center = iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
+            user_center = (
+                iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
+            )
     else:
         user_center = ""
     abbr = get_configuration_from_database("ABBREVIATION_USED_FOR_SERVICE_REQUEST")
@@ -83,7 +82,9 @@ def is_service_manager(request):
         Return True if the user belongs to service Manager, False if not
     """
     try:
-        groups = django.contrib.auth.models.Group.objects.get(name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
+        groups = django.contrib.auth.models.Group.objects.get(
+            name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER
+        )
         if groups not in request.user.groups.all():
             return False
     except:
@@ -171,8 +172,12 @@ def get_user_sharing_list(request_user):
             sharing_list.append(user.id)
     else:
         for user in user_groups:
-            if django.contrib.auth.models.User.objects.filter(username__exact=user).exists():
-                sharing_list.append(django.contrib.auth.models.User.objects.get(username__exact=user).id)
+            if django.contrib.auth.models.User.objects.filter(
+                username__exact=user
+            ).exists():
+                sharing_list.append(
+                    django.contrib.auth.models.User.objects.get(username__exact=user).id
+                )
         sharing_list.append(request_user.id)
     return sharing_list
 
@@ -211,7 +216,9 @@ def get_users_requested_services():
             user_list.append(
                 [
                     user_id["serviceUserId"],
-                    django.contrib.auth.models.User.objects.filter(pk__exact=user_id["serviceUserId"])
+                    django.contrib.auth.models.User.objects.filter(
+                        pk__exact=user_id["serviceUserId"]
+                    )
                     .last()
                     .username,
                 ]
@@ -280,7 +287,7 @@ def store_file_from_form(file, path):
     else:
         file_name = file.name
         file_ext = ""
-    fs = FileSystemStorage()
+    fs = django.core.files.storage.FileSystemStorage()
     timestr = time.strftime("%Y%m%d%H%M%S")
     f_name = timestr + "_" + file_name + file_ext
     full_path_file = os.path.join(path, f_name)
