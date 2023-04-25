@@ -7,7 +7,8 @@ from django.contrib.auth.models import Group, User
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.models import User
+import django.contrib.auth.models
+import django_utils.models
 
 # Local imports
 from iSkyLIMS_drylab import drylab_config
@@ -36,11 +37,11 @@ def create_service_id(service_number, user_name):
     """
     if get_configuration_from_database("USER_CENTER_USED_FOR_NAMING_SERVICE") == "True":
         try:
-            user_center = iSkyLIMS_drylab.models.Profile.objects.get(
+            user_center = django_utils.models.Profile.objects.get(
                 profileUserID=user_name
             ).profileCenter.centerAbbr
         except ValueError:
-            user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
+            user_center = iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     else:
         user_center = ""
     abbr = get_configuration_from_database("ABBREVIATION_USED_FOR_SERVICE_REQUEST")
@@ -82,7 +83,7 @@ def is_service_manager(request):
         Return True if the user belongs to service Manager, False if not
     """
     try:
-        groups = Group.objects.get(name=drylab_config.SERVICE_MANAGER)
+        groups = django.contrib.auth.models.Group.objects.get(name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
         if groups not in request.user.groups.all():
             return False
     except:
@@ -102,7 +103,7 @@ def increment_service_number(request_user):
         service_number
     """
     try:
-        user_center = iSkyLIMS_drylab.models.Profile.objects.get(
+        user_center = django_utils.models.Profile.objects.get(
             profileUserID=request_user
         ).profileCenter.centerAbbr
     except:
@@ -164,14 +165,14 @@ def get_user_sharing_list(request_user):
     # getting projects from user sharing list
     sharing_list = []
     user_groups = request_user.groups.values_list("name", flat=True)
-    if drylab_config.SERVICE_MANAGER in user_groups:
-        all_users = User.objects.all()
+    if iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER in user_groups:
+        all_users = django.contrib.auth.models.User.objects.all()
         for user in all_users:
             sharing_list.append(user.id)
     else:
         for user in user_groups:
-            if User.objects.filter(username__exact=user).exists():
-                sharing_list.append(User.objects.get(username__exact=user).id)
+            if django.contrib.auth.models.User.objects.filter(username__exact=user).exists():
+                sharing_list.append(django.contrib.auth.models.User.objects.get(username__exact=user).id)
         sharing_list.append(request_user.id)
     return sharing_list
 
@@ -184,8 +185,8 @@ def get_defined_username_and_ids():
         userids_list
     """
     userids_list = []
-    if User.objects.all().exists():
-        user_objs = User.objects.all().order_by("username")
+    if django.contrib.auth.models.User.objects.all().exists():
+        user_objs = django.contrib.auth.models.User.objects.all().order_by("username")
         for user_obj in user_objs:
             userids_list.append([user_obj.username, user_obj.pk])
     return userids_list
@@ -210,7 +211,7 @@ def get_users_requested_services():
             user_list.append(
                 [
                     user_id["serviceUserId"],
-                    User.objects.filter(pk__exact=user_id["serviceUserId"])
+                    django.contrib.auth.models.User.objects.filter(pk__exact=user_id["serviceUserId"])
                     .last()
                     .username,
                 ]
@@ -234,7 +235,7 @@ def get_current_users():
         data = session.get_decoded()
         user_id_list.append(data.get("_auth_user_id", None))
     # Query all logged in users based on id list
-    return User.objects.filter(id__in=user_id_list)
+    return django.contrib.auth.models.User.objects.filter(id__in=user_id_list)
 
 
 def save_database_configuration_value(configuration_name, configuration_value):
