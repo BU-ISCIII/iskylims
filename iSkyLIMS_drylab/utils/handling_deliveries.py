@@ -1,10 +1,9 @@
 # Generic imports
 from datetime import datetime
 from django.core.mail import send_mail
-from iSkyLIMS_drylab.models import *
-from iSkyLIMS_drylab.utils.handling_resolutions import get_resolution_obj_from_id
-from iSkyLIMS_drylab.utils.handling_pipelines import get_pipelines_for_resolution
-
+import iSkyLIMS_drylab.models
+import iSkyLIMS_drylab.utils
+import iSkyLIMS_drylab.drylab_config
 
 def prepare_delivery_form(resolution_id):
     """
@@ -21,7 +20,7 @@ def prepare_delivery_form(resolution_id):
         delivery_data_form
     """
     delivery_data_form = {}
-    resolution_obj = get_resolution_obj_from_id(resolution_id)
+    resolution_obj = iSkyLIMS_drylab.utils.handling_resolutions.get_resolution_obj_from_id(resolution_id)
     if resolution_obj != None:
         delivery_data_form[
             "available_services"
@@ -30,7 +29,7 @@ def prepare_delivery_form(resolution_id):
         delivery_data_form["resolution_number"] = resolution_obj.get_resolution_number()
         # req_available_services_id = resolution_obj.get_available_services_ids()
 
-        delivery_data_form["pipelines_data"] = get_pipelines_for_resolution(
+        delivery_data_form["pipelines_data"] = iSkyLIMS_drylab.utils.handling_pipelines.get_pipelines_for_resolution(
             resolution_obj
         )
 
@@ -52,7 +51,7 @@ def store_resolution_delivery(form_data):
         delivery_data
     """
     delivery_data = None
-    resolution_obj = get_resolution_obj_from_id(form_data["resolution_id"])
+    resolution_obj = iSkyLIMS_drylab.utils.handling_resolutions.get_resolution_obj_from_id(form_data["resolution_id"])
     if resolution_obj != None:
         delivery_data = {}
         if form_data["startdate"] != "":
@@ -73,7 +72,7 @@ def store_resolution_delivery(form_data):
         delivery_data["temporary_used_space"] = form_data["tspace"]
         delivery_data["deliveryNotes"] = form_data["deliveryNotes"]
 
-        Delivery.objects.create_delivery(delivery_data)
+        iSkyLIMS_drylab.models.Delivery.objects.create_delivery(delivery_data)
 
         resolution_obj.update_resolution_in_delivered()
 
@@ -95,7 +94,7 @@ def send_delivery_service_email(email_data):
     Return:
         None
     """
-    subject_tmp = drylab_config.SUBJECT_RESOLUTION_DELIVERED.copy()
+    subject_tmp = iSkyLIMS_drylab.drylab_config.SUBJECT_RESOLUTION_DELIVERED.copy()
     subject_tmp.insert(1, email_data["resolution_number"])
     subject = " ".join(subject_tmp)
 
@@ -104,7 +103,7 @@ def send_delivery_service_email(email_data):
             lambda st: str.replace(
                 st, "RESOLUTION_NUMBER", email_data["resolution_number"]
             ),
-            drylab_config.BODY_RESOLUTION_DELIVERED,
+            iSkyLIMS_drylab.drylab_config.BODY_RESOLUTION_DELIVERED,
         )
     )
     body_preparation = list(
@@ -116,7 +115,7 @@ def send_delivery_service_email(email_data):
 
     body_message = "\n".join(body_preparation)
     notification_user = (
-        ConfigSetting.objects.filter(
+        iSkyLIMS_drylab.models.ConfigSetting.objects.filter(
             configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
         )
         .last()
