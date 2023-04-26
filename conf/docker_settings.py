@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'iSkyLIMS_core',
     'iSkyLIMS_clinic',
     'iSkyLIMS_wetlab',
-    'iSkyLIMS_drylab',
+    'drylab',
     'django_utils',
     'mptt',
     'crispy_forms',
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
 
 APPS_NAMES = [ ['iSkyLIMS_clinic', 'Clinic'],
     ['iSkyLIMS_wetlab', 'Masive Sequencing'],
-    ['iSkyLIMS_drylab','Requesting Services']
+    ['drylab','Requesting Services']
     ]
 
 MIDDLEWARE = [
