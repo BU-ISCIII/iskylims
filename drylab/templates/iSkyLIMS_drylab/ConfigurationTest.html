@@ -1,13 +1,13 @@
-{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% extends 'wetlab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
 
 
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/wetlab.js" %}"></script>
 
-<link rel="stylesheet"  href="{% static "iSkyLIMS_wetlab/css/styles/default.css"%}">
-<script src="{% static "iSkyLIMS_wetlab/js/highlight.pack.js" %}"></script>
+<link rel="stylesheet"  href="{% static "wetlab/css/styles/default.css"%}">
+<script src="{% static "wetlab/js/highlight.pack.js" %}"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 
 

@@ -29,7 +29,7 @@ RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
 RUN git checkout develop
 # RUN git submodule init
 # RUN git submodule update --checkout
-RUN cd iSkyLIMS_wetlab git 
+RUN cd wetlab git 
 
 
 

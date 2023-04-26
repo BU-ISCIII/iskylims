@@ -1,7 +1,7 @@
 from django.urls import path
 from wetlab.api import views
 
-app_name = "iSkyLIMS_wetlab_api"
+app_name = "wetlab_api"
 
 
 urlpatterns = [

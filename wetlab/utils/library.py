@@ -284,8 +284,8 @@ def get_samples_for_library_preparation():
     Constant:
         HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
     Functions:
-        configuration_sequencer_exists     # located at iSkyLIMS_wetlab.utils.sequencers
-        get_configuration_sequencers       # located at iSkyLIMS_wetlab.utils.sequencers
+        configuration_sequencer_exists     # located at wetlab.utils.sequencers
+        get_configuration_sequencers       # located at wetlab.utils.sequencers
     Return:
         samples_in_lib_prep
     """
@@ -471,7 +471,7 @@ def validate_sample_sheet_data(input_data):
     Functions:
         valid_samples_for_lib_preparation    # located at this file
         find_duplicate_index                 # located at this file
-        check_collection_index_exists        # located at iSkyLIMS_wetlab/utils/collection_index_functions.py
+        check_collection_index_exists        # located at wetlab/utils/collection_index_functions.py
     Constant:
         ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
         ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES

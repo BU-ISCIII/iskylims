@@ -391,7 +391,7 @@ def get_pool_duplicated_index(pool_objs):
         The function get the single read and paired ened  used for each pool.
         return a dictionary with single_paired as a key and the pool name list as value
     Functions:
-        check_if_duplicated_index   # located at iSkyLIMS_wetlab/utils/pool_preparation.py
+        check_if_duplicated_index   # located at wetlab/utils/pool_preparation.py
     Return:
         False if no duplicated found or the result_index cotaining the duplicated samples index
     """
@@ -546,7 +546,7 @@ def get_library_preparation_unique_id(lib_prep_ids):
     Input:
         lib_prep_ids # list having the library preparation id
     Functions:
-        get_lib_prep_obj_from_id   # located at iSkyLIMS_wetlab/utils/library_preparation.py
+        get_lib_prep_obj_from_id   # located at wetlab/utils/library_preparation.py
     Return:
         unique_id_list
     """

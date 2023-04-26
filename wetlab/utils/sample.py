@@ -348,7 +348,7 @@ def pending_samples_for_grafic(pending):
     Input:
         pending     # dictionary with the pending sample information
     Functions:
-        graphic_3D_pie # located at iSkyLIMS_wetlab/utils/stats_graphics.py
+        graphic_3D_pie # located at wetlab/utils/stats_graphics.py
     Return:
         graphic_pending_samples.
     """

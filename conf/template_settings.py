@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1', 'localserverip']
 INSTALLED_APPS = [
     'core',
     'clinic',
-    'iSkyLIMS_wetlab',
+    'wetlab',
     'drylab',
     'django_utils',
     'mptt',
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
 ]
 
 APPS_NAMES = [ ['clinic', 'Clinic'],
-    ['iSkyLIMS_wetlab', 'Masive Sequencing'],
+    ['wetlab', 'Masive Sequencing'],
     ['drylab','Requesting Services']
     ]
 
@@ -188,13 +188,13 @@ LOG_CLEAN_FILE = os.path.join(BASE_DIR, 'logs', 'crontab_cleanup.log')
 
 # Crontab settings
 CRONJOBS = [
-    #('2-59/5 * * * *', 'iSkyLIMS_wetlab.cron.update_run_in_recorded_state',  '>>' + LOG_CRONTAB_FILE), # run every 5 min wit an offset of 2 minutes
-    #('0 0 2 * *', 'iSkyLIMS_wetlab.cron.update_run_in_recorded_state',  '>>' + LOG_CRONTAB_FILE), # At minute 0 past every 2nd hour
-    #('*/5 * * * *', 'iSkyLIMS_wetlab.cron.check_not_finish_run', '>>' + LOG_CRONTAB_FILE) # run every 5 min
+    #('2-59/5 * * * *', 'wetlab.cron.update_run_in_recorded_state',  '>>' + LOG_CRONTAB_FILE), # run every 5 min wit an offset of 2 minutes
+    #('0 0 2 * *', 'wetlab.cron.update_run_in_recorded_state',  '>>' + LOG_CRONTAB_FILE), # At minute 0 past every 2nd hour
+    #('*/5 * * * *', 'wetlab.cron.check_not_finish_run', '>>' + LOG_CRONTAB_FILE) # run every 5 min
 
-    #('0 */2 * * *', 'iSkyLIMS_wetlab.cron.look_for_miseq_runs', '>>' + LOG_CRONTAB_FILE) # At minute 0 past every 2nd hour
-    ('0 0 2 * *', 'iSkyLIMS_wetlab.cron.looking_for_new_runs', '>>' + LOG_CRONTAB_FILE),
-    ('0 0 1 * *', 'iSkyLIMS_wetlab.cron.delete_invalid_run', '>>' + LOG_CLEAN_FILE)
+    #('0 */2 * * *', 'wetlab.cron.look_for_miseq_runs', '>>' + LOG_CRONTAB_FILE) # At minute 0 past every 2nd hour
+    ('0 0 2 * *', 'wetlab.cron.looking_for_new_runs', '>>' + LOG_CRONTAB_FILE),
+    ('0 0 1 * *', 'wetlab.cron.delete_invalid_run', '>>' + LOG_CLEAN_FILE)
     ]
 
 CRONTAB_COMMAND_SUFFIX = '2>&1'

@@ -338,9 +338,9 @@ def define_new_samples(request):
         analyze_input_samples  : located at core/handling_samples.py
         analyze_input_sample_project_fields  : located at core/handling_samples.py
         prepare_sample_input_table : located at core/utils/handling_samples.py
-        get_codeID_for_resequencing : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        get_codeID_for_resequencing : located at wetlab/utils/sample_functions.py
         prepare_sample_project_input_table :  located at core/utils/handling_samples.py
-        analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        analyze_reprocess_data  : located at wetlab/utils/sample_functions.py
         get_info_for_reprocess_samples : located at core/utils/handling_samples.py
     """
     # Record new samples
@@ -414,7 +414,7 @@ def define_new_samples(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/recordSample.html",
+            "wetlab/recordSample.html",
             {"sample_recorded": sample_recorded},
         )
 
@@ -431,13 +431,13 @@ def define_new_samples(request):
             )
             return render(
                 request,
-                "iSkyLIMS_wetlab/recordSample.html",
+                "wetlab/recordSample.html",
                 {"sample_recorded": sample_recorded},
             )
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/recordSample.html",
+                "wetlab/recordSample.html",
                 {"sample_recorded": sample_recorded},
             )
 
@@ -710,7 +710,7 @@ def display_sample_project(request, sample_project_id):
 
 
 def pending_to_update(request):
-    if "iSkyLIMS_wetlab" in settings.INSTALLED_APPS:
+    if "wetlab" in settings.INSTALLED_APPS:
         for c_sample_state in ["Sequencing", "Patient update"]:
             check_if_need_update(c_sample_state)
     pending = {}

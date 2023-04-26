@@ -1,15 +1,15 @@
-{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% extends 'wetlab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
 {% if display_annual_report %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/wetlab.js" %}"></script> 
 <style>
 .table-wrapper {
     max-height: 450px;
@@ -352,7 +352,7 @@
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'iSkyLIMS_wetlab/annual-Report-help.html' %}
+        {% include 'wetlab/annual-Report-help.html' %}
  
     </div> <!--// end row -->
 

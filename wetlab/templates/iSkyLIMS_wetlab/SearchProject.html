@@ -1,8 +1,8 @@
-{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% extends 'wetlab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/wetlab.js" %}"></script>
 <style>
     .scroll-wrapper-sm-7 {
         max-height: 350px;
@@ -133,7 +133,7 @@
         </div> <!--// end panel -->
        </div> <!--  end col-sm-3  -->
      <!-- Insert the Help window when clicking on the button -->
-        {% include 'iSkyLIMS_wetlab/search-help.html' %}
+        {% include 'wetlab/search-help.html' %}
     </div> <!--// end row -->
     <!-- End of FORM for searching Project information -->
 

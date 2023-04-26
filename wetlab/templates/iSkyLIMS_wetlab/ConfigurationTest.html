@@ -1,12 +1,12 @@
-{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% extends 'wetlab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
 
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/wetlab.js" %}"></script>
 
 
-<link rel="stylesheet"  href="{% static "iSkyLIMS_wetlab/css/styles/default.css" %}">
+<link rel="stylesheet"  href="{% static "wetlab/css/styles/default.css" %}">
 
 <style>
 .panel-wrapper-sm-6 {

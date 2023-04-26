@@ -30,7 +30,7 @@ urlpatterns = [
     path('bu-isciii', LoginView.as_view(template_name='core/bu_isciii.html'), name="about-us"),
     path('contact', LoginView.as_view(template_name='core/contact.html'), name="contact"),
     path('admin/', admin.site.urls),
-    path('wetlab/', include('iSkyLIMS_wetlab.urls')),
+    path('wetlab/', include('wetlab.urls')),
     path('drylab/',include('drylab.urls')),
     path('utils/',include('django_utils.urls')),
     path('clinic/',include ('clinic.urls')),
@@ -38,6 +38,6 @@ urlpatterns = [
     
     # REST FRAMEWORK URLS
     path('drylab/api/', include('drylab.api.urls')),
-    path('wetlab/api/', include('iSkyLIMS_wetlab.api.urls')),
+    path('wetlab/api/', include('wetlab.api.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0))
 ]

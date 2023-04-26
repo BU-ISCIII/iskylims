@@ -483,7 +483,7 @@ if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]
     mkdir -p $INSTALL_PATH
 
     rsync -rlv README.md LICENSE conf core drylab \
-            iSkyLIMS_wetlab clinic django_utils $INSTALL_PATH
+            wetlab clinic django_utils $INSTALL_PATH
 
     cd $INSTALL_PATH
 
@@ -534,7 +534,7 @@ if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]
 
     echo "Creating the database structure for iSkyLIMS"
     python3 manage.py migrate
-    python3 manage.py makemigrations django_utils core iSkyLIMS_wetlab drylab clinic
+    python3 manage.py makemigrations django_utils core wetlab drylab clinic
     python3 manage.py migrate
 
     echo "Run collectstatic"
