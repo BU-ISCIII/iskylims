@@ -6,7 +6,7 @@
 migrations/
 tmp/
 logs/
-./static/
+/static/
 install_settings.txt
 #--- updates introduced for iSkyLIMS in submodules packaging ---
 virtualenv/
