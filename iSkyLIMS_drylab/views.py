@@ -16,13 +16,13 @@ import iSkyLIMS_core.utils.common
 # Local imports
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
-import iSkyLIMS_drylab.utils.drylab_common_functions
+import iSkyLIMS_drylab.utils.common
 import iSkyLIMS_drylab.utils.graphics
-import iSkyLIMS_drylab.utils.handling_deliveries
-import iSkyLIMS_drylab.utils.handling_multiple_files
-import iSkyLIMS_drylab.utils.handling_pipelines
-import iSkyLIMS_drylab.utils.handling_request_services
-import iSkyLIMS_drylab.utils.handling_resolutions
+import iSkyLIMS_drylab.utils.deliveries
+import iSkyLIMS_drylab.utils.multi_files
+import iSkyLIMS_drylab.utils.pipelines
+import iSkyLIMS_drylab.utils.req_services
+import iSkyLIMS_drylab.utils.resolutions
 import iSkyLIMS_drylab.utils.testing_drylab_configuration
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 
@@ -60,7 +60,7 @@ def index(request):
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list["ongoing"].append(s_info)
     org_name = (
-        iSkyLIMS_drylab.utils.drylab_common_functions.get_configuration_from_database(
+        iSkyLIMS_drylab.utils.common.get_configuration_from_database(
             "ORGANIZATION_NAME"
         )
     )
@@ -78,7 +78,7 @@ def configuration_email(request):
     email_conf_data = iSkyLIMS_core.utils.common.get_email_data()
     email_conf_data[
         "EMAIL_ISKYLIMS"
-    ] = iSkyLIMS_drylab.utils.drylab_common_functions.get_configuration_from_database(
+    ] = iSkyLIMS_drylab.utils.common.get_configuration_from_database(
         "EMAIL_FOR_NOTIFICATIONS"
     )
     if request.method == "POST" and (request.POST["action"] == "emailconfiguration"):
@@ -92,7 +92,7 @@ def configuration_email(request):
                 "iSkyLIMS_drylab/configurationEmail.html",
                 {"ERROR": result_email, "email_conf_data": email_conf_data},
             )
-        iSkyLIMS_drylab.utils.drylab_common_functions.save_database_configuration_value(
+        iSkyLIMS_drylab.utils.common.save_database_configuration_value(
             "EMAIL_FOR_NOTIFICATIONS", request.POST["EMAIL_ISKYLIMS"]
         )
         return render(
@@ -327,7 +327,7 @@ def infrastructure_request(request):
 @login_required
 def add_samples_in_service(request):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(
@@ -382,7 +382,7 @@ def add_samples_in_service(request):
 @login_required
 def delete_samples_in_service(request):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(
@@ -429,7 +429,7 @@ def display_service(request, service_id):
         return redirect("/accounts/login")
     if iSkyLIMS_drylab.models.Service.objects.filter(pk=service_id).exists():
         service_manager = (
-            iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request)
+            iSkyLIMS_drylab.utils.common.is_service_manager(request)
         )
         display_service_details = (
             iSkyLIMS_drylab.utils.handling_request_services.get_service_information(
@@ -474,7 +474,7 @@ def search_service(request):
 
     if "iSkyLIMS_wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
-    if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+    if not iSkyLIMS_drylab.utils.common.is_service_manager(request):
         services_search_list["username"] = request.user.username
 
     if request.method == "POST" and request.POST["action"] == "searchservice":
@@ -514,12 +514,12 @@ def search_service(request):
         # check the right format of start and end date
         if (
             request.POST["startdate"] != ""
-            and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            and not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 request.POST["startdate"]
             )
         ) or (
             request.POST["enddate"] != ""
-            and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            and not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 request.POST["enddate"]
             )
         ):
@@ -687,7 +687,7 @@ def search_service(request):
 @login_required
 def pending_services(request):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(
@@ -765,7 +765,7 @@ def service_in_waiting_info(request):
 @login_required
 def add_resolution(request):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(
@@ -984,12 +984,12 @@ def add_delivery(request):
     if request.method == "POST" and request.POST["action"] == "addDeliveryResolution":
         if (
             request.POST["startdate"] != ""
-            and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            and not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 request.POST["startdate"]
             )
         ) or (
             request.POST["enddate"] != ""
-            and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            and not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 request.POST["enddate"]
             )
         ):
@@ -1077,7 +1077,7 @@ def stats_by_user(request):
         # redirect to login webpage
         return redirect("/accounts/login")
     user_list = (
-        iSkyLIMS_drylab.utils.drylab_common_functions.get_users_requested_services()
+        iSkyLIMS_drylab.utils.common.get_users_requested_services()
     )
     if request.method == "POST" and request.POST["action"] == "userStatistics":
         # validate the input data in the form
@@ -1087,7 +1087,7 @@ def stats_by_user(request):
 
         if (
             start_date != ""
-            and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            and not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 start_date
             )
         ):
@@ -1098,7 +1098,7 @@ def stats_by_user(request):
                 {"user_list": user_list, "ERROR": error_message},
             )
         if end_date != "":
-            if not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            if not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 end_date
             ):
                 error_message = (
@@ -1289,13 +1289,13 @@ def stats_by_services_request(request):
         end_date = request.POST["enddate"]
         if (
             start_date != ""
-            and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            and not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 start_date
             )
         ):
             return render(request, "iSkyLIMS_drylab/statsByServicesRequest.html")
         if end_date != "":
-            if not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
+            if not iSkyLIMS_drylab.utils.common.check_valid_date_format(
                 end_date
             ):
                 return render(request, "iSkyLIMS_drylab/statsByServicesRequest.html")
@@ -1615,9 +1615,9 @@ def open_sessions(request):
         return redirect("")
 
     user_connected = {}
-    if iSkyLIMS_drylab.utils.drylab_common_functions.get_current_users().exists():
+    if iSkyLIMS_drylab.utils.common.get_current_users().exists():
         user_list_connected = (
-            iSkyLIMS_drylab.utils.drylab_common_functions.get_current_users()
+            iSkyLIMS_drylab.utils.common.get_current_users()
         )
         user_data = []
         for user in user_list_connected:
@@ -1773,7 +1773,7 @@ def configuration_test(request):
 @login_required
 def define_pipeline_service(request):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(
@@ -1844,7 +1844,7 @@ def define_pipeline_service(request):
 @login_required
 def manage_pipelines(request):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(
@@ -1866,7 +1866,7 @@ def manage_pipelines(request):
 @login_required
 def detail_pipeline(request, pipeline_id):
     if request.user.is_authenticated:
-        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(
+        if not iSkyLIMS_drylab.utils.common.is_service_manager(
             request
         ):
             return render(

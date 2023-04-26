@@ -34,11 +34,11 @@ from .serializers import (
     CreateDeliveryPostSerializer,
 )
 
-from iSkyLIMS_drylab.utils.handling_resolutions import (
+from iSkyLIMS_drylab.utils.resolutions import (
     send_resolution_in_progress_email,
 )
 
-from iSkyLIMS_drylab.utils.handling_deliveries import (
+from iSkyLIMS_drylab.utils.deliveries import (
     send_delivery_service_email,
 )
 

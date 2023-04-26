@@ -9,8 +9,8 @@ import django.contrib.auth.models
 # Local imports
 import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.drylab_config
-import iSkyLIMS_drylab.utils.handling_request_services
-import iSkyLIMS_drylab.utils.handling_pipelines
+import iSkyLIMS_drylab.utils.req_services
+import iSkyLIMS_drylab.utils.pipelines
 
 
 def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
@@ -25,7 +25,7 @@ def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
     """
     for pipeline_id in pipeline_ids:
         resolution_obj.resolution_pipelines.add(
-            iSkyLIMS_drylab.utils.handling_pipelines.get_pipeline_obj_from_id(
+            iSkyLIMS_drylab.utils.pipelines.get_pipeline_obj_from_id(
                 pipeline_id
             )
         )
@@ -86,7 +86,7 @@ def get_assign_resolution_full_number(service_id, acronymName):
         resolution_full_number
     """
     service_obj = (
-        iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(
+        iSkyLIMS_drylab.utils.req_services.get_service_obj_from_id(
             service_id
         )
     )
@@ -122,7 +122,7 @@ def create_resolution_number(service_id):
         resolution_number
     """
     service_obj = (
-        iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(
+        iSkyLIMS_drylab.utils.req_services.get_service_obj_from_id(
             service_id
         )
     )
@@ -256,7 +256,7 @@ def create_new_resolution(resolution_data_form):
         new_resolution
     """
     service_obj = (
-        iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(
+        iSkyLIMS_drylab.utils.req_services.get_service_obj_from_id(
             resolution_data_form["service_id"]
         )
     )
@@ -293,7 +293,7 @@ def create_new_resolution(resolution_data_form):
 
     # Add selected available services to the new resolution
     for avail_sarvice in resolution_data_form["select_available_services"]:
-        avail_service_obj = iSkyLIMS_drylab.utils.handling_request_services.get_available_service_obj_from_id(
+        avail_service_obj = iSkyLIMS_drylab.utils.req_services.get_available_service_obj_from_id(
             avail_sarvice
         )
         new_resolution.available_services.add(avail_service_obj)
@@ -302,7 +302,7 @@ def create_new_resolution(resolution_data_form):
         for pipeline in resolution_data_form["pipelines"]:
             if pipeline != "":
                 pipeline_obj = (
-                    iSkyLIMS_drylab.utils.handling_pipelines.get_pipeline_obj_from_id(
+                    iSkyLIMS_drylab.utils.pipelines.get_pipeline_obj_from_id(
                         pipeline
                     )
                 )
@@ -379,20 +379,20 @@ def prepare_form_data_add_resolution(form_data):
     else:
         list_of_ch_services = False
     service_obj = (
-        iSkyLIMS_drylab.utils.handling_request_services.get_service_obj_from_id(
+        iSkyLIMS_drylab.utils.req_services.get_service_obj_from_id(
             form_data["service_id"]
         )
     )
     resolution_form_data["service_number"] = service_obj.get_service_request_number()
     all_tree_services = service_obj.service_available_service.all()
-    all_children_services = iSkyLIMS_drylab.utils.handling_request_services.get_available_children_services_and_id(
+    all_children_services = iSkyLIMS_drylab.utils.req_services.get_available_children_services_and_id(
         all_tree_services
     )
 
     if list_of_ch_services:
         if len(list_of_ch_services) != len(all_children_services):
             for children in list_of_ch_services:
-                avail_serv_obj = iSkyLIMS_drylab.utils.handling_request_services.get_available_service_obj_from_id(
+                avail_serv_obj = iSkyLIMS_drylab.utils.req_services.get_available_service_obj_from_id(
                     children
                 )
                 selected_children_services.append(
@@ -435,7 +435,7 @@ def prepare_form_data_add_resolution(form_data):
     #        pipelines_data.append([ get_available_service_obj_from_id(avail_service).get_service_description() , data])
     resolution_form_data[
         "pipelines_data"
-    ] = iSkyLIMS_drylab.utils.handling_pipelines.get_all_defined_pipelines(True)
+    ] = iSkyLIMS_drylab.utils.pipelines.get_all_defined_pipelines(True)
     resolution_form_data[
         "pipelines_heading"
     ] = iSkyLIMS_drylab.drylab_config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
