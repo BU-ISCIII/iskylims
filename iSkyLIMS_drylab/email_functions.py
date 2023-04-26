@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 
-import smtplib
-import email.utils
-import subprocess
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from subprocess import Popen, PIPE
-
 from email.mime.text import MIMEText
+from subprocess import PIPE, Popen
 
 
 # Create the message
