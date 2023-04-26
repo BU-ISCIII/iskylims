@@ -1,18 +1,16 @@
 # Generic imports
 import os
-from datetime import date, datetime
-from django.db import models
-from django import forms
-from django.contrib.auth.models import User
-from django.utils.translation import gettext_lazy as _
-from mptt.models import MPTTModel
-from mptt.fields import TreeForeignKey, TreeManyToManyField
-from django.utils.timezone import now as timezone_now
-from django_utils.models import Profile, Center
-from django.contrib.auth.models import User
+from datetime import date
 
-from iSkyLIMS_core.models import SequencingPlatform
-from iSkyLIMS_drylab import drylab_config
+from django.contrib.auth.models import User
+from django.db import models
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext_lazy as _
+from mptt.fields import TreeForeignKey, TreeManyToManyField
+from mptt.models import MPTTModel
+
+import iSkyLIMS_core.models
+import iSkyLIMS_drylab.drylab_config
 
 # STATUS_CHOICES will be deprecated from release 2.4.0 or higher
 STATUS_CHOICES = (
@@ -85,22 +83,20 @@ class AvailableService(MPTTModel):
     )
     parent = TreeForeignKey("self", models.SET_NULL, null=True, blank=True)
     service_in_use = models.BooleanField(default=True)
-    serviceId = models.CharField(max_length=40, null=True, blank=True)
+    service_id = models.CharField(max_length=40, null=True, blank=True)
     description = models.CharField(max_length=200, null=True, blank=True)
 
     class Meta:
         db_table = "drylab_available_service"
+        ordering = ["tree_id", "lft"]
+        verbose_name = "AvailableService"
+        verbose_name_plural = "AvailableServices"
 
     def __str__(self):
         return "%s" % (self.avail_service_description)
 
     def get_service_description(self):
         return "%s" % (self.avail_service_description)
-
-    class Meta:
-        ordering = ["tree_id", "lft"]
-        verbose_name = "AvailableService"
-        verbose_name_plural = "AvailableServices"
 
 
 class PipelinesManager(models.Manager):
@@ -111,7 +107,7 @@ class PipelinesManager(models.Manager):
             pipeline_in_use=True,
             pipeline_version=data["pipeline_version"],
             pipeline_file=os.path.join(
-                drylab_config.PIPELINE_FILE_DIRECTORY, data["filename"]
+                iSkyLIMS_drylab.drylab_config.PIPELINE_FILE_DIRECTORY, data["filename"]
             ),
             pipeline_url=data["url"],
             pipeline_description=data["description"],
@@ -128,7 +124,9 @@ class Pipelines(models.Model):
     pipeline_version = models.CharField(max_length=10)
     pipeline_in_use = models.BooleanField(default=True)
     pipeline_file = models.FileField(
-        upload_to=drylab_config.PIPELINE_FILE_DIRECTORY, null=True, blank=True
+        upload_to=iSkyLIMS_drylab.drylab_config.PIPELINE_FILE_DIRECTORY,
+        null=True,
+        blank=True,
     )
     pipeline_url = models.CharField(max_length=200, null=True, blank=True)
     pipeline_description = models.CharField(max_length=500, null=True, blank=True)
@@ -230,7 +228,7 @@ class ServiceManager(models.Manager):
             state_value__iexact="recorded"
         ).last()
         new_service = self.create(
-            serviceUserId=data["serviceUserId"],
+            service_user_id=data["serviceUserId"],
             service_sequencing_platform=service_sequencing_platform,
             service_run_specs=service_run_specs,
             service_seq_center=data["service_seq_center"],
@@ -244,12 +242,15 @@ class ServiceManager(models.Manager):
 
 
 class Service(models.Model):
-    ## User requesting service:
+    # User requesting service:
     # 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
     #  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
-    serviceUserId = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    service_user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     service_sequencing_platform = models.ForeignKey(
-        SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
+        iSkyLIMS_core.models.SequencingPlatform,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     service_available_service = TreeManyToManyField(
         AvailableService, verbose_name=_("AvailableServices")
@@ -297,7 +298,7 @@ class Service(models.Model):
         return [self.service_request_number, self.service_seq_center]
 
     def get_service_information(self):
-        return [self.serviceRequestNumber, self.serviceSeqCenter]
+        return [self.service_request_number, self.service_seq_center]
 
     def get_service_id(self):
         return "%s" % self.pk
@@ -365,26 +366,21 @@ class Service(models.Model):
         return "%s" % (self.service_request_number)
 
     def get_service_requested_user(self):
-        if self.serviceUserId != None:
-            return "%s" % (self.serviceUserId.username)
+        if self.service_user_id is not None:
+            return "%s" % (self.service_user_id.username)
         return "Not available"
 
     def get_user_service_obj(self):
-        return self.serviceUserId
-	
-    def get_service_requested_user(self):
-        if self.serviceUserId is not None:
-            return '%s' %(self.serviceUserId.username)
-        return 'Not available'
+        return self.service_user_id
 
     def get_service_request_center_abbr(self):
-        return "%s" % (self.serviceUserId.profile.profileCenter.centerAbbr)
+        return "%s" % (self.service_user_id.profile.profile_center.center_abbr)
 
     def get_service_state(self, display_type):
         return self.service_state.get_state(to_display=display_type)
 
     def get_service_request_center_name(self):
-        return "%s" % (self.serviceUserId.profile.profileCenter.centerName)
+        return "%s" % (self.service_user_id.profile.profile_center.center_name)
 
     def get_service_user_notes(self):
         return "%s" % (self.service_notes)
@@ -393,14 +389,14 @@ class Service(models.Model):
         if self.service_delivered_date == self.service_created_date:
             return 1
         else:
-            number_days, time = str(
+            number_days, _ = str(
                 self.service_delivered_date - self.service_created_date
             ).split(",")
-            number, string_value = number_days.split(" ")
+            number, _ = number_days.split(" ")
         return number
 
     def get_user_email(self):
-        return "%s" % (self.serviceUserId.email)
+        return "%s" % (self.service_user_id.email)
 
     def get_child_services(self):
         children_services = []
@@ -514,7 +510,7 @@ class UploadServiceFile(models.Model):
         Service, on_delete=models.CASCADE, null=True, blank=True
     )
     upload_file = models.FileField(
-        upload_to=drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY
+        upload_to=iSkyLIMS_drylab.drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY
     )
     upload_file_name = models.CharField(null=True, blank=True, max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -547,12 +543,12 @@ class ResolutionManager(models.Manager):
         resolution_asigned_user = User.objects.get(
             pk__exact=resolution_data["resolution_asigned_user"]
         )
-        resolution_serviceID = Service.objects.get(
+        resolution_service_id = Service.objects.get(
             pk__exact=resolution_data["service_id"]
         )
         state = ResolutionStates.objects.get(state_value__exact="Queued")
         new_resolution = self.create(
-            resolution_serviceID=resolution_serviceID,
+            resolution_service_id=resolution_service_id,
             resolution_asigned_user=resolution_asigned_user,
             resolution_number=resolution_data["resolutionNumber"],
             resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
@@ -565,7 +561,7 @@ class ResolutionManager(models.Manager):
 
 
 class Resolution(models.Model):
-    resolution_serviceID = models.ForeignKey(
+    resolution_service_id = models.ForeignKey(
         Service, on_delete=models.CASCADE, related_name="resolutions"
     )
     resolution_asigned_user = models.ForeignKey(
@@ -601,7 +597,7 @@ class Resolution(models.Model):
         _("Acronym Name"), max_length=255, null=True, blank=True
     )
     resolution_pdf_file = models.FileField(
-        upload_to=drylab_config.RESOLUTION_FILES_DIRECTORY, null=True, blank=True
+        upload_to=iSkyLIMS_drylab.drylab_config.RESOLUTION_FILES_DIRECTORY, null=True, blank=True
     )
 
     class Meta:
@@ -614,7 +610,7 @@ class Resolution(models.Model):
         return "%s" % self.resolution_number
 
     def get_service_request_number(self):
-        return "%s" % self.resolution_serviceID.get_service_request_number()
+        return "%s" % self.resolution_service_id.get_service_request_number()
 
     def get_available_services(self):
         if self.available_services.all().exists():
@@ -651,12 +647,12 @@ class Resolution(models.Model):
     def get_resolution_information(self):
         resolution_info = []
         resolution_info.append(self.get_available_services())
-        if self.resolution_state != None:
+        if self.resolution_state is not None:
             resolution_info.append(self.resolution_state.get_state())
         else:
             resolution_info.append("Not assigned")
         resolution_info.append(self.resolution_full_number)
-        if self.resolution_asigned_user != None:
+        if self.resolution_asigned_user is not None:
             resolution_info.append(self.resolution_asigned_user.username)
         else:
             resolution_info.append("Not assigned")
@@ -692,8 +688,8 @@ class Resolution(models.Model):
         else:
             on_estimated_date = self.resolution_estimated_date.strftime("%d %B, %Y")
         data = []
-        data.append(self.resolution_serviceID.get_service_id())
-        data.append(self.resolution_serviceID.get_service_request_number())
+        data.append(self.resolution_service_id.get_service_id())
+        data.append(self.resolution_service_id.get_service_request_number())
         data.append(self.resolution_number)
         data.append(self.resolution_full_number)
         if self.resolution_asigned_user is None:
@@ -705,13 +701,13 @@ class Resolution(models.Model):
         return data
 
     def get_service_obj(self):
-        return self.resolution_serviceID
+        return self.resolution_service_id
 
     def get_service_name(self):
-        return "%s" % (self.resolution_serviceID.get_service_request_number())
+        return "%s" % (self.resolution_service_id.get_service_request_number())
 
     def get_state(self):
-        if self.resolution_state != None:
+        if self.resolution_state is not None:
             return "%s" % (self.resolution_state.get_state())
         else:
             return "Not assigned"
@@ -720,15 +716,15 @@ class Resolution(models.Model):
         return "%s" % (self.resolution_full_number)
 
     def get_resolution_estimated_date(self):
-        if self.resolution_estimated_date != None:
+        if self.resolution_estimated_date is not None:
             return "%s" % (self.resolution_estimated_date)
         return "--"
-    
+
     def get_resolution_state(self):
-        if self.resolutionState is not None:
-            return '%s' %(self.resolutionState.get_resolution_state())
+        if self.resolution_state is not None:
+            return "%s" % (self.resolution_state.get_resolution_state())
         else:
-            return 'Not assigned'
+            return "Not assigned"
 
     def get_resolution_on_queued_date(self):
         if self.resolution_queued_date is not None:
@@ -738,20 +734,10 @@ class Resolution(models.Model):
 
     def get_resolution_in_progress_date_no_format(self):
         return self.resolution_in_progress_date
-    
-    def get_resolution_estimated_date(self):
-        if self.resolutionEstimatedDate is not None:
-            return '%s' %(self.resolutionEstimatedDate)
-        return 'Not yet defined'
 
     def get_resolution_request_center_abbr(self):
         return "%s" % (
-            self.resolution_serviceID.serviceUserId.profile.profileCenter.centerAbbr
-        )
-
-    def get_resolution_request_center_abbr(self):
-        return "%s" % (
-            self.resolution_serviceID.serviceUserId.profile.profileCenter.centerName
+            self.resolution_service_id.service_user_id.profile.profile_center.center_abbr
         )
 
     def get_resolution_handler_user(self):
@@ -760,8 +746,8 @@ class Resolution(models.Model):
         return "--"
 
     def get_service_owner_email(self):
-        if self.resolution_serviceID != None:
-            return self.resolution_serviceID.get_user_email()
+        if self.resolution_service_id is not None:
+            return self.resolution_service_id.get_user_email()
         return ""
 
     def update_resolution_in_progress_date(self):
@@ -840,7 +826,7 @@ class DeliveryManager(models.Manager):
 
 
 class Delivery(models.Model):
-    delivery_resolutionID = models.ForeignKey(
+    delivery_resolution_id = models.ForeignKey(
         Resolution, on_delete=models.CASCADE, related_name="delivery"
     )
     pipelines_in_delivery = models.ManyToManyField(Pipelines, blank=True)
@@ -858,17 +844,17 @@ class Delivery(models.Model):
         db_table = "drylab_delivery"
 
     def __str__(self):
-        return "%s" % (self.delivery_resolutionID)
+        return "%s" % (self.delivery_resolution_id)
 
     def get_delivery_information(self):
         delivery_info = []
-        delivery_info.append(self.delivery_resolutionID.resolution_number)
+        delivery_info.append(self.delivery_resolution_id.resolution_number)
         delivery_info.append(self.delivery_date.strftime("%d %B, %Y"))
         delivery_info.append(self.delivery_notes)
         return delivery_info
 
     def get_resolution_obj(self):
-        return self.delivery_resolutionID
+        return self.delivery_resolution_id
 
     objects = DeliveryManager()
 
