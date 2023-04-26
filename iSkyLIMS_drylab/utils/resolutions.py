@@ -424,15 +424,11 @@ def prepare_form_data_add_resolution(form_data):
     if len(selected_children_services) == 0:
         req_available_services_with_desc = all_children_services
     else:
-        req_available_services_with_desc = selected_children_services  # resolution_form_data['selected_avail_services_data']
+        req_available_services_with_desc = selected_children_services
     req_available_services_id = []
     for req_service in req_available_services_with_desc:
         req_available_services_id.append(req_service[0])
-    # data = get_active_pipeline_and_versions()
-    # for avail_service in req_available_services_id:
-    #    data = get_pipeline_and_versions_for_available_service(avail_service)
-    #    if data :
-    #        pipelines_data.append([ get_available_service_obj_from_id(avail_service).get_service_description() , data])
+
     resolution_form_data[
         "pipelines_data"
     ] = iSkyLIMS_drylab.utils.pipelines.get_all_defined_pipelines(True)
@@ -570,7 +566,7 @@ def send_resolution_in_progress_email(email_data):
     from_user = notification_user
     to_users = [email_data["user_email"], notification_user]
     try:
-        send_mail(subject, body_message, from_user, to_users)
+        django.core.mail.send_mail(subject, body_message, from_user, to_users)
     except SMTPException:
         pass
     return

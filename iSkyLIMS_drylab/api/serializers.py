@@ -1,13 +1,10 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
+from rest_framework import serializers
+
 from django_utils.models import Profile
-from iSkyLIMS_drylab.models import (
-    Service,
-    Resolution,
-    RequestedSamplesInServices,
-    Delivery,
-    Pipelines,
-)
+from iSkyLIMS_drylab.models import (Delivery, Pipelines,
+                                    RequestedSamplesInServices, Resolution,
+                                    Service)
 
 
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):

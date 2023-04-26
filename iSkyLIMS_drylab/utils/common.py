@@ -16,7 +16,7 @@ def check_valid_date_format(date):
     try:
         datetime.datetime.strptime(date, "%Y-%m-%d")
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -87,7 +87,7 @@ def is_service_manager(request):
         )
         if groups not in request.user.groups.all():
             return False
-    except:
+    except Exception:
         return False
 
     return True
@@ -107,7 +107,7 @@ def increment_service_number(request_user):
         user_center = django_utils.models.Profile.objects.get(
             profile_user_id=request_user
         ).profile_center.center_abbr
-    except:
+    except Exception:
         user_center = iSkyLIMS_drylab.drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
 

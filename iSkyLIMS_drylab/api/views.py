@@ -1,46 +1,28 @@
 from datetime import datetime
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Prefetch
 
-from rest_framework.decorators import (
-    authentication_classes,
-    permission_classes,
-    api_view,
-)
+from django.db.models import Prefetch
+from django.http import QueryDict
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.authentication import (BasicAuthentication,
+                                           SessionAuthentication)
+from rest_framework.decorators import (api_view, authentication_classes,
+                                       permission_classes)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from iSkyLIMS_drylab.models import (
-    Service,
-    Resolution,
-    ResolutionStates,
-    RequestedSamplesInServices,
-    Pipelines,
-    Delivery,
-)
-from django_utils.models import Profile
-from django.http import QueryDict
+from iSkyLIMS_drylab.models import (Delivery, Pipelines,
+                                    RequestedSamplesInServices, Resolution,
+                                    ResolutionStates, Service)
+from iSkyLIMS_drylab.utils.deliveries import send_delivery_service_email
+from iSkyLIMS_drylab.utils.resolutions import send_resolution_in_progress_email
 
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from .serializers import (
-    ServiceListSerializer,
-    ServiceSerializer,
-    ResolutionSerializer,
-    RequestedSamplesInServicesSerializer,
-    UpdateResolutionStateSerializer,
-    UpdateServiceStateSerializer,
-    CreateDeliveryPostSerializer,
-)
-
-from iSkyLIMS_drylab.utils.resolutions import (
-    send_resolution_in_progress_email,
-)
-
-from iSkyLIMS_drylab.utils.deliveries import (
-    send_delivery_service_email,
-)
+from .serializers import (CreateDeliveryPostSerializer,
+                          RequestedSamplesInServicesSerializer,
+                          ResolutionSerializer, ServiceListSerializer,
+                          ServiceSerializer, UpdateResolutionStateSerializer,
+                          UpdateServiceStateSerializer)
 
 
 def check_valid_date_format(date):
@@ -54,7 +36,8 @@ def check_valid_date_format(date):
 service_state_param = openapi.Parameter(
     "state",
     openapi.IN_QUERY,
-    description="State parameter is optional. The allowed values are: [approved/rejected/queued/in_progress/delivered/archived/recorded]",
+    description="""State parameter is optional.
+                   The allowed values are: [approved/rejected/queued/in_progress/delivered/archived/recorded]""",
     enum=[
         "approved",
         "rejected",
@@ -69,14 +52,16 @@ service_state_param = openapi.Parameter(
 date_from_param = openapi.Parameter(
     "date_from",
     openapi.IN_QUERY,
-    description="Date parameter is optional.It will limit the results from the date specified in the parameter. Example 2022-01-01",
+    description="""Date parameter is optional.It will limit the results from the date specified in the parameter.
+                Example 2022-01-01""",
     type=openapi.TYPE_STRING,
 )
 
 date_until_param = openapi.Parameter(
     "date_until",
     openapi.IN_QUERY,
-    description="Date parameter is optional.It will limit the results up to the date specified in the parameter. Example 2022-01-01",
+    description="""Date parameter is optional.It will limit the results up to the date specified in the parameter.
+                Example 2022-01-01""",
     type=openapi.TYPE_STRING,
 )
 
@@ -102,7 +87,9 @@ service_name_param = openapi.Parameter(
 resolution_state_mand = openapi.Parameter(
     "status",
     openapi.IN_QUERY,
-    description="Parameter status is mandatory and can take the following possible values:[approved/rejected/queued/in_progress/delivered/archived/recorded]",
+    description="""Parameter status is mandatory.
+                It can take the following possible values:
+                [approved/rejected/queued/in_progress/delivered/archived/recorded]""",
     type=openapi.TYPE_STRING,
 )
 
@@ -171,7 +158,7 @@ def resolution_data(request):
         if Resolution.objects.filter(
             resolution_state__resolution_stateName__exact=request.GET["state"]
         ).exists():
-            resolution_objs = Resolution.objects.filter(
+            resolution_obj = Resolution.objects.filter(
                 resolution_state__resolution_stateName__exact=request.GET["state"]
             )
         else:
