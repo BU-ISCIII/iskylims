@@ -17,9 +17,9 @@ def get_codeID_for_resequencing(sample_recorded):
     Input:
         sample_recorded : sample id
     Functions:
-        get_sample_obj_from_id : located at core/utils/handling_samples.py
-        get_molecule_objs_from_sample : located at core/utils/handling_samples.py
-        get_molecule_codeid_from_object : located at core/utils/handling_samples.py
+        get_sample_obj_from_id
+        get_molecule_objs_from_sample
+        get_molecule_codeid_from_object
     Variables:
         lib_prep_available # list all possibilities for library preparation
         mol_lib_prep_available # list all possibilities for molecule
@@ -68,9 +68,9 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
         reprocess_sample_id      # sample id to reprocess
         reg_user                 # register user
     Functions:
-        update_sample_reused    # located at core/utils/handling_samples.py
-        update_molecule_reused  # located at core/utils/handling_samples.
-        get_sample_obj_from_id  # located at core/utils/handling_samples.
+        update_sample_reused
+        update_molecule_reused
+        get_sample_obj_from_id
     Return:
         True if user request were right, or Invalid options if user requests were wrong.
     """
@@ -147,7 +147,7 @@ def get_comparation_sample_information(sample_objs):
     Input:
         sample_objs       # samples objs
     Functions:
-        get_sample_obj_from_id : located at core/utils/handling_samples.
+        get_sample_obj_from_id
     Return:
         compared_data
     """

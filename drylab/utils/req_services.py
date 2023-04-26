@@ -31,13 +31,13 @@ def add_files_to_service(file_ids, service_obj):
         file_ids 		# id of the files
         service_obj      # service instance
     Functions:
-        update_upload_file_with_service   # located at drylab/utils/handling_multiple_files
+        update_upload_file_with_service   # located at drylab/utils/multi_files
     Return:
         True if service id exists
     """
     for file_id in file_ids:
         if file_id != "undefined":
-            drylab.utils.handling_multiple_files.update_upload_file_with_service(
+            drylab.utils.multi_files.update_upload_file_with_service(
                 file_id, service_obj
             )
     return
@@ -83,8 +83,8 @@ def create_new_save_sequencing_service_request(request):
     Input:
         request      # user data form
     Functions:
-        create_service_id			# located at drylab.utils.drylab_common_functions
-        increment_service_number	# located at drylab.utils.drylab_common_functions
+        create_service_id			# located at drylab.utils.common
+        increment_service_number	# located at drylab.utils.common
     Return:
         new_service		# recorded instance of the form
     """
@@ -120,13 +120,13 @@ def create_new_save_sequencing_service_request(request):
     service_data["serviceUserId"] = request_user
     service_data[
         "service_request_int"
-    ] = drylab.utils.drylab_common_functions.increment_service_number(
+    ] = drylab.utils.common.increment_service_number(
         request_user
     )
 
     service_data[
         "service_request_number"
-    ] = drylab.utils.drylab_common_functions.create_service_id(
+    ] = drylab.utils.common.create_service_id(
         service_data["service_request_int"], request_user
     )
 
@@ -177,12 +177,12 @@ def create_new_save_counseling_infrastructure_service_request(request):
     service_data["serviceUserId"] = request.user
     service_data[
         "service_request_int"
-    ] = drylab.utils.drylab_common_functions.increment_service_number(
+    ] = drylab.utils.common.increment_service_number(
         request.user.id
     )
     service_data[
         "service_request_number"
-    ] = drylab.utils.drylab_common_functions.create_service_id(
+    ] = drylab.utils.common.create_service_id(
         service_data["service_request_int"], request.user.id
     )
     # Save the new service
@@ -292,7 +292,7 @@ def get_data_for_service_confirmation(service_requested):
     Input:
         service_requested # service instance
     Functions:
-        get_uploaded_files_for_service   # located at drylab.utils.handling_multiple_files
+        get_uploaded_files_for_service   # located at drylab.utils.multi_files
         get_projects_in_requested_samples # located at this file
     Return:
         information
@@ -331,7 +331,7 @@ def get_data_for_service_confirmation(service_requested):
     service_data["center"] = center
     service_data["notes"] = service.get_service_user_notes()
     files = (
-        drylab.utils.handling_multiple_files.get_uploaded_files_for_service(
+        drylab.utils.multi_files.get_uploaded_files_for_service(
             service
         )
     )
@@ -625,7 +625,7 @@ def get_service_information(service_id, service_manager):
             )
 
     display_service_details["user_name"] = service_obj.get_service_requested_user()
-    user_input_files = drylab.utils.handling_multiple_files.get_uploaded_files_and_file_name_for_service(
+    user_input_files = drylab.utils.multi_files.get_uploaded_files_and_file_name_for_service(
         service_obj
     )
     if user_input_files:
@@ -882,19 +882,19 @@ def prepare_form_data_request_service_sequencing(request):
         HEADING_SELECT_SAMPLE_IN_SERVICE
         HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
     Functions:
-        get_only_recorded_samples_and_dates		# located at core.utils.handling_samples
-        get_user_sharing_list					# located at drylab.utils.drylab_common_functions
-        get_defined_username_and_ids   			# located at drylab.utils.drylab_common_functions
-        get_runs_projects_samples_and_dates		# located at wetlab.utils.api.wetlab_api
+        get_only_recorded_samples_and_dates
+        get_user_sharing_list
+        get_defined_username_and_ids
+        get_runs_projects_samples_and_dates
     Return:
         service_data_information
     """
     service_data_information = {}
 
-    if drylab.utils.drylab_common_functions.is_service_manager(request):
+    if drylab.utils.common.is_service_manager(request):
         service_data_information[
             "users"
-        ] = drylab.utils.drylab_common_functions.get_defined_username_and_ids()
+        ] = drylab.utils.common.get_defined_username_and_ids()
     service_data_information["nodes"] = (
         drylab.models.AvailableService.objects.filter(
             avail_service_description__exact="Genomic data analysis"
@@ -906,7 +906,7 @@ def prepare_form_data_request_service_sequencing(request):
     if wetlab_api_available:
         # get samples which have sequencing data in iSkyLIMS
         user_sharing_list = (
-            drylab.utils.drylab_common_functions.get_user_sharing_list(
+            drylab.utils.common.get_user_sharing_list(
                 request.user
             )
         )
@@ -926,7 +926,7 @@ def prepare_form_data_request_service_sequencing(request):
 
     service_data_information[
         "sample_only_recorded"
-    ] = core.utils.handling_samples.get_only_recorded_samples_and_dates()
+    ] = core.utils.samples.get_only_recorded_samples_and_dates()
     if len(service_data_information["sample_only_recorded"]) > 0:
         service_data_information[
             "sample_only_recorded_heading"

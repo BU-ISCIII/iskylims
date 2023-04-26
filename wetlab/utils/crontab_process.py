@@ -31,8 +31,8 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
         run_folder          # root folder to start the checking file size
         experiment_name     # Experiment name
     Functions:
-        get_samba_application_shared_folder  # located at utils.handling_crontab_common_functions.py
-        get_size_dir                         # Located on this file
+        get_samba_application_shared_folder
+        get_size_dir
     Return:
         disk_utilization    # in the last iteraction will return the total size of the folder
     """
@@ -1380,8 +1380,8 @@ def get_run_metric_files(conn, run_folder, experiment_name):
         RUN_PARAMETER_FILE
         STATISTICS_FOLDER
     Functions:
-        get_samba_application_shared_folder     # Located at utils/handling_crontab_common_functions.py
-        fetch_remote_file                       # Located at utils.handling_crontab_common_functions.py
+        get_samba_application_shared_folder
+        fetch_remote_file
     Return:
         copied_files
     """
@@ -2013,8 +2013,8 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         STATS_FILE_PATH
         CONVERSION_STATS_FILE
     Functions:
-        get_samba_application_shared_folder     # Located at utils/handling_crontab_common_functions.py
-        get_samba_shared_folder                 # Located at utils/handling_crontab_common_functions.py
+        get_samba_application_shared_folder
+        get_samba_shared_folder
     Return:
         bcl2fastq_finish_date
     """
@@ -2133,9 +2133,9 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
         STATS_FILE_PATH
         CONVERSION_STATS_FILE
     Functions:
-        get_samba_application_shared_folder     # Located at utils/handling_crontab_common_functions.py
-        get_samba_shared_folder                 # Located at utils/handling_crontab_common_functions.py
-        fetch_remote_file                       # Located at utils/handling_crontab_common_functions.py
+        get_samba_application_shared_folder
+        get_samba_shared_folder
+        fetch_remote_file
     Return:
         demux_files
     """

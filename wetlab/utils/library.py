@@ -216,8 +216,8 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
         ones that matches with the protocol of the first library preparation are
         considered
     Functions:
-        get_protocol_parameters_and_type # located at core.utils.handling_protocols.py
-        get_protocol_parameters  # located at core.utils.handling_protocols.py
+        get_protocol_parameters_and_type
+        get_protocol_parameters
     Constant:
         HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
 

@@ -4363,13 +4363,13 @@ def pending_to_update(request):
 def record_samples(request):
     """
     Functions :
-        analyze_input_samples  : located at core/handling_samples.py
-        analyze_input_sample_project_fields  : located at core/handling_samples.py
-        prepare_sample_input_table : located at core/utils/handling_samples.py
-        get_codeID_for_resequencing : located at wetlab/utils/sample_functions.py
-        prepare_sample_project_input_table :  located at core/utils/handling_samples.py
-        analyze_reprocess_data  : located at wetlab/utils/sample_functions.py
-        get_info_for_reprocess_samples : located at core/utils/handling_samples.py
+        analyze_input_samples
+        analyze_input_sample_project_fields
+        prepare_sample_input_table
+        get_codeID_for_resequencing
+        prepare_sample_project_input_table
+        analyze_reprocess_data
+        get_info_for_reprocess_samples
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
@@ -4800,8 +4800,8 @@ def modify_sample_project_fields(request, sample_project_id):
 def define_molecule_uses(request):
     """
     Functions:
-        display_molecule_use : located at core/utils/handling_samples.py
-        record_molecule_use : located at core/utils/handling_samples.py
+        display_molecule_use
+        record_molecule_use
     """
     molecule_use_data = display_molecule_use(__package__)
     if request.method == "POST" and request.POST["action"] == "record_molecule_use":
@@ -4818,8 +4818,8 @@ def define_molecule_uses(request):
 def define_type_of_samples(request):
     """
     Functions:
-        display_sample_types : located at core/utils/handling_samples.py
-        save_type_of_sample : located at core/utils/handling_samples.py
+        display_sample_types
+        save_type_of_sample
     """
     sample_types = display_sample_types(__package__)
     if request.method == "POST" and request.POST["action"] == "addNewSampleType":
@@ -4836,10 +4836,10 @@ def define_type_of_samples(request):
 def display_sample(request, sample_id):
     """
     Functions:
-        get_all_sample_information : located at core/utils/handling_samples.py
-        get_all_library_information  located at wetlab/utils/library_preparation.py
-        get_additional_kits_used_in_sample   located at wetlab/utils/additional_kits.py
-        get_sample_in_project_obj_from_sample_name  # located at wetlab/utils/sample_functions.py
+        get_all_sample_information
+        get_all_library_information
+        get_additional_kits_used_in_sample
+        get_sample_in_project_obj_from_sample_name
     """
     sample_information = get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
@@ -4895,7 +4895,7 @@ def display_sample_in_run(request, sample_run_id):
 def display_type_of_sample(request, sample_type_id):
     """
     Functions:
-        get_type_of_sample_information : located at core/utils/handling_samples.py
+        get_type_of_sample_information
     """
     type_of_sample_data = get_type_of_sample_information(sample_type_id)
     return render(
@@ -4909,19 +4909,19 @@ def display_type_of_sample(request, sample_type_id):
 def handling_library_preparations(request):
     """
     Functions:
-        analyze_and_store_input_additional_kits : located at utils/additional_kits.py
-        get_samples_for_library_preparation : located at utils/library_preparation.py
+        analyze_and_store_input_additional_kits
+        get_samples_for_library_preparation
         check_users_exists
-        create_library_preparation_instance : located at utils/library_preparation.py
-        extract_user_sample_sheet_data   : located at utils/library_preparation.py
-        get_additional_kits_from_lib_prep   : located at utils/additional_kits.py
-        get_data_for_library_preparation_in_defined : located at core/utils/handling_samples.py
-        get_type_of_sample_information : located at core/utils/handling_samples.py
-        get_library_preparation_heading_for_samples : located at utils/library_preparation.py
-        get_protocols_for_library_preparation : located at utils/library_preparation.py
-        get_samples_in_lib_prep_state :  located at utils/library_preparation.py
-        validate_sample_sheet_data  :  located at utils/library_preparation.py
-        get_list_of_collection_kits     : located at utils/collection_index_function.py
+        create_library_preparation_instance
+        extract_user_sample_sheet_data
+        get_additional_kits_from_lib_prep
+        get_data_for_library_preparation_in_defined
+        get_type_of_sample_information
+        get_library_preparation_heading_for_samples
+        get_protocols_for_library_preparation
+        get_samples_in_lib_prep_state
+        validate_sample_sheet_data
+        get_list_of_collection_kits
     """
     # get the information for returning the uploaded file in case errors in the sample sheet
     samples_in_lib_prep = get_samples_for_library_preparation()
@@ -5136,9 +5136,9 @@ def handling_library_preparations(request):
 def handling_molecules(request):
     """
     Functions:
-        get_samples_in_state : located at core/utils/handling_samples.py
-        create_table_to_select_molecules : located at core/utils/handling_samples.py
-        display_molecule_protocol_parameters  : located at core/utils/handling_samples.py
+        get_samples_in_state
+        create_table_to_select_molecules
+        display_molecule_protocol_parameters
     """
 
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
@@ -5327,8 +5327,8 @@ def repeat_library_preparation(request):
 def repeat_molecule_extraction(request):
     """
     Functions:
-    analyze_reprocess_data  : located at utils/sample_functions.py
-    get_table_record_molecule : located at core/utils/handling_samples.py
+    analyze_reprocess_data
+    get_table_record_molecule
     """
 
     if request.method == "POST" and request.POST["action"] == "repeat_extraction":
@@ -5390,10 +5390,10 @@ def repeat_pool(request):
 def search_sample(request):
     """
     Functions:
-        get_sample_states  : located at core/utils/handling_samples.py
-        check_valid_date_format : located at utils/common.py
-        search_samples          : located at core/utils/handling_samples.py
-        search_run_samples      : located at utils/sample_functions.py
+        get_sample_states
+        check_valid_date_format
+        search_samples
+        search_run_samples
     """
     search_data = {}
     search_data["s_state"] = get_sample_states()

@@ -247,11 +247,11 @@ def create_new_resolution(resolution_data_form):
     Input:
         resolution_data_form	# contains the formated user data form
     Functions:
-        get_assign_resolution_full_number  # located at this file
-        create_resolution_number  # located at this file
-        get_service_obj_from_id  # located at drylab.utils.handling_request_services
-        store_resolution_additional_parameter  # located at this file
-        get_available_service_obj_from_id # located at drylab.utils.handling_request_services
+        get_assign_resolution_full_number
+        create_resolution_number
+        get_service_obj_from_id
+        store_resolution_additional_parameter
+        get_available_service_obj_from_id
     Return:
         new_resolution
     """
