@@ -335,13 +335,13 @@ def define_new_patient_history(request):
 def define_new_samples(request):
     """
     Functions :
-        analyze_input_samples  : located at core/handling_samples.py
-        analyze_input_sample_project_fields  : located at core/handling_samples.py
-        prepare_sample_input_table : located at core/utils/handling_samples.py
-        get_codeID_for_resequencing : located at wetlab/utils/sample_functions.py
-        prepare_sample_project_input_table :  located at core/utils/handling_samples.py
-        analyze_reprocess_data  : located at wetlab/utils/sample_functions.py
-        get_info_for_reprocess_samples : located at core/utils/handling_samples.py
+        analyze_input_samples  
+        analyze_input_sample_project_fields  
+        prepare_sample_input_table
+        get_codeID_for_resequencing
+        prepare_sample_project_input_table
+        analyze_reprocess_data
+        get_info_for_reprocess_samples
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":

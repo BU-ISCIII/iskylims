@@ -155,9 +155,9 @@ def execute_test_for_testing_run(run_test_name):
         run_test_name     # folder test name in remote server
 
     Functions:
-        open_samba_connection               # located at utils.common.py
-        get_samba_application_shared_folder # located at utils.handling_crontab_common_functions.py
-        get_samba_shared_folder             # located at utils.handling_crontab_common_functions.py
+        open_samba_connection
+        get_samba_application_shared_folder
+        get_samba_shared_folder
 
 
     Return:

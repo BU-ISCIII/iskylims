@@ -41,21 +41,21 @@ def search_update_new_runs(request_reason):
     Input:
         request_reason      # define if crontab process request the search or was for testing
     Functions:
-        assign_projects_to_run               # located at utils.handling_crontab_common_functions
-        assign_used_library_in_run           # located at utils.handling_crontab_common_functions
-        copy_sample_sheet_to_remote_folder   # located at utils.handling_crontab_common_functions
-        fetch_remote_file                    # located at utils.handling_crontab_common_functions
-        open_samba_connection                # located in utils.common.py
-        get_list_processed_runs              # located at this file
-        get_new_runs_on_remote_server        # located at utils.common.py
-        get_new_runs_from_remote_server      # located at utils.handling_crontab_common_functions
-        get_experiment_name_from_file        # located at utils.common.py
-        get_remote_sample_sheet              # located at utils.handling_crontab_common_functions
-        get_samba_application_shared_folder  # located at utils.handling_crontab_common_functions.py
-        get_samba_shared_folder              # located at utils.handling_crontab_common_functions.py
-        fetch_remote_file                    # located at utils.handling_crontab_common_functions
-        parsing_run_info_and_parameter_information  #  located at utils.handling_crontab_common_functions
-        store_sample_sheet_if_not_defined_in_run     #  located at utils.handling_crontab_common_functions
+        assign_projects_to_run
+        assign_used_library_in_run
+        copy_sample_sheet_to_remote_folder
+        fetch_remote_file
+        open_samba_connection
+        get_list_processed_runs
+        get_new_runs_on_remote_server
+        get_new_runs_from_remote_server
+        get_experiment_name_from_file
+        get_remote_sample_sheet
+        get_samba_application_shared_folder
+        get_samba_shared_folder
+        fetch_remote_file
+        parsing_run_info_and_parameter_information
+        store_sample_sheet_if_not_defined_in_run
     Constants:
         PROCESSED_RUN_FILE
         RUN_TEMP_DIRECTORY
@@ -652,11 +652,11 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
         RUN_TEMP_DIRECTORY_PROCESSING
     Functions:
         delete_existing_run_metrics_table_processed
-        get_run_metric_files          # located in utils.handling_crontab_run_metric.py
-        handling_errors_in_run        # located in utils.handling_crontab_common_functions.py
-        delete_run_metric_files       # located in utils.handling_crontab_run_metric.py
-        parsing_run_metrics_files     # located in utils.handling_crontab_run_metric.py
-        create_run_metric_graphics    # located in utils.handling_crontab_run_metric.py
+        get_run_metric_files
+        handling_errors_in_run
+        delete_run_metric_files
+        parsing_run_metrics_files
+        create_run_metric_graphics
     Return:
         None
     """
@@ -745,9 +745,9 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
     Constants:
         RUN_TEMP_DIRECTORY_PROCESSING
     Functions:
-        check_run_metrics_processed             # located in utils.handling_crontab_run_metric.py
-        waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
-        check_demultiplexing_folder_exists      # located in utils.handling_crontab_bcl2fastq.py
+        check_run_metrics_processed
+        waiting_time_expired
+        check_demultiplexing_folder_exists
     Return:
         None
     """
