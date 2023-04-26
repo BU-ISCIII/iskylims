@@ -1,9 +1,7 @@
 # Generic imports
-from django.urls import path
 from django.conf import settings
-from django.shortcuts import redirect
 from django.conf.urls.static import static
-from django.views.generic import ListView, DetailView
+from django.urls import path
 
 # Local imports
 import iSkyLIMS_drylab.views
@@ -77,7 +75,6 @@ urlpatterns = [
         name="request_sequencing_service",
     ),
     path("searchService", iSkyLIMS_drylab.views.search_service, name="search_service"),
-    # path('service_request_<str:serviceRequestType>',views.service_request, name='service_request'),
     path(
         "serviceInWaitingInfo",
         iSkyLIMS_drylab.views.service_in_waiting_info,
@@ -90,7 +87,6 @@ urlpatterns = [
         name="stats_by_services_request",
     ),
     path("userLogin", iSkyLIMS_drylab.views.user_login, name="user_login"),
-    # path('multipleFiles', views.multiple_files, name='multiple_files'),
     path(
         "uploadServiceFileDelete=<int:file_id>",
         iSkyLIMS_drylab.views.upload_service_file_delete,
