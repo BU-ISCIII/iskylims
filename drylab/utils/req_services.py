@@ -885,7 +885,7 @@ def prepare_form_data_request_service_sequencing(request):
         get_only_recorded_samples_and_dates		# located at core.utils.handling_samples
         get_user_sharing_list					# located at drylab.utils.drylab_common_functions
         get_defined_username_and_ids   			# located at drylab.utils.drylab_common_functions
-        get_runs_projects_samples_and_dates		# located at iSkyLIMS_wetlab.utils.api.wetlab_api
+        get_runs_projects_samples_and_dates		# located at wetlab.utils.api.wetlab_api
     Return:
         service_data_information
     """
@@ -1046,7 +1046,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
         form_data      # form with the internal and external samples
         new_service     # service obj
     Functions:
-        get_user_projects	# API from iSkyLIMS_wetlab located at file wetlab_api
+        get_user_projects	# API from wetlab located at file wetlab_api
     Return:
         display_service
     """

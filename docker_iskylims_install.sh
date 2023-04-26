@@ -9,7 +9,7 @@ echo "Waiting 20 seconds for starting dabase and web services..."
 sleep 20
 echo "Creating the database structure for iSkyLIMS"
 docker exec -it iskylimsv2_app python3 manage.py migrate
-docker exec -it iskylimsv2_app python3 manage.py makemigrations django_utils core iSkyLIMS_wetlab drylab clinic
+docker exec -it iskylimsv2_app python3 manage.py makemigrations django_utils core wetlab drylab clinic
 docker exec -it iskylimsv2_app python3 manage.py migrate
 
 echo "Loading in database initial data"

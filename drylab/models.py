@@ -257,7 +257,7 @@ class Service(models.Model):
     )
 
     service_project_names = models.ManyToManyField(
-        "iSkyLIMS_wetlab.Projects", verbose_name=_("User's projects"), blank=True
+        "wetlab.Projects", verbose_name=_("User's projects"), blank=True
     )
     service_state = models.ForeignKey(
         ServiceState,

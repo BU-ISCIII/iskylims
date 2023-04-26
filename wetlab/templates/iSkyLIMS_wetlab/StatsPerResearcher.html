@@ -1,4 +1,4 @@
-{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% extends 'wetlab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -203,7 +203,7 @@
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'iSkyLIMS_wetlab/statistics-researcher-help.html' %}
+        {% include 'wetlab/statistics-researcher-help.html' %}
 
     </div> <!--// end row -->
     <!-- End of FORM for searching RUN information -->

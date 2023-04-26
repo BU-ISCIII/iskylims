@@ -53,7 +53,7 @@ def looking_for_new_runs():
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     config_file = os.path.join(
-        settings.BASE_DIR, "iSkyLIMS_wetlab", config.LOGGING_CONFIG_FILE
+        settings.BASE_DIR, "wetlab", config.LOGGING_CONFIG_FILE
     )
     logger = open_log(config_file)
     logger.info("----------------------------------")

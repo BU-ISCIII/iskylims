@@ -763,11 +763,11 @@ ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = [
 ]
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = [
     "Unable to save the Samba configuration file ",
-    "check if folder iSkyLIMS_wetlab has write permision for apache user",
+    "check if folder wetlab has write permision for apache user",
 ]
 ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = [
     "Unable to save the email configuration file ",
-    "check if folder iSkyLIMS_wetlab has write permision for apache user",
+    "check if folder wetlab has write permision for apache user",
 ]
 
 ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = [

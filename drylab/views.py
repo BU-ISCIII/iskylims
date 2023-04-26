@@ -472,7 +472,7 @@ def search_service(request):
         True
     )
 
-    if "iSkyLIMS_wetlab" in settings.INSTALLED_APPS:
+    if "wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
     if not drylab.utils.common.is_service_manager(request):
         services_search_list["username"] = request.user.username

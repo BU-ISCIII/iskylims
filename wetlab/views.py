@@ -44,14 +44,14 @@ from .utils.test_wetlab_conf import *
 def index(request):
     org_name = get_configuration_from_database("ORGANIZATION_NAME")
     return render(
-        request, "iSkyLIMS_wetlab/index.html", {"organization_name": org_name}
+        request, "wetlab/index.html", {"organization_name": org_name}
     )
 
 
 @login_required
 def register_wetlab(request):
     #
-    return render(request, "iSkyLIMS_wetlab/index.html")
+    return render(request, "wetlab/index.html")
 
 
 @login_required
@@ -70,7 +70,7 @@ def configuration_email(request):
             email_conf_data["test_email"] = request.POST["test_email"]
             return render(
                 request,
-                "iSkyLIMS_wetlab/configurationEmail.html",
+                "wetlab/configurationEmail.html",
                 {"ERROR": result_email, "email_conf_data": email_conf_data},
             )
         save_database_configuration_value(
@@ -78,12 +78,12 @@ def configuration_email(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/configurationEmail.html",
+            "wetlab/configurationEmail.html",
             {"succesful_settings": True},
         )
     return render(
         request,
-        "iSkyLIMS_wetlab/configurationEmail.html",
+        "wetlab/configurationEmail.html",
         {"email_conf_data": email_conf_data},
     )
 
@@ -103,20 +103,20 @@ def configuration_samba(request):
             open_samba_connection()
             return render(
                 request,
-                "iSkyLIMS_wetlab/configurationSamba.html",
+                "wetlab/configurationSamba.html",
                 {"succesful_settings": True},
             )
         except Exception:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(
                 request,
-                "iSkyLIMS_wetlab/configurationSamba.html",
+                "wetlab/configurationSamba.html",
                 {"samba_conf_data": samba_user_field, "error_message": error_message},
             )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/configurationSamba.html",
+            "wetlab/configurationSamba.html",
             {"samba_conf_data": samba_conf_data},
         )
 
@@ -130,7 +130,7 @@ def initial_settings(request):
     if not is_wetlab_manager(request):
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ERROR_USER_NOT_WETLAB_MANAGER},
         )
     initial_data = get_inital_sample_settings_values(__package__)
@@ -156,18 +156,18 @@ def initial_settings(request):
         if "ERROR" in new_inital_data:
             return render(
                 request,
-                "iSkyLIMS_wetlab/initialSettings.html",
+                "wetlab/initialSettings.html",
                 {"initial_data": initial_data, "ERROR": new_inital_data["ERROR"]},
             )
         return render(
             request,
-            "iSkyLIMS_wetlab/initialSettings.html",
+            "wetlab/initialSettings.html",
             {"initial_data": initial_data, "new_setting_defined": new_inital_data},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/initialSettings.html",
+            "wetlab/initialSettings.html",
             {"initial_data": initial_data},
         )
 
@@ -181,7 +181,7 @@ def create_nextseq_run(request):
     if not is_wetlab_manager(request):
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ERROR_USER_NOT_WETLAB_MANAGER},
         )
 
@@ -197,7 +197,7 @@ def create_nextseq_run(request):
         if split_filename is None:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Uploaded file does not containt extension",
@@ -215,7 +215,7 @@ def create_nextseq_run(request):
         if ext_file != ".csv":
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Sample Sheet must have a csv extension",
@@ -281,7 +281,7 @@ def create_nextseq_run(request):
                 os.remove(stored_file)
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "Run Name is already used. ",
@@ -304,7 +304,7 @@ def create_nextseq_run(request):
             fs.delete(file_name)
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         'Sample Sheet does not contain "Sample project" and/or "Description" fields',
@@ -340,7 +340,7 @@ def create_nextseq_run(request):
             fs.delete(file_name)
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         head_text,
@@ -410,7 +410,7 @@ def create_nextseq_run(request):
         # displays the list of projects and the user names found on Sample Sheet
         return render(
             request,
-            "iSkyLIMS_wetlab/CreateNextSeqRun.html",
+            "wetlab/CreateNextSeqRun.html",
             {"get_user_names": run_info_values},
         )
 
@@ -427,7 +427,7 @@ def create_nextseq_run(request):
         if not RunProcess.objects.filter(run_name__exact=run_name).exists():
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You get this error page because you use the back Buttom"
@@ -487,11 +487,11 @@ def create_nextseq_run(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/CreateNextSeqRun.html",
+            "wetlab/CreateNextSeqRun.html",
             {"completed_form": results},
         )
 
-    return render(request, "iSkyLIMS_wetlab/CreateNextSeqRun.html")
+    return render(request, "wetlab/CreateNextSeqRun.html")
 
 
 @login_required
@@ -537,7 +537,7 @@ def add_basespace_library(request):
         ).exists():
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The Library Kit ",
@@ -558,7 +558,7 @@ def add_basespace_library(request):
     basespace_library_information["libraries"] = basespace_library
     return render(
         request,
-        "iSkyLIMS_wetlab/AddBasespaceLibrary.html",
+        "wetlab/AddBasespaceLibrary.html",
         {"list_of_libraries": basespace_library_information},
     )
 
@@ -638,7 +638,7 @@ def add_collection_index_kit(request):
             os.remove(saved_file)
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The Collection Index Kit file",
@@ -654,7 +654,7 @@ def add_collection_index_kit(request):
             os.remove(saved_file)
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The Collection Index Kit file",
@@ -670,7 +670,7 @@ def add_collection_index_kit(request):
             os.remove(saved_file)
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The Collection Index Kit Name ",
@@ -693,14 +693,14 @@ def add_collection_index_kit(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/addCollectionIndexKit.html",
+            "wetlab/addCollectionIndexKit.html",
             {"collection_index_information": collection_index_information},
         )
     else:
         collection_index_information["collection_index"] = collection_index_names
         return render(
             request,
-            "iSkyLIMS_wetlab/addCollectionIndexKit.html",
+            "wetlab/addCollectionIndexKit.html",
             {"list_of_collection_index": collection_index_information},
         )
 
@@ -759,7 +759,7 @@ def search_run(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -789,7 +789,7 @@ def search_run(request):
             and run_state == ""
             and platform_name == ""
         ):
-            return render(request, "iSkyLIMS_wetlab/SearchRun.html")
+            return render(request, "wetlab/SearchRun.html")
 
         # check the right format of start and end date
         if start_date != "":
@@ -797,7 +797,7 @@ def search_run(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if end_date != "":
@@ -805,7 +805,7 @@ def search_run(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
@@ -832,7 +832,7 @@ def search_run(request):
                 ]
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
@@ -849,7 +849,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if platform_name != "":
@@ -861,7 +861,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         # Check if state is not empty
@@ -874,7 +874,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         # Check if start_date is not empty
@@ -884,7 +884,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if start_date != "" and end_date == "":
@@ -893,7 +893,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if start_date == "" and end_date != "":
@@ -902,7 +902,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchRun.html",
+                    "wetlab/SearchRun.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
@@ -924,12 +924,12 @@ def search_run(request):
                 )
             return render(
                 request,
-                "iSkyLIMS_wetlab/SearchRun.html",
+                "wetlab/SearchRun.html",
                 {"display_run_list": run_list},
             )
     else:
         return render(
-            request, "iSkyLIMS_wetlab/SearchRun.html", {"run_form_data": run_form_data}
+            request, "wetlab/SearchRun.html", {"run_form_data": run_form_data}
         )
 
 
@@ -977,7 +977,7 @@ def search_project(request):
         ):
             return render(
                 request,
-                "iSkyLIMS_wetlab/SearchProject.html",
+                "wetlab/SearchProject.html",
                 {"project_form_data": project_form_data},
             )
 
@@ -985,7 +985,7 @@ def search_project(request):
             error_message = ERROR_USER_NAME_TOO_SHORT
             return render(
                 request,
-                "iSkyLIMS_wetlab/SearchProject.html",
+                "wetlab/SearchProject.html",
                 {
                     "project_form_data": project_form_data,
                     "error_message": error_message,
@@ -998,7 +998,7 @@ def search_project(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchProject.html",
+                    "wetlab/SearchProject.html",
                     {
                         "project_form_data": project_form_data,
                         "error_message": error_message,
@@ -1010,7 +1010,7 @@ def search_project(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/SearchProject.html",
+                    "wetlab/SearchProject.html",
                     {
                         "project_form_data": project_form_data,
                         "error_message": error_message,
@@ -1050,7 +1050,7 @@ def search_project(request):
             error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
             return render(
                 request,
-                "iSkyLIMS_wetlab/SearchProject.html",
+                "wetlab/SearchProject.html",
                 {
                     "project_form_data": project_form_data,
                     "error_message": error_message,
@@ -1070,14 +1070,14 @@ def search_project(request):
             project_list_dict["projects"] = project_list
             return render(
                 request,
-                "iSkyLIMS_wetlab/SearchProject.html",
+                "wetlab/SearchProject.html",
                 {"display_project_list": project_list_dict},
             )
 
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/SearchProject.html",
+            "wetlab/SearchProject.html",
             {"project_form_data": project_form_data},
         )
 
@@ -1091,7 +1091,7 @@ def retry_error_run(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1102,7 +1102,7 @@ def retry_error_run(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1123,18 +1123,18 @@ def retry_error_run(request):
             detail_description["information"] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
             return render(
                 request,
-                "iSkyLIMS_wetlab/successful_page.html",
+                "wetlab/successful_page.html",
                 {"detail_description": detail_description, "return_main_menu": True},
             )
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["Run does not exist "]},
             )
     else:
         # return redirect (request,'/')
-        return render(request, "iSkyLIMS_wetlab/index.html")
+        return render(request, "wetlab/index.html")
 
 
 @login_required
@@ -1146,7 +1146,7 @@ def skip_cancel_situation(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1157,7 +1157,7 @@ def skip_cancel_situation(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1178,18 +1178,18 @@ def skip_cancel_situation(request):
             detail_description["information"] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
             return render(
                 request,
-                "iSkyLIMS_wetlab/successful_page.html",
+                "wetlab/successful_page.html",
                 {"detail_description": detail_description, "return_main_menu": True},
             )
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["Run does not exist "]},
             )
     else:
         # return redirect (request,'/')
-        return render(request, "iSkyLIMS_wetlab/index.html")
+        return render(request, "wetlab/index.html")
 
 
 @login_required
@@ -1212,7 +1212,7 @@ def display_run(request, run_id):
             if not allowed:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1223,7 +1223,7 @@ def display_run(request, run_id):
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["No matches have been found for the run "]},
             )
 
@@ -1232,13 +1232,13 @@ def display_run(request, run_id):
         r_data_display = get_information_run(run_name_found)
         return render(
             request,
-            "iSkyLIMS_wetlab/displayRun.html",
+            "wetlab/displayRun.html",
             {"display_one_run": r_data_display},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["No matches have been found for the run  "]},
         )
 
@@ -1252,7 +1252,7 @@ def last_run_by_sequencer(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1263,7 +1263,7 @@ def last_run_by_sequencer(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1278,11 +1278,11 @@ def last_run_by_sequencer(request):
     last_runs = get_last_runs_by_sequencer()
     if len(last_runs) == 0:
         return render(
-            request, "iSkyLIMS_wetlab/lastRunBySequencer.html", {"no_runs": "no_runs"}
+            request, "wetlab/lastRunBySequencer.html", {"no_runs": "no_runs"}
         )
     if len(last_runs) > 1:
         return render(
-            request, "iSkyLIMS_wetlab/lastRunBySequencer.html", {"last_runs": last_runs}
+            request, "wetlab/lastRunBySequencer.html", {"last_runs": last_runs}
         )
     else:
         # if only 1 sequencer is defined, then display the information of the latest run
@@ -1298,7 +1298,7 @@ def incompleted_runs(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1309,7 +1309,7 @@ def incompleted_runs(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1324,13 +1324,13 @@ def incompleted_runs(request):
         display_incompleted_run = get_information_for_incompleted_run()
         return render(
             request,
-            "iSkyLIMS_wetlab/incompletedRuns.html",
+            "wetlab/incompletedRuns.html",
             {"display_incompleted_run": display_incompleted_run},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/info_page.html",
+            "wetlab/info_page.html",
             {
                 "content": [
                     "There is no project in incompleted state",
@@ -1365,7 +1365,7 @@ def display_project(request, project_id):
             if int(project_obj.get_user_id()) not in p_shared_list:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1377,13 +1377,13 @@ def display_project(request, project_id):
         display_project_data = get_information_project(project_obj, request)
         return render(
             request,
-            "iSkyLIMS_wetlab/displayProject.html",
+            "wetlab/displayProject.html",
             {"display_project_data": display_project_data},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["No matches have been found for the project  "]},
         )
 
@@ -1395,13 +1395,13 @@ def display_collection_index(request, collection_index_id):
         if collection_index_dict is not False:
             return render(
                 request,
-                "iSkyLIMS_wetlab/DisplayCollectionIndex.html",
+                "wetlab/DisplayCollectionIndex.html",
                 {"display_one_collection_index": collection_index_dict},
             )
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "There are recorded information for the collection index for your request"
@@ -1412,7 +1412,7 @@ def display_collection_index(request, collection_index_id):
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["No matches have been found for the Collection index "]},
         )
 
@@ -1436,13 +1436,13 @@ def search_collection_index_library(request):
             and index_name == ""
             and index_sequence == ""
         ):
-            return render(request, "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html")
+            return render(request, "wetlab/searchCollectionIndexLibrary.html")
 
         if index_sequence != "":
             if len(index_sequence) < 6:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/searchCollectionIndexLibrary.html",
                     {"error_message": ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE},
                 )
             else:
@@ -1451,7 +1451,7 @@ def search_collection_index_library(request):
                     if letter not in valid_seq_characters:
                         return render(
                             request,
-                            "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                            "wetlab/searchCollectionIndexLibrary.html",
                             {"error_message": ERROR_INVALID_SEQUENCE_CHARACTERS},
                         )
 
@@ -1473,7 +1473,7 @@ def search_collection_index_library(request):
                 error_message.append(collection_index_kit_name)
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/searchCollectionIndexLibrary.html",
                     {"error_message": error_message},
                 )
         if adapter_1 != "":
@@ -1484,7 +1484,7 @@ def search_collection_index_library(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/searchCollectionIndexLibrary.html",
                     {"not_found_matchs": "not_found_matchs"},
                 )
         if adapter_2 != "":
@@ -1495,7 +1495,7 @@ def search_collection_index_library(request):
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/searchCollectionIndexLibrary.html",
                     {"not_found_matchs": "not_found_matchs"},
                 )
 
@@ -1521,7 +1521,7 @@ def search_collection_index_library(request):
                 else:
                     return render(
                         request,
-                        "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                        "wetlab/searchCollectionIndexLibrary.html",
                         {"not_found_matchs": "not_found_matchs"},
                     )
 
@@ -1542,7 +1542,7 @@ def search_collection_index_library(request):
                 else:
                     return render(
                         request,
-                        "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                        "wetlab/searchCollectionIndexLibrary.html",
                         {"not_found_matchs": "not_found_matchs"},
                     )
 
@@ -1577,7 +1577,7 @@ def search_collection_index_library(request):
                 else:
                     return render(
                         request,
-                        "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                        "wetlab/searchCollectionIndexLibrary.html",
                         {"matched_collection_index": matched_collection_index},
                     )
         else:
@@ -1597,12 +1597,12 @@ def search_collection_index_library(request):
                     )
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/searchCollectionIndexLibrary.html",
                     {"matched_collection_index": matched_collection_index},
                 )
 
     else:
-        return render(request, "iSkyLIMS_wetlab/searchCollectionIndexLibrary.html")
+        return render(request, "wetlab/searchCollectionIndexLibrary.html")
 
 
 @login_required
@@ -1617,7 +1617,7 @@ def change_run_name(request, run_id):
         if groups not in request.user.groups.all():
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1630,13 +1630,13 @@ def change_run_name(request, run_id):
             if new_run_name == "":
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {"content": ["Empty value is not allowed for the Run Name "]},
                 )
             if RunProcess.objects.filter(run_name__exact=new_run_name).exists():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "The given Run Name is already in use",
@@ -1653,7 +1653,7 @@ def change_run_name(request, run_id):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/ChangeRunName.html",
+                "wetlab/ChangeRunName.html",
                 {"changed_run_name": changed_run_name},
             )
         else:
@@ -1661,13 +1661,13 @@ def change_run_name(request, run_id):
             form_change_run_name["run_name"] = run.run_name
             return render(
                 request,
-                "iSkyLIMS_wetlab/ChangeRunName.html",
+                "wetlab/ChangeRunName.html",
                 {"form_change_run_name": form_change_run_name},
             )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["There is no Run for your query  "]},
         )
 
@@ -1685,7 +1685,7 @@ def change_project_libKit(request, project_id):
         if not allowed_access:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1703,7 +1703,7 @@ def change_project_libKit(request, project_id):
             if old_library_name == new_library_name:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/info_page.html",
+                    "wetlab/info_page.html",
                     {
                         "content": [
                             "The library kit from the input text is the same to the existing defined for this project",
@@ -1739,7 +1739,7 @@ def change_project_libKit(request, project_id):
 
                         return render(
                             request,
-                            "iSkyLIMS_wetlab/error_page.html",
+                            "wetlab/error_page.html",
                             {
                                 "content": [
                                     message,
@@ -1756,7 +1756,7 @@ def change_project_libKit(request, project_id):
             )
             if new_file == "ERROR":
                 return render(
-                    request, "iSkyLIMS_wetlab/error_page.html", {"content": [""]}
+                    request, "wetlab/error_page.html", {"content": [""]}
                 )
             # update the database with new file
             project.baseSpaceFile = new_file
@@ -1772,7 +1772,7 @@ def change_project_libKit(request, project_id):
             #
             return render(
                 request,
-                "iSkyLIMS_wetlab/ChangeProjectLibraryKit.html",
+                "wetlab/ChangeProjectLibraryKit.html",
                 {"changed_lib_kit": change_library_kit_dict},
             )
         else:
@@ -1795,20 +1795,20 @@ def change_project_libKit(request, project_id):
                 form_change_lib_kit["project_data"] = project_data
             return render(
                 request,
-                "iSkyLIMS_wetlab/ChangeProjectLibraryKit.html",
+                "wetlab/ChangeProjectLibraryKit.html",
                 {"form_change_lib_kit": form_change_lib_kit},
             )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["No project has been found for changing the library Kit "]},
         )
 
 
 @login_required
 def stats_experiment(request):
-    return render(request, "iSkyLIMS_wetlab/StatsPerExperiment.html", {})
+    return render(request, "wetlab/StatsPerExperiment.html", {})
 
 
 @login_required
@@ -1824,7 +1824,7 @@ def stats_per_sequencer(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerSequencer.html",
+                    "wetlab/StatsPerSequencer.html",
                     {
                         "sequencer_names": sequencer_names,
                         "error_message": error_message,
@@ -1835,7 +1835,7 @@ def stats_per_sequencer(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerSequencer.html",
+                    "wetlab/StatsPerSequencer.html",
                     {
                         "sequencer_names": sequencer_names,
                         "error_message": error_message,
@@ -1848,7 +1848,7 @@ def stats_per_sequencer(request):
             error_message = ERROR_NO_MATCHES_FOR_SEQUENCER_STATS
             return render(
                 request,
-                "iSkyLIMS_wetlab/StatsPerSequencer.html",
+                "wetlab/StatsPerSequencer.html",
                 {"sequencer_names": sequencer_names, "error_message": error_message},
             )
         sequencer_data = get_stats_sequencer_data_from_selected_runs(
@@ -1857,14 +1857,14 @@ def stats_per_sequencer(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/StatsPerSequencer.html",
+            "wetlab/StatsPerSequencer.html",
             {"sequencer_data": sequencer_data},
         )
 
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/StatsPerSequencer.html",
+            "wetlab/StatsPerSequencer.html",
             {"sequencer_names": sequencer_names},
         )
 
@@ -1881,18 +1881,18 @@ def stats_per_researcher(request):
             error_message = researcher_statistics["ERROR"]
             return render(
                 request,
-                "iSkyLIMS_wetlab/StatsPerResearcher.html",
+                "wetlab/StatsPerResearcher.html",
                 {"researcher_statistics": error_message},
             )
 
         return render(
             request,
-            "iSkyLIMS_wetlab/StatsPerResearcher.html",
+            "wetlab/StatsPerResearcher.html",
             {"researcher_statistics": researcher_statistics},
         )
 
     else:
-        return render(request, "iSkyLIMS_wetlab/StatsPerResearcher.html", {})
+        return render(request, "wetlab/StatsPerResearcher.html", {})
 
 
 @login_required
@@ -1904,12 +1904,12 @@ def stats_per_time(request):
         if start_date != "" and not check_valid_date_format(start_date):
             error_message = config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
-                request, "iSkyLIMS_wetlab/StatsPerTime.html", {"ERROR": error_message}
+                request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
         if end_date != "" and not check_valid_date_format(start_date):
             error_message = config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
-                request, "iSkyLIMS_wetlab/StatsPerTime.html", {"ERROR": error_message}
+                request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
         ########
         # searching for runs were match the state and start and end date
@@ -2167,14 +2167,14 @@ def stats_per_time(request):
                 #
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerTime.html",
+                    "wetlab/StatsPerTime.html",
                     {"display_stats_per_time": stat_per_time},
                 )
 
             else:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "No matches have been found for Runs created between",
@@ -2187,11 +2187,11 @@ def stats_per_time(request):
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": "Start date and End Date cannot be empty "},
             )
 
-    return render(request, "iSkyLIMS_wetlab/StatsPerTime.html")
+    return render(request, "wetlab/StatsPerTime.html")
 
 
 def get_list_of_libraries_values(
@@ -2268,13 +2268,13 @@ def stats_per_library(request):
         end_date = request.POST["enddate"]
         # check that some values are in the request if not return the form
         if library_kit_name == "" and start_date == "" and end_date == "":
-            return render(request, "iSkyLIMS_wetlab/StatsPerLibrary.html")
+            return render(request, "wetlab/StatsPerLibrary.html")
 
         if library_kit_name != "" and len(library_kit_name) < 5:
             error_message = ERROR_TOO_SHORT_INDEX_LIBRAY_NAME
             return render(
                 request,
-                "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                "wetlab/StatsPerLibrary.html",
                 {"error_message": error_message},
             )
 
@@ -2284,7 +2284,7 @@ def stats_per_library(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                    "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
         if end_date != "":
@@ -2292,7 +2292,7 @@ def stats_per_library(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                    "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
 
@@ -2309,7 +2309,7 @@ def stats_per_library(request):
                 error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                    "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
         else:
@@ -2327,7 +2327,7 @@ def stats_per_library(request):
                 error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                    "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
         if start_date != "" and end_date == "":
@@ -2338,7 +2338,7 @@ def stats_per_library(request):
                 error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                    "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
         if start_date == "" and end_date != "":
@@ -2349,7 +2349,7 @@ def stats_per_library(request):
                 error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                    "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
 
@@ -2690,7 +2690,7 @@ def stats_per_library(request):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                "wetlab/StatsPerLibrary.html",
                 {"display_library_stats": library_stats},
             )
         else:
@@ -2888,12 +2888,12 @@ def stats_per_library(request):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/StatsPerLibrary.html",
+                "wetlab/StatsPerLibrary.html",
                 {"display_list_of_library_stats": library_list_stats},
             )
 
     else:
-        return render(request, "iSkyLIMS_wetlab/StatsPerLibrary.html")
+        return render(request, "wetlab/StatsPerLibrary.html")
 
 
 @login_required
@@ -2905,7 +2905,7 @@ def annual_report(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -2916,7 +2916,7 @@ def annual_report(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -2935,7 +2935,7 @@ def annual_report(request):
         if year_selected > present_year:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Annual Report cannot be done on the future  ",
@@ -2956,7 +2956,7 @@ def annual_report(request):
         if len(completed_run_in_year) == 0 and len(uncompleted_run_in_year) == 0:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Annual Report cannot be generated because there is no runs performed the year ",
@@ -3124,11 +3124,11 @@ def annual_report(request):
         #
         return render(
             request,
-            "iSkyLIMS_wetlab/AnnualReport.html",
+            "wetlab/AnnualReport.html",
             {"display_annual_report": annual_report_information},
         )
     else:
-        return render(request, "iSkyLIMS_wetlab/AnnualReport.html")
+        return render(request, "wetlab/AnnualReport.html")
 
 
 @login_required
@@ -3140,7 +3140,7 @@ def monthly_report(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -3151,7 +3151,7 @@ def monthly_report(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -3173,7 +3173,7 @@ def monthly_report(request):
             except Exception:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "Input field does not have the right format  ",
@@ -3191,7 +3191,7 @@ def monthly_report(request):
             except Exception:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "Monthly Report input field does not have the right format  ",
@@ -3209,7 +3209,7 @@ def monthly_report(request):
         if int(year_selected) > present_year:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Monthly Report cannot be done on the future  ",
@@ -3226,7 +3226,7 @@ def monthly_report(request):
         ):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Monthly Report cannot be done on the future  ",
@@ -3252,7 +3252,7 @@ def monthly_report(request):
         ):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Montly Report cannot be generated because there is no runs performed the year ",
@@ -3439,11 +3439,11 @@ def monthly_report(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/MonthlyReport.html",
+            "wetlab/MonthlyReport.html",
             {"display_monthly_report": monthly_report_information},
         )
     else:
-        return render(request, "iSkyLIMS_wetlab/MonthlyReport.html")
+        return render(request, "wetlab/MonthlyReport.html")
 
 
 @login_required
@@ -3455,7 +3455,7 @@ def quarter_report(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/error_page.html",
+                    "wetlab/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -3466,7 +3466,7 @@ def quarter_report(request):
         except Exception:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -3504,7 +3504,7 @@ def quarter_report(request):
         if int(year_selected) > present_year:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Quarter Report cannot be done on the future  ",
@@ -3519,7 +3519,7 @@ def quarter_report(request):
         if (int(year_selected) == present_year) and (int(end_quarter) > present_month):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Quater Report cannot be done on the future  ",
@@ -3541,7 +3541,7 @@ def quarter_report(request):
         if len(completed_run_in_quarter) == 0 and len(uncompleted_run_in_quarter) == 0:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "Quater Report cannot be generated because there is no runs performed the Quarter ",
@@ -3732,11 +3732,11 @@ def quarter_report(request):
         #
         return render(
             request,
-            "iSkyLIMS_wetlab/QuarterReport.html",
+            "wetlab/QuarterReport.html",
             {"display_quarter_report": quarter_report_information},
         )
     else:
-        return render(request, "iSkyLIMS_wetlab/QuarterReport.html")
+        return render(request, "wetlab/QuarterReport.html")
 
 
 def get_size_dir(
@@ -3827,13 +3827,13 @@ def update_tables(request):
         """
         return render(
             request,
-            "iSkyLIMS_wetlab/info_page.html",
+            "wetlab/info_page.html",
             {"content": ["The Disk space usage have been updated"]},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {
                 "content": [
                     "There is no tables which requiered to update with Disk space usage information"
@@ -3887,13 +3887,13 @@ def update_tables_date(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/info_page.html",
+            "wetlab/info_page.html",
             {"content": ["The dates for the Runs have been updated"]},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {
                 "content": [
                     "There is no tables which requiered to update with date information"
@@ -3909,7 +3909,7 @@ def configuration_test(request):
         if not request.user.is_staff or not request.user.is_superuser:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -3923,7 +3923,7 @@ def configuration_test(request):
     if request.method == "POST" and request.POST["action"] == "basicTest":
         test_results = {}
         config_file = os.path.join(
-            settings.BASE_DIR, "iSkyLIMS_wetlab", "config.py"
+            settings.BASE_DIR, "wetlab", "config.py"
         )
         test_results["iSkyLIMS_settings"] = get_iSkyLIMS_settings()
         test_results["config_file"] = get_config_file(config_file)
@@ -3947,7 +3947,7 @@ def configuration_test(request):
                 )
         return render(
             request,
-            "iSkyLIMS_wetlab/ConfigurationTest.html",
+            "wetlab/ConfigurationTest.html",
             {"test_results": test_results, "available_run_test": available_run_test},
         )
 
@@ -3963,7 +3963,7 @@ def configuration_test(request):
         if not folder_test_exists(run_test_folder):
             return render(
                 request,
-                "iSkyLIMS_wetlab/ConfigurationTest.html",
+                "wetlab/ConfigurationTest.html",
                 {"error": config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
             )
         run_test_result = execute_test_for_testing_run(run_test_name)
@@ -3980,13 +3980,13 @@ def configuration_test(request):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/ConfigurationTest.html",
+                "wetlab/ConfigurationTest.html",
                 {"run_test_result": run_test_result, "log_trace": log_trace},
             )
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/ConfigurationTest.html",
+                "wetlab/ConfigurationTest.html",
                 {"run_test_result": run_test_result},
             )
     elif request.method == "POST" and request.POST["action"] == "deleteTestRun":
@@ -4004,12 +4004,12 @@ def configuration_test(request):
                     delete_successful = {"run_name": request.POST["deleteRun"]}
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/ConfigurationTest.html",
+                    "wetlab/ConfigurationTest.html",
                     {"delete_successful": delete_successful},
                 )
-            return render(request, "iSkyLIMS_wetlab/ConfigurationTest.html")
+            return render(request, "wetlab/ConfigurationTest.html")
     else:
-        return render(request, "iSkyLIMS_wetlab/ConfigurationTest.html")
+        return render(request, "wetlab/ConfigurationTest.html")
 
 
 @login_required
@@ -4019,7 +4019,7 @@ def create_protocol(request):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4043,7 +4043,7 @@ def create_protocol(request):
         if check_if_protocol_exists(new_protocol, __package__):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["Protocol Name ", new_protocol, "Already exists."]},
             )
         new_protocol_id = create_new_protocol(
@@ -4052,7 +4052,7 @@ def create_protocol(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/createProtocol.html",
+            "wetlab/createProtocol.html",
             {
                 "defined_protocols": defined_protocols,
                 "defined_protocol_types": defined_protocol_types,
@@ -4064,7 +4064,7 @@ def create_protocol(request):
 
     return render(
         request,
-        "iSkyLIMS_wetlab/createProtocol.html",
+        "wetlab/createProtocol.html",
         {
             "defined_protocols": defined_protocols,
             "defined_protocol_types": defined_protocol_types,
@@ -4081,7 +4081,7 @@ def define_sample_projects(request):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4103,7 +4103,7 @@ def define_sample_projects(request):
             error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
-                "iSkyLIMS_wetlab/createSampleProjects.html",
+                "wetlab/createSampleProjects.html",
                 {
                     "defined_samples_projects": defined_samples_projects,
                     "error_message": error_message,
@@ -4113,7 +4113,7 @@ def define_sample_projects(request):
         new_defined_sample_project = sample_project_name
         return render(
             request,
-            "iSkyLIMS_wetlab/createSampleProjects.html",
+            "wetlab/createSampleProjects.html",
             {
                 "defined_samples_projects": defined_samples_projects,
                 "new_sample_project_id": new_sample_project_id,
@@ -4123,7 +4123,7 @@ def define_sample_projects(request):
 
     return render(
         request,
-        "iSkyLIMS_wetlab/createSampleProjects.html",
+        "wetlab/createSampleProjects.html",
         {"defined_samples_projects": defined_samples_projects},
     )
 
@@ -4134,7 +4134,7 @@ def define_additional_kits(request, protocol_id):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4152,13 +4152,13 @@ def define_additional_kits(request, protocol_id):
         if len(recorded_additional_kits) == 0:
             return render(
                 request,
-                "iSkyLIMS_wetlab/defineAdditionalKits.html",
+                "wetlab/defineAdditionalKits.html",
                 {"additional_kits": additional_kits},
             )
 
         return render(
             request,
-            "iSkyLIMS_wetlab/defineAdditionalKits.html",
+            "wetlab/defineAdditionalKits.html",
             {"recorded_additional_kits": recorded_additional_kits},
         )
 
@@ -4166,7 +4166,7 @@ def define_additional_kits(request, protocol_id):
         if not check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The requested Protocol does not exist",
@@ -4177,7 +4177,7 @@ def define_additional_kits(request, protocol_id):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/defineAdditionalKits.html",
+            "wetlab/defineAdditionalKits.html",
             {"additional_kits": additional_kits},
         )
 
@@ -4188,11 +4188,11 @@ def display_sample_project(request, sample_project_id):
     if "ERROR" in samples_project_data:
         error_message = samples_project_data["ERROR"]
         return render(
-            request, "iSkyLIMS_wetlab/error_page.html", {"content": error_message}
+            request, "wetlab/error_page.html", {"content": error_message}
         )
     return render(
         request,
-        "iSkyLIMS_wetlab/displaySampleProject.html",
+        "wetlab/displaySampleProject.html",
         {"samples_project_data": samples_project_data},
     )
 
@@ -4202,7 +4202,7 @@ def display_protocol(request, protocol_id):
     if not is_wetlab_manager(request):
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {
                 "content": [
                     "You do not have enough privileges to see this page ",
@@ -4213,7 +4213,7 @@ def display_protocol(request, protocol_id):
     if not check_if_protocol_exists(protocol_id, __package__):
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {
                 "content": [
                     "The protocol that you are trying to get ",
@@ -4226,7 +4226,7 @@ def display_protocol(request, protocol_id):
 
     return render(
         request,
-        "iSkyLIMS_wetlab/displayProtocol.html",
+        "wetlab/displayProtocol.html",
         {"protocol_data": protocol_data, "kit_data": kit_data},
     )
 
@@ -4238,7 +4238,7 @@ def define_protocol_parameters(request, protocol_id):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4258,7 +4258,7 @@ def define_protocol_parameters(request, protocol_id):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/defineProtocolParameters.html",
+            "wetlab/defineProtocolParameters.html",
             {"recorded_prot_parameters": recorded_prot_parameters},
         )
 
@@ -4266,7 +4266,7 @@ def define_protocol_parameters(request, protocol_id):
         if not check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The requested Protocol does not exist",
@@ -4278,7 +4278,7 @@ def define_protocol_parameters(request, protocol_id):
         prot_parameters = define_table_for_prot_parameters(protocol_id)
         return render(
             request,
-            "iSkyLIMS_wetlab/defineProtocolParameters.html",
+            "wetlab/defineProtocolParameters.html",
             {"prot_parameters": prot_parameters},
         )
 
@@ -4294,7 +4294,7 @@ def add_commercial_kit(request):
         if get_commercial_kit_id(request.POST["kitName"]):
             return render(
                 request,
-                "iSkyLIMS_wetlab/addCommercialKit.html",
+                "wetlab/addCommercialKit.html",
                 {
                     "defined_protocols": defined_protocols,
                     "invalid_name": request.POST["kitName"],
@@ -4304,13 +4304,13 @@ def add_commercial_kit(request):
         new_kit_data = get_commercial_kit_basic_data(new_kit)
         return render(
             request,
-            "iSkyLIMS_wetlab/addCommercialKit.html",
+            "wetlab/addCommercialKit.html",
             {"new_kit_data": new_kit_data},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/addCommercialKit.html",
+            "wetlab/addCommercialKit.html",
             {
                 "defined_protocols": defined_protocols,
                 "defined_platforms": defined_platforms,
@@ -4326,7 +4326,7 @@ def add_user_lot_commercial_kit(request):
         if get_lot_user_commercial_kit_id(request.POST["barCode"]):
             return render(
                 request,
-                "iSkyLIMS_wetlab/addUserLotCommercialKit.html",
+                "wetlab/addUserLotCommercialKit.html",
                 {
                     "defined_kits": defined_kits,
                     "invalid_name": request.POST["nickName"],
@@ -4336,13 +4336,13 @@ def add_user_lot_commercial_kit(request):
         new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
         return render(
             request,
-            "iSkyLIMS_wetlab/addUserLotCommercialKit.html",
+            "wetlab/addUserLotCommercialKit.html",
             {"new_lot_kit_data": new_lot_kit_data},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/addUserLotCommercialKit.html",
+            "wetlab/addUserLotCommercialKit.html",
             {"defined_kits": defined_kits},
         )
 
@@ -4356,7 +4356,7 @@ def pending_to_update(request):
     pending["extract_molecule"] = get_samples_in_extracted_molecule_state(request.user)
     pending["graphic_pending_samples"] = pending_samples_for_grafic(pending).render()
 
-    return render(request, "iSkyLIMS_wetlab/pendingToUpdate.html", {"pending": pending})
+    return render(request, "wetlab/pendingToUpdate.html", {"pending": pending})
 
 
 @login_required
@@ -4366,9 +4366,9 @@ def record_samples(request):
         analyze_input_samples  : located at core/handling_samples.py
         analyze_input_sample_project_fields  : located at core/handling_samples.py
         prepare_sample_input_table : located at core/utils/handling_samples.py
-        get_codeID_for_resequencing : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        get_codeID_for_resequencing : located at wetlab/utils/sample_functions.py
         prepare_sample_project_input_table :  located at core/utils/handling_samples.py
-        analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        analyze_reprocess_data  : located at wetlab/utils/sample_functions.py
         get_info_for_reprocess_samples : located at core/utils/handling_samples.py
     """
     # Record new samples
@@ -4385,7 +4385,7 @@ def record_samples(request):
             sample_information = prepare_sample_input_table(__package__)
             return render(
                 request,
-                "iSkyLIMS_wetlab/recordSample.html",
+                "wetlab/recordSample.html",
                 {"sample_information": sample_information},
             )
 
@@ -4404,7 +4404,7 @@ def record_samples(request):
             )
         return render(
             request,
-            "iSkyLIMS_wetlab/recordSample.html",
+            "wetlab/recordSample.html",
             {"sample_recorded": sample_recorded},
         )
 
@@ -4428,7 +4428,7 @@ def record_samples(request):
             if to_be_reprocessed_ids[0] == "":
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/recordSample.html",
+                    "wetlab/recordSample.html",
                     {"all_sucessful_reprocess": True},
                 )
             else:
@@ -4442,7 +4442,7 @@ def record_samples(request):
                 sample_recorded["reprocess_result"] = "True"
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/recordSample.html",
+                    "wetlab/recordSample.html",
                     {"sample_recorded": sample_recorded},
                 )
 
@@ -4466,7 +4466,7 @@ def record_samples(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/recordSample.html",
+            "wetlab/recordSample.html",
             {"reprocess_result": sample_recorded["reprocess_result"]},
         )
 
@@ -4480,7 +4480,7 @@ def record_samples(request):
         sample_recorded = prepare_sample_project_input_table(pre_defined_samples_id)
         return render(
             request,
-            "iSkyLIMS_wetlab/recordSample.html",
+            "wetlab/recordSample.html",
             {"sample_recorded": sample_recorded},
         )
 
@@ -4496,13 +4496,13 @@ def record_samples(request):
             )
             return render(
                 request,
-                "iSkyLIMS_wetlab/recordSample.html",
+                "wetlab/recordSample.html",
                 {"sample_recorded": sample_recorded},
             )
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/recordSample.html",
+                "wetlab/recordSample.html",
                 {"sample_recorded": sample_recorded},
             )
     # Load batch file
@@ -4513,7 +4513,7 @@ def record_samples(request):
             if "ERROR" in samples_batch_df:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/recordSample.html",
+                    "wetlab/recordSample.html",
                     {
                         "sample_information": sample_information,
                         "error_message": samples_batch_df["ERROR"],
@@ -4523,7 +4523,7 @@ def record_samples(request):
             if valid_file_result != "OK":
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/recordSample.html",
+                    "wetlab/recordSample.html",
                     {
                         "sample_information": sample_information,
                         "error_message": valid_file_result,
@@ -4535,7 +4535,7 @@ def record_samples(request):
             if result_recorded != "OK":
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/recordSample.html",
+                    "wetlab/recordSample.html",
                     {
                         "sample_information": sample_information,
                         "error_message": result_recorded,
@@ -4543,7 +4543,7 @@ def record_samples(request):
                 )
             return render(
                 request,
-                "iSkyLIMS_wetlab/recordSample.html",
+                "wetlab/recordSample.html",
                 {
                     "sample_information": sample_information,
                     "successfuly_batch_load": "ok",
@@ -4554,7 +4554,7 @@ def record_samples(request):
         sample_information = prepare_sample_input_table(__package__)
         return render(
             request,
-            "iSkyLIMS_wetlab/recordSample.html",
+            "wetlab/recordSample.html",
             {"sample_information": sample_information},
         )
 
@@ -4566,7 +4566,7 @@ def define_sample_projects_fields(request, sample_project_id):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4585,7 +4585,7 @@ def define_sample_projects_fields(request, sample_project_id):
         sample_project_field_data = set_sample_project_fields(request.POST)
         return render(
             request,
-            "iSkyLIMS_wetlab/defineSampleProjectFields.html",
+            "wetlab/defineSampleProjectFields.html",
             {"sample_project_field_data": sample_project_field_data},
         )
 
@@ -4599,7 +4599,7 @@ def define_sample_projects_fields(request, sample_project_id):
             if "ERROR" in schema:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/defineSampleProjectFields.html",
+                    "wetlab/defineSampleProjectFields.html",
                     {
                         "sample_project_data": sample_project_data,
                         "error_message": schema["ERROR"],
@@ -4614,7 +4614,7 @@ def define_sample_projects_fields(request, sample_project_id):
             if "ERROR" in result:
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/defineSampleProjectFields.html",
+                    "wetlab/defineSampleProjectFields.html",
                     {
                         "error_message": result["ERROR"],
                         "sample_project_data": sample_project_data,
@@ -4622,19 +4622,19 @@ def define_sample_projects_fields(request, sample_project_id):
                 )
             return render(
                 request,
-                "iSkyLIMS_wetlab/defineSampleProjectFields.html",
+                "wetlab/defineSampleProjectFields.html",
                 {"schema_result": result},
             )
         return render(
             request,
-            "iSkyLIMS_wetlab/defineSampleProjectFields.html",
+            "wetlab/defineSampleProjectFields.html",
             {"error_message": ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS},
         )
     else:
         if not check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The requested Protocol does not exist",
@@ -4646,7 +4646,7 @@ def define_sample_projects_fields(request, sample_project_id):
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
         return render(
             request,
-            "iSkyLIMS_wetlab/defineSampleProjectFields.html",
+            "wetlab/defineSampleProjectFields.html",
             {"sample_project_data": sample_project_data},
         )
 
@@ -4658,7 +4658,7 @@ def modify_additional_kits(request, protocol_id):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4676,14 +4676,14 @@ def modify_additional_kits(request, protocol_id):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/modifyAdditionalKits.html",
+            "wetlab/modifyAdditionalKits.html",
             {"additional_kits_data_saved": additional_kits_data_saved},
         )
     else:
         if not check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The requested additional kits do not exist",
@@ -4694,7 +4694,7 @@ def modify_additional_kits(request, protocol_id):
         additional_kits_data = get_additional_kits_data_to_modify(protocol_id)
         return render(
             request,
-            "iSkyLIMS_wetlab/modifyAdditionalKits.html",
+            "wetlab/modifyAdditionalKits.html",
             {"additional_kits_data": additional_kits_data},
         )
 
@@ -4706,7 +4706,7 @@ def modify_protocol_fields(request, protocol_id):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4722,14 +4722,14 @@ def modify_protocol_fields(request, protocol_id):
         protocol_field_saved = modify_fields_in_protocol(request.POST)
         return render(
             request,
-            "iSkyLIMS_wetlab/modifyProtocolFields.html",
+            "wetlab/modifyProtocolFields.html",
             {"protocol_field_saved": protocol_field_saved},
         )
     else:
         if not check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The requested Protocol does not exist",
@@ -4740,7 +4740,7 @@ def modify_protocol_fields(request, protocol_id):
         protocol_field = get_protocol_fields(protocol_id)
         return render(
             request,
-            "iSkyLIMS_wetlab/modifyProtocolFields.html",
+            "wetlab/modifyProtocolFields.html",
             {"protocol_field": protocol_field},
         )
 
@@ -4753,7 +4753,7 @@ def modify_sample_project_fields(request, sample_project_id):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -4772,7 +4772,7 @@ def modify_sample_project_fields(request, sample_project_id):
         sample_project_field_saved = modify_fields_in_sample_project(request.POST)
         return render(
             request,
-            "iSkyLIMS_wetlab/modifySampleProjectFields.html",
+            "wetlab/modifySampleProjectFields.html",
             {"sample_project_field_saved": sample_project_field_saved},
         )
 
@@ -4780,7 +4780,7 @@ def modify_sample_project_fields(request, sample_project_id):
         if not check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The requested Sample project does not exist",
@@ -4791,7 +4791,7 @@ def modify_sample_project_fields(request, sample_project_id):
         sample_project_field = get_parameters_sample_project(sample_project_id)
         return render(
             request,
-            "iSkyLIMS_wetlab/modifySampleProjectFields.html",
+            "wetlab/modifySampleProjectFields.html",
             {"sample_project_field": sample_project_field},
         )
 
@@ -4809,7 +4809,7 @@ def define_molecule_uses(request):
 
     return render(
         request,
-        "iSkyLIMS_wetlab/defineMoleculeUses.html",
+        "wetlab/defineMoleculeUses.html",
         {"molecule_use_data": molecule_use_data},
     )
 
@@ -4827,7 +4827,7 @@ def define_type_of_samples(request):
 
     return render(
         request,
-        "iSkyLIMS_wetlab/defineTypeOfSamples.html",
+        "wetlab/defineTypeOfSamples.html",
         {"sample_types": sample_types},
     )
 
@@ -4837,9 +4837,9 @@ def display_sample(request, sample_id):
     """
     Functions:
         get_all_sample_information : located at core/utils/handling_samples.py
-        get_all_library_information  located at iSkyLIMS_wetlab/utils/library_preparation.py
-        get_additional_kits_used_in_sample   located at iSkyLIMS_wetlab/utils/additional_kits.py
-        get_sample_in_project_obj_from_sample_name  # located at iSkyLIMS_wetlab/utils/sample_functions.py
+        get_all_library_information  located at wetlab/utils/library_preparation.py
+        get_additional_kits_used_in_sample   located at wetlab/utils/additional_kits.py
+        get_sample_in_project_obj_from_sample_name  # located at wetlab/utils/sample_functions.py
     """
     sample_information = get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
@@ -4859,13 +4859,13 @@ def display_sample(request, sample_id):
     if len(sample_information) == 0:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["No Sample was found"]},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/displaySample.html",
+            "wetlab/displaySample.html",
             {"sample_information": sample_information},
         )
 
@@ -4880,13 +4880,13 @@ def display_sample_in_run(request, sample_run_id):
     if not sample_run_obj:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["No Sample was found"]},
         )
     sample_information = get_info_sample_in_run(sample_run_obj)
     return render(
         request,
-        "iSkyLIMS_wetlab/displaySample.html",
+        "wetlab/displaySample.html",
         {"sample_information": sample_information},
     )
 
@@ -4900,7 +4900,7 @@ def display_type_of_sample(request, sample_type_id):
     type_of_sample_data = get_type_of_sample_information(sample_type_id)
     return render(
         request,
-        "iSkyLIMS_wetlab/displayTypeOfSample.html",
+        "wetlab/displayTypeOfSample.html",
         {"type_of_sample_data": type_of_sample_data},
     )
 
@@ -4933,7 +4933,7 @@ def handling_library_preparations(request):
         if len(samples_in_lib_prep_protocol) == 0:
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                "wetlab/handlingLibraryPreparations.html",
                 {"stored_lib_prep": samples_in_lib_prep},
             )
         library_preparation_objs = create_library_preparation_instance(
@@ -4944,7 +4944,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"lib_prep_protocol_parameters": lib_prep_protocol_parameters},
         )
 
@@ -4959,7 +4959,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"lib_prep_protocol_parameters": lib_prep_protocol_parameters},
         )
 
@@ -4983,7 +4983,7 @@ def handling_library_preparations(request):
             )
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                "wetlab/handlingLibraryPreparations.html",
                 {
                     "ERROR": error_message,
                     "lib_prep_protocol_parameters": lib_prep_protocol_parameters,
@@ -4991,7 +4991,7 @@ def handling_library_preparations(request):
             )
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"stored_params": stored_params},
         )
 
@@ -5008,7 +5008,7 @@ def handling_library_preparations(request):
                 data["ERROR"].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                "wetlab/handlingLibraryPreparations.html",
                 {"ERROR": data["ERROR"], "samples_in_lib_prep": samples_in_lib_prep},
             )
         user_in_description = get_configuration_value(
@@ -5021,7 +5021,7 @@ def handling_library_preparations(request):
                     user_id_in_s_sheet["ERROR"].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
                 return render(
                     request,
-                    "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                    "wetlab/handlingLibraryPreparations.html",
                     {
                         "ERROR": user_id_in_s_sheet["ERROR"],
                         "samples_in_lib_prep": samples_in_lib_prep,
@@ -5037,7 +5037,7 @@ def handling_library_preparations(request):
                 valid_data["ERROR"].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                "wetlab/handlingLibraryPreparations.html",
                 {
                     "ERROR": valid_data["ERROR"],
                     "samples_in_lib_prep": samples_in_lib_prep,
@@ -5061,7 +5061,7 @@ def handling_library_preparations(request):
             display_sample_sheet["user_list"] = get_userid_list()
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"display_sample_sheet": display_sample_sheet},
         )
 
@@ -5070,7 +5070,7 @@ def handling_library_preparations(request):
         if "ERROR" in store_data_result:
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                "wetlab/handlingLibraryPreparations.html",
                 {
                     "ERROR": valid_data["ERROR"],
                     "samples_in_lib_prep": samples_in_lib_prep,
@@ -5079,7 +5079,7 @@ def handling_library_preparations(request):
         stored_index = "True"
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"stored_index": stored_index},
         )
 
@@ -5093,7 +5093,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"stored_lib_prep": stored_lib_prep},
         )
         """
@@ -5103,7 +5103,7 @@ def handling_library_preparations(request):
         additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"additional_kits": additional_kits},
         )
 
@@ -5116,19 +5116,19 @@ def handling_library_preparations(request):
             additional_kits["data"] = json.loads(request.POST["protocol_data"])
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+                "wetlab/handlingLibraryPreparations.html",
                 {"ERROR": error_message, "additional_kits": additional_kits},
             )
 
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"stored_additional_kits": stored_additional_kits},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingLibraryPreparations.html",
+            "wetlab/handlingLibraryPreparations.html",
             {"samples_in_lib_prep": samples_in_lib_prep},
         )
 
@@ -5151,14 +5151,14 @@ def handling_molecules(request):
         if "ERROR" in molecule_protocol:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["There was no valid sample selected "]},
             )
         molecule_protocol["samples"] = ",".join(samples)
 
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingMolecules.html",
+            "wetlab/handlingMolecules.html",
             {"molecule_protocol": molecule_protocol},
         )
 
@@ -5187,7 +5187,7 @@ def handling_molecules(request):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingMolecules.html",
+                "wetlab/handlingMolecules.html",
                 {"molecule_recorded": molecule_recorded},
             )
 
@@ -5196,7 +5196,7 @@ def handling_molecules(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingMolecules.html",
+            "wetlab/handlingMolecules.html",
             {
                 "molecule_recorded": molecule_recorded,
                 "show_molecule_parameters": show_molecule_parameters,
@@ -5217,7 +5217,7 @@ def handling_molecules(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingMolecules.html",
+            "wetlab/handlingMolecules.html",
             {
                 "molecule_recorded": molecule_recorded,
                 "show_molecule_parameters": show_molecule_parameters,
@@ -5233,7 +5233,7 @@ def handling_molecules(request):
             )
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingMolecules.html",
+                "wetlab/handlingMolecules.html",
                 {
                     "molecule_parameters_updated": molecule_parameters_updated,
                     "show_molecule_parameters": show_molecule_parameters,
@@ -5242,7 +5242,7 @@ def handling_molecules(request):
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingMolecules.html",
+                "wetlab/handlingMolecules.html",
                 {"molecule_parameters_updated": molecule_parameters_updated},
             )
 
@@ -5250,7 +5250,7 @@ def handling_molecules(request):
         molecule_use = set_molecule_use(request.POST, __package__)
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingMolecules.html",
+            "wetlab/handlingMolecules.html",
             {"molecule_use": molecule_use},
         )
 
@@ -5274,7 +5274,7 @@ def handling_molecules(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/handlingMolecules.html",
+            "wetlab/handlingMolecules.html",
             {
                 "sample_availables": sample_availables,
                 "user_molecules": user_molecules,
@@ -5310,13 +5310,13 @@ def repeat_library_preparation(request):
             ]
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"detail_description": detail_description},
             )
         detail_description["information"] = SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
         return render(
             request,
-            "iSkyLIMS_wetlab/successful_page.html",
+            "wetlab/successful_page.html",
             {"detail_description": detail_description},
         )
     # return to the main page because the page was not requested for the right page
@@ -5343,7 +5343,7 @@ def repeat_molecule_extraction(request):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/handlingMolecules.html",
+                "wetlab/handlingMolecules.html",
                 {"molecule_protocol": molecule_protocol},
             )
     # return to the main page because the page was not requested for the right page
@@ -5373,13 +5373,13 @@ def repeat_pool(request):
             ]
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"detail_description": detail_description},
             )
         detail_description["information"] = SUCCESSFUL_REUSE_LIB_PREP
         return render(
             request,
-            "iSkyLIMS_wetlab/successful_page.html",
+            "wetlab/successful_page.html",
             {"detail_description": detail_description},
         )
     # return to the main page because the page was not requested for the right page
@@ -5415,14 +5415,14 @@ def search_sample(request):
         ):
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchSample.html",
+                "wetlab/searchSample.html",
                 {"search_data": search_data},
             )
 
         if user_name != "" and len(user_name) < 5:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "The user name must contains at least 5 caracters ",
@@ -5436,7 +5436,7 @@ def search_sample(request):
         if start_date != "" and not check_valid_date_format(start_date):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         'The format for the "Start Date Search" Field is incorrect ',
@@ -5448,7 +5448,7 @@ def search_sample(request):
         if end_date != "" and not check_valid_date_format(end_date):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         'The format for the "End Date Search" Field is incorrect ',
@@ -5471,7 +5471,7 @@ def search_sample(request):
         if len(sample_list) == 0 and len(run_sample_list) == 0:
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchSample.html",
+                "wetlab/searchSample.html",
                 {
                     "no_samples": ERROR_NO_SAMPLE_FOUND,
                     "sample_list": sample_list,
@@ -5493,13 +5493,13 @@ def search_sample(request):
                 run_sample_list = [run_sample_obj.get_basic_info()]
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchSample.html",
+                "wetlab/searchSample.html",
                 {"sample_list": sample_list, "run_sample_list": run_sample_list},
             )
 
     else:
         return render(
-            request, "iSkyLIMS_wetlab/searchSample.html", {"search_data": search_data}
+            request, "wetlab/searchSample.html", {"search_data": search_data}
         )
 
 
@@ -5509,7 +5509,7 @@ def set_molecule_values(request):
         if request.POST["samples"] == "":
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["There was no sample selected "]},
             )
         if "samples_in_list" in request.POST:
@@ -5521,7 +5521,7 @@ def set_molecule_values(request):
         if "ERROR" in molecule_protocol:
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {"content": ["There was no valid sample selected "]},
             )
 
@@ -5529,7 +5529,7 @@ def set_molecule_values(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/setMoleculeValues.html",
+            "wetlab/setMoleculeValues.html",
             {"molecule_protocol": molecule_protocol},
         )
 
@@ -5545,7 +5545,7 @@ def set_molecule_values(request):
             molecule_protocol["samples"] = ",".join(samples)
             return render(
                 request,
-                "iSkyLIMS_wetlab/setMoleculeValues.html",
+                "wetlab/setMoleculeValues.html",
                 {"molecule_protocol": molecule_protocol},
             )
         else:
@@ -5555,7 +5555,7 @@ def set_molecule_values(request):
 
             return render(
                 request,
-                "iSkyLIMS_wetlab/setMoleculeValues.html",
+                "wetlab/setMoleculeValues.html",
                 {"molecule_recorded": molecule_recorded},
             )
 
@@ -5572,7 +5572,7 @@ def set_molecule_values(request):
         )
         return render(
             request,
-            "iSkyLIMS_wetlab/setMoleculeValues.html",
+            "wetlab/setMoleculeValues.html",
             {"show_molecule_parameters": show_molecule_parameters},
         )
 
@@ -5588,7 +5588,7 @@ def set_molecule_values(request):
             )
             return render(
                 request,
-                "iSkyLIMS_wetlab/setMoleculeValues.html",
+                "wetlab/setMoleculeValues.html",
                 {
                     "added_molecule_protocol_parameters": added_molecule_protocol_parameters,
                     "show_molecule_parameters": show_molecule_parameters,
@@ -5597,7 +5597,7 @@ def set_molecule_values(request):
         else:
             return render(
                 request,
-                "iSkyLIMS_wetlab/setMoleculeValues.html",
+                "wetlab/setMoleculeValues.html",
                 {
                     "added_molecule_protocol_parameters": added_molecule_protocol_parameters
                 },
@@ -5609,10 +5609,10 @@ def set_molecule_values(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/setMoleculeValues.html",
+            "wetlab/setMoleculeValues.html",
             {"display_list": display_list},
         )
-    return render(request, "iSkyLIMS_wetlab/setMoleculeValues.html", {})
+    return render(request, "wetlab/setMoleculeValues.html", {})
 
 
 @login_required
@@ -5622,7 +5622,7 @@ def create_pool(request):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -5643,19 +5643,19 @@ def create_pool(request):
             display_list.update(new_pool)
             return render(
                 request,
-                "iSkyLIMS_wetlab/createPool.html",
+                "wetlab/createPool.html",
                 {"display_list": display_list},
             )
         information_for_created_pool = get_info_to_display_created_pool(new_pool)
         return render(
             request,
-            "iSkyLIMS_wetlab/createPool.html",
+            "wetlab/createPool.html",
             {"information_for_created_pool": information_for_created_pool},
         )
 
     else:
         return render(
-            request, "iSkyLIMS_wetlab/createPool.html", {"display_list": display_list}
+            request, "wetlab/createPool.html", {"display_list": display_list}
         )
 
 
@@ -5665,7 +5665,7 @@ def create_new_run(request):
         if not is_wetlab_manager(request):
             return render(
                 request,
-                "iSkyLIMS_wetlab/error_page.html",
+                "wetlab/error_page.html",
                 {
                     "content": [
                         "You do not have enough privileges to see this page ",
@@ -5683,7 +5683,7 @@ def create_new_run(request):
             error_message = config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
             return render(
                 request,
-                "iSkyLIMS_wetlab/CreateNewRun.html",
+                "wetlab/CreateNewRun.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": error_message,
@@ -5693,7 +5693,7 @@ def create_new_run(request):
         if "ERROR" in compatibility:
             return render(
                 request,
-                "iSkyLIMS_wetlab/CreateNewRun.html",
+                "wetlab/CreateNewRun.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": compatibility["ERROR"],
@@ -5708,7 +5708,7 @@ def create_new_run(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/CreateNewRun.html",
+            "wetlab/CreateNewRun.html",
             {"display_sample_information": display_sample_information},
         )
 
@@ -5729,7 +5729,7 @@ def create_new_run(request):
         display_sample_information["run_process_id"] = run_id
         return render(
             request,
-            "iSkyLIMS_wetlab/CreateNewRun.html",
+            "wetlab/CreateNewRun.html",
             {"display_sample_information": display_sample_information},
         )
 
@@ -5742,7 +5742,7 @@ def create_new_run(request):
             display_pools_for_run = display_available_pools()
             return render(
                 request,
-                "iSkyLIMS_wetlab/CreateNewRun.html",
+                "wetlab/CreateNewRun.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": error_message,
@@ -5759,7 +5759,7 @@ def create_new_run(request):
             display_pools_for_run = display_available_pools()
             return render(
                 request,
-                "iSkyLIMS_wetlab/CreateNewRun.html",
+                "wetlab/CreateNewRun.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": projects_objs["ERROR"],
@@ -5782,14 +5782,14 @@ def create_new_run(request):
 
         return render(
             request,
-            "iSkyLIMS_wetlab/CreateNewRun.html",
+            "wetlab/CreateNewRun.html",
             {"created_new_run": created_new_run},
         )
     else:
         display_pools_for_run = display_available_pools()
         return render(
             request,
-            "iSkyLIMS_wetlab/CreateNewRun.html",
+            "wetlab/CreateNewRun.html",
             {"display_pools_for_run": display_pools_for_run},
         )
 
@@ -5806,7 +5806,7 @@ def pending_sample_preparations(request):
     pending["add_lib_prep_parameters"] = get_lib_prep_to_add_parameters()
     pending["graphic_pending_samples"] = pending_samples_for_grafic(pending).render()
     return render(
-        request, "iSkyLIMS_wetlab/pendingSamplePreparations.html", {"pending": pending}
+        request, "wetlab/pendingSamplePreparations.html", {"pending": pending}
     )
 
 
@@ -5821,20 +5821,20 @@ def compare_samples(request):
             error_message = ERROR_NO_SAMPLES_SELECTED
             return render(
                 request,
-                "iSkyLIMS_wetlab/compareSamples.html",
+                "wetlab/compareSamples.html",
                 {"ERROR": error_message, "samples_data": samples_data},
             )
         compared_data = get_comparation_sample_information(selected_sample_objs)
 
         return render(
             request,
-            "iSkyLIMS_wetlab/compareSamples.html",
+            "wetlab/compareSamples.html",
             {"compared_data": compared_data},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/compareSamples.html",
+            "wetlab/compareSamples.html",
             {"samples_data": samples_data},
         )
 
@@ -5848,7 +5848,7 @@ def user_commercial_kit_inventory(request):
         if len(selected_user_kits) == 0:
             return render(
                 request,
-                "iSkyLIMS_wetlab/userCommercialKitInventory.html",
+                "wetlab/userCommercialKitInventory.html",
                 {
                     "expired_kit": expired_kit,
                     "valid_kit": valid_kit,
@@ -5858,14 +5858,14 @@ def user_commercial_kit_inventory(request):
         run_out_kits = set_user_lot_kit_to_run_out(selected_user_kits)
         return render(
             request,
-            "iSkyLIMS_wetlab/userCommercialKitInventory.html",
+            "wetlab/userCommercialKitInventory.html",
             {"run_out_kits": run_out_kits},
         )
 
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/userCommercialKitInventory.html",
+            "wetlab/userCommercialKitInventory.html",
             {
                 "expired_kit": expired_kit,
                 "valid_kit": valid_kit,
@@ -5888,7 +5888,7 @@ def search_user_lot_kit(request):
         ) and "exclude_runout" not in request.POST:
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchUserLotKit.html",
+                "wetlab/searchUserLotKit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -5901,7 +5901,7 @@ def search_user_lot_kit(request):
             error_message = ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchUserLotKit.html",
+                "wetlab/searchUserLotKit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -5914,7 +5914,7 @@ def search_user_lot_kit(request):
             error_message = ERROR_NO_USER_LOT_KIT_DEFINED
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchUserLotKit.html",
+                "wetlab/searchUserLotKit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -5927,14 +5927,14 @@ def search_user_lot_kit(request):
             )
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchUserLotKit.html",
+                "wetlab/searchUserLotKit.html",
                 {"display_user_kit_list": display_user_kit_list},
             )
         elif len(user_kits_objs) == 0:
             error_message = ERROR_NO_MATCHES_FOR_USER_LOT_KIT
             return render(
                 request,
-                "iSkyLIMS_wetlab/searchUserLotKit.html",
+                "wetlab/searchUserLotKit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -5947,7 +5947,7 @@ def search_user_lot_kit(request):
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/searchUserLotKit.html",
+            "wetlab/searchUserLotKit.html",
             {"protocol_list": protocol_list, "platform_list": platform_list},
         )
 
@@ -5958,13 +5958,13 @@ def display_user_lot_kit(request, user_kit_id):
     if user_kit_obj is None:
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ["Invalid User Lot Commercial Kit"]},
         )
     user_lot_kit_data = get_user_lot_kit_data_to_display(user_kit_obj)
     return render(
         request,
-        "iSkyLIMS_wetlab/displayUserLotKit.html",
+        "wetlab/displayUserLotKit.html",
         {"user_lot_kit_data": user_lot_kit_data},
     )
 
@@ -5978,7 +5978,7 @@ def sequencer_configuration(request):
     if not is_wetlab_manager(request):
         return render(
             request,
-            "iSkyLIMS_wetlab/error_page.html",
+            "wetlab/error_page.html",
             {"content": ERROR_USER_NOT_WETLAB_MANAGER},
         )
     sequencer_info = get_list_sequencer_configuration()
@@ -5990,12 +5990,12 @@ def sequencer_configuration(request):
         if "ERROR" in new_sequencer:
             return render(
                 request,
-                "iSkyLIMS_wetlab/sequencerConfiguration.html",
+                "wetlab/sequencerConfiguration.html",
                 {"sequencer_info": sequencer_info, "ERROR": new_sequencer},
             )
         return render(
             request,
-            "iSkyLIMS_wetlab/sequencerConfiguration.html",
+            "wetlab/sequencerConfiguration.html",
             {"sequencer_info": sequencer_info, "new_defined_sequencer": new_sequencer},
         )
     if request.method == "POST" and request.POST["action"] == "addNewConfiguration":
@@ -6003,12 +6003,12 @@ def sequencer_configuration(request):
         if "ERROR" in new_defined_configuration:
             return render(
                 request,
-                "iSkyLIMS_wetlab/sequencerConfiguration.html",
+                "wetlab/sequencerConfiguration.html",
                 {"sequencer_info": sequencer_info, "ERROR": new_defined_configuration},
             )
         return render(
             request,
-            "iSkyLIMS_wetlab/sequencerConfiguration.html",
+            "wetlab/sequencerConfiguration.html",
             {
                 "sequencer_info": sequencer_info,
                 "new_defined_configuration": new_defined_configuration,
@@ -6017,7 +6017,7 @@ def sequencer_configuration(request):
     else:
         return render(
             request,
-            "iSkyLIMS_wetlab/sequencerConfiguration.html",
+            "wetlab/sequencerConfiguration.html",
             {"sequencer_info": sequencer_info},
         )
 
@@ -6033,7 +6033,7 @@ def sequencer_inventory(request):
         sequencer_data = get_sequencer_inventory_data()
         return render(
             request,
-            "iSkyLIMS_wetlab/sequencerInventory.html",
+            "wetlab/sequencerInventory.html",
             {"sequencer_data": sequencer_data},
         )
 

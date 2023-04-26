@@ -2808,7 +2808,7 @@ def process_and_store_samples_projects_data(
         run_process_obj     # runProcess object
         experiment_name     # Experiment name
     Functions:
-        get_sample_with_user_owner  # Located at iSkyLIMS_wetlab/utils/sample_sheet_utils.py
+        get_sample_with_user_owner  # Located at wetlab/utils/sample_sheet_utils.py
     Return:
         None
     """

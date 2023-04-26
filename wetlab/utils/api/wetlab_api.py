@@ -123,17 +123,17 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         cursor = connection.cursor()
         user_list_str = [str(id_str) for id_str in user_list_ids]
         user_list = "( " + ",".join(user_list_str) + " )"
-        fetch_fields = " iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate , iSkyLIMS_wetlab_runningparameters.runID "
-        q_tables = " FROM iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id   inner join iSkyLIMS_wetlab_runningparameters ON iSkyLIMS_wetlab_runprocess.id =  iSkyLIMS_wetlab_runningparameters.runName_id_id "
+        fetch_fields = " wetlab_runprocess.runName, wetlab_runprocess.id ,wetlab_projects.projectName , wetlab_projects.id ,  wetlab_samplesinproject.sampleName, wetlab_samplesinproject.id, DATE_FORMAT(wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate , wetlab_runningparameters.runID "
+        q_tables = " FROM wetlab_samplesinproject inner join wetlab_projects ON wetlab_samplesinproject.project_id_id = wetlab_projects.id inner join wetlab_runprocess ON wetlab_samplesinproject.runProcess_id_id = wetlab_runprocess.id   inner join wetlab_runningparameters ON wetlab_runprocess.id =  wetlab_runningparameters.runName_id_id "
         restrict_results = (
-            "WHERE iSkyLIMS_wetlab_samplesinproject.user_id_id IN " + user_list
+            "WHERE wetlab_samplesinproject.user_id_id IN " + user_list
         )
         query = (
             "SELECT "
             + fetch_fields
             + q_tables
             + restrict_results
-            + "ORDER BY (iSkyLIMS_wetlab_runprocess.run_completed_date) DESC"
+            + "ORDER BY (wetlab_runprocess.run_completed_date) DESC"
         )
 
         cursor.execute(query)

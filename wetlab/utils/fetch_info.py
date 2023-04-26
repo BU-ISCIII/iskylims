@@ -488,7 +488,7 @@ def get_information_for_incompleted_run():
         It creates a 4 groups. Recorded, Error, Canceled and rest of the states.
         Creates a pie graphic
     Functions:
-        graphic_3D_pie      # located at iSkyLIMS_wetlab/utils/stats_graphics
+        graphic_3D_pie      # located at wetlab/utils/stats_graphics
     Return:
         run_information with information collected for each run
     """
