@@ -1,29 +1,30 @@
 # -*- coding: utf-8 -*-
 # Generic imports
-import os, re
-from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth.decorators import login_required
-import django.contrib.auth.models
-import django_utils.models
-from django.conf import settings
-from django_utils.fusioncharts.fusioncharts import FusionCharts
-from django.http import HttpResponse
-from django.core.files.storage import FileSystemStorage
-from datetime import date, datetime
+import os
 import statistics
+from datetime import date, datetime
 
+import django.contrib.auth.models
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+
+import django_utils.models
+import iSkyLIMS_core.utils.common
 # Local imports
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
-import iSkyLIMS_drylab.utils.handling_pipelines
-import iSkyLIMS_drylab.utils.graphics
-import iSkyLIMS_drylab.utils.testing_drylab_configuration
 import iSkyLIMS_drylab.utils.drylab_common_functions
-import iSkyLIMS_drylab.utils.handling_request_services
-import iSkyLIMS_drylab.utils.handling_resolutions
+import iSkyLIMS_drylab.utils.graphics
 import iSkyLIMS_drylab.utils.handling_deliveries
 import iSkyLIMS_drylab.utils.handling_multiple_files
-import iSkyLIMS_core.utils.common
+import iSkyLIMS_drylab.utils.handling_pipelines
+import iSkyLIMS_drylab.utils.handling_request_services
+import iSkyLIMS_drylab.utils.handling_resolutions
+import iSkyLIMS_drylab.utils.testing_drylab_configuration
+from django_utils.fusioncharts.fusioncharts import FusionCharts
 
 
 @login_required
@@ -156,7 +157,7 @@ def request_sequencing_service(request):
             iSkyLIMS_drylab.utils.handling_request_services.add_files_to_service(
                 request.POST.getlist("files"), new_service
             )
-        ## Send mail to user and drylab notification email
+        # Send mail to user and drylab notification email
         email_data = {}
         if (
             "requestedForUserid" in request.POST
@@ -176,9 +177,6 @@ def request_sequencing_service(request):
         )
         # PDF preparation file for confirmation of service request
         confirmation_result = {}
-        """ removed creation of pdf file when creating a new service
-		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
-		"""
         service_request_number = new_service.get_service_request_number()
         confirmation_result["text"] = list(
             map(
@@ -340,12 +338,7 @@ def add_samples_in_service(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if iSkyLIMS_drylab.models.Service.objects.filter(
-        pk=request.POST["service_id"]
-    ).exists():
-        service_manager = (
-            iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request)
-        )
+
     if request.method == "POST" and request.POST["action"] == "addeSamplesInService":
         if not iSkyLIMS_drylab.models.Service.objects.filter(
             pk__exact=request.POST["service_id"]
@@ -400,12 +393,7 @@ def delete_samples_in_service(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if iSkyLIMS_drylab.models.Service.objects.filter(
-        pk=request.POST["service_id"]
-    ).exists():
-        service_manager = (
-            iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request)
-        )
+
     if request.method == "POST" and request.POST["action"] == "deleteSamplesInService":
         if not iSkyLIMS_drylab.models.Service.objects.filter(
             pk__exact=request.POST["service_id"]
@@ -415,7 +403,7 @@ def delete_samples_in_service(request):
                 "iSkyLIMS_drylab/error_page.html",
                 {"content": ["The service that you are trying to get does not exist "]},
             )
-        if not "sampleId" in request.POST:
+        if "sampleId" not in request.POST:
             return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
         deleted_samples = iSkyLIMS_drylab.utils.handling_request_services.delete_requested_samples_in_service(
             request.POST.getlist("sampleId")
@@ -523,7 +511,7 @@ def search_service(request):
                 {"services_search_list": services_search_list},
             )
 
-        ### check the right format of start and end date
+        # check the right format of start and end date
         if (
             request.POST["startdate"] != ""
             and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(
@@ -745,7 +733,7 @@ def service_in_waiting_info(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
@@ -788,7 +776,7 @@ def add_resolution(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if request.method != "POST" or not "service_id" in request.POST:
+    if request.method != "POST" or "service_id" not in request.POST:
         return render(
             request,
             "iSkyLIMS_drylab/error_page.html",
@@ -818,7 +806,7 @@ def add_resolution(request):
         # pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
         # resolution_file = create_pdf(request,information, iSkyLIMS_drylab.drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 
-        ## Send email
+        # Send email
         email_data = {}
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
@@ -834,7 +822,7 @@ def add_resolution(request):
         created_resolution["resolution_number"] = resolution_data_form[
             "resolutionNumber"
         ]
-        ## Display pipeline parameters
+        # Display pipeline parameters
 
         return render(
             request,
@@ -864,85 +852,6 @@ def add_resolution(request):
         )
 
 
-"""
-def test (request):
-    resolution_number = 'SRVIIER001.1'
-    service_requested = 'SRVIIER001'
-    from weasyprint import HTML, CSS
-    from django.template.loader import get_template
-    from django.core.files.storage import FileSystemStorage
-    from django.http import HttpResponse
-    from weasyprint.fonts import FontConfiguration
-
-
-
-    information, user, resolution_data = {}, {}, {}
-    # get service object
-    service = Service.objects.get(service_request_number = service_requested)
-    service_number ,run_specs, center, platform = service.get_service_information().split(';')
-    # get resolution object
-    resolution = Resolution.objects.get(resolutionNumber = resolution_number)
-    resolution_info = resolution.get_resolution_information()
-    # get profile object
-    user_id = service.serviceUserId.id
-
-    information['resolution_number'] = resolution_number
-    information['requested_date'] = service.get_service_creation_time()
-    information['resolution_date'] = resolution_info[4]
-    information['nodes']= service.service_available_service.all()
-    user['name'] = service.serviceUserId.first_name
-    user['surname'] = service.serviceUserId.last_name
-
-
-    user_id = service.serviceUserId.id
-    user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
-    user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
-    user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
-    user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
-    user['email'] = service.serviceUserId.email
-    information['user'] = user
-    resolution_data['folder'] = resolution_info[1]
-    resolution_data['estimated_date'] = resolution_info[3]
-    resolution_data['notes'] = resolution_info[6]
-    resolution_data['decission'] = service.serviceStatus
-    information['service_data'] = service.service_notes
-
-    resolution_data['folder'] = resolution_info[1]
-    information['resolution_data'] = resolution_data
-    html_string = render_to_string('resolution_template.html', {'information': information})
-
-    html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf('documents/drylab/res_pdf.pdf',stylesheets=[CSS(settings.STATIC_ROOT +
-                                iSkyLIMS_drylab.drylab_config.CSS_FOR_PDF)])
-
-    fs = FileSystemStorage('documents/drylab')
-    with fs.open('res_pdf.pdf') as pdf:
-        response = HttpResponse(pdf, content_type='application/pdf')
-        # save pdf file as attachment
-        #response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
-
-
-        response['Content-Disposition'] = 'inline;filename=res_pdf.pdf'
-
-    return response
-
-"""
-"""
-def add_new_resolution_file (conn, full_service_path,resolution_file,year):
-
-    temp_file=resolution_file.split('/')
-    resolution_name_file = temp_file[-1]
-    resolution_remote_file = os.path.join(iSkyLIMS_drylab.drylab_config.SAMBA_SERVICE_FOLDER,str(year),full_service_path,iSkyLIMS_drylab.drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
-
-    try:
-        with open(resolution_file ,'rb') as  res_samba_fp:
-            conn.storeFile(iSkyLIMS_drylab.drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
-    except:
-        return ( 'Unable to copy the resolution file ',resolution_remote_file,resolution_name_file)
-
-    return True
-"""
-
-
 @login_required
 def add_in_progress(request):
     if request.user.is_authenticated:
@@ -961,7 +870,7 @@ def add_in_progress(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
@@ -1044,7 +953,7 @@ def add_delivery(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
@@ -1153,7 +1062,7 @@ def stats_by_user(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
@@ -1361,7 +1270,7 @@ def stats_by_services_request(request):
                         ]
                     },
                 )
-        except:
+        except Exception:
             return render(
                 request,
                 "iSkyLIMS_drylab/error_page.html",
@@ -1521,7 +1430,7 @@ def stats_by_services_request(request):
             ] = graphic_center_services.render()
 
             ################################################
-            ## Preparing the statistics per period of time
+            # Preparing the statistics per period of time
             ################################################
             # calculating the period to be displayed the graphic (per month o per year)
             delta_dates = (end_date_format - start_date_format).days
@@ -1530,9 +1439,8 @@ def stats_by_services_request(request):
             else:
                 period_year_month = "%Y_%m"
 
-            ## Preparing the statistics for Center on period of time
+            # Preparing the statistics for Center on period of time
             user_services_period = {}
-            center_period = {}
             time_values_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
@@ -1545,7 +1453,7 @@ def stats_by_services_request(request):
                     ).get_profile_center_abbr()
                 else:
                     user_center = "Not defined"
-                if not date_service in time_values_dict:
+                if date_service not in time_values_dict:
                     time_values_dict[date_service] = 1
                 if user_center in user_services_period:
                     if date_service in user_services_period[user_center]:
@@ -1561,7 +1469,7 @@ def stats_by_services_request(request):
             # fill with zero for the centers that have no sevice during some period
             for center, value in user_services_period.items():
                 for d_period in time_values:
-                    if not d_period in user_services_period[center]:
+                    if d_period not in user_services_period[center]:
                         user_services_period[center][d_period] = 0
             data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_per_time(
                 "Services requested by center ",
@@ -1578,9 +1486,8 @@ def stats_by_services_request(request):
                 "graphic_center_services_per_time"
             ] = graphic_center_services_per_time.render()
 
-            ## Preparing the statistics for Area on period of time
+            # Preparing the statistics for Area on period of time
             user_area_services_period = {}
-            area_period = {}
             time_values_dict = {}
             for service in services_found:
                 user_id = service.serviceUserId.id
@@ -1609,7 +1516,7 @@ def stats_by_services_request(request):
             # fill with zero for the centers that have no sevice during some period
             for area, value in user_area_services_period.items():
                 for d_period in time_values:
-                    if not d_period in user_area_services_period[area]:
+                    if d_period not in user_area_services_period[area]:
                         user_area_services_period[area][d_period] = 0
 
             data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_per_time(
@@ -1778,9 +1685,9 @@ def configuration_test(request):
         )
         # check if access to databases are defined
         try:
-            access_db = iSkyLIMS_drylab.models.Service.objects.all()
+            iSkyLIMS_drylab.models.Service.objects.all()
             test_results["database_access"] = "OK"
-        except:
+        except Exception:
             test_results["database_access"] = "NOK"
 
         # check if available services are defined
@@ -1980,7 +1887,7 @@ def detail_pipeline(request, pipeline_id):
     )
 
 
-###################### Delete upload service file  #########################
+# Delete upload service file  #
 def upload_service_file_delete(request, file_id):
     if request.method == "DELETE":
         if not iSkyLIMS_drylab.utils.handling_multiple_files.check_if_file_is_linked_to_service(
