@@ -16,7 +16,7 @@ class ServiceAdmin(admin.ModelAdmin):
     list_display = (
         "service_request_number",
         "service_seq_center",
-        "serviceUserId",
+        "service_user_id",
         "service_state",
         "service_created_date",
         "service_delivered_date",
@@ -38,12 +38,12 @@ class UploadServiceFileAdmin(admin.ModelAdmin):
 
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
-    list_display = ["avail_service_description", "serviceId", "service_in_use"]
+    list_display = ["avail_service_description", "service_id", "service_in_use"]
 
 
 class ResolutionAdmin(admin.ModelAdmin):
     list_display = (
-        "resolution_serviceID",
+        "resolution_service_id",
         "resolution_number",
         "resolution_state",
         "resolution_date",
@@ -53,7 +53,7 @@ class ResolutionAdmin(admin.ModelAdmin):
     )
     list_filter = ["resolution_date"]
     search_fields = [
-        "resolutionNumber__icontains",
+        "resolution_number__icontains",
         "resolution_asigned_user__username__icontains",
     ]
 
@@ -69,7 +69,7 @@ class ResolutionParametersAdmin(admin.ModelAdmin):
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = [
-        "delivery_resolutionID",
+        "delivery_resolution_id",
         "delivery_date",
         "execution_start_date",
         "execution_end_date",
