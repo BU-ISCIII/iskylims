@@ -19,7 +19,7 @@ from core.utils.samples import *
 def index(request):
     org_name = get_configuration_from_database("ORGANIZATION_NAME")
     return render(
-        request, "iSkyLIMS_clinic/index.html", {"organization_name": org_name}
+        request, "clinic/index.html", {"organization_name": org_name}
     )
 
 
@@ -35,7 +35,7 @@ def add_commercial_kit(request):
         if get_commercial_kit_id(request.POST["kitName"]):
             return render(
                 request,
-                "iSkyLIMS_clinic/addCommercialKit.html",
+                "clinic/addCommercialKit.html",
                 {
                     "defined_protocols": defined_protocols,
                     "invalid_name": request.POST["kitName"],
@@ -45,13 +45,13 @@ def add_commercial_kit(request):
         new_kit_data = get_commercial_kit_basic_data(new_kit)
         return render(
             request,
-            "iSkyLIMS_clinic/addCommercialKit.html",
+            "clinic/addCommercialKit.html",
             {"new_kit_data": new_kit_data},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_clinic/addCommercialKit.html",
+            "clinic/addCommercialKit.html",
             {
                 "defined_protocols": defined_protocols,
                 "commercial_kits_data": commercial_kits_data,
@@ -66,7 +66,7 @@ def add_user_lot_commercial_kit(request):
             defined_kits = get_defined_commercial_kits()
             return render(
                 request,
-                "iSkyLIMS_clinic/addUserLotCommercialKit.html",
+                "clinic/addUserLotCommercialKit.html",
                 {
                     "defined_kits": defined_kits,
                     "invalid_name": request.POST["nickName"],
@@ -76,14 +76,14 @@ def add_user_lot_commercial_kit(request):
         new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
         return render(
             request,
-            "iSkyLIMS_clinic/addUserLotCommercialKit.html",
+            "clinic/addUserLotCommercialKit.html",
             {"new_lot_kit_data": new_lot_kit_data},
         )
     else:
         defined_kits = get_defined_commercial_kits()
         return render(
             request,
-            "iSkyLIMS_clinic/addUserLotCommercialKit.html",
+            "clinic/addUserLotCommercialKit.html",
             {"defined_kits": defined_kits},
         )
 
@@ -100,18 +100,18 @@ def assign_project(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/addPatientProject.html",
+            "clinic/addPatientProject.html",
             {"defined_project": defined_project},
         )
     elif request.method == "POST" and request.POST["action"] == "defineProjectFields":
         project_fields_added = add_project_fields(request.POST)
         return render(
             request,
-            "iSkyLIMS_clinic/addPatientProject.html",
+            "clinic/addPatientProject.html",
             {"project_fields_added": project_fields_added},
         )
 
-    return render(request, "iSkyLIMS_clinic/addPatientProject.html")
+    return render(request, "clinic/addPatientProject.html")
 
 
 @login_required
@@ -122,7 +122,7 @@ def create_new_patient_project(request):
         if "ERROR" in new_project:
             return render(
                 request,
-                "iSkyLIMS_clinic/createNewProject.html",
+                "clinic/createNewProject.html",
                 {
                     "defined_projects": defined_projects,
                     "error": ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS,
@@ -130,13 +130,13 @@ def create_new_patient_project(request):
             )
         return render(
             request,
-            "iSkyLIMS_clinic/createNewProject.html",
+            "clinic/createNewProject.html",
             {"new_project": new_project},
         )
 
     return render(
         request,
-        "iSkyLIMS_clinic/createNewProject.html",
+        "clinic/createNewProject.html",
         {"defined_projects": defined_projects},
     )
 
@@ -155,7 +155,7 @@ def create_protocol(request):
         if check_if_protocol_exists(new_protocol, __package__):
             return render(
                 request,
-                "iSkyLIMS_clinic/createProtocol.html",
+                "clinic/createProtocol.html",
                 {"content": ["Protocol Name ", new_protocol, "Already exists."]},
             )
         new_protocol_id = create_new_protocol(
@@ -164,7 +164,7 @@ def create_protocol(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/createProtocol.html",
+            "clinic/createProtocol.html",
             {
                 "defined_protocols": defined_protocols,
                 "defined_protocol_types": defined_protocol_types,
@@ -176,7 +176,7 @@ def create_protocol(request):
 
     return render(
         request,
-        "iSkyLIMS_clinic/createProtocol.html",
+        "clinic/createProtocol.html",
         {
             "defined_protocols": defined_protocols,
             "defined_protocol_types": defined_protocol_types,
@@ -198,7 +198,7 @@ def create_sample_projects(request):
             error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
-                "iSkyLIMS_clinic/createSampleProjects.html",
+                "clinic/createSampleProjects.html",
                 {
                     "defined_samples_projects": defined_samples_projects,
                     "error_message": error_message,
@@ -208,7 +208,7 @@ def create_sample_projects(request):
         new_defined_sample_project = sample_project_name
         return render(
             request,
-            "iSkyLIMS_clinic/createSampleProjects.html",
+            "clinic/createSampleProjects.html",
             {
                 "defined_samples_projects": defined_samples_projects,
                 "new_sample_project_id": new_sample_project_id,
@@ -218,7 +218,7 @@ def create_sample_projects(request):
 
     return render(
         request,
-        "iSkyLIMS_clinic/createSampleProjects.html",
+        "clinic/createSampleProjects.html",
         {"defined_samples_projects": defined_samples_projects},
     )
 
@@ -235,7 +235,7 @@ def define_extraction_molecules(request):
         pass
         return render(
             request,
-            "iSkyLIMS_clinic/defineExtractionMolecules.html",
+            "clinic/defineExtractionMolecules.html",
             {"extraction_molecules": extraction_molecules},
         )
         # return the samples that match user request
@@ -243,7 +243,7 @@ def define_extraction_molecules(request):
         pass
         return render(
             request,
-            "iSkyLIMS_clinic/defineExtractionMolecules.html",
+            "clinic/defineExtractionMolecules.html",
             {"extraction_molecules": extraction_molecules},
         )
         # group the samples selected by user
@@ -251,14 +251,14 @@ def define_extraction_molecules(request):
         pass
         return render(
             request,
-            "iSkyLIMS_clinic/defineExtractionMolecules.html",
+            "clinic/defineExtractionMolecules.html",
             {"extraction_molecules": extraction_molecules},
         )
     else:
         pass
     return render(
         request,
-        "iSkyLIMS_clinic/defineExtractionMolecules.html",
+        "clinic/defineExtractionMolecules.html",
         {"extraction_molecules": extraction_molecules},
     )
 
@@ -271,7 +271,7 @@ def define_new_patient(request):
             patient_definition_data = fields_for_new_patient(__package__)
             return render(
                 request,
-                "iSkyLIMS_clinic/defineNewPatient.html",
+                "clinic/defineNewPatient.html",
                 {
                     "patient_definition_data": patient_definition_data,
                     "error": ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS,
@@ -279,7 +279,7 @@ def define_new_patient(request):
             )
         return render(
             request,
-            "iSkyLIMS_clinic/defineNewPatient.html",
+            "clinic/defineNewPatient.html",
             {"defined_patient": defined_patient},
         )
     elif request.method == "POST" and request.POST["action"] == "defineBatchPatient":
@@ -289,7 +289,7 @@ def define_new_patient(request):
                 patient_definition_data = fields_for_new_patient(__package__)
                 return render(
                     request,
-                    "iSkyLIMS_clinic/defineNewPatient.html",
+                    "clinic/defineNewPatient.html",
                     {
                         "patient_definition_data": patient_definition_data,
                         "error": patient_batch_data["ERROR"],
@@ -298,7 +298,7 @@ def define_new_patient(request):
             defined_batch_patient = store_batch_patient(patient_batch_data)
         return render(
             request,
-            "iSkyLIMS_clinic/defineNewPatient.html",
+            "clinic/defineNewPatient.html",
             {"defined_batch_patient": defined_batch_patient},
         )
     elif (
@@ -309,19 +309,19 @@ def define_new_patient(request):
         return redirect(
             "display_patient_information", patient_id=request.POST["patient_id"]
         )
-        # return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
+        # return render(request, 'clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
     elif request.method == "POST" and request.POST["action"] == "defineProjectFields":
         project_fields_added = add_project_fields(request.POST)
         return render(
             request,
-            "iSkyLIMS_clinic/defineNewPatient.html",
+            "clinic/defineNewPatient.html",
             {"project_fields_added": project_fields_added},
         )
     else:
         patient_definition_data = fields_for_new_patient(__package__)
         return render(
             request,
-            "iSkyLIMS_clinic/defineNewPatient.html",
+            "clinic/defineNewPatient.html",
             {"patient_definition_data": patient_definition_data},
         )
 
@@ -335,13 +335,13 @@ def define_new_patient_history(request):
 def define_new_samples(request):
     """
     Functions :
-        analyze_input_samples  : located at iSkyLIMS_core/handling_samples.py
-        analyze_input_sample_project_fields  : located at iSkyLIMS_core/handling_samples.py
-        prepare_sample_input_table : located at iSkyLIMS_core/utils/handling_samples.py
+        analyze_input_samples  : located at core/handling_samples.py
+        analyze_input_sample_project_fields  : located at core/handling_samples.py
+        prepare_sample_input_table : located at core/utils/handling_samples.py
         get_codeID_for_resequencing : located at iSkyLIMS_wetlab/utils/sample_functions.py
-        prepare_sample_project_input_table :  located at iSkyLIMS_core/utils/handling_samples.py
+        prepare_sample_project_input_table :  located at core/utils/handling_samples.py
         analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
-        get_info_for_reprocess_samples : located at iSkyLIMS_core/utils/handling_samples.py
+        get_info_for_reprocess_samples : located at core/utils/handling_samples.py
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
@@ -356,7 +356,7 @@ def define_new_samples(request):
             sample_information = prepare_sample_input_table(__package__)
             return render(
                 request,
-                "iSkyLIMS_clinic/defineNewSamples.html",
+                "clinic/defineNewSamples.html",
                 {"sample_information": sample_information},
             )
 
@@ -399,7 +399,7 @@ def define_new_samples(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/defineNewSamples.html",
+            "clinic/defineNewSamples.html",
             {"sample_recorded": sample_recorded},
         )
 
@@ -445,7 +445,7 @@ def define_new_samples(request):
         sample_information = prepare_sample_input_table(__package__)
         return render(
             request,
-            "iSkyLIMS_clinic/defineNewSamples.html",
+            "clinic/defineNewSamples.html",
             {"sample_information": sample_information},
         )
 
@@ -463,7 +463,7 @@ def define_patient_information(request):
             )
         return render(
             request,
-            "iSkyLIMS_clinic/definePatientInformation.html",
+            "clinic/definePatientInformation.html",
             {"patient_information": patient_information},
         )
     elif request.method == "POST" and request.POST["action"] == "storePatientInfo":
@@ -471,7 +471,7 @@ def define_patient_information(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/definePatientInformation.html",
+            "clinic/definePatientInformation.html",
             {"updated_information": updated_information},
         )
     else:
@@ -479,7 +479,7 @@ def define_patient_information(request):
         if not clinic_samples:
             return render(
                 request,
-                "iSkyLIMS_clinic/definePatientInformation.html",
+                "clinic/definePatientInformation.html",
                 {"no_samples": True},
             )
         else:
@@ -487,7 +487,7 @@ def define_patient_information(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/definePatientInformation.html",
+            "clinic/definePatientInformation.html",
             {"patient_information": patient_information},
         )
 
@@ -498,14 +498,14 @@ def define_project_fields(request, project_id):
         recorded_project_fields = set_project_fields(request.POST)
         return render(
             request,
-            "iSkyLIMS_clinic/defineProjectFields.html",
+            "clinic/defineProjectFields.html",
             {"recorded_project_fields": recorded_project_fields},
         )
     else:
         project_fields = define_table_for_project_fields(project_id)
     return render(
         request,
-        "iSkyLIMS_clinic/defineProjectFields.html",
+        "clinic/defineProjectFields.html",
         {"project_fields": project_fields},
     )
 
@@ -519,14 +519,14 @@ def define_protocol_parameters(request, protocol_id):
         recorded_prot_parameters = set_protocol_parameters(request)
         return render(
             request,
-            "iSkyLIMS_clinic/defineProtocolParameters.html",
+            "clinic/defineProtocolParameters.html",
             {"recorded_prot_parameters": recorded_prot_parameters},
         )
     else:
         if not check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "iSkyLIMS_clinic/error_page.html",
+                "clinic/error_page.html",
                 {
                     "content": [
                         "The requested Protocol does not exist",
@@ -537,7 +537,7 @@ def define_protocol_parameters(request, protocol_id):
         prot_parameters = define_table_for_prot_parameters(protocol_id)
         return render(
             request,
-            "iSkyLIMS_clinic/defineProtocolParameters.html",
+            "clinic/defineProtocolParameters.html",
             {"prot_parameters": prot_parameters},
         )
 
@@ -554,7 +554,7 @@ def define_sample_projects_fields(request, sample_project_id):
 
         return render(
             request,
-            "iSkyLIMS_clinic/defineSampleProjectFields.html",
+            "clinic/defineSampleProjectFields.html",
             {"sample_project_field_data": sample_project_field_data},
         )
 
@@ -562,7 +562,7 @@ def define_sample_projects_fields(request, sample_project_id):
         if not check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
-                "iSkyLIMS_clinic/error_page.html",
+                "clinic/error_page.html",
                 {
                     "content": [
                         "The requested Protocol does not exist",
@@ -574,7 +574,7 @@ def define_sample_projects_fields(request, sample_project_id):
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
         return render(
             request,
-            "iSkyLIMS_clinic/defineSampleProjectFields.html",
+            "clinic/defineSampleProjectFields.html",
             {"sample_project_data": sample_project_data},
         )
 
@@ -585,13 +585,13 @@ def display_patient_information(request, patient_id):
     if "ERROR" in display_patient_info:
         return render(
             request,
-            "iSkyLIMS_clinic/displayPatientInformation.html",
+            "clinic/displayPatientInformation.html",
             {"ERROR": "ERROR"},
         )
     else:
         return render(
             request,
-            "iSkyLIMS_clinic/displayPatientInformation.html",
+            "clinic/displayPatientInformation.html",
             {"display_patient_info": display_patient_info},
         )
     return
@@ -602,7 +602,7 @@ def display_patient_project(request, project_id):
     if not check_if_project_exists(project_id, __package__):
         return render(
             request,
-            "iSkyLIMS_clinic/error_page.html",
+            "clinic/error_page.html",
             {
                 "content": [
                     "The project that you are trying to get ",
@@ -613,7 +613,7 @@ def display_patient_project(request, project_id):
     project_data = get_all_project_info(project_id)
 
     return render(
-        request, "iSkyLIMS_clinic/displayProject.html", {"project_data": project_data}
+        request, "clinic/displayProject.html", {"project_data": project_data}
     )
 
 
@@ -622,7 +622,7 @@ def display_protocol(request, protocol_id):
     if not check_if_protocol_exists(protocol_id, __package__):
         return render(
             request,
-            "iSkyLIMS_clinic/error_page.html",
+            "clinic/error_page.html",
             {
                 "content": [
                     "The protocol that you are trying to get ",
@@ -634,7 +634,7 @@ def display_protocol(request, protocol_id):
 
     return render(
         request,
-        "iSkyLIMS_clinic/displayProtocol.html",
+        "clinic/displayProtocol.html",
         {"protocol_data": protocol_data},
     )
 
@@ -644,7 +644,7 @@ def display_result_protocol(request, result_protocol_id):
     if not check_if_protocol_exists(result_protocol_id, __package__):
         return render(
             request,
-            "iSkyLIMS_clinic/error_page.html",
+            "clinic/error_page.html",
             {
                 "content": [
                     "The result protocol that you are trying to get ",
@@ -656,7 +656,7 @@ def display_result_protocol(request, result_protocol_id):
 
     return render(
         request,
-        "iSkyLIMS_clinic/displayResultProtocol.html",
+        "clinic/displayResultProtocol.html",
         {"result_protocol_data": result_protocol_data},
     )
 
@@ -667,8 +667,8 @@ def display_sample_clinic_info(request, sample_c_id):
     Description:
         The function will get the option values to display in the select menus.
     Functions:
-        display_one_sample_info         # located at iSkyLIMS_clinic/utils/managed_samples.py
-        collect_sample_data_for_search  # located at iSkyLIMS_clinic/utils/managed_samples.py
+        display_one_sample_info         # located at clinic/utils/managed_samples.py
+        collect_sample_data_for_search  # located at clinic/utils/managed_samples.py
     Return:
         patient_definition_data.
     """
@@ -677,7 +677,7 @@ def display_sample_clinic_info(request, sample_c_id):
 
         return render(
             request,
-            "iSkyLIMS_clinic/displaySampleClinicInfo.html",
+            "clinic/displaySampleClinicInfo.html",
             {"display_sample_info": display_sample_info},
         )
     else:
@@ -688,7 +688,7 @@ def display_sample_clinic_info(request, sample_c_id):
         ]
         return render(
             request,
-            "iSkyLIMS_clinic/searchSample.html",
+            "clinic/searchSample.html",
             {"search_sample_data": search_sample_data, "error_message": error_message},
         )
 
@@ -699,12 +699,12 @@ def display_sample_project(request, sample_project_id):
     if "ERROR" in samples_project_data:
         error_message = samples_project_data["ERROR"]
         return render(
-            request, "iSkyLIMS_clinic/error_page.html", {"content": error_message}
+            request, "clinic/error_page.html", {"content": error_message}
         )
 
     return render(
         request,
-        "iSkyLIMS_clinic/displaySampleProject.html",
+        "clinic/displaySampleProject.html",
         {"samples_project_data": samples_project_data},
     )
 
@@ -736,7 +736,7 @@ def pending_to_update(request):
         pending
     ).render()
 
-    return render(request, "iSkyLIMS_clinic/pendingToUpdate.html", {"pending": pending})
+    return render(request, "clinic/pendingToUpdate.html", {"pending": pending})
 
 
 @login_required
@@ -757,7 +757,7 @@ def search_sample(request):
         if len([v for v in data_request.values() if v != ""]) == 0:
             return render(
                 request,
-                "iSkyLIMS_clinic/searchSample.html",
+                "clinic/searchSample.html",
                 {"search_sample_data": search_sample_data},
             )
         # Check for valid date format
@@ -767,7 +767,7 @@ def search_sample(request):
             except Exception:
                 return render(
                     request,
-                    "iSkyLIMS_clinic/searchSample.html",
+                    "clinic/searchSample.html",
                     {
                         "search_sample_data": search_sample_data,
                         "Error": ERROR_MESSAGE_FOR_INCORRECT_START_SEARCH_DATE,
@@ -779,7 +779,7 @@ def search_sample(request):
             except Exception:
                 return render(
                     request,
-                    "iSkyLIMS_clinic/searchSample.html",
+                    "clinic/searchSample.html",
                     {
                         "search_sample_data": search_sample_data,
                         "Error": ERROR_MESSAGE_FOR_INCORRECT_END_SEARCH_DATE,
@@ -789,7 +789,7 @@ def search_sample(request):
         if data_request["patientName"] != "" and len(data_request["patientName"]) < 4:
             return render(
                 request,
-                "iSkyLIMS_clinic/searchSample.html",
+                "clinic/searchSample.html",
                 {
                     "search_sample_data": search_sample_data,
                     "Error": ERROR_MESSAGE_FOR_SORT_PATIENT_NAME,
@@ -800,7 +800,7 @@ def search_sample(request):
         if len(sample_c_list) == 0:
             return render(
                 request,
-                "iSkyLIMS_clinic/searchSample.html",
+                "clinic/searchSample.html",
                 {
                     "search_sample_data": search_sample_data,
                     "Error": ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH,
@@ -811,21 +811,21 @@ def search_sample(request):
 
             return render(
                 request,
-                "iSkyLIMS_clinic/displaySampleClinicInfo.html",
+                "clinic/displaySampleClinicInfo.html",
                 {"display_sample_info": display_sample_info},
             )
         else:
             display_sample_list_info = display_sample_list(sample_c_list)
             return render(
                 request,
-                "iSkyLIMS_clinic/displaySampleClinicInfo.html",
+                "clinic/displaySampleClinicInfo.html",
                 {"display_sample_list_info": display_sample_list_info},
             )
 
     else:
         return render(
             request,
-            "iSkyLIMS_clinic/searchSample.html",
+            "clinic/searchSample.html",
             {"search_sample_data": search_sample_data},
         )
 
@@ -842,12 +842,12 @@ def search_patient(request):
         len_search_values = len(set(data_request.values()))
 
         if len_search_values == 1:
-            return render(request, "iSkyLIMS_clinic/searchPatient.html")
+            return render(request, "clinic/searchPatient.html")
 
         if data_request["p_name"] != "" and len(data_request["p_name"]) < 4:
             return render(
                 request,
-                "iSkyLIMS_clinic/searchPatient.html",
+                "clinic/searchPatient.html",
                 {"Error": ERROR_MESSAGE_FOR_SORT_PATIENT_NAME},
             )
         patient_list = get_patients_in_search(data_request)
@@ -855,7 +855,7 @@ def search_patient(request):
         if len(patient_list) == 0:
             return render(
                 request,
-                "iSkyLIMS_clinic/searchPatient.html",
+                "clinic/searchPatient.html",
                 {
                     "Error": ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH,
                     "s_patient_data": s_patient_data,
@@ -867,14 +867,14 @@ def search_patient(request):
             display_patient_list_info = display_patient_list(patient_list)
             return render(
                 request,
-                "iSkyLIMS_clinic/searchPatient.html",
+                "clinic/searchPatient.html",
                 {"display_patient_list_info": display_patient_list_info},
             )
 
     else:
         return render(
             request,
-            "iSkyLIMS_clinic/searchPatient.html",
+            "clinic/searchPatient.html",
             {"s_patient_data": s_patient_data},
         )
 
@@ -885,7 +885,7 @@ def set_molecule_values(request):
         if request.POST["c_samples"] == "":
             return render(
                 request,
-                "iSkyLIMS_clinic/error_page.html",
+                "clinic/error_page.html",
                 {"content": ["There was no sample selected "]},
             )
         if "samples_in_list" in request.POST:
@@ -897,7 +897,7 @@ def set_molecule_values(request):
         if "ERROR" in molecule_protocol:
             return render(
                 request,
-                "iSkyLIMS_clinic/error_page.html",
+                "clinic/error_page.html",
                 {"content": ["There was no valid sample selected "]},
             )
 
@@ -905,7 +905,7 @@ def set_molecule_values(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/setMoleculeValues.html",
+            "clinic/setMoleculeValues.html",
             {"molecule_protocol": molecule_protocol},
         )
 
@@ -921,7 +921,7 @@ def set_molecule_values(request):
             molecule_protocol["samples"] = ",".join(samples)
             return render(
                 request,
-                "iSkyLIMS_clinic/setMoleculeValues.html",
+                "clinic/setMoleculeValues.html",
                 {"molecule_protocol": molecule_protocol},
             )
         else:
@@ -933,7 +933,7 @@ def set_molecule_values(request):
 
             return render(
                 request,
-                "iSkyLIMS_clinic/setMoleculeValues.html",
+                "clinic/setMoleculeValues.html",
                 {"molecule_recorded": molecule_recorded},
             )
 
@@ -950,7 +950,7 @@ def set_molecule_values(request):
         )
         return render(
             request,
-            "iSkyLIMS_clinic/setMoleculeValues.html",
+            "clinic/setMoleculeValues.html",
             {"show_molecule_parameters": show_molecule_parameters},
         )
 
@@ -973,7 +973,7 @@ def set_molecule_values(request):
             )
             return render(
                 request,
-                "iSkyLIMS_clinic/setMoleculeValues.html",
+                "clinic/setMoleculeValues.html",
                 {
                     "added_molecule_protocol_parameters": added_molecule_protocol_parameters,
                     "show_molecule_parameters": show_molecule_parameters,
@@ -982,7 +982,7 @@ def set_molecule_values(request):
         else:
             return render(
                 request,
-                "iSkyLIMS_clinic/setMoleculeValues.html",
+                "clinic/setMoleculeValues.html",
                 {
                     "added_molecule_protocol_parameters": added_molecule_protocol_parameters
                 },
@@ -994,7 +994,7 @@ def set_molecule_values(request):
 
         return render(
             request,
-            "iSkyLIMS_clinic/setMoleculeValues.html",
+            "clinic/setMoleculeValues.html",
             {"display_list": display_list},
         )
-    return render(request, "iSkyLIMS_clinic/setMoleculeValues.html", {})
+    return render(request, "clinic/setMoleculeValues.html", {})

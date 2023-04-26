@@ -2,7 +2,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from iSkyLIMS_core.models import (PatientCore, ProtocolParameters, Protocols,
+from core.models import (PatientCore, ProtocolParameters, Protocols,
                                   Samples)
 
 

@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+{% include "core/graphic_chart_functionality.html" %}
 {% if display_stats_per_time.run_names %}
 
 <script type="text/javascript" src="{% static 'iSkyLIMS_wetlab/js/wetlab.js' %}"></script>

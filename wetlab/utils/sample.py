@@ -17,9 +17,9 @@ def get_codeID_for_resequencing(sample_recorded):
     Input:
         sample_recorded : sample id
     Functions:
-        get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.py
-        get_molecule_objs_from_sample : located at iSkyLIMS_core/utils/handling_samples.py
-        get_molecule_codeid_from_object : located at iSkyLIMS_core/utils/handling_samples.py
+        get_sample_obj_from_id : located at core/utils/handling_samples.py
+        get_molecule_objs_from_sample : located at core/utils/handling_samples.py
+        get_molecule_codeid_from_object : located at core/utils/handling_samples.py
     Variables:
         lib_prep_available # list all possibilities for library preparation
         mol_lib_prep_available # list all possibilities for molecule
@@ -68,9 +68,9 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
         reprocess_sample_id      # sample id to reprocess
         reg_user                 # register user
     Functions:
-        update_sample_reused    # located at iSkyLIMS_core/utils/handling_samples.py
-        update_molecule_reused  # located at iSkyLIMS_core/utils/handling_samples.
-        get_sample_obj_from_id  # located at iSkyLIMS_core/utils/handling_samples.
+        update_sample_reused    # located at core/utils/handling_samples.py
+        update_molecule_reused  # located at core/utils/handling_samples.
+        get_sample_obj_from_id  # located at core/utils/handling_samples.
     Return:
         True if user request were right, or Invalid options if user requests were wrong.
     """
@@ -147,7 +147,7 @@ def get_comparation_sample_information(sample_objs):
     Input:
         sample_objs       # samples objs
     Functions:
-        get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.
+        get_sample_obj_from_id : located at core/utils/handling_samples.
     Return:
         compared_data
     """
@@ -174,7 +174,7 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     Constants:
         HEADING_COMPARATION_SAMPLE_LIST
     Functions:
-        get_friend_list     # Located at iSkyLIMS_core.utils.common
+        get_friend_list     # Located at core.utils.common
     Return:
         samples_data.
     """
@@ -285,7 +285,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
         start_date      # date from starting the search
         end_date        # date from ending the search
     Functions:
-        get_friend_list # located at iSkyLIMS_core/utils/common.py
+        get_friend_list # located at core/utils/common.py
     Return:
         run_sample_obj.
     """

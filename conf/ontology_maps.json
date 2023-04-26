@@ -1,6 +1,6 @@
 [
 {
-    "model": "iSkyLIMS_core.ontologymap",
+    "model": "core.ontologymap",
     "pk": 1,
     "fields": {
         "label": "labRequest",
@@ -8,7 +8,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.ontologymap",
+    "model": "core.ontologymap",
     "pk": 2,
     "fields": {
         "label": "sampleType",
@@ -16,7 +16,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.ontologymap",
+    "model": "core.ontologymap",
     "pk": 3,
     "fields": {
         "label": "species",
@@ -24,7 +24,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.ontologymap",
+    "model": "core.ontologymap",
     "pk": 4,
     "fields": {
         "label": "sampleName",
@@ -32,7 +32,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.ontologymap",
+    "model": "core.ontologymap",
     "pk": 6,
     "fields": {
         "label": "sampleEntryDate",
@@ -40,7 +40,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.ontologymap",
+    "model": "core.ontologymap",
     "pk": 7,
     "fields": {
         "label": "collectionSampleDate",

@@ -25,15 +25,15 @@ schema_view = get_schema_view(openapi.Info(
 
 
 urlpatterns = [
-    path('',include('iSkyLIMS_core.urls')),
-    path('background', LoginView.as_view(template_name='iSkyLIMS_core/background.html'), name="background"),
-    path('bu-isciii', LoginView.as_view(template_name='iSkyLIMS_core/bu_isciii.html'), name="about-us"),
-    path('contact', LoginView.as_view(template_name='iSkyLIMS_core/contact.html'), name="contact"),
+    path('',include('core.urls')),
+    path('background', LoginView.as_view(template_name='core/background.html'), name="background"),
+    path('bu-isciii', LoginView.as_view(template_name='core/bu_isciii.html'), name="about-us"),
+    path('contact', LoginView.as_view(template_name='core/contact.html'), name="contact"),
     path('admin/', admin.site.urls),
     path('wetlab/', include('iSkyLIMS_wetlab.urls')),
     path('drylab/',include('drylab.urls')),
     path('utils/',include('django_utils.urls')),
-    path('clinic/',include ('iSkyLIMS_clinic.urls')),
+    path('clinic/',include ('clinic.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     
     # REST FRAMEWORK URLS

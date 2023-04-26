@@ -80,7 +80,7 @@ def display_available_protocols(app_name):
     Description:
         The function return a list with all defined protocols that contains
         molecule definition. This means to exclude any other protocol that their
-        parameters are not stored in iSkyLIMS_core.
+        parameters are not stored in core.
     Return:
         molecule_protocol_list and other_protocol_list .
     """

@@ -183,7 +183,7 @@ def get_sequencer_inventory_data():
     Description:
         The function get the sequencer data defined
     Functions:
-        get_defined_platforms_and_ids  # located at iSkyLIMS_core.utils.handling_platforms
+        get_defined_platforms_and_ids  # located at core.utils.handling_platforms
     Return
         sequencer_configuration
     """
@@ -205,7 +205,7 @@ def get_platform_data():
     Description:
         The function get the platform list and their id
     Functions:
-        get_defined_platforms_and_ids  # located at iSkyLIMS_core.utils.handling_platforms
+        get_defined_platforms_and_ids  # located at core.utils.handling_platforms
     Return
         sequencer_configuration
     """
