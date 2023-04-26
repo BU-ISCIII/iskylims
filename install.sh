@@ -252,7 +252,7 @@ if [ $upgrade == true ]; then
 
     # update installation by sinchronize folders
     echo "Copying files to installation folder"
-    rsync -rlv --delete README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
+    rsync -rlv --fuzzy --delay-updates --delete-delay README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
     # upgrade database if needed
     cd $INSTALL_PATH
     echo "activate the virtualenv"
@@ -271,10 +271,12 @@ if [ $upgrade == true ]; then
     fi
     ./manage.py migrate
     ./manage.py collectstatic
-    if [ $update_tables == true ]; then
+    
+    if [ $update_tables ]; then
         ./manage.py loaddata conf/first_install_tables.json
     fi
-    if [ $run_script == true ]; then
+
+    if [ $run_script ]; then
         ./manage.py runscript $migration_script
     fi
 
