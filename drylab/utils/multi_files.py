@@ -60,7 +60,7 @@ def get_and_save_service_file(request):
         new_upload_file_obj = drylab.models.UploadServiceFile.objects.create_upload_file(file_data)
         files[0]["file_id"] = new_upload_file_obj.get_upload_file_id()
         files[0]["deleteUrl"] = str(
-            "upload_serviceFileDelete=" + new_upload_file_obj.get_upload_file_id()
+            "uploadServiceFileDelete=" + new_upload_file_obj.get_upload_file_id()
         )
 
     data = {"files": files}
