@@ -376,7 +376,7 @@ class Service(models.Model):
     def get_service_request_center_abbr(self):
         return "%s" % (self.service_user_id.profile.profile_center.center_abbr)
 
-    def get_service_state(self, display_type):
+    def get_service_state(self, display_type=False):
         return self.service_state.get_state(to_display=display_type)
 
     def get_service_request_center_name(self):

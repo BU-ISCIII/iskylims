@@ -654,7 +654,7 @@ def search_service(request):
                 data = []
                 service_id = service_item.get_service_id()
                 data.append(service_item.get_service_request_number())
-                data.append(service_item.get_service_state())
+                data.append(service_item.get_service_state(display_type=True))
                 data.append(service_item.get_service_dates())
                 data.append(service_item.get_service_request_center_name())
                 data.append(
@@ -1341,7 +1341,7 @@ def stats_by_services_request(request):
             for service in services_found:
                 # user_id = service.serviceUserId.id
 
-                status = service.get_service_state()
+                status = service.get_service_state(display_type=True)
                 if status in status_services:
                     status_services[status] += 1
                 else:
