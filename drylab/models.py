@@ -874,7 +874,7 @@ class ConfigSetting(models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "config_setting"
+        db_table = "drylab_config_setting"
 
     def __str__(self):
         return "%s" % (self.configuration_name)

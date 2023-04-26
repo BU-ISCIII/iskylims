@@ -1906,7 +1906,7 @@ class ConfigSetting(models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "config_setting"
+        db_table = "wetlab_config_setting"
 
     def __str__(self):
         return "%s" % (self.configuration_name)
