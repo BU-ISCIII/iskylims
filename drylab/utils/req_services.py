@@ -867,7 +867,7 @@ def get_service_information(service_id, service_manager):
                 dates.append(["Execution time", execution_time])
     display_service_details["calculation_dates"] = dates
     # Allow that service could set on hold if state is other than delivery
-    if display_service_details["state"].lower() != "delivered":
+    if service_obj.get_service_state(display_type=False).lower() != "delivered":
         display_service_details["allowed_waiting_info"] = "allowed"
     return display_service_details
 
