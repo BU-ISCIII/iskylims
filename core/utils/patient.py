@@ -1,4 +1,4 @@
-from iSkyLIMS_core.models import *
+from core.models import *
 
 def get_patient_core_obj_from_id (p_id):
     '''

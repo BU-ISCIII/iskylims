@@ -6,7 +6,7 @@ import jsonschema
 import pandas as pd
 from jsonschema import Draft202012Validator
 
-from iSkyLIMS_core.core_config import (
+from core.core_config import (
     ERROR_FIELD_NOT_EXIST_IN_SCHEMA, ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED,
@@ -25,7 +25,7 @@ from iSkyLIMS_core.core_config import (
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED,
     ERROR_MESSAGE_INVALID_JSON_SCHEMA, SUCCESSFUL_JSON_SCHEMA)
-from iSkyLIMS_core.models import (LabRequest, MoleculeParameterValue,
+from core.models import (LabRequest, MoleculeParameterValue,
                                   MoleculePreparation, MoleculeType,
                                   OntologyMap, ProtocolParameters, Protocols,
                                   SampleProjectFieldClassification,
@@ -33,7 +33,7 @@ from iSkyLIMS_core.models import (LabRequest, MoleculeParameterValue,
                                   SampleProjectsFieldsValue, Samples,
                                   SamplesProjectsTableOptions, SampleType,
                                   Species, UserLotCommercialKits)
-from iSkyLIMS_core.utils.samples import (
+from core.utils.samples import (
     check_if_sample_already_defined, check_patient_code_exists,
     create_empty_patient, get_sample_project_obj_from_id,
     increase_unique_value)

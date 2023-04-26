@@ -1,4 +1,4 @@
-from iSkyLIMS_core.models import *
+from core.models import *
 
 
 def get_defined_platforms_and_ids(sequencing_technology):

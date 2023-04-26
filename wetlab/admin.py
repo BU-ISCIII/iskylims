@@ -1,5 +1,5 @@
 from django.contrib import admin
-from iSkyLIMS_wetlab.models import *
+from wetlab.models import *
 
 
 class LibraryPreparationAdmin(admin.ModelAdmin):

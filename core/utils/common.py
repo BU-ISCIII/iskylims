@@ -4,8 +4,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 
-from iSkyLIMS_core.core_config import *
-from iSkyLIMS_core.models import *
+from core.core_config import *
+from core.models import *
 
 
 def get_installed_apps():
