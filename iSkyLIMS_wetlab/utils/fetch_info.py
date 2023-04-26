@@ -493,8 +493,8 @@ def get_information_for_incompleted_run():
         run_information with information collected for each run
     """
     run_information = {}
-    today = datetime.date.today()
-    if RunProcess.objects.filter(state__runStateName="Recorded").exists():
+    today = datetime.today().date()
+    if RunProcess.objects.filter(state__run_state_name="Recorded").exists():
         run_information["recorded"] = []
         run_objs = RunProcess.objects.filter(state__run_state_name="Recorded").order_by(
             "run_name"
@@ -527,7 +527,7 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["error"].append(data)
 
-    if RunProcess.objects.filter(state__runStateName="Cancelled").exists():
+    if RunProcess.objects.filter(state__run_state_name="Cancelled").exists():
         run_information["cancelled"] = []
         run_objs = RunProcess.objects.filter(state__run_state_name="Cancelled").order_by(
             "run_name"

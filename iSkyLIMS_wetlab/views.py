@@ -256,11 +256,11 @@ def create_nextseq_run(request):
 
         if (RunProcess.objects.filter(run_name__iexact=run_name)).exists():
             if RunProcess.objects.filter(
-                run_name__iexact=run_name, state__runStateName__exact="Pre-Recorded"
+                run_name__iexact=run_name, state__run_state_name__exact="Pre-Recorded"
             ).exists():
                 # Delete the Sample Sheet file and the row in database
                 delete_run_objs = RunProcess.objects.filter(
-                    run_name__iexact=run_name, state__runStateName__exact="Pre-Recorded"
+                    run_name__iexact=run_name, state__run_state_name__exact="Pre-Recorded"
                 )
                 for delete_run in delete_run_objs:
                     # sample_sheet_file = delete_run.get_sample_file()
@@ -838,7 +838,7 @@ def search_run(request):
 
         # Get runs when run name is not empty
         if run_name != "":
-            if RunProcess.objects.filter(runName__iexact=run_name).exists():
+            if RunProcess.objects.filter(run_name__iexact=run_name).exists():
                 run_name_found = RunProcess.objects.filter(run_name__iexact=run_name)
                 if len(run_name_found) == 1:
                     return redirect("display_run", run_id=run_name_found[0].pk)
@@ -867,7 +867,7 @@ def search_run(request):
         # Check if state is not empty
         if run_state != "":
             s_state = RunStates.objects.get(run_state_name__exact=run_state)
-            if runs_found.filter(state__runS_state_name__exact=s_state).exists():
+            if runs_found.filter(state__run_state_name__exact=s_state).exists():
                 runs_found = runs_found.filter(
                     state__run_state_name__exact=s_state
                 ).order_by("run_name")
@@ -1040,12 +1040,12 @@ def search_project(request):
                 )
         if start_date != "" and end_date != "":
             projects_found = projects_found.filter(
-                generate_dat__range=(start_date, end_date)
+                generated_at__range=(start_date, end_date)
             )
         if start_date != "" and end_date == "":
-            projects_found = projects_found.filter(generate_dat__gte=start_date)
+            projects_found = projects_found.filter(generated_at__gte=start_date)
         if start_date == "" and end_date != "":
-            projects_found = projects_found.filter(generate_dat__lte=end_date)
+            projects_found = projects_found.filter(generated_at__lte=end_date)
         if len(projects_found) == 0:
             error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
             return render(
@@ -1645,8 +1645,8 @@ def change_run_name(request, run_id):
                     },
                 )
             changed_run_name = {}
-            old_run_name = run.runName
-            run.runName = new_run_name
+            old_run_name = run.run_name
+            run.run_name = new_run_name
             run.save()
             changed_run_name["new_run_name"] = [[new_run_name, run_id]]
             changed_run_name["old_run_name"] = old_run_name
@@ -1658,7 +1658,7 @@ def change_run_name(request, run_id):
             )
         else:
             form_change_run_name = {}
-            form_change_run_name["run_name"] = run.runName
+            form_change_run_name["run_name"] = run.run_name
             return render(
                 request,
                 "iSkyLIMS_wetlab/ChangeRunName.html",
@@ -1917,7 +1917,7 @@ def stats_per_time(request):
         if start_date != "" and end_date != "":
             stat_per_time = {}
             if RunProcess.objects.filter(
-                state__runStateName="Completed", run_date__range=(start_date, end_date)
+                state__run_state_name="Completed", run_date__range=(start_date, end_date)
             ).exists():
                 run_stats_list = RunProcess.objects.filter(
                     state__run_state_name="Completed",
@@ -2129,7 +2129,7 @@ def stats_per_time(request):
                 # Insert information for disk space utilization
                 run_disk_utilization = {}
                 for run_disk_stats in run_stats_list:
-                    run_name_disk = run_disk_stats.runName
+                    run_name_disk = run_disk_stats.run_name
                     run_disk_utilization[
                         run_name_disk
                     ] = run_disk_stats.get_disk_space_utilization()
@@ -2548,7 +2548,7 @@ def stats_per_library(request):
             if start_date != "" and end_date != "":
                 if (
                     Projects.objects.filter(
-                        runprocess_id__state__runStateName__exact="Completed",
+                        runprocess_id__state__run_state_name__exact="Completed",
                         generatedat__range=(start_date, end_date),
                     )
                     .exclude(library_kit__exact=library_name)
@@ -2947,7 +2947,7 @@ def annual_report(request):
             )
 
         completed_run_in_year = RunProcess.objects.filter(
-            run_date__year=year_selected, state__runStateName__exact="Completed"
+            run_date__year=year_selected, state__run_state_name__exact="Completed"
         )
         #
         uncompleted_run_in_year = RunProcess.objects.filter(
@@ -3240,7 +3240,7 @@ def monthly_report(request):
         completed_run_in_year_month = RunProcess.objects.filter(
             run_date__year=year_selected,
             run_date__month=month_selected,
-            state__runStateName__exact="Completed",
+            state__run_state_name__exact="Completed",
         )
         #
         uncompleted_run_in_year_month = RunProcess.objects.filter(
