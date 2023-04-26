@@ -1,6 +1,7 @@
 from django.contrib import admin
-from iSkyLIMS_drylab.models import *
 from django_mptt_admin.admin import DjangoMpttAdmin
+
+import iSkyLIMS_drylab.models
 
 
 class ResolutionStatesAdmin(admin.ModelAdmin):
@@ -96,15 +97,15 @@ class ConfigSettingAdmin(admin.ModelAdmin):
     list_display = ["configuration_name", "configuration_value"]
 
 
-admin.site.register(ServiceState, ServiceStateAdmin)
-admin.site.register(ResolutionStates, ResolutionStatesAdmin)
-admin.site.register(Service, ServiceAdmin)
-admin.site.register(UploadServiceFile, UploadServiceFileAdmin)
-admin.site.register(ResolutionParameters, ResolutionParametersAdmin)
-admin.site.register(RequestedSamplesInServices, RequestedSamplesInServicesAdmin)
-admin.site.register(AvailableService, AvailableServiceAdmin)
-admin.site.register(Resolution, ResolutionAdmin)
-admin.site.register(Delivery, DeliveryAdmin)
-admin.site.register(Pipelines, PipelinesManager)
-admin.site.register(ParameterPipeline, ParameterPipelineManager)
-admin.site.register(ConfigSetting, ConfigSettingAdmin)
+admin.site.register(iSkyLIMS_drylab.models.ServiceState, ServiceStateAdmin)
+admin.site.register(iSkyLIMS_drylab.models.ResolutionStates, ResolutionStatesAdmin)
+admin.site.register(iSkyLIMS_drylab.models.Service, ServiceAdmin)
+admin.site.register(iSkyLIMS_drylab.models.UploadServiceFile, UploadServiceFileAdmin)
+admin.site.register(iSkyLIMS_drylab.models.ResolutionParameters, ResolutionParametersAdmin)
+admin.site.register(iSkyLIMS_drylab.models.RequestedSamplesInServices, RequestedSamplesInServicesAdmin)
+admin.site.register(iSkyLIMS_drylab.models.AvailableService, AvailableServiceAdmin)
+admin.site.register(iSkyLIMS_drylab.models.Resolution, ResolutionAdmin)
+admin.site.register(iSkyLIMS_drylab.models.Delivery, DeliveryAdmin)
+admin.site.register(iSkyLIMS_drylab.models.Pipelines, PipelinesManager)
+admin.site.register(iSkyLIMS_drylab.models.ParameterPipeline, ParameterPipelineManager)
+admin.site.register(iSkyLIMS_drylab.models.ConfigSetting, ConfigSettingAdmin)
