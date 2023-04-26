@@ -1,5 +1,5 @@
 from django.urls import path
-from iSkyLIMS_wetlab.api import views
+from wetlab.api import views
 
 app_name = "iSkyLIMS_wetlab_api"
 

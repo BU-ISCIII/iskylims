@@ -1,6 +1,6 @@
 from django.db import connection
 
-from iSkyLIMS_wetlab.models import Projects, RunningParameters, SamplesInProject
+from wetlab.models import Projects, RunningParameters, SamplesInProject
 
 
 def get_runfolder_from_run_name(run_name):

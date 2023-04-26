@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from iSkyLIMS_core.models import (City, CommercialKits, Contact, LabRequest,
+from core.models import (City, CommercialKits, Contact, LabRequest,
                                   MoleculeParameterValue, MoleculePreparation,
                                   MoleculeType, MoleculeUsedFor, OntologyMap,
                                   PatientCore, PatientProjects, PatientSex,

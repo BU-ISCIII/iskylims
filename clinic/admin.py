@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from iSkyLIMS_clinic.models import *
+from clinic.models import *
 
 
 # Register your models here.

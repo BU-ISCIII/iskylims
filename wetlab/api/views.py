@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
 
-from iSkyLIMS_core.models import (
+from core.models import (
     SampleProjects,
     SampleProjectsFields,
     SampleProjectsFieldsValue,
@@ -18,7 +18,7 @@ from iSkyLIMS_core.models import (
     Samples,
 )
 
-from iSkyLIMS_wetlab.models import SamplesInProject
+from wetlab.models import SamplesInProject
 
 from .serializers import (
     CreateSampleSerializer,

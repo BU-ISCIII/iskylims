@@ -1,6 +1,6 @@
-from iSkyLIMS_clinic.models import ConfigSetting
-from iSkyLIMS_core.fusioncharts.fusioncharts import FusionCharts
-from iSkyLIMS_core.utils.stats_graphics import *
+from clinic.models import ConfigSetting
+from core.fusioncharts.fusioncharts import FusionCharts
+from core.utils.stats_graphics import *
 
 
 def check_empty_fields(row_data):

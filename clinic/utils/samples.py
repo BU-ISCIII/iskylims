@@ -1,9 +1,9 @@
 import json
 
-from iSkyLIMS_clinic.clinic_config import *
-from iSkyLIMS_clinic.models import *
-from iSkyLIMS_clinic.utils.common import *
-from iSkyLIMS_core.utils.samples import *
+from clinic.clinic_config import *
+from clinic.models import *
+from clinic.utils.common import *
+from core.utils.samples import *
 
 
 def analyze_and_store_patient_data(user_post, user):

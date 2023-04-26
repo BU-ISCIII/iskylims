@@ -1,4 +1,4 @@
-from iSkyLIMS_core.models import LabRequest
+from core.models import LabRequest
 
 
 def get_laboratory_instance(lab_name):
