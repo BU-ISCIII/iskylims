@@ -1,27 +1,19 @@
 import sys
 
 sys.path.append
-"""
-try:
-    from .drylab_email_conf import *
-    EMAIL_USER_CONFIGURED = True
-except:
-    EMAIL_USER_CONFIGURED = False
-"""
+
 
 SERVICE_MANAGER = "ServiceManager"
 
 INTERNAL_SEQUENCING_UNIT = "GENOMIC_SEQ_UNIT"
-################### DIRECTORIES ###################
+# DIRECTORIES #
 USER_REQUESTED_SERVICE_FILE_DIRECTORY = "drylab/servicesRequestFiles"
 PIPELINE_FILE_DIRECTORY = "drylab/pipelinesFiles"
 
-
-###################################################
-## CSS file to be used for creating the PDF files
+# CSS file to be used for creating the PDF files
 CSS_FOR_PDF = "/documents/drylab/services_templates/css/print_services.css"
 
-## template files for generating the PDF files
+# template files for generating the PDF files
 REQUESTED_CONFIRMATION_SERVICE = "request_service_template.html"
 RESOLUTION_TEMPLATE = "resolution_template.html"
 OUTPUT_DIR_SERVICE_REQUEST_PDF = (
@@ -36,17 +28,12 @@ RESOLUTION_FILES_DIRECTORY = "documents/drylab/resolutions"
 ABBREVIATION_USED_FOR_SERVICE_REQUEST = "SRV"
 USER_CENTER_USED_WHEN_NOT_PROVIDED = "NO_CENTER"
 
-# SAMBA_SERVICE_FOLDER = 'services'
-## Folders to be created when service is accepted
-# FOLDERS_FOR_SERVICES = ['request', 'resolution', 'result'] # 0= request, 1= resolution, 2 = result (keep order as suggested)
-# RESOLUTION_PREFIX = 'Resolution_'
-
-############## FOLDER SETTINGS ###############################
-## Directory settings for processing the run data files ######
-## Relative path from settings.BASE_DIR
+# FOLDER SETTINGS #
+# Directory settings for processing the run data files ######
+# Relative path from settings.BASE_DIR
 LOG_DIRECTORY = "logs/"
 
-################# CONFIG FILE LOG NAME ###############################
+# CONFIG FILE LOG NAME #
 LOGGING_CONFIG_FILE = "logging_config.ini"
 
 CONFIRMATION_TEXT_MESSAGE = [
@@ -57,7 +44,7 @@ CONFIRMATION_TEXT_MESSAGE = [
 ]
 
 
-################# ERROR  #########################
+# ERROR #
 ERROR_USER_NOT_ALLOWED = [
     "You do not have the enough privileges to see this page ",
     "Contact with your administrator .",
@@ -91,7 +78,7 @@ ERROR_USER_NOT_DEFINED = ["User is not defined"]
 
 ERROR_UNABLE_TO_SEND_EMAIL = ["Unable to send the email to user"]
 
-################### PIPELINES ######################
+# PIPELINES #
 DISPLAY_NEW_DEFINED_PIPELINE = ["Pipeline Name", "Pipeline Version", "Description"]
 DISPLAY_PIPELINES_USED_IN_RESOLUTION = [
     "Created by User",
@@ -139,7 +126,7 @@ HEADING_SERVICES_IN_PIPELINE = [
     "State",
 ]
 
-####################### SERVICES #####################
+# SERVICES #
 MAX_UPLOAD_SIZE = 5242880
 
 HEADING_PENDING_SERVICE_QUEUED = [
@@ -186,7 +173,7 @@ HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE = [
     "sample_id",
 ]
 
-################ # RESOLUTION ##############################
+# RESOLUTION #
 HEADING_FOR_RESOLUTION_INFORMATION = [
     "Partial Services",
     "Resolution State",
@@ -216,7 +203,7 @@ MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [
     ("resolution_param_notes", "Notes"),
 ]
 
-################ EMAIL TEXT   ##################################
+# EMAIL TEXT #
 SUBJECT_SERVICE_RECORDED = ["Service ", " has been recorded"]
 BODY_SERVICE_RECORDED = [
     "Dear USER_NAME",
@@ -240,7 +227,8 @@ BODY_RESOLUTION_REJECTED = [
     "Dear  USER_NAME",
     "A new resolution has been added for your service:  SERVICE_NUMBER.",
     "Your service has been STATUS",
-    "because it does not fullfil our requirements or is not in our services portfolio. If you have any question please contact us.",
+    "because it does not fullfil our requirements or is not in our services portfolio.",
+    "If you have any question please contact us.",
     "Kind regards",
     "BU-ISCIII",
 ]
@@ -264,7 +252,7 @@ BODY_RESOLUTION_DELIVERED = [
 SUBJECT_SERVICE_ON_QUEUED = ["Service ", "sent to preparation pipelines Jobs"]
 BODY_SERVICE_ON_QUEUED = ["Service  SERVICE_NUMBER is on queued "]
 
-################ EMAIL CONFIGURATION FIELDS ###############################
+# EMAIL CONFIGURATION FIELDS #
 EMAIL_CONFIGURATION_FIELDS = [
     "EMAIL_HOST",
     "EMAIL_PORT",
@@ -273,11 +261,14 @@ EMAIL_CONFIGURATION_FIELDS = [
     "USER_EMAIL",
     "USE_TLS",
 ]
-EMAIL_CONFIGURATION_FILE_HEADING = "############# EMAIL CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n"
+EMAIL_CONFIGURATION_FILE_HEADING = """############# EMAIL CONFIGURATION FILE ########
+                                #DO NOT MODIFY MANUALLY THIS FILE
+                                #VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM
+                                """
 EMAIL_CONFIGURATION_FILE_END = "########## END EMAIL CONFIGURATION FILE"
 
 
-################ GRAPHICS #############################
+# GRAPHICS #
 COLORS_MULTI_LEVEL_PIE = [
     "#66ffff",
     "#99ff99",
@@ -287,7 +278,9 @@ COLORS_MULTI_LEVEL_PIE = [
     "#ccccff",
     "#66ccff",
 ]
-MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE = "Service pending on <b>$label</b> are <b>$value</b>, which was $percentValue of parent Service"
+MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE = (
+    "Service pending on <b>$label</b> are <b>$value</b>, which was $percentValue of parent Service"
+)
 MULTI_LEVEL_PIE_PENDING_MAIN_TEXT = (
     "Please hover over a services requested Unit to see details"
 )
