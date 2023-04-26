@@ -767,7 +767,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 1,
     "fields": {
         "avail_service_description": "Genomic Data Analysis",
@@ -782,7 +782,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 2,
     "fields": {
         "avail_service_description": "Bioinformatics consulting and training",
@@ -797,7 +797,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 3,
     "fields": {
         "avail_service_description": "User support",
@@ -812,7 +812,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 4,
     "fields": {
         "avail_service_description": "Download and quality analysis",
@@ -827,7 +827,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 5,
     "fields": {
         "avail_service_description": "Next Generation Sequencing data analysis",
@@ -842,7 +842,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 6,
     "fields": {
         "avail_service_description": "Bioinformatics analysis consulting",
@@ -857,7 +857,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 7,
     "fields": {
         "avail_service_description": "In-house and outer course organization",
@@ -872,7 +872,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 8,
     "fields": {
         "avail_service_description": "Student training in colaboration: Master thesis, research visit,...",
@@ -887,7 +887,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 9,
     "fields": {
         "avail_service_description": "Installation and support of bioinformatic software on Linux OS",
@@ -902,7 +902,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 10,
     "fields": {
         "avail_service_description": "Installation and access to Virtual machines in the Unit server containing bioinformatic software",
@@ -917,7 +917,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 11,
     "fields": {
         "avail_service_description": "Code snippets development",
@@ -932,7 +932,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 12,
     "fields": {
         "avail_service_description": "DNAseq: Exome sequencing (WES) / Genome sequencing (WGS) / Target (Amplicon, probes)  / Direct seq",
@@ -947,7 +947,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 13,
     "fields": {
         "avail_service_description": "RNAseq: Transcriptome sequencing",
@@ -962,7 +962,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 14,
     "fields": {
         "avail_service_description": "Amplicon sequencing (Deep sequencing)",
@@ -977,7 +977,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 15,
     "fields": {
         "avail_service_description": "Metagenomics",
@@ -992,7 +992,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 16,
     "fields": {
         "avail_service_description": "Data download",
@@ -1007,7 +1007,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 17,
     "fields": {
         "avail_service_description": "Sequence quality analysis",
@@ -1022,7 +1022,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 18,
     "fields": {
         "avail_service_description": "Sequence pre-processing (quality filtering)",
@@ -1037,7 +1037,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 19,
     "fields": {
         "avail_service_description": "Human: Trio/family variant calling, annotation and priorization",
@@ -1052,7 +1052,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 20,
     "fields": {
         "avail_service_description": "Diploid organisms: Variant calling, annotation and prioritization",
@@ -1067,7 +1067,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 21,
     "fields": {
         "avail_service_description": "Haploid organisms: mapping, variant calling, annotation and snp-based analysis (p.e outbreak)",
@@ -1082,7 +1082,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 22,
     "fields": {
         "avail_service_description": "Bacteria: wg/cgMLST calling",
@@ -1097,7 +1097,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 23,
     "fields": {
         "avail_service_description": "Bacteria: MLST + virulence + AMR + plasmid analysis",
@@ -1112,7 +1112,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 24,
     "fields": {
         "avail_service_description": "Bacteria: Assembly + automatic annotation",
@@ -1127,7 +1127,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 25,
     "fields": {
         "avail_service_description": "Bacteria: plasmidID pipeline - strain plasmid characterization",
@@ -1142,7 +1142,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 26,
     "fields": {
         "avail_service_description": "miRNA known detection, prediction and/or differential expression",
@@ -1157,7 +1157,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 27,
     "fields": {
         "avail_service_description": "mRNA/totalRNA alignment, quantification and/or differential expression",
@@ -1172,7 +1172,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 28,
     "fields": {
         "avail_service_description": "Human: Low frequency variant analysis and annotation",
@@ -1187,7 +1187,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 29,
     "fields": {
         "avail_service_description": "Virus: consensus, assembly and minor variants detection - Viralrecon (with reference)",
@@ -1202,7 +1202,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 30,
     "fields": {
         "avail_service_description": "Ribosomal amplicons (16S/18S/ITR) taxonomic profiling",
@@ -1217,7 +1217,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 31,
     "fields": {
         "avail_service_description": "Viral: shotgun metagenomics profiling - Pikavirus",
@@ -1232,7 +1232,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 32,
     "fields": {
         "avail_service_description": "CHIP-SEQ",
@@ -1247,7 +1247,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 33,
     "fields": {
         "avail_service_description": "Peak detection and annotation",
@@ -1262,7 +1262,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 34,
     "fields": {
         "avail_service_description": "Shotgun metagenomics - Virus genome reconstruction",
@@ -1277,7 +1277,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 35,
     "fields": {
         "avail_service_description": "OT-2 robots",
@@ -1292,7 +1292,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.availableservice",
+    "model": "drylab.availableservice",
     "pk": 36,
     "fields": {
         "avail_service_description": "Flu: consensus, assembly and minor variants detection (IRMA)",
@@ -1307,7 +1307,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.configsetting",
+    "model": "drylab.configsetting",
     "pk": 1,
     "fields": {
         "configuration_name": "EMAIL_FOR_NOTIFICATIONS",
@@ -1316,7 +1316,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.configsetting",
+    "model": "drylab.configsetting",
     "pk": 2,
     "fields": {
         "configuration_name": "USER_CENTER_USED_FOR_NAMING_SERVICE",
@@ -1325,7 +1325,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.configsetting",
+    "model": "drylab.configsetting",
     "pk": 3,
     "fields": {
         "configuration_name": "ABBREVIATION_USED_FOR_SERVICE_REQUEST",
@@ -1334,42 +1334,42 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.resolutionstates",
+    "model": "drylab.resolutionstates",
     "pk": 1,
     "fields": {
         "state_value": "Recorded"
     }
 },
 {
-    "model": "iSkyLIMS_drylab.resolutionstates",
+    "model": "drylab.resolutionstates",
     "pk": 2,
     "fields": {
         "state_value": "In Progress"
     }
 },
 {
-    "model": "iSkyLIMS_drylab.resolutionstates",
+    "model": "drylab.resolutionstates",
     "pk": 3,
     "fields": {
         "state_value": "Delivery"
     }
 },
 {
-    "model": "iSkyLIMS_drylab.resolutionstates",
+    "model": "drylab.resolutionstates",
     "pk": 4,
     "fields": {
         "state_value": "Cancelled"
     }
 },
 {
-    "model": "iSkyLIMS_drylab.resolutionstates",
+    "model": "drylab.resolutionstates",
     "pk": 5,
     "fields": {
         "state_value": "Rejected"
     }
 },
 {
-    "model": "iSkyLIMS_drylab.resolutionstates",
+    "model": "drylab.resolutionstates",
     "pk": 6,
     "fields": {
         "state_value": "Queued"
@@ -20035,7 +20035,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 1,
     "fields": {
         "state_value": "recorded",
@@ -20045,7 +20045,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 2,
     "fields": {
         "state_value": "approved",
@@ -20055,7 +20055,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 3,
     "fields": {
         "state_value": "rejected",
@@ -20065,7 +20065,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 4,
     "fields": {
         "state_value": "queued",
@@ -20075,7 +20075,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 5,
     "fields": {
         "state_value": "in_progress",
@@ -20085,7 +20085,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 6,
     "fields": {
         "state_value": "delivered",
@@ -20095,7 +20095,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 7,
     "fields": {
         "state_value": "archived",
@@ -20105,7 +20105,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_drylab.servicestate",
+    "model": "drylab.servicestate",
     "pk": 8,
     "fields": {
         "state_value": "waiting_information",

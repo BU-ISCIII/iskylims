@@ -1,0 +1,102 @@
+{% extends 'drylab/base.html' %}
+{% load static %}
+{% block content %}
+{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
+
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 550px;
+    }
+    .jexcel > tbody > tr > td.readonly {
+        color:rgba(0,0,0,0.6) !important;
+    }
+ </style>
+{% if detailed %}
+
+{% else %}
+    {% if pipelines_data.heading %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 style="text-align:center">Service Pipelines defined.</h3></div>
+                    <div class="panel-body">
+                        <h5 style="text-align:center"> Click on the Pipeline Name to get full pipeline information</h5>
+                        <div  class="scrolling-wrapper">
+                        	<div id="spreadsheet"></div>
+                        	<br>
+                        	<script>
+                        		var data = [{% for values in pipelines_data.data %}
+                        		   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                        		];
+                        	   mySpreadsheet = $('#spreadsheet').jexcel({
+                        		   data:data,
+                        		   columns: [
+                                        {% for value in pipelines_data.heading %}
+                                            {% if forloop.last %}
+                                                { type: 'hidden' },
+                                            {% else %}
+                        				        { type: 'text', title:'{{value}}', width:120 , readOnly:true },
+                                            {% endif %}
+                                        {% endfor %}
+                        		    ],
+                        		    allowInsertColumn:false,
+                        		    allowDeleteColumn:false,
+                        		    allowRenameColumn:false,
+                        		    allowInsertRow:false,
+                        		    allowDeleteRow:false,
+                        		    tableOverflow:true,
+                        		    tableHeight:'350px',
+                                    search:true,
+                                    pagination:10,
+                        		    csvFileName:'serviceActionsPipeline',
+                                    onselection:function(instance, cell, r, c, value) {
+                                        if (c == 1) {
+                                            var columnName = jexcel.getColumnNameFromId([5, r]);
+                                            var pipeline_id = instance.jexcel.getValue(columnName);
+                                            window.location.href = '/drylab/detailPipeline='+ pipeline_id;
+                                        }
+
+                                    }
+                        	   });
+                        	</script>
+
+                            <script>
+                                $(document).ready(function () {
+                                    $("#requestMoleculeUse").submit(function (e) {
+                                       //stop submitting the form to see the disabled button effect
+                                       // e.preventDefault();
+                                       //disable the submit button
+                                       var table_data = $('#spreadsheet').jexcel('getData')
+                                       var data_json = JSON.stringify(table_data)
+                                       $("<input />").attr("type", "hidden")
+                                         .attr("name", "molecule_used_for")
+                                         .attr("value", data_json)
+                                         .appendTo("#requestMoleculeUse");
+                                       $("#btnSubmit").attr("disabled", true);
+                                       return true;
+                                    });
+                                });
+                            </script>
+                        </div> <!--  end of scrolling  -->
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% else %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8 col-sm-offset-2" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3 style="text-align:center">No Pipelines Services have been defined so far</h3></div>
+                    <div class="panel-body">
+                        <h5 style="text-align:center">Check the User Guide to define new Pipelines</h5>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% endif %}
+
+{% endif %}
+{% endblock %}

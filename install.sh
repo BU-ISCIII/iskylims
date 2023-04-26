@@ -252,7 +252,7 @@ if [ $upgrade == true ]; then
 
     # update installation by sinchronize folders
     echo "Copying files to installation folder"
-    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH
+    rsync -rlv README.md LICENSE conf iSkyLIMS_core drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH
     # upgrade database if needed
     cd $INSTALL_PATH
     echo "activate the virtualenv"
@@ -482,7 +482,7 @@ if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]
     ## Create the installation folder
     mkdir -p $INSTALL_PATH
 
-    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
+    rsync -rlv README.md LICENSE conf iSkyLIMS_core drylab \
             iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
 
     cd $INSTALL_PATH
@@ -534,7 +534,7 @@ if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]
 
     echo "Creating the database structure for iSkyLIMS"
     python3 manage.py migrate
-    python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
+    python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab drylab iSkyLIMS_clinic
     python3 manage.py migrate
 
     echo "Run collectstatic"

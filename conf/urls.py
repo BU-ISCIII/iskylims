@@ -31,13 +31,13 @@ urlpatterns = [
     path('contact', LoginView.as_view(template_name='iSkyLIMS_core/contact.html'), name="contact"),
     path('admin/', admin.site.urls),
     path('wetlab/', include('iSkyLIMS_wetlab.urls')),
-    path('drylab/',include('iSkyLIMS_drylab.urls')),
+    path('drylab/',include('drylab.urls')),
     path('utils/',include('django_utils.urls')),
     path('clinic/',include ('iSkyLIMS_clinic.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     
     # REST FRAMEWORK URLS
-    path('drylab/api/', include('iSkyLIMS_drylab.api.urls')),
+    path('drylab/api/', include('drylab.api.urls')),
     path('wetlab/api/', include('iSkyLIMS_wetlab.api.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0))
 ]
