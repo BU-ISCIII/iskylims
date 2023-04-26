@@ -1738,7 +1738,7 @@ class SequencerInLab(models.Model):
     def get_all_sequencer_data(self):
         data = []
         if self.platform_id is not None:
-            platform_name = self.platformID.get_platform_name()
+            platform_name = self.platform_id.get_platform_name()
         else:
             platform_name = "Not Defined"
         if self.sequencer_operation_start is not None:

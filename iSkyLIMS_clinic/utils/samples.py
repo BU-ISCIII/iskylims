@@ -256,7 +256,7 @@ def get_clinic_samples_in_state(user, state):
     """
     user_friend_list = get_friend_list(user)
     if ClinicSampleRequest.objects.filter(
-        clinic_sample_state__clinicState__exact=state,
+        clinic_sample_state__clinic_state__exact=state,
         sample_request_user__in=user_friend_list,
     ).exists():
         samples = ClinicSampleRequest.objects.filter(
