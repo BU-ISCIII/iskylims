@@ -1,24 +1,25 @@
 # Generic imports
 import json
 import os
+
 import django.conf
-import django.core.mail
-import django_utils.fusioncharts.fusioncharts
-import django_utils.models
 import django.contrib.auth.models
+import django.core.mail
 
 # Local imports
+import django_utils.fusioncharts.fusioncharts
+import django_utils.models
+import iSkyLIMS_core.utils
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.utils
-import iSkyLIMS_core.utils
 
-#### API from Wetlab ######
+# API from Wetlab #
 try:
     import iSkyLIMS_wetlab.utils.api.wetlab_api
 
     wetlab_api_available = True
-except:
+except Exception:
     wetlab_api_available = False
 
 
@@ -110,7 +111,7 @@ def create_new_save_sequencing_service_request(request):
                 .last()
                 .profile_center.get_center_name()
             )
-        except:
+        except Exception:
             service_data[
                 "service_seq_center"
             ] = iSkyLIMS_drylab.drylab_config.INTERNAL_SEQUENCING_UNIT
@@ -342,28 +343,6 @@ def get_data_for_service_confirmation(service_requested):
 
     return information
 
-    # def create_service_pdf_file (service_request_number, absolute_url):
-    """
-    Description:
-        The function collect the information to create the pdf file
-    Input:
-        request # contains the session information
-    Functions:
-        get_data_for_service_confirmation   # located at this file
-        create_pdf                          # located at iSkyLIMS_drylab.utils.drylab_common_functions
-    Constants:
-        OUTPUT_DIR_SERVICE_REQUEST_PDF
-    Return:
-        pdf_file which contains the full path and name of the pdf file
-    """
-    """
-    information_to_include = get_data_for_service_confirmation(service_request_number)
-    pdf_file_name = service_request_number + '.pdf'
-    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name,  drylab_config.OUTPUT_DIR_SERVICE_REQUEST_PDF)
-    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
-    return pdf_file
-    """
-
 
 def get_pending_services_information():
     """
@@ -377,19 +356,13 @@ def get_pending_services_information():
     Return:
         pending_services_details
     """
-    # pending_services_details = {}
+
     stat_services = list(
         iSkyLIMS_drylab.models.ServiceState.objects.filter(
             show_in_stats=True
         ).values_list("state_display", flat=True)
     )
-    # fileds_to_show = ["service_approved_date"]
-    """
-        variable_column = 'service_approved_date'
-        search_type = 'contains'
-        filter = variable_column + '__' + search_type
-        info=members.filter(**{ filter: search_string })
-    """
+
     info_for_stat_service = {}
     number_of_services = {}
     pending_services_per_unit = {}
@@ -615,7 +588,6 @@ def get_service_information(service_id, service_manager):
     display_service_details = {}
 
     # text_for_dates = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
-    service_dates = []
     display_service_details["service_name"] = service_obj.get_service_request_number()
     display_service_details["service_id"] = service_id
     # get the list of samples
@@ -681,7 +653,6 @@ def get_service_information(service_id, service_manager):
         display_service_details[
             "resolution_folder"
         ] = last_resolution.get_resolution_full_number()
-        resolution_estimated_date = last_resolution.get_resolution_estimated_date()
 
     # get all services
     display_service_details["nodes"] = service_obj.service_available_service.all()
@@ -699,7 +670,7 @@ def get_service_information(service_id, service_manager):
             if iSkyLIMS_drylab.models.Resolution.objects.filter(
                 resolution_serviceID=service_obj
             ).exists():
-                ## get informtaion from the defined Resolutions
+                # get informtaion from the defined Resolutions
                 resolution_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(
                     resolution_serviceID=service_obj
                 )
@@ -775,13 +746,11 @@ def get_service_information(service_id, service_manager):
                 if len(available_services_ids) < len(
                     display_service_details["children_services"]
                 ):
-                    # if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
                     display_service_details["add_resolution_action"] = service_id
                     display_service_details["multiple_services"] = True
                     display_service_details["pending_to_add_resolution"] = []
                     for ch_service in display_service_details["children_services"]:
                         if ch_service[0] not in available_services_ids:
-                            # available_service_obj = get_available_service_obj_from_id(ch_service[0])
                             display_service_details["pending_to_add_resolution"].append(
                                 ch_service
                             )
@@ -865,7 +834,7 @@ def get_service_information(service_id, service_manager):
             if pipelines_objs:
                 for pipelines_obj in pipelines_objs:
                     pipeline_name = pipelines_obj.get_pipeline_name()
-                    if not pipeline_name in display_service_details["piplelines_data"]:
+                    if pipeline_name not in display_service_details["piplelines_data"]:
                         display_service_details["piplelines_data"][pipeline_name] = []
                     display_service_details["piplelines_data"][pipeline_name].append(
                         [
@@ -890,7 +859,7 @@ def get_service_information(service_id, service_manager):
             resolution_serviceID=service_obj
         ).first()
         in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
-        if in_progress_date is not None :
+        if in_progress_date is not None:
             time_in_queue = (in_progress_date - created_date).days
             dates.append(['Time in Queue', time_in_queue])
             if delivery_date is not None:
@@ -921,19 +890,6 @@ def prepare_form_data_request_service_sequencing(request):
         service_data_information
     """
     service_data_information = {}
-    # get requestiong sequencing data
-    """
-    if SequencingPlatform.objects.all().exists():
-        service_data_information['platform'] = []
-        platform_objs = SequencingPlatform.objects.all()
-        for platform_obj in platform_objs:
-            service_data_information['platform'].append([platform_obj.get_platform_id(), platform_obj.get_platform_name()])
-    if FileExt.objects.all().exists():
-        service_data_information['file_extension'] =[]
-        file_ext_objs = FileExt.objects.all()
-        for file_ext_obj in file_ext_objs:
-            service_data_information['file_extension'].append([file_ext_obj.get_file_extension_id(),file_ext_obj.get_file_extension()])
-    """
 
     if iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
         service_data_information[
@@ -948,7 +904,7 @@ def prepare_form_data_request_service_sequencing(request):
     )
 
     if wetlab_api_available:
-        ## get samples which have sequencing data in iSkyLIMS
+        # get samples which have sequencing data in iSkyLIMS
         user_sharing_list = (
             iSkyLIMS_drylab.utils.drylab_common_functions.get_user_sharing_list(
                 request.user
@@ -966,7 +922,7 @@ def prepare_form_data_request_service_sequencing(request):
                 "samples_heading"
             ] = iSkyLIMS_drylab.drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
 
-    ## get the samples that are only defined without sequencing data available from iSkyLIMS
+    # get the samples that are only defined without sequencing data available from iSkyLIMS
 
     service_data_information[
         "sample_only_recorded"
@@ -1061,7 +1017,7 @@ def send_service_creation_confirmation_email(email_data):
     to_users = [email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except:
+    except Exception:
         return iSkyLIMS_drylab.drylab_config.ERROR_UNABLE_TO_SEND_EMAIL
     return "OK"
 
@@ -1115,7 +1071,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
                     data[heading[i]] = row[i]
                 data["samples_in_service"] = new_service
                 data["only_recorded"] = False
-                req_samp_obj = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.create_request_sample(
+                iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.create_request_sample(
                     data
                 )
                 requested_sample_list.append(data["sample_name"])
@@ -1133,7 +1089,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
             data["sample_id"] = row[5]
             data["samples_in_service"] = new_service
             data["only_recorded"] = True
-            ext_samp_obj = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.create_request_sample(
+            iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.create_request_sample(
                 data
             )
             requested_sample_list.append(data["sample_name"])

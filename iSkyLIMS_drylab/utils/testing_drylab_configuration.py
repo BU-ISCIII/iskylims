@@ -1,10 +1,12 @@
 # Generic imports
 import os
-from django.conf import settings
+
 import django.contrib.auth.models
+from django.conf import settings
 
 # Local imports
 import iSkyLIMS_drylab.models
+
 
 def get_config_file(config_file):
     c_file = []
@@ -17,7 +19,7 @@ def get_config_file(config_file):
                     line = " = ".join(hide_passwd)
                 line = line.replace("\n", "")
                 c_file.append(line)
-    except:
+    except Exception:
         return
     return c_file
 
@@ -29,7 +31,7 @@ def get_iSkyLIMS_settings():
         with open(settings_file, "r") as fh:
             for line in fh:
                 if "PASSWORD" in line or "SECRET_KEY" in line:
-                    if not "AUTH_PASSWORD_VALIDATORS" in line:
+                    if "AUTH_PASSWORD_VALIDATORS" not in line:
                         if "=" in line:
                             split_separator = "="
                         else:
@@ -40,7 +42,7 @@ def get_iSkyLIMS_settings():
 
                 line = line.replace("\n", "")
                 s_file.append(line)
-    except:
+    except Exception:
         return
 
     return s_file
@@ -58,27 +60,31 @@ def create_service_test(service_requested):
         delete_service.delete()
 
     # Check user is defined in database
-    if not django.contrib.auth.models.User.objects.filter(username__exact="test_userDrylab").exists():
-        user = django.contrib.auth.models.User.objects.create_user(
+    if not django.contrib.auth.models.User.objects.filter(
+        username__exact="test_userDrylab"
+    ).exists():
+        django.contrib.auth.models.User.objects.create_user(
             username="test_userDrylab",
             email="test_userDrylab@iSkyLIMS.com",
             password="test_userD",
         )
 
     try:
-        user_name = django.contrib.auth.models.User.objects.get(username__exact="test_userDrylab")
+        user_name = django.contrib.auth.models.User.objects.get(
+            username__exact="test_userDrylab"
+        )
         service_results.append(("User defined", "OK"))
-    except:
+    except Exception:
         service_results.append(("User defined", "NOK"))
     try:
         service_platform = iSkyLIMS_drylab.models.Platform.objects.first()
         service_results.append(("Platform defined", "OK"))
-    except:
+    except Exception:
         service_results.append(("Platform defined", "NOK"))
     try:
         service_file_ext = iSkyLIMS_drylab.models.FileExt.objects.first()
         service_results.append(("File extension defined", "OK"))
-    except:
+    except Exception:
         service_results.append(("File extension defined", "NOK"))
 
     for i in range(len(service_results)):
@@ -96,17 +102,12 @@ def create_service_test(service_requested):
 
         service_results.append(("Service Test creation", "OK"))
         return service_results, "OK"
-    except:
+    except Exception:
         service_results.append(("Service Test creation", "NOK"))
         return service_results, "NOK"
 
 
 def create_resolution_test(resolution_number, service_requested):
-    from weasyprint import HTML, CSS
-
-    from django.core.files.storage import FileSystemStorage
-    from weasyprint.fonts import FontConfiguration
-
     resolution_test = []
     # get service object
     service = iSkyLIMS_drylab.models.Service.objects.get(
@@ -121,55 +122,13 @@ def create_resolution_test(resolution_number, service_requested):
             resolution_full_number=str("Test_" + resolution_number),
         )
         resolution_test.append(("Resolution creation", "OK"))
-    except:
+    except Exception:
         resolution_test.append(("Resolution creation", "NOK"))
-    # test_resolution.save()
-    # resolution = Resolution.objects.get(resolutionNumber = resolution_number)
-    resolution_info = test_resolution.get_resolution_information()
 
-    # get profile object
-    # user_id = service.serviceUserId.id
+    test_resolution.get_resolution_information()
 
     resolution_test.append(("Folder structure creation", "OK"))
 
-    """
-    information['resolution_number'] = resolution_number
-    information['requested_date'] = service.get_service_creation_time()
-    information['resolution_date'] = resolution_info[4]
-    information['nodes']= service.service_available_service.all()
-    user['name'] = service.serviceUserId.first_name
-    user['surname'] = service.serviceUserId.last_name
-
-
-    user_id = service.serviceUserId.id
-    user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
-    user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
-    user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
-    user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
-    user['email'] = service.serviceUserId.email
-    information['user'] = user
-    resolution_data['folder'] = resolution_info[1]
-    resolution_data['estimated_date'] = resolution_info[3]
-    resolution_data['notes'] = resolution_info[6]
-    resolution_data['decission'] = service.serviceStatus
-    information['service_data'] = service.service_notes
-
-    resolution_data['folder'] = resolution_info[1]
-    information['resolution_data'] = resolution_data
-    html_string = render_to_string('resolution_template.html', {'information': information})
-
-    html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf('documents/drylab/res_pdf.pdf',stylesheets=[CSS(settings.STATIC_ROOT +
-                                drylab_config.CSS_FOR_PDF)])
-
-    fs = FileSystemStorage('documents/drylab')
-    with fs.open('res_pdf.pdf') as pdf:
-        response = HttpResponse(pdf, content_type='application/pdf')
-        # save pdf file as attachment
-        #response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
-
-
-        response['Content-Disposition'] = 'inline;filename=res_pdf.pdf'
-    """
     return resolution_test
 
 
@@ -179,7 +138,7 @@ def delete_test_service(service_name):
             service_request_number__exact=service_name
         )
         d_service.delete()
-    except:
+    except Exception:
         return
 
     return

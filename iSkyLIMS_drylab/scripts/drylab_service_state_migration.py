@@ -3,10 +3,10 @@ from iSkyLIMS_drylab.models import Service, ServiceState
 
 """
     The script is applicable for the upgrade from 2.3.0 to 2.3.1.
-    Service state that was defined as option choice in  models,is replaced in 
+    Service state that was defined as option choice in  models,is replaced in
     version 2.3.1  as a primary key in SampleState table, given in this way
     more flexibility for adding more states in the future.
-    
+
     Script reads the existing service state value reorded in field serviceStatus
     and create the relation to the same state in SampleState table.
 """

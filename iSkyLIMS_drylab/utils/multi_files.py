@@ -1,23 +1,12 @@
 # encoding: utf-8
 # Generic imports
-from django.http import HttpResponse
 import json
 
+from django.http import HttpResponse
+
 # Local imports
-import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.drylab_config
-
-
-# def response_mimetype(request):
-"""response_mimetype -- Return a proper response mimetype, accordingly to
-what the client accepts, as available in the `HTTP_ACCEPT` header.
-
-request -- a HttpRequest instance.
-
-"""
-#    can_json = MIMEJSON in request.META['HTTP_ACCEPT']
-#    can_json |= MIMEANY in request.META['HTTP_ACCEPT']
-#    return MIMEJSON if can_json else MIMETEXT
+import iSkyLIMS_drylab.models
 
 
 class JSONResponse(HttpResponse):

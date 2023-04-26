@@ -1,4 +1,5 @@
 from django.urls import path
+
 from iSkyLIMS_drylab.api import views
 
 app_name = "iSkyLIMS_drylab_api"
