@@ -882,7 +882,7 @@ def prepare_form_data_request_service_sequencing(request):
         HEADING_SELECT_SAMPLE_IN_SERVICE
         HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
     Functions:
-        get_only_recorded_samples_and_dates		# located at iSkyLIMS_core.utils.handling_samples
+        get_only_recorded_samples_and_dates		# located at core.utils.handling_samples
         get_user_sharing_list					# located at drylab.utils.drylab_common_functions
         get_defined_username_and_ids   			# located at drylab.utils.drylab_common_functions
         get_runs_projects_samples_and_dates		# located at iSkyLIMS_wetlab.utils.api.wetlab_api

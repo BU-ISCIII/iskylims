@@ -15,7 +15,7 @@ from .utils.common import *
 def index(request):
 
     apps_in_iskylims = get_installed_apps ()
-    return render(request, 'iSkyLIMS_core/index.html',{'apps_in_iskylims': apps_in_iskylims})
+    return render(request, 'core/index.html',{'apps_in_iskylims': apps_in_iskylims})
 
 def add_new_contacts (request):
     '''
@@ -44,7 +44,7 @@ def add_new_contacts (request):
         
         pass
 
-    return render(request, "iSkyLIMS_core/addNewContacts.html",{'apps_installed':apps_installed})
+    return render(request, "core/addNewContacts.html",{'apps_installed':apps_installed})
 
 def contact(request):
     
@@ -67,8 +67,8 @@ def contact(request):
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('thanks')
-    return render(request, "iSkyLIMS_core/contact_email.html", { 'form': form, 'contact_info': contact_info })
+    return render(request, "core/contact_email.html", { 'form': form, 'contact_info': contact_info })
 
 def thanks(request):
-    return render(request, 'iSkyLIMS_core/thanks.html')
+    return render(request, 'core/thanks.html')
     #return HttpResponse('Thank you for your message.')

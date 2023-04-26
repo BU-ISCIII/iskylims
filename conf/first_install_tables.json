@@ -168,7 +168,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencerinlab",
+    "model": "core.sequencerinlab",
     "pk": 1,
     "fields": {
         "platformID": 10,
@@ -183,7 +183,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencerinlab",
+    "model": "core.sequencerinlab",
     "pk": 2,
     "fields": {
         "platformID": 9,
@@ -198,7 +198,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencerinlab",
+    "model": "core.sequencerinlab",
     "pk": 3,
     "fields": {
         "platformID": 9,
@@ -213,7 +213,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencerinlab",
+    "model": "core.sequencerinlab",
     "pk": 4,
     "fields": {
         "platformID": 12,
@@ -228,7 +228,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencerinlab",
+    "model": "core.sequencerinlab",
     "pk": 5,
     "fields": {
         "platformID": 12,
@@ -243,7 +243,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencerinlab",
+    "model": "core.sequencerinlab",
     "pk": 6,
     "fields": {
         "platformID": 9,
@@ -258,91 +258,91 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 1,
     "fields": {
         "sampleStateName": "Defined"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 2,
     "fields": {
         "sampleStateName": "Extract molecule"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 3,
     "fields": {
         "sampleStateName": "Library preparation"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 4,
     "fields": {
         "sampleStateName": "Pool preparation"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 5,
     "fields": {
         "sampleStateName": "Sequencing"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 7,
     "fields": {
         "sampleStateName": "Completed"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 8,
     "fields": {
         "sampleStateName": "Error"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 9,
     "fields": {
         "sampleStateName": "Pre-defined"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesforsample",
+    "model": "core.statesforsample",
     "pk": 10,
     "fields": {
         "sampleStateName": "Pending for use"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesformolecule",
+    "model": "core.statesformolecule",
     "pk": 3,
     "fields": {
         "moleculeStateName": "Defined"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesformolecule",
+    "model": "core.statesformolecule",
     "pk": 4,
     "fields": {
         "moleculeStateName": "Assigned Protocol"
     }
 },
 {
-    "model": "iSkyLIMS_core.statesformolecule",
+    "model": "core.statesformolecule",
     "pk": 5,
     "fields": {
         "moleculeStateName": "Completed"
     }
 },
 {
-    "model": "iSkyLIMS_core.species",
+    "model": "core.species",
     "pk": 1,
     "fields": {
         "speciesName": "Human",
@@ -354,7 +354,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.species",
+    "model": "core.species",
     "pk": 2,
     "fields": {
         "speciesName": "Mouse",
@@ -366,7 +366,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 1,
     "fields": {
         "platformName": "Ion GeneStudio S5 System",
@@ -375,7 +375,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 2,
     "fields": {
         "platformName": "Ion Torrent Genexus System",
@@ -384,7 +384,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 3,
     "fields": {
         "platformName": "Ion PGM System",
@@ -393,7 +393,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 4,
     "fields": {
         "platformName": "Ion Proton System",
@@ -402,7 +402,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 5,
     "fields": {
         "platformName": "Sequel System",
@@ -411,7 +411,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 6,
     "fields": {
         "platformName": "Sequel II System",
@@ -420,7 +420,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 7,
     "fields": {
         "platformName": "iSeq 100",
@@ -429,7 +429,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 8,
     "fields": {
         "platformName": "MiniSeq",
@@ -438,7 +438,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 9,
     "fields": {
         "platformName": "MiSeq",
@@ -447,7 +447,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 10,
     "fields": {
         "platformName": "NextSeq 550 Series",
@@ -456,7 +456,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 11,
     "fields": {
         "platformName": "NextSeq 2000",
@@ -465,7 +465,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 12,
     "fields": {
         "platformName": "NovaSeq 6000",
@@ -474,7 +474,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingplatform",
+    "model": "core.sequencingplatform",
     "pk": 13,
     "fields": {
         "platformName": "HiSeq",
@@ -483,7 +483,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 1,
     "fields": {
         "platformID": 9,
@@ -491,7 +491,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 2,
     "fields": {
         "platformID": 9,
@@ -499,7 +499,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 3,
     "fields": {
         "platformID": 8,
@@ -507,7 +507,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 4,
     "fields": {
         "platformID": 9,
@@ -515,7 +515,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 5,
     "fields": {
         "platformID": 9,
@@ -523,7 +523,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 6,
     "fields": {
         "platformID": 9,
@@ -531,7 +531,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 7,
     "fields": {
         "platformID": 9,
@@ -539,7 +539,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 8,
     "fields": {
         "platformID": 9,
@@ -547,7 +547,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 9,
     "fields": {
         "platformID": 10,
@@ -555,7 +555,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 10,
     "fields": {
         "platformID": 10,
@@ -563,7 +563,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 11,
     "fields": {
         "platformID": 10,
@@ -571,7 +571,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 12,
     "fields": {
         "platformID": 10,
@@ -579,7 +579,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 13,
     "fields": {
         "platformID": 10,
@@ -587,7 +587,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.sequencingconfiguration",
+    "model": "core.sequencingconfiguration",
     "pk": 14,
     "fields": {
         "platformID": 12,
@@ -595,7 +595,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.protocoltype",
+    "model": "core.protocoltype",
     "pk": 2,
     "fields": {
         "molecule": 2,
@@ -604,7 +604,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.protocoltype",
+    "model": "core.protocoltype",
     "pk": 3,
     "fields": {
         "molecule": null,
@@ -613,7 +613,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.protocoltype",
+    "model": "core.protocoltype",
     "pk": 4,
     "fields": {
         "molecule": 1,
@@ -622,7 +622,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.protocoltype",
+    "model": "core.protocoltype",
     "pk": 8,
     "fields": {
         "molecule": null,
@@ -631,28 +631,28 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.patientsex",
+    "model": "core.patientsex",
     "pk": 1,
     "fields": {
         "sex": "Not Provided"
     }
 },
 {
-    "model": "iSkyLIMS_core.patientsex",
+    "model": "core.patientsex",
     "pk": 2,
     "fields": {
         "sex": "Female"
     }
 },
 {
-    "model": "iSkyLIMS_core.patientsex",
+    "model": "core.patientsex",
     "pk": 3,
     "fields": {
         "sex": "Male"
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 1,
     "fields": {
         "usedFor": "Amplicon-Seq",
@@ -661,7 +661,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 2,
     "fields": {
         "usedFor": "hiC-Seq",
@@ -670,7 +670,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 3,
     "fields": {
         "usedFor": "Methyl-Seq",
@@ -679,7 +679,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 4,
     "fields": {
         "usedFor": "miRNA-Seq",
@@ -688,7 +688,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 5,
     "fields": {
         "usedFor": "Metagenetics",
@@ -697,7 +697,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 6,
     "fields": {
         "usedFor": "Metagenomics",
@@ -706,7 +706,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 7,
     "fields": {
         "usedFor": "Exome-Seq",
@@ -715,7 +715,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 8,
     "fields": {
         "usedFor": "RNA-Seq",
@@ -724,7 +724,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 9,
     "fields": {
         "usedFor": "Whole Genome Sequencing",
@@ -733,7 +733,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 10,
     "fields": {
         "usedFor": "RT-PCR",
@@ -742,7 +742,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculeusedfor",
+    "model": "core.moleculeusedfor",
     "pk": 11,
     "fields": {
         "usedFor": "Sanger sequencing",
@@ -751,7 +751,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculetype",
+    "model": "core.moleculetype",
     "pk": 1,
     "fields": {
         "moleculeType": "DNA",
@@ -759,7 +759,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_core.moleculetype",
+    "model": "core.moleculetype",
     "pk": 2,
     "fields": {
         "moleculeType": "RNA",
@@ -19968,7 +19968,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_clinic.configsetting",
+    "model": "clinic.configsetting",
     "pk": 1,
     "fields": {
         "configurationName": "PATIENT_NAME",
@@ -19977,7 +19977,7 @@
     }
 },
 {
-    "model": "iSkyLIMS_clinic.configsetting",
+    "model": "clinic.configsetting",
     "pk": 2,
     "fields": {
         "configurationName": "PATIENT_SURNAME",
@@ -19986,49 +19986,49 @@
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 1,
     "fields": {
         "clinicState": "Defined"
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 2,
     "fields": {
         "clinicState": "Patient update"
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 3,
     "fields": {
         "clinicState": "Sequencing"
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 4,
     "fields": {
         "clinicState": "Pending protocol"
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 5,
     "fields": {
         "clinicState": "Pending results"
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 6,
     "fields": {
         "clinicState": "Completed"
     }
 },
 {
-    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "model": "clinic.clinicsamplestate",
     "pk": 7,
     "fields": {
         "clinicState": "Invalid"

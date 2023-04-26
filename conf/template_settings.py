@@ -30,8 +30,8 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1', 'localserverip']
 # Application definition
 
 INSTALLED_APPS = [
-    'iSkyLIMS_core',
-    'iSkyLIMS_clinic',
+    'core',
+    'clinic',
     'iSkyLIMS_wetlab',
     'drylab',
     'django_utils',
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django_cleanup', # should go after your apps
 ]
 
-APPS_NAMES = [ ['iSkyLIMS_clinic', 'Clinic'],
+APPS_NAMES = [ ['clinic', 'Clinic'],
     ['iSkyLIMS_wetlab', 'Masive Sequencing'],
     ['drylab','Requesting Services']
     ]

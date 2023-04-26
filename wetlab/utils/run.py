@@ -867,7 +867,7 @@ def get_pool_info(pools_to_update):
         HEADING_FOR_SELECTING_POOLS
         HEADING_FOR_INCOMPLETED_SELECTION_POOLS
     Functions:
-        get_lot_reagent_commercial_kits # located at iSkyLIMS_core/utils/handling_commercial_kits
+        get_lot_reagent_commercial_kits # located at core/utils/handling_commercial_kits
     Return:
         pool_info
     """
@@ -1147,7 +1147,7 @@ def fetch_reagent_kits_used_in_run(form_data):
     Input:
         form_data    # data from the user form
     Fucntion:
-        update_usage_user_lot_kit       # located at iSkyLIMS_core.utils.handoling_commercial_kits
+        update_usage_user_lot_kit       # located at core.utils.handoling_commercial_kits
     Return:
         user_reagents_kit_objs
     """

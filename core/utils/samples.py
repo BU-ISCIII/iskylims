@@ -47,8 +47,8 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
     Input:
         molecule_ids
     Functions:
-        get_protocol_parameters_and_type  # located at iSkyLIMS_core.handling_protocols.py
-        get_lot_commercial_kits  # located at iSkyLIMS_core.handling_commercial_kits.py
+        get_protocol_parameters_and_type  # located at core.handling_protocols.py
+        get_lot_commercial_kits  # located at core.handling_commercial_kits.py
     Return:
         laboratories.
     """
