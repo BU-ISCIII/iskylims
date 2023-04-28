@@ -285,7 +285,7 @@ if [ $upgrade == true ]; then
     sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
     sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 
-     ### RENAME APP ####
+    ### RENAME APP ####
     # make migrations backup in home
     # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
     sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
@@ -297,8 +297,6 @@ if [ $upgrade == true ]; then
     sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
     sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
 
-  
-    
     mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
     mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
     mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
@@ -322,7 +320,6 @@ if [ $upgrade == true ]; then
         exit 1
     fi
 
-    
     ./manage.py migrate
     ./manage.py collectstatic
     
