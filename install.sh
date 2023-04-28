@@ -246,19 +246,71 @@ if [ $upgrade == true ]; then
     printf "\n\n%s"
     printf "${YELLOW}------------------${NC}\n"
     printf "%s"
-    printf "${YELLOW}Starting iSKyLIMS Upgrade version: ${ISKYLIMS_VERSION}${NC}\n"
+    printf "${YELLOW}Starting iSkyLIMS Upgrade version: ${ISKYLIMS_VERSION}${NC}\n"
     printf "%s"
     printf "${YELLOW}------------------${NC}\n\n"
 
+    ### Delete git and no copy files stuff
+    rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
+    mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
+    mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
+    mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
+    mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
+
     # update installation by sinchronize folders
     echo "Copying files to installation folder"
-    rsync -rlv --fuzzy --delay-updates --delete-delay README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
+    rsync -rlv --fuzzy --delay-updates --delete-delay --exclude "migrations" --exclude "__pycache__" README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
     # upgrade database if needed
     cd $INSTALL_PATH
     echo "activate the virtualenv"
     source virtualenv/bin/activate
     echo "Installing required python packages"
     python3 -m pip install -r conf/requirements.txt
+    
+    cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
+    cp conf/urls.py $INSTALL_PATH/iSkyLIMS
+
+    ## TODO grab secret from setting.py and put into .secret file in home
+    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+
+    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+
+     ### RENAME APP ####
+    # make migrations backup in home
+    # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
+    sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
+    sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
+    sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
+    sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
+    sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
+    sed -i 's/iSkyLIMS_wetlab/wetlab/g' wetlab/migrations/*.py
+    sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
+    sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
+
+  
+    
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_drylab", "drylab") WHERE app_label like ("iSkyLIMS_%");'
+    
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_drylab", "drylab") WHERE app like ("iSkyLIMS_%");'
+    
+    query="SELECT CONCAT('RENAME TABLE ', TABLE_SCHEMA, '.', TABLE_NAME, ' TO ', TABLE_SCHEMA, '.', REPLACE(TABLE_NAME, 'iSkyLIMS_', ''), ';') AS query FROM information_schema.tables WHERE TABLE_SCHEMA = \"$DB_NAME\" AND TABLE_NAME LIKE 'iSkyLIMS_%';"
+    mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
 
     echo "checking for database changes"
     ./manage.py makemigrations
@@ -269,6 +321,8 @@ if [ $upgrade == true ]; then
         echo "Exiting without running migrate command."
         exit 1
     fi
+
+    
     ./manage.py migrate
     ./manage.py collectstatic
     
@@ -516,7 +570,7 @@ if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]
     django-admin startproject iSkyLIMS .
     grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
-    # Copying config files and script
+    # Copying config files and script. TODO CHANGE iSkyLIMS to app name
     cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
     cp conf/urls.py $INSTALL_PATH/iSkyLIMS
 
