@@ -370,11 +370,12 @@ if [ $upgrade == true ]; then
         # rm -rf ./*/migrations/__init__.py
         
         # copy modified migration files
-        cp conf/0002_core_migration_v2.3.1.py core/migrations
-        cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations
-        cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations
-        cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations
-        cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations
+        ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils clinic
+        cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
+        cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
+        cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py
+        cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
+        cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations/0002_migration_v2_3_1.py
 
     else
         echo "checking for database changes"

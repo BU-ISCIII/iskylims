@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("core", "0002_auto_20230429_1052"),
+        ("core", "0001_initial"),
         ("wetlab", "0001_initial"),
     ]
 
