@@ -1,0 +1,67 @@
+{
+    "model": "clinic.configsetting",
+    "pk": 1,
+    "fields": {
+        "configuration_name": "PATIENT_NAME",
+        "configuration_value": "Name",
+        "generated_at": "2021-05-28T15:35:56.859"
+    }
+},
+{
+    "model": "clinic.configsetting",
+    "pk": 2,
+    "fields": {
+        "configuration_name": "PATIENT_SURNAME",
+        "configuration_value": "Family Name",
+        "generated_at": "2021-05-28T15:36:27.742"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 1,
+    "fields": {
+        "clinic_state": "Defined"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 2,
+    "fields": {
+        "clinic_state": "Patient update"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 3,
+    "fields": {
+        "clinic_state": "Sequencing"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 4,
+    "fields": {
+        "clinic_state": "Pending protocol"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 5,
+    "fields": {
+        "clinic_state": "Pending results"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 6,
+    "fields": {
+        "clinic_state": "Completed"
+    }
+},
+{
+    "model": "clinic.clinicsamplestate",
+    "pk": 7,
+    "fields": {
+        "clinic_state": "Invalid"
+    }
+},
