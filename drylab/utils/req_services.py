@@ -384,10 +384,10 @@ def get_pending_services_information():
             service_data.append(service_obj.get_service_creation_time())
             # fetch latest resolution for the service
             if drylab.models.Resolution.objects.filter(
-                resolution_serviceID=service_obj
+                resolution_service_id=service_obj
             ).exists():
                 resolution_obj = drylab.models.Resolution.objects.filter(
-                    resolution_serviceID=service_obj
+                    resolution_service_id=service_obj
                 ).last()
                 service_data.append(resolution_obj.get_resolution_number())
                 service_data.append(resolution_obj.get_resolution_handler_user())
@@ -454,7 +454,7 @@ def get_user_pending_services_information(user_name):
         resolution_recorded_objs = drylab.models.Resolution.objects.filter(
             resolution_asigned_user__username__exact=user_name,
             resolution_state__state_value__exact="Recorded",
-        ).order_by("-resolution_serviceID")
+        ).order_by("-resolution_service_id")
         for resolution_recorded_obj in resolution_recorded_objs:
             resolution_data = (
                 resolution_recorded_obj.get_information_for_pending_resolutions()
@@ -472,7 +472,7 @@ def get_user_pending_services_information(user_name):
         resolution_recorded_objs = drylab.models.Resolution.objects.filter(
             resolution_asigned_user__username__exact=user_name,
             resolution_state__state_value__exact="In Progress",
-        ).order_by("-resolution_serviceID")
+        ).order_by("-resolution_service_id")
         for resolution_recorded_obj in resolution_recorded_objs:
             resolution_data = (
                 resolution_recorded_obj.get_information_for_pending_resolutions()
@@ -645,10 +645,10 @@ def get_service_information(service_id, service_manager):
     )
     # get the proposal for the delivery date for the last resolution
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_obj
+        resolution_service_id=service_obj
     ).exists():
         last_resolution = drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         ).last()
         display_service_details[
             "resolution_folder"
@@ -668,11 +668,11 @@ def get_service_information(service_id, service_manager):
             or service_obj.serviceStatus != "archived"
         ):
             if drylab.models.Resolution.objects.filter(
-                resolution_serviceID=service_obj
+                resolution_service_id=service_obj
             ).exists():
                 # get informtaion from the defined Resolutions
                 resolution_objs = drylab.models.Resolution.objects.filter(
-                    resolution_serviceID=service_obj
+                    resolution_service_id=service_obj
                 )
                 display_service_details["resolution_for_progress"] = []
                 display_service_details["resolution_for_delivery"] = []
@@ -764,8 +764,8 @@ def get_service_information(service_id, service_manager):
                 display_service_details["add_resolution_action"] = service_id
                 if len(display_service_details["children_services"]) > 1:
                     display_service_details["multiple_services"] = True
-                    # if Resolution.objects.filter(resolution_serviceID = service_obj).exists():
-                    #    resolutions = Resolution.objects.filter(resolution_serviceID = service_obj)
+                    # if Resolution.objects.filter(resolution_service_id = service_obj).exists():
+                    #    resolutions = Resolution.objects.filter(resolution_service_id = service_obj)
                     #    for resolution in resolutions:
                     #        pass
                     # else:
@@ -774,7 +774,7 @@ def get_service_information(service_id, service_manager):
         if service_obj.get_service_state(None) == "queued":
             resolution_id = (
                 drylab.models.Resolution.objects.filter(
-                    resolution_serviceID=service_obj
+                    resolution_service_id=service_obj
                 )
                 .last()
                 .id
@@ -782,11 +782,11 @@ def get_service_information(service_id, service_manager):
             display_service_details["add_in_progress_action"] = resolution_id
         if service_obj.get_service_state(None) == "in_progress":
             if drylab.models.Resolution.objects.filter(
-                resolution_serviceID=service_obj
+                resolution_service_id=service_obj
             ).exists():
                 resolution_id = (
                     drylab.models.Resolution.objects.filter(
-                        resolution_serviceID=service_obj
+                        resolution_service_id=service_obj
                     )
                     .last()
                     .id
@@ -794,13 +794,13 @@ def get_service_information(service_id, service_manager):
                 display_service_details["add_delivery_action"] = resolution_id
 
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_obj
+        resolution_service_id=service_obj
     ).exists():
         resolution_heading = (
             drylab.config.HEADING_FOR_RESOLUTION_INFORMATION
         )
         resolution_objs = drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         ).order_by("resolution_state")
         resolution_info = []
         for resolution_obj in resolution_objs:
@@ -853,10 +853,10 @@ def get_service_information(service_id, service_manager):
     delivery_date = service_obj.get_service_delivery_time_no_format()
     dates = []
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_obj
+        resolution_service_id=service_obj
     ).exists():
         resolution_obj = drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         ).first()
         in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
         if in_progress_date is not None:
