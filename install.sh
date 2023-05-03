@@ -18,10 +18,10 @@ usage : $0 --upgrade --dev --conf
 
 
 Examples:
-    To install iskylims application with the main release
+    To install iskylims only dependencies
     sudo $0 --install dependencies
 
-    To install only iSkyLIMS platform application
+    To install only iSkyLIMS application
     $0 --install application
 
     To upgrade using develop code
@@ -111,7 +111,7 @@ root_check(){
 
 update_settings_and_urls(){
     # save SECRET KEY at home user directory
-    grep ^SECRET iSkyLIMS/settings.py > ~/.secret
+    grep ^SECRET $INSTALL_PATH/iSkyLIMS/settings.py > ~/.secret
 
     # Copying config files and script. TODO CHANGE iSkyLIMS to app name
     cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
@@ -178,7 +178,7 @@ git_branch="main"
 conf_file="./install_settings.txt"
 
 #PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:durtvh"
+options=":c:s:i:durtvh"
 while getopts $options opt; do
     case $opt in
         i ) type_installation=$OPTARG
@@ -278,6 +278,11 @@ printf "${BLUE}Successful check for database${NC}\n"
 apache_check
 printf "${BLUE}Successful check for apache${NC}\n"
 
+if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
+    printf "${ORANGE} You need to be root for full or dependencies install"
+    root_check
+fi
+
 #=============================================================================
 #                   UPGRADE INSTALLATION
 # Check if parameter is passing to script to upgrade the installation
@@ -304,162 +309,185 @@ if [ $upgrade == true ]; then
     printf "${YELLOW}Starting iSkyLIMS Upgrade version: ${ISKYLIMS_VERSION}${NC}\n"
     printf "%s"
     printf "${YELLOW}------------------${NC}\n\n"
-
-    ### Delete git and no copy files stuff
-    if [ $rename_applications == true ] ; then
-        echo "Changing app dir names in $INSTALL_PATH..."
-        rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
-            $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
-            $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
-        mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
-        mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
-        mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
-        mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
-        echo "Done changing app dir names in $INSTALL_PATH..."
-    fi
-
-    # update installation by sinchronize folders
-    echo "Copying files to installation folder"
-    rsync -rlv --fuzzy --delay-updates --delete-delay --exclude "migrations" --exclude "__pycache__" README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
-    # upgrade database if needed
-    cd $INSTALL_PATH
-    echo "activate the virtualenv"
-    source virtualenv/bin/activate
-    echo "Installing required python packages"
-    python3 -m pip install -r conf/requirements.txt
     
-    # update the settings.py and the main urls
-    echo "Update settings and url file."
-    update_settings_and_urls
+    if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
+        # upgrade database if needed
+        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements
+        cd $INSTALL_PATH
+        echo "activate the virtualenv"
+        source virtualenv/bin/activate
+        echo "Installing required python packages"
+        python3 -m pip install -r conf/requirements.txt
+    fi
 
-    ### RENAME APP  in database and migration files ####
-    if [ $rename_applications == true ] ; then
-        # make migrations backup in home
-        # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
-        echo "Modifying names in migration files..."
-        sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
-        #sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
-        #sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
-        sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
-        sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
-        sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
-        sed -i 's/iSkyLIMS_wetlab/wetlab/g' wetlab/migrations/*.py
-        sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
-        sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
-        sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
-        echo "Done modifying names in migration files..."
+    if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]; then
 
-        echo "Modifying database names and constraints..."
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
-        #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
-        #    -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_drylab", "drylab") WHERE app_label like ("iSkyLIMS_%");'
+        ### Delete git and no copy files stuff
+        if [ $rename_applications == true ] ; then
+            echo "Changing app dir names in $INSTALL_PATH..."
+            rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
+                $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
+                $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
+            mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
+            mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
+            mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
+            mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
+            echo "Done changing app dir names in $INSTALL_PATH..."
+        fi
+
+        # update installation by sinchronize folders
+        echo "Copying files to installation folder"
+        rsync -rlv --fuzzy --delay-updates --delete-delay --exclude "migrations" --exclude "__pycache__" README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
         
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
-        #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-        #    -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_drylab", "drylab") WHERE app like ("iSkyLIMS_%");'
-        
-        query_rename_table="SELECT CONCAT('RENAME TABLE ', TABLE_SCHEMA, '.', TABLE_NAME, \
-                            ' TO ', TABLE_SCHEMA, '.', REPLACE(TABLE_NAME, 'iSkyLIMS_', ''), ';') \
-                            AS query FROM information_schema.tables WHERE TABLE_SCHEMA = \"$DB_NAME\" AND TABLE_NAME LIKE 'iSkyLIMS_%';"
-        mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
-            | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+        # update the settings.py and the main urls
+        echo "Update settings and url file."
+        update_settings_and_urls
 
-        # query_rename_indexes="SELECT CONCAT('ALTER TABLE ', kcu.TABLE_SCHEMA, '.', kcu.TABLE_NAME, ' RENAME INDEX ', kcu.CONSTRAINT_NAME, \
-        #                       ' TO ', REPLACE(kcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
-        #                       AS query FROM information_schema.key_column_usage kcu JOIN information_schema.table_constraints tc \
-        #                       ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME WHERE kcu.TABLE_SCHEMA = \"$DB_NAME\" AND kcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%';"
-        # mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_indexes"  \
-        #    | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+        cd $INSTALL_PATH
+        echo "activate the virtualenv"
+        source virtualenv/bin/activate
         
-        query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                 ' DROP FOREIGN KEY ', rcu.CONSTRAINT_NAME, ';', \
-                 ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                 ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
-                 tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
-                 IF(tc.CONSTRAINT_TYPE = 'FOREIGN KEY', \
-                   CONCAT(' REFERENCES ', rcu.REFERENCED_TABLE_SCHEMA, '.', REPLACE(rcu.REFERENCED_TABLE_NAME, 'iSkyLIMS_', ''), ' (', \
-                          GROUP_CONCAT(rcu.REFERENCED_COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ') ON DELETE ', rc.DELETE_RULE), \
-                   ''), ';') AS query \
-                FROM information_schema.key_column_usage rcu \
-                JOIN information_schema.table_constraints tc ON rcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME \
-                JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
-                WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
-                GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
-        mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+        ### RENAME APP  in database and migration files ####
+        if [ $rename_applications == true ] ; then
+            # make migrations backup in home
+            # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
+            echo "Modifying names in migration files..."
+            sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
+            #sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
+            #sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
+            sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
+            sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
+            sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
+            sed -i 's/iSkyLIMS_wetlab/wetlab/g' wetlab/migrations/*.py
+            sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
+            sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
+            sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
+            echo "Done modifying names in migration files..."
 
-        echo "Done modifying database names and constraints..."        
-        # rm -rf ./*/migrations/__pycache__
-        # rm -rf ./*/migrations/__init__.py
+            echo "Modifying database names and constraints..."
+            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+                -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
+            #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
+            #    -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
+            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+                -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
+            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+                -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_drylab", "drylab") WHERE app_label like ("iSkyLIMS_%");'
+            
+            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+                -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
+            #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+            #    -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
+            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+                -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
+            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+                -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_drylab", "drylab") WHERE app like ("iSkyLIMS_%");'
+            
+            query_rename_table="SELECT CONCAT('RENAME TABLE ', TABLE_SCHEMA, '.', TABLE_NAME, \
+                                ' TO ', TABLE_SCHEMA, '.', REPLACE(TABLE_NAME, 'iSkyLIMS_', ''), ';') \
+                                AS query FROM information_schema.tables WHERE TABLE_SCHEMA = \"$DB_NAME\" AND TABLE_NAME LIKE 'iSkyLIMS_%';"
+            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
+                | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+
+            # query_rename_indexes="SELECT CONCAT('ALTER TABLE ', kcu.TABLE_SCHEMA, '.', kcu.TABLE_NAME, ' RENAME INDEX ', kcu.CONSTRAINT_NAME, \
+            #                       ' TO ', REPLACE(kcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
+            #                       AS query FROM information_schema.key_column_usage kcu JOIN information_schema.table_constraints tc \
+            #                       ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME WHERE kcu.TABLE_SCHEMA = \"$DB_NAME\" AND kcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%';"
+            # mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_indexes"  \
+            #    | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+            
+            query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
+                    ' DROP FOREIGN KEY ', rcu.CONSTRAINT_NAME, ';', \
+                    ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
+                    ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
+                    tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
+                    IF(tc.CONSTRAINT_TYPE = 'FOREIGN KEY', \
+                    CONCAT(' REFERENCES ', rcu.REFERENCED_TABLE_SCHEMA, '.', REPLACE(rcu.REFERENCED_TABLE_NAME, 'iSkyLIMS_', ''), ' (', \
+                            GROUP_CONCAT(rcu.REFERENCED_COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ') ON DELETE ', rc.DELETE_RULE), \
+                    ''), ';') AS query \
+                    FROM information_schema.key_column_usage rcu \
+                    JOIN information_schema.table_constraints tc ON rcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME \
+                    JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
+                    WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
+                    GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
+            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+
+            echo "Done modifying database names and constraints..."        
+            # rm -rf ./*/migrations/__pycache__
+            # rm -rf ./*/migrations/__init__.py
+            
+            # copy modified migration files
+            echo "Copying custom migration files from conf."
+            ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils
+            cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
+            cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
+            cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py
+            # cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
+            cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations/0002_migration_v2_3_1.py
+
+        else
+            echo "checking for database changes"
+            ./manage.py makemigrations
+        fi
         
-        # copy modified migration files
-        echo "Copying custom migration files from conf."
-        ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils
-        cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
-        cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
-        cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py
-        # cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
-        cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations/0002_migration_v2_3_1.py
+        read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            echo "Exiting without running migrate command."
+            exit 1
+        fi
+        echo "Running migrate..."
+        ./manage.py migrate
+        echo "Done migrate command."
+        echo "Running collect statics..."
+        ./manage.py collectstatic
+        echo "Done collect statics"
+        
+        if [ $update_tables == true ] ; then
+            echo "Loading pre-filled tables..."
+            ./manage.py loaddata conf/first_install_tables.json
+            echo "Done loading pre-filled tables..."
+        fi
 
-    else
-        echo "checking for database changes"
-        ./manage.py makemigrations
+        if [ $run_script ]; then
+            echo "Running migration script: $migration_script"
+            ./manage.py runscript $migration_script
+            echo "Done migration script: $migration_script"
+        fi
+
+        cd -
+
+        #Linux distribution
+        linux_distribution=$(lsb_release -i | cut -f 2-)
+
+        echo ""
+        echo "Restart apache server to update changes"
+        if [[ $linux_distribution == "Ubuntu" ]]; then
+            apache_user="apache2"
+        else
+            apache_user="httpd"
+        fi
+        
+    
+        systemctl restart $apache_user
+
+        if ! [ $? -eq 0 ]; then
+            echo -e "${ORANGE}Apache server restart failed. trying with sudo{NC}"
+            sudo systemctl restart $apache_user
+        fi
+
+        printf "\n\n%s"
+        printf "${BLUE}------------------${NC}\n"
+        printf "%s"
+        printf "${BLUE}Successfuly upgrade of iSKyLIMS version: ${ISKYLIMS_VERSION}${NC}\n"
+        printf "%s"
+        printf "${BLUE}------------------${NC}\n\n"
+       
     fi
     
-    read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        echo "Exiting without running migrate command."
-        exit 1
-    fi
-    echo "Running migrate..."
-    ./manage.py migrate
-    echo "Done migrate command."
-    echo "Running collect statics..."
-    ./manage.py collectstatic
-    echo "Done collect statics"
-    
-    if [ $update_tables == true ] ; then
-        echo "Loading pre-filled tables..."
-        ./manage.py loaddata conf/first_install_tables.json
-        echo "Done loading pre-filled tables..."
-    fi
-
-    if [ $run_script ]; then
-        echo "Running migration script: $migration_script"
-        ./manage.py runscript $migration_script
-        echo "Done migration script: $migration_script"
-    fi
-
-    #Linux distribution
-    linux_distribution=$(lsb_release -i | cut -f 2-)
-
-    echo ""
-    echo "Restart apache server to update changes"
-    if [[ $linux_distribution == "Ubuntu" ]]; then
-        apache_user="apache2"
-    else
-        apache_user="httpd"
-    fi
-    sudo systemctl restart $apache_user
-
-    printf "\n\n%s"
-    printf "${BLUE}------------------${NC}\n"
-    printf "%s"
-    printf "${BLUE}Successfuly upgrade of iSKyLIMS version: ${ISKYLIMS_VERSION}${NC}\n"
-    printf "%s"
-    printf "${BLUE}------------------${NC}\n\n"
-
+    # exit once upgrade is finished
     exit 0
+
 fi
 
 #================================================================
@@ -467,9 +495,6 @@ fi
 #================================================================
 
 if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
-    # Check if installation script is run as root
-    root_check
-
     user=$SUDO_USER
     group=$(groups | cut -d" " -f1)
 
