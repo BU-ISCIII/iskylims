@@ -283,6 +283,7 @@ if [ $upgrade == true ]; then
 
     ### Delete git and no copy files stuff
     if [ $rename_applications ] ; then
+        echo "Changing app dir names in $INSTALL_PATH..."
         rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
             $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
             $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
@@ -290,6 +291,7 @@ if [ $upgrade == true ]; then
         mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
         mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
         mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
+        echo "Done changing app dir names in $INSTALL_PATH..."
     fi
 
     # update installation by sinchronize folders
@@ -303,12 +305,14 @@ if [ $upgrade == true ]; then
     python3 -m pip install -r conf/requirements.txt
     
     # update the settings.py and the main urls
+    echo "Update settings and url file."
     update_settings_and_urls
 
     ### RENAME APP  in database and migration files ####
     if [ $rename_applications ] ; then
         # make migrations backup in home
         # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
+        echo "Modifying names in migration files..."
         sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
         #sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
         #sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
@@ -319,7 +323,9 @@ if [ $upgrade == true ]; then
         sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
         sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
         sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
+        echo "Done modifying names in migration files..."
 
+        echo "Modifying database names and constraints..."
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
             -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
         #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
@@ -366,16 +372,18 @@ if [ $upgrade == true ]; then
                 WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
                 GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
         mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
-        
+
+        echo "Done modifying database names and constraints..."        
         # rm -rf ./*/migrations/__pycache__
         # rm -rf ./*/migrations/__init__.py
         
         # copy modified migration files
+        echo "Copying custom migration files from conf."
         ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils
         cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
         cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
         cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py
-        #cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
+        # cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
         cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations/0002_migration_v2_3_1.py
 
     else
@@ -391,16 +399,23 @@ if [ $upgrade == true ]; then
         echo "Exiting without running migrate command."
         exit 1
     fi
-
+    echo "Running migrate..."
     ./manage.py migrate
+    echo "Done migrate command."
+    echo "Running collect statics..."
     ./manage.py collectstatic
+    echo "Done collect statics"
     
     if [ $update_tables ]; then
+        echo "Loading pre-filled tables..."
         ./manage.py loaddata conf/first_install_tables.json
+        echo "Done loading pre-filled tables..."
     fi
 
     if [ $run_script ]; then
+        echo "Running migration script: $migration_script"
         ./manage.py runscript $migration_script
+        echo "Done migration script: $migration_script"
     fi
 
     #Linux distribution
