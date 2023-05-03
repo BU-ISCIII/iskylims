@@ -337,7 +337,9 @@ if [ $upgrade == true ]; then
 
         # update installation by sinchronize folders
         echo "Copying files to installation folder"
-        rsync -rlv --fuzzy --delay-updates --delete-delay --exclude "migrations" --exclude "__pycache__" README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
+        rsync -rlv --fuzzy --delay-updates --delete-delay \
+              --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
+              README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
         
         # update the settings.py and the main urls
         echo "Update settings and url file."
