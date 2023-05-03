@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "localserverip"]
 
 INSTALLED_APPS = [
     "core",
-    "clinic",
+    # "clinic",
     "wetlab",
     "drylab",
     "django_utils",
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
 ]
 
 APPS_NAMES = [
-    ["clinic", "Clinic"],
+    # ["clinic", "Clinic"],
     ["wetlab", "Masive Sequencing"],
     ["drylab", "Requesting Services"],
 ]

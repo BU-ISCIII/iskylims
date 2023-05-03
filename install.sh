@@ -284,7 +284,9 @@ if [ $upgrade == true ]; then
 
     ### Delete git and no copy files stuff
     if [ $rename_applications ] ; then
-        rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
+        rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
+            $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
+            $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
         mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
         mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
         mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
@@ -309,7 +311,7 @@ if [ $upgrade == true ]; then
         # make migrations backup in home
         # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
         sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
-        sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
+        #sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
         sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
         sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
         sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
@@ -374,7 +376,7 @@ if [ $upgrade == true ]; then
         cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
         cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
         cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py
-        cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
+        #cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
         cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations/0002_migration_v2_3_1.py
 
     else
