@@ -312,7 +312,7 @@ if [ $upgrade == true ]; then
         # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
         sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
         #sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
-        sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
+        #sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
         sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
         sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
         sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
@@ -323,8 +323,8 @@ if [ $upgrade == true ]; then
 
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
             -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
-            -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
+        #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
+        #    -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
             -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
@@ -332,8 +332,8 @@ if [ $upgrade == true ]; then
         
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
             -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
-        mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
+        #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        #    -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
             -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
         mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
@@ -372,7 +372,7 @@ if [ $upgrade == true ]; then
         # rm -rf ./*/migrations/__init__.py
         
         # copy modified migration files
-        ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils clinic
+        ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils
         cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
         cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
         cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py

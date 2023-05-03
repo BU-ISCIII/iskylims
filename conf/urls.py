@@ -44,7 +44,7 @@ urlpatterns = [
     path("wetlab/", include("wetlab.urls")),
     path("drylab/", include("drylab.urls")),
     path("utils/", include("django_utils.urls")),
-    path("clinic/", include("clinic.urls")),
+    #path("clinic/", include("clinic.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     # REST FRAMEWORK URLS
     path("drylab/api/", include("drylab.api.urls")),
