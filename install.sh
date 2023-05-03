@@ -173,6 +173,7 @@ done
 #SETTING DEFAULT VALUES
 upgrade=false
 rename_applications=false
+update_tables=false
 git_branch="main"
 conf_file="./install_settings.txt"
 
@@ -254,6 +255,29 @@ else
     exit 1
 fi
 
+#================================================================
+# MAIN_BODY FOR NEW INSTALLATION
+#================================================================
+
+printf "\n\n%s"
+printf "${YELLOW}------------------${NC}\n"
+printf "%s"
+printf "${YELLOW}Starting iskylims installation version: ${ISKYLIMS_VERSION}${NC}\n"
+printf "%s"
+printf "${YELLOW}------------------${NC}\n\n"
+
+#================================================================
+#CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
+#================================================================
+
+echo "Checking main requirements"
+python_check
+printf "${BLUE}Valid version of Python${NC}\n"
+db_check
+printf "${BLUE}Successful check for database${NC}\n"
+apache_check
+printf "${BLUE}Successful check for apache${NC}\n"
+
 #=============================================================================
 #                   UPGRADE INSTALLATION
 # Check if parameter is passing to script to upgrade the installation
@@ -282,7 +306,7 @@ if [ $upgrade == true ]; then
     printf "${YELLOW}------------------${NC}\n\n"
 
     ### Delete git and no copy files stuff
-    if [ $rename_applications ] ; then
+    if [ $rename_applications == true ] ; then
         echo "Changing app dir names in $INSTALL_PATH..."
         rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
             $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
@@ -309,7 +333,7 @@ if [ $upgrade == true ]; then
     update_settings_and_urls
 
     ### RENAME APP  in database and migration files ####
-    if [ $rename_applications ] ; then
+    if [ $rename_applications == true ] ; then
         # make migrations backup in home
         # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
         echo "Modifying names in migration files..."
@@ -388,8 +412,6 @@ if [ $upgrade == true ]; then
 
     else
         echo "checking for database changes"
-        # rm -rf ./*/migrations/__pycache__
-        # rm -rf ./*/migrations/__init__.py
         ./manage.py makemigrations
     fi
     
@@ -406,7 +428,7 @@ if [ $upgrade == true ]; then
     ./manage.py collectstatic
     echo "Done collect statics"
     
-    if [ $update_tables ]; then
+    if [ $update_tables == true ] ; then
         echo "Loading pre-filled tables..."
         ./manage.py loaddata conf/first_install_tables.json
         echo "Done loading pre-filled tables..."
@@ -441,29 +463,6 @@ if [ $upgrade == true ]; then
 fi
 
 #================================================================
-# MAIN_BODY FOR NEW INSTALLATION
-#================================================================
-
-printf "\n\n%s"
-printf "${YELLOW}------------------${NC}\n"
-printf "%s"
-printf "${YELLOW}Starting iskylims installation version: ${ISKYLIMS_VERSION}${NC}\n"
-printf "%s"
-printf "${YELLOW}------------------${NC}\n\n"
-
-#================================================================
-#CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
-#================================================================
-
-echo "Checking main requirements"
-python_check
-printf "${BLUE}Valid version of Python${NC}\n"
-db_check
-printf "${BLUE}Successful check for database${NC}\n"
-apache_check
-printf "${BLUE}Successful check for apache${NC}\n"
-
-#================================================================
 # INSTALL REPOSITORY REQUIRED SOFTWARE AND PYTHON VIRTUAL ENVIRONMENT
 #================================================================
 
@@ -477,20 +476,12 @@ if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" 
     # Find out server Linux distribution
     linux_distribution=$(lsb_release -i | cut -f 2-)
 
-    read -p "Are you sure you want to install repository Software required for iSkyLIMS? (Y/N) " -n 1 -r
+    read -p "Are you sure you want to install repository software required for iSkyLIMS? (Y/N) " -n 1 -r
         echo    # (optional) move to a new line
         if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
             echo "Exiting without installing required software for iSkyLIMS installation"
             exit 1
         fi
-
-
-    #================================================================
-    ## move to develop branch if --dev param
-
-    ##git checkout develop
-
-    #================================================================
 
     read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
