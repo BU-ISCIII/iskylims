@@ -33,7 +33,7 @@ EOF
 }
 
 db_check(){
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist >/tmp/null ###user should have mysql permission on remote server.
+    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null ###user should have mysql permission on remote server.
 
     if ! [ $? -eq 0 ]; then
         echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
@@ -446,7 +446,7 @@ if [ $upgrade == true ]; then
     echo ""
     echo "Restart apache server to update changes"
     if [[ $linux_distribution == "Ubuntu" ]]; then
-        apache_user="apache"
+        apache_user="apache2"
     else
         apache_user="httpd"
     fi
