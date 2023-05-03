@@ -21,6 +21,14 @@ class Migration(migrations.Migration):
             old_name="StatesForPool",
             new_name="PoolStates",
         ),
+        migrations.RenameModel(
+            old_name="StatesForLibraryPreparation",
+            new_name="LibPrepareStates",
+        ),
+        migrations.RenameModel(
+            old_name="libPreparationUserSampleSheet",
+            new_name="LibUserSampleSheet",
+        ),
         migrations.AlterModelOptions(
             name="librarypool",
             options={"ordering": ("pool_name",)},
@@ -851,14 +859,6 @@ class Migration(migrations.Migration):
         migrations.AlterModelTable(
             name="statsrunsummary",
             table="wetlab_stats_run_summary",
-        ),
-        migrations.RenameModel(
-            old_name="StatesForLibraryPreparation",
-            new_name="LibPrepareStates",
-        ),
-        migrations.RenameModel(
-            old_name="libPreparationUserSampleSheet",
-            new_name="LibUserSampleSheet",
         ),
         migrations.CreateModel(
             name="LibPrepare",

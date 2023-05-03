@@ -420,9 +420,9 @@ class Migration(migrations.Migration):
             ),
             preserve_default=False,
         ),
-        migrations.AlterField(
-            model_name="resolutionstates",
-            name="description",
+        migrations.AddField(
+            model_name='resolutionstates',
+            name='description',
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
