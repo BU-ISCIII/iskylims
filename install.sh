@@ -177,7 +177,7 @@ git_branch="main"
 conf_file="./install_settings.txt"
 
 #PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:durtsvh"
+options=":c:s:durtvh"
 while getopts $options opt; do
     case $opt in
         i ) type_installation=$OPTARG
