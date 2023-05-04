@@ -21,10 +21,16 @@ def get_list_processed_runs():
     logger = logging.getLogger(__name__)
     logger.debug("Starting function get_list_processed_runs")
     processed_runs = []
-    r_parameters_objects = RunningParameters.objects.all()
+    r_parameters_objs = RunningParameters.objects.all()
 
-    for r_parameter in r_parameters_objects:
+    for r_parameter in r_parameters_objs:
         processed_runs.append(r_parameter.get_run_folder())
+
+    run_objs = RunProcess.objects.all()
+    for run in run_objs:
+        run_folder = r_parameters_objs.get(run_name_id=run_objs[0]).get_run_folder()
+        if run_folder not in processed_runs:
+            processed_runs.append(run.run_name)
 
     logger.info("run processed list is filled")
     logger.debug("End function get_list_processed_runs")
