@@ -820,10 +820,10 @@ def get_service_information(service_id, service_manager):
         delivery_info = []
         for resolution_obj in resolution_objs:
             if drylab.models.Delivery.objects.filter(
-                delivery_resolutionID=resolution_obj
+                delivery_resolution_id=resolution_obj
             ).exists():
                 delivery = drylab.models.Delivery.objects.filter(
-                    delivery_resolutionID=resolution_obj
+                    delivery_resolution_id=resolution_obj
                 ).last()
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details["delivery"] = delivery_info
