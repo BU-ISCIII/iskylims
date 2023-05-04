@@ -11,7 +11,7 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
         fields = [
-            "delivery_resolutionID",
+            "delivery_resolution_id",
             "pipelines_in_delivery",
             "executionStartDate",
             "execution_end_date",
@@ -88,13 +88,13 @@ class PipelinesSerializer(serializers.ModelSerializer):
 
 
 class DeliverySerializer(serializers.ModelSerializer):
-    delivery_resolutionID = serializers.StringRelatedField(many=False)
+    delivery_resolution_id = serializers.StringRelatedField(many=False)
     pipelines_in_delivery = PipelinesSerializer(many=True)
 
     class Meta:
         model = Delivery
         fields = [
-            "delivery_resolutionID",
+            "delivery_resolution_id",
             "pipelines_in_delivery",
             "executionStartDate",
             "execution_end_date",

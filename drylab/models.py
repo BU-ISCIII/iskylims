@@ -814,7 +814,7 @@ class ResolutionParameters(models.Model):
 class DeliveryManager(models.Manager):
     def create_delivery(self, delivery_data):
         new_delivery = self.create(
-            delivery_resolutionID=delivery_data["delivery_resolutionID"],
+            delivery_resolution_id=delivery_data["delivery_resolutionID"],
             delivery_notes=delivery_data["deliveryNotes"],
             execution_start_date=delivery_data["executionStartDate"],
             execution_end_date=delivery_data["execution_end_date"],
