@@ -385,9 +385,9 @@ def create_delivery(request):
         data.pop("resolutionNumber")
         data["delivery_resolutionID"] = resolution_pk
 
-        if Delivery.objects.filter(delivery_resolutionID__exact=resolution_pk).exists():
+        if Delivery.objects.filter(delivery_resolution_id__exact=resolution_pk).exists():
             delivery_obj = Delivery.objects.filter(
-                delivery_resolutionID__exact=resolution_pk
+                delivery_resolution_id__exact=resolution_pk
             ).last()
             serializer = CreateDeliveryPostSerializer(delivery_obj, data=data)
         else:
