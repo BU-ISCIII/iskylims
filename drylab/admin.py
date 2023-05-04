@@ -70,7 +70,6 @@ class ResolutionParametersAdmin(admin.ModelAdmin):
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = [
         "delivery_resolution_id",
-        "delivery_date",
         "execution_start_date",
         "execution_end_date",
         "execution_time",

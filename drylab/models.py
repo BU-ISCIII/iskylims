@@ -830,9 +830,6 @@ class Delivery(models.Model):
         Resolution, on_delete=models.CASCADE, related_name="delivery"
     )
     pipelines_in_delivery = models.ManyToManyField(Pipelines, blank=True)
-
-    delivery_date = models.DateField(auto_now_add=True, null=True, blank=True)
-
     delivery_notes = models.TextField(max_length=1000, null=True, blank=True)
     execution_start_date = models.DateField(null=True, blank=True)
     execution_end_date = models.DateField(null=True, blank=True)

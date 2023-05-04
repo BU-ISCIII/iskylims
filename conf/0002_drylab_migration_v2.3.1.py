@@ -381,6 +381,10 @@ class Migration(migrations.Migration):
             model_name="service",
             name="serviceFileExt",
         ),
+        migrations.RemoveField(
+            model_name="delivery",
+            name="delivery_date",
+        ),
         migrations.AlterField(
             model_name="configsetting",
             name="configuration_name",
