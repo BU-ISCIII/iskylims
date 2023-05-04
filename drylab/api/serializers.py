@@ -74,10 +74,10 @@ class UserIDSerializer(serializers.ModelSerializer):
 class CustomAvailableServiceField(serializers.RelatedField):
     def to_representation(self, service):
         data = {"avail_service_description": service.avail_service_description}
-        if service.serviceId:
-            data["serviceId"] = service.serviceId
+        if service.service_id:
+            data["service_id"] = service.service_id
         else:
-            data["serviceId"] = None
+            data["service_id"] = None
         return data
 
 
@@ -108,7 +108,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
     resolution_state = serializers.StringRelatedField(many=False)
     resolution_pipelines = serializers.StringRelatedField(many=True)
     available_services = CustomAvailableServiceField(many=True, read_only=True)
-    resolution_serviceID = serializers.StringRelatedField(many=False)
+    resolution_service_id = serializers.StringRelatedField(many=False)
     delivery = DeliverySerializer(many=True)
 
     class Meta:
@@ -119,7 +119,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "resolution_state",
             "resolutionDate",
             "resolutionEstimatedDate",
-            "resolution_serviceID",
+            "resolution_service_id",
             "resolutionOnQueuedDate",
             "resolutionOnInProgressDate",
             "resolutionDeliveryDate",
