@@ -176,12 +176,14 @@ rename_applications=false
 update_tables=false
 git_branch="main"
 conf_file="./install_settings.txt"
+type_installation="full"
 
 #PARSE VARIABLE ARGUMENTS WITH getops
 options=":c:s:i:durtvh"
 while getopts $options opt; do
     case $opt in
-        i ) type_installation=$OPTARG
+        i ) 
+            type_installation=$OPTARG    
             ;;
         u )
             upgrade=true
