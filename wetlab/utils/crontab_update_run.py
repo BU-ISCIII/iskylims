@@ -28,7 +28,11 @@ def get_list_processed_runs():
 
     run_objs = RunProcess.objects.all()
     for run in run_objs:
-        run_folder = r_parameters_objs.get(run_name_id=run_objs[0]).get_run_folder()
+        if r_parameters_objs.filter(run_name_id=run).exists():
+            run_folder = r_parameters_objs.get(run_name_id=run).get_run_folder()
+        else:
+            run_folder = ""
+
         if run_folder not in processed_runs:
             processed_runs.append(run.run_name)
 
@@ -150,9 +154,7 @@ def search_update_new_runs(request_reason):
                     continue
 
             # Fetch run info
-            l_run_info_path = os.path.join(
-                config.RUN_TEMP_DIRECTORY, config.RUN_INFO
-            )
+            l_run_info_path = os.path.join(config.RUN_TEMP_DIRECTORY, config.RUN_INFO)
             s_run_info_path = os.path.join(
                 get_samba_application_shared_folder(), new_run, config.RUN_INFO
             )
@@ -277,9 +279,7 @@ def search_update_new_runs(request_reason):
                 if (
                     config.COPY_SAMPLE_SHEET_TO_REMOTE
                     and "NextSeq"
-                    in running_parameters["running_data"][
-                        config.APPLICATION_NAME_TAG
-                    ]
+                    in running_parameters["running_data"][config.APPLICATION_NAME_TAG]
                 ):
                     sample_sheet = run_process_obj.get_sample_file()
                     sample_sheet_path = os.path.join(settings.MEDIA_ROOT, sample_sheet)
@@ -704,9 +704,7 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             )
         logger.info("%s : run metrics summary data saved to database", experiment_name)
         for run_stat_read in parsed_run_stats_read:
-            StatsRunRead.objects.create_stats_run_read(
-                run_stat_read, run_process_obj
-            )
+            StatsRunRead.objects.create_stats_run_read(run_stat_read, run_process_obj)
         logger.info("%s :run metrics read data saved to database", experiment_name)
 
         # create run graphics
