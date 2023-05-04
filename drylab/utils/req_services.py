@@ -106,14 +106,14 @@ def create_new_save_sequencing_service_request(request):
 
     if django_utils.models.Profile.objects.filter(profile_user_id=request_user).exists():
         try:
-            service_data["service_seq_center"] = (
+            service_data["service_center"] = (
                 django_utils.models.Profile.objects.filter(profile_user_id=request_user)
                 .last()
                 .profile_center.get_center_name()
             )
         except Exception:
             service_data[
-                "service_seq_center"
+                "service_center"
             ] = drylab.config.INTERNAL_SEQUENCING_UNIT
 
     service_data["service_notes"] = request.POST["description"]
@@ -166,9 +166,29 @@ def create_new_save_counseling_infrastructure_service_request(request):
     available_service_objs = []
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj_from_id(av_service))
-    service_data[
-        "service_seq_center"
-    ] = drylab.config.INTERNAL_SEQUENCING_UNIT
+
+    if "requestedForUserid" in request.POST:
+        if request.POST["requestedForUserid"] == "":
+            request_user = request.user
+        else:
+            request_user = django.contrib.auth.models.User.objects.get(
+                pk__exact=request.POST["requestedForUserid"]
+            )
+    else:
+        request_user = request.user
+
+    if django_utils.models.Profile.objects.filter(profile_user_id=request_user).exists():
+        try:
+            service_data["service_center"] = (
+                django_utils.models.Profile.objects.filter(profile_user_id=request_user)
+                .last()
+                .profile_center.get_center_name()
+            )
+        except Exception:
+            service_data[
+                "service_center"
+            ] = drylab.config.INTERNAL_SEQUENCING_UNIT
+
     service_data["service_notes"] = request.POST["description"]
     service_data["service_run_specs"] = ""
     service_data["service_sequencing_platform"] = ""

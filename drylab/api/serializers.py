@@ -162,7 +162,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             "serviceUserId",
             "service_created_date",
             "service_delivered_date",
-            "service_seq_center",
+            "service_center",
             "service_available_service",
             "serviceFileExt",
             "service_notes",

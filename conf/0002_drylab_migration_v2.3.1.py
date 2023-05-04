@@ -330,7 +330,7 @@ class Migration(migrations.Migration):
         migrations.RenameField(
             model_name="service",
             old_name="serviceSeqCenter",
-            new_name="service_seq_center",
+            new_name="service_center",
         ),
         migrations.RenameField(
             model_name="service",
