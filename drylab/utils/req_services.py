@@ -83,8 +83,8 @@ def create_new_save_sequencing_service_request(request):
     Input:
         request      # user data form
     Functions:
-        create_service_id			# located at drylab.utils.common
-        increment_service_number	# located at drylab.utils.common
+        create_service_id
+        increment_service_number
     Return:
         new_service		# recorded instance of the form
     """

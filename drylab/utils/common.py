@@ -112,11 +112,11 @@ def increment_service_number(request_user):
     # get latest service used for user's center
 
     if drylab.models.Service.objects.filter(
-        serviceUserId__profile__profileCenter__centerAbbr__exact=user_center
+        service_center__exact=user_center
     ).exists():
         number_request = (
             drylab.models.Service.objects.filter(
-                serviceUserId__profile__profileCenter__centerAbbr__exact=user_center
+                service_center__exact=user_center
             )
             .last()
             .get_service_request_integer()
