@@ -231,7 +231,7 @@ class ServiceManager(models.Manager):
             service_user_id=data["serviceUserId"],
             service_sequencing_platform=service_sequencing_platform,
             service_run_specs=service_run_specs,
-            service_seq_center=data["service_seq_center"],
+            service_center=data["service_center"],
             service_request_number=data["service_request_number"],
             service_request_int=data["service_request_int"],
             service_state=service_state_obj,
@@ -266,7 +266,7 @@ class Service(models.Model):
         null=True,
         blank=True,
     )
-    service_seq_center = models.CharField(
+    service_center = models.CharField(
         _("Sequencing center"), max_length=50, blank=False, null=True
     )
     service_request_number = models.CharField(max_length=80, null=True)
@@ -295,10 +295,10 @@ class Service(models.Model):
         return "%s" % (self.service_request_number)
 
     def get_service_name_and_center(self):
-        return [self.service_request_number, self.service_seq_center]
+        return [self.service_request_number, self.service_center]
 
     def get_service_information(self):
-        return [self.service_request_number, self.service_seq_center]
+        return [self.service_request_number, self.service_center]
 
     def get_service_id(self):
         return "%s" % self.pk
@@ -665,7 +665,7 @@ class Resolution(models.Model):
             resolution_info.append(self.resolution_queued_date.strftime("%d %B, %Y"))
         else:
             resolution_info.append("Not defined yet")
-
+            
         if self.resolution_in_progress_date is None:
             resolution_info.append("--")
         else:

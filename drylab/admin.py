@@ -15,7 +15,7 @@ class ServiceStateAdmin(admin.ModelAdmin):
 class ServiceAdmin(admin.ModelAdmin):
     list_display = (
         "service_request_number",
-        "service_seq_center",
+        "service_center",
         "service_user_id",
         "service_state",
         "service_created_date",
