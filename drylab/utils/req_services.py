@@ -727,22 +727,7 @@ def get_service_information(service_id, service_manager):
                             )
                     elif resolution_obj.get_state() == "Delivery":
                         display_service_details["resolution_delivered"] = True
-                        """
-                        # allow to display all requested service because issue #116
-                        delivered_services = (
-                            resolution_obj.get_available_services_and_ids()
-                        )
 
-                        if not "None" in delivered_services:
-                            for delivered_service in delivered_services:
-                                if (
-                                    delivered_service
-                                    in display_service_details["children_services"]
-                                ):
-                                    display_service_details["children_services"].remove(
-                                        delivered_service
-                                    )
-                        """
                 if len(available_services_ids) < len(
                     display_service_details["children_services"]
                 ):
@@ -764,11 +749,7 @@ def get_service_information(service_id, service_manager):
                 display_service_details["add_resolution_action"] = service_id
                 if len(display_service_details["children_services"]) > 1:
                     display_service_details["multiple_services"] = True
-                    # if Resolution.objects.filter(resolution_service_id = service_obj).exists():
-                    #    resolutions = Resolution.objects.filter(resolution_service_id = service_obj)
-                    #    for resolution in resolutions:
-                    #        pass
-                    # else:
+     
                 display_service_details["first_resolution"] = True
 
         if service_obj.get_service_state(None) == "queued":

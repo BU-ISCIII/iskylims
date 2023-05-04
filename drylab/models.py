@@ -846,7 +846,7 @@ class Delivery(models.Model):
     def get_delivery_information(self):
         delivery_info = []
         delivery_info.append(self.delivery_resolution_id.resolution_number)
-        delivery_info.append(self.delivery_date.strftime("%d %B, %Y"))
+        delivery_info.append(self.delivery_resolution_id.resolution_delivery_date.strftime("%d %B, %Y"))
         delivery_info.append(self.delivery_notes)
         return delivery_info
 
