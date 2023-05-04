@@ -47,13 +47,13 @@ def allow_to_service_update_state(resolution_obj, new_state):
     service_obj = resolution_obj.get_service_obj()
     if (
         drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         )
         .exclude(resolution_state__state_value__exact="Queued")
         .exists()
     ):
         all_resolution_objs = drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         ).exclude(resolution_state__state_value__exact="Queued")
         avail_services_handled = []
         for all_resolution_obj in all_resolution_objs:
@@ -91,11 +91,11 @@ def get_assign_resolution_full_number(service_id, acronymName):
         )
     )
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_id
+        resolution_service_id=service_id
     ).exists():
         resolution_full_number = (
             drylab.models.Resolution.objects.filter(
-                resolution_serviceID=service_obj
+                resolution_service_id=service_obj
             )
             .last()
             .get_resolution_number()
@@ -128,10 +128,10 @@ def create_resolution_number(service_id):
     )
     service_request_number = service_obj.get_service_request_number()
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_obj
+        resolution_service_id=service_obj
     ).exists():
         resolution_count = drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         ).count()
         resolution_number = service_request_number + "." + str(resolution_count + 1)
     else:
@@ -261,11 +261,11 @@ def create_new_resolution(resolution_data_form):
         )
     )
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_obj
+        resolution_service_id=service_obj
     ).exists():
         resolution_data_form["resolution_full_number"] = (
             drylab.models.Resolution.objects.filter(
-                resolution_serviceID=service_obj
+                resolution_service_id=service_obj
             )
             .last()
             .get_resolution_full_number()
@@ -319,10 +319,10 @@ def create_new_resolution(resolution_data_form):
             ):
                 service_obj.update_service_state("queued")
             elif drylab.models.Resolution.objects.filter(
-                resolution_serviceID=service_obj
+                resolution_service_id=service_obj
             ).exists():
                 resolution_objs = drylab.models.Resolution.objects.filter(
-                    resolution_serviceID=service_obj
+                    resolution_service_id=service_obj
                 )
                 avail_services_handled = []
                 for resolution_obj in resolution_objs:
@@ -403,10 +403,10 @@ def prepare_form_data_add_resolution(form_data):
             ] = selected_children_services
 
     if drylab.models.Resolution.objects.filter(
-        resolution_serviceID=service_obj
+        resolution_service_id=service_obj
     ).exists():
         existing_resolution = drylab.models.Resolution.objects.filter(
-            resolution_serviceID=service_obj
+            resolution_service_id=service_obj
         ).last()
         resolution_form_data[
             "resolution_full_number"

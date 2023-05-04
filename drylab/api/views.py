@@ -211,7 +211,7 @@ def service_full_data(request):
         service = (
             Resolution.objects.filter(resolutionNumber__iexact=resolution)
             .last()
-            .resolution_serviceID
+            .resolution_service_id
         )
         service_obj = Service.objects.prefetch_related(
             Prefetch(
@@ -241,7 +241,7 @@ def service_full_data(request):
 def update_state(request):
     def all_resolutions_delivered(service, state):
         if (
-            Resolution.objects.filter(resolution_serviceID=service)
+            Resolution.objects.filter(resolution_service_id=service)
             .exclude(resolution_state=state)
             .exists()
         ):
