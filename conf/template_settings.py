@@ -183,7 +183,7 @@ LOG_CLEAN_FILE = os.path.join(BASE_DIR, "logs", "crontab_cleanup.log")
 
 # Crontab settings
 CRONJOBS = [
-    ("0 0 2 * *", "wetlab.cron.looking_for_new_runs", ">>" + LOG_CRONTAB_FILE),
+    ("*/15 * * * *", "wetlab.cron.looking_for_new_runs", ">>" + LOG_CRONTAB_FILE),
     ("0 0 1 * *", "wetlab.cron.delete_invalid_run", ">>" + LOG_CLEAN_FILE),
 ]
 
