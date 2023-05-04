@@ -328,6 +328,7 @@ if [ $upgrade == true ]; then
         source virtualenv/bin/activate
         echo "Installing required python packages"
         python3 -m pip install -r conf/requirements.txt
+        cd -
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
