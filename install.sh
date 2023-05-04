@@ -4,31 +4,34 @@ ISKYLIMS_VERSION="2.x.x"
 
 usage() {
 cat << EOF
-This script install and upgrade the iskylims application.
+This script install and upgrade the iskylims app.
 
 usage : $0 --upgrade --dev --conf
     Optional input data:
-    --install | Define the type of installation full/dependencies/application
-    --upgrade | Upgrade the iskylims application
+    --install | Install iskylims full/dep/app
+    --upgrade | Upgrade iskylims full/dep/app
     --dev     | Use the develop version instead of main release
-    --conf    | Select configuration file
-    --tables  | Load the first inital tables for upgrades
-    --script  | Run a migration script 
-    --ren_app | Rename applications required for the upgrade migration to 2.3.1 
+    --conf    | Select custom configuration file. Default: ./install_settings.txt
+    --tables  | Load the first inital tables for upgrades in conf folder
+    --script  | Run a migration script.
+    --ren_app | Rename apps required for the upgrade migration to 2.3.1 
 
 
 Examples:
-    To install iskylims only dependencies
-    sudo $0 --install dependencies
+    Install iskylims only dep
+    sudo $0 --install dep
 
-    To install only iSkyLIMS application
-    $0 --install application
+    Install only iSkyLIMS app
+    $0 --install app
 
-    To upgrade using develop code
-    $0 --upgrade --dev
+    Upgrade using develop code
+    $0 --upgrade full --dev
 
-    To upgrade running migration script and update initial tables
-    $0 --upgrade --script <migration_script> --tables
+    Upgrade running migration script and update initial tables
+    $0 --upgrade full --script <migration_script> --tables
+
+    Make adjustments for apps renaming in upgrade 2.3.0 to 2.3.1
+    $0 --upgrade full --script <migration_script> --tables
 EOF
 }
 
@@ -171,38 +174,54 @@ do
 done
 
 #SETTING DEFAULT VALUES
-upgrade=false
-rename_applications=false
-update_tables=false
+ren_app=false
+tables=false
 git_branch="main"
-conf_file="./install_settings.txt"
-type_installation="full"
+conf="./install_settings.txt"
+install=true
+install_type="full"
+upgrade=false
+upgrade_type="full"
 
 #PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:durtvh"
+options=":c:s:i:u:drtvh"
 while getopts $options opt; do
     case $opt in
         i ) 
-            type_installation=$OPTARG    
+            install=true
+            upgrade=false
+            if [[ "$OPTARG" -eq "full" || "$OPTARG" -eq "dep" || "$OPTARG" -eq "app" ]]; then
+                install_type=$OPTARG
+            else
+                echo "Upgrade is not set to one valid option. Use: --upgrade full/app/dep"
+                exit 1
+            fi
             ;;
         u )
+            install=false
             upgrade=true
+            if [[ "$OPTARG" -eq "full" || "$OPTARG" -eq "dep" || "$OPTARG" -eq "app" ]]; then
+                upgrade_type=$OPTARG
+            else
+                echo "Upgrade is not set to one valid option. Use: --upgrade full/app/dep"
+                exit 1
+            fi
             ;;
         s )
             run_script=true
             migration_script=$OPTARG
             ;;
         t )
-            update_tables=true
+            tables=true
             ;;
         r )
-            rename_applications=true
+            ren_app=true
             ;;
         d )
             git_branch="develop"
             ;;
         c )
-            conf_file=$OPTARG
+            conf=$OPTARG
             ;;
         h )
             usage
@@ -232,18 +251,18 @@ shift $((OPTIND-1))
 #                     SETTINGS CHECKINGS
 #=============================================================================
 
-if [ ! -f "$conf_file" ]; then
+if [ ! -f "$conf" ]; then
     printf "\n\n%s"
     printf "${RED}------------------${NC}\n"
     printf "${RED}Unable to start.${NC}\n"
-    printf "${RED}Configuration File $conf_file does not exist.${NC}\n"
+    printf "${RED}Configuration File $conf does not exist.${NC}\n"
     printf "${RED}------------------${NC}\n"
     exit 1
 fi
 
 # Read configuration file
 
-. $conf_file
+. $conf
 
 # check if branch master/develop is defined and checkout
 if [ "`git branch --list $git_branch`" ]; then
@@ -258,17 +277,6 @@ else
 fi
 
 #================================================================
-# MAIN_BODY FOR NEW INSTALLATION
-#================================================================
-
-printf "\n\n%s"
-printf "${YELLOW}------------------${NC}\n"
-printf "%s"
-printf "${YELLOW}Starting iskylims installation version: ${ISKYLIMS_VERSION}${NC}\n"
-printf "%s"
-printf "${YELLOW}------------------${NC}\n\n"
-
-#================================================================
 #CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
 #================================================================
 
@@ -280,8 +288,8 @@ printf "${BLUE}Successful check for database${NC}\n"
 apache_check
 printf "${BLUE}Successful check for apache${NC}\n"
 
-if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
-    printf "${ORANGE} You need to be root for full or dependencies install"
+if [ "$install" = "full" ] || [ "$install" = "dep" ]; then
+    printf "${ORANGE} You need to be root for full or dep install"
     root_check
 fi
 
@@ -312,7 +320,7 @@ if [ $upgrade == true ]; then
     printf "%s"
     printf "${YELLOW}------------------${NC}\n\n"
     
-    if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
+    if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "dep" ]; then
         # upgrade database if needed
         rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements
         cd $INSTALL_PATH
@@ -322,10 +330,10 @@ if [ $upgrade == true ]; then
         python3 -m pip install -r conf/requirements.txt
     fi
 
-    if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]; then
+    if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
 
         ### Delete git and no copy files stuff
-        if [ $rename_applications == true ] ; then
+        if [ $ren_app == true ] ; then
             echo "Changing app dir names in $INSTALL_PATH..."
             rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
                 $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
@@ -352,7 +360,7 @@ if [ $upgrade == true ]; then
         source virtualenv/bin/activate
         
         ### RENAME APP  in database and migration files ####
-        if [ $rename_applications == true ] ; then
+        if [ $ren_app == true ] ; then
             # make migrations backup in home
             # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
             echo "Modifying names in migration files..."
@@ -447,7 +455,7 @@ if [ $upgrade == true ]; then
         ./manage.py collectstatic
         echo "Done collect statics"
         
-        if [ $update_tables == true ] ; then
+        if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
             ./manage.py loaddata conf/first_install_tables.json
             echo "Done loading pre-filled tables..."
@@ -472,8 +480,7 @@ if [ $upgrade == true ]; then
             apache_user="httpd"
         fi
         
-    
-        systemctl restart $apache_user
+        # systemctl restart $apache_user
 
         if ! [ $? -eq 0 ]; then
             echo -e "${ORANGE}Apache server restart failed. trying with sudo{NC}"
@@ -498,222 +505,236 @@ fi
 # INSTALL REPOSITORY REQUIRED SOFTWARE AND PYTHON VIRTUAL ENVIRONMENT
 #================================================================
 
-if [ "$type_installation" = "full" ] || [ "$type_installation" = "dependencies" ]; then
-    user=$SUDO_USER
-    group=$(groups | cut -d" " -f1)
+if [ $install == true ]; then
 
-    # Find out server Linux distribution
-    linux_distribution=$(lsb_release -i | cut -f 2-)
+    if [ "$install_type" = "full" ] || [ "$install_type" = "dep" ]; then
 
-    read -p "Are you sure you want to install repository software required for iSkyLIMS? (Y/N) " -n 1 -r
+        #================================================================
+        # MAIN_BODY FOR INSTALL
+        #================================================================
+        printf "\n\n%s"
+        printf "${YELLOW}------------------${NC}\n"
+        printf "%s"
+        printf "${YELLOW}Starting iSkyLIMS install version: ${ISKYLIMS_VERSION}${NC}\n"
+        printf "%s"
+        printf "${YELLOW}------------------${NC}\n\n"
+
+        user=$SUDO_USER
+        group=$(groups | cut -d" " -f1)
+
+        # Find out server Linux distribution
+        linux_distribution=$(lsb_release -i | cut -f 2-)
+
+        read -p "Are you sure you want to install repository software required for iSkyLIMS? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                echo "Exiting without installing required software for iSkyLIMS installation"
+                exit 1
+            fi
+
+        read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            echo "Exiting without running iskylims installation"
+            exit 1
+        fi
+
+        echo "Installing Interop"
+        if [ -d /opt/interop ]; then
+            echo "There is already an interop installation"
+            echo "Skipping Interop installation"
+        else
+            cd /opt
+            echo "Downloading interop software"
+            wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
+            tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
+            ln -s InterOp-1.1.15-Linux-GNU interop
+            rm InterOp-1.1.15-Linux-GNU.tar.gz
+            echo "Interop is now installed"
+            cd -
+        fi
+
+        if [[ $linux_distribution == "Ubuntu" ]]; then
+            echo "Software installation for Ubuntu"
+            apt-get update && apt-get upgrade -y
+            apt-get install -y \
+                apt-utils wget \
+                libmysqlclient-dev apache2-dev \
+                python3-venv mariadb-server \
+                gcc libpq-dev \
+                python3-dev python3-pip python3-wheel
+        fi
+
+        if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+            echo "Software installation for Centos/RedHat"
+            yum groupinstall "Development tools"
+            yum install zlib-devel bzip2-devel openssl-devel \
+                        wget httpd-devel mysql-libs sqlite sqlite-devel \
+                        mariadb mariadb-devel libffi-devel
+        fi
+
+        # install virtual environment
+        echo "Creating virtual environment"
+        if [ -d $INSTALL_PATH/virtualenv ]; then
+            echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
+            read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                rm -rf $INSTALL_PATH/virtualenv
+                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+            else
+                echo "virtualenv alredy defined. Skipping."
+            fi
+        else
+            bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+        fi
+
+        echo "activate the virtualenv"
+        source virtualenv/bin/activate
+
+        # Install python packages required for iSkyLIMS
+        echo "Installing required python packages"
+        python3 -m pip install wheel
+        python3 -m pip install -r conf/requirements.txt
+
+
+        ## Create apache group if it does not exist.
+        if ! grep -q apache /etc/group
+        then
+            groupadd apache
+        fi
+
+        if [ install == "full" || install == "app" ]; then
+            echo "Software dep are successfuly installed"
+        else
+            printf "\n\n%s"
+            printf "${BLUE}------------------${NC}\n"
+            printf "%s"
+            printf "${BLUE}Software dep are successfuly installed${NC}\n"
+            printf "%s"
+            printf "${BLUE}------------------${NC}\n\n"
+            exit 0
+        fi
+    fi
+
+    #================================================================
+    # INSTALL iSkyLIMS PLATFORM APPLICATION
+    #================================================================
+
+    if [ "$install" = "full" ] || [ "$install" = "app" ]; then
+
+        read -p "Are you sure you want to install iSkyLIMS app in this server? (Y/N) " -n 1 -r
         echo    # (optional) move to a new line
         if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
             echo "Exiting without installing required software for iSkyLIMS installation"
             exit 1
         fi
+        ## Fix permissions and owners
 
-    read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        echo "Exiting without running iskylims installation"
-        exit 1
-    fi
-
-    echo "Installing Interop"
-    if [ -d /opt/interop ]; then
-        echo "There is already an interop installation"
-        echo "Skipping Interop installation"
-    else
-        cd /opt
-        echo "Downloading interop software"
-        wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
-        tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
-        ln -s InterOp-1.1.15-Linux-GNU interop
-        rm InterOp-1.1.15-Linux-GNU.tar.gz
-        echo "Interop is now installed"
-        cd -
-    fi
-
-    if [[ $linux_distribution == "Ubuntu" ]]; then
-        echo "Software installation for Ubuntu"
-        apt-get update && apt-get upgrade -y
-        apt-get install -y \
-            apt-utils wget \
-            libmysqlclient-dev apache2-dev \
-            python3-venv mariadb-server \
-            gcc libpq-dev \
-            python3-dev python3-pip python3-wheel
-    fi
-
-    if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-        echo "Software installation for Centos/RedHat"
-        yum groupinstall "Development tools"
-        yum install zlib-devel bzip2-devel openssl-devel \
-                    wget httpd-devel mysql-libs sqlite sqlite-devel \
-                    mariadb mariadb-devel libffi-devel
-    fi
-
-    # install virtual environment
-    echo "Creating virtual environment"
-    if [ -d $INSTALL_PATH/virtualenv ]; then
-        echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
-        read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
-        echo    # (optional) move to a new line
-        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-            rm -rf $INSTALL_PATH/virtualenv
-            bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+        if [ $LOG_TYPE == "symbolic_link" ]; then
+            if [ -d $LOG_PATH ]; then
+                ln -s $LOG_PATH  $INSTALL_PATH/logs
+            chmod 775 $LOG_PATH
+            else
+                echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
+            exit 1
+            fi
         else
-            echo "virtualenv alredy defined. Skipping."
+            mkdir -p $INSTALL_PATH/logs
+            chown $user:apache $INSTALL_PATH/logs
+            chmod 775 $INSTALL_PATH/logs
         fi
-    else
-        bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
-    fi
-
-    echo "activate the virtualenv"
-    source virtualenv/bin/activate
-
-    # Install python packages required for iSkyLIMS
-    echo "Installing required python packages"
-    python3 -m pip install wheel
-    python3 -m pip install -r conf/requirements.txt
 
 
-    ## Create apache group if it does not exist.
-    if ! grep -q apache /etc/group
-    then
-        groupadd apache
-    fi
+        echo "Starting iSkyLIMS installation"
+        if [ -d $INSTALL_PATH ]; then
+            echo "There already is an installation of iskylims in $INSTALL_PATH."
+            read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                echo "Exiting without running iSkyLIMS installation"
+                exit 1
+            else
+                rm -rf $INSTALL_PATH
+            fi
+        fi
 
-    if [ type_installation == "full" || type_installation == "application" ]; then
-        echo "Software dependencies are successfuly installed"
-    else
+        ## Create the installation folder
+        mkdir -p $INSTALL_PATH
+
+        rsync -rlv README.md LICENSE conf core drylab \
+                wetlab clinic django_utils $INSTALL_PATH
+
+        cd $INSTALL_PATH
+
+        # Create necessary folders
+        echo "Created documents structure"
+        mkdir -p $INSTALL_PATH/documents/wetlab/tmp
+        mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
+        mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
+        chown $user:apache $INSTALL_PATH/documents
+        chmod 775 $INSTALL_PATH/documents
+        chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
+        chmod 775 $INSTALL_PATH/documents/wetlab/tmp
+        chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
+        chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
+        chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
+        chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
+        mkdir -p $INSTALL_PATH/documents/drylab
+        chown $user:apache $INSTALL_PATH/documents/drylab
+        chmod 775 $INSTALL_PATH/documents/drylab
+
+
+
+        # Starting iSkyLIMS
+        echo "activate the virtualenv"
+        source virtualenv/bin/activate
+
+        echo "Creating iskylims project"
+        django-admin startproject iSkyLIMS .
+        
+        # update the settings.py and the main urls
+        update_settings_and_urls
+
+        echo "Creating the database structure for iSkyLIMS"
+        python3 manage.py migrate
+        python3 manage.py makemigrations django_utils core wetlab drylab clinic
+        python3 manage.py migrate
+
+        echo "Run collectstatic"
+        python3 manage.py collectstatic
+
+        echo "Loading in database initial data"
+        python3 manage.py loaddata conf/first_install_tables.json
+
+        echo "Running crontab"
+        ## TODO: CHECK THIS.
+        python3 manage.py crontab add
+        mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
+        chown www-data /var/spool/cron/crontabs/www-data
+
+        echo "Updating Apache configuration"
+        if [[ $linux_distribution == "Ubuntu" ]]; then
+            cp conf/iskylims_apache_ubuntu.conf /etc/apache2/sites-available/000-default.conf
+        fi
+
+        if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+            cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
+        fi
+
+        echo "Creating super user "
+        python3 manage.py createsuperuser --username admin
+
         printf "\n\n%s"
         printf "${BLUE}------------------${NC}\n"
         printf "%s"
-        printf "${BLUE}Software dependencies are successfuly installed${NC}\n"
+        printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
         printf "%s"
         printf "${BLUE}------------------${NC}\n\n"
+
+        echo "Installation completed"
         exit 0
     fi
-fi
-
-#================================================================
-# INSTALL iSkyLIMS PLATFORM APPLICATION
-#================================================================
-
-if [ "$type_installation" = "full" ] || [ "$type_installation" = "application" ]; then
-
-    read -p "Are you sure you want to install iSkyLIMS application in this server? (Y/N) " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        echo "Exiting without installing required software for iSkyLIMS installation"
-        exit 1
-    fi
-    ## Fix permissions and owners
-
-    if [ $LOG_TYPE == "symbolic_link" ]; then
-        if [ -d $LOG_PATH ]; then
-            ln -s $LOG_PATH  $INSTALL_PATH/logs
-        chmod 775 $LOG_PATH
-        else
-            echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
-        exit 1
-        fi
-    else
-        mkdir -p $INSTALL_PATH/logs
-        chown $user:apache $INSTALL_PATH/logs
-        chmod 775 $INSTALL_PATH/logs
-    fi
-
-
-    echo "Starting iSkyLIMS installation"
-    if [ -d $INSTALL_PATH ]; then
-        echo "There already is an installation of iskylims in $INSTALL_PATH."
-        read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
-        echo    # (optional) move to a new line
-        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-            echo "Exiting without running iSkyLIMS installation"
-            exit 1
-        else
-            rm -rf $INSTALL_PATH
-        fi
-    fi
-
-    ## Create the installation folder
-    mkdir -p $INSTALL_PATH
-
-    rsync -rlv README.md LICENSE conf core drylab \
-            wetlab clinic django_utils $INSTALL_PATH
-
-    cd $INSTALL_PATH
-
-    # Create necessary folders
-    echo "Created documents structure"
-    mkdir -p $INSTALL_PATH/documents/wetlab/tmp
-    mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
-    mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
-    chown $user:apache $INSTALL_PATH/documents
-    chmod 775 $INSTALL_PATH/documents
-    chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
-    chmod 775 $INSTALL_PATH/documents/wetlab/tmp
-    chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
-    chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
-    chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
-    chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
-    mkdir -p $INSTALL_PATH/documents/drylab
-    chown $user:apache $INSTALL_PATH/documents/drylab
-    chmod 775 $INSTALL_PATH/documents/drylab
-
-
-
-    # Starting iSkyLIMS
-    echo "activate the virtualenv"
-    source virtualenv/bin/activate
-
-    echo "Creating iskylims project"
-    django-admin startproject iSkyLIMS .
-    
-    # update the settings.py and the main urls
-    update_settings_and_urls
-
-    echo "Creating the database structure for iSkyLIMS"
-    python3 manage.py migrate
-    python3 manage.py makemigrations django_utils core wetlab drylab clinic
-    python3 manage.py migrate
-
-    echo "Run collectstatic"
-    python3 manage.py collectstatic
-
-    echo "Loading in database initial data"
-    python3 manage.py loaddata conf/first_install_tables.json
-
-    echo "Running crontab"
-    ## TODO: CHECK THIS.
-    python3 manage.py crontab add
-    mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
-    chown www-data /var/spool/cron/crontabs/www-data
-
-    echo "Updating Apache configuration"
-    if [[ $linux_distribution == "Ubuntu" ]]; then
-        cp conf/iskylims_apache_ubuntu.conf /etc/apache2/sites-available/000-default.conf
-    fi
-
-    if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-        cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
-    fi
-
-    echo "Creating super user "
-    python3 manage.py createsuperuser --username admin
-
-    printf "\n\n%s"
-    printf "${BLUE}------------------${NC}\n"
-    printf "%s"
-    printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
-    printf "%s"
-    printf "${BLUE}------------------${NC}\n\n"
-
-    echo "Installation completed"
-    exit 0
 fi
 
 printf "\n\n%s"
