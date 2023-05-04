@@ -769,7 +769,7 @@ def get_service_information(service_id, service_manager):
                 display_service_details["add_resolution_action"] = service_id
                 if len(display_service_details["children_services"]) > 1:
                     display_service_details["multiple_services"] = True
-     
+
                 display_service_details["first_resolution"] = True
 
         if service_obj.get_service_state(None) == "queued":

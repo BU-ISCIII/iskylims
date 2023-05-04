@@ -2,9 +2,13 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from django_utils.models import Profile
-from drylab.models import (Delivery, Pipelines,
-                                    RequestedSamplesInServices, Resolution,
-                                    Service)
+from drylab.models import (
+    Delivery,
+    Pipelines,
+    RequestedSamplesInServices,
+    Resolution,
+    Service,
+)
 
 
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):

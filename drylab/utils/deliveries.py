@@ -12,7 +12,7 @@ def prepare_delivery_form(resolution_id):
         The function get the services handled by the resolution to display them
         in the user form
     Input:
-        resolution_id  
+        resolution_id
     Functions:
         get_resolution_obj_from_id
         get_pipelines_for_service
@@ -21,11 +21,7 @@ def prepare_delivery_form(resolution_id):
         delivery_data_form
     """
     delivery_data_form = {}
-    resolution_obj = (
-        drylab.utils.resolutions.get_resolution_obj_from_id(
-            resolution_id
-        )
-    )
+    resolution_obj = drylab.utils.resolutions.get_resolution_obj_from_id(resolution_id)
     if resolution_obj is not None:
         delivery_data_form[
             "available_services"
@@ -36,9 +32,7 @@ def prepare_delivery_form(resolution_id):
 
         delivery_data_form[
             "pipelines_data"
-        ] = drylab.utils.pipelines.get_pipelines_for_resolution(
-            resolution_obj
-        )
+        ] = drylab.utils.pipelines.get_pipelines_for_resolution(resolution_obj)
 
     return delivery_data_form
 
@@ -58,10 +52,8 @@ def store_resolution_delivery(form_data):
         delivery_data
     """
     delivery_data = None
-    resolution_obj = (
-        drylab.utils.resolutions.get_resolution_obj_from_id(
-            form_data["resolution_id"]
-        )
+    resolution_obj = drylab.utils.resolutions.get_resolution_obj_from_id(
+        form_data["resolution_id"]
     )
     if resolution_obj is not None:
         delivery_data = {}

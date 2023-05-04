@@ -5,24 +5,35 @@ from django.http import QueryDict
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.authentication import (BasicAuthentication,
-                                           SessionAuthentication)
-from rest_framework.decorators import (api_view, authentication_classes,
-                                       permission_classes)
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from drylab.models import (Delivery, Pipelines,
-                                    RequestedSamplesInServices, Resolution,
-                                    ResolutionStates, Service)
+from drylab.models import (
+    Delivery,
+    Pipelines,
+    RequestedSamplesInServices,
+    Resolution,
+    ResolutionStates,
+    Service,
+)
 from drylab.utils.deliveries import send_delivery_service_email
 from drylab.utils.resolutions import send_resolution_in_progress_email
 
-from .serializers import (CreateDeliveryPostSerializer,
-                          RequestedSamplesInServicesSerializer,
-                          ResolutionSerializer, ServiceListSerializer,
-                          ServiceSerializer, UpdateResolutionStateSerializer,
-                          UpdateServiceStateSerializer)
+from .serializers import (
+    CreateDeliveryPostSerializer,
+    RequestedSamplesInServicesSerializer,
+    ResolutionSerializer,
+    ServiceListSerializer,
+    ServiceSerializer,
+    UpdateResolutionStateSerializer,
+    UpdateServiceStateSerializer,
+)
 
 
 def check_valid_date_format(date):
@@ -385,7 +396,9 @@ def create_delivery(request):
         data.pop("resolutionNumber")
         data["delivery_resolutionID"] = resolution_pk
 
-        if Delivery.objects.filter(delivery_resolution_id__exact=resolution_pk).exists():
+        if Delivery.objects.filter(
+            delivery_resolution_id__exact=resolution_pk
+        ).exists():
             delivery_obj = Delivery.objects.filter(
                 delivery_resolution_id__exact=resolution_pk
             ).last()
