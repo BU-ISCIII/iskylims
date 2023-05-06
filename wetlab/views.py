@@ -326,10 +326,9 @@ def create_nextseq_run(request):
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if Projects.objects.filter(project_name__icontains=key).exists():
-                if project_in_several_runs != "TRUE":
-                    project_already_defined.append(key)
+                   project_already_defined.append(key)
 
-        if len(project_already_defined) > 0:
+        if len(project_already_defined) > 0 and project_in_several_runs != "TRUE":
             if len(project_already_defined) > 1:
                 head_text = "The following projects are already defined in database:"
             else:
