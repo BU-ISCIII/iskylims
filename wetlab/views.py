@@ -2930,7 +2930,7 @@ def annual_report(request):
     if request.method == "POST":
         year_selected = int(request.POST["yearselected"])
         # get the current year to compare with the input
-        present_year = datetime.datetime.now().year
+        present_year = datetime.now().year
         if year_selected > present_year:
             return render(
                 request,
@@ -3167,7 +3167,7 @@ def monthly_report(request):
         browser_used = request.META["HTTP_USER_AGENT"]
         if "Firefox" in browser_used:
             try:
-                datetime.datetime.strptime(input_value, "%m-%Y")
+                datetime.strptime(input_value, "%m-%Y")
                 month_selected, year_selected = input_value.split("-")
             except Exception:
                 return render(
@@ -3185,7 +3185,7 @@ def monthly_report(request):
 
         else:
             try:
-                datetime.datetime.strptime(input_value, "%Y-%m")
+                datetime.strptime(input_value, "%Y-%m")
                 year_selected, month_selected = input_value.split("-")
             except Exception:
                 return render(
@@ -3203,7 +3203,7 @@ def monthly_report(request):
                 )
 
         # get the current year to compare with the input
-        present_year = datetime.datetime.now().year
+        present_year = datetime.now().year
         #
         if int(year_selected) > present_year:
             return render(
@@ -3219,7 +3219,7 @@ def monthly_report(request):
                 },
             )
 
-        present_month = datetime.datetime.now().month
+        present_month = datetime.now().month
         if (int(year_selected) == present_year) and (
             int(month_selected) > present_month
         ):
@@ -3499,7 +3499,7 @@ def quarter_report(request):
             + days_in_end_quarter[quarter_selected]
         )
         # get the current year to compare with the input
-        present_year = datetime.datetime.now().year
+        present_year = datetime.now().year
         if int(year_selected) > present_year:
             return render(
                 request,
@@ -3514,7 +3514,7 @@ def quarter_report(request):
                 },
             )
 
-        present_month = datetime.datetime.now().month
+        present_month = datetime.now().month
         if (int(year_selected) == present_year) and (int(end_quarter) > present_month):
             return render(
                 request,
@@ -3859,7 +3859,7 @@ def update_tables_date(request):
                     config.SAMBA_SHARED_FOLDER_NAME, completion_file
                 )
                 # fetching the time creation on the RunCompletionStatus.xml for Run finish datetime
-                run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(
+                run_be_updated.run_finish_date = datetime.fromtimestamp(
                     int(completion_attributes.create_time)
                 ).strftime("%Y-%m-%d %H:%M:%S")
             except Exception:
@@ -3872,7 +3872,7 @@ def update_tables_date(request):
                     config.SAMBA_SHARED_FOLDER_NAME, conversion_stats_file
                 )
                 #
-                run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(
+                run_be_updated.bcl2fastq_finish_date = datetime.fromtimestamp(
                     int(conversion_attributes.create_time)
                 ).strftime("%Y-%m-%d %H:%M:%S")
             except Exception:
