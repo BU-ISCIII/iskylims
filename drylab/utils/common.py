@@ -208,16 +208,16 @@ def get_users_requested_services():
     if drylab.models.Service.objects.all().exists():
         user_ids = (
             drylab.models.Service.objects.all()
-            .order_by("serviceUserId")
-            .values("serviceUserId")
+            .order_by("service_user_id")
+            .values("service_user_id")
             .distinct()
         )
         for user_id in user_ids:
             user_list.append(
                 [
-                    user_id["serviceUserId"],
+                    user_id["service_user_id"],
                     django.contrib.auth.models.User.objects.filter(
-                        pk__exact=user_id["serviceUserId"]
+                        pk__exact=user_id["service_user_id"]
                     )
                     .last()
                     .username,
