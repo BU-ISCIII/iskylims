@@ -1440,7 +1440,7 @@ def stats_by_services_request(request):
             time_values_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+                date_service = service.service_created_on_date.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_service_obj
                 ).exists():
@@ -1487,7 +1487,7 @@ def stats_by_services_request(request):
             time_values_dict = {}
             for service in services_found:
                 user_id = service.get_service_user_id()
-                date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+                date_service = service.service_created_on_date.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_id
                 ).exists():
