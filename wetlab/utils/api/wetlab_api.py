@@ -123,17 +123,17 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         cursor = connection.cursor()
         user_list_str = [str(id_str) for id_str in user_list_ids]
         user_list = "( " + ",".join(user_list_str) + " )"
-        fetch_fields = " wetlab_runprocess.runName, wetlab_runprocess.id ,wetlab_projects.projectName , wetlab_projects.id ,  wetlab_samplesinproject.sampleName, wetlab_samplesinproject.id, DATE_FORMAT(wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate , wetlab_runningparameters.runID "
-        q_tables = " FROM wetlab_samplesinproject inner join wetlab_projects ON wetlab_samplesinproject.project_id_id = wetlab_projects.id inner join wetlab_runprocess ON wetlab_samplesinproject.runProcess_id_id = wetlab_runprocess.id   inner join wetlab_runningparameters ON wetlab_runprocess.id =  wetlab_runningparameters.runName_id_id "
+        fetch_fields = " wetlab_run_process.run_name, wetlab_run_process.id ,wetlab_projects.project_name , wetlab_projects.id ,  wetlab_samples_in_project.sample_name, wetlab_samples_in_project.id, DATE_FORMAT(wetlab_run_process.run_completed_date,'%d/%m/%Y') AS niceDate , wetlab_running_parameters.run_id "
+        q_tables = " FROM wetlab_samples_in_project inner join wetlab_projects ON wetlab_samples_in_project.project_id_id = wetlab_projects.id inner join wetlab_run_process ON wetlab_samples_in_project.run_process_id_id = wetlab_run_process.id   inner join wetlab_running_parameters ON wetlab_run_process.id =  wetlab_running_parameters.run_name_id_id "
         restrict_results = (
-            "WHERE wetlab_samplesinproject.user_id_id IN " + user_list
+            "WHERE wetlab_samples_in_project.user_id_id IN " + user_list
         )
         query = (
             "SELECT "
             + fetch_fields
             + q_tables
             + restrict_results
-            + "ORDER BY (wetlab_runprocess.run_completed_date) DESC"
+            + "ORDER BY (wetlab_run_process.run_completed_date) DESC"
         )
 
         cursor.execute(query)
