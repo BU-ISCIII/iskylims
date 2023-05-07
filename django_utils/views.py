@@ -183,8 +183,8 @@ def user_creation(request):
             form1.save()
             profile = form2.save(commit=False)
             user_name = form1.cleaned_data["username"]
-            profileUserID = User.objects.get(username__exact=user_name)
-            profile.profileUserID = profileUserID
+            profile_user_id = User.objects.get(username__exact=user_name)
+            profile.profile_user_id = profile_user_id
 
             profile.save()
             return render(

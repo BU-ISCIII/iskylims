@@ -1365,10 +1365,10 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 if django_utils.models.Profile.objects.filter(
-                    profileUserID=user_service_obj
+                    profile_user_id=user_service_obj
                 ).exists():
                     user_classification_area = django_utils.models.Profile.objects.get(
-                        profileUserID=user_service_obj
+                        profile_user_id=user_service_obj
                     ).get_clasification_area()
                 else:
                     user_classification_area = "No_user_area"
@@ -1398,10 +1398,10 @@ def stats_by_services_request(request):
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 if django_utils.models.Profile.objects.filter(
-                    profileUserID=user_service_obj
+                    profile_user_id=user_service_obj
                 ).exists():
                     user_center = django_utils.models.Profile.objects.get(
-                        profileUserID=user_service_obj
+                        profile_user_id=user_service_obj
                     ).get_profile_center_abbr()
                 else:
                     user_center = "Not defined"
@@ -1442,10 +1442,10 @@ def stats_by_services_request(request):
                 user_service_obj = service.get_user_service_obj()
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
-                    profileUserID=user_service_obj
+                    profile_user_id=user_service_obj
                 ).exists():
                     user_center = django_utils.models.Profile.objects.get(
-                        profileUserID=user_service_obj
+                        profile_user_id=user_service_obj
                     ).get_profile_center_abbr()
                 else:
                     user_center = "Not defined"
