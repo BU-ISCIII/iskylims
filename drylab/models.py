@@ -383,7 +383,7 @@ class Service(models.Model):
         return "%s" % (self.service_user_id.profile.profile_center.center_name)
 
     def get_service_user_id(self):
-        return "%s" % (self.service_user_id)
+        return "%s" % (self.service_user_id.pk)
 
     def get_service_user_name(self):
         if self.service_user_id is not None:
