@@ -576,7 +576,7 @@ def search_service(request):
             )
         if user_name != "":
             services_found = services_found.filter(
-                serviceUserId__username__iexact=user_name
+                service_user_id__username__iexact=user_name
             )
         if handeld_user != "":
             if not drylab.models.Resolution.objects.filter(
@@ -1121,7 +1121,7 @@ def stats_by_user(request):
             )
 
         service_objs = drylab.models.Service.objects.filter(
-            serviceUserId__exact=user_id
+            service_user_id__exact=user_id
         ).order_by("-service_request_number")
         if start_date != "":
             service_objs = service_objs.filter(service_created_date__gte=start_date)
@@ -1339,8 +1339,6 @@ def stats_by_services_request(request):
             # preparing stats for status of the services
             status_services = {}
             for service in services_found:
-                # user_id = service.serviceUserId.id
-
                 status = service.get_service_state(display_type=True)
                 if status in status_services:
                     status_services[status] += 1
@@ -1488,7 +1486,7 @@ def stats_by_services_request(request):
             user_area_services_period = {}
             time_values_dict = {}
             for service in services_found:
-                user_id = service.serviceUserId.id
+                user_id = service.get_service_user_id()
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_id

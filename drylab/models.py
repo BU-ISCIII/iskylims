@@ -228,7 +228,7 @@ class ServiceManager(models.Manager):
             state_value__iexact="recorded"
         ).last()
         new_service = self.create(
-            service_user_id=data["serviceUserId"],
+            service_user_id=data["service_user_id"],
             service_sequencing_platform=service_sequencing_platform,
             service_run_specs=service_run_specs,
             service_center=data["service_center"],
@@ -243,7 +243,7 @@ class ServiceManager(models.Manager):
 
 class Service(models.Model):
     # User requesting service:
-    # 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
+    # 'serviceUsername' refactored to 'service_user_id' which shows better its true nature
     #  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
     service_user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     service_sequencing_platform = models.ForeignKey(
@@ -381,6 +381,22 @@ class Service(models.Model):
 
     def get_service_request_center_name(self):
         return "%s" % (self.service_user_id.profile.profile_center.center_name)
+
+    def get_service_user_id(self):
+        return "%s" % (self.service_user_id)
+
+    def get_service_user_name(self):
+        if self.service_user_id is not None:
+            return "%s" % (self.service_user_id.name)
+        else:
+            return ""
+
+    def get_service_user_surname(self):
+        if self.service_user_id is not None:
+            return "%s" % (self.service_user_id.last_name)
+        else:
+            return ""
+
 
     def get_service_user_notes(self):
         return "%s" % (self.service_notes)

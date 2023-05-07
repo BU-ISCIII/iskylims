@@ -93,7 +93,7 @@ def create_service_test(service_requested):
     try:
         new_test_service = drylab.models.Service(
             service_request_number=service_requested,
-            serviceUserId=user_name,
+            service_user_id=user_name,
             servicePlatform=service_platform,
             serviceFileExt=service_file_ext,
             serviceStatus="recorded",
