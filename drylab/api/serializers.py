@@ -153,7 +153,7 @@ class ServiceListSerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer):
     serviceFileExt = serializers.StringRelatedField(many=False)
-    serviceUserId = UserIDSerializer(many=False)
+    service_user_id = UserIDSerializer(many=False)
     service_available_service = serializers.StringRelatedField(many=True)
     resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
     samples = RequestedSamplesInServicesSerializer(many=True)
@@ -163,7 +163,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         fields = [
             "service_request_number",
             "serviceStatus",
-            "serviceUserId",
+            "service_user_id",
             "service_created_date",
             "service_delivered_date",
             "service_center",

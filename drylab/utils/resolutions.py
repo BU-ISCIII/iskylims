@@ -145,7 +145,7 @@ def get_data_for_resolution(service_obj, resolution_obj):
 
     resolution_info = resolution_obj.get_resolution_information()
     # get profile object
-    user_id = service_obj.serviceUserId.id
+    user_id = service_obj.get_service_user_id()
 
     information["resolution_number"] = resolution_obj.get_resolution_number()
     information["requested_date"] = service_obj.get_service_creation_time()

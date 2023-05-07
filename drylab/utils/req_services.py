@@ -117,7 +117,7 @@ def create_new_save_sequencing_service_request(request):
             ] = drylab.config.INTERNAL_SEQUENCING_UNIT
 
     service_data["service_notes"] = request.POST["description"]
-    service_data["serviceUserId"] = request_user
+    service_data["service_user_id"] = request_user
     service_data[
         "service_request_int"
     ] = drylab.utils.common.increment_service_number(
@@ -194,7 +194,7 @@ def create_new_save_counseling_infrastructure_service_request(request):
     service_data["service_sequencing_platform"] = ""
     service_data["serviceFileExt"] = ""
     service_data["service_run_specs"] = ""
-    service_data["serviceUserId"] = request.user
+    service_data["service_user_id"] = request.user
     service_data[
         "service_request_int"
     ] = drylab.utils.common.increment_service_number(
@@ -327,10 +327,10 @@ def get_data_for_service_confirmation(service_requested):
     information["service_number"] = service_number
     information["requested_date"] = service.get_service_creation_time()
     information["nodes"] = service.service_available_service.all()
-    user["name"] = service.serviceUserId.first_name
-    user["surname"] = service.serviceUserId.last_name
+    user["name"] = service.get_service_user_name()
+    user["surname"] = service.get_service_user_surname()
 
-    user_id = service.serviceUserId.id
+    user_id = service.get_service_user_id()
     user["area"] = django_utils.models.Profile.objects.get(
         profile_user_id=user_id
     ).profile_area
