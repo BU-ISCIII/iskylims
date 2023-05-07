@@ -322,7 +322,7 @@ if [ $upgrade == true ]; then
     
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "dep" ]; then
         # upgrade database if needed
-        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements
+        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
         cd $INSTALL_PATH
         echo "activate the virtualenv"
         source virtualenv/bin/activate
