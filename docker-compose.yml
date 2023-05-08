@@ -24,8 +24,6 @@ services:
         build: .
         container_name: iskylimsv2_app
         command: python3 /opt/iSkyLIMS/manage.py runserver 0:8000
-        volumes:
-            - ./:/opt/iSkyLIMS
         ports:
             - "8000:8000"
         networks:
@@ -34,6 +32,7 @@ services:
             - db1
 
         volumes:
+            - ./:/opt/iSkyLIMS
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
 networks:
