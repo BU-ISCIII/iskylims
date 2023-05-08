@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 # ENV PYTHONUNBUFFERED 1
 ENV TZ=Europe/Madrid
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -40,7 +40,7 @@ RUN mkdir -p /opt/iSkyLIMS/logs
 
 
 # Starting iSkyLIMS
-RUN python3 -m pip install -r conf/pythonPackagesRequired.txt
+RUN python3 -m pip install -r conf/requirements.txt
 RUN django-admin startproject iSkyLIMS .
 RUN /bin/bash -c 'grep ^SECRET iSkyLIMS/settings.py > ~/.secret'
 
