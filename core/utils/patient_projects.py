@@ -35,22 +35,6 @@ def check_if_project_exists(project_id, app_name):
         return False
 
 
-def check_project_fields(project_obj):
-    """
-    Description:
-        The function check if fields are defined for project.
-        Returns info to display back to user the project name and project id
-    Input:
-        project_obj  #  project object to check the fields
-
-    Return:
-        True if fields are defined
-    """
-    if PatientProjectsFields.objects.filter(patient_projects_id=project_obj).exists():
-        return True
-    return False
-
-
 def create_patient_project(form_data, app_name):
     """
     Description:
@@ -122,27 +106,6 @@ def get_available_projects_for_patient(patient_obj, app_name):
         return available_projects
     else:
         return None
-
-
-def get_defined_projects(app_name):
-    """
-    Description:
-        The function gets the project already defined.
-        Returns info to display back to user the project information
-    Return:
-        project_data.
-    """
-    project_data = []
-    if not PatientProjects.objects.filter(apps_name__exact=app_name).exists():
-        return project_data
-    projects = PatientProjects.objects.filter(apps_name__exact=app_name).order_by(
-        "project_name"
-    )
-    for project in projects:
-        p_data = project.get_patient_project_data()
-        p_data.append(check_project_fields(project))
-        project_data.append(p_data)
-    return project_data
 
 
 def get_defined_patient_projects(app_name):
@@ -217,7 +180,9 @@ def get_project_fields(project_id):
     """
     project_fields = []
 
-    if PatientProjectsFields.objects.filter(patient_projects_id__pk=project_id).exists():
+    if PatientProjectsFields.objects.filter(
+        patient_projects_id__pk=project_id
+    ).exists():
         p_fields_obj = PatientProjectsFields.objects.filter(
             patient_projects_id__pk=project_id
         ).order_by("project_field_order")
@@ -236,7 +201,9 @@ def get_project_field_ids(project_id):
     """
     project_field_ids = []
 
-    if PatientProjectsFields.objects.filter(patient_projects_id__pk=project_id).exists():
+    if PatientProjectsFields.objects.filter(
+        patient_projects_id__pk=project_id
+    ).exists():
         p_fields_obj = PatientProjectsFields.objects.filter(
             patient_projects_id__pk=project_id
         ).order_by("project_field_order")

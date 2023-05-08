@@ -437,13 +437,6 @@ def get_samples_clinic_in_search(data_request):
     return clinic_s_list
 
 
-def get_sample_clinic_obj_from_id(c_sample_id):
-    if ClinicSampleRequest.objects.filter(pk__exact=c_sample_id).exists():
-        c_sample_obj = ClinicSampleRequest.objects.get(pk__exact=c_sample_id)
-        return c_sample_obj
-    return None
-
-
 def prepare_patient_form(clinic_samples_ids):
     patient_info = {}
     patient_info["data"] = []

@@ -84,13 +84,6 @@ def check_samba_connection():
         return "NOK"
 
 
-def run_exists_in_db(run_name):
-    if RunProcess.objects.filter(run_name__exact=run_name).exists():
-        return True
-    else:
-        return False
-
-
 def folder_test_exists(folder_run_name):
     """
     Description:
@@ -116,24 +109,6 @@ def folder_test_exists(folder_run_name):
                 result = True
                 break
     return result
-
-
-def delete_graphic_folder_if_exists(run_name):
-    if RunningParameters.objects.filter(
-        run_name_id=RunProcess.objects.get(run_name__exact=run_name)
-    ).exists():
-        folder_graphic = RunningParameters.objects.get(
-            run_name_id=RunProcess.objects.get(run_name__exact=run_name)
-        ).get_run_folder()
-        if os.path.isdir(
-            os.path.join(settings.MEDIA_ROOT, "wetlab", "images_plot", folder_graphic)
-        ):
-            shutil.rmtree(
-                os.path.join(
-                    settings.MEDIA_ROOT, "wetlab", "images_plot", folder_graphic
-                )
-            )
-    return True
 
 
 def delete_test_run(run_obj):

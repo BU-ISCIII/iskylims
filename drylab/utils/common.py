@@ -130,27 +130,6 @@ def increment_service_number(request_user):
     return service_number
 
 
-def get_children_available_services():
-    """
-    Description:
-        The function collect the available services and the fields to present information
-        in the form
-    Return:
-        children_services
-    """
-    children_services = []
-    if drylab.models.AvailableService.objects.filter(parent=None).exists():
-        all_services = drylab.models.AvailableService.objects.filter(
-            parent=None
-        ).get_descendants()
-        for service in all_services:
-            if not service.get_children().exists():
-                children_services.append(
-                    [service.pk, service.get_service_description()]
-                )
-    return children_services
-
-
 def get_user_sharing_list(request_user):
     """
     Description:
@@ -267,30 +246,3 @@ def save_database_configuration_value(configuration_name, configuration_value):
             )
         )
     return config_settings_obj
-
-
-def store_file_from_form(file, path):
-    """
-    Description:
-        The function store the user input file and return the file_name.
-    Input:
-        file       # file to store
-        path       # path to store the file
-    Return:
-        f_name      # contains the file name and the extension
-        stored_file # contains the full path
-    """
-    if "." in file.name:
-        split_filename = re.search("(.*)(\.\w+$)", file.name)
-        file_name = split_filename.group(1)
-        file_ext = split_filename.group(2)
-    else:
-        file_name = file.name
-        file_ext = ""
-    fs = django.core.files.storage.FileSystemStorage()
-    timestr = time.strftime("%Y%m%d%H%M%S")
-    f_name = timestr + "_" + file_name + file_ext
-    full_path_file = os.path.join(path, f_name)
-
-    fs.save(full_path_file, file)
-    return f_name, full_path_file

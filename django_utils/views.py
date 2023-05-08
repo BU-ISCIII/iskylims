@@ -105,11 +105,9 @@ def user_edit(request):
         form2 = ProfileCreationForm(instance=request.user.profile)
 
         # get the list of users that are sharing
-        # import pdb; pdb.set_trace()
         sharing_users = []
         sharing_list = []
         if Group.objects.filter(name__exact=request.user.username).exists():
-            # import pdb; pdb.set_trace()
             group = Group.objects.get(name__exact=request.user.username)
             users = group.user_set.all().exclude(username=request.user.username)
 
@@ -118,7 +116,6 @@ def user_edit(request):
                 sharing_list.append(
                     [user.username, user.first_name + " " + user.last_name]
                 )
-        # import pdb; pdb.set_trace()
         user_list = (
             User.objects.all()
             .exclude(username=request.user.username)
@@ -131,7 +128,6 @@ def user_edit(request):
             username_list.append(
                 [user.username, user.first_name + " " + user.last_name]
             )
-        # import pdb; pdb.set_trace()
         if len(sharing_list) == 0:
             return render(
                 request,

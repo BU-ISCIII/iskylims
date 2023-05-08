@@ -6,7 +6,6 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    # path('addResultData', views.add_result_data, name = 'add_result_data'),
     path("addCommercialKit", views.add_commercial_kit, name="add_commercial_kit"),
     path(
         "addUserLotCommercialKit",

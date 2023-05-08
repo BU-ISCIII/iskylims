@@ -1,18 +1,15 @@
 from datetime import datetime
 
-from django.core.exceptions import FieldError
-
 from core.models import (City, LabRequest, OntologyMap, PatientCore,
-                                  SampleProjects, SampleProjectsFields,
-                                  SampleProjectsFieldsValue, Samples,
-                                  SampleType, Species, StateInCountry,
-                                  StatesForSample)
+                         SampleProjects, SampleProjectsFields,
+                         SampleProjectsFieldsValue, Samples, SampleType,
+                         Species, StateInCountry, StatesForSample)
 from core.utils.samples import increase_unique_value
 from wetlab.api.serializers import CreateSampleTypeSerializer
-from wetlab.config import (
-    ERROR_API_NO_SAMPLE_DEFINED, ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
-    ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
-    ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED)
+from wetlab.config import (ERROR_API_NO_SAMPLE_DEFINED,
+                           ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
+                           ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
+                           ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED)
 
 
 def create_state(state, apps_name):
@@ -128,38 +125,6 @@ def get_sample_fields(apps_name):
             )
 
     return sample_fields
-
-
-def samples_match_on_parameter(req_param):
-    """Check if parameter is one of the available belongs to sample and return
-    a sample list for each group of the parameter"""
-
-    r_param = req_param["sampleParameter"]
-    query = r_param + "__isnull"
-    try:
-        if Samples.objects.filter(**{query: False}).exists():
-            out_data = {}
-    except FieldError:
-        return None
-
-    values = (
-        Samples.objects.filter(**{query: False})
-        .values_list(r_param, flat=True)
-        .distinct()
-        .order_by(r_param)
-    )
-    for value in values:
-        try:
-            f_value = value.strftime("%d-%b-%Y")
-        except AttributeError:
-            f_value = value
-        out_data[f_value] = list(
-            Samples.objects.filter(**{r_param: value}).values_list(
-                "sampleName", flat=True
-            )
-        )
-
-    return out_data
 
 
 def get_sample_project_obj(project_name):

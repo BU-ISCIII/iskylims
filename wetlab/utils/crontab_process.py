@@ -761,21 +761,6 @@ def get_remote_sample_sheet(conn, new_run, experiment_name):
     return l_sample_sheet_path
 
 
-def get_run_platform_from_file(l_run_parameter):
-    """
-    Description:
-        The function will get the run platform for the xml element tag in the
-        file and it will return the platform used
-    Input:
-        l_run_parameter  # file to find the tag
-    Return:
-        platform
-    """
-    platform = find_xml_tag_text(l_run_parameter, APPLICATION_NAME_TAG)
-
-    return platform
-
-
 def get_run_process_obj_or_create_if_not_exists(experiment_name):
     """
     Description:

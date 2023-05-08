@@ -4,7 +4,6 @@ from datetime import date
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy as _
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from mptt.models import MPTTModel
@@ -22,16 +21,6 @@ STATUS_CHOICES = (
     ("delivered", _("Delivered")),
     ("archived", _("Archived")),
 )
-
-
-def service_files_upload(instance, filename):
-    now = timezone_now()
-    filename_base, filename_ext = os.path.splitext(filename)
-    return "drylab/servicesRequest/%s_%s%s" % (
-        now.strftime("%Y%m%d%H%M%S"),
-        filename_base.lower(),
-        filename_ext.lower(),
-    )
 
 
 class ServiceState(models.Model):
@@ -376,8 +365,8 @@ class Service(models.Model):
     def get_service_request_center_abbr(self):
         return "%s" % (self.service_user_id.profile.profile_center.center_abbr)
 
-    def get_service_state(self, display_type=False):
-        return self.service_state.get_state(to_display=display_type)
+    def get_service_state(self, to_display=False):
+        return self.service_state.get_state(to_display=to_display)
 
     def get_service_request_center_name(self):
         return "%s" % (self.service_user_id.profile.profile_center.center_name)
@@ -565,7 +554,7 @@ class ResolutionManager(models.Manager):
         new_resolution = self.create(
             resolution_service_id=resolution_service_id,
             resolution_asigned_user=resolution_asigned_user,
-            resolution_number=resolution_data["resolutionNumber"],
+            resolution_number=resolution_data["resolution_number"],
             resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
             resolution_queued_date=date.today(),
             resolution_notes=resolution_data["resolutionNotes"],
@@ -769,7 +758,7 @@ class Resolution(models.Model):
         today = date.today()
         self.resolution_in_progress_date = today
         self.resolution_state = ResolutionStates.objects.get(
-            state_value__exact="In Progress"
+            state_value__exact="in_progress"
         )
         self.save()
         return self
@@ -778,7 +767,7 @@ class Resolution(models.Model):
         today = date.today()
         self.resolution_delivery_date = today
         self.resolution_state = ResolutionStates.objects.get(
-            state_value__exact="Delivery"
+            state_value__exact="delivered"
         )
         self.save()
         return self
@@ -861,9 +850,13 @@ class Delivery(models.Model):
     def get_delivery_information(self):
         delivery_info = []
         delivery_info.append(self.delivery_resolution_id.resolution_number)
-        delivery_info.append(
-            self.delivery_resolution_id.resolution_delivery_date.strftime("%d %B, %Y")
-        )
+        try:
+            delivery_info.append(
+                self.delivery_resolution_id.resolution_delivery_date.strftime("%d %B, %Y")
+            )
+        except Exception:
+            delivery_info.append("-")
+
         delivery_info.append(self.delivery_notes)
         return delivery_info
 

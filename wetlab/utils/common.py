@@ -150,24 +150,6 @@ def open_samba_connection():
     return conn
 
 
-def get_type_of_data(data):
-    """
-    Description:
-        The function get always as input a string class.
-        By trying to convert the input data to int or bolean it will decide the type of data
-        If not possible to conver it returns string
-    Return:
-        type_of_data
-    """
-    boolean_values = ["True", "False", "None"]
-    if data in boolean_values:
-        return "boolean"
-    try:
-        return "integer"
-    except Exception:
-        return "string"
-
-
 def find_xml_tag_text(input_file, search_tag):
     """
     Description:
@@ -219,42 +201,6 @@ def get_attributes_remote_file(conn, run_dir, remote_file):
     return file_attributes
 
 
-def get_available_platform():
-    """
-    Description:
-        The function fetch the available run states by quering
-        the run_state table
-    Variable:
-        available_states   # list containing the run state names
-        platforms   # all platform objects
-    Return:
-        available_platforms
-    """
-    available_platforms = []
-
-    platforms = SequencingPlatform.objects.all()
-    for platform in platforms:
-        available_platforms.append(platform.get_platform_name())
-    return available_platforms
-
-
-def get_available_run_state():
-    """
-    Description:
-        The function fetch the available run states by quering
-        the run_state table
-    Variable:
-        available_states   # list containing the run state names
-    Return:
-        available_states
-    """
-    available_states = []
-    run_states = RunStates.objects.all()
-    for state in run_states:
-        available_states.append(state.run_state_name)
-    return available_states
-
-
 def get_experiment_name_from_file(l_run_parameter):
     """
     Description:
@@ -293,26 +239,6 @@ def get_configuration_from_database(configuration_name):
         ).last()
         configuration_value = configuration_settings_obj.get_configuration_value()
     return configuration_value
-
-
-def get_log_file_name(config_log_file):
-    """
-    Description:
-        The function will get the log file name from the configuration
-        file and it will return the fullpath log file name
-    Input:
-        config_log_file  # configuration log file
-    Variables:
-        log_file_name # name of found log file name
-    Return:
-        log_file_name
-    """
-    log_file_name = ""
-    with open(config_log_file) as fh:
-        for line in fh:
-            if ".log" in line:
-                log_file_name = line.split("'")[1]
-    return log_file_name
 
 
 def get_allowed_user_for_sharing(request_user):

@@ -33,24 +33,6 @@ def check_empty_fields(data):
     return False
 
 
-def check_users_exists(user_list):
-    """
-    Description:
-        The function check if users are defined on database
-
-    Retrun:
-        all_valid if all users are defined. List of users that are not in database
-    """
-    user_not_found = []
-    for user in user_list:
-        if User.objects.filter(username__exact=user).exists():
-            continue
-        user_not_found.append(user)
-    if user_not_found:
-        return user_not_found
-    return "all_valid"
-
-
 def analyze_and_store_input_param_values(form_data):
     """
     Description:
@@ -396,25 +378,6 @@ def get_samples_for_library_preparation():
     return samples_in_lib_prep
 
 
-def extract_sample_data(s_data):
-    """
-
-    BORRAR
-    """
-    headings = s_data["headings"]
-    sample_list = []
-    for sample_row in s_data["samples"]:
-        lib_prep_data = {}
-        for column in config.MAP_USER_SAMPLE_SHEET_TO_DATABASE:
-            if column[0] in headings:
-                lib_prep_data[column[1]] = sample_row[headings.index(column[0])]
-            else:
-                lib_prep_data[column[1]] = ""
-        sample_list.append(lib_prep_data)
-
-    return sample_list
-
-
 def extract_userids_from_sample_sheet_data(file_read):
     """
     Description:
@@ -439,25 +402,6 @@ def extract_userids_from_sample_sheet_data(file_read):
     if user_ids == [""]:
         user_ids["ERROR"] = ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
     return user_ids
-
-
-def get_library_preparation_protocols():
-    """
-    Description:
-        The function collect the protocol names defined for library preparation
-    Return:
-        protocol_names
-    """
-    protocol_names = []
-    if Protocols.objects.filter(
-        type__protocol_type__exact="Library preparation"
-    ).exists():
-        protocol_objs = Protocols.objects.filter(
-            type__protocol_type__exact="Library preparation"
-        )
-        for protocol_obj in protocol_objs:
-            protocol_names.append(protocol_obj.get_name())
-    return protocol_names
 
 
 def validate_sample_sheet_data(input_data):
@@ -566,24 +510,6 @@ def find_duplicate_index(sample_row_data, heading):
         error["ERROR"] = error_message
         return error
     return "False"
-
-
-def get_data_for_library_preparation_in_defined():
-    """
-    Description:
-        The function get the basic data for Library preparation which are in defined state
-    Return
-        lib_prep_data
-    """
-
-    lib_prep_data = []
-    if LibPrepare.objects.filter(lib_prep_state__lib_prep_state__exact="Defined").exists():
-        libs_preps_defined = LibPrepare.objects.filter(
-            lib_prep_state__lib_prep_state__exact="Defined"
-        ).order_by("lib_prep_code_id")
-        for lib_prep in libs_preps_defined:
-            lib_prep_data.append(lib_prep.get_basic_data())
-    return lib_prep_data
 
 
 def get_protocols_for_library_preparation():
@@ -952,20 +878,6 @@ def get_library_code_and_unique_id(sample_id, molecule_id):
         lib_prep_code_id = molecule_obj.get_molecule_code_id() + "_LIB_01"
         uniqueID = sample_obj.get_unique_sample_id() + "-1"
     return lib_prep_code_id, uniqueID
-
-
-def get_user_for_sample_sheet():
-    """
-    Descripion:
-        The function collect the user_id defined in iSkyLIMS
-    Return:
-        user_list
-    """
-    user_list = []
-    user_objs = User.objects.all().order_by("username")
-    for user_obj in user_objs:
-        user_list.append(user_obj.username)
-    return user_list
 
 
 def format_sample_sheet_to_display_in_form(sample_sheet_data):

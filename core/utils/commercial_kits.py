@@ -315,46 +315,6 @@ def get_lot_reagent_commercial_kits(platform):
     Return
         user_platform_kit_list and commercial_list
     """
-    user_platform_kit_dict = {}
-    user_platform_kit_list = []
-    commercial_kit_names = []
-    if CommercialKits.objects.filter(
-        platform_kits__platform_name__exact=platform
-    ).exists():
-        commercial_objs = CommercialKits.objects.filter(
-            platform_kits__platform_name__exact=platform
-        ).order_by("name")
-        for commercial_obj in commercial_objs:
-            commercial_name = commercial_obj.get_name()
-            commercial_kit_names.append(commercial_name)
-            user_platform_kit_dict[commercial_name] = []
-            if UserLotCommercialKits.objects.filter(
-                based_commercial=commercial_obj, run_out=False
-            ).exists():
-                user_kits = UserLotCommercialKits.objects.filter(
-                    based_commercial=commercial_obj, run_out=False
-                ).order_by("expiration_date")
-                for user_kit in user_kits:
-                    user_platform_kit_dict[commercial_name].append(
-                        [user_kit.get_user_lot_kit_id(), user_kit.get_lot_number()]
-                    )
-        user_platform_kit_list = list(
-            [(k, v) for k, v in user_platform_kit_dict.items()]
-        )
-        commercial_list = ",".join(commercial_kit_names)
-    return user_platform_kit_list, commercial_list
-
-
-def get_lot_reagent_commercial_kits_excluding_sequencing_configuration(platform):
-    """
-    Description:
-        The function get the user commercial kits that are defined for using
-        platform.
-    Input:
-        platform  # platform name
-    Return
-        user_platform_kit_list and commercial_list
-    """
     seq_conf_names = []
     user_platform_kit_dict = {}
     user_platform_kit_list = []

@@ -105,50 +105,6 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
     return display_sample_information
 
 
-def create_or_add_project_to_run(run_data, user_obj, project_name, proj_data):
-    """
-    Description:
-        Function will check if project is already defined. If proyect is new, Then
-        it is created but if already exists then run is added to the project
-    Input:
-        run_data    # data related to the run
-        user_obj    # owner of the project
-        project_name    # name of the project
-        proj_data   # data related to project
-    Functions:
-        get_project_obj_from_project_name   # located at this file
-    Return:
-        None
-    """
-    if not Projects.objects.filter(project_name__iexact=project_name).exists():
-        project_data = {}
-        project_data["user_id"] = user_obj
-        project_data["projectName"] = project_name
-        project_data["libraryKit"] = run_data["collection_index"]
-        project_data["baseSpaceFile"] = proj_data[0]
-        project_data["BaseSpaceLibrary"] = proj_data[1]
-        project_obj = Projects.objects.create_new_project(project_data)
-    else:
-        project_obj = get_project_obj_from_project_name(project_name)
-    project_obj.runProcess.add(run_data["run_obj"])
-    return
-
-
-def get_project_obj_from_project_name(project_name):
-    """
-    Description:
-        The function get the project obj for the given project name
-    Input:
-        project_name    # project name
-    Return:
-        project_obj
-    """
-    project_obj = None
-    if Projects.objects.filter(project_name__exact=project_name).exists():
-        project_obj = Projects.objects.filter(project_name__exact=project_name).last()
-    return project_obj
-
-
 def collect_data_and_update_library_preparation_samples_for_run(data_form, user):
     """
     Description:
@@ -157,9 +113,6 @@ def collect_data_and_update_library_preparation_samples_for_run(data_form, user)
         Return a dictionary with the user form
     Input:
         data_form    # user data form
-    Functions:
-        prepare_fields_to_create_sample_sheet_from_template
-
     Constants:
         HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ
         HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END
@@ -366,24 +319,6 @@ def get_pool_adapters(pool_objs):
 
     return adapters
 
-    #  def get_pool_single_paired(pool_objs):
-    """
-    Description:
-        The function get the single read and paired end  used for each pool.
-        return a dictionary with single_paired as a key and the pool name list as value
-    Return:
-        adapters
-
-    single_paired = {}
-    for pool in pool_obj :
-        s_p = pool.get_pool_single_paired()
-        if not s_p in single_paired:
-            single_paired[s_p] = []
-        single_paired[s_p].append(pool.get_pool_name())
-
-    return single_paired
-    """
-
 
 def get_pool_duplicated_index(pool_objs):
     """
@@ -539,23 +474,6 @@ def get_experiment_name(run_id):
     return experiment_name
 
 
-def get_library_preparation_unique_id(lib_prep_ids):
-    """
-    Description:
-        The function returns the library preparation unique id for the input list
-    Input:
-        lib_prep_ids # list having the library preparation id
-    Functions:
-        get_lib_prep_obj_from_id   # located at wetlab/utils/library_preparation.py
-    Return:
-        unique_id_list
-    """
-    unique_id_list = []
-    for lib_prep_id in lib_prep_ids:
-        unique_id_list.append(get_lib_prep_obj_from_id(lib_prep_id).get_unique_id())
-    return unique_id_list
-
-
 def get_library_preparation_data_in_run(lib_prep_ids, pool_ids):
     """
     Description:
@@ -569,7 +487,6 @@ def get_library_preparation_data_in_run(lib_prep_ids, pool_ids):
     Function:
         get_type_read_sequencing             # located at this file
         collect_lib_prep_data_for_new_run    # located at this file
-        get_library_preparation_unique_id    # located at this file
     Return:
         display_sample_information
     """
@@ -591,8 +508,6 @@ def get_library_preparation_data_in_run(lib_prep_ids, pool_ids):
     display_sample_information["lib_prep_unique_ids"] = ",".join(
         lib_prep_data["uniqueID_list"]
     )
-
-    # display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
 
     display_sample_information[
         "date"
@@ -770,34 +685,6 @@ def increase_reuse_if_samples_exists(sample_list):
 
     return samples_reused
 
-    # def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
-    """
-    Description:
-        The function check if in index have been changed.
-        The function does not change the original values recorded at the time that
-        sample sheet was uploaded.
-    Input:
-        sample_sheet_data        # Data inside sample sheet
-        lib_prep_ids        #
-    Return:
-        samples_reused
-    """
-    """
-    Borrar
-    # check in index hve been changed
-    #
-    for  index_lib in range(len(lib_prep_ids)):
-
-        lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep_ids[index_lib])
-        sample_sheet_data[lib_prep_ids[index_lib]]['I7_Index_ID'] = lib_prep_obj.get_i7_index()
-        lib_prep_obj.update_i7_index(sample_sheet_data[lib_prep_ids[index_lib]]['index'])
-        if 'I5_Index_ID' in sample_sheet_data[lib_prep_ids[index_lib]]:
-            sample_sheet_data[lib_prep_ids[index_lib]]['I5_Index_ID'] = lib_prep_obj.get_i5_index()
-            lib_prep_obj.update_i5_index(sample_sheet_data[lib_prep_ids[index_lib]]['index2'])
-
-    return sample_sheet_data
-    """
-
 
 def get_library_prep_in_pools(pool_ids):
     """
@@ -893,7 +780,7 @@ def get_pool_info(pools_to_update):
                     (
                         reagents_kits[platform],
                         commercial_kits[platform],
-                    ) = get_lot_reagent_commercial_kits_excluding_sequencing_configuration(
+                    ) = get_lot_reagent_commercial_kits(
                         platform
                     )
                     configutation_name = (
@@ -1034,111 +921,6 @@ def get_pool_instance_from_id(pool_id):
     return pool_obj
 
 
-def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_space):
-    base_space_lib = {}
-    for sample_id in sample_sheet_data:
-        lib_name = sample_sheet_data[sample_id]["Base Space Library"]
-        if lib_name not in base_space_lib:
-            base_space_lib[lib_name] = {}
-        project_name = sample_sheet_data[sample_id]["Sample_Project"]
-
-        if project_name not in base_space_lib[lib_name]:
-            base_space_lib[lib_name][project_name] = {}
-            base_space_lib[lib_name][project_name]["data"] = []
-            base_space_lib[lib_name][project_name]["project_user"] = sample_sheet_data[
-                sample_id
-            ]["Description"]
-        bs_sample_data = {}
-        for item in range(len(mapping)):
-            bs_sample_data[mapping[item][0]] = sample_sheet_data[sample_id][
-                mapping[item][1]
-            ]
-        # modify the index 5 if paired End
-
-        if paired:
-            if bs_sample_data["Index2Sequence"] != "":
-                seq = Seq(bs_sample_data["Index2Sequence"])
-                bs_sample_data["Index2Sequence"] = str(seq.reverse_complement())
-        # add the default values
-        bs_sample_data["Species"] = ""
-        bs_sample_data["NucleicAcid"] = "DNA"
-        bs_sample_data["Project"] = project_name
-        # build the data row for base space file
-        bs_row_data = []
-        for item in heading_base_space:
-            bs_row_data.append(bs_sample_data[item])
-        string_row_data = ",".join(bs_row_data)
-        base_space_lib[lib_name][project_name]["data"].append(string_row_data)
-    return base_space_lib
-
-
-def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
-    """
-    Description:
-        The function collect data from user form to build the dictionary
-        with the right values to replace on the template
-    Input:
-        data_for    # information from the user form
-        user        # userid
-    Functions:
-        get_run_obj_from_id                    # located at this file
-    Return:
-        fields  # dictionary having the key and values used to replace in the template
-    """
-    fields = {}
-    data = []
-    temp_data = json.loads(data_form["s_sheet_data"])
-    for line in temp_data:
-        # remove the last item in data (base space field)
-        line.pop()
-        data.append(",".join(line))
-
-    fields["data"] = "\n".join(data)
-    fields["exp_name"] = get_run_obj_from_id(data_form["run_process_id"]).get_run_name()
-    fields["user"] = user
-    fields["application"] = data_form["application"]
-    fields["instrument"] = data_form["instrument"]
-    fields["assay"] = data_form["assay"]
-    fields["collection_index"] = data_form["collection_index"]
-    fields["pairedEnd"] = data_form["pairedEnd"]
-    fields["reads"] = data_form["reads"]
-    fields["adapter"] = data_form["adapter"]
-    if "adapter2" in data_form:
-        fields["adapter2"] = data_form["adapter2"]
-
-    return fields
-
-    # def store_sample_sheet_in_tmp_folder(run_process_id):
-    """
-    Description:
-        The function get the orignal sample sheet and copy it into the tmp/run_process_id folder
-    Input:
-        run_process_id    # run process id
-    Constants:
-        MEDIA_ROOT
-        RUN_TEMP_DIRECTORY_RECORDED
-    Return:LibUserSampleSheet
-        sample_sheet_relative
-    """
-    """
-    run_obj = get_run_obj_from_id(run_process_id)
-    sample_sheet_relative = run_obj.get_sample_file()
-    sample_sheet_original = os.path.join(settings.MEDIA_ROOT ,sample_sheet_relative )
-    temp_directory = os.path.join(settings.MEDIA_ROOT , config.RUN_TEMP_DIRECTORY_RECORDED, run_process_id)
-    if not os.path.exists(temp_directory) :
-        os.mkdir(temp_directory)
-    # set group writing permission to the temporary directory
-    os.chmod(temp_directory, 0o774)
-
-    sample_sheet_copy= os.path.join(temp_directory, 'samplesheet.csv' )
-    shutil.copy(sample_sheet_original,sample_sheet_copy)
-    # set the group write permission to the Sample Sheet File
-    os.chmod(sample_sheet_copy, 0o664)
-
-    return sample_sheet_relative
-    """
-
-
 def fetch_reagent_kits_used_in_run(form_data):
     """
     Description:
@@ -1159,156 +941,3 @@ def fetch_reagent_kits_used_in_run(form_data):
         user_reagents_kit_objs.append(update_usage_user_lot_kit(form_data[kit_name]))
 
     return user_reagents_kit_objs
-
-
-def prepare_lib_prep_table_new_run(
-    index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2
-):
-    """
-
-    BORRAR
-    BORRAR esta funcion
-    """
-    protocol = request.POST["lib_protocols"]
-    single_paired = request.POST["singlePairedEnd"]
-    read_length = request.POST["readlength"]
-    user_sample_sheet_data = {}
-    stored_lib_prep = {}
-    stored_lib_prep["data"] = []
-
-    if CollectionIndexKit.objects.filter(
-        collection_index_name__exact=index_adapters
-    ).exists():
-        collection_index_kit_id = CollectionIndexKit.objects.get(
-            collection_index_name__exact=index_adapters
-        )
-    else:
-        collection_index_kit_id = None
-    register_user_obj = User.objects.get(username__exact=request.user.username)
-    user_sample_sheet_data["registerUser"] = register_user_obj
-    protocol_obj = Protocols.objects.get(name__exact=protocol)
-    user_sample_sheet_data["collectionIndexKit_id"] = collection_index_kit_id
-
-    user_sample_sheet_data["sampleSheet"] = file_name
-    user_sample_sheet_data["assay"] = assay
-    user_sample_sheet_data["adapter1"] = adapter1
-    user_sample_sheet_data["adapter2"] = adapter2
-    new_user_s_sheet_obj = libUserSampleSheet.objects.create_lib_prep_user_sample_sheet(
-        user_sample_sheet_data
-    )
-
-    parameter_heading = get_protocol_parameters(protocol_obj)
-    length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len(parameter_heading)
-    stored_lib_prep["heading"] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
-    stored_lib_prep["par_heading"] = parameter_heading
-    stored_lib_prep["heading_in_excel"] = ",".join(
-        HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading
-    )
-    lib_prep_id = []
-    samples_not_available = []
-    stored_lib_prep["reagents_kits"] = get_lot_commercial_kits(
-        register_user_obj, protocol_obj
-    )
-    for extracted_data in extracted_data_list:
-        if Samples.objects.filter(
-            sample_name__exact=extracted_data["sample_id"],
-            sample_user=register_user_obj,
-            sample_state__sample_state_name="Library preparation",
-        ).exists():
-            sample_obj = Samples.objects.get(
-                sample_name__exact=extracted_data["sample_id"]
-            )
-            extracted_data["sample_id"] = sample_obj
-
-            extracted_data["protocol_obj"] = protocol_obj
-            extracted_data["collection_index_kit_id"] = collection_index_kit_id
-
-            molecule_obj = MoleculePreparation.objects.filter(sample=sample_obj).last()
-            if LibPrepare.objects.filter(
-                sample_id=sample_obj,
-                lib_prep_state__lib_prep_state__exact="Created for Reuse",
-            ).exists():
-                lib_prep_obj = LibPrepare.objects.get(
-                    sample_id=sample_obj,
-                    lib_prep_state__lib_prep_state__exact="Created for Reuse",
-                )
-                molecule_obj = lib_prep_obj.get_molecule_obj()
-
-                last_lib_prep_for_molecule = (
-                    LibPrepare.objects.filter(
-                        sample_id=sample_obj, molecule_id=molecule_obj
-                    )
-                    .exclude(lib_prep_state__lib_prep_state__exact="Created for Reuse")
-                    .last()
-                )
-                if last_lib_prep_for_molecule:
-                    last_lib_prep_code_id = (
-                        last_lib_prep_for_molecule.get_lib_prep_code()
-                    )
-                    split_code = re.search("(.*_)(\d+)$", last_lib_prep_code_id)
-                    index_val = int(split_code.group(2))
-                    new_index = str(index_val + 1).zfill(2)
-                    lib_prep_code_id = split_code.group(1) + new_index
-                    unique_s_id_split = lib_prep_obj.get_unique_sample_id().split("-")
-                    inc_value = int(unique_s_id_split[-1]) + 1
-                    unique_s_id_split[-1] = str(inc_value)
-                    extracted_data["uniqueID"] = "-".join(unique_s_id_split)
-
-                else:
-                    lib_prep_code_id = molecule_obj.get_molecule_code_id() + "_LIB_01"
-                    split_code = lib_prep_code_id.split("_")
-                    extracted_data["uniqueID"] = (
-                        sample_obj.get_unique_sample_id()
-                        + "-"
-                        + split_code[-3][1:]
-                        + "-"
-                        + split_code[-1]
-                    )
-
-                extracted_data["lib_code_id"] = lib_prep_code_id
-                # lib_prep_obj.update_lib_preparation_info_in_reuse_state(extracted_data)
-
-                new_library_preparation = (
-                    lib_prep_obj.update_lib_preparation_info_in_reuse_state(
-                        extracted_data, new_user_s_sheet_obj, single_paired, read_length
-                    )
-                )
-                # new_library_preparation = LibraryPreparation.objects.update_library_preparation(extracted_data)
-            else:
-                lib_prep_code_id = molecule_obj.get_molecule_code_id() + "_LIB_01"
-                extracted_data["lib_code_id"] = lib_prep_code_id
-                split_code = lib_prep_code_id.split("_")
-                extracted_data["uniqueID"] = (
-                    sample_obj.get_unique_sample_id()
-                    + "-"
-                    + split_code[-3][1:]
-                    + "-"
-                    + split_code[-1]
-                )
-                extracted_data["assay"] = assay
-                # Create the new library preparation object
-                new_library_preparation = LibPrepare.objects.create_lib_preparation(
-                    extracted_data,
-                    new_user_s_sheet_obj,
-                    register_user_obj,
-                    molecule_obj,
-                    single_paired,
-                    read_length,
-                )
-            lib_prep_id.append(new_library_preparation.get_id())
-            data = [""] * length_heading
-            data[0] = extracted_data["sample_id"]
-            data[1] = lib_prep_code_id
-
-            if not collection_index_kit_id:
-                data[2] = "collection Index not defined"
-            else:
-                data[2] = collection_index_kit_id.get_collection_index_name()
-            stored_lib_prep["data"].append(data)
-
-        else:
-            samples_not_available.append(extracted_data["sample_id"])
-
-    stored_lib_prep["lib_prep_id"] = ",".join(lib_prep_id)
-    stored_lib_prep["samples_not_available"] = samples_not_available
-    return stored_lib_prep

@@ -21,7 +21,6 @@ class FusionCharts:
     # constructor
     def __init__(self, type, id, width, height, renderAt, dataFormat, dataSource):
         self.constructorOptions = {}
-        # import pdb ; pdb.set_trace()
         self.constructorOptions["type"] = type
         self.constructorOptions["id"] = id
         self.constructorOptions["width"] = width

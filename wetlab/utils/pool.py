@@ -234,31 +234,3 @@ def get_info_to_display_created_pool(pool_obj):
     ] = HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
 
     return information_for_created_pool
-
-
-def get_lib_prep_collection_index(lib_prep_ids):
-    """
-    Description:
-        The function return a list of the used parameters .
-    Return:
-        protocol_parameter_list.
-
-    """
-    collection_dict = {}
-    for lib_prep_id in lib_prep_ids:
-        if not LibPrepare.objects.filter(pk__exact=lib_prep_id).exists():
-            continue
-        lib_prep_obj = LibPrepare.objects.get(pk__exact=lib_prep_id)
-        collection_name = lib_prep_obj.get_collection_index_name()
-        if collection_name not in collection_dict:
-            collection_dict[collection_name] = 0
-        collection_dict[collection_name] += 1
-    if len(collection_dict) == 1:
-        return collection_name
-    else:
-        max_value = 0
-        for key, value in collection_dict.items():
-            if value > max_value:
-                max_value = value
-                collection_name = key
-        return collection_name
