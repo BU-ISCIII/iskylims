@@ -133,18 +133,6 @@ def create_new_save_sequencing_service_request(request):
     # Save the new service
     new_service = drylab.models.Service.objects.create_service(service_data)
 
-    # Save files
-    """
-    if "uploadfile" in request.FILES:
-        path = os.path.join(config.USER_REQUESTED_SERVICE_FILE_DIRECTORY)
-        files = request.FILES.getlist("uploadfile")
-        for file in files:
-            file_name, full_path_file_name = store_file_from_form(file, path)
-            new_file = RequestedServiceFile.objects.create_request_service_file(
-                file_data
-            )
-            # service_data['serviceFile'] = full_path_file_name
-    """
     # Save the many-to-many data for the form
     for av_service_obj in available_service_objs:
         new_service.service_available_service.add(av_service_obj)
@@ -272,12 +260,13 @@ def get_available_service_obj_from_id(available_service_id):
 
 
 def get_available_service_states(add_internal_value=False):
-    """_summary_
+    """Function that returns available services in the database
 
     Parameters
     ----------
     add_internal_value : bool, optional
-        _description_, by default False
+        it defines if a tuple or only display string is returned
+        , by default False
 
     Returns
     -------
@@ -346,8 +335,6 @@ def get_data_for_service_confirmation(service_requested):
     user["email"] = service.service_user_id.email
     information["user"] = user
     service_data["projects"] = get_projects_in_requested_samples(service)
-    # service_data['platform'] = platform
-    # service_data['run_specifications'] = run_specs
     service_data["center"] = center
     service_data["notes"] = service.get_service_user_notes()
     files = (
@@ -607,9 +594,9 @@ def get_service_information(service_id, service_manager):
     service_obj = get_service_obj_from_id(service_id)
     display_service_details = {}
 
-    # text_for_dates = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
     display_service_details["service_name"] = service_obj.get_service_request_number()
     display_service_details["service_id"] = service_id
+
     # get the list of samples
     if drylab.models.RequestedSamplesInServices.objects.filter(
         samples_in_service=service_obj, only_recorded_sample__exact=False
@@ -684,22 +671,21 @@ def get_service_information(service_id, service_manager):
     if service_manager:
         display_service_details["service_manager"] = True
         if (
-            service_obj.serviceStatus != "rejected"
-            or service_obj.serviceStatus != "archived"
+            service_obj.service_state != "rejected"
+            or service_obj.service_state != "archived"
         ):
             if drylab.models.Resolution.objects.filter(
                 resolution_service_id=service_obj
             ).exists():
-                # get informtaion from the defined Resolutions
+                # get information from the defined Resolutions
                 resolution_objs = drylab.models.Resolution.objects.filter(
                     resolution_service_id=service_obj
                 )
                 display_service_details["resolution_for_progress"] = []
                 display_service_details["resolution_for_delivery"] = []
-                # display_service_details['resolution_delivered'] = []
                 available_services_ids = []
                 for resolution_obj in resolution_objs:
-                    if resolution_obj.get_state() == "Queued":
+                    if resolution_obj.get_state() == "queued":
                         req_available_services = resolution_obj.get_available_services()
                         if req_available_services != ["None"]:
                             req_available_service_ids = (
@@ -722,7 +708,7 @@ def get_service_information(service_id, service_manager):
                                     [""],
                                 ]
                             )
-                    elif resolution_obj.get_state() == "In Progress":
+                    elif resolution_obj.get_state() == "in_progress":
                         req_available_services = resolution_obj.get_available_services()
                         if req_available_services != ["None"]:
                             req_available_service_ids = (
@@ -745,7 +731,7 @@ def get_service_information(service_id, service_manager):
                                     [""],
                                 ]
                             )
-                    elif resolution_obj.get_state() == "Delivery":
+                    elif resolution_obj.get_state() == "delivered":
                         display_service_details["resolution_delivered"] = True
 
                 if len(available_services_ids) < len(
@@ -772,7 +758,7 @@ def get_service_information(service_id, service_manager):
 
                 display_service_details["first_resolution"] = True
 
-        if service_obj.get_service_state(None) == "queued":
+        if service_obj.get_service_state() == "queued":
             resolution_id = (
                 drylab.models.Resolution.objects.filter(
                     resolution_service_id=service_obj
@@ -781,7 +767,7 @@ def get_service_information(service_id, service_manager):
                 .id
             )
             display_service_details["add_in_progress_action"] = resolution_id
-        if service_obj.get_service_state(None) == "in_progress":
+        if service_obj.get_service_state() == "in_progress":
             if drylab.models.Resolution.objects.filter(
                 resolution_service_id=service_obj
             ).exists():
@@ -829,15 +815,15 @@ def get_service_information(service_id, service_manager):
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details["delivery"] = delivery_info
 
-        display_service_details["piplelines_data"] = {}
+        display_service_details["pipelines_data"] = {}
         for resolution_obj in resolution_objs:
             pipelines_objs = resolution_obj.resolution_pipelines.all()
             if pipelines_objs:
                 for pipelines_obj in pipelines_objs:
                     pipeline_name = pipelines_obj.get_pipeline_name()
-                    if pipeline_name not in display_service_details["piplelines_data"]:
-                        display_service_details["piplelines_data"][pipeline_name] = []
-                    display_service_details["piplelines_data"][pipeline_name].append(
+                    if pipeline_name not in display_service_details["pipelines_data"]:
+                        display_service_details["pipelines_data"][pipeline_name] = []
+                    display_service_details["pipelines_data"][pipeline_name].append(
                         [
                             pipelines_obj.get_pipeline_id(),
                             pipeline_name,
@@ -846,7 +832,7 @@ def get_service_information(service_id, service_manager):
                         ]
                     )
 
-        if len(display_service_details["piplelines_data"]) > 0:
+        if len(display_service_details["pipelines_data"]) > 0:
             display_service_details[
                 "pipelines_heading"
             ] = drylab.config.HEADING_PIPELINES_USED_IN_RESOLUTIONS
@@ -870,6 +856,7 @@ def get_service_information(service_id, service_manager):
     # Allow that service could set on hold if state is other than delivery
     if service_obj.get_service_state(display_type=False).lower() != "delivered":
         display_service_details["allowed_waiting_info"] = "allowed"
+    import pdb; pdb.set_trace()
     return display_service_details
 
 

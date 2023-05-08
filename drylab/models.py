@@ -67,7 +67,7 @@ class ResolutionStates(models.Model):
     def __str__(self):
         return "%s" % (self.state_value)
 
-    def get_state(self, to_display=None):
+    def get_state(self, to_display=False):
         if to_display:
             return "%s" % (self.state_display)
         else:
@@ -397,7 +397,6 @@ class Service(models.Model):
         else:
             return ""
 
-
     def get_service_user_notes(self):
         return "%s" % (self.service_notes)
 
@@ -681,7 +680,7 @@ class Resolution(models.Model):
             resolution_info.append(self.resolution_queued_date.strftime("%d %B, %Y"))
         else:
             resolution_info.append("Not defined yet")
-            
+
         if self.resolution_in_progress_date is None:
             resolution_info.append("--")
         else:
@@ -862,7 +861,9 @@ class Delivery(models.Model):
     def get_delivery_information(self):
         delivery_info = []
         delivery_info.append(self.delivery_resolution_id.resolution_number)
-        delivery_info.append(self.delivery_resolution_id.resolution_delivery_date.strftime("%d %B, %Y"))
+        delivery_info.append(
+            self.delivery_resolution_id.resolution_delivery_date.strftime("%d %B, %Y")
+        )
         delivery_info.append(self.delivery_notes)
         return delivery_info
 
