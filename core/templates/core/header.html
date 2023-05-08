@@ -4,12 +4,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% load static %}
 <!-- GLOBAL MANDATORY STYLES -->
-<link rel="icon" href="{% static 'iSkyLIMS.ico' %}">
+<link rel="icon" href="{% static 'core/main_style/img/iSkyLIMS.ico' %}">
 <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
-<link href="{% static "iSkyLIMS_common_static/css/icons.css" %}" rel="stylesheet" type="text/css"/>
-<link href="{% static "iSkyLIMS_common_static/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-<link href="{% static "iSkyLIMS_common_static/css/custom.css" %}" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+<link href="{% static "core/vendor/bootstrap-icons/bootstrap-icons.css" %}" rel="stylesheet" type="text/css"/>
+<link href="{% static "core/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
+<link href="{% static "core/custom/css/custom.css" %}" rel="stylesheet" type="text/css"/>
 
 
 
@@ -24,15 +24,17 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
 
 
-<script type="text/javascript" src="{% static 'iSkyLIMS_common_static/js/customized.js' %}"></script>
+<script type="text/javascript" src="{% static 'core/custom/js/customized.js' %}"></script>
 
 
 
 <!-- PAGE LEVEL PLUGIN STYLES -->
-<link href="{% static "iSkyLIMS_common_static/css/customized.css" %}" rel="stylesheet">
-<link href="{% static "iSkyLIMS_common_static/css/animate.css" %}" rel="stylesheet">
-<link href="{% static "iSkyLIMS_common_static/vendor/swiper/css/swiper.min.css" %}" rel="stylesheet" type="text/css"/>
-<link href="{% static "iSkyLIMS_common_static/css/form.css" %}" rel="stylesheet" type="text/css"/>
+<link href="{% static "core/custom/css/customized.css" %}" rel="stylesheet">
+<link href="{% static "core/custom/css/animate.css" %}" rel="stylesheet">
+{% comment %} 
+    <link href="{% static "core/vendor/swiper/css/swiper.min.css" %}" rel="stylesheet" type="text/css"/> 
+{% endcomment %}
+<link href="{% static "core/custom/css/form.css" %}" rel="stylesheet" type="text/css"/>
 
 <!-- THEME STYLES -->
-<link href="{% static "iSkyLIMS_common_static/css/layout.css" %}" rel="stylesheet" type="text/css"/>
+<link href="{% static "core/custom/css/layout.css" %}" rel="stylesheet" type="text/css"/>

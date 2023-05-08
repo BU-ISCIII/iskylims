@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # from django.shortcuts import render
 import json
 
@@ -13,10 +14,25 @@ from .utils.common import *
 # Create your views here.
 
 
+=======
+from django.core.mail import send_mail, BadHeaderError
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+from django.core.mail import send_mail
+
+import core.utils.common 
+import core.models
+>>>>>>> Removing the iSkyLIMS_ references in html to statics and organize the statics to clean duplicated/triplicated files
 def index(request):
     apps_in_iskylims = get_installed_apps()
     return render(request, "core/index.html", {"apps_in_iskylims": apps_in_iskylims})
 
+<<<<<<< HEAD
+=======
+    apps_in_iskylims = core.utils.common.get_installed_apps ()
+    return render(request, 'core/index.html',{'apps_in_iskylims': apps_in_iskylims})
+>>>>>>> Removing the iSkyLIMS_ references in html to statics and organize the statics to clean duplicated/triplicated files
 
 def add_new_contacts(request):
     """
@@ -30,6 +46,7 @@ def add_new_contacts(request):
 
     Return:
 
+<<<<<<< HEAD
     """
 
     """
@@ -42,6 +59,13 @@ def add_new_contacts(request):
     apps_installed["apps_names"] = get_installed_apps()
 
     if request.method == "POST" and request.POST["action"] == "addNewContacts":
+=======
+    '''
+    apps_installed = {}
+    apps_installed['apps_names'] = core.utils.common.get_installed_apps ()
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewContacts':
+>>>>>>> Removing the iSkyLIMS_ references in html to statics and organize the statics to clean duplicated/triplicated files
         pass
 
     return render(
@@ -51,7 +75,7 @@ def add_new_contacts(request):
 
 def contact(request):
     contact_info = {}
-    contacts = Contact.objects.all()
+    contacts = core.models.Contact.objects.all()
     for contact in contacts:
         contact_info[contact.get_contact_name()] = contact.get_contact_email()
 
