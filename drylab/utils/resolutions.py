@@ -141,7 +141,6 @@ def create_resolution_number(service_id):
 
 def get_data_for_resolution(service_obj, resolution_obj):
     information, user, resolution_data = {}, {}, {}
-    service_number, center = service_obj.get_service_information()
 
     resolution_info = resolution_obj.get_resolution_information()
     # get profile object
@@ -165,7 +164,7 @@ def get_data_for_resolution(service_obj, resolution_obj):
     ).profile_center
     user["position"] = django_utils.models.Profile.objects.get(
         profile_user_id=user_id
-    ).profilePosition
+    ).profile_position
     user["phone"] = django_utils.models.Profile.objects.get(
         profile_user_id=user_id
     ).profile_extension
