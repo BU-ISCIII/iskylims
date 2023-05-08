@@ -20,7 +20,7 @@
                         <label for="apps" class="control-label requiredField ">Select iSkyLIMS application</label>
                             <select class="form-control" id="dropdown" name="apps">
                                 {% for app in apps_installed.apps_names %}
-                                    <option value="{{ app|cut:'iSkyLIMS_' }}">{{ app|cut:'iSkyLIMS_' }}</option>
+                                    <option value="{{ app }}">{{ app }}</option>
                                 {% endfor %}
                             </select>
                     </div>
