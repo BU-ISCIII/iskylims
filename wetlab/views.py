@@ -813,9 +813,6 @@ def search_run(request):
             runs_found = RunProcess.objects.all().order_by("run_date").reverse()
         else:
             user_ids = get_allowed_user_for_sharing(request.user)
-            import pdb
-
-            pdb.set_trace()
             user_projects = Projects.objects.filter(user_id__in=user_ids)
             run_list = []
             for user_project in user_projects:
@@ -4910,17 +4907,14 @@ def handling_library_preparations(request):
     Functions:
         analyze_and_store_input_additional_kits
         get_samples_for_library_preparation
-        check_users_exists
         create_library_preparation_instance
         extract_user_sample_sheet_data
         get_additional_kits_from_lib_prep
-        get_data_for_library_preparation_in_defined
         get_type_of_sample_information
         get_library_preparation_heading_for_samples
         get_protocols_for_library_preparation
         get_samples_in_lib_prep_state
         validate_sample_sheet_data
-        get_list_of_collection_kits
     """
     # get the information for returning the uploaded file in case errors in the sample sheet
     samples_in_lib_prep = get_samples_for_library_preparation()

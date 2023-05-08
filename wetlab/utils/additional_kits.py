@@ -80,22 +80,6 @@ def analyze_and_store_input_additional_kits(form_data):
     return stored_additional_kits
 
 
-def check_if_additional_kits_exists(additional_kit_id):
-    """
-    Description:
-        The function check if the additional kit id exist. Return True if exists
-    Input:
-        additional_kit_id  # Id of the additional kit
-    Return:
-        True/False
-    """
-    if AdditionaKitsLibPrepare.objects.filter(
-        commercial_kit_id__exact=additional_kit_id
-    ).exists():
-        return True
-    return False
-
-
 def define_table_for_additional_kits(protocol_id):
     """
     Description:

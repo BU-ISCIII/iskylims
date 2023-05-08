@@ -2,13 +2,9 @@
 # coding: utf-8
 import os
 import re
-from datetime import datetime
 import time
-import string
-import random
 import codecs
 
-from Bio.Seq import Seq
 from django.conf import settings
 
 from django.core.files.storage import FileSystemStorage
@@ -85,42 +81,6 @@ def delete_stored_file (input_file):
             return False
         return True
     return False
-
-
-def get_assay_from_file(in_file):
-
-    assay = ''
-    fh = codecs.open(in_file, 'r', 'utf-8')
-    for line in fh:
-        line = line.rstrip()
-        if line == '':
-            continue
-        found_assay = re.search('^Assay',line)
-        if found_assay :
-            split_line = line.split(',')
-            assay = split_line[1]
-            fh.close()
-            break
-    return assay
-
-
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
-
-
-def include_csv_header (library_kit, out_file, plate, container):
-    csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
-
-    header_settings=['1','',plate,container,'automatic generated file from iSkyLIMS']
-
-    index_kit=csv_header.index('LibraryPrepKit')
-    header_settings[index_kit]=library_kit
-    out_file.write('[Header]\n')
-    for i in range(len(csv_header)):
-        header_line=str(csv_header[i] + ',' + header_settings[i] + '\n')
-        out_file.write(header_line)
-    #### adding additional line
-    out_file.write('\n')
 
 
 def get_adapters (file_lines):
@@ -362,164 +322,6 @@ def get_sample_with_user_owner (sample_sheet_path):
             sample_user[sample_name] = user_id
     fh.close()
     return sample_user
-
-
-def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
-    data_raw=[]
-    well_column={}
-    well_row={}
-    letter_well='A'
-    number_well='01'
-    result_directory=config.MIGRATION_DIRECTORY_FILES
-    data_found=0
-    header_found=0
-
-    fh = open(in_file,'r')
-    for line in fh:
-        line=line.rstrip()
-        if line == '':
-            continue
-        date_found = re.search('^Date',line)
-        if date_found :
-            date_line = line.split(',')
-            # check if the year contains only 2 digits
-            temp_date = date_line[1].split('/')
-            if len (temp_date[2]) == 2 :
-                 # add the 20 century to the year
-                 year_four_digits = '20' + temp_date[2]
-                 temp_date[2] = year_four_digits
-                 date_line[1] = '/'.join(temp_date)
-
-            try:
-                date_object = datetime.datetime.strptime(date_line[1],'%m/%d/%Y')
-            except:
-                try:
-                    date_object = datetime.datetime.strptime(date_line[1],'%d/%m/%Y')
-                except:
-                    date_object = datetime.datetime.strptime(date_line[1],'%Y/%m/%d')
-            date_sample = date_object.strftime('%Y%m%d')
-            date_found = False
-
-        found=re.search('^\[Data\]', line)
-        if found:
-            data_found=1
-            continue
-        found_header=re.search('^Sample_ID,Sample_Name',line)
-        if found_header:
-            header_found=1
-            table_index = []
-            if 'index2' in line :
-                only_one_index = False
-                using_header = config.BASESPACE_FILE_TWO_INDEX
-                using_map_table = config.MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX
-            else:
-                only_one_index = True
-                using_header = config.BASESPACE_FILE_ONE_INDEX
-                using_map_table = config.MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX
-            table_mapping = [0 for x in range(len(using_map_table))]
-            header_split = line.split(',')
-
-            for i in range(len(using_map_table)):
-                table_mapping[i]= header_split.index(using_map_table[i][1])
-                # getting index value for project column
-                if using_map_table[i][0] == 'Project':
-                    project_index = i
-            continue
-        if (data_found and header_found ):
-            dict_value_data={}
-            data_split=line.split(',')
-            # get only the samples that are related to the specific project
-            if data_split[table_mapping[project_index]] in projects:
-                for i in range(len(using_map_table)):
-                    dict_value_data[using_map_table[i][0]] = data_split[table_mapping[i]]
-
-                #### adding empty values of species and NucleicAccid
-                dict_value_data['Species']=''
-                dict_value_data['NucleicAcid']='DNA'
-
-                ### adding well information New
-                #well_column = number_well
-                dict_value_data['Well']=str(letter_well + number_well)
-                number_well =str(int(number_well)+1).zfill(2)
-                if number_well == '13':
-                    # reset the number well to 1 and increase the letter
-                    number_well = '01'
-                    letter_well=chr(ord(letter_well)+1)
-                ### adding well information
-                #well_column = number_well
-                dict_value_data['Well']=str(letter_well + number_well)
-                number_well =str(int(number_well)+1).zfill(2)
-                if number_well == '13':
-                # reset the number well to 1 and increase the letter
-                    number_well = '01'
-                    letter_well=chr(ord(letter_well)+1)
-                '''  Removed
-                if not dict_value_data['Index1Name'] in well_column:
-                    well_column[dict_value_data['Index1Name']]=number_well
-                    number_well =str(int(number_well)+1).zfill(2)
-                #else:
-                #    number_well = well_column[dict_value_data['Index1Name']]
-                if only_one_index == False:
-                    if not dict_value_data['Index2Name'] in well_row:
-                        well_row[dict_value_data['Index2Name']]=letter_well
-                        letter_well=chr(ord(letter_well)+1)
-                    dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])
-                else:
-                    letter_well = 'A'
-                    dict_value_data['Well']=str(letter_well + well_column[dict_value_data['Index1Name']])
-                '''
-                data_raw.append(dict_value_data)
-    fh.close()
-    # containerID build on the last Letter Well and the date in the sample sheet plus 6 randon characters to have unique value
-    container = str(letter_well + date_sample +id_generator() )
-    data_found=0
-    tmp= re.search('.*/(.*)\.csv',in_file)
-    out_tmp=tmp.group(1)
-    #base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    base_dir = settings.MEDIA_ROOT
-    out_file = str(base_dir + result_directory +  out_tmp + '_for_basespace' + '_'+ library_kit_file + '.csv')
-
-
-    #### check for validation of the shample file
-    try:
-        dict_value_data
-    except:
-        return ('Error')
-    #### open file for writting the conversion file
-    fh_out = open (out_file, 'w')
-    #####  print csv header
-    include_csv_header(library_kit,fh_out,plate,container)
-    #####  print data header
-    fh_out.write('[Data]\n')
-    ### use the column names of 2 index because it is mandatory on BaseSpace to have index2 even if the sample sheet
-    ### was done using one single index
-    fh_out.write(','.join(config.BASESPACE_FILE_TWO_INDEX))
-    fh_out.write('\n')
-
-
-    for line in data_raw:
-        #### reverse order for Index2
-        if only_one_index == False :
-            seq=Seq(line['Index2Sequence'])
-            line['Index2Sequence']=str(seq.reverse_complement())
-            ### removing the index value when there is only 1 index, in order to be imported to Base Space
-        else:
-            line['Index1Name'] = ''
-
-        for i in  range(len(using_header)):
-            fh_out.write(line[using_header[i]])
-            if i < len(using_header)-1:
-                fh_out.write(',')
-            else:
-                if only_one_index == True:
-                    fh_out.write(',,')
-                fh_out.write('\n')
-
-    fh_out.close()
-    # remove the absolute path of the library file_name
-    absolute_path = str(settings.BASE_DIR + '/')
-    file_name_in_database = out_file.replace(absolute_path,'')
-    return file_name_in_database
 
 
 def get_projects_in_run(in_file):

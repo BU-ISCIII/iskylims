@@ -358,117 +358,6 @@ def analyze_input_samples(request, app_name):
     return sample_recorded
 
 
-def analyze_input_molecules(request):
-    """
-    Description:
-        The function analyze the user data to assign samples to the molecule protocol.
-        Molecule is created for the sample and sample state is updated to "Extracted molecule"
-
-    Input:
-        request
-    Variables:
-
-    Return:
-        molecule_recorded.
-    """
-    molecule_json_data = json.loads(request.POST["molecule_data"])
-    samples = request.POST["samples"].split(",")
-    heading_in_excel = [
-        "sampleID",
-        "molecule_type",
-        "type_extraction",
-        "extractionDate",
-        "protocol_type",
-        "protocol_used",
-    ]
-    molecule_recorded = {}
-    showed_molecule = []
-    pending_molecule = []
-    prot_used_in_display = ""
-    molecule_recorded["molecule_id"] = []
-    molecule_recorded["data"] = []
-    incomplete_molecules_ids = []
-    for row_index in range(len(molecule_json_data)):
-        molecule_data = {}
-        if not Samples.objects.filter(pk=int(samples[row_index])).exists():
-            continue
-        sample_obj = Samples.objects.get(pk=int(samples[row_index]))
-        # check_empty_fields does not consider if the optional values are empty
-        if check_empty_fields(molecule_json_data[row_index], [""]):
-            incomplete_molecules_ids.append(int(samples[row_index]))
-            continue
-        if MoleculePreparation.objects.filter(sample=sample_obj).exists():
-            last_molecule_code = (
-                MoleculePreparation.objects.filter(sample=sample_obj)
-                .last()
-                .get_molecule_code_id()
-            )
-            code_split = re.search(r"(.*_E)(\d+)$", last_molecule_code)
-            number_code = int(code_split.group(2))
-            number_code += 1
-            molecule_code_id = code_split.group(1) + str(number_code)
-        else:
-            number_code = 1
-            molecule_code_id = sample_obj.get_sample_code() + "_E1"
-        protocol_used = molecule_json_data[row_index][
-            heading_in_excel.index("protocol_used")
-        ]
-        protocol_used_obj = Protocols.objects.get(name__exact=protocol_used)
-        molecule_type_obj = MoleculeType.objects.get(
-            molecule_type__exact=molecule_json_data[row_index][
-                heading_in_excel.index("molecule_type")
-            ]
-        )
-
-        molecule_data["protocolUsed"] = protocol_used_obj
-        molecule_data["sample"] = sample_obj
-        molecule_data["moleculeType"] = molecule_type_obj
-        molecule_data["moleculeCodeId"] = molecule_code_id
-        molecule_data["extractionType"] = molecule_json_data[row_index][
-            heading_in_excel.index("type_extraction")
-        ]
-        molecule_data["moleculeExtractionDate"] = molecule_json_data[row_index][
-            heading_in_excel.index("extractionDate")
-        ]
-        molecule_data["numberOfReused"] = str(number_code - 1)
-
-        new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
-        # Update Sample state to "Extracted molecule"
-        sample_obj.set_state("Extracted Molecule")
-        if prot_used_in_display == "":
-            if ProtocolParameters.objects.filter(
-                protocol_id__exact=protocol_used_obj
-            ).exists():
-                prot_used_in_display = protocol_used
-                protocol_parameters = ProtocolParameters.objects.filter(
-                    protocol_id__exact=protocol_used_obj, parameter_used=True
-                ).order_by("parameter_order")
-                parameter_list = []
-                for parameter in protocol_parameters:
-                    parameter_list.append(parameter.get_parameter_name())
-                length_heading = len(
-                    HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list
-                )
-                molecule_recorded[
-                    "fix_heading"
-                ] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-                molecule_recorded["param_heading"] = parameter_list
-
-        if protocol_used == prot_used_in_display:
-            showed_molecule.append(new_molecule.get_id())
-            data = [""] * length_heading
-            data[0] = molecule_code_id
-            data[1] = protocol_used
-            molecule_recorded["data"].append(data)
-        else:
-            pending_molecule.append(new_molecule.get_id())
-    molecule_recorded["molecule_id"] = ",".join(showed_molecule)
-    molecule_recorded["pending_id"] = ",".join(pending_molecule)
-    molecule_recorded["heading_in_excel"] = ",".join(parameter_list)
-
-    return molecule_recorded
-
-
 def analyze_input_sample_project_fields(form_data):
     """
     Description:
@@ -882,11 +771,6 @@ def get_sample_project_information(sample_project_obj, sample_obj):
     return s_project_info
 
 
-def get_sample_definition_heading():
-    """Function to return the sample fields if other apps need them"""
-    return HEADING_FOR_SAMPLE_DEFINITION
-
-
 def get_all_sample_information(sample_id, massive):
     sample_information = {}
     sample_information["sample_id"] = sample_id
@@ -979,21 +863,6 @@ def get_defined_samples(register_user):
             sample_information.append(sample.get_info_in_defined_state())
         defined_samples["sample_information"] = sample_information
     return defined_samples
-
-
-def get_extraction_kits(username):
-    """
-    Description:
-        The function will return the kits that are associated to the user.
-    Input:
-        username
-    Variables:
-        laboratories # list containing all laboratory names
-    Return:
-        laboratories.
-    """
-    kits = 1
-    return kits
 
 
 def get_lab_requested():

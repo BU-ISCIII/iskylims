@@ -67,24 +67,7 @@ def get_and_save_service_file(request):
     return data
 
 
-def get_uploaded_files_for_service(service_obj):
-    """
-    Description:
-        The function return the user uploaded files in a list
-    Input:
-        service_obj      # service instance
-    Return:
-        file_list with file stored on database
-    """
-    file_list = []
-    if drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj).exists():
-        file_objs = drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj)
-        for file_obj in file_objs:
-            file_list.append(file_obj.get_upload_file_full_path_and_name())
-    return file_list
-
-
-def get_uploaded_files_and_file_name_for_service(service_obj):
+def get_uploaded_files(service_obj):
     """
     Description:
         The function return the user uploaded files in a list

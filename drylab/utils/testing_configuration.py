@@ -118,7 +118,7 @@ def create_resolution_test(resolution_number, service_requested):
     try:
         test_resolution = drylab.models.Resolution(
             resolution_service_id=service,
-            resolutionNumber=resolution_number,
+            resolution_number=resolution_number,
             resolution_full_number=str("Test_" + resolution_number),
         )
         resolution_test.append(("Resolution creation", "OK"))

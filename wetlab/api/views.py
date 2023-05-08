@@ -369,25 +369,6 @@ def sample_fields(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-"""
-@swagger_auto_schema(
-    method="get",
-    operation_description="Get the samples names grouped by the given parameter",
-    manual_parameters=[sample_parameter],
-)
-@api_view(["GET"])
-def fetch_samples_on_parameter(request):
-    # Returns the samples that match parameter
-    if "sampleParameter" in request.GET:
-        data = samples_match_on_parameter(request.GET)
-        if data:
-            return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-"""
-
-
 @swagger_auto_schema(
     method="get",
     operation_description="Use this request to get the field' s names that are required for the sample project",

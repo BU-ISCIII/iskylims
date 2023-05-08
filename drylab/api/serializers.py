@@ -26,27 +26,25 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
 
 
 class UpdateResolutionStateSerializer(serializers.ModelSerializer):
-    # resolution_state = serializers.StringRelatedField(many=False)
-
     class Meta:
         model = Resolution
 
         fields = [
-            "resolutionNumber",
-            "resolutionOnInProgressDate",
-            "resolutionDeliveryDate",
+            "resolution_number",
+            "resolution_in_progress_date",
+            "resolution_delivery_date",
             "resolution_state",
         ]
 
     def update(self, instance, validated_data):
-        instance.resolutionNumber = validated_data["resolutionNumber"]
+        instance.resolution_number = validated_data["resolution_number"]
         instance.resolution_state = validated_data["resolution_state"]
         if "resolutionOnInProgressDate" in validated_data:
-            instance.resolutionOnInProgressDate = validated_data[
+            instance.resolution_in_progress_date = validated_data[
                 "resolutionOnInProgressDate"
             ]
         if "resolutionDeliveryDate" in validated_data:
-            instance.resolutionDeliveryDate = validated_data["resolutionDeliveryDate"]
+            instance.resolution_delivery_date = validated_data["resolutionDeliveryDate"]
         instance.save()
         return instance
 
@@ -55,7 +53,7 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
 
-        fields = ["service_request_number", "service_delivered_date", "serviceStatus"]
+        fields = ["service_request_number", "service_delivered_date", "service_state"]
 
 
 class ProfileUserSerializer(serializers.ModelSerializer):
@@ -64,7 +62,7 @@ class ProfileUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ["profileClassificationArea", "profileCenter"]
+        fields = ["profile_classification_area", "profile_center"]
 
 
 class UserIDSerializer(serializers.ModelSerializer):
@@ -100,11 +98,11 @@ class DeliverySerializer(serializers.ModelSerializer):
         fields = [
             "delivery_resolution_id",
             "pipelines_in_delivery",
-            "executionStartDate",
+            "execution_start_date",
             "execution_end_date",
             "permanent_used_space",
             "temporary_used_space",
-            "deliveryNotes",
+            "delivery_notes",
         ]
 
 
@@ -118,18 +116,18 @@ class ResolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resolution
         fields = [
-            "resolutionNumber",
+            "resolution_number",
             "resolution_full_number",
             "resolution_state",
-            "resolutionDate",
-            "resolutionEstimatedDate",
+            "resolution_date",
+            "resolution_estimated_date",
             "resolution_service_id",
-            "resolutionOnQueuedDate",
-            "resolutionOnInProgressDate",
-            "resolutionDeliveryDate",
-            "resolutionNotes",
-            "resolutionPipelines",
-            "availableServices",
+            "resolution_on_queued_date",
+            "resolution_in_progress_date",
+            "resolution_delivery_date",
+            "resolution_notes",
+            "resolution_pipelines",
+            "available_services",
             "delivery",
         ]
 
@@ -145,14 +143,14 @@ class ServiceListSerializer(serializers.ModelSerializer):
         model = Service
         fields = [
             "service_request_number",
-            "serviceStatus",
+            "service_state",
             "service_created_date",
             "service_delivered_date",
         ]
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-    serviceFileExt = serializers.StringRelatedField(many=False)
+    service_file_ext = serializers.StringRelatedField(many=False)
     service_user_id = UserIDSerializer(many=False)
     service_available_service = serializers.StringRelatedField(many=True)
     resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
@@ -162,13 +160,13 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = [
             "service_request_number",
-            "serviceStatus",
+            "service_state",
             "service_user_id",
             "service_created_date",
             "service_delivered_date",
             "service_center",
             "service_available_service",
-            "serviceFileExt",
+            "service_file_ext",
             "service_notes",
             "resolutions",
             "samples",

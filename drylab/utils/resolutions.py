@@ -139,50 +139,6 @@ def create_resolution_number(service_id):
     return resolution_number
 
 
-def get_data_for_resolution(service_obj, resolution_obj):
-    information, user, resolution_data = {}, {}, {}
-
-    resolution_info = resolution_obj.get_resolution_information()
-    # get profile object
-    user_id = service_obj.get_service_user_id()
-
-    information["resolution_number"] = resolution_obj.get_resolution_number()
-    information["requested_date"] = service_obj.get_service_creation_time()
-    information["resolution_date"] = resolution_info[4]
-    if resolution_obj.available_services.all() == ["None"]:
-        information["nodes"] = service_obj.service_available_service.all()
-    else:
-        information["nodes"] = resolution_obj.available_services.all()
-    user["name"] = service_obj.service_user_id.first_name
-    user["surname"] = service_obj.service_user_id.last_name
-
-    user["area"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_area
-    user["center"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_center
-    user["position"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_position
-    user["phone"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_extension
-    user["email"] = service_obj.get_user_email()
-    information["user"] = user
-    resolution_info_split = resolution_info[2].split("_")
-    resolution_data["acronym"] = resolution_info_split[2]
-    resolution_data["estimated_date"] = resolution_info[4]
-    resolution_data["notes"] = resolution_info[7]
-    resolution_data["decission"] = service_obj.get_service_state()
-    information["service_data"] = service_obj.get_service_user_notes()
-
-    resolution_data["folder"] = resolution_info[2]
-    information["resolution_data"] = resolution_data
-
-    return information
-
-
 def get_add_resolution_data_form(form_data):
     """
     Description:
@@ -275,7 +231,7 @@ def create_new_resolution(resolution_data_form):
         ] = get_assign_resolution_full_number(
             resolution_data_form["service_id"], resolution_data_form["acronymName"]
         )
-    resolution_data_form["resolutionNumber"] = create_resolution_number(
+    resolution_data_form["resolution_number"] = create_resolution_number(
         resolution_data_form["service_id"]
     )
 

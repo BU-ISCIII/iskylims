@@ -159,7 +159,7 @@ def service_list(request):
 def resolution_data(request):
     if "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
-        if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
+        if Resolution.objects.filter(resolution_number__exact=resolution).exists():
             resolution_obj = Resolution.objects.filter(
                 resolution_number__exact=resolution
             ).last()
@@ -220,14 +220,14 @@ def service_full_data(request):
     elif "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
         service = (
-            Resolution.objects.filter(resolutionNumber__iexact=resolution)
+            Resolution.objects.filter(resolution_number__iexact=resolution)
             .last()
             .resolution_service_id
         )
         service_obj = Service.objects.prefetch_related(
             Prefetch(
                 "resolutions",
-                queryset=Resolution.objects.filter(resolutionNumber__iexact=resolution),
+                queryset=Resolution.objects.filter(resolution_number__iexact=resolution),
                 to_attr="filtered_resolutions",
             )
         )
@@ -262,12 +262,12 @@ def update_state(request):
 
     if ("resolution" in request.query_params) and ("state" in request.query_params):
         resolution = request.query_params["resolution"].strip()
-        if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
-            resolution_obj = Resolution.objects.get(resolutionNumber__exact=resolution)
+        if Resolution.objects.filter(resolution_number__exact=resolution).exists():
+            resolution_obj = Resolution.objects.get(resolution_number__exact=resolution)
             state = request.query_params["state"].strip()
             try:
                 state_obj = ResolutionStates.objects.get(
-                    resolution_stateName__iexact=state
+                    resolution_state_name__iexact=state
                 )
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -281,7 +281,7 @@ def update_state(request):
 
             if state == "In Progress":
                 data_resolution = {
-                    "resolutionNumber": resolution,
+                    "resolution_number": resolution,
                     "resolution_state": state_obj.pk,
                     "resolutionOnInProgressDate": datetime.today().strftime("%Y-%m-%d"),
                 }
@@ -294,7 +294,7 @@ def update_state(request):
 
             elif state == "Delivery":
                 data_resolution = {
-                    "resolutionNumber": resolution,
+                    "resolution_number": resolution,
                     "resolution_state": state_obj.pk,
                     "resolutionDeliveryDate": datetime.today().strftime("%Y-%m-%d"),
                 }
@@ -335,19 +335,19 @@ def update_state(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "resolutionNumber": openapi.Schema(
+            "resolution_number": openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description="resolutionNumber. pe. SRVCNM123.1",
+                description="resolution_number. pe. SRVCNM123.1",
             ),
             "pipelines_in_delivery": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(type="string"),
-                description="resolutionNumber. pe. ['viralrecon']",
+                description="pipelines in delivery. pe. ['viralrecon']",
             ),
             "delivery_date": openapi.Schema(
                 type=openapi.TYPE_STRING, description="delivery date. pe. 2022-01-01"
             ),
-            "executionStartDate": openapi.Schema(
+            "execution_start_date": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="execution start date. pe. 2022-01-01",
             ),
@@ -363,7 +363,7 @@ def update_state(request):
                 type=openapi.TYPE_INTEGER,
                 description="temporary used space in GB. pe. SRVCNM123.1",
             ),
-            "deliveryNotes": openapi.Schema(
+            "delivery_notes": openapi.Schema(
                 type=openapi.TYPE_INTEGER,
                 description="delivery notes with brief results description.",
             ),
@@ -381,7 +381,7 @@ def create_delivery(request):
             data = data.dict()
 
         resolution_pk = (
-            Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"])
+            Resolution.objects.filter(resolution_number__exact=data["resolution_number"])
             .last()
             .pk
         )
@@ -393,7 +393,7 @@ def create_delivery(request):
             ]
             data["pipelines_in_delivery"] = pipelines
 
-        data.pop("resolutionNumber")
+        data.pop("resolution_number")
         data["delivery_resolutionID"] = resolution_pk
 
         if Delivery.objects.filter(

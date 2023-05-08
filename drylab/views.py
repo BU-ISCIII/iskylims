@@ -654,7 +654,7 @@ def search_service(request):
                 data = []
                 service_id = service_item.get_service_id()
                 data.append(service_item.get_service_request_number())
-                data.append(service_item.get_service_state(display_type=True))
+                data.append(service_item.get_service_state(to_display=True))
                 data.append(service_item.get_service_dates())
                 data.append(service_item.get_service_request_center_name())
                 data.append(
@@ -796,13 +796,6 @@ def add_resolution(request):
             drylab.utils.resolutions.add_pipelines_to_resolution(
                 new_resolution, resolution_data_form["pipeline_ids"]
             )
-        # create a new resolution to be added to the service folder including the path where file is stored
-        """ removed pdf creation file
-        # pdf_file = create_resolution_pdf_file(new_resolution, request.build_absolute_uri())
-        # new_resolution.update_resolution_file(pdf_file)
-        """
-        # pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
-        # resolution_file = create_pdf(request,information, drylab.config.RESOLUTION_TEMPLATE, pdf_name)
 
         # Send email
         email_data = {}
@@ -818,7 +811,7 @@ def add_resolution(request):
         )
         created_resolution = {}
         created_resolution["resolution_number"] = resolution_data_form[
-            "resolutionNumber"
+            "resolution_number"
         ]
         # Display pipeline parameters
 
@@ -1339,7 +1332,7 @@ def stats_by_services_request(request):
             # preparing stats for status of the services
             status_services = {}
             for service in services_found:
-                status = service.get_service_state(display_type=True)
+                status = service.get_service_state(to_display=True)
                 if status in status_services:
                     status_services[status] += 1
                 else:

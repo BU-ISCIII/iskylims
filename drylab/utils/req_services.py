@@ -60,21 +60,6 @@ def add_requested_samples_in_service(request):
     return prepare_form_data_request_service_sequencing(request)
 
 
-def check_service_id_exists(service_id):
-    """
-    Description:
-        The function check if service id exists
-    Input:
-        service_id      # id of the service
-    Return:
-        True if service id exists
-    """
-    if drylab.models.Service.objects.filter(pk=service_id).exists():
-        return True
-    else:
-        return False
-
-
 def create_new_save_sequencing_service_request(request):
     """
     Description:
@@ -104,7 +89,9 @@ def create_new_save_sequencing_service_request(request):
     else:
         request_user = request.user
 
-    if django_utils.models.Profile.objects.filter(profile_user_id=request_user).exists():
+    if django_utils.models.Profile.objects.filter(
+        profile_user_id=request_user
+    ).exists():
         try:
             service_data["service_center"] = (
                 django_utils.models.Profile.objects.filter(profile_user_id=request_user)
@@ -112,21 +99,15 @@ def create_new_save_sequencing_service_request(request):
                 .profile_center.get_center_name()
             )
         except Exception:
-            service_data[
-                "service_center"
-            ] = drylab.config.INTERNAL_SEQUENCING_UNIT
+            service_data["service_center"] = drylab.config.INTERNAL_SEQUENCING_UNIT
 
     service_data["service_notes"] = request.POST["description"]
     service_data["service_user_id"] = request_user
-    service_data[
-        "service_request_int"
-    ] = drylab.utils.common.increment_service_number(
+    service_data["service_request_int"] = drylab.utils.common.increment_service_number(
         request_user
     )
 
-    service_data[
-        "service_request_number"
-    ] = drylab.utils.common.create_service_id(
+    service_data["service_request_number"] = drylab.utils.common.create_service_id(
         service_data["service_request_int"], request_user
     )
 
@@ -165,7 +146,9 @@ def create_new_save_counseling_infrastructure_service_request(request):
     else:
         request_user = request.user
 
-    if django_utils.models.Profile.objects.filter(profile_user_id=request_user).exists():
+    if django_utils.models.Profile.objects.filter(
+        profile_user_id=request_user
+    ).exists():
         try:
             service_data["service_center"] = (
                 django_utils.models.Profile.objects.filter(profile_user_id=request_user)
@@ -173,9 +156,7 @@ def create_new_save_counseling_infrastructure_service_request(request):
                 .profile_center.get_center_name()
             )
         except Exception:
-            service_data[
-                "service_center"
-            ] = drylab.config.INTERNAL_SEQUENCING_UNIT
+            service_data["service_center"] = drylab.config.INTERNAL_SEQUENCING_UNIT
 
     service_data["service_notes"] = request.POST["description"]
     service_data["service_run_specs"] = ""
@@ -183,14 +164,10 @@ def create_new_save_counseling_infrastructure_service_request(request):
     service_data["serviceFileExt"] = ""
     service_data["service_run_specs"] = ""
     service_data["service_user_id"] = request.user
-    service_data[
-        "service_request_int"
-    ] = drylab.utils.common.increment_service_number(
+    service_data["service_request_int"] = drylab.utils.common.increment_service_number(
         request.user.id
     )
-    service_data[
-        "service_request_number"
-    ] = drylab.utils.common.create_service_id(
+    service_data["service_request_number"] = drylab.utils.common.create_service_id(
         service_data["service_request_int"], request.user.id
     )
     # Save the new service
@@ -212,10 +189,8 @@ def delete_requested_samples_in_service(sample_list):
         deleted_sample_names
     """
     deleted_sample_names = []
-    samples_in_services_objs = (
-        drylab.models.RequestedSamplesInServices.objects.filter(
-            pk__in=sample_list
-        )
+    samples_in_services_objs = drylab.models.RequestedSamplesInServices.objects.filter(
+        pk__in=sample_list
     )
     for samples_in_services_obj in samples_in_services_objs:
         deleted_sample_names.append(samples_in_services_obj.get_sample_name())
@@ -294,63 +269,6 @@ def get_available_service_states(add_internal_value=False):
     return state_values
 
 
-def get_data_for_service_confirmation(service_requested):
-    """
-    Description:
-        The function get the data to confirm that service was created
-    Input:
-        service_requested # service instance
-    Functions:
-        get_uploaded_files_for_service   # located at drylab.utils.multi_files
-        get_projects_in_requested_samples # located at this file
-    Return:
-        information
-    """
-    information = {}
-    user = {}
-    service_data = {}
-    service = drylab.models.Service.objects.filter(
-        service_request_number__exact=service_requested
-    ).last()
-    service_number, center = service.get_service_name_and_center()
-    information["service_number"] = service_number
-    information["requested_date"] = service.get_service_creation_time()
-    information["nodes"] = service.service_available_service.all()
-    user["name"] = service.get_service_user_name()
-    user["surname"] = service.get_service_user_surname()
-
-    user_id = service.get_service_user_id()
-    user["area"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_area
-    user["center"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_center
-    user["phone"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_extension
-    user["position"] = django_utils.models.Profile.objects.get(
-        profile_user_id=user_id
-    ).profile_position
-    user["email"] = service.service_user_id.email
-    information["user"] = user
-    service_data["projects"] = get_projects_in_requested_samples(service)
-    service_data["center"] = center
-    service_data["notes"] = service.get_service_user_notes()
-    files = (
-        drylab.utils.multi_files.get_uploaded_files_for_service(
-            service
-        )
-    )
-    if len(files) > 0:
-        service_data["file"] = files
-    else:
-        service_data["file"] = ["Not provided"]
-    information["service_data"] = service_data
-
-    return information
-
-
 def get_pending_services_information():
     """
     Description:
@@ -365,9 +283,9 @@ def get_pending_services_information():
     """
 
     stat_services = list(
-        drylab.models.ServiceState.objects.filter(
-            show_in_stats=True
-        ).values_list("state_display", flat=True)
+        drylab.models.ServiceState.objects.filter(show_in_stats=True).values_list(
+            "state_display", flat=True
+        )
     )
 
     info_for_stat_service = {}
@@ -507,10 +425,8 @@ def get_projects_in_requested_samples(service_obj):
         samples_in_service=service_obj
     ).exists():
         project_list = []
-        req_sample_objs = (
-            drylab.models.RequestedSamplesInServices.objects.filter(
-                samples_in_service=service_obj
-            )
+        req_sample_objs = drylab.models.RequestedSamplesInServices.objects.filter(
+            samples_in_service=service_obj
         )
         for req_sample_obj in req_sample_objs:
             project_list.append(req_sample_obj.get_project_name())
@@ -532,10 +448,8 @@ def get_run_in_requested_samples(service_obj):
         samples_in_service=service_obj
     ).exists():
         run_list = []
-        req_sample_objs = (
-            drylab.models.RequestedSamplesInServices.objects.filter(
-                samples_in_service=service_obj
-            )
+        req_sample_objs = drylab.models.RequestedSamplesInServices.objects.filter(
+            samples_in_service=service_obj
         )
         for req_sample_obj in req_sample_objs:
             run_list.append(req_sample_obj.get_run_name())
@@ -554,42 +468,25 @@ def get_service_obj_from_id(service_id):
     """
     service_obj = None
     if drylab.models.Service.objects.filter(pk__exact=service_id).exists():
-        service_obj = drylab.models.Service.objects.filter(
-            pk__exact=service_id
-        ).last()
+        service_obj = drylab.models.Service.objects.filter(pk__exact=service_id).last()
     return service_obj
 
 
-def get_requested_services_obj_from_available_service(avail_service_obj):
-    """
-    Description:
-        The function get the requested service instances from the avilable
-        service object
-    Input:
-        avail_service_obj  # instance of the  available service
-    Return:
-        request_service_objs
-    """
-    request_service_objs = None
-    if drylab.models.Service.objects.filter(
-        service_available_service=avail_service_obj
-    ).exists():
-        request_service_objs = drylab.models.Service.objects.filter(
-            service_available_service=avail_service_obj
-        )
-    return request_service_objs
-
-
 def get_service_information(service_id, service_manager):
-    """
-    Description:
-        The function get the  service information, which includes the requested services
+    """ The function get the  service information, which includes the requested services
         resolutions, deliveries, samples and the allowed actions on the service
-    Input:
-        service_id  # id of the  service
-        service_manager 	# Boolean variable to know if user is service manager or not
-    Return:
-        display_service_details
+
+    Parameters
+    ----------
+    service_id
+        service identifier. ex. SRVCNM230
+    service_manager
+        wether the logged user is a service manager or not. boolean. True, False
+
+    Returns
+    -------
+    display_services_details.
+        dictionary including service, resolution, delivery and allowed actions.
     """
     service_obj = get_service_obj_from_id(service_id)
     display_service_details = {}
@@ -601,10 +498,8 @@ def get_service_information(service_id, service_manager):
     if drylab.models.RequestedSamplesInServices.objects.filter(
         samples_in_service=service_obj, only_recorded_sample__exact=False
     ).exists():
-        samples_in_service = (
-            drylab.models.RequestedSamplesInServices.objects.filter(
-                samples_in_service=service_obj, only_recorded_sample__exact=False
-            )
+        samples_in_service = drylab.models.RequestedSamplesInServices.objects.filter(
+            samples_in_service=service_obj, only_recorded_sample__exact=False
         )
         display_service_details["samples_sequenced"] = []
         for sample in samples_in_service:
@@ -620,10 +515,8 @@ def get_service_information(service_id, service_manager):
     if drylab.models.RequestedSamplesInServices.objects.filter(
         samples_in_service=service_obj, only_recorded_sample__exact=True
     ).exists():
-        samples_in_service = (
-            drylab.models.RequestedSamplesInServices.objects.filter(
-                samples_in_service=service_obj, only_recorded_sample__exact=True
-            )
+        samples_in_service = drylab.models.RequestedSamplesInServices.objects.filter(
+            samples_in_service=service_obj, only_recorded_sample__exact=True
         )
         display_service_details["only_recorded_samples"] = []
         for sample in samples_in_service:
@@ -632,9 +525,7 @@ def get_service_information(service_id, service_manager):
             )
 
     display_service_details["user_name"] = service_obj.get_service_requested_user()
-    user_input_files = drylab.utils.multi_files.get_uploaded_files_and_file_name_for_service(
-        service_obj
-    )
+    user_input_files = drylab.utils.multi_files.get_uploaded_files(service_obj)
     if user_input_files:
         display_service_details["file"] = []
         for input_file in user_input_files:
@@ -644,7 +535,7 @@ def get_service_information(service_id, service_manager):
                     input_file[1],
                 ]
             )
-    display_service_details["state"] = service_obj.get_service_state(True)
+    display_service_details["state"] = service_obj.get_service_state(to_display=True)
     display_service_details["service_notes"] = service_obj.get_service_user_notes()
     display_service_details["service_dates"] = zip(
         drylab.config.HEADING_SERVICE_DATES,
@@ -671,8 +562,8 @@ def get_service_information(service_id, service_manager):
     if service_manager:
         display_service_details["service_manager"] = True
         if (
-            service_obj.service_state != "rejected"
-            or service_obj.service_state != "archived"
+            service_obj.get_service_state() != "rejected"
+            or service_obj.get_service_state() != "archived"
         ):
             if drylab.models.Resolution.objects.filter(
                 resolution_service_id=service_obj
@@ -783,9 +674,7 @@ def get_service_information(service_id, service_manager):
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
     ).exists():
-        resolution_heading = (
-            drylab.config.HEADING_FOR_RESOLUTION_INFORMATION
-        )
+        resolution_heading = drylab.config.HEADING_FOR_RESOLUTION_INFORMATION
         resolution_objs = drylab.models.Resolution.objects.filter(
             resolution_service_id=service_obj
         ).order_by("resolution_state")
@@ -848,15 +737,14 @@ def get_service_information(service_id, service_manager):
         in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
         if in_progress_date is not None:
             time_in_queue = (in_progress_date - created_date).days
-            dates.append(['Time in Queue', time_in_queue])
+            dates.append(["Time in Queue", time_in_queue])
             if delivery_date is not None:
                 execution_time = (delivery_date - in_progress_date).days
                 dates.append(["Execution time", execution_time])
     display_service_details["calculation_dates"] = dates
     # Allow that service could set on hold if state is other than delivery
-    if service_obj.get_service_state(display_type=False).lower() != "delivered":
+    if service_obj.get_service_state(to_display=False).lower() != "delivered":
         display_service_details["allowed_waiting_info"] = "allowed"
-    import pdb; pdb.set_trace()
     return display_service_details
 
 
@@ -893,11 +781,7 @@ def prepare_form_data_request_service_sequencing(request):
 
     if wetlab_api_available:
         # get samples which have sequencing data in iSkyLIMS
-        user_sharing_list = (
-            drylab.utils.common.get_user_sharing_list(
-                request.user
-            )
-        )
+        user_sharing_list = drylab.utils.common.get_user_sharing_list(request.user)
 
         service_data_information[
             "samples_data"
@@ -933,13 +817,9 @@ def prepare_form_data_request_counseling_service():
         service_data_information
     """
     service_data_information = {}
-    service_data_information[
-        "nodes"
-    ] = drylab.models.AvailableService.objects.filter(
+    service_data_information["nodes"] = drylab.models.AvailableService.objects.filter(
         avail_service_description__exact="Bioinformatics consulting and training"
-    ).get_descendants(
-        include_self=True
-    )
+    ).get_descendants(include_self=True)
     return service_data_information
 
 
@@ -953,13 +833,9 @@ def prepare_form_data_request_infrastructure_service():
         service_data_information
     """
     service_data_information = {}
-    service_data_information[
-        "nodes"
-    ] = drylab.models.AvailableService.objects.filter(
+    service_data_information["nodes"] = drylab.models.AvailableService.objects.filter(
         avail_service_description__exact="User support"
-    ).get_descendants(
-        include_self=True
-    )
+    ).get_descendants(include_self=True)
     return service_data_information
 
 
@@ -1033,8 +909,6 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
     Input:
         form_data      # form with the internal and external samples
         new_service     # service obj
-    Functions:
-        get_user_projects	# API from wetlab located at file wetlab_api
     Return:
         display_service
     """
@@ -1077,9 +951,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
             data["sample_id"] = row[5]
             data["samples_in_service"] = new_service
             data["only_recorded"] = True
-            drylab.models.RequestedSamplesInServices.objects.create_request_sample(
-                data
-            )
+            drylab.models.RequestedSamplesInServices.objects.create_request_sample(data)
             requested_sample_list.append(data["sample_name"])
 
     return requested_sample_list

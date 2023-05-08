@@ -30,23 +30,6 @@ def analyze_input_pipelines(request):
     return pipeline_data
 
 
-def check_if_pipelines_exists_for_service(service_id):
-    """
-    Description:
-        The function check if the service had already a pipeline
-    Return:
-        True or False
-    """
-    if (
-        drylab.models.Pipelines.objects.filter(
-            availableService__pk__exact=service_id
-        ).count()
-        > 1
-    ):
-        return True
-    return False
-
-
 def get_all_defined_pipelines(only_in_used):
     """
     Description:
@@ -96,7 +79,6 @@ def get_data_form_pipeline():
         additional_data
     """
     additional_data = {}
-    # additional_data ['available_services']= get_children_available_services ()
     additional_data[
         "heading"
     ] = drylab.config.HEADING_PARAMETER_PIPELINE
@@ -229,18 +211,6 @@ def get_pipeline_obj_from_id(pipeline_id):
         pipeline_obj
     """
     return drylab.models.Pipelines.objects.get(pk__exact=pipeline_id)
-
-
-def get_avail_service_name_from_id(service_id):
-    """
-    Description:
-        The function get the service name from service id
-    Return:
-        service_name
-    """
-    return drylab.models.AvailableService.objects.get(
-        pk__exact=service_id
-    ).get_service_description()
 
 
 def pipeline_version_exists(pipeline_name, pipeline_version):

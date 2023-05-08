@@ -250,30 +250,6 @@ def get_sample_in_project_obj_from_sample_name(sample_name_in_project):
     return sample_in_project_obj
 
 
-def get_run_sample_id(sample_name):
-    """
-    Description:
-        The function gets the sample name and if found it returns the SamplesInProject objects.
-        Return the if of sampleInProject
-    Input:
-        sample_name     # sample name to look at
-    Return:
-        run_sample_obj.
-    """
-    run_sample_obj = ""
-    if SamplesInProject.objects.filter(sampleName__exact=sample_name).exists():
-        sample_run_objs = SamplesInProject.objects.filter(
-            sample_name__exact=sample_name
-        )
-        if len(sample_run_objs) > 1:
-            pass
-        else:
-            run_sample_obj = SamplesInProject.objects.get(
-                sample_name__exact=sample_name
-            )
-    return run_sample_obj
-
-
 def search_run_samples(sample_name, user_name, start_date, end_date):
     """
     Description:

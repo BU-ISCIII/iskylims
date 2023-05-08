@@ -49,13 +49,6 @@ def check_if_protocol_exists(protocol, app_name):
             return False
 
 
-def check_if_protocol_parameters_exists(protocol):
-    if ProtocolParameters.objects.filter(protocol_id__name__exact=protocol).exists():
-        return True
-    else:
-        return False
-
-
 def define_table_for_prot_parameters(protocol_id):
     """
     Description:
@@ -194,18 +187,6 @@ def get_defined_protocols(app_name, exclude_non_molecule):
     return defined_protocols
 
 
-def get_protocol_from_prot_types(prot_types):
-    protocols = {}
-
-    for prot_type in prot_types:
-        prot_names = []
-        prots = Protocols.objects.filter(type__protocol_type__exact=prot_type)
-        for prot in prots:
-            prot_names.append(prot.get_name())
-        protocols[prot_type] = prot_names
-    return protocols
-
-
 def display_protocol_types(app_name):
     """
     Description:
@@ -342,20 +323,6 @@ def get_protocol_parameter_obj_from_id(protocol_parameter_id):
     if ProtocolParameters.objects.filter(pk__exact=protocol_parameter_id).exists():
         return ProtocolParameters.objects.get(pk__exact=protocol_parameter_id)
     return None
-
-
-def get_project_name_by_id(protocol_id):
-    """
-    Description:
-        The function return a protocol_name for a ginven protocol id.
-    Return:
-        protocol_name.
-    """
-    if Protocols.objects.filter(pk__exact=protocol_id).exists():
-        protocol_name = Protocols.objects.get(pk__exact=protocol_id).get_name()
-        return protocol_name
-    else:
-        "None"
 
 
 def modify_fields_in_protocol(form_data):
