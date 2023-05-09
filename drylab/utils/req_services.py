@@ -12,7 +12,9 @@ import core.utils
 import django_utils.models
 import drylab.config
 import drylab.models
-import drylab.utils
+import drylab.utils.multi_files
+import drylab.utils.common
+import drylab.utils.graphics
 
 # API from Wetlab #
 try:
