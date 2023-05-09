@@ -24,7 +24,7 @@ import drylab.utils.pipelines
 import drylab.utils.req_services
 import drylab.utils.resolutions
 import drylab.utils.test_conf
-from core.fusioncharts.fusioncharts import FusionCharts
+import core.fusioncharts.fusioncharts
 
 
 @login_required
@@ -1174,7 +1174,7 @@ def stats_by_user(request):
             "fint",
             number_of_services,
         )
-        graphic_by_user_date_services = FusionCharts(
+        graphic_by_user_date_services = core.fusioncharts.fusioncharts.FusionCharts(
             "pie3d", "ex1", "600", "350", "chart-1", "json", data_source
         )
         stats_info[
@@ -1201,7 +1201,7 @@ def stats_by_user(request):
             "fint",
             service_dict,
         )
-        graphic_requested_services = FusionCharts(
+        graphic_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
             "column3d", "ex2", "550", "350", "chart-2", "json", data_source
         )
         stats_info["graphic_requested_services"] = graphic_requested_services.render()
@@ -1227,7 +1227,7 @@ def stats_by_user(request):
             "fint",
             service_time_tupla,
         )
-        graphic_date_requested_services = FusionCharts(
+        graphic_date_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
             "column3d", "ex3", "550", "350", "chart-3", "json", data_source
         )
         stats_info[
@@ -1323,7 +1323,7 @@ def stats_by_services_request(request):
                 "fint",
                 user_services,
             )
-            graphic_requested_services = FusionCharts(
+            graphic_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex1", "525", "350", "chart-1", "json", data_source
             )
             services_stats_info[
@@ -1346,7 +1346,7 @@ def stats_by_services_request(request):
                 "fint",
                 status_services,
             )
-            graphic_status_requested_services = FusionCharts(
+            graphic_status_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "pie3d", "ex2", "525", "350", "chart-2", "json", data_source
             )
             services_stats_info[
@@ -1379,7 +1379,7 @@ def stats_by_services_request(request):
                 "fint",
                 user_area_dict,
             )
-            graphic_area_services = FusionCharts(
+            graphic_area_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex3", "600", "350", "chart-3", "json", data_source
             )
             services_stats_info[
@@ -1411,7 +1411,7 @@ def stats_by_services_request(request):
                 "fint",
                 user_center_dict,
             )
-            graphic_center_services = FusionCharts(
+            graphic_center_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex4", "600", "350", "chart-4", "json", data_source
             )
             services_stats_info[
@@ -1468,7 +1468,7 @@ def stats_by_services_request(request):
                 time_values,
                 user_services_period,
             )
-            graphic_center_services_per_time = FusionCharts(
+            graphic_center_services_per_time = core.fusioncharts.fusioncharts.FusionCharts(
                 "mscolumn3d", "ex5", "525", "350", "chart-5", "json", data_source
             )
             services_stats_info[
@@ -1516,7 +1516,7 @@ def stats_by_services_request(request):
                 time_values,
                 user_area_services_period,
             )
-            graphic_area_services_per_time = FusionCharts(
+            graphic_area_services_per_time = core.fusioncharts.fusioncharts.FusionCharts(
                 "mscolumn3d", "ex6", "525", "350", "chart-6", "json", data_source
             )
             services_stats_info[
@@ -1541,7 +1541,7 @@ def stats_by_services_request(request):
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services:", "level 2 ", "", "", "fint", service_dict
             )
-            graphic_req_l2_services = FusionCharts(
+            graphic_req_l2_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex7", "800", "375", "chart-7", "json", data_source
             )
             services_stats_info[
@@ -1564,7 +1564,7 @@ def stats_by_services_request(request):
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services:", "level 3 ", "", "", "fint", service_dict
             )
-            graphic_req_l3_services = FusionCharts(
+            graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex8", "800", "375", "chart-8", "json", data_source
             )
             services_stats_info[
