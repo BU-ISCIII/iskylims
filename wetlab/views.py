@@ -27,10 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import wetlab.config
 import wetlab.fusioncharts.fusioncharts
-
-from core.fusioncharts.fusioncharts import FusionCharts
-from .models import *
-from .utils.additional_kits import *
 from .utils.collection_index import *
 # updated --
 import wetlab.utils.common
@@ -47,6 +43,10 @@ from .utils.sequencers import *
 from .utils.statistics import *
 from .utils.stats_graphs import *
 from .utils.test_conf import *
+import wetlab.models
+
+import wetlab.utils.additional_kits
+
 
 
 def index(request):
@@ -3848,7 +3848,7 @@ def create_protocol(request):
             )
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols(__package__)
-    additional_kits = get_additional_kits_list(__package__)
+    additional_kits = wetlab.utils.additional_kits.get_additional_kits_list(__package__)
     defined_protocol_types = display_protocol_types(__package__)
 
     if request.method == "POST" and request.POST["action"] == "addNewProtocol":
@@ -3959,9 +3959,9 @@ def define_additional_kits(request, protocol_id):
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    additional_kits = define_table_for_additional_kits(protocol_id)
+    additional_kits = wetlab.utils.additional_kits.define_table_for_additional_kits(protocol_id)
     if request.method == "POST" and request.POST["action"] == "defineAdditionalKits":
-        recorded_additional_kits = set_additional_kits(request.POST, request.user)
+        recorded_additional_kits = wetlab.utils.additional_kits.set_additional_kits(request.POST, request.user)
         if len(recorded_additional_kits) == 0:
             return render(
                 request,
@@ -4035,7 +4035,7 @@ def display_protocol(request, protocol_id):
             },
         )
     protocol_data = get_all_protocol_info(protocol_id)
-    kit_data = get_all_additional_kit_info(protocol_id)
+    kit_data = wetlab.utils.additional_kits.get_all_additional_kit_info(protocol_id)
 
     return render(
         request,
@@ -4484,7 +4484,7 @@ def modify_additional_kits(request, protocol_id):
         return redirect("/accounts/login")
 
     if request.method == "POST" and request.POST["action"] == "modifyAdditionalKits":
-        additional_kits_data_saved = modify_fields_in_additional_kits(
+        additional_kits_data_saved = wetlab.utils.additional_kits.modify_fields_in_additional_kits(
             request.POST, request.user
         )
         return render(
@@ -4504,7 +4504,7 @@ def modify_additional_kits(request, protocol_id):
                     ]
                 },
             )
-        additional_kits_data = get_additional_kits_data_to_modify(protocol_id)
+        additional_kits_data = wetlab.utils.additional_kits.get_additional_kits_data_to_modify(protocol_id)
         return render(
             request,
             "wetlab/modifyAdditionalKits.html",
@@ -4658,7 +4658,7 @@ def display_sample(request, sample_id):
     if "Error" not in sample_information:
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
-        sample_information.update(get_additional_kits_used_in_sample(sample_id))
+        sample_information.update(wetlab.utils.additional_kits.get_additional_kits_used_in_sample(sample_id))
         sample_information.update(get_run_user_lot_kit_used_in_sample(sample_id))
     else:
         sample_information = {}
@@ -4910,7 +4910,7 @@ def handling_library_preparations(request):
 
     if request.method == "POST" and request.POST["action"] == "assignAdditionalKits":
         lib_prep_ids = request.POST.getlist("libpreparation")
-        additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
+        additional_kits = wetlab.utils.additional_kits.get_additional_kits_from_lib_prep(lib_prep_ids)
         return render(
             request,
             "wetlab/handlingLibraryPreparations.html",
@@ -4918,11 +4918,11 @@ def handling_library_preparations(request):
         )
 
     if request.method == "POST" and request.POST["action"] == "storeAdditionalKits":
-        stored_additional_kits = analyze_and_store_input_additional_kits(request.POST)
+        stored_additional_kits = wetlab.utils.additional_kits.analyze_and_store_input_additional_kits(request.POST)
         if "ERROR" in stored_additional_kits:
             error_message = stored_additional_kits["ERROR"]
             lib_prep_ids = request.POST["lib_prep_ids"].split(",")
-            additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
+            additional_kits = wetlab.utils.additional_kits.get_additional_kits_from_lib_prep(lib_prep_ids)
             additional_kits["data"] = json.loads(request.POST["protocol_data"])
             return render(
                 request,
