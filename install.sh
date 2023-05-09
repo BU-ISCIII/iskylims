@@ -36,7 +36,8 @@ EOF
 }
 
 db_check(){
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null ###user should have mysql permission on remote server.
+    # user should have mysql permission on remote server.
+    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null
 
     if ! [ $? -eq 0 ]; then
         echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
@@ -156,7 +157,7 @@ do
       set --      # this resets the "$@" array so we can rebuild it
     fi
     case "$arg" in
-    ##OPTIONAL
+    # OPTIONAL
         --install)  set -- "$@" -i ;;
         --upgrade)  set -- "$@" -u ;;
         --script)   set -- "$@" -s ;;
@@ -165,15 +166,15 @@ do
         --conf)     set -- "$@" -c ;;
         --ren_app)  set -- "$@" -r ;;
 
-    ## ADITIONAL
+    # ADITIONAL
         --help)     set -- "$@" -h ;;
         --version)  set -- "$@" -v ;;
-    ## PASSING VALUE IN PARAMETER
+    # PASSING VALUE IN PARAMETER
         *)          set -- "$@" "$arg" ;;
     esac
 done
 
-#SETTING DEFAULT VALUES
+# SETTING DEFAULT VALUES
 ren_app=false
 tables=false
 git_branch="main"
@@ -183,7 +184,7 @@ install_type="full"
 upgrade=false
 upgrade_type="full"
 
-#PARSE VARIABLE ARGUMENTS WITH getops
+# PARSE VARIABLE ARGUMENTS WITH getops
 options=":c:s:i:u:drtvh"
 while getopts $options opt; do
     case $opt in
@@ -277,7 +278,7 @@ else
 fi
 
 #================================================================
-#CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
+# CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
 #================================================================
 
 echo "Checking main requirements"
@@ -321,7 +322,7 @@ if [ $upgrade == true ]; then
     printf "${YELLOW}------------------${NC}\n\n"
     
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "dep" ]; then
-        # upgrade database if needed
+        # upgrade pip dependencies if needed
         rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
         cd $INSTALL_PATH
         echo "activate the virtualenv"
@@ -333,7 +334,7 @@ if [ $upgrade == true ]; then
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
 
-        ### Delete git and no copy files stuff
+        # Delete git and no copy files stuff
         if [ $ren_app == true ] ; then
             echo "Changing app dir names in $INSTALL_PATH..."
             rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
@@ -366,8 +367,8 @@ if [ $upgrade == true ]; then
             # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
             echo "Modifying names in migration files..."
             sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
-            #sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
-            #sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
+            # sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
+            # sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
             sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
             sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
             sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
@@ -380,7 +381,7 @@ if [ $upgrade == true ]; then
             echo "Modifying database names and constraints..."
             mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
                 -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
-            #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
+            # mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
             #    -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
             mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
                 -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
@@ -389,7 +390,7 @@ if [ $upgrade == true ]; then
             
             mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
                 -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
-            #mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+            # mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
             #    -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
             mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
                 -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
@@ -402,15 +403,20 @@ if [ $upgrade == true ]; then
             mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
                 | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
 
-            query_rename_indexes="SELECT CONCAT('ALTER TABLE ', kcu.TABLE_SCHEMA, '.', kcu.TABLE_NAME, ' RENAME INDEX ', kcu.CONSTRAINT_NAME, \
-                                 ' TO ', REPLACE(kcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
-                                 AS query FROM information_schema.key_column_usage kcu JOIN information_schema.table_constraints tc \
-                                 ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME WHERE kcu.TABLE_SCHEMA = \"$DB_NAME\" AND kcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%';"
-            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_indexes"  \
+            query_rename_unique_indexes="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
+                                 ' RENAME INDEX ', rcu.CONSTRAINT_NAME, \
+                                 ' TO ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
+                                 AS query FROM information_schema.key_column_usage rcu \
+                                 JOIN information_schema.table_constraints tc \
+                                 ON tc.CONSTRAINT_NAME = rcu.CONSTRAINT_NAME WHERE rcu.TABLE_SCHEMA = \"$DB_NAME\" \
+                                 AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' AND tc.CONSTRAINT_TYPE = 'UNIQUE' \
+                                 GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, \
+                                 rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME;"
+            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_unique_indexes"  \
                 | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
             
             query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                    ' DROP FOREIGN KEY' , rcu.CONSTRAINT_NAME, ';', \
+                    ' DROP FOREIGN KEY ' , rcu.CONSTRAINT_NAME, ';', \
                     ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
                     ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
                     tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
@@ -470,7 +476,7 @@ if [ $upgrade == true ]; then
 
         cd -
 
-        #Linux distribution
+        # Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)
 
         echo ""
@@ -598,7 +604,6 @@ if [ $install == true ]; then
         python3 -m pip install wheel
         python3 -m pip install -r conf/requirements.txt
 
-
         ## Create apache group if it does not exist.
         if ! grep -q apache /etc/group
         then
@@ -630,7 +635,6 @@ if [ $install == true ]; then
             echo "Exiting without installing required software for iSkyLIMS installation"
             exit 1
         fi
-        ## Fix permissions and owners
 
         if [ $LOG_TYPE == "symbolic_link" ]; then
             if [ -d $LOG_PATH ]; then
@@ -645,7 +649,6 @@ if [ $install == true ]; then
             chown $user:apache $INSTALL_PATH/logs
             chmod 775 $INSTALL_PATH/logs
         fi
-
 
         echo "Starting iSkyLIMS installation"
         if [ -d $INSTALL_PATH ]; then
@@ -684,8 +687,6 @@ if [ $install == true ]; then
         mkdir -p $INSTALL_PATH/documents/drylab
         chown $user:apache $INSTALL_PATH/documents/drylab
         chmod 775 $INSTALL_PATH/documents/drylab
-
-
 
         # Starting iSkyLIMS
         echo "activate the virtualenv"
