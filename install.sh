@@ -402,15 +402,15 @@ if [ $upgrade == true ]; then
             mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
                 | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
 
-            # query_rename_indexes="SELECT CONCAT('ALTER TABLE ', kcu.TABLE_SCHEMA, '.', kcu.TABLE_NAME, ' RENAME INDEX ', kcu.CONSTRAINT_NAME, \
-            #                       ' TO ', REPLACE(kcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
-            #                       AS query FROM information_schema.key_column_usage kcu JOIN information_schema.table_constraints tc \
-            #                       ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME WHERE kcu.TABLE_SCHEMA = \"$DB_NAME\" AND kcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%';"
-            # mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_indexes"  \
-            #    | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+            query_rename_indexes="SELECT CONCAT('ALTER TABLE ', kcu.TABLE_SCHEMA, '.', kcu.TABLE_NAME, ' RENAME INDEX ', kcu.CONSTRAINT_NAME, \
+                                 ' TO ', REPLACE(kcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
+                                 AS query FROM information_schema.key_column_usage kcu JOIN information_schema.table_constraints tc \
+                                 ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME WHERE kcu.TABLE_SCHEMA = \"$DB_NAME\" AND kcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%';"
+            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_indexes"  \
+                | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
             
             query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                    ' DROP FOREIGN KEY ', rcu.CONSTRAINT_NAME, ';', \
+                    ' DROP ', tc.CONSTRAINT_TYPE, ' ', rcu.CONSTRAINT_NAME, ';', \
                     ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
                     ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
                     tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
@@ -419,8 +419,8 @@ if [ $upgrade == true ]; then
                             GROUP_CONCAT(rcu.REFERENCED_COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ') ON DELETE ', rc.DELETE_RULE), \
                     ''), ';') AS query \
                     FROM information_schema.key_column_usage rcu \
-                    JOIN information_schema.table_constraints tc ON rcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME \
-                    JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
+                    LEFT JOIN information_schema.table_constraints tc ON rcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME \
+                    LEFT JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
                     WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
                     GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
             mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
