@@ -25,7 +25,7 @@ import core.utils.load_batch
 import core.utils.platforms
 import core.utils.protocols
 import core.utils.samples
-from wetlab import config
+import wetlab.config
 
 from core.fusioncharts.fusioncharts import FusionCharts
 from .models import *
@@ -115,7 +115,7 @@ def configuration_samba(request):
                 {"succesful_settings": True},
             )
         except Exception:
-            error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
+            error_message = wetlab.config.ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(
                 request,
                 "wetlab/configuration_samba.html",
@@ -238,7 +238,7 @@ def initial_settings(request):
         return render(
             request,
             "wetlab/error_page.html",
-            {"content": ERROR_USER_NOT_WETLAB_MANAGER},
+            {"content": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
         )
     initial_data = get_inital_sample_settings_values(__package__)
     form_data = {}
@@ -286,7 +286,7 @@ def create_nextseq_run(request):
         return render(
             request,
             "wetlab/error_page.html",
-            {"content": ERROR_USER_NOT_WETLAB_MANAGER},
+            {"content": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
         )
 
     # FIRST STEP in collecting data from the NextSeq run. Sample Sheet and experiment name are required
@@ -335,7 +335,7 @@ def create_nextseq_run(request):
         # do not need to include the absolute path because django uses
         # the MEDIA_ROOT variable defined on settings to upload the file
         file_name = str(
-            config.RUN_SAMPLE_SHEET_DIRECTORY
+            wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY
             + split_filename.group(1)
             + "_"
             + timestr
@@ -485,7 +485,7 @@ def create_nextseq_run(request):
                 user_id = User.objects.get(username__exact=val)
             else:
                 user_id = None
-    
+
             if not Projects.objects.filter(project_name__iexact=key).exists():
                 data = {}
                 data["user_id"] = user_id
@@ -852,15 +852,16 @@ def search_run(request):
 
     """
     # check user privileges
-    groups = Group.objects.filter(name=config.WETLAB_MANAGER).last()
+    groups = Group.objects.filter(name=wetlab.config.WETLAB_MANAGER).last()
     if groups not in request.user.groups.all():
         allowed_all_runs = False
     else:
         allowed_all_runs = True
 
     # Search for runs that fullfil the input values
-    run_form_data = wetlab.utils.common.get_run_search_fields_form()
-    error_message = ERROR_NO_MATCHES_FOR_RUN_SEARCH
+    ########
+    run_form_data = get_run_search_fields_form()
+    error_message = wetlab.config.ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == "POST" and (request.POST["action"] == "runsearch"):
         run_name = request.POST["runname"]
         start_date = request.POST["startdate"]
@@ -879,16 +880,16 @@ def search_run(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not wetlab.utils.common.check_valid_date_format(start_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(start_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if end_date != "":
-            if not wetlab.utils.common.check_valid_date_format(end_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(end_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/search_run.html",
@@ -1040,8 +1041,8 @@ def search_project(request):
             ---run_list         # in case several run matches the user conditions.
 
     """
-    project_form_data = wetlab.utils.common.get_project_search_fields_form()
-    error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
+    project_form_data = get_project_search_fields_form()
+    error_message = wetlab.config.ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
     if request.method == "POST" and (request.POST["action"] == "searchproject"):
         project_name = request.POST["projectname"]
         start_date = request.POST["startdate"]
@@ -1065,7 +1066,7 @@ def search_project(request):
             )
 
         if user_name != "" and len(user_name) < 5:
-            error_message = ERROR_USER_NAME_TOO_SHORT
+            error_message = wetlab.config.ERROR_USER_NAME_TOO_SHORT
             return render(
                 request,
                 "wetlab/search_project.html",
@@ -1077,8 +1078,8 @@ def search_project(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not wetlab.utils.common.check_valid_date_format(start_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(start_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/search_project.html",
@@ -1089,8 +1090,8 @@ def search_project(request):
                 )
 
         if end_date != "":
-            if not wetlab.utils.common.check_valid_date_format(start_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(start_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/search_project.html",
@@ -1130,7 +1131,7 @@ def search_project(request):
         if start_date == "" and end_date != "":
             projects_found = projects_found.filter(generated_at__lte=end_date)
         if len(projects_found) == 0:
-            error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
+            error_message = wetlab.config.ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
             return render(
                 request,
                 "wetlab/search_project.html",
@@ -1203,7 +1204,7 @@ def retry_error_run(request):
             previous_error_state = run_name_found.get_state_before_error()
             run_name_found.set_run_state(previous_error_state)
             detail_description = {}
-            detail_description["information"] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            detail_description["information"] = wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
             return render(
                 request,
                 "wetlab/successful_page.html",
@@ -1258,7 +1259,7 @@ def skip_cancel_situation(request):
             run_name_found.set_run_state("Sample Sent")
             run_name_found.set_forced_continue_on_error()
             detail_description = {}
-            detail_description["information"] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            detail_description["information"] = wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
             return render(
                 request,
                 "wetlab/successful_page.html",
@@ -1281,7 +1282,7 @@ def display_run(request, run_id):
     if not request.user.is_authenticated:
         # redirect to login webpage
         return redirect("/accounts/login")
-    groups = Group.objects.get(name=config.WETLAB_MANAGER)
+    groups = Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
     if groups not in request.user.groups.all():
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
@@ -1415,7 +1416,7 @@ def incompleted_runs(request):
 
 
 def check_user_access(request, project_found_id):
-    groups = Group.objects.get(name=config.WETLAB_MANAGER)
+    groups = Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
     # check if user belongs to WetlabManager . If true allow to see the page
     if groups not in request.user.groups.all():
         # check if project belongs to the same user as the one requesting the page
@@ -1433,7 +1434,7 @@ def display_project(request, project_id):
         project_obj = Projects.objects.filter(pk=project_id).last()
 
         # check that user is allow to see the project
-        groups = Group.objects.get(name=config.WETLAB_MANAGER)
+        groups = Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
         if groups not in request.user.groups.all():
             p_shared_list = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
             if int(project_obj.get_user_center_name()) not in p_shared_list:
@@ -1477,7 +1478,7 @@ def display_collection_index(request, collection_index_id):
                 request,
                 "wetlab/display_collection_index.html",
                 {
-                    "error_message": 
+                    "error_message":
                         "There are recorded information for the collection index for your request"
                 },
             )
@@ -1515,7 +1516,7 @@ def search_collection_index_library(request):
                 return render(
                     request,
                     "wetlab/search_collection_index_library.html",
-                    {"error_message": ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE},
+                    {"error_message": wetlab.config.ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE},
                 )
             else:
                 valid_seq_characters = ["a", "A", "c", "C", "g", "G", "t", "T"]
@@ -1524,7 +1525,7 @@ def search_collection_index_library(request):
                         return render(
                             request,
                             "wetlab/search_collection_index_library.html",
-                            {"error_message": ERROR_INVALID_SEQUENCE_CHARACTERS},
+                            {"error_message": wetlab.config.ERROR_INVALID_SEQUENCE_CHARACTERS},
                         )
 
         collection_indexes = CollectionIndexKit.objects.all()
@@ -1890,8 +1891,8 @@ def stats_per_sequencer(request):
         end_date = request.POST["enddate"]
 
         if start_date != "":
-            if not wetlab.utils.common.check_valid_date_format(start_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(start_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/StatsPerSequencer.html",
@@ -1901,8 +1902,8 @@ def stats_per_sequencer(request):
                     },
                 )
         if end_date != "":
-            if not wetlab.utils.common.check_valid_date_format(end_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(end_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/StatsPerSequencer.html",
@@ -1915,7 +1916,7 @@ def stats_per_sequencer(request):
             sequencer, start_date, end_date
         )
         if len(runs_using_sequencer) == 0:
-            error_message = ERROR_NO_MATCHES_FOR_SEQUENCER_STATS
+            error_message = wetlab.config.ERROR_NO_MATCHES_FOR_SEQUENCER_STATS
             return render(
                 request,
                 "wetlab/StatsPerSequencer.html",
@@ -1971,13 +1972,13 @@ def stats_per_time(request):
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
         # check the right format of start and end date
-        if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
-            error_message = config.ERROR_INVALID_FORMAT_FOR_DATES
+        if start_date != "" and not check_valid_date_format(start_date):
+            error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
-        if end_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
-            error_message = config.ERROR_INVALID_FORMAT_FOR_DATES
+        if end_date != "" and not check_valid_date_format(start_date):
+            error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
@@ -2341,7 +2342,7 @@ def stats_per_library(request):
             return render(request, "wetlab/StatsPerLibrary.html")
 
         if library_kit_name != "" and len(library_kit_name) < 5:
-            error_message = ERROR_TOO_SHORT_INDEX_LIBRAY_NAME
+            error_message = wetlab.config.ERROR_TOO_SHORT_INDEX_LIBRAY_NAME
             return render(
                 request,
                 "wetlab/StatsPerLibrary.html",
@@ -2350,16 +2351,16 @@ def stats_per_library(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not wetlab.utils.common.check_valid_date_format(start_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(start_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/StatsPerLibrary.html",
                     {"error_message": error_message},
                 )
         if end_date != "":
-            if not wetlab.utils.common.check_valid_date_format(end_date):
-                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            if not check_valid_date_format(end_date):
+                error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
                     "wetlab/StatsPerLibrary.html",
@@ -2376,7 +2377,7 @@ def stats_per_library(request):
                     run_process__state__run_state_name__exact="Completed",
                 )
             else:
-                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                error_message = wetlab.config.ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
                     "wetlab/StatsPerLibrary.html",
@@ -2394,7 +2395,7 @@ def stats_per_library(request):
                     project_run_date__range=(start_date, end_date)
                 )
             else:
-                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                error_message = wetlab.config.ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
                     "wetlab/StatsPerLibrary.html",
@@ -2405,7 +2406,7 @@ def stats_per_library(request):
                 library_found = library_found.filter(project_run_date__gte=start_date)
                 #
             else:
-                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                error_message = wetlab.config.ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
                     "wetlab/StatsPerLibrary.html",
@@ -2416,7 +2417,7 @@ def stats_per_library(request):
                 #
                 library_found = library_found.filter(project_run_date__lte=end_date)
             else:
-                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                error_message = wetlab.config.ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(
                     request,
                     "wetlab/StatsPerLibrary.html",
@@ -3814,7 +3815,7 @@ def get_size_dir(
     conn,
 ):
     count_file_size = 0
-    file_list = conn.listPath(config.SAMBA_SHARED_FOLDER_NAME, directory)
+    file_list = conn.listPath(wetlab.config.SAMBA_SHARED_FOLDER_NAME, directory)
     for sh_file in file_list:
         if sh_file.isDirectory:
             if sh_file.filename == "." or sh_file.filename == "..":
@@ -3911,7 +3912,7 @@ def define_sample_projects(request):
         # description = request.POST['description']
 
         if core.utils.samples.check_if_sample_project_exists(sample_project_name, __package__):
-            error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
+            error_message = wetlab.config.ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
                 "wetlab/createSampleProjects.html",
@@ -4439,7 +4440,7 @@ def define_sample_projects_fields(request, sample_project_id):
         return render(
             request,
             "wetlab/defineSampleProjectFields.html",
-            {"error_message": ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS},
+            {"error_message": wetlab.config.ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS},
         )
     else:
         if not core.utils.samples.check_if_sample_project_id_exists(sample_project_id):
@@ -4811,9 +4812,9 @@ def handling_library_preparations(request):
         file_read = read_user_iem_file(data["full_path_file"])
         if not valid_user_iem_file(file_read):
             # Error found when extracting data from sample sheet
-            data["ERROR"] = config.ERROR_INVALID_FILE_FORMAT
+            data["ERROR"] = wetlab.config.ERROR_INVALID_FILE_FORMAT
             if not delete_stored_file(data["full_path_file"]):
-                data["ERROR"].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
+                data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
                 "wetlab/handlingLibraryPreparations.html",
@@ -4826,7 +4827,7 @@ def handling_library_preparations(request):
             user_id_in_s_sheet = extract_userids_from_sample_sheet_data(file_read)
             if "ERROR" in user_id_in_s_sheet:
                 if not delete_stored_file(data["full_path_file"]):
-                    user_id_in_s_sheet["ERROR"].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
+                    user_id_in_s_sheet["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
                 return render(
                     request,
                     "wetlab/handlingLibraryPreparations.html",
@@ -4842,7 +4843,7 @@ def handling_library_preparations(request):
         valid_data = validate_sample_sheet_data(sample_sheet_data)
         if "ERROR" in valid_data:
             if not delete_stored_file(data["full_path_file"]):
-                valid_data["ERROR"].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
+                valid_data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
                 "wetlab/handlingLibraryPreparations.html",
@@ -5112,16 +5113,16 @@ def repeat_library_preparation(request):
         )
         detail_description = {}
         if result == "Invalid options":
-            detail_description["heading"] = ERROR_UNABLE_SAVE_REQUEST
+            detail_description["heading"] = wetlab.config.ERROR_UNABLE_SAVE_REQUEST
             detail_description["information"] = [
-                ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP
+                wetlab.config.ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP
             ]
             return render(
                 request,
                 "wetlab/error_page.html",
                 {"detail_description": detail_description},
             )
-        detail_description["information"] = SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
+        detail_description["information"] = wetlab.config.SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
         return render(
             request,
             "wetlab/successful_page.html",
@@ -5175,16 +5176,16 @@ def repeat_pool(request):
         )
         detail_description = {}
         if result == "Invalid options":
-            detail_description["heading"] = ERROR_UNABLE_SAVE_REQUEST
+            detail_description["heading"] = wetlab.config.ERROR_UNABLE_SAVE_REQUEST
             detail_description["information"] = [
-                ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP
+                wetlab.config.ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP
             ]
             return render(
                 request,
                 "wetlab/error_page.html",
                 {"detail_description": detail_description},
             )
-        detail_description["information"] = SUCCESSFUL_REUSE_LIB_PREP
+        detail_description["information"] = wetlab.config.SUCCESSFUL_REUSE_LIB_PREP
         return render(
             request,
             "wetlab/successful_page.html",
@@ -5281,7 +5282,7 @@ def search_sample(request):
                 request,
                 "wetlab/search_sample.html",
                 {
-                    "no_samples": ERROR_NO_SAMPLE_FOUND,
+                    "no_samples": wetlab.config.ERROR_NO_SAMPLE_FOUND,
                     "sample_list": sample_list,
                     "search_data": search_data,
                 },
@@ -5488,7 +5489,7 @@ def create_new_run(request):
     if request.method == "POST" and request.POST["action"] == "createNewRun":
         display_pools_for_run = display_available_pools()
         if "poolID" not in request.POST:
-            error_message = config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
+            error_message = wetlab.config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
             return render(
                 request,
                 "wetlab/CreateNewRun.html",
@@ -5545,7 +5546,7 @@ def create_new_run(request):
         run_obj = get_run_obj_from_id(request.POST["run_process_id"])
         if run_obj.get_state() != "Pre-Recorded":
             exp_name = run_obj.get_run_name()
-            error_message = ERROR_RUN_NAME_CREATED_ALREADY.copy()
+            error_message = wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY.copy()
             error_message.insert(1, exp_name)
             display_pools_for_run = display_available_pools()
             return render(
@@ -5628,7 +5629,7 @@ def compare_samples(request):
     if request.method == "POST" and request.POST["action"] == "compareSamples":
         selected_sample_objs = analyze_compare_samples_form(request.POST["table_data"])
         if len(selected_sample_objs) == 0:
-            error_message = ERROR_NO_SAMPLES_SELECTED
+            error_message = wetlab.config.ERROR_NO_SAMPLES_SELECTED
             return render(
                 request,
                 "wetlab/compareSamples.html",
@@ -5708,7 +5709,7 @@ def search_user_lot_kit(request):
         if request.POST["expired"] != "" and not wetlab.utils.common.check_valid_date_format(
             request.POST["expired"]
         ):
-            error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request,
                 "wetlab/searchUserLotKit.html",
@@ -5721,7 +5722,7 @@ def search_user_lot_kit(request):
 
         user_kits_objs = search_user_lot_kit_from_user_form(request.POST)
         if user_kits_objs == "No defined":
-            error_message = ERROR_NO_USER_LOT_KIT_DEFINED
+            error_message = wetlab.config.ERROR_NO_USER_LOT_KIT_DEFINED
             return render(
                 request,
                 "wetlab/searchUserLotKit.html",
@@ -5741,7 +5742,7 @@ def search_user_lot_kit(request):
                 {"display_user_kit_list": display_user_kit_list},
             )
         elif len(user_kits_objs) == 0:
-            error_message = ERROR_NO_MATCHES_FOR_USER_LOT_KIT
+            error_message = wetlab.config.ERROR_NO_MATCHES_FOR_USER_LOT_KIT
             return render(
                 request,
                 "wetlab/searchUserLotKit.html",
@@ -5789,7 +5790,7 @@ def sequencer_configuration(request):
         return render(
             request,
             "wetlab/error_page.html",
-            {"content": ERROR_USER_NOT_WETLAB_MANAGER},
+            {"content": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
         )
     sequencer_info = get_list_sequencer_configuration()
     sequencer_info["platforms"] = get_platform_data()
