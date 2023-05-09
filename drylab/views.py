@@ -23,7 +23,7 @@ import drylab.utils.multi_files
 import drylab.utils.pipelines
 import drylab.utils.req_services
 import drylab.utils.resolutions
-import drylab.utils.testing_configuration
+import drylab.utils.test_conf
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 
 
@@ -1689,10 +1689,10 @@ def configuration_test(request):
             test_results["services"] = ("Available services", "OK")
         test_results[
             "iSkyLIMS_settings"
-        ] = drylab.utils.testing_configuration.get_iSkyLIMS_settings()
+        ] = drylab.utils.test_conf.get_iSkyLIMS_settings()
         test_results[
             "config_file"
-        ] = drylab.utils.testing_configuration.get_config_file(
+        ] = drylab.utils.test_conf.get_config_file(
             config_file
         )
         for result in test_results:
@@ -1707,7 +1707,7 @@ def configuration_test(request):
         )
     elif request.method == "POST" and request.POST["action"] == "resolutionTest":
         if "Delete" in request.POST:
-            drylab.utils.testing_configuration.delete_test_service(
+            drylab.utils.test_conf.delete_test_service(
                 "SRVTEST-IIER001"
             )
             return render(request, "drylab/ConfigurationTest.html")
@@ -1717,7 +1717,7 @@ def configuration_test(request):
         (
             resolution_results["CreateService"],
             result,
-        ) = drylab.utils.testing_configuration.create_service_test(
+        ) = drylab.utils.test_conf.create_service_test(
             service_requested
         )
 
@@ -1734,7 +1734,7 @@ def configuration_test(request):
             resolution_number = "SRVTEST-IIER001.1"
             resolution_results[
                 "resolution_test"
-            ] = drylab.utils.testing_configuration.create_resolution_test(
+            ] = drylab.utils.test_conf.create_resolution_test(
                 resolution_number, service_requested
             )
             resolution_results["create_resolution_ok"] = "OK"
