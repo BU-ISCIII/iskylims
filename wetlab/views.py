@@ -11,8 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
-import django_utils.models
-import django_utils.views
+from django_utils.models import Center, Profile
+from django_utils.views import check_user_group
 from core.utils.common import (
     get_email_data,
     get_inital_sample_settings_values,
@@ -28,6 +28,7 @@ import core.utils.samples
 import wetlab.config
 import wetlab.fusioncharts.fusioncharts
 
+from core.fusioncharts.fusioncharts import FusionCharts
 from .models import *
 from .utils.additional_kits import *
 from .utils.collection_index import *
@@ -461,11 +462,11 @@ def create_nextseq_run(request):
         # Once the information looks good. it will be stores in runProcess and projects table
 
         # store data in runProcess table, run is in pre-recorded state
-        center_requested_id = django_utils.models.Profile.objects.get(
+        center_requested_id = Profile.objects.get(
             profile_user_id=request.user
         ).profile_center.id
-        center_requested_by = django_utils.models.Center.objects.get(pk=center_requested_id)
-        new_run_obj = wetlab.models.RunProcess(
+        center_requested_by = Center.objects.get(pk=center_requested_id)
+        new_run_obj = RunProcess(
             run_name=run_name,
             sample_sheet=file_name,
             state=RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
@@ -1785,7 +1786,7 @@ def change_project_libKit(request, project_id):
             # check if there is no other project in the same Run with the same Library Kit
             # if the library is shared with other project then error message is displayed
 
-            if not django_utils.views.check_user_group(request, "WetlabManager"):
+            if not check_user_group(request, "WetlabManager"):
                 project_run_id = project.runprocess_id.id
                 project_lib_kit = project.libraryKit
                 if (
