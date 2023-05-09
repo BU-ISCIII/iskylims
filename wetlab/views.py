@@ -46,6 +46,7 @@ from .utils.test_conf import *
 import wetlab.models
 
 import wetlab.utils.additional_kits
+import wetlab.utils.collection_index
 
 
 
@@ -735,10 +736,10 @@ def add_collection_index_kit(request):
         # the date and time on now to store in database
 
         file_name = request.FILES["newCollectionIndexFile"].name
-        saved_file = store_collection_kits_file(request.FILES["newCollectionIndexFile"])
+        saved_file = wetlab.utils.collection_index.store_collection_kits_file(request.FILES["newCollectionIndexFile"])
 
         # get the libary name to check if it is already defined
-        if not check_collection_index_file_format(os.path.join(settings.MEDIA_ROOT,saved_file)):
+        if not wetlab.utils.collection_index.check_collection_index_file_format(os.path.join(settings.MEDIA_ROOT,saved_file)):
             os.remove(saved_file)
             return render(
                 request,
@@ -752,7 +753,7 @@ def add_collection_index_kit(request):
                 },
             )
 
-        collection_name = get_collection_index_name(os.path.join(settings.MEDIA_ROOT,saved_file))
+        collection_name = wetlab.utils.collection_index.get_collection_index_name(os.path.join(settings.MEDIA_ROOT,saved_file))
         if collection_name == "":
             # removing the uploaded file
             os.remove(saved_file)
@@ -769,7 +770,7 @@ def add_collection_index_kit(request):
             )
 
         # check if library name is already defined on database
-        if check_collection_index_exists(collection_name):
+        if wetlab.utils.collection_index.check_collection_index_exists(collection_name):
             # removing the uploaded file
             os.remove(saved_file)
             return render(
@@ -784,11 +785,11 @@ def add_collection_index_kit(request):
                 },
             )
         # Get the collection settings included in the file
-        collection_settings = get_collection_settings(os.path.join(settings.MEDIA_ROOT,saved_file))
-        new_collection_obj = store_collection_settings(collection_settings, saved_file)
+        collection_settings = wetlab.utils.collection_index.get_collection_settings(os.path.join(settings.MEDIA_ROOT,saved_file))
+        new_collection_obj = wetlab.utils.collection_index.store_collection_settings(collection_settings, saved_file)
         # get the index name and index bases for the library
-        collection_index = get_index_values(os.path.join(settings.MEDIA_ROOT,saved_file))
-        store_collection_indexes(collection_index, new_collection_obj)
+        collection_index = wetlab.utils.collection_index.get_index_values(os.path.join(settings.MEDIA_ROOT,saved_file))
+        wetlab.utils.collection_index.store_collection_indexes(collection_index, new_collection_obj)
 
         collection_index_information["collection_index_names"] = collection_settings[
             "name"
@@ -1466,8 +1467,8 @@ def display_project(request, project_id):
 
 @login_required
 def display_collection_index(request, collection_index_id):
-    if CollectionIndexKit.objects.filter(pk=collection_index_id).exists():
-        collection_index_dict = get_collection_index_information(collection_index_id)
+    if wetlab.models.CollectionIndexKit.objects.filter(pk=collection_index_id).exists():
+        collection_index_dict = wetlab.utils.collection_index.get_collection_index_information(collection_index_id)
         if collection_index_dict is not False:
             return render(
                 request,
