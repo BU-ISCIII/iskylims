@@ -1,8 +1,5 @@
 # Generic imports
-import time
 import datetime
-import re
-import os
 import django.core.files.storage
 import django.contrib.auth.models
 import django_utils.models

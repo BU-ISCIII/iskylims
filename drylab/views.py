@@ -365,7 +365,7 @@ def add_samples_in_service(request):
             {"samples_added": samples_added},
         )
     else:
-        service_data_information = drylab.utils.req_services.add_requested_samples_in_service(
+        service_data_information = drylab.utils.req_services.prepare_form_data_request_service_sequencing(
             request
         )
         service_data_information["service_id"] = request.POST["service_id"]
