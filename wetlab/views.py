@@ -38,7 +38,7 @@ from .utils.samplesheet import *
 from .utils.sequencers import *
 from .utils.statistics import *
 from .utils.stats_graphs import *
-from .utils.test_wetlab_conf import *
+from .utils.test_conf import *
 
 
 def index(request):
