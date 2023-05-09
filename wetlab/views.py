@@ -26,8 +26,12 @@ import core.utils.platforms
 import core.utils.protocols
 import core.utils.samples
 import wetlab.config
+import wetlab.fusioncharts.fusioncharts
 
+<<<<<<< HEAD
 from core.fusioncharts.fusioncharts import FusionCharts
+=======
+>>>>>>> Fixed wetlab.fusioncharts.fusioncharts imports
 from .models import *
 from .utils.additional_kits import *
 from .utils.collection_index import *
@@ -2037,7 +2041,7 @@ def stats_per_time(request):
                     "ocean",
                     run_date_name,
                 )
-                stat_per_time["run_period_graphic"] = FusionCharts(
+                stat_per_time["run_period_graphic"] = wetlab.fusioncharts.fusioncharts.FusionCharts(
                     "column3d",
                     run_period_index_graph,
                     "550",
@@ -2109,7 +2113,7 @@ def stats_per_time(request):
                             "carbon",
                             project_date_name,
                         )
-                        stat_per_time["project_period_graphic"] = FusionCharts(
+                        stat_per_time["project_period_graphic"] = wetlab.fusioncharts.fusioncharts.FusionCharts(
                             "column3d",
                             run_period_index_graph,
                             "550",
@@ -2171,7 +2175,7 @@ def stats_per_time(request):
                     data_source = graphic_for_unbarcodes(
                         heading, themes[lane_number], count_unbarcode[lane_number]
                     )
-                    lane_graphic = FusionCharts(
+                    lane_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                         "column3d",
                         render_number,
                         "500",
@@ -2191,7 +2195,7 @@ def stats_per_time(request):
                     "fint",
                     top_unbarcode_all_runs,
                 )
-                unknow_pie3d = FusionCharts(
+                unknow_pie3d = wetlab.fusioncharts.fusioncharts.FusionCharts(
                     "pie3d", "ex5", "500", "400", "chart-5", "json", data_source
                 )
                 stat_per_time["unknow_pie3d"] = unknow_pie3d.render()
@@ -2225,7 +2229,7 @@ def stats_per_time(request):
                     "carbon",
                     run_disk_utilization,
                 )
-                stat_per_time["disk_space_period_graphic"] = FusionCharts(
+                stat_per_time["disk_space_period_graphic"] = wetlab.fusioncharts.fusioncharts.FusionCharts(
                     "column3d",
                     disk_space_period_index_graph,
                     "950",
@@ -2478,7 +2482,7 @@ def stats_per_library(request):
                     "ocean",
                     yield_mb_lane,
                 )
-                yield_mb_lane_graphic = FusionCharts(
+                yield_mb_lane_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                     "column3d",
                     render_number,
                     "500",
@@ -2505,7 +2509,7 @@ def stats_per_library(request):
                     "zune",
                     q_30_lane,
                 )
-                q30_lane_graphic = FusionCharts(
+                q30_lane_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                     "column3d",
                     render_number,
                     "400",
@@ -2532,7 +2536,7 @@ def stats_per_library(request):
                     "carbon",
                     mean_q_lane,
                 )
-                mean_lane_graphic = FusionCharts(
+                mean_lane_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                     "column3d",
                     render_number,
                     "400",
@@ -2708,7 +2712,7 @@ def stats_per_library(request):
                 "",
                 q30_comparations,
             )
-            comp_q30_lib_graphic = FusionCharts(
+            comp_q30_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "comp-q30-1",
                 "500",
@@ -2728,7 +2732,7 @@ def stats_per_library(request):
                 "",
                 mean_comparations,
             )
-            comp_mean_lib_graphic = FusionCharts(
+            comp_mean_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "comp-mean-1",
                 "500",
@@ -2748,7 +2752,7 @@ def stats_per_library(request):
                 "",
                 n_bases_comparations,
             )
-            comp_mean_lib_graphic = FusionCharts(
+            comp_mean_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "comp-n_bases-1",
                 "500",
@@ -2791,7 +2795,7 @@ def stats_per_library(request):
                 "",
                 q30_comparations,
             )
-            comp_q30_lib_graphic = FusionCharts(
+            comp_q30_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "comp-q30-1",
                 "500",
@@ -2812,7 +2816,7 @@ def stats_per_library(request):
                 "",
                 mean_comparations,
             )
-            comp_mean_lib_graphic = FusionCharts(
+            comp_mean_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "comp-mean-1",
                 "500",
@@ -2833,7 +2837,7 @@ def stats_per_library(request):
                 "",
                 n_bases_comparations,
             )
-            comp_mean_lib_graphic = FusionCharts(
+            comp_mean_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "comp-n_bases-1",
                 "500",
@@ -2878,7 +2882,7 @@ def stats_per_library(request):
                 "",
                 q30_comparations,
             )
-            lib_q30_lib_graphic = FusionCharts(
+            lib_q30_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "lib-q30-lib",
                 "500",
@@ -2899,7 +2903,7 @@ def stats_per_library(request):
                 "",
                 mean_comparations,
             )
-            lib_mean_lib_graphic = FusionCharts(
+            lib_mean_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "lib-mean-lib",
                 "500",
@@ -2920,7 +2924,7 @@ def stats_per_library(request):
                 "",
                 n_bases_comparations,
             )
-            lib_mean_lib_graphic = FusionCharts(
+            lib_mean_lib_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "column3d",
                 "lib-n_bases-lib",
                 "500",
@@ -2944,7 +2948,7 @@ def stats_per_library(request):
             data_source = pie_graphic(
                 "Library utilization in projects", "fint", count_libraries
             )
-            libraries_kit_utilization = FusionCharts(
+            libraries_kit_utilization = wetlab.fusioncharts.fusioncharts.FusionCharts(
                 "pie3d",
                 "lib_kit_utilization_graph-1",
                 "500",
@@ -3057,7 +3061,7 @@ def annual_report(request):
         data_source = pie_graphic_standard(
             "Number of Runs performed on the year", "", "ocean", number_of_runs
         )
-        graphic_completed_run = FusionCharts(
+        graphic_completed_run = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
         )
         annual_report_information[
@@ -3084,7 +3088,7 @@ def annual_report(request):
         data_source = column_graphic_for_year_report(
             heading, "Aligned  ", "Run names ", "Aligned (in %)", "ocean", aligned_year
         )
-        aligned_year_graphic = FusionCharts(
+        aligned_year_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "aligned_year",
             "600",
@@ -3104,7 +3108,7 @@ def annual_report(request):
             "carbon",
             error_rate_year,
         )
-        error_rate_year_graphic = FusionCharts(
+        error_rate_year_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "error_rate_year",
             "600",
@@ -3121,7 +3125,7 @@ def annual_report(request):
         data_source = column_graphic_for_year_report(
             heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_year
         )
-        q30_year_graphic = FusionCharts(
+        q30_year_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d", "q30_year", "600", "300", "q30_chart-2", "json", data_source
         )
         #
@@ -3168,7 +3172,7 @@ def annual_report(request):
         data_source = column_graphic_for_year_report(
             heading, "  ", "Projects ", "number of users", "ocean", p_user_year
         )
-        p_user_year_graphic = FusionCharts(
+        p_user_year_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "bar_project_user_year",
             "400",
@@ -3180,7 +3184,7 @@ def annual_report(request):
         annual_report_information["p_user_year_graphic"] = p_user_year_graphic.render()
 
         data_source = pie_graphic_standard(heading, "Percentage", "carbon", p_user_year)
-        pie_p_user_year_graphic = FusionCharts(
+        pie_p_user_year_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "pie3d",
             "pie_project_user_year",
             "400",
@@ -3359,7 +3363,7 @@ def monthly_report(request):
             + year_selected
         )
         data_source = pie_graphic_standard(heading, "", "ocean", number_of_runs)
-        graphic_completed_run = FusionCharts(
+        graphic_completed_run = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
         )
         monthly_report_information[
@@ -3409,7 +3413,7 @@ def monthly_report(request):
         data_source = column_graphic_for_year_report(
             heading, "  ", "Projects ", "number of users", "ocean", p_user_month
         )
-        p_user_monthly_graphic = FusionCharts(
+        p_user_monthly_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "bar_project_user_month",
             "400",
@@ -3425,7 +3429,7 @@ def monthly_report(request):
         data_source = pie_graphic_standard(
             heading, "Percentage", "carbon", p_user_month
         )
-        pie_p_user_monthly_graphic = FusionCharts(
+        pie_p_user_monthly_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "pie3d",
             "pie_project_user_month",
             "400",
@@ -3461,7 +3465,7 @@ def monthly_report(request):
         data_source = column_graphic_for_year_report(
             heading, "Aligned  ", "Run names ", "Aligned (in %)", "ocean", aligned_month
         )
-        aligned_month_graphic = FusionCharts(
+        aligned_month_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "aligned_year",
             "600",
@@ -3483,7 +3487,7 @@ def monthly_report(request):
             "carbon",
             error_rate_month,
         )
-        error_rate_month_graphic = FusionCharts(
+        error_rate_month_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "error_rate_year",
             "600",
@@ -3502,7 +3506,7 @@ def monthly_report(request):
         data_source = column_graphic_for_year_report(
             heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_month
         )
-        q30_month_graphic = FusionCharts(
+        q30_month_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d", "q30_year", "600", "300", "q30_chart-2", "json", data_source
         )
 
@@ -3644,7 +3648,7 @@ def quarter_report(request):
         data_source = pie_graphic_standard(
             "Number of Runs performed on the year", "", "ocean", number_of_runs
         )
-        graphic_completed_run = FusionCharts(
+        graphic_completed_run = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
         )
         quarter_report_information[
@@ -3680,7 +3684,7 @@ def quarter_report(request):
             "ocean",
             aligned_quarter,
         )
-        aligned_quarter_graphic = FusionCharts(
+        aligned_quarter_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "aligned_year",
             "600",
@@ -3704,7 +3708,7 @@ def quarter_report(request):
             "carbon",
             error_rate_quarter,
         )
-        error_rate_quarter_graphic = FusionCharts(
+        error_rate_quarter_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "error_rate_year",
             "600",
@@ -3725,7 +3729,7 @@ def quarter_report(request):
         data_source = column_graphic_for_year_report(
             heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_quarter
         )
-        q30_quarter_graphic = FusionCharts(
+        q30_quarter_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d", "q30_year", "600", "300", "q30_chart-2", "json", data_source
         )
         #
@@ -3772,7 +3776,7 @@ def quarter_report(request):
         data_source = column_graphic_for_year_report(
             heading, "  ", "Projects ", "number of users", "ocean", p_user_quarter
         )
-        p_user_quarter_graphic = FusionCharts(
+        p_user_quarter_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "bar_project_user_year",
             "400",
@@ -3788,7 +3792,7 @@ def quarter_report(request):
         data_source = pie_graphic_standard(
             heading, "Percentage", "carbon", p_user_quarter
         )
-        pie_p_user_quarter_graphic = FusionCharts(
+        pie_p_user_quarter_graphic = wetlab.fusioncharts.fusioncharts.FusionCharts(
             "pie3d",
             "pie_project_user_year",
             "400",
