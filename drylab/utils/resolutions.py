@@ -3,7 +3,6 @@ from datetime import date, datetime
 import json
 from smtplib import SMTPException
 import django.core.mail
-import django_utils.models
 import django.contrib.auth.models
 
 # Local imports
