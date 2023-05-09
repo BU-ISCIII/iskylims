@@ -23,7 +23,7 @@ from core.utils.common import (
 # Local imports
 import core.utils.load_batch
 import core.utils.platforms
-from core.utils.protocols import display_protocol_list
+import core.utils.protocols
 from core.utils.samples import *
 from wetlab import config
 
@@ -5686,7 +5686,7 @@ def user_commercial_kit_inventory(request):
 
 @login_required
 def search_user_lot_kit(request):
-    protocol_list = display_protocol_list()
+    protocol_list = core.utils.protocols.display_protocol_list()
     platform_list = core.utils.platforms.get_defined_platforms_and_ids("NGS")
     if request.method == "POST" and request.POST["action"] == "searchuserkit":
         if (
