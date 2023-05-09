@@ -22,7 +22,7 @@ from core.utils.common import (
 
 # Local imports
 import core.utils.load_batch
-from core.utils.platforms import get_defined_platforms_and_ids
+import core.utils.platforms
 from core.utils.protocols import display_protocol_list
 from core.utils.samples import *
 from wetlab import config
@@ -4098,7 +4098,7 @@ def define_protocol_parameters(request, protocol_id):
 def add_commercial_kit(request):
     app_name = __package__.split(".")[0]
     defined_protocols = get_defined_protocols(app_name, False)
-    defined_platforms = get_defined_platforms_and_ids("NGS")
+    defined_platforms = core.utils.platforms.get_defined_platforms_and_ids("NGS")
     commercial_kits_data = get_data_for_commercial_kits("NGS")
 
     if request.method == "POST" and request.POST["action"] == "addCommercialKit":
@@ -5687,7 +5687,7 @@ def user_commercial_kit_inventory(request):
 @login_required
 def search_user_lot_kit(request):
     protocol_list = display_protocol_list()
-    platform_list = get_defined_platforms_and_ids("NGS")
+    platform_list = core.utils.platforms.get_defined_platforms_and_ids("NGS")
     if request.method == "POST" and request.POST["action"] == "searchuserkit":
         if (
             request.POST["expired"] == ""
