@@ -410,7 +410,7 @@ if [ $upgrade == true ]; then
                 | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
             
             query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                    ' DROP ', tc.CONSTRAINT_TYPE, ' ', rcu.CONSTRAINT_NAME, ';', \
+                    ' DROP FOREIGN KEY' , rcu.CONSTRAINT_NAME, ';', \
                     ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
                     ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
                     tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
