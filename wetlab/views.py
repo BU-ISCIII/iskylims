@@ -49,6 +49,7 @@ import wetlab.models
 import wetlab.utils.additional_kits
 import wetlab.utils.collection_index
 import wetlab.utils.common
+import wetlab.utils.fetch_info
 
 
 
@@ -941,7 +942,7 @@ def search_run(request):
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if platform_name != "":
-            sequencer_list = get_sequencer_names_from_platform(platform_name)
+            sequencer_list = wetlab.utils.fetch_info.get_sequencer_names_from_platform(platform_name)
             if len(sequencer_list) > 0:
                 runs_found = runs_found.filter(
                     used_sequencer__sequencer_name__in=sequencer_list
@@ -1315,9 +1316,9 @@ def display_run(request, run_id):
                 {"content": ["No matches have been found for the run "]},
             )
 
-    if RunProcess.objects.filter(pk=run_id).exists():
-        run_name_found = RunProcess.objects.get(pk=run_id)
-        r_data_display = get_information_run(run_name_found)
+    if wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
+        run_name_found = wetlab.models.RunProcess.objects.get(pk=run_id)
+        r_data_display = wetlab.utils.fetch_info.get_information_run(run_name_found)
         return render(
             request,
             "wetlab/displayRun.html",
@@ -1363,7 +1364,7 @@ def last_run_by_sequencer(request):
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    last_runs = get_last_runs_by_sequencer()
+    last_runs = wetlab.utils.fetch_info.get_last_runs_by_sequencer()
     if len(last_runs) == 0:
         return render(
             request, "wetlab/last_run_by_sequencer.html", {"no_runs": "no_runs"}
@@ -1408,8 +1409,8 @@ def incompleted_runs(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if RunProcess.objects.all().exclude(state__run_state_name="Completed").exists():
-        display_incompleted_run = get_information_for_incompleted_run()
+    if wetlab.models.RunProcess.objects.all().exclude(state__run_state_name="Completed").exists():
+        display_incompleted_run = wetlab.utils.fetch_info.get_information_for_incompleted_run()
         return render(
             request,
             "wetlab/incompleted_runs.html",
@@ -1453,7 +1454,7 @@ def display_project(request, project_id):
                     },
                 )
         # Display the proyect information
-        display_project_data = get_information_project(project_obj, request)
+        display_project_data = wetlab.utils.fetch_info.get_information_project(project_obj, request)
         return render(
             request,
             "wetlab/displayProject.html",
@@ -1888,7 +1889,7 @@ def stats_experiment(request):
 
 @login_required
 def stats_per_sequencer(request):
-    sequencer_names = get_sequencer_installed_names()
+    sequencer_names = wetlab.utils.fetch_info.get_sequencer_installed_names()
     if request.method == "POST":
         sequencer = request.POST["sequencer"]
         start_date = request.POST["startdate"]
@@ -1916,7 +1917,7 @@ def stats_per_sequencer(request):
                         "error_message": error_message,
                     },
                 )
-        runs_using_sequencer = get_sequencers_run_from_time_interval(
+        runs_using_sequencer = wetlab.utils.fetch_info.get_sequencers_run_from_time_interval(
             sequencer, start_date, end_date
         )
         if len(runs_using_sequencer) == 0:
@@ -1926,7 +1927,7 @@ def stats_per_sequencer(request):
                 "wetlab/StatsPerSequencer.html",
                 {"sequencer_names": sequencer_names, "error_message": error_message},
             )
-        sequencer_data = get_stats_sequencer_data_from_selected_runs(
+        sequencer_data = wetlab.utils.fetch_info.get_stats_sequencer_data_from_selected_runs(
             runs_using_sequencer, sequencer, start_date, end_date
         )
 
@@ -4670,7 +4671,7 @@ def display_sample(request, sample_id):
         sample_name = sample_obj.get_sample_name()
         run_sample_obj = get_sample_in_project_obj_from_sample_name(sample_name)
         if run_sample_obj:
-            sample_information.update(get_info_sample_in_run(run_sample_obj))
+            sample_information.update(wetlab.utils.fetch_info.get_info_sample_in_run(run_sample_obj))
 
     if len(sample_information) == 0:
         return render(
@@ -4699,7 +4700,7 @@ def display_sample_in_run(request, sample_run_id):
             "wetlab/error_page.html",
             {"content": ["No Sample was found"]},
         )
-    sample_information = get_info_sample_in_run(sample_run_obj)
+    sample_information = wetlab.utils.fetch_info.get_info_sample_in_run(sample_run_obj)
     return render(
         request,
         "wetlab/display_sample.html",
