@@ -24,7 +24,7 @@ from core.utils.common import (
 import core.utils.load_batch
 import core.utils.platforms
 import core.utils.protocols
-from core.utils.samples import *
+import core.utils.samples
 from wetlab import config
 
 from core.fusioncharts.fusioncharts import FusionCharts
@@ -3904,13 +3904,13 @@ def define_sample_projects(request):
                 },
             )
     # get the information of defined sample Projects
-    defined_samples_projects = get_info_for_defined_sample_projects(__package__)
+    defined_samples_projects = core.utils.samples.get_info_for_defined_sample_projects(__package__)
 
     if request.method == "POST" and request.POST["action"] == "addNewSampleProject":
         sample_project_name = request.POST["sampleProyectName"]
         # description = request.POST['description']
 
-        if check_if_sample_project_exists(sample_project_name, __package__):
+        if core.utils.samples.check_if_sample_project_exists(sample_project_name, __package__):
             error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
@@ -3920,7 +3920,7 @@ def define_sample_projects(request):
                     "error_message": error_message,
                 },
             )
-        new_sample_project_id = create_new_sample_project(request.POST, __package__)
+        new_sample_project_id = core.utils.samples.create_new_sample_project(request.POST, __package__)
         new_defined_sample_project = sample_project_name
         return render(
             request,
@@ -3995,7 +3995,7 @@ def define_additional_kits(request, protocol_id):
 
 @login_required
 def display_sample_project(request, sample_project_id):
-    samples_project_data = get_info_to_display_sample_project(sample_project_id)
+    samples_project_data = core.utils.samples.get_info_to_display_sample_project(sample_project_id)
     if "ERROR" in samples_project_data:
         error_message = samples_project_data["ERROR"]
         return render(
@@ -4163,8 +4163,8 @@ def pending_to_update(request):
     pending = {}
     # get the samples in defined state
 
-    pending["defined"] = get_samples_in_defined_state("")
-    pending["extract_molecule"] = get_samples_in_extracted_molecule_state(request.user)
+    pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
+    pending["extract_molecule"] = core.utils.samples.get_samples_in_extracted_molecule_state(request.user)
     pending["graphic_pending_samples"] = pending_samples_for_grafic(pending).render()
 
     return render(request, "wetlab/pendingToUpdate.html", {"pending": pending})
@@ -4184,7 +4184,7 @@ def record_samples(request):
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
-        sample_recorded = analyze_input_samples(request, __package__)
+        sample_recorded = core.utils.samples.analyze_input_samples(request, __package__)
         # if no samples are in any of the options, displays the inital page
 
         if (
@@ -4193,7 +4193,7 @@ def record_samples(request):
             and "invalid_samples" not in sample_recorded
             and "incomplete_samples" not in sample_recorded
         ):
-            sample_information = prepare_sample_input_table(__package__)
+            sample_information = core.utils.samples.prepare_sample_input_table(__package__)
             return render(
                 request,
                 "wetlab/record_sample.html",
@@ -4203,13 +4203,13 @@ def record_samples(request):
         if "sample_id_for_action" in sample_recorded:
             sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
         if "incomplete_samples" in sample_recorded:
-            sample_recorded.update(prepare_sample_input_table(__package__))
+            sample_recorded.update(core.utils.samples.prepare_sample_input_table(__package__))
             sample_recorded["number_of_samples"] = len(
                 sample_recorded["incomplete_samples"]
             )
         if "pre_defined_samples_id" in sample_recorded:
             sample_recorded.update(
-                prepare_sample_project_input_table(
+                core.utils.samples.prepare_sample_project_input_table(
                     sample_recorded["pre_defined_samples_id"]
                 )
             )
@@ -4228,7 +4228,7 @@ def record_samples(request):
         result = analyze_reprocess_data(json_data[0], reprocess_id, request.user)
         if result == "Invalid options":
             to_be_reprocessed_ids.insert(0, reprocess_id)
-            sample_recorded = get_info_for_reprocess_samples(
+            sample_recorded = core.utils.samples.get_info_for_reprocess_samples(
                 to_be_reprocessed_ids, reprocess_id
             )
             sample_recorded["invalid_samples_id"] = request.POST["invalidSamplesID"]
@@ -4244,7 +4244,7 @@ def record_samples(request):
                 )
             else:
                 next_to_be_process_id = str(to_be_reprocessed_ids[0])
-                sample_recorded = get_info_for_reprocess_samples(
+                sample_recorded = core.utils.samples.get_info_for_reprocess_samples(
                     to_be_reprocessed_ids, next_to_be_process_id
                 )
                 sample_recorded["invalid_samples_id"] = ",".join(to_be_reprocessed_ids)
@@ -4288,7 +4288,7 @@ def record_samples(request):
     ):
         if "samples_in_list" in request.POST:
             pre_defined_samples_id = request.POST.getlist("samples")
-        sample_recorded = prepare_sample_project_input_table(pre_defined_samples_id)
+        sample_recorded = core.utils.samples.prepare_sample_project_input_table(pre_defined_samples_id)
         return render(
             request,
             "wetlab/record_sample.html",
@@ -4297,11 +4297,11 @@ def record_samples(request):
 
     # Add the additional information related to the project
     elif request.method == "POST" and request.POST["action"] == "sampleprojectdata":
-        sample_recorded = analyze_input_sample_project_fields(request.POST)
+        sample_recorded = core.utils.samples.analyze_input_sample_project_fields(request.POST)
 
         if request.POST["pending_pre_defined"] != "":
             sample_recorded.update(
-                prepare_sample_project_input_table(
+                core.utils.samples.prepare_sample_project_input_table(
                     request.POST["pending_pre_defined"].split(",")
                 )
             )
@@ -4318,7 +4318,7 @@ def record_samples(request):
             )
     # Load batch file
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
-        sample_information = prepare_sample_input_table(__package__)
+        sample_information = core.utils.samples.prepare_sample_input_table(__package__)
         if "samplesExcel" in request.FILES:
             samples_batch_df = core.utils.load_batch.read_batch_sample_file(request.FILES["samplesExcel"])
             if "ERROR" in samples_batch_df:
@@ -4362,7 +4362,7 @@ def record_samples(request):
             )
     # Form to get the new samples
     else:
-        sample_information = prepare_sample_input_table(__package__)
+        sample_information = core.utils.samples.prepare_sample_input_table(__package__)
         return render(
             request,
             "wetlab/record_sample.html",
@@ -4393,7 +4393,7 @@ def define_sample_projects_fields(request, sample_project_id):
         request.method == "POST"
         and request.POST["action"] == "defineSampleProjectFields"
     ):
-        sample_project_field_data = set_sample_project_fields(request.POST)
+        sample_project_field_data = core.utils.samples.set_sample_project_fields(request.POST)
         return render(
             request,
             "wetlab/defineSampleProjectFields.html",
@@ -4401,7 +4401,7 @@ def define_sample_projects_fields(request, sample_project_id):
         )
 
     elif request.method == "POST" and request.POST["action"] == "defineBatchFields":
-        sample_project_data = define_table_for_sample_project_fields(
+        sample_project_data = core.utils.samples.define_table_for_sample_project_fields(
             request.POST["sample_project_id"]
         )
         # sample_information = prepare_sample_input_table(__package__)
@@ -4442,7 +4442,7 @@ def define_sample_projects_fields(request, sample_project_id):
             {"error_message": ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS},
         )
     else:
-        if not check_if_sample_project_id_exists(sample_project_id):
+        if not core.utils.samples.check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4454,7 +4454,7 @@ def define_sample_projects_fields(request, sample_project_id):
                 },
             )
 
-        sample_project_data = define_table_for_sample_project_fields(sample_project_id)
+        sample_project_data = core.utils.samples.define_table_for_sample_project_fields(sample_project_id)
         return render(
             request,
             "wetlab/defineSampleProjectFields.html",
@@ -4580,7 +4580,7 @@ def modify_sample_project_fields(request, sample_project_id):
         request.method == "POST"
         and request.POST["action"] == "modifySampleProjectFields"
     ):
-        sample_project_field_saved = modify_fields_in_sample_project(request.POST)
+        sample_project_field_saved = core.utils.samples.modify_fields_in_sample_project(request.POST)
         return render(
             request,
             "wetlab/modifySampleProjectFields.html",
@@ -4588,7 +4588,7 @@ def modify_sample_project_fields(request, sample_project_id):
         )
 
     else:
-        if not check_if_sample_project_id_exists(sample_project_id):
+        if not core.utils.samples.check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4599,7 +4599,7 @@ def modify_sample_project_fields(request, sample_project_id):
                     ]
                 },
             )
-        sample_project_field = get_parameters_sample_project(sample_project_id)
+        sample_project_field = core.utils.samples.get_parameters_sample_project(sample_project_id)
         return render(
             request,
             "wetlab/modifySampleProjectFields.html",
@@ -4614,9 +4614,9 @@ def define_molecule_uses(request):
         display_molecule_use
         record_molecule_use
     """
-    molecule_use_data = display_molecule_use(__package__)
+    molecule_use_data = core.utils.samples.display_molecule_use(__package__)
     if request.method == "POST" and request.POST["action"] == "record_molecule_use":
-        molecule_use_data.update(record_molecule_use(request.POST, __package__))
+        molecule_use_data.update(core.utils.samples.record_molecule_use(request.POST, __package__))
 
     return render(
         request,
@@ -4632,9 +4632,9 @@ def define_type_of_samples(request):
         display_sample_types
         save_type_of_sample
     """
-    sample_types = display_sample_types(__package__)
+    sample_types = core.utils.samples.display_sample_types(__package__)
     if request.method == "POST" and request.POST["action"] == "addNewSampleType":
-        sample_types.update(save_type_of_sample(request.POST, __package__))
+        sample_types.update(core.utils.samples.save_type_of_sample(request.POST, __package__))
 
     return render(
         request,
@@ -4652,7 +4652,7 @@ def display_sample(request, sample_id):
         get_additional_kits_used_in_sample
         get_sample_in_project_obj_from_sample_name
     """
-    sample_information = get_all_sample_information(sample_id, True)
+    sample_information = core.utils.samples.get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
@@ -4660,7 +4660,7 @@ def display_sample(request, sample_id):
         sample_information.update(get_run_user_lot_kit_used_in_sample(sample_id))
     else:
         sample_information = {}
-    sample_obj = get_sample_obj_from_id(sample_id)
+    sample_obj = core.utils.samples.get_sample_obj_from_id(sample_id)
     if sample_obj:
         sample_name = sample_obj.get_sample_name()
         run_sample_obj = get_sample_in_project_obj_from_sample_name(sample_name)
@@ -4708,7 +4708,7 @@ def display_type_of_sample(request, sample_type_id):
     Functions:
         get_type_of_sample_information
     """
-    type_of_sample_data = get_type_of_sample_information(sample_type_id)
+    type_of_sample_data = core.utils.samples.get_type_of_sample_information(sample_type_id)
     return render(
         request,
         "wetlab/display_type_of_sample.html",
@@ -4952,10 +4952,10 @@ def handling_molecules(request):
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
 
-        samples = get_selected_recorded_samples(request.POST["selected_samples"])
+        samples = core.utils.samples.get_selected_recorded_samples(request.POST["selected_samples"])
         if len(samples) == 0:
             return redirect("handling_molecules")
-        molecule_protocol = get_table_record_molecule(samples, __package__)
+        molecule_protocol = core.utils.samples.get_table_record_molecule(samples, __package__)
         if "ERROR" in molecule_protocol:
             return render(
                 request,
@@ -4973,7 +4973,7 @@ def handling_molecules(request):
     elif (
         request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
     ):
-        molecule_recorded = record_molecules(request.POST, request.user, __package__)
+        molecule_recorded = core.utils.samples.record_molecules(request.POST, request.user, __package__)
 
         if (
             "molecule_code_ids" in request.POST
@@ -4988,7 +4988,7 @@ def handling_molecules(request):
         if "incomplete_sample_ids" in molecule_recorded:
             # collect the information to select in the option fields
             molecule_recorded.update(
-                get_table_record_molecule(
+                core.utils.samples.get_table_record_molecule(
                     molecule_recorded["incomplete_sample_ids"], __package__
                 )
             )
@@ -4999,7 +4999,7 @@ def handling_molecules(request):
                 {"molecule_recorded": molecule_recorded},
             )
 
-        show_molecule_parameters = display_molecule_protocol_parameters(
+        show_molecule_parameters = core.utils.samples.display_molecule_protocol_parameters(
             molecule_recorded["molecule_ids"].split(","), request.user
         )
         return render(
@@ -5020,7 +5020,7 @@ def handling_molecules(request):
         molecules = request.POST.getlist("molecules")
         # Set to true to reuse the html Code
         molecule_recorded = True
-        show_molecule_parameters = display_molecule_protocol_parameters(
+        show_molecule_parameters = core.utils.samples.display_molecule_protocol_parameters(
             molecules, request.user
         )
         return render(
@@ -5033,10 +5033,10 @@ def handling_molecules(request):
         )
 
     elif request.method == "POST" and request.POST["action"] == "addMoleculeParameters":
-        molecule_parameters_updated = add_molecule_protocol_parameters(request.POST)
+        molecule_parameters_updated = core.utils.samples.add_molecule_protocol_parameters(request.POST)
         if "pending" in request.POST:
             molecules = request.POST["pending"].split(",")
-            show_molecule_parameters = display_molecule_protocol_parameters(
+            show_molecule_parameters = core.utils.samples.display_molecule_protocol_parameters(
                 molecules, request.user
             )
             return render(
@@ -5055,7 +5055,7 @@ def handling_molecules(request):
             )
 
     elif request.method == "POST" and request.POST["action"] == "requestMoleculeUse":
-        molecule_use = set_molecule_use(request.POST, __package__)
+        molecule_use = core.utils.samples.set_molecule_use(request.POST, __package__)
         return render(
             request,
             "wetlab/handling_molecules.html",
@@ -5064,21 +5064,21 @@ def handling_molecules(request):
 
     else:
         sample_availables, user_molecules, request_molecule_use = "", "", ""
-        samples_list = get_samples_in_state("Defined")
+        samples_list = core.utils.samples.get_samples_in_state("Defined")
         if samples_list:
-            sample_availables = create_table_to_select_molecules(samples_list)
+            sample_availables = core.utils.samples.create_table_to_select_molecules(samples_list)
 
-        user_owner_molecules = get_molecule_in_state("Defined", request.user)
+        user_owner_molecules = core.utils.samples.get_molecule_in_state("Defined", request.user)
         if len(user_owner_molecules) > 0:
-            user_molecules = create_table_user_molecules(user_owner_molecules)
+            user_molecules = core.utils.samples.create_table_user_molecules(user_owner_molecules)
 
-        samples_pending_use = get_samples_in_state("Pending for use")
+        samples_pending_use = core.utils.samples.get_samples_in_state("Pending for use")
         if samples_pending_use:
-            request_molecule_use = create_table_pending_use(
+            request_molecule_use = core.utils.samples.create_table_pending_use(
                 samples_pending_use, __package__
             )
         # check if there are defined the type
-        molecule_use_defined = check_if_molecule_use_defined(__package__)
+        molecule_use_defined = core.utils.samples.check_if_molecule_use_defined(__package__)
 
         return render(
             request,
@@ -5142,7 +5142,7 @@ def repeat_molecule_extraction(request):
     if request.method == "POST" and request.POST["action"] == "repeat_extraction":
         sample_id = request.POST["sample_id"]
         if analyze_reprocess_data(["New Extraction"], sample_id, request.user):
-            molecule_protocol = get_table_record_molecule([sample_id], __package__)
+            molecule_protocol = core.utils.samples.get_table_record_molecule([sample_id], __package__)
             molecule_protocol["samples"] = sample_id
             # create a copy of the request, to allow to modify it
             # request.POST = request.POST.copy()
@@ -5204,7 +5204,7 @@ def search_sample(request):
         search_run_samples
     """
     search_data = {}
-    search_data["s_state"] = get_sample_states()
+    search_data["s_state"] = core.utils.samples.get_sample_states()
 
     if request.method == "POST" and request.POST["action"] == "searchsample":
         sample_name = request.POST["samplename"]
@@ -5266,7 +5266,7 @@ def search_sample(request):
                 },
             )
         # Get projects when sample name is not empty
-        sample_list = search_samples(
+        sample_list = core.utils.samples.search_samples(
             sample_name, user_name, sample_state, start_date, end_date
         )
         if sample_state == "":
@@ -5294,7 +5294,7 @@ def search_sample(request):
         else:
             # get the sample information to select it , because there are also matches on run_sample
             if len(sample_list) == 1:
-                sample_obj = get_sample_obj_from_id(sample_list[0])
+                sample_obj = core.utils.samples.get_sample_obj_from_id(sample_list[0])
                 sample_list = [sample_obj.get_info_for_searching()]
             if len(run_sample_list) == 1:
                 run_sample_obj = get_sample_in_project_obj_from_id(run_sample_list[0])
@@ -5325,7 +5325,7 @@ def set_molecule_values(request):
         else:
             samples = request.POST["samples"].split(",")
 
-        molecule_protocol = get_table_record_molecule(samples, __package__)
+        molecule_protocol = core.utils.samples.get_table_record_molecule(samples, __package__)
         if "ERROR" in molecule_protocol:
             return render(
                 request,
@@ -5344,11 +5344,11 @@ def set_molecule_values(request):
     elif (
         request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
     ):
-        molecule_recorded = record_molecules(request)
+        molecule_recorded = core.utils.samples.record_molecules(request)
 
         if "heading" not in molecule_recorded:
             samples = request.POST["samples"].split(",")
-            molecule_protocol = get_table_record_molecule(samples, __package__)
+            molecule_protocol = core.utils.samples.get_table_record_molecule(samples, __package__)
             molecule_protocol["data"] = molecule_recorded["incomplete_molecules"]
             molecule_protocol["samples"] = ",".join(samples)
             return render(
@@ -5359,7 +5359,7 @@ def set_molecule_values(request):
         else:
             if "incomplete_molecules" in molecule_recorded:
                 samples = molecule_recorded["incomplete_molecules_ids"].split(",")
-                molecule_recorded.update(get_table_record_molecule(samples))
+                molecule_recorded.update(core.utils.samples.get_table_record_molecule(samples))
 
             return render(
                 request,
@@ -5375,7 +5375,7 @@ def set_molecule_values(request):
             molecules = request.POST.getlist("molecules")
         else:
             molecules = request.POST["molecules"].split(",")
-        show_molecule_parameters = display_molecule_protocol_parameters(
+        show_molecule_parameters = core.utils.samples.display_molecule_protocol_parameters(
             molecules, request.user
         )
         return render(
@@ -5388,10 +5388,10 @@ def set_molecule_values(request):
         (
             added_molecule_protocol_parameters,
             sample_updated_list,
-        ) = add_molecule_protocol_parameters(request)
+        ) = core.utils.samples.add_molecule_protocol_parameters(request)
         if "pending" in request.POST:
             molecules = request.POST["pending"].split(",")
-            show_molecule_parameters = display_molecule_protocol_parameters(
+            show_molecule_parameters = core.utils.samples.display_molecule_protocol_parameters(
                 molecules, request.user
             )
             return render(
@@ -5413,7 +5413,7 @@ def set_molecule_values(request):
 
     else:
         register_user = request.user.username
-        display_list = get_defined_samples(register_user)
+        display_list = core.utils.samples.get_defined_samples(register_user)
 
         return render(
             request,
@@ -5606,8 +5606,8 @@ def create_new_run(request):
 def pending_sample_preparations(request):
     pending = {}
     # get the samples in defined state
-    pending["defined"] = get_samples_in_defined_state("")
-    pending["extract_molecule"] = get_samples_in_extracted_molecule_state("")
+    pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
+    pending["extract_molecule"] = core.utils.samples.get_samples_in_extracted_molecule_state("")
     pending["create_library_preparation"] = get_samples_in_lib_prep_state()
     # pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
