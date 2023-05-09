@@ -48,6 +48,7 @@ import wetlab.models
 
 import wetlab.utils.additional_kits
 import wetlab.utils.collection_index
+import wetlab.utils.common
 
 
 
@@ -863,7 +864,7 @@ def search_run(request):
 
     # Search for runs that fullfil the input values
     ########
-    run_form_data = get_run_search_fields_form()
+    run_form_data = wetlab.utils.common.get_run_search_fields_form()
     error_message = wetlab.config.ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == "POST" and (request.POST["action"] == "runsearch"):
         run_name = request.POST["runname"]
@@ -883,7 +884,7 @@ def search_run(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -891,7 +892,7 @@ def search_run(request):
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not wetlab.utils.common.check_valid_date_format(end_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -904,7 +905,7 @@ def search_run(request):
             runs_found = RunProcess.objects.all().order_by("run_date").reverse()
         else:
             user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
-            user_projects = Projects.objects.filter(user_id__in=user_ids)
+            user_projects = wetlab.models.Projects.objects.filter(user_id__in=user_ids)
             run_list = []
             for user_project in user_projects:
                 # run_list.append(user_project.runprocess_id.id)
@@ -1044,7 +1045,7 @@ def search_project(request):
             ---run_list         # in case several run matches the user conditions.
 
     """
-    project_form_data = get_project_search_fields_form()
+    project_form_data = wetlab.utils.common.get_project_search_fields_form()
     error_message = wetlab.config.ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
     if request.method == "POST" and (request.POST["action"] == "searchproject"):
         project_name = request.POST["projectname"]
@@ -1081,7 +1082,7 @@ def search_project(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1093,7 +1094,7 @@ def search_project(request):
                 )
 
         if end_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1289,8 +1290,8 @@ def display_run(request, run_id):
     if groups not in request.user.groups.all():
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
-        if Projects.objects.filter(run_process__exact=run_id).exists():
-            projects = Projects.objects.filter(run_process__exact=run_id)
+        if wetlab.models.Projects.objects.filter(run_process__exact=run_id).exists():
+            projects = wetlab.models.Projects.objects.filter(run_process__exact=run_id)
             allowed = False
             for project in projects:
                 if int(project.get_user_center_name()) in shared_user_ids:
@@ -1894,7 +1895,7 @@ def stats_per_sequencer(request):
         end_date = request.POST["enddate"]
 
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1905,7 +1906,7 @@ def stats_per_sequencer(request):
                     },
                 )
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not wetlab.utils.common.check_valid_date_format(end_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1975,12 +1976,12 @@ def stats_per_time(request):
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
         # check the right format of start and end date
-        if start_date != "" and not check_valid_date_format(start_date):
+        if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
             error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
-        if end_date != "" and not check_valid_date_format(start_date):
+        if end_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
             error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
@@ -2354,7 +2355,7 @@ def stats_per_library(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -2362,7 +2363,7 @@ def stats_per_library(request):
                     {"error_message": error_message},
                 )
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not wetlab.utils.common.check_valid_date_format(end_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -4870,7 +4871,7 @@ def handling_library_preparations(request):
         display_sample_sheet["platform"] = platform
         display_sample_sheet["iem_version"] = sample_sheet_data["iem_version"]
         if user_in_description == "TRUE":
-            display_sample_sheet["user_list"] = get_userid_list()
+            display_sample_sheet["user_list"] = wetlab.utils.common.get_userid_list()
         return render(
             request,
             "wetlab/handlingLibraryPreparations.html",
@@ -5625,8 +5626,6 @@ def pending_sample_preparations(request):
 @login_required
 def compare_samples(request):
     user_is_wetlab_manager = wetlab.utils.common.is_wetlab_manager(request)
-
-    import pdb; pdb.set_trace()
     samples_data = get_list_of_samples_in_projects(request.user, user_is_wetlab_manager)
     samples_data["user"] = request.user.username
     if request.method == "POST" and request.POST["action"] == "compareSamples":
