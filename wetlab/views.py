@@ -1,3 +1,4 @@
+# Generic imports
 import datetime
 import json
 import os
@@ -18,7 +19,9 @@ from core.utils.common import (
     save_inital_sample_setting_value,
     send_test_email,
 )
-from core.utils.load_batch import *
+
+# Local imports
+import core.utils.load_batch
 from core.utils.platforms import get_defined_platforms_and_ids
 from core.utils.protocols import display_protocol_list
 from core.utils.samples import *
@@ -4317,7 +4320,7 @@ def record_samples(request):
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
         sample_information = prepare_sample_input_table(__package__)
         if "samplesExcel" in request.FILES:
-            samples_batch_df = read_batch_sample_file(request.FILES["samplesExcel"])
+            samples_batch_df = core.utils.load_batch.read_batch_sample_file(request.FILES["samplesExcel"])
             if "ERROR" in samples_batch_df:
                 return render(
                     request,
@@ -4327,7 +4330,7 @@ def record_samples(request):
                         "error_message": samples_batch_df["ERROR"],
                     },
                 )
-            valid_file_result = valid_sample_batch_file(samples_batch_df, __package__)
+            valid_file_result = core.utils.load_batch.valid_sample_batch_file(samples_batch_df, __package__)
             if valid_file_result != "OK":
                 return render(
                     request,
@@ -4337,7 +4340,7 @@ def record_samples(request):
                         "error_message": valid_file_result,
                     },
                 )
-            result_recorded = save_samples_in_batch_file(
+            result_recorded = core.utils.load_batch.save_samples_in_batch_file(
                 samples_batch_df, request.user.username, __package__
             )
             if result_recorded != "OK":
@@ -4403,7 +4406,7 @@ def define_sample_projects_fields(request, sample_project_id):
         )
         # sample_information = prepare_sample_input_table(__package__)
         if "jsonSchema" in request.FILES:
-            schema = read_json_schema(request.FILES["jsonSchema"])
+            schema = core.utils.load_batch.read_json_schema(request.FILES["jsonSchema"])
             if "ERROR" in schema:
                 return render(
                     request,
@@ -4413,7 +4416,7 @@ def define_sample_projects_fields(request, sample_project_id):
                         "error_message": schema["ERROR"],
                     },
                 )
-            result = store_schema(
+            result = core.utils.load_batch.store_schema(
                 schema["schema"],
                 request.POST["classification"],
                 request.POST["subfilter"],
