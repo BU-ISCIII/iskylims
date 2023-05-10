@@ -27,15 +27,8 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-from .utils.collection_index import *
-# updated --
-import wetlab.utils.common
 import logging
-# end updated --
 
-from .utils.fetch_info import *
-from .utils.library import *
-from .utils.pool import *
 from .utils.run import *
 from .utils.sample import *
 from .utils.samplesheet import *
@@ -50,6 +43,7 @@ import wetlab.utils.collection_index
 import wetlab.utils.common
 import wetlab.utils.fetch_info
 import wetlab.utils.library
+import wetlab.utils.pool
 
 
 
@@ -491,7 +485,7 @@ def create_nextseq_run(request):
             else:
                 user_id = None
 
-            if not Projects.objects.filter(project_name__iexact=key).exists():
+            if not wetlab.models.Projects.objects.filter(project_name__iexact=key).exists():
                 data = {}
                 data["user_id"] = user_id
                 data["projectName"] = key
@@ -5448,10 +5442,10 @@ def create_pool(request):
         # redirect to login webpage
         return redirect("/accounts/login")
     # collect the information for collecting
-    display_list = get_lib_prep_to_select_in_pool()
+    display_list = wetlab.utils.pool.get_lib_prep_to_select_in_pool()
 
     if request.method == "POST" and request.POST["action"] == "createPool":
-        new_pool = define_new_pool(request.POST, request.user)
+        new_pool = wetlab.utils.pool.define_new_pool(request.POST, request.user)
 
         if not isinstance(new_pool, LibraryPool):
             display_list.update(new_pool)
@@ -5460,7 +5454,7 @@ def create_pool(request):
                 "wetlab/createPool.html",
                 {"display_list": display_list},
             )
-        information_for_created_pool = get_info_to_display_created_pool(new_pool)
+        information_for_created_pool = wetlab.utils.pool.get_info_to_display_created_pool(new_pool)
         return render(
             request,
             "wetlab/createPool.html",
