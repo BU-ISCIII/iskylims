@@ -27,9 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-
-import logging
-from .utils.sample import *
 from .utils.samplesheet import *
 from .utils.sequencers import *
 from .utils.statistics import *
@@ -44,6 +41,7 @@ import wetlab.utils.fetch_info
 import wetlab.utils.library
 import wetlab.utils.pool
 import wetlab.utils.run
+import wetlab.utils.sample
 
 
 
@@ -4165,7 +4163,7 @@ def pending_to_update(request):
 
     pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
     pending["extract_molecule"] = core.utils.samples.get_samples_in_extracted_molecule_state(request.user)
-    pending["graphic_pending_samples"] = pending_samples_for_grafic(pending).render()
+    pending["graphic_pending_samples"] = wetlab.utils.sample.pending_samples_for_grafic(pending).render()
 
     return render(request, "wetlab/pendingToUpdate.html", {"pending": pending})
 
@@ -4201,7 +4199,7 @@ def record_samples(request):
             )
 
         if "sample_id_for_action" in sample_recorded:
-            sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
+            sample_recorded.update(wetlab.utils.sample.get_codeID_for_resequencing(sample_recorded))
         if "incomplete_samples" in sample_recorded:
             sample_recorded.update(core.utils.samples.prepare_sample_input_table(__package__))
             sample_recorded["number_of_samples"] = len(
@@ -4225,7 +4223,7 @@ def record_samples(request):
         reprocess_id = request.POST["sampleIDforAction"]
         json_data = json.loads(request.POST["reprocess_data"])
 
-        result = analyze_reprocess_data(json_data[0], reprocess_id, request.user)
+        result = wetlab.utils.sample.analyze_reprocess_data(json_data[0], reprocess_id, request.user)
         if result == "Invalid options":
             to_be_reprocessed_ids.insert(0, reprocess_id)
             sample_recorded = core.utils.samples.get_info_for_reprocess_samples(
@@ -4233,7 +4231,7 @@ def record_samples(request):
             )
             sample_recorded["invalid_samples_id"] = request.POST["invalidSamplesID"]
             sample_recorded["sample_id_for_action"] = reprocess_id
-            sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
+            sample_recorded.update(wetlab.utils.sample.get_codeID_for_resequencing(sample_recorded))
             sample_recorded["reprocess_result"] = "False"
         else:
             if to_be_reprocessed_ids[0] == "":
@@ -4249,7 +4247,7 @@ def record_samples(request):
                 )
                 sample_recorded["invalid_samples_id"] = ",".join(to_be_reprocessed_ids)
                 sample_recorded["sample_id_for_action"] = next_to_be_process_id
-                sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
+                sample_recorded.update(wetlab.utils.sample.get_codeID_for_resequencing(sample_recorded))
                 sample_recorded["reprocess_result"] = "True"
                 return render(
                     request,
@@ -4663,7 +4661,7 @@ def display_sample(request, sample_id):
     sample_obj = core.utils.samples.get_sample_obj_from_id(sample_id)
     if sample_obj:
         sample_name = sample_obj.get_sample_name()
-        run_sample_obj = get_sample_in_project_obj_from_sample_name(sample_name)
+        run_sample_obj = wetlab.utils.sample.get_sample_in_project_obj_from_sample_name(sample_name)
         if run_sample_obj:
             sample_information.update(wetlab.utils.fetch_info.get_info_sample_in_run(run_sample_obj))
 
@@ -4687,7 +4685,7 @@ def display_sample_in_run(request, sample_run_id):
     Functions:
         get_info_sample_in_run
     """
-    sample_run_obj = get_sample_in_project_obj_from_id(sample_run_id)
+    sample_run_obj = wetlab.utils.sample.get_sample_in_project_obj_from_id(sample_run_id)
     if not sample_run_obj:
         return render(
             request,
@@ -5107,7 +5105,7 @@ def repeat_library_preparation(request):
     ):
         molecule_code_id = request.POST["molecule_code_id"]
         sample_id = request.POST["sample_id"]
-        result = analyze_reprocess_data(
+        result = wetlab.utils.sample.analyze_reprocess_data(
             [molecule_code_id, "New Library Preparation"], sample_id, request.user
         )
         detail_description = {}
@@ -5141,7 +5139,7 @@ def repeat_molecule_extraction(request):
 
     if request.method == "POST" and request.POST["action"] == "repeat_extraction":
         sample_id = request.POST["sample_id"]
-        if analyze_reprocess_data(["New Extraction"], sample_id, request.user):
+        if wetlab.utils.sample.analyze_reprocess_data(["New Extraction"], sample_id, request.user):
             molecule_protocol = core.utils.samples.get_table_record_molecule([sample_id], __package__)
             molecule_protocol["samples"] = sample_id
             # create a copy of the request, to allow to modify it
@@ -5170,7 +5168,7 @@ def repeat_pool(request):
         molecule_code_id = lib_prep_obj.get_molecule_code_id()
         sample_id = lib_prep_obj.get_sample_id()
 
-        result = analyze_reprocess_data(
+        result = wetlab.utils.sample.analyze_reprocess_data(
             [molecule_code_id, lib_prep_code_id, "New Pool"], sample_id, request.user
         )
         detail_description = {}
@@ -5270,7 +5268,7 @@ def search_sample(request):
             sample_name, user_name, sample_state, start_date, end_date
         )
         if sample_state == "":
-            run_sample_list = search_run_samples(
+            run_sample_list = wetlab.utils.sample.search_run_samples(
                 sample_name, user_name, start_date, end_date
             )
         else:
@@ -5297,7 +5295,7 @@ def search_sample(request):
                 sample_obj = core.utils.samples.get_sample_obj_from_id(sample_list[0])
                 sample_list = [sample_obj.get_info_for_searching()]
             if len(run_sample_list) == 1:
-                run_sample_obj = get_sample_in_project_obj_from_id(run_sample_list[0])
+                run_sample_obj = wetlab.utils.sample.get_sample_in_project_obj_from_id(run_sample_list[0])
                 run_sample_list = [run_sample_obj.get_basic_info()]
             return render(
                 request,
@@ -5612,7 +5610,7 @@ def pending_sample_preparations(request):
     # pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
     pending["add_lib_prep_parameters"] = wetlab.utils.library.get_lib_prep_to_add_parameters()
-    pending["graphic_pending_samples"] = pending_samples_for_grafic(pending).render()
+    pending["graphic_pending_samples"] = wetlab.utils.sample.pending_samples_for_grafic(pending).render()
     return render(
         request, "wetlab/pendingSamplePreparations.html", {"pending": pending}
     )
@@ -5621,10 +5619,10 @@ def pending_sample_preparations(request):
 @login_required
 def compare_samples(request):
     user_is_wetlab_manager = wetlab.utils.common.is_wetlab_manager(request)
-    samples_data = get_list_of_samples_in_projects(request.user, user_is_wetlab_manager)
+    samples_data = wetlab.utils.sample.get_list_of_samples_in_projects(request.user, user_is_wetlab_manager)
     samples_data["user"] = request.user.username
     if request.method == "POST" and request.POST["action"] == "compareSamples":
-        selected_sample_objs = analyze_compare_samples_form(request.POST["table_data"])
+        selected_sample_objs = wetlab.utils.sample.analyze_compare_samples_form(request.POST["table_data"])
         if len(selected_sample_objs) == 0:
             error_message = wetlab.config.ERROR_NO_SAMPLES_SELECTED
             return render(
@@ -5632,7 +5630,7 @@ def compare_samples(request):
                 "wetlab/compareSamples.html",
                 {"ERROR": error_message, "samples_data": samples_data},
             )
-        compared_data = get_comparation_sample_information(selected_sample_objs)
+        compared_data = wetlab.utils.sample.get_comparation_sample_information(selected_sample_objs)
 
         return render(
             request,
