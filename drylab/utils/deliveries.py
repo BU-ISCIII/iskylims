@@ -77,7 +77,7 @@ def store_resolution_delivery(form_data):
 
         drylab.models.Delivery.objects.create_delivery(delivery_data)
 
-        resolution_obj.update_resolution_in_delivered()
+        resolution_obj.update_to_delivered()
 
         delivery_data["resolution_number"] = resolution_obj.get_resolution_number()
     return delivery_data

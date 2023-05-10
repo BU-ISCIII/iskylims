@@ -645,10 +645,10 @@ class Resolution(models.Model):
             return service_list
         return ["None"]
 
-    def get_resolution_id(self):
+    def get_id(self):
         return "%s" % (self.pk)
 
-    def get_resolution_information(self):
+    def get_information(self):
         resolution_info = []
         resolution_info.append(self.get_available_services())
         if self.resolution_state is not None:
@@ -682,7 +682,7 @@ class Resolution(models.Model):
 
         return resolution_info
 
-    def get_information_for_pending_resolutions(self):
+    def get_info_pending_resolutions(self):
         if self.resolution_queued_date is None:
             on_queued_date = "Not defined"
         else:
@@ -724,27 +724,16 @@ class Resolution(models.Model):
             return "%s" % (self.resolution_estimated_date)
         return "--"
 
-    def get_resolution_state(self):
-        if self.resolution_state is not None:
-            return "%s" % (self.resolution_state.get_resolution_state())
-        else:
-            return "Not assigned"
-
-    def get_resolution_on_queued_date(self):
+    def get_on_queued_date(self):
         if self.resolution_queued_date is not None:
             return self.resolution_queued_date.strftime("%d %B, %Y")
         else:
             return "--"
 
-    def get_resolution_in_progress_date_no_format(self):
+    def get_in_progress_date(self):
         return self.resolution_in_progress_date
 
-    def get_resolution_request_center_abbr(self):
-        return "%s" % (
-            self.resolution_service_id.service_user_id.profile.profile_center.center_abbr
-        )
-
-    def get_resolution_handler_user(self):
+    def get_asigned_user(self):
         if self.resolution_asigned_user is not None:
             return self.resolution_asigned_user.username
         return "--"
@@ -754,7 +743,7 @@ class Resolution(models.Model):
             return self.resolution_service_id.get_user_email()
         return ""
 
-    def update_resolution_in_progress_date(self):
+    def update_to_in_progress(self):
         today = date.today()
         self.resolution_in_progress_date = today
         self.resolution_state = ResolutionStates.objects.get(
@@ -763,7 +752,7 @@ class Resolution(models.Model):
         self.save()
         return self
 
-    def update_resolution_in_delivered(self):
+    def update_to_delivered(self):
         today = date.today()
         self.resolution_delivery_date = today
         self.resolution_state = ResolutionStates.objects.get(
@@ -772,12 +761,7 @@ class Resolution(models.Model):
         self.save()
         return self
 
-    def update_resolution_file(self, file):
-        self.resolution_pdf_file = file
-        self.save()
-        return self
-
-    def update_resolution_state(self, state):
+    def update_state(self, state):
         self.resolution_state = ResolutionStates.objects.get(state_value__exact=state)
         self.save()
         return self

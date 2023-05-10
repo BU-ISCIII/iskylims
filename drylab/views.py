@@ -147,7 +147,7 @@ def request_sequencing_service(request):
                 },
             )
 
-        new_service = drylab.utils.req_services.save_sequencing_service_request(
+        new_service = drylab.utils.req_services.save_sequencing_service(
             request
         )
         sample_stored = drylab.utils.req_services.save_service_samples(
@@ -229,7 +229,7 @@ def counseling_request(request):
                 },
             )
 
-        new_service = drylab.utils.req_services.save_counseling_infrastructure_service_request(
+        new_service = drylab.utils.req_services.save_counseling_infrastructure_service(
             request
         )
 
@@ -285,7 +285,7 @@ def infrastructure_request(request):
                 },
             )
 
-        new_service = drylab.utils.req_services.save_counseling_infrastructure_service_request(
+        new_service = drylab.utils.req_services.save_counseling_infrastructure_service(
             request
         )
 
@@ -896,7 +896,7 @@ def add_in_progress(request):
                 resolution_id
             )
         )
-        resolution_obj.update_resolution_in_progress_date()
+        resolution_obj.update_to_in_progress()
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
         # check if services can change to "in progress"
@@ -1395,7 +1395,7 @@ def stats_by_services_request(request):
                 ).exists():
                     user_center = django_utils.models.Profile.objects.get(
                         profile_user_id=user_service_obj
-                    ).get_profile_center_abbr()
+                    ).get_center_abbr()
                 else:
                     user_center = "Not defined"
                 if user_center in user_center_dict:
@@ -1439,7 +1439,7 @@ def stats_by_services_request(request):
                 ).exists():
                     user_center = django_utils.models.Profile.objects.get(
                         profile_user_id=user_service_obj
-                    ).get_profile_center_abbr()
+                    ).get_center_abbr()
                 else:
                     user_center = "Not defined"
                 if date_service not in time_values_dict:
