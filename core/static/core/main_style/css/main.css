@@ -1,0 +1,61 @@
+
+@media all and (min-width: 992px) {
+    .navbar .nav-item .dropdown-menu{ display: none; }
+    .navbar .nav-item:hover .nav-link{   }
+    .navbar .nav-item:hover .dropdown-menu{ display: block; }
+    .navbar .nav-item .dropdown-menu{ margin-top:0; }
+}
+
+
+/*--------------------------------------------------------------
+# Footer
+--------------------------------------------------------------*/
+.footer {
+    color: var(--color-black);
+    font-size: 14px;
+}
+.footer {
+    z-index:1000;
+}
+.footer .footer-logo {
+    width: 250px;
+    height: auto;
+}
+.footer .footer-power-by-logo {
+    width: 150px !important;
+    height: auto;
+}
+.footer .footer-content {
+    background: var(--color-secondary);
+    padding: 30px 0 30px 0;
+}
+
+/*--------------------------------------------------------------
+# Scroll top button
+--------------------------------------------------------------*/
+.scroll-top {
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  right: 15px;
+  bottom: 15px;
+  z-index: 995;
+  background: var(--color-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  transition: all 0.4s;
+}
+.scroll-top i {
+  font-size: 24px;
+  color: var(--color-white);
+  line-height: 0;
+}
+.scroll-top:hover {
+  background: rgba(var(--color-primary-rgb), 0.85);
+  color: var(--color-white);
+}
+.scroll-top.active {
+  visibility: visible;
+  opacity: 1;
+}

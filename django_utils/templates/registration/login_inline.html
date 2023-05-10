@@ -1,24 +1,28 @@
- {% if user.is_authenticated %}                                                                                                    
-<form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">                           
-  	{% csrf_token %}                                                                                                                
-  	<div class="input-group">                                                                                                       
-  		<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                             
-		<input id="id_username" type="text" class="form-control" name="username" value="" placeholder="{{user.get_username}}" readonly>                  
-  	</div>                                                                                                                          
-  	<button type="submit" class="btn btn-primary"> Logout </button>                                                                  
-	<a class="btn btn-primary" href="/utils/user_edit"> My account </a>                                                                   
- </form>                                                                                                                            
+{% if user.is_authenticated %}
+    <div class="row mt-1">
+        <div class="col-md-6 offset-6">                                                                                                   
+        <form id="signin"  role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">                           
+            {% csrf_token %}                                                                                                                
+            <div class="input-group me-auto" >                                                                                                       
+                <span class="input-group-addon me-auto"><i class="glyphicon glyphicon-user"></i></span>                                             
+                <input id="id_username" type="text" class="form-control" name="username" value="" placeholder="{{user.get_username}}" readonly>                  
+            </div>                                                                                                                          
+            <button type="submit" class="btn btn-primary"> Logout </button>                                                                  
+            <a class="btn btn-primary" href="/utils/user_edit"> My account </a>                                                                   
+        </form>
+    </div>
+    </div>                                                                                                                          
  {% else %}                                                                                                                        
- <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
- 	{% csrf_token %}                                                                                                               
- 	<div class="input-group">                                                                                                      
- 		<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                            
- 		<input id="id_username" type="text" class="form-control" name="username" value="" placeholder="User name">                 
- 	</div>                                                                                                                         
- 	<div class="input-group">                                                                                                      
- 		<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>                                            
- 		<input id="id_password" type="password" class="form-control" name="password" value="" placeholder="Password">              
- 	</div>                                                                                                                         
- 	<button type="submit" class="btn btn-primary"> Login </button>                                                                 
- </form>                                                                                                                           
+    <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
+        {% csrf_token %}                                                                                                               
+        <div class="input-group">                                                                                                      
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                            
+            <input id="id_username" type="text" class="form-control" name="username" value="" placeholder="User name">                 
+        </div>                                                                                                                         
+        <div class="input-group">                                                                                                      
+            <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>                                            
+            <input id="id_password" type="password" class="form-control" name="password" value="" placeholder="Password">              
+        </div>                                                                                                                         
+        <button type="submit" class="btn btn-primary"> Login </button>                                                                 
+    </form>                                                                                                                           
  {% endif %}                                                                                                                       
