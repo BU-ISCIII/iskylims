@@ -125,7 +125,7 @@ def create_resolution_test(resolution_number, service_requested):
     except Exception:
         resolution_test.append(("Resolution creation", "NOK"))
 
-    test_resolution.get_resolution_information()
+    test_resolution.get_information()
 
     resolution_test.append(("Folder structure creation", "OK"))
 

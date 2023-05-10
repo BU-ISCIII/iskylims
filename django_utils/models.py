@@ -64,7 +64,7 @@ class Profile(models.Model):
             )
         return "Not available"
 
-    def get_profile_center_abbr(self):
+    def get_center_abbr(self):
         if self.profile_center is not None:
             return "%s" % (self.profile_center.get_center_abbr())
         return "Not defined"
