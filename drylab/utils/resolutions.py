@@ -24,15 +24,13 @@ def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
     """
     for pipeline_id in pipeline_ids:
         resolution_obj.resolution_pipelines.add(
-            drylab.utils.pipelines.get_pipeline_obj_from_id(
-                pipeline_id
-            )
+            drylab.utils.pipelines.get_pipeline_obj_from_id(pipeline_id)
         )
 
     return None
 
 
-def allow_to_service_update_state(resolution_obj, new_state):
+def check_allow_service_update(resolution_obj, new_state):
     """
     Description:
         The function check if all partial resolutions are handled all requested
@@ -43,32 +41,27 @@ def allow_to_service_update_state(resolution_obj, new_state):
     Return:
         True or False
     """
+    states = []
     service_obj = resolution_obj.get_service_obj()
-    if (
-        drylab.models.Resolution.objects.filter(
-            resolution_service_id=service_obj
-        )
-        .exclude(resolution_state__state_value__exact="Queued")
-        .exists()
-    ):
-        all_resolution_objs = drylab.models.Resolution.objects.filter(
-            resolution_service_id=service_obj
-        ).exclude(resolution_state__state_value__exact="Queued")
-        avail_services_handled = []
-        for all_resolution_obj in all_resolution_objs:
-            if new_state == "delivered":
-                if not (
-                    all_resolution_obj.get_state() == "Delivered"
-                    or all_resolution_obj.get_state() == "Cancelled"
-                    or all_resolution_obj == resolution_obj
-                ):
-                    continue
-            resolution_handle_list = all_resolution_obj.get_available_services()
-            for item in resolution_handle_list:
-                avail_services_handled.append(item)
-        if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
-            return True
-    return False
+    if drylab.models.Resolution.objects.filter(
+        resolution_service_id=service_obj
+    ).exists():
+        if new_state == "in_progress":
+            resolution_objs = drylab.models.Resolution.objects.filter(
+                resolution_service_id=service_obj
+            ).exclude(resolution_state__state_value__in=["delivered", "rejected", "cancelled"])
+        else:
+            resolution_objs = drylab.models.Resolution.objects.filter(
+                resolution_service_id=service_obj
+            ).exclude(resolution_state__state_value__in=["rejected", "cancelled"])
+        for resolution_obj in resolution_objs:
+            states.append(resolution_obj.get_state())
+    
+    import pdb;pdb.set_trace()
+    if all(state == new_state for state in states):
+        return True
+    else:
+        return False
 
 
 def get_assign_resolution_full_number(service_id, acronymName):
@@ -84,18 +77,12 @@ def get_assign_resolution_full_number(service_id, acronymName):
     Return:
         resolution_full_number
     """
-    service_obj = (
-        drylab.utils.common.get_service_obj(
-            service_id
-        )
-    )
+    service_obj = drylab.utils.common.get_service_obj(service_id)
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_id
     ).exists():
         resolution_full_number = (
-            drylab.models.Resolution.objects.filter(
-                resolution_service_id=service_obj
-            )
+            drylab.models.Resolution.objects.filter(resolution_service_id=service_obj)
             .last()
             .get_resolution_number()
         )
@@ -120,11 +107,7 @@ def create_resolution_number(service_id):
     Return:
         resolution_number
     """
-    service_obj = (
-        drylab.utils.common.get_service_obj(
-            service_id
-        )
-    )
+    service_obj = drylab.utils.common.get_service_obj(service_id)
     service_request_number = service_obj.get_service_request_number()
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
@@ -186,9 +169,7 @@ def check_if_resolution_exists(resolution_id):
     Return:
         True or False
     """
-    if drylab.models.Resolution.objects.filter(
-        pk__exact=resolution_id
-    ).exists():
+    if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
         return True
     return False
 
@@ -209,18 +190,14 @@ def create_new_resolution(resolution_data_form):
     Return:
         new_resolution
     """
-    service_obj = (
-        drylab.utils.common.get_service_obj(
-            resolution_data_form["service_id"]
-        )
+    service_obj = drylab.utils.common.get_service_obj(
+        resolution_data_form["service_id"]
     )
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
     ).exists():
         resolution_data_form["resolution_full_number"] = (
-            drylab.models.Resolution.objects.filter(
-                resolution_service_id=service_obj
-            )
+            drylab.models.Resolution.objects.filter(resolution_service_id=service_obj)
             .last()
             .get_resolution_full_number()
         )
@@ -255,11 +232,7 @@ def create_new_resolution(resolution_data_form):
     if "pipelines" in resolution_data_form:
         for pipeline in resolution_data_form["pipelines"]:
             if pipeline != "":
-                pipeline_obj = (
-                    drylab.utils.pipelines.get_pipeline_obj_from_id(
-                        pipeline
-                    )
-                )
+                pipeline_obj = drylab.utils.pipelines.get_pipeline_obj_from_id(pipeline)
                 new_resolution.servicePipelines.add(pipeline_obj)
 
     if "additional_parameters" in resolution_data_form:
@@ -307,9 +280,7 @@ def get_resolution_obj_from_id(resolution_id):
         resolution_obj
     """
     resolution_obj = None
-    if drylab.models.Resolution.objects.filter(
-        pk__exact=resolution_id
-    ).exists():
+    if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
         resolution_obj = drylab.models.Resolution.objects.filter(
             pk__exact=resolution_id
         ).last()
@@ -332,11 +303,7 @@ def prepare_form_data_add_resolution(form_data):
         list_of_ch_services = form_data.getlist("childrenServices")
     else:
         list_of_ch_services = False
-    service_obj = (
-        drylab.utils.common.get_service_obj(
-            form_data["service_id"]
-        )
-    )
+    service_obj = drylab.utils.common.get_service_obj(form_data["service_id"])
     resolution_form_data["service_number"] = service_obj.get_service_request_number()
     all_tree_services = service_obj.service_available_service.all()
     all_children_services = drylab.utils.req_services.get_children_services(
@@ -542,9 +509,7 @@ def store_resolution_additional_parameter(additional_parameters, resolution_obj)
     for additional_parameter in additional_parameters:
         parameter = {}
         parameter["resolution"] = resolution_obj
-        for (
-            field
-        ) in drylab.config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:
+        for field in drylab.config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:
             parameter[field[0]] = additional_parameter[field[1]]
         drylab.models.ResolutionParameters.objects.create_resolution_parameters(
             parameter

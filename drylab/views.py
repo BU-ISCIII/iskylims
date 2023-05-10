@@ -878,7 +878,7 @@ def add_in_progress(request):
 
     if (
         request.method == "POST"
-        and request.POST["action"] == "inProgressResolutionService"
+        and request.POST["action"] == "add_in_progress"
     ):
         resolution_id = request.POST["resolution_id"]
         if not drylab.utils.resolutions.check_if_resolution_exists(
@@ -900,7 +900,7 @@ def add_in_progress(request):
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
         # check if services can change to "in progress"
-        if drylab.utils.resolutions.allow_to_service_update_state(
+        if drylab.utils.resolutions.check_allow_service_update(
             resolution_obj, "in_progress"
         ):
             # update the service status and in_porgress date
@@ -1011,7 +1011,7 @@ def add_delivery(request):
             drylab.utils.deliveries.send_delivery_service_email(
                 email_data
             )
-            if drylab.utils.resolutions.allow_to_service_update_state(
+            if drylab.utils.resolutions.check_allow_service_update(
                 resolution_obj, "delivered"
             ):
                 service_obj = resolution_obj.get_service_obj()

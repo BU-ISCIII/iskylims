@@ -171,7 +171,7 @@
                             {% for res_id , res_name, services in display_service.resolution_progress %}
                             <form class="" action="/drylab/addInProgress" method="post">
                                 {% csrf_token %}
-                                <input type="hidden" name="action" value="inProgressResolutionService">
+                                <input type="hidden" name="action" value="add_in_progress">
                                 <input type="hidden" name="resolution_id" value="{{res_id}}">
                                 <div class="col-sm-8 "> <!-- col-sm-4  In progress button  -->
                                     <h5>{{res_name}}</h5>
