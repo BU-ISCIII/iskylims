@@ -27,7 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-from .utils.samplesheet import *
 from .utils.sequencers import *
 from .utils.statistics import *
 from .utils.stats_graphs import *
@@ -42,6 +41,7 @@ import wetlab.utils.library
 import wetlab.utils.pool
 import wetlab.utils.run
 import wetlab.utils.sample
+import wetlab.utils.samplesheet
 
 
 
@@ -344,7 +344,7 @@ def create_nextseq_run(request):
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
 
         # Fetch the experiment name and the library name from the sample sheet file
-        index_library_name = get_index_library_name(stored_file)
+        index_library_name = wetlab.utils.samplesheet.get_index_library_name(stored_file)
         run_name = wetlab.utils.common.get_experiment_name_from_file(stored_file)
 
         if run_name == "":
@@ -398,7 +398,7 @@ def create_nextseq_run(request):
         # the run and the user. Error page is showed if not project/description
         # colunms are found
 
-        project_list = get_projects_in_run(stored_file)
+        project_list = wetlab.utils.samplesheet.get_projects_in_run(stored_file)
 
         if len(project_list) == 0:
             # delete sample sheet file
@@ -552,13 +552,13 @@ def create_nextseq_run(request):
         if not os.path.isfile(index_file):
             with open(index_file, "w") as index_fh:
                 index_fh.write("0000-AA")
-        create_unique_sample_id_values(in_file, index_file)
+        wetlab.utils.samplesheet.create_unique_sample_id_values(in_file, index_file)
         # create the projects/users to update sample sheet
         user_names_in_projects = {}
         for p_index in range(len(projects)):
             user_names_in_projects[projects[p_index]] = user_name[p_index]
 
-        set_user_names_in_sample_sheet(in_file, user_names_in_projects)
+        wetlab.utils.samplesheet.set_user_names_in_sample_sheet(in_file, user_names_in_projects)
         # build the project list for each project_library kit
         for x in range(len(project_index_kit)):
             if project_index_kit[x] in library:
@@ -581,8 +581,8 @@ def create_nextseq_run(request):
             update_info_proj.save()
         results.append(["runname", experiment_name])
         run_p.set_run_state("Recorded")
-        sample_sheet_lines = read_all_lines_in_sample_sheet(in_file)
-        sample_names_and_data = get_samples_in_sample_sheet(sample_sheet_lines)
+        sample_sheet_lines = wetlab.utils.samplesheet.read_all_lines_in_sample_sheet(in_file)
+        sample_names_and_data = wetlab.utils.samplesheet.get_samples_in_sample_sheet(sample_sheet_lines)
         wetlab.utils.run.increase_reuse_if_samples_exists(sample_names_and_data["samples"])
 
         return render(
@@ -1819,7 +1819,7 @@ def change_project_libKit(request, project_id):
             old_lib_kit_file = project.baseSpaceFile
             new_file_name = new_library_name.replace(" ", "_")
             #
-            new_file = update_library_kit_field(
+            new_file = wetlab.utils.samplesheet.update_library_kit_field(
                 old_lib_kit_file, new_file_name, new_library_name
             )
             if new_file == "ERROR":
@@ -4803,14 +4803,14 @@ def handling_library_preparations(request):
 
     if request.method == "POST" and request.POST["action"] == "importsamplesheet":
         data = {}
-        data["full_path_file"], data["file_name"] = store_user_input_file(
+        data["full_path_file"], data["file_name"] = wetlab.utils.samplesheet.store_user_input_file(
             request.FILES["uploadfile"]
         )
-        file_read = read_user_iem_file(data["full_path_file"])
-        if not valid_user_iem_file(file_read):
+        file_read = wetlab.utils.samplesheet.read_user_iem_file(data["full_path_file"])
+        if not wetlab.utils.samplesheet.valid_user_iem_file(file_read):
             # Error found when extracting data from sample sheet
             data["ERROR"] = wetlab.config.ERROR_INVALID_FILE_FORMAT
-            if not delete_stored_file(data["full_path_file"]):
+            if not wetlab.utils.samplesheet.delete_stored_file(data["full_path_file"]):
                 data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
@@ -4823,7 +4823,7 @@ def handling_library_preparations(request):
         if user_in_description == "TRUE":
             user_id_in_s_sheet = wetlab.utils.library.extract_userids_from_sample_sheet_data(file_read)
             if "ERROR" in user_id_in_s_sheet:
-                if not delete_stored_file(data["full_path_file"]):
+                if not wetlab.utils.samplesheet.delete_stored_file(data["full_path_file"]):
                     user_id_in_s_sheet["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
                 return render(
                     request,
@@ -4835,11 +4835,11 @@ def handling_library_preparations(request):
                 )
         else:
             user_id_in_s_sheet = []
-        sample_sheet_data = get_sample_sheet_data(file_read)
+        sample_sheet_data = wetlab.utils.samplesheet.get_sample_sheet_data(file_read)
 
         valid_data = wetlab.utils.library.validate_sample_sheet_data(sample_sheet_data)
         if "ERROR" in valid_data:
-            if not delete_stored_file(data["full_path_file"]):
+            if not wetlab.utils.samplesheet.delete_stored_file(data["full_path_file"]):
                 valid_data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
