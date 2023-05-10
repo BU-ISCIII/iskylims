@@ -27,9 +27,8 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-import logging
 
-from .utils.run import *
+import logging
 from .utils.sample import *
 from .utils.samplesheet import *
 from .utils.sequencers import *
@@ -44,6 +43,7 @@ import wetlab.utils.common
 import wetlab.utils.fetch_info
 import wetlab.utils.library
 import wetlab.utils.pool
+import wetlab.utils.run
 
 
 
@@ -585,7 +585,7 @@ def create_nextseq_run(request):
         run_p.set_run_state("Recorded")
         sample_sheet_lines = read_all_lines_in_sample_sheet(in_file)
         sample_names_and_data = get_samples_in_sample_sheet(sample_sheet_lines)
-        increase_reuse_if_samples_exists(sample_names_and_data["samples"])
+        wetlab.utils.run.increase_reuse_if_samples_exists(sample_names_and_data["samples"])
 
         return render(
             request,
@@ -4657,7 +4657,7 @@ def display_sample(request, sample_id):
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(wetlab.utils.library.get_all_library_information(sample_id))
         sample_information.update(wetlab.utils.additional_kits.get_additional_kits_used_in_sample(sample_id))
-        sample_information.update(get_run_user_lot_kit_used_in_sample(sample_id))
+        sample_information.update(wetlab.utils.run.get_run_user_lot_kit_used_in_sample(sample_id))
     else:
         sample_information = {}
     sample_obj = core.utils.samples.get_sample_obj_from_id(sample_id)
@@ -5486,7 +5486,7 @@ def create_new_run(request):
         return redirect("/accounts/login")
 
     if request.method == "POST" and request.POST["action"] == "createNewRun":
-        display_pools_for_run = display_available_pools()
+        display_pools_for_run = wetlab.utils.run.display_available_pools()
         if "poolID" not in request.POST:
             error_message = wetlab.config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
             return render(
@@ -5497,7 +5497,7 @@ def create_new_run(request):
                     "ERROR": error_message,
                 },
             )
-        compatibility = check_valid_data_for_creation_run(request.POST, request.user)
+        compatibility = wetlab.utils.run.check_valid_data_for_creation_run(request.POST, request.user)
         if "ERROR" in compatibility:
             return render(
                 request,
@@ -5509,7 +5509,7 @@ def create_new_run(request):
             )
         # compatible_index = check_index_compatible(lib_prep_ids)
         display_sample_information = (
-            create_run_in_pre_recorded_and_get_data_for_confirmation(
+            wetlab.utils.run.create_run_in_pre_recorded_and_get_data_for_confirmation(
                 request.POST, request.user
             )
         )
@@ -5522,17 +5522,17 @@ def create_new_run(request):
 
     elif request.method == "POST" and request.POST["action"] == "continueWithRun":
         run_id = request.POST["run_ids"]
-        experiment_name = wetlab.utils.common.get_experiment_name(run_id)
-        pool_objs = LibraryPool.objects.filter(run_process_id__exact=run_id)
+        experiment_name = wetlab.utils.run.get_experiment_name(run_id)
+        pool_objs = wetlab.models.LibraryPool.objects.filter(run_process_id__exact=run_id)
         pool_ids = []
         for pool in pool_objs:
             pool_ids.append(pool.get_id())
-        lib_prep_ids = get_library_prep_in_pools(pool_ids)
+        lib_prep_ids = wetlab.utils.run.get_library_prep_in_pools(pool_ids)
 
-        display_sample_information = get_library_preparation_data_in_run(
+        display_sample_information = wetlab.utils.run.get_library_preparation_data_in_run(
             lib_prep_ids, pool_ids
         )
-        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids))
+        display_sample_information.update(wetlab.utils.run.get_stored_user_sample_sheet(lib_prep_ids))
         display_sample_information["experiment_name"] = experiment_name
         display_sample_information["run_process_id"] = run_id
         return render(
@@ -5542,12 +5542,12 @@ def create_new_run(request):
         )
 
     elif request.method == "POST" and request.POST["action"] == "storeDataNewRun":
-        run_obj = get_run_obj_from_id(request.POST["run_process_id"])
+        run_obj = wetlab.utils.run.get_run_obj_from_id(request.POST["run_process_id"])
         if run_obj.get_state() != "Pre-Recorded":
             exp_name = run_obj.get_run_name()
             error_message = wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY.copy()
             error_message.insert(1, exp_name)
-            display_pools_for_run = display_available_pools()
+            display_pools_for_run = wetlab.utils.run.display_available_pools()
             return render(
                 request,
                 "wetlab/CreateNewRun.html",
@@ -5556,15 +5556,15 @@ def create_new_run(request):
                     "ERROR": error_message,
                 },
             )
-        run_data = collect_data_and_update_library_preparation_samples_for_run(
+        run_data = wetlab.utils.run.collect_data_and_update_library_preparation_samples_for_run(
             request.POST, request.user
         )
 
-        projects_objs = create_new_projects_added_to_run(
+        projects_objs = wetlab.utils.run.create_new_projects_added_to_run(
             run_data["projects"], run_data["run_obj"], request.user
         )
         if "ERROR" in projects_objs:
-            display_pools_for_run = display_available_pools()
+            display_pools_for_run = wetlab.utils.run.display_available_pools()
             return render(
                 request,
                 "wetlab/CreateNewRun.html",
@@ -5576,7 +5576,7 @@ def create_new_run(request):
 
         run_obj.set_run_state("Recorded")
 
-        sample_sheet_name = store_confirmation_sample_sheet(run_data)
+        sample_sheet_name = wetlab.utils.run.store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
         pools_obj = LibraryPool.objects.filter(run_process_id=run_obj)
 
@@ -5594,7 +5594,7 @@ def create_new_run(request):
             {"created_new_run": created_new_run},
         )
     else:
-        display_pools_for_run = display_available_pools()
+        display_pools_for_run = wetlab.utils.run.display_available_pools()
         return render(
             request,
             "wetlab/CreateNewRun.html",
