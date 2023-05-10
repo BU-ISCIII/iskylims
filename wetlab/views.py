@@ -24,7 +24,7 @@ from core.utils.protocols import display_protocol_list
 from core.utils.samples import *
 from wetlab import config
 
-from .fusioncharts.fusioncharts import FusionCharts
+from core.fusioncharts.fusioncharts import FusionCharts
 from .models import *
 from .utils.additional_kits import *
 from .utils.collection_index import *

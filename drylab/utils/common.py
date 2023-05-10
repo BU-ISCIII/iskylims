@@ -9,6 +9,21 @@ import drylab.config
 import drylab.models
 
 
+def get_service_obj(service_id):
+    """
+    Description:
+        The function get the  service obj  from the id
+    Input:
+        service_id  # id of the  service
+    Return:
+        service_obj
+    """
+    service_obj = None
+    if drylab.models.Service.objects.filter(pk__exact=service_id).exists():
+        service_obj = drylab.models.Service.objects.filter(pk__exact=service_id).last()
+    return service_obj
+
+
 def check_valid_date_format(date):
     try:
         datetime.datetime.strptime(date, "%Y-%m-%d")

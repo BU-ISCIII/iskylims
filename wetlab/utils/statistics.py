@@ -1,6 +1,6 @@
 import statistics
 
-from wetlab.fusioncharts.fusioncharts import FusionCharts
+from core.fusioncharts.fusioncharts import FusionCharts
 from wetlab.models import *
 from wetlab.utils.common import *
 from wetlab.utils.fetch_info import *

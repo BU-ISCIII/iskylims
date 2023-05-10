@@ -25,7 +25,9 @@ class ContactForm(forms.Form):
         self.helper.layout = layout.Layout(
             layout.Div(
                 layout.HTML(
-                    """<div class="panel-heading"><h3 class="panel-title">Write your email and your request </h3></div>"""
+                    """<div class="panel-heading">
+                        <h3 class="panel-title">Write your email and your request </h3>
+                        </div>"""
                 ),
                 layout.Div(
                     layout.Div(
