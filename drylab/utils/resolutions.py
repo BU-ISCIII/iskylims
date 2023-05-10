@@ -85,7 +85,7 @@ def get_assign_resolution_full_number(service_id, acronymName):
         resolution_full_number
     """
     service_obj = (
-        drylab.utils.req_services.get_service_obj_from_id(
+        drylab.utils.common.get_service_obj(
             service_id
         )
     )
@@ -121,7 +121,7 @@ def create_resolution_number(service_id):
         resolution_number
     """
     service_obj = (
-        drylab.utils.req_services.get_service_obj_from_id(
+        drylab.utils.common.get_service_obj(
             service_id
         )
     )
@@ -210,7 +210,7 @@ def create_new_resolution(resolution_data_form):
         new_resolution
     """
     service_obj = (
-        drylab.utils.req_services.get_service_obj_from_id(
+        drylab.utils.common.get_service_obj(
             resolution_data_form["service_id"]
         )
     )
@@ -247,7 +247,7 @@ def create_new_resolution(resolution_data_form):
 
     # Add selected available services to the new resolution
     for avail_sarvice in resolution_data_form["select_available_services"]:
-        avail_service_obj = drylab.utils.req_services.get_available_service_obj_from_id(
+        avail_service_obj = drylab.utils.req_services.get_available_service_obj(
             avail_sarvice
         )
         new_resolution.available_services.add(avail_service_obj)
@@ -333,20 +333,20 @@ def prepare_form_data_add_resolution(form_data):
     else:
         list_of_ch_services = False
     service_obj = (
-        drylab.utils.req_services.get_service_obj_from_id(
+        drylab.utils.common.get_service_obj(
             form_data["service_id"]
         )
     )
     resolution_form_data["service_number"] = service_obj.get_service_request_number()
     all_tree_services = service_obj.service_available_service.all()
-    all_children_services = drylab.utils.req_services.get_available_children_services_and_id(
+    all_children_services = drylab.utils.req_services.get_children_services(
         all_tree_services
     )
 
     if list_of_ch_services:
         if len(list_of_ch_services) != len(all_children_services):
             for children in list_of_ch_services:
-                avail_serv_obj = drylab.utils.req_services.get_available_service_obj_from_id(
+                avail_serv_obj = drylab.utils.req_services.get_available_service_obj(
                     children
                 )
                 selected_children_services.append(

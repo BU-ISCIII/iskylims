@@ -24,7 +24,7 @@ import drylab.utils.pipelines
 import drylab.utils.req_services
 import drylab.utils.resolutions
 import drylab.utils.test_conf
-from django_utils.fusioncharts.fusioncharts import FusionCharts
+from core.fusioncharts.fusioncharts import FusionCharts
 
 
 @login_required
@@ -122,7 +122,7 @@ def request_sequencing_service(request):
             response["Content-Disposition"] = "inline; filename=files.json"
             return response
         else:
-            service_data_information = drylab.utils.req_services.prepare_form_data_request_service_sequencing(
+            service_data_information = drylab.utils.req_services.get_service_data(
                 request
             )
             return render(
@@ -134,7 +134,7 @@ def request_sequencing_service(request):
     if request.method == "POST" and request.POST["subAction"] == "createservice":
         # check that at some services have been requested
         if len(request.POST.getlist("RequestedServices")) == 0:
-            service_data_information = drylab.utils.req_services.prepare_form_data_request_service_sequencing(
+            service_data_information = drylab.utils.req_services.get_service_data(
                 request
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
@@ -147,10 +147,10 @@ def request_sequencing_service(request):
                 },
             )
 
-        new_service = drylab.utils.req_services.create_new_save_sequencing_service_request(
+        new_service = drylab.utils.req_services.save_sequencing_service_request(
             request
         )
-        sample_stored = drylab.utils.req_services.stored_samples_for_sequencing_request_service(
+        sample_stored = drylab.utils.req_services.save_service_samples(
             request.POST, new_service
         )
         if "files" in request.POST:
@@ -172,7 +172,7 @@ def request_sequencing_service(request):
             email_data["user_email"] = request.user.email
             email_data["user_name"] = request.user.username
         email_data["service_number"] = new_service.get_service_request_number()
-        email_result = drylab.utils.req_services.send_service_creation_confirmation_email(
+        email_result = drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
         # PDF preparation file for confirmation of service request
@@ -201,7 +201,7 @@ def request_sequencing_service(request):
             {"confirmation_result": confirmation_result},
         )
     else:
-        service_data_information = drylab.utils.req_services.prepare_form_data_request_service_sequencing(
+        service_data_information = drylab.utils.req_services.get_service_data(
             request
         )
         return render(
@@ -217,7 +217,7 @@ def counseling_request(request):
         # check that at some services have been requested
         if len(request.POST.getlist("RequestedServices")) == 0:
             service_data_information = (
-                drylab.utils.req_services.prepare_form_data_request_counseling_service()
+                drylab.utils.req_services.get_counseling_service_data()
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
@@ -229,7 +229,7 @@ def counseling_request(request):
                 },
             )
 
-        new_service = drylab.utils.req_services.create_new_save_counseling_infrastructure_service_request(
+        new_service = drylab.utils.req_services.save_counseling_infrastructure_service_request(
             request
         )
 
@@ -237,7 +237,7 @@ def counseling_request(request):
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
         email_data["service_number"] = new_service.get_service_request_number()
-        drylab.utils.req_services.send_service_creation_confirmation_email(
+        drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
         confirmation_result = {}
@@ -258,7 +258,7 @@ def counseling_request(request):
 
     else:
         service_data_information = (
-            drylab.utils.req_services.prepare_form_data_request_counseling_service()
+            drylab.utils.req_services.get_counseling_service_data()
         )
         return render(
             request,
@@ -273,7 +273,7 @@ def infrastructure_request(request):
         # check that at some services have been requested
         if len(request.POST.getlist("RequestedServices")) == 0:
             service_data_information = (
-                drylab.utils.req_services.prepare_form_data_request_infrastructure_service()
+                drylab.utils.req_services.get_infrastructure_service_data()
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
@@ -285,7 +285,7 @@ def infrastructure_request(request):
                 },
             )
 
-        new_service = drylab.utils.req_services.create_new_save_counseling_infrastructure_service_request(
+        new_service = drylab.utils.req_services.save_counseling_infrastructure_service_request(
             request
         )
 
@@ -293,7 +293,7 @@ def infrastructure_request(request):
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
         email_data["service_number"] = new_service.get_service_request_number()
-        drylab.utils.req_services.send_service_creation_confirmation_email(
+        drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
         confirmation_result = {}
@@ -313,7 +313,7 @@ def infrastructure_request(request):
         )
     else:
         service_data_information = (
-            drylab.utils.req_services.prepare_form_data_request_infrastructure_service()
+            drylab.utils.req_services.get_infrastructure_service_data()
         )
         return render(
             request,
@@ -347,14 +347,14 @@ def add_samples_in_service(request):
                 {"content": ["The service that you are trying to get does not exist "]},
             )
         service_obj = (
-            drylab.utils.req_services.get_service_obj_from_id(
+            drylab.utils.common.get_service_obj(
                 request.POST["service_id"]
             )
         )
         samples_added = {}
         samples_added[
             "samples"
-        ] = drylab.utils.req_services.stored_samples_for_sequencing_request_service(
+        ] = drylab.utils.req_services.save_service_samples(
             request.POST, service_obj
         )
         samples_added["service_name"] = service_obj.get_service_request_number()
@@ -365,7 +365,7 @@ def add_samples_in_service(request):
             {"samples_added": samples_added},
         )
     else:
-        service_data_information = drylab.utils.req_services.add_requested_samples_in_service(
+        service_data_information = drylab.utils.req_services.get_service_data(
             request
         )
         service_data_information["service_id"] = request.POST["service_id"]
@@ -403,12 +403,12 @@ def delete_samples_in_service(request):
             )
         if "sampleId" not in request.POST:
             return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
-        deleted_samples = drylab.utils.req_services.delete_requested_samples_in_service(
+        deleted_samples = drylab.utils.req_services.delete_samples_in_service(
             request.POST.getlist("sampleId")
         )
         service_data = {
             "service_id": request.POST["service_id"],
-            "service_name": drylab.utils.req_services.get_service_obj_from_id(
+            "service_name": drylab.utils.common.get_service_obj(
                 request.POST["service_id"]
             ).get_service_request_number(),
         }
@@ -430,7 +430,7 @@ def display_service(request, service_id):
             drylab.utils.common.is_service_manager(request)
         )
         display_service_details = (
-            drylab.utils.req_services.get_service_information(
+            drylab.utils.req_services.get_display_service_info(
                 service_id, service_manager
             )
         )
@@ -746,7 +746,7 @@ def service_in_waiting_info(request):
         # redirect to login webpage
         return redirect("/accounts/login")
     if request.method == "POST" and request.POST["action"] == "serviceInWaitingInfo":
-        service_name = drylab.utils.req_services.set_service_waiting_for_user(
+        service_name = drylab.utils.req_services.set_service_waiting(
             request.POST["service_id"]
         )
         if service_name is not None:

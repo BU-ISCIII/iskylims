@@ -3,7 +3,7 @@ from core.utils.samples import *
 from wetlab.models import *
 from wetlab.config import *
 
-from ..fusioncharts.fusioncharts import FusionCharts
+from core.fusioncharts.fusioncharts import FusionCharts
 from .stats_graphs import *
 
 

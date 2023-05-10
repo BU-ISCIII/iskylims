@@ -10,7 +10,7 @@ from core.models import SequencerInLab
 from wetlab.models import *
 from wetlab.config import *
 
-from ..fusioncharts.fusioncharts import FusionCharts
+from core.fusioncharts.fusioncharts import FusionCharts
 from .common import get_run_in_same_year_to_compare, normalized_data
 from .stats_graphs import *
 
