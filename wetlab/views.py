@@ -27,7 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-import wetlab.fusioncharts.fusioncharts
 from .utils.collection_index import *
 # updated --
 import wetlab.utils.common
@@ -50,6 +49,7 @@ import wetlab.utils.additional_kits
 import wetlab.utils.collection_index
 import wetlab.utils.common
 import wetlab.utils.fetch_info
+import wetlab.utils.library
 
 
 
@@ -1602,7 +1602,7 @@ def search_collection_index_library(request):
                     )
 
             if index_sequence != "":
-                index_found, sequence = find_index_sequence_collection_values_kit(
+                index_found, sequence = wetlab.utils.library.find_index_sequence_collection_values_kit(
                     index_sequence
                 )
                 if "I7" in index_found:
@@ -4661,7 +4661,7 @@ def display_sample(request, sample_id):
     sample_information = core.utils.samples.get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
-        sample_information.update(get_all_library_information(sample_id))
+        sample_information.update(wetlab.utils.library.get_all_library_information(sample_id))
         sample_information.update(wetlab.utils.additional_kits.get_additional_kits_used_in_sample(sample_id))
         sample_information.update(get_run_user_lot_kit_used_in_sample(sample_id))
     else:
@@ -4738,10 +4738,10 @@ def handling_library_preparations(request):
         validate_sample_sheet_data
     """
     # get the information for returning the uploaded file in case errors in the sample sheet
-    samples_in_lib_prep = get_samples_for_library_preparation()
+    samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation()
 
     if request.method == "POST" and request.POST["action"] == "assignProtocol":
-        samples_in_lib_prep_protocol = extract_protocol_library_preparation_form(
+        samples_in_lib_prep_protocol = wetlab.utils.library.extract_protocol_library_preparation_form(
             request.POST
         )
         if len(samples_in_lib_prep_protocol) == 0:
@@ -4750,10 +4750,10 @@ def handling_library_preparations(request):
                 "wetlab/handlingLibraryPreparations.html",
                 {"stored_lib_prep": samples_in_lib_prep},
             )
-        library_preparation_objs = create_library_preparation_instance(
+        library_preparation_objs = wetlab.utils.library.create_library_preparation_instance(
             samples_in_lib_prep_protocol, request.user
         )
-        lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(
+        lib_prep_protocol_parameters = wetlab.utils.library.get_protocol_parameters_for_library_preparation(
             library_preparation_objs
         )
         return render(
@@ -4767,8 +4767,8 @@ def handling_library_preparations(request):
         lib_prep_ids = request.POST.getlist("libpreparation")
         library_preparation_objs = []
         for lib_prep_id in lib_prep_ids:
-            library_preparation_objs.append(get_lib_prep_obj_from_id(lib_prep_id))
-        lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(
+            library_preparation_objs.append(wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id))
+        lib_prep_protocol_parameters = wetlab.utils.library.get_protocol_parameters_for_library_preparation(
             library_preparation_objs
         )
         return render(
@@ -4779,15 +4779,15 @@ def handling_library_preparations(request):
 
     # store the parameter library preparation protocol
     if request.method == "POST" and request.POST["action"] == "recordProtocolParamters":
-        stored_params = analyze_and_store_input_param_values(request.POST)
+        stored_params = wetlab.utils.library.analyze_and_store_input_param_values(request.POST)
         if "ERROR" in stored_params:
             error_message = stored_params["ERROR"]
             lib_prep_ids = request.POST["lib_prep_ids"].split(",")
             library_preparation_objs = []
             for lib_prep_id in lib_prep_ids:
-                library_preparation_objs.append(get_lib_prep_obj_from_id(lib_prep_id))
+                library_preparation_objs.append(wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id))
             lib_prep_protocol_parameters = (
-                get_protocol_parameters_for_library_preparation(
+                wetlab.utils.library.get_protocol_parameters_for_library_preparation(
                     library_preparation_objs
                 )
             )
@@ -4829,7 +4829,7 @@ def handling_library_preparations(request):
             "DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME"
         )
         if user_in_description == "TRUE":
-            user_id_in_s_sheet = extract_userids_from_sample_sheet_data(file_read)
+            user_id_in_s_sheet = wetlab.utils.library.extract_userids_from_sample_sheet_data(file_read)
             if "ERROR" in user_id_in_s_sheet:
                 if not delete_stored_file(data["full_path_file"]):
                     user_id_in_s_sheet["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
@@ -4845,7 +4845,7 @@ def handling_library_preparations(request):
             user_id_in_s_sheet = []
         sample_sheet_data = get_sample_sheet_data(file_read)
 
-        valid_data = validate_sample_sheet_data(sample_sheet_data)
+        valid_data = wetlab.utils.library.validate_sample_sheet_data(sample_sheet_data)
         if "ERROR" in valid_data:
             if not delete_stored_file(data["full_path_file"]):
                 valid_data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
@@ -4862,10 +4862,10 @@ def handling_library_preparations(request):
         configuration = request.POST[request.POST["platform"]]
         sample_sheet_data["file_name"] = data["file_name"]
         sample_sheet_data["userid_names"] = user_id_in_s_sheet
-        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(
+        lib_prep_sample_sheet_obj = wetlab.utils.library.store_library_preparation_sample_sheet(
             sample_sheet_data, request.user, platform, configuration
         )
-        display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
+        display_sample_sheet = wetlab.utils.library.format_sample_sheet_to_display_in_form(sample_sheet_data)
         display_sample_sheet[
             "lib_prep_user_sample_sheet"
         ] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
@@ -4880,7 +4880,7 @@ def handling_library_preparations(request):
         )
 
     if request.method == "POST" and request.POST["action"] == "storeIndexSample":
-        store_data_result = store_confirmation_library_preparation_index(request.POST)
+        store_data_result = wetlab.utils.library.store_confirmation_library_preparation_index(request.POST)
         if "ERROR" in store_data_result:
             return render(
                 request,
@@ -5171,7 +5171,7 @@ def repeat_pool(request):
     analyze_reprocess_data  : located at utils/sample_functions.py
     """
     if request.method == "POST" and request.POST["action"] == "repeat_pool":
-        lib_prep_obj = get_lib_prep_obj_from_id(request.POST["lib_prep_id"])
+        lib_prep_obj = wetlab.utils.library.get_lib_prep_obj_from_id(request.POST["lib_prep_id"])
         lib_prep_code_id = lib_prep_obj.get_lib_prep_code()
         molecule_code_id = lib_prep_obj.get_molecule_code_id()
         sample_id = lib_prep_obj.get_sample_id()
@@ -5588,7 +5588,7 @@ def create_new_run(request):
 
         for pool_obj in pools_obj:
             pool_obj.set_pool_state("Used")
-        update_batch_lib_prep_sample_state(run_data["lib_prep_ids"], "Sequencing")
+        wetlab.utils.library.update_batch_lib_prep_sample_state(run_data["lib_prep_ids"], "Sequencing")
         created_new_run = {}
         created_new_run["exp_name"] = run_data["exp_name"]
         created_new_run["run_process_id"] = request.POST["run_process_id"]
@@ -5614,10 +5614,10 @@ def pending_sample_preparations(request):
     # get the samples in defined state
     pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
     pending["extract_molecule"] = core.utils.samples.get_samples_in_extracted_molecule_state("")
-    pending["create_library_preparation"] = get_samples_in_lib_prep_state()
+    pending["create_library_preparation"] = wetlab.utils.library.get_samples_in_lib_prep_state()
     # pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
-    pending["add_lib_prep_parameters"] = get_lib_prep_to_add_parameters()
+    pending["add_lib_prep_parameters"] = wetlab.utils.library.get_lib_prep_to_add_parameters()
     pending["graphic_pending_samples"] = pending_samples_for_grafic(pending).render()
     return render(
         request, "wetlab/pendingSamplePreparations.html", {"pending": pending}
