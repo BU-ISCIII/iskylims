@@ -8,8 +8,8 @@ import django.core.mail
 
 # Local imports
 import core.fusioncharts.fusioncharts
-import django_utils.models
 import core.utils
+import django_utils.models
 import drylab.config
 import drylab.models
 import drylab.utils
