@@ -1202,7 +1202,7 @@ def display_run(request, run_id):
             projects = Projects.objects.filter(run_process__exact=run_id)
             allowed = False
             for project in projects:
-                if int(project.get_user_id()) in shared_user_ids:
+                if int(project.get_user_center_name()) in shared_user_ids:
                     allowed = True
                     break
             if not allowed:
@@ -1358,7 +1358,7 @@ def display_project(request, project_id):
         groups = Group.objects.get(name=config.WETLAB_MANAGER)
         if groups not in request.user.groups.all():
             p_shared_list = get_allowed_user_for_sharing(request.user)
-            if int(project_obj.get_user_id()) not in p_shared_list:
+            if int(project_obj.get_user_center_name()) not in p_shared_list:
                 return render(
                     request,
                     "wetlab/error_page.html",

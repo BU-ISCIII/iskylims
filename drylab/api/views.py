@@ -394,7 +394,7 @@ def create_delivery(request):
             data["pipelines_in_delivery"] = pipelines
 
         data.pop("resolution_number")
-        data["delivery_resolutionID"] = resolution_pk
+        data["delivery_resolution_id"] = resolution_pk
 
         if Delivery.objects.filter(
             delivery_resolution_id__exact=resolution_pk

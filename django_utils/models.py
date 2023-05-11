@@ -14,7 +14,7 @@ class Center(models.Model):
     def __str__(self):
         return "%s" % (self.center_abbr)
 
-    def get_center_abbr(self):
+    def get_user_center_abbr(self):
         return "%s" % (self.center_abbr)
 
     def get_center_name(self):
@@ -64,7 +64,7 @@ class Profile(models.Model):
             )
         return "Not available"
 
-    def get_center_abbr(self):
+    def get_user_center_abbr(self):
         if self.profile_center is not None:
-            return "%s" % (self.profile_center.get_center_abbr())
+            return "%s" % (self.profile_center.get_user_center_abbr())
         return "Not defined"

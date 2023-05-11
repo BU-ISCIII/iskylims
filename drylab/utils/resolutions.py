@@ -56,8 +56,7 @@ def check_allow_service_update(resolution_obj, new_state):
             ).exclude(resolution_state__state_value__in=["rejected", "cancelled"])
         for resolution_obj in resolution_objs:
             states.append(resolution_obj.get_state())
-    
-    import pdb;pdb.set_trace()
+
     if all(state == new_state for state in states):
         return True
     else:
@@ -88,10 +87,10 @@ def get_assign_resolution_full_number(service_id, acronymName):
         )
     else:
         resolution_full_number = ""
-        resolution_full_number += service_obj.get_service_request_number() + "_"
+        resolution_full_number += service_obj.get_identifier() + "_"
         resolution_full_number += str(date.today()).replace("-", "") + "_"
         resolution_full_number += acronymName + "_"
-        resolution_full_number += service_obj.get_service_requested_user() + "_S"
+        resolution_full_number += service_obj.get_user_name() + "_S"
     return resolution_full_number
 
 
@@ -108,7 +107,7 @@ def create_resolution_number(service_id):
         resolution_number
     """
     service_obj = drylab.utils.common.get_service_obj(service_id)
-    service_request_number = service_obj.get_service_request_number()
+    service_request_number = service_obj.get_identifier()
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
     ).exists():
@@ -211,7 +210,7 @@ def create_new_resolution(resolution_data_form):
         resolution_data_form["service_id"]
     )
 
-    # service_request_number = service_obj.get_service_request_number()
+    # service_request_number = service_obj.get_identifier()
     new_resolution = drylab.models.Resolution.objects.create_resolution(
         resolution_data_form
     )
@@ -244,7 +243,7 @@ def create_new_resolution(resolution_data_form):
             if len(resolution_data_form["select_available_services"]) == len(
                 service_obj.get_child_services()
             ):
-                service_obj.update_service_state("queued")
+                service_obj.update_state("queued")
             elif drylab.models.Resolution.objects.filter(
                 resolution_service_id=service_obj
             ).exists():
@@ -259,13 +258,13 @@ def create_new_resolution(resolution_data_form):
                 if len(set(avail_services_handled)) == len(
                     service_obj.get_child_services()
                 ):
-                    service_obj.update_service_state("queued")
+                    service_obj.update_state("queued")
         else:
-            service_obj.update_service_state("queued")
+            service_obj.update_state("queued")
         service_obj.update_approved_date(date.today())
     else:
-        service_obj.update_service_state("rejected")
-        service_obj.update_service_rejected_date(date.today())
+        service_obj.update_state("rejected")
+        service_obj.update_rejected_date(date.today())
 
     return new_resolution
 
@@ -304,7 +303,7 @@ def prepare_form_data_add_resolution(form_data):
     else:
         list_of_ch_services = False
     service_obj = drylab.utils.common.get_service_obj(form_data["service_id"])
-    resolution_form_data["service_number"] = service_obj.get_service_request_number()
+    resolution_form_data["service_number"] = service_obj.get_identifier()
     all_tree_services = service_obj.service_available_service.all()
     all_children_services = drylab.utils.req_services.get_children_services(
         all_tree_services
