@@ -352,7 +352,7 @@ class Service(models.Model):
             else:
                 return self.service_delivered_date
         else:
-            return "Not yet defined"
+            return None
 
     def get_number(self):
         return "%s" % (self.service_request_int)
@@ -703,7 +703,8 @@ class Resolution(models.Model):
     def get_resolution_estimated_date(self):
         if self.resolution_estimated_date is not None:
             return "%s" % (self.resolution_estimated_date)
-        return "--"
+        else:
+            return None
 
     def get_on_queued_date(self, format=True):
         if self.resolution_queued_date is not None:
@@ -712,7 +713,7 @@ class Resolution(models.Model):
             else:
                 return self.resolution_queued_date
         else:
-            return "--"
+            return None
 
     def get_in_progress_date(self, format=True):
         if self.resolution_in_progress_date is not None:
@@ -721,12 +722,12 @@ class Resolution(models.Model):
             else:
                 return self.resolution_in_progress_date
         else:
-            return "--"
+            return None
 
     def get_asigned_user(self):
         if self.resolution_asigned_user is not None:
             return self.resolution_asigned_user.username
-        return "--"
+        return None
 
     def get_service_owner_email(self):
         if self.resolution_service_id is not None:
