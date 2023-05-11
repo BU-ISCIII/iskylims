@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django_utils",
     "mptt",
     "crispy_forms",
-    "crispy_bootstrap3",
+    "crispy_bootstrap5",
     "django_crontab",
     "django_mptt_admin",
     "django.contrib.admin",
@@ -55,7 +55,7 @@ INSTALLED_APPS = [
 APPS_NAMES = [
     # ["clinic", "Clinic"],
     ["wetlab", "Masive Sequencing"],
-    ["drylab", "Requesting Services"],
+    ["drylab", "Request Service"],
 ]
 
 MIDDLEWARE = [
@@ -159,7 +159,8 @@ MEDIA_URL = "/documents/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "documents/")
 
 #  Crispy forms settings
-CRISPY_TEMPLATE_PACK = "bootstrap3"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = "/"

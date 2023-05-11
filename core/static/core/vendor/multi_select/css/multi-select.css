@@ -1,8 +1,3 @@
-.ms-container{
-  background: transparent url('../../img/multi_select_switch.png') no-repeat 50% 50%;
-  width: 570px;
-}
-
 .ms-container:after{
   content: ".";
   display: block;

@@ -1,28 +1,41 @@
 {% if user.is_authenticated %}
     <div class="row mt-1">
-        <div class="col-md-6 offset-6">                                                                                                   
-        <form id="signin"  role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">                           
-            {% csrf_token %}                                                                                                                
-            <div class="input-group me-auto" >                                                                                                       
-                <span class="input-group-addon me-auto"><i class="glyphicon glyphicon-user"></i></span>                                             
-                <input id="id_username" type="text" class="form-control" name="username" value="" placeholder="{{user.get_username}}" readonly>                  
-            </div>                                                                                                                          
-            <button type="submit" class="btn btn-primary"> Logout </button>                                                                  
-            <a class="btn btn-primary" href="/utils/user_edit"> My account </a>                                                                   
-        </form>
-    </div>
+        <div class="col-md-4 offset-8">
+            <form id="signin"  role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">
+                {% csrf_token %} 
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <i class="bi bi-person-check-fill" style="font-size: 20px;"></i>
+                        <label class="col-form-label">{{user.get_username}}</label>
+                    </div>
+                    <div class="col-auto">                                                                                                 
+                        <button type="submit" class="btn btn-outline-primary"> Logout </button>
+                    </div>
+                    <div class="col-auto"> 
+                        <a class="btn btn-outline-secondary" href="/utils/user_edit"> My account </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>                                                                                                                          
- {% else %}                                                                                                                        
-    <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
-        {% csrf_token %}                                                                                                               
-        <div class="input-group">                                                                                                      
-            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                            
-            <input id="id_username" type="text" class="form-control" name="username" value="" placeholder="User name">                 
-        </div>                                                                                                                         
-        <div class="input-group">                                                                                                      
-            <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>                                            
-            <input id="id_password" type="password" class="form-control" name="password" value="" placeholder="Password">              
-        </div>                                                                                                                         
-        <button type="submit" class="btn btn-primary"> Login </button>                                                                 
-    </form>                                                                                                                           
+{% else %}
+    <div class="row mt-1">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">                                                                                                               
+            <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
+                {% csrf_token %}
+                <div class="form-floating mb-2">
+                    <input type="text" class="form-control" id="id_username" name="username" placeholder="User name">
+                    <label for="id_username">User name</label>
+                </div>
+                <div class="form-floating mb-2">
+                    <input type="password" class="form-control" id="id_password"  name="password" placeholder="Password">
+                    <label for="id_password">Password</label>
+                </div>                                                                                                            
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-outline-primary me-md-2">Login</button>
+                    
+                  </div>
+            </form>
+        </div>
+    </div>                                                                                                                          
  {% endif %}                                                                                                                       
