@@ -27,7 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-from .utils.sequencers import *
 from .utils.statistics import *
 from .utils.stats_graphs import *
 from .utils.test_conf import *
@@ -42,6 +41,7 @@ import wetlab.utils.pool
 import wetlab.utils.run
 import wetlab.utils.sample
 import wetlab.utils.samplesheet
+import wetlab.utils.sequencers
 
 
 
@@ -5787,12 +5787,12 @@ def sequencer_configuration(request):
             "wetlab/error_page.html",
             {"content": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
         )
-    sequencer_info = get_list_sequencer_configuration()
-    sequencer_info["platforms"] = get_platform_data()
-    sequencer_info["sequencer_names"] = get_defined_sequencers()
+    sequencer_info = wetlab.utils.sequencers.get_list_sequencer_configuration()
+    sequencer_info["platforms"] = wetlab.utils.sequencers.get_platform_data()
+    sequencer_info["sequencer_names"] = wetlab.utils.sequencers.get_defined_sequencers()
 
     if request.method == "POST" and request.POST["action"] == "addNewSequencer":
-        new_sequencer = define_new_sequencer(request.POST)
+        new_sequencer = wetlab.utils.sequencers.define_new_sequencer(request.POST)
         if "ERROR" in new_sequencer:
             return render(
                 request,
@@ -5805,7 +5805,7 @@ def sequencer_configuration(request):
             {"sequencer_info": sequencer_info, "new_defined_sequencer": new_sequencer},
         )
     if request.method == "POST" and request.POST["action"] == "addNewConfiguration":
-        new_defined_configuration = define_new_seq_configuration(request.POST)
+        new_defined_configuration = wetlab.utils.sequencers.define_new_seq_configuration(request.POST)
         if "ERROR" in new_defined_configuration:
             return render(
                 request,
@@ -5836,7 +5836,7 @@ def sequencer_inventory(request):
     if request.method == "POST" and request.POST["action"] == "setRunOutDate":
         pass
     else:
-        sequencer_data = get_sequencer_inventory_data()
+        sequencer_data = wetlab.utils.sequencers.get_sequencer_inventory_data()
         return render(
             request,
             "wetlab/sequencerInventory.html",
