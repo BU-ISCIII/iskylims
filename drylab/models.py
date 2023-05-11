@@ -350,7 +350,7 @@ class Service(models.Model):
             if format:
                 return self.service_delivered_date.strftime("%d %B, %Y")
             else:
-                return self.service_delivered_date.strftime("%d %B, %Y")
+                return self.service_delivered_date
         else:
             return "Not yet defined"
 
@@ -705,14 +705,23 @@ class Resolution(models.Model):
             return "%s" % (self.resolution_estimated_date)
         return "--"
 
-    def get_on_queued_date(self):
+    def get_on_queued_date(self, format=True):
         if self.resolution_queued_date is not None:
-            return self.resolution_queued_date.strftime("%d %B, %Y")
+            if format:
+                return self.resolution_queued_date.strftime("%d %B, %Y")
+            else:
+                return self.resolution_queued_date
         else:
             return "--"
 
-    def get_in_progress_date(self):
-        return self.resolution_in_progress_date
+    def get_in_progress_date(self, format=True):
+        if self.resolution_in_progress_date is not None:
+            if format:
+                return self.resolution_in_progress_date.strftime("%d %B, %Y")
+            else:
+                return self.resolution_in_progress_date
+        else:
+            return "--"
 
     def get_asigned_user(self):
         if self.resolution_asigned_user is not None:
