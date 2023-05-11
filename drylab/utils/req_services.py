@@ -79,7 +79,7 @@ def save_sequencing_service(request):
             service_data["service_center"] = (
                 django_utils.models.Profile.objects.filter(profile_user_id=request_user)
                 .last()
-                .get_center_abbr()
+                .get_user_center_abbr()
             )
         except Exception:
             service_data["service_center"] = drylab.config.INTERNAL_SEQUENCING_UNIT
@@ -252,72 +252,86 @@ def get_available_service_states(add_internal_value=False):
     return state_values
 
 
-def get_pending_services_information():
+def get_pending_services_info():
     """
     Description:
         The function get the pending service information
     Constants:
         MULTI_LEVEL_PIE_PENDING_MAIN_TEXT
     Functions:
-        graphic_3D_pie				# located at utils/graphics.py
-        graphic_multi_level_pie		# located at utils/graphics.py
+        graphic_3D_pie
+        graphic_multi_level_pie
     Return:
         pending_services_details
     """
 
-    stat_services = list(
-        drylab.models.ServiceState.objects.filter(show_in_stats=True).values_list(
-            "state_display", flat=True
-        )
+    state_services = list(
+        drylab.models.ServiceState.objects.filter(show_in_stats=True)
+        .exclude(state_value="recorded")
+        .values_list("state_display", flat=True)
     )
 
-    info_for_stat_service = {}
-    number_of_services = {}
+    info_by_state = {}
+    services_number = {}
     pending_services_per_unit = {}
     pending_services_details = {}
     pending_services_graphics = {}
-    for stat_service in stat_services:
-        info_for_stat_service[stat_service] = []
-        service_objs = drylab.models.Service.objects.filter(
-            service_state__state_display__exact=stat_service
-        ).order_by("-service_created_date")
-        number_of_services[stat_service] = len(service_objs)
-        for service_obj in service_objs:
-            # fetch service id and name
+    service_data = []
+
+    service_objs = drylab.models.Service.objects.exclude(
+        service_state__state_value__in=["delivered", "rejected", "cancelled"]
+    ).order_by("-service_created_date")
+
+    for service_obj in service_objs:
+        if service_obj.get_state() == "recorded":
+            # fetch service id and name        
+            services_number[service_obj.get_state(to_display=True)] = len(service_objs)
             service_data = [service_obj.get_service_id()]
-            service_data.append(service_obj.get_service_request_number())
+            service_data.append(service_obj.get_identifier())
             # fetch requested user
-            service_data.append(service_obj.get_service_requested_user())
+            service_data.append(service_obj.get_user_name())
             # get date creation service
-            service_data.append(service_obj.get_service_creation_time())
-            # fetch latest resolution for the service
-            if drylab.models.Resolution.objects.filter(
-                resolution_service_id=service_obj
-            ).exists():
-                resolution_obj = drylab.models.Resolution.objects.filter(
-                    resolution_service_id=service_obj
-                ).last()
+            service_data.append(service_obj.get_creation_date())
+            # set empty values when no resolution are defined for service
+            service_data += ["--", "--", "--", "--"]
+            info_by_state[service_obj.get_state(to_display=True)].append(service_data)
+
+    for state in state_services:
+        info_by_state[state] = []
+        services_number[service_obj.get_state(to_display=True)] = len(service_objs)
+        if drylab.models.Resolution.objects.filter(
+            resolution_service_id=service_obj, resolution_state__state_value=state
+        ).exists():
+            resolution_objs = drylab.models.Resolution.objects.filter(
+                resolution_service_id=service_obj, resolution_state__state_display=state
+            )
+            for resolution_obj in resolution_objs:
+                # fetch service id and name
+                service_data = [service_obj.get_service_id()]
+                service_data.append(service_obj.get_identifier())
+                # fetch requested user
+                service_data.append(service_obj.get_user_name())
+                # get date creation service
+                service_data.append(service_obj.get_creation_date())
+                # fetch resolution info
                 service_data.append(resolution_obj.get_resolution_number())
                 service_data.append(resolution_obj.get_asigned_user())
                 service_data.append(resolution_obj.get_on_queued_date())
                 service_data.append(resolution_obj.get_resolution_estimated_date())
-            else:
-                # set empty values when no resolution are defined for service
-                service_data += ["--", "--", "--", "--"]
-            info_for_stat_service[stat_service].append(service_data)
+                info_by_state[state].append(service_data)
+
             # calculate the number of services per center
-            unit_req_serv = service_obj.get_service_request_center_name()
+            unit_req_serv = service_obj.get_user_center_name()
             if unit_req_serv not in pending_services_per_unit:
                 pending_services_per_unit[unit_req_serv] = {}
-            if stat_service not in pending_services_per_unit[unit_req_serv]:
-                pending_services_per_unit[unit_req_serv][stat_service] = 0
-            pending_services_per_unit[unit_req_serv][stat_service] += 1
+            if state not in pending_services_per_unit[unit_req_serv]:
+                pending_services_per_unit[unit_req_serv][state] = 0
+            pending_services_per_unit[unit_req_serv][state] += 1
 
-        pending_services_details[stat_service] = info_for_stat_service
-    pending_services_details["data"] = info_for_stat_service
+    pending_services_details["data"] = info_by_state
 
     data_source = drylab.utils.graphics.graphic_3D_pie(
-        "Number of Pending Services", "", "", "", "fint", number_of_services
+        "Number of Pending Services", "", "", "", "fint", services_number
     )
     graphic_pending_services = core.fusioncharts.fusioncharts.FusionCharts(
         "pie3d", "ex1", "740", "600", "chart-1", "json", data_source
@@ -339,10 +353,12 @@ def get_pending_services_information():
         "graphic_pending_unit_services"
     ] = graphic_unit_pending_services.render()
     pending_services_details["graphics"] = pending_services_graphics
+    import pdb;pdb.set_trace()
+
     return pending_services_details
 
 
-def get_user_pending_services_information(user_name):
+def get_user_pending_services_info(user_name):
     """
     Description:
         The function get the services that are pending for a user
@@ -357,11 +373,11 @@ def get_user_pending_services_information(user_name):
     res_in_queued, res_in_progress = [], []
     if drylab.models.Resolution.objects.filter(
         resolution_asigned_user__username__exact=user_name,
-        resolution_state__state_value__exact="Recorded",
+        resolution_state__state_value__exact="queued",
     ).exists():
         resolution_recorded_objs = drylab.models.Resolution.objects.filter(
             resolution_asigned_user__username__exact=user_name,
-            resolution_state__state_value__exact="Recorded",
+            resolution_state__state_value__exact="queued",
         ).order_by("-resolution_service_id")
         for resolution_recorded_obj in resolution_recorded_objs:
             resolution_data = resolution_recorded_obj.get_info_pending_resolutions()
@@ -373,11 +389,11 @@ def get_user_pending_services_information(user_name):
         ] = drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
     if drylab.models.Resolution.objects.filter(
         resolution_asigned_user__username__exact=user_name,
-        resolution_state__state_value__exact="In Progress",
+        resolution_state__state_value__exact="in_progress",
     ).exists():
         resolution_recorded_objs = drylab.models.Resolution.objects.filter(
             resolution_asigned_user__username__exact=user_name,
-            resolution_state__state_value__exact="In Progress",
+            resolution_state__state_value__exact="in_progress",
         ).order_by("-resolution_service_id")
         for resolution_recorded_obj in resolution_recorded_objs:
             resolution_data = resolution_recorded_obj.get_info_pending_resolutions()
@@ -457,14 +473,14 @@ def get_display_service_info(service_id, service_manager):
     service_obj = drylab.utils.common.get_service_obj(service_id)
 
     # Get service general info
-    display_service_details["service_name"] = service_obj.get_service_request_number()
+    display_service_details["service_name"] = service_obj.get_identifier()
     display_service_details["service_id"] = service_id
-    display_service_details["user_name"] = service_obj.get_service_requested_user()
-    display_service_details["state"] = service_obj.get_service_state(to_display=True)
-    display_service_details["service_notes"] = service_obj.get_service_user_notes()
+    display_service_details["user_name"] = service_obj.get_user_name()
+    display_service_details["state"] = service_obj.get_state(to_display=True)
+    display_service_details["service_notes"] = service_obj.get_notes()
     display_service_details["service_dates"] = zip(
         drylab.config.HEADING_SERVICE_DATES,
-        service_obj.get_service_dates(),
+        service_obj.get_dates(),
     )
 
     # Get folder name if there is already a resolution
@@ -523,8 +539,8 @@ def get_display_service_info(service_id, service_manager):
             )
 
     # service dates
-    created_date = service_obj.get_service_creation_time_no_format()
-    delivery_date = service_obj.get_service_delivery_time_no_format()
+    created_date = service_obj.get_creation_date(format=False)
+    delivery_date = service_obj.get_delivery_date(format=False)
     dates = []
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
@@ -552,8 +568,8 @@ def get_display_service_info(service_id, service_manager):
     if service_manager:
         display_service_details["service_manager"] = True
         if (
-            service_obj.get_service_state() != "rejected"
-            or service_obj.get_service_state() != "archived"
+            service_obj.get_state() != "rejected"
+            or service_obj.get_state() != "archived"
         ):
             # Add resolution action
             display_service_details["add_resolution_action"] = service_id
@@ -621,7 +637,7 @@ def get_display_service_info(service_id, service_manager):
                             )
 
             # Allow that service could set on hold if state is other than delivery
-            if service_obj.get_service_state(to_display=False).lower() != "delivered":
+            if service_obj.get_state(to_display=False).lower() != "delivered":
                 display_service_details["allowed_waiting_info"] = "allowed"
 
     # Display resolutions and deliveries
@@ -833,8 +849,8 @@ def set_service_waiting(service_id):
     """
     service_obj = drylab.utils.common.get_service_obj(service_id)
     if service_obj is not None:
-        service_obj.update_service_state("waiting_information")
-        return service_obj.get_service_request_number()
+        service_obj.update_state("waiting_information")
+        return service_obj.get_identifier()
     return None
 
 
