@@ -282,15 +282,15 @@ def get_pending_services_info():
         service_state__state_value__in=["delivered", "rejected", "cancelled"]
     ).order_by("-service_created_date")
 
-    info_by_state[
-        drylab.models.ServiceState.objects.get(state_value="recorded").get_state(
-            to_display=True
-        )
-    ] = []
+    recorded_state = drylab.models.ServiceState.objects.get(
+        state_value="recorded"
+    ).get_state(to_display=True)
+    info_by_state[recorded_state] = []
+    services_number[recorded_state] = 0
     for service_obj in service_objs:
         if service_obj.get_state() == "recorded":
+            services_number[service_obj.get_state(to_display=True)] += 1
             # fetch service id and name
-            services_number[service_obj.get_state(to_display=True)] = len(service_objs)
             service_data = [service_obj.get_service_id()]
             service_data.append(service_obj.get_identifier())
             # fetch requested user
@@ -303,14 +303,13 @@ def get_pending_services_info():
 
     for state in state_services:
         info_by_state[state] = []
-        services_number[service_obj.get_state(to_display=True)] = len(service_objs)
-        import pdb;pdb.set_trace()
         if drylab.models.Resolution.objects.filter(
             resolution_state__state_display=state
         ).exists():
             resolution_objs = drylab.models.Resolution.objects.filter(
                 resolution_state__state_display=state
             )
+            services_number[state] = len(resolution_objs)
             for resolution_obj in resolution_objs:
                 # fetch service id and name
                 service_obj = resolution_obj.get_service_obj()
@@ -336,7 +335,7 @@ def get_pending_services_info():
                 pending_services_per_unit[unit_req_serv][state] += 1
 
     pending_services_details["data"] = info_by_state
-    
+
     data_source = drylab.utils.graphics.graphic_3D_pie(
         "Number of Pending Services", "", "", "", "fint", services_number
     )
@@ -359,6 +358,7 @@ def get_pending_services_info():
     pending_services_graphics[
         "graphic_pending_unit_services"
     ] = graphic_unit_pending_services.render()
+
     pending_services_details["graphics"] = pending_services_graphics
 
     return pending_services_details
