@@ -1,47 +1,58 @@
 {% extends "core/base.html" %}
-
+{% load static %}
 {% block content %}
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-{% if next %}
-    {% if user.is_authenticated %}
-        <p>Your account doesn't have access to this page. To proceed,
-            please login with an account that has access.</p>
-    {% else %}
-         <p>Please login to see this page.</p>
-    {% endif %}
-{% endif %}
-
-<div class="row margin-t-40">
-    <div class="col-md-6 col-md-offset-3">
-        <form method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title"> Sign in </h3> </div>
-                    <div class="row panel-body">
-                        <div class="col-md-12">
-                        <div class="form-group input-group">
-                            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                             
-                            <input id="id_username" type="text" class="form-control" name="username" value="" placeholder="User name">                  
-                        </div>
-                        <div class="form-group input-group">
-                            <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>                                             
-                            <input id="id_password" type="password" class="form-control" name="password" value="" placeholder="Password">               
-                        </div>
-                        <div>                                                                                                                                
-                            <button type="submit" class="btn btn-primary"> Login </button>                                                                   
-                            <input type="hidden" name="next" value="{{ next }}" />                                                                           
-                        </div>                                                                                                                               
-                    </div>
-                </div>
-            </div>
-        </form>
+<nav class="navbar navbar-expand-sm navbar-light">
+    <div class="container">
+        <a  class="navbar-brand" href="/">
+            <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
+        </a>
     </div>
-</div>
-{# Assumes you setup the password_reset view in your URLconf #}
-<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+</nav>
+{% if form.errors %}
+    <section class="justify-content-center">
+        <div class="container d-flex px-4  justify-content-center align-items-center text-center">
+            <div class="row mt-5">
+                <div class="card border-danger mb-3">
+                    <h4 class="card-title text-danger mt-4 ">Your userid and/or password are incorrect</h4>
+                    <div class="card-body">
+                        <p> Please enter your credentials again to login</p>
+                    </div>  <!-- end card-body -->
+                </div>  <!-- end card -->
+            </div> <!-- end row -->
+        </div>
+    </section>
+{% endif %}
+
+<section class="justify-content-center">
+    <div class="container d-flex flex-column justify-content-center align-items-center text-center">
+        <div class="row mt-3">
+            <div class="card border-default mb-3">
+                <h4 class="card-title mt-4">Login access form</h4>
+                <div class="card-body">
+                    <p> Please enter your credentials to access to iSkyLIMS </p>
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}" /> 
+                        <div class="form-floating mb-2">
+                            <input type="text" class="form-control" id="id_username" name="username" placeholder="User name">
+                            <label for="id_username">User name</label>
+                        </div>
+                        <div class="form-floating mb-2">
+                            <input type="password" class="form-control" id="id_password"  name="password" placeholder="Password">
+                            <label for="id_password">Password</label>
+                        </div>                                                                                                            
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-outline-primary me-md-2" type="button">Login</button>
+                        </div>
+                    </form>
+                    <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+                </div>  <!-- end card-body -->
+            </div>  <!-- end card -->
+        </div> <!-- end row -->            
+    </div>
+</section>
+
+
 
 {% endblock %}

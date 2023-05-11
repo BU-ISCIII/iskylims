@@ -5,7 +5,7 @@ biopython==1.79
 cryptography==38.0.3
 Django==3.2
 django-crispy-forms==2.0
-crispy-bootstrap3==2022.1
+crispy-bootstrap5==0.7
 django-crontab==0.7.1
 django-js-asset==2.0.0
 django-mptt==0.14.0
