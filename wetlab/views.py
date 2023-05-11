@@ -27,7 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-from .utils.stats_graphs import *
 from .utils.test_conf import *
 import wetlab.models
 
@@ -42,6 +41,7 @@ import wetlab.utils.sample
 import wetlab.utils.samplesheet
 import wetlab.utils.sequencers
 import wetlab.utils.statistics
+import wetlab.utils.stats_graphs
 
 
 
@@ -2026,7 +2026,7 @@ def stats_per_time(request):
                 run_period_chart_number = "run_period_chart-1"
                 run_period_index_graph = "exq1"
 
-                data_source = researcher_project_column_graphic(
+                data_source = wetlab.utils.stats_graphs.researcher_project_column_graphic(
                     heading,
                     sub_caption,
                     x_axis_name,
@@ -2098,7 +2098,7 @@ def stats_per_time(request):
                         run_period_chart_number = "project_period_chart-1"
                         run_period_index_graph = "project_period-1"
 
-                        data_source = researcher_project_column_graphic(
+                        data_source = wetlab.utils.stats_graphs.researcher_project_column_graphic(
                             heading,
                             sub_caption,
                             x_axis_name,
@@ -2165,7 +2165,7 @@ def stats_per_time(request):
                     )
                     chart_number = "chart-" + str(lane_number)
                     render_number = "ex" + str(lane_number)
-                    data_source = graphic_for_unbarcodes(
+                    data_source = wetlab.utils.stats_graphs.graphic_for_unbarcodes(
                         heading, themes[lane_number], count_unbarcode[lane_number]
                     )
                     lane_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -2183,7 +2183,7 @@ def stats_per_time(request):
                 stat_per_time["unbar_lane_chart"] = unbar_lane_chart
 
                 # prepare the pie graphic for the number of top Unknow Barcode per sequence
-                data_source = pie_graphic(
+                data_source = wetlab.utils.stats_graphs.pie_graphic(
                     "Number of count for the Undetermined Sequences",
                     "fint",
                     top_unbarcode_all_runs,
@@ -2214,7 +2214,7 @@ def stats_per_time(request):
                 disk_space_period_chart_number = "disk_usage_chart-1"
                 disk_space_period_index_graph = "diskusage1"
 
-                data_source = researcher_project_column_graphic(
+                data_source = wetlab.utils.stats_graphs.researcher_project_column_graphic(
                     heading,
                     sub_caption,
                     x_axis_name,
@@ -2467,7 +2467,7 @@ def stats_per_library(request):
                 heading = "Number of MBases in the projects for Lane " + str(
                     lane_number
                 )
-                data_source = graphic_for_library_kit(
+                data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                     heading,
                     "projects in lane ",
                     "Project Names",
@@ -2494,7 +2494,7 @@ def stats_per_library(request):
                 heading = "Percent of bases > Q30 in the projects for Lane " + str(
                     lane_number
                 )
-                data_source = graphic_for_library_kit(
+                data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                     heading,
                     "projects in lane ",
                     "Project Names",
@@ -2521,7 +2521,7 @@ def stats_per_library(request):
                 heading = "Mean Quality Score in the projects for Lane " + str(
                     lane_number
                 )
-                data_source = graphic_for_library_kit(
+                data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                     heading,
                     "projects in lane ",
                     "Project Names",
@@ -2697,7 +2697,7 @@ def stats_per_library(request):
                 library_stats["error_library"] = error_in_library_to_compare
 
             heading = "Comparison of Percent of bases > Q30  "
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Q30 comparison ",
                 "Library Names",
@@ -2717,7 +2717,7 @@ def stats_per_library(request):
             library_stats["comp_q30_graphic"] = comp_q30_lib_graphic.render()
 
             heading = "Comparison of Mean Quality Score "
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Mean Quality Score comparison ",
                 "Library Names",
@@ -2737,7 +2737,7 @@ def stats_per_library(request):
             library_stats["comp_mean_graphic"] = comp_mean_lib_graphic.render()
 
             heading = "Number of Bases comparison"
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Number of Bases comparison ",
                 "Library Names",
@@ -2780,7 +2780,7 @@ def stats_per_library(request):
             )
 
             heading = "Comparison of Percent of bases > Q30  "
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Q30 comparison ",
                 "Library Names",
@@ -2801,7 +2801,7 @@ def stats_per_library(request):
             library_list_stats["comp_q30_graphic"] = comp_q30_lib_graphic.render()
 
             heading = "Comparison of Mean Quality Score "
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Mean Quality Score comparison ",
                 "Library Names",
@@ -2822,7 +2822,7 @@ def stats_per_library(request):
             library_list_stats["comp_mean_graphic"] = comp_mean_lib_graphic.render()
 
             heading = "Number of Bases comparison"
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Number of Bases comparison ",
                 "Library Names",
@@ -2867,7 +2867,7 @@ def stats_per_library(request):
             )
             #
             heading = "Library kits of Percent of bases > Q30  "
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Q30 library kits ",
                 "Library Names",
@@ -2888,7 +2888,7 @@ def stats_per_library(request):
             library_list_stats["lib_q30_graphic"] = lib_q30_lib_graphic.render()
 
             heading = "Library kits of Mean Quality Score "
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Mean Quality Score Library kits ",
                 "Library Names",
@@ -2909,7 +2909,7 @@ def stats_per_library(request):
             library_list_stats["lib_mean_graphic"] = lib_mean_lib_graphic.render()
 
             heading = "Number of Bases per Library kits"
-            data_source = graphic_for_library_kit(
+            data_source = wetlab.utils.stats_graphs.graphic_for_library_kit(
                 heading,
                 "Number of Bases per Library kits ",
                 "Library Names",
@@ -2938,7 +2938,7 @@ def stats_per_library(request):
                     count_libraries[lib_name] = 1
                 else:
                     count_libraries[lib_name] += 1
-            data_source = pie_graphic(
+            data_source = wetlab.utils.stats_graphs.pie_graphic(
                 "Library utilization in projects", "fint", count_libraries
             )
             libraries_kit_utilization = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3051,7 +3051,7 @@ def annual_report(request):
             annual_report_information["uncompleted_run"] = uncompleted_run
             number_of_runs["Not Finish Runs"] = len(uncompleted_run_in_year)
         # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = pie_graphic_standard(
+        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
             "Number of Runs performed on the year", "", "ocean", number_of_runs
         )
         graphic_completed_run = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3078,7 +3078,7 @@ def annual_report(request):
         annual_report_information["q30_data"] = q30_year
         # graphics for StatsRunSummary
         heading = "Aligned % for the runs done on year " + str(year_selected)
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "Aligned  ", "Run names ", "Aligned (in %)", "ocean", aligned_year
         )
         aligned_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3093,7 +3093,7 @@ def annual_report(request):
         annual_report_information["aligned_graphic"] = aligned_year_graphic.render()
 
         heading = "Error Rate for the runs done on year " + str(year_selected)
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading,
             "Error rate ",
             "Run names ",
@@ -3115,7 +3115,7 @@ def annual_report(request):
         ] = error_rate_year_graphic.render()
 
         heading = ">Q30 for the runs done on year " + str(year_selected)
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_year
         )
         q30_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3162,7 +3162,7 @@ def annual_report(request):
         p_user_year["6 - 10"] = len(investigator_10_project)
         p_user_year["more than 10"] = len(investigator_more_10_project)
         heading = "Projects done per investigator on year " + str(year_selected)
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "  ", "Projects ", "number of users", "ocean", p_user_year
         )
         p_user_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3176,7 +3176,7 @@ def annual_report(request):
         )
         annual_report_information["p_user_year_graphic"] = p_user_year_graphic.render()
 
-        data_source = pie_graphic_standard(heading, "Percentage", "carbon", p_user_year)
+        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(heading, "Percentage", "carbon", p_user_year)
         pie_p_user_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
             "pie3d",
             "pie_project_user_year",
@@ -3355,7 +3355,7 @@ def monthly_report(request):
             + " - "
             + year_selected
         )
-        data_source = pie_graphic_standard(heading, "", "ocean", number_of_runs)
+        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(heading, "", "ocean", number_of_runs)
         graphic_completed_run = core.fusioncharts.fusioncharts.FusionCharts(
             "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
         )
@@ -3403,7 +3403,7 @@ def monthly_report(request):
         heading = "Projects done per investigator on " + str(
             month_selected + " - " + year_selected
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "  ", "Projects ", "number of users", "ocean", p_user_month
         )
         p_user_monthly_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3419,7 +3419,7 @@ def monthly_report(request):
             "p_user_monthly_graphic"
         ] = p_user_monthly_graphic.render()
 
-        data_source = pie_graphic_standard(
+        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
             heading, "Percentage", "carbon", p_user_month
         )
         pie_p_user_monthly_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3455,7 +3455,7 @@ def monthly_report(request):
         heading = "Aligned % for the runs done on " + str(
             month_selected + " - " + year_selected
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "Aligned  ", "Run names ", "Aligned (in %)", "ocean", aligned_month
         )
         aligned_month_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3472,7 +3472,7 @@ def monthly_report(request):
         heading = "Error Rate for the runs done on  " + str(
             month_selected + " - " + year_selected
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading,
             "Error rate ",
             "Run names ",
@@ -3496,7 +3496,7 @@ def monthly_report(request):
         heading = ">Q30 for the runs done on  " + str(
             month_selected + " - " + year_selected
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_month
         )
         q30_month_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3638,7 +3638,7 @@ def quarter_report(request):
             quarter_report_information["uncompleted_run"] = uncompleted_run
             number_of_runs["Not Finish Runs"] = len(uncompleted_run_in_quarter)
         # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = pie_graphic_standard(
+        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
             "Number of Runs performed on the year", "", "ocean", number_of_runs
         )
         graphic_completed_run = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3669,7 +3669,7 @@ def quarter_report(request):
             + quarter_string[quarter_selected]
             + str(year_selected)
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading,
             "Aligned  ",
             "Run names ",
@@ -3693,7 +3693,7 @@ def quarter_report(request):
             + quarter_string[quarter_selected]
             + str(year_selected)
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading,
             "Error rate ",
             "Run names ",
@@ -3719,7 +3719,7 @@ def quarter_report(request):
             + quarter_string[quarter_selected]
             + str(year_selected)
         )
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_quarter
         )
         q30_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3766,7 +3766,7 @@ def quarter_report(request):
         p_user_quarter["6 - 10"] = len(investigator_10_project)
         p_user_quarter["more than 10"] = len(investigator_more_10_project)
         heading = "Projects done per investigator on year " + str(year_selected)
-        data_source = column_graphic_for_year_report(
+        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
             heading, "  ", "Projects ", "number of users", "ocean", p_user_quarter
         )
         p_user_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
@@ -3782,7 +3782,7 @@ def quarter_report(request):
             "p_user_year_graphic"
         ] = p_user_quarter_graphic.render()
 
-        data_source = pie_graphic_standard(
+        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
             heading, "Percentage", "carbon", p_user_quarter
         )
         pie_p_user_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
