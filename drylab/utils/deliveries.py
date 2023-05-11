@@ -58,22 +58,22 @@ def store_resolution_delivery(form_data):
     if resolution_obj is not None:
         delivery_data = {}
         if form_data["startdate"] != "":
-            delivery_data["executionStartDate"] = datetime.datetime.strptime(
+            delivery_data["execution_start_date"] = datetime.datetime.strptime(
                 form_data["startdate"], "%Y-%m-%d"
             )
         else:
-            delivery_data["executionStartDate"] = None
+            delivery_data["execution_start_date"] = None
         if form_data["startdate"] != "":
             delivery_data["execution_end_date"] = datetime.datetime.strptime(
                 form_data["enddate"], "%Y-%m-%d"
             )
         else:
             delivery_data["execution_end_date"] = None
-        delivery_data["delivery_resolutionID"] = resolution_obj
+        delivery_data["delivery_resolution_id"] = resolution_obj
         delivery_data["execution_time"] = form_data["time"]
         delivery_data["permanent_used_space"] = form_data["pspace"]
         delivery_data["temporary_used_space"] = form_data["tspace"]
-        delivery_data["deliveryNotes"] = form_data["deliveryNotes"]
+        delivery_data["delivery_notes"] = form_data["delivery_notes"]
 
         drylab.models.Delivery.objects.create_delivery(delivery_data)
 

@@ -388,7 +388,7 @@ class Projects(models.Model):
         user_name = self.user_id.username
         return "%s" % (user_name)
 
-    def get_user_id(self):
+    def get_user_center_name(self):
         return "%s" % (self.user_id.pk)
 
     def get_project_name(self):

@@ -118,7 +118,7 @@ def increment_service_number(request_user):
     try:
         user_center = django_utils.models.Profile.objects.get(
             profile_user_id=request_user
-        ).get_center_abbr()
+        ).get_user_center_abbr()
     except Exception:
         user_center = drylab.config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
@@ -131,7 +131,7 @@ def increment_service_number(request_user):
                 service_center__exact=user_center
             )
             .last()
-            .get_service_request_integer()
+            .get_number()
         )
         if number_request is None:
             service_number = "001"

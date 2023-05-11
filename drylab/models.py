@@ -35,7 +35,7 @@ class ServiceState(models.Model):
     def __str__(self):
         return "%s" % (self.state_value)
 
-    def get_state(self, to_display=None):
+    def get_state(self, to_display=False):
         if to_display:
             return "%s" % (self.state_display)
         else:
@@ -283,7 +283,7 @@ class Service(models.Model):
     def __str__(self):
         return "%s" % (self.service_request_number)
 
-    def get_service_name_and_center(self):
+    def get_identifier_and_user_center(self):
         return [self.service_request_number, self.service_center]
 
     def get_service_information(self):
@@ -292,7 +292,13 @@ class Service(models.Model):
     def get_service_id(self):
         return "%s" % self.pk
 
-    def get_service_dates(self):
+    def get_state(self, to_display=False):
+        if self.service_state is not None:
+            return "%s" % (self.service_state.get_state(to_display=to_display))
+        else:
+            return "Not assigned"
+
+    def get_dates(self):
         service_dates = []
         service_dates.append(self.service_created_date.strftime("%d %B, %Y"))
         try:
@@ -333,60 +339,45 @@ class Service(models.Model):
 
         return stats_information
 
-    def get_service_creation_time(self):
-        return self.service_created_date.strftime("%d %B, %Y")
+    def get_creation_date(self, format=True):
+        if format:
+            return self.service_created_date.strftime("%d %B, %Y")
+        else:
+            return self.service_created_date
 
-    def get_service_creation_time_no_format(self):
-        return self.service_created_date
-
-    def get_service_delivery_time_no_format(self):
-        return self.service_delivered_date
-
-    def get_delivery_date(self):
+    def get_delivery_date(self, format=True):
         if self.service_delivered_date:
-            return self.service_delivered_date.strftime("%d %B, %Y")
+            if format:
+                return self.service_delivered_date.strftime("%d %B, %Y")
+            else:
+                return self.service_delivered_date.strftime("%d %B, %Y")
         else:
             return "Not yet defined"
 
-    def get_service_request_integer(self):
+    def get_number(self):
         return "%s" % (self.service_request_int)
 
-    def get_service_request_number(self):
+    def get_identifier(self):
         return "%s" % (self.service_request_number)
 
-    def get_service_requested_user(self):
+    def get_user_name(self):
         if self.service_user_id is not None:
             return "%s" % (self.service_user_id.username)
         return "Not available"
 
-    def get_user_service_obj(self):
+    def get_user_obj(self):
         return self.service_user_id
 
-    def get_service_request_center_abbr(self):
+    def get_user_center_abbr(self):
         return "%s" % (self.service_user_id.profile.profile_center.center_abbr)
 
-    def get_service_state(self, to_display=False):
-        return self.service_state.get_state(to_display=to_display)
-
-    def get_service_request_center_name(self):
+    def get_user_center_name(self):
         return "%s" % (self.service_user_id.profile.profile_center.center_name)
 
-    def get_service_user_id(self):
+    def get_user_id(self):
         return "%s" % (self.service_user_id.pk)
 
-    def get_service_user_name(self):
-        if self.service_user_id is not None:
-            return "%s" % (self.service_user_id.name)
-        else:
-            return ""
-
-    def get_service_user_surname(self):
-        if self.service_user_id is not None:
-            return "%s" % (self.service_user_id.last_name)
-        else:
-            return ""
-
-    def get_service_user_notes(self):
+    def get_notes(self):
         return "%s" % (self.service_notes)
 
     def get_time_to_delivery(self):
@@ -417,29 +408,19 @@ class Service(models.Model):
         self.save()
         return self
 
-    def update_service_state(self, state):
+    def update_state(self, state):
         state_obj = ServiceState.objects.filter(state_value__iexact=state).last()
         self.service_state = state_obj
         self.save()
         return self
 
-    def update_service_approved_date(self, date):
-        self.service_approved_date = date
-        self.save()
-        return self
-
-    def update_service_delivered_date(self, date):
+    def update_delivered_date(self, date):
         self.service_delivered_date = date
         self.save()
         return self
 
-    def update_service_rejected_date(self, date):
+    def update_rejected_date(self, date):
         self.service_rejected_date = date
-        self.save()
-        return self
-
-    def update_sequencing_platform(self, data):
-        self.service_sequencing_platform = data
         self.save()
         return self
 
@@ -613,8 +594,8 @@ class Resolution(models.Model):
     def get_resolution_number(self):
         return "%s" % self.resolution_number
 
-    def get_service_request_number(self):
-        return "%s" % self.resolution_service_id.get_service_request_number()
+    def get_identifier(self):
+        return "%s" % self.resolution_service_id.get_identifier()
 
     def get_available_services(self):
         if self.available_services.all().exists():
@@ -693,7 +674,7 @@ class Resolution(models.Model):
             on_estimated_date = self.resolution_estimated_date.strftime("%d %B, %Y")
         data = []
         data.append(self.resolution_service_id.get_service_id())
-        data.append(self.resolution_service_id.get_service_request_number())
+        data.append(self.resolution_service_id.get_identifier())
         data.append(self.resolution_number)
         data.append(self.resolution_full_number)
         if self.resolution_asigned_user is None:
@@ -708,7 +689,7 @@ class Resolution(models.Model):
         return self.resolution_service_id
 
     def get_service_name(self):
-        return "%s" % (self.resolution_service_id.get_service_request_number())
+        return "%s" % (self.resolution_service_id.get_identifier())
 
     def get_state(self):
         if self.resolution_state is not None:
@@ -802,9 +783,9 @@ class ResolutionParameters(models.Model):
 class DeliveryManager(models.Manager):
     def create_delivery(self, delivery_data):
         new_delivery = self.create(
-            delivery_resolution_id=delivery_data["delivery_resolutionID"],
-            delivery_notes=delivery_data["deliveryNotes"],
-            execution_start_date=delivery_data["executionStartDate"],
+            delivery_resolution_id=delivery_data["delivery_resolution_id"],
+            delivery_notes=delivery_data["delivery_notes"],
+            execution_start_date=delivery_data["execution_start_date"],
             execution_end_date=delivery_data["execution_end_date"],
             execution_time=delivery_data["execution_time"],
             permanent_used_space=delivery_data["permanent_used_space"],

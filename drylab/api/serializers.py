@@ -17,11 +17,11 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
         fields = [
             "delivery_resolution_id",
             "pipelines_in_delivery",
-            "executionStartDate",
+            "execution_start_date",
             "execution_end_date",
             "permanent_used_space",
             "temporary_used_space",
-            "deliveryNotes",
+            "delivery_notes",
         ]
 
 

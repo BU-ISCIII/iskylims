@@ -38,8 +38,8 @@ def index(request):
         ).order_by("service_created_date")
         service_list["recorded"] = []
         for r_service_obj in r_service_objs:
-            s_info = r_service_obj.get_service_name_and_center()
-            s_info.append(r_service_obj.get_service_requested_user())
+            s_info = r_service_obj.get_identifier_and_user_center()
+            s_info.append(r_service_obj.get_user_name())
             service_list["recorded"].append(s_info)
 
     if (
@@ -56,7 +56,7 @@ def index(request):
         )
         service_list["ongoing"] = []
         for ongoing_services_obj in ongoing_services_objs:
-            s_info = ongoing_services_obj.get_service_name_and_center()
+            s_info = ongoing_services_obj.get_identifier_and_user_center()
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list["ongoing"].append(s_info)
     org_name = (
@@ -171,13 +171,13 @@ def request_sequencing_service(request):
         else:
             email_data["user_email"] = request.user.email
             email_data["user_name"] = request.user.username
-        email_data["service_number"] = new_service.get_service_request_number()
+        email_data["service_number"] = new_service.get_identifier()
         email_result = drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
         # PDF preparation file for confirmation of service request
         confirmation_result = {}
-        service_request_number = new_service.get_service_request_number()
+        service_request_number = new_service.get_identifier()
         confirmation_result["text"] = list(
             map(
                 lambda st: str.replace(st, "SERVICE_NUMBER", service_request_number),
@@ -236,13 +236,13 @@ def counseling_request(request):
         email_data = {}
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
-        email_data["service_number"] = new_service.get_service_request_number()
+        email_data["service_number"] = new_service.get_identifier()
         drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
         confirmation_result = {}
 
-        service_request_number = new_service.get_service_request_number()
+        service_request_number = new_service.get_identifier()
         confirmation_result["text"] = list(
             map(
                 lambda st: str.replace(st, "SERVICE_NUMBER", service_request_number),
@@ -292,13 +292,13 @@ def infrastructure_request(request):
         email_data = {}
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
-        email_data["service_number"] = new_service.get_service_request_number()
+        email_data["service_number"] = new_service.get_identifier()
         drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
         confirmation_result = {}
 
-        service_request_number = new_service.get_service_request_number()
+        service_request_number = new_service.get_identifier()
         confirmation_result["text"] = list(
             map(
                 lambda st: str.replace(st, "SERVICE_NUMBER", service_request_number),
@@ -357,7 +357,7 @@ def add_samples_in_service(request):
         ] = drylab.utils.req_services.save_service_samples(
             request.POST, service_obj
         )
-        samples_added["service_name"] = service_obj.get_service_request_number()
+        samples_added["service_name"] = service_obj.get_identifier()
         samples_added["service_id"] = request.POST["service_id"]
         return render(
             request,
@@ -410,7 +410,7 @@ def delete_samples_in_service(request):
             "service_id": request.POST["service_id"],
             "service_name": drylab.utils.common.get_service_obj(
                 request.POST["service_id"]
-            ).get_service_request_number(),
+            ).get_identifier(),
         }
         return render(
             request,
@@ -653,10 +653,10 @@ def search_service(request):
             for service_item in services_found:
                 data = []
                 service_id = service_item.get_service_id()
-                data.append(service_item.get_service_request_number())
-                data.append(service_item.get_service_state(to_display=True))
-                data.append(service_item.get_service_dates())
-                data.append(service_item.get_service_request_center_name())
+                data.append(service_item.get_identifier())
+                data.append(service_item.get_state(to_display=True))
+                data.append(service_item.get_dates())
+                data.append(service_item.get_user_center_name())
                 data.append(
                     drylab.utils.req_services.get_projects_in_requested_samples(
                         service_item
@@ -698,9 +698,9 @@ def pending_services(request):
         return redirect("/accounts/login")
 
     pending_services_details = (
-        drylab.utils.req_services.get_pending_services_information()
+        drylab.utils.req_services.get_pending_services_info()
     )
-    user_pending_services = drylab.utils.req_services.get_user_pending_services_information(
+    user_pending_services = drylab.utils.req_services.get_user_pending_services_info(
         request.user.username
     )
     return render(
@@ -801,7 +801,7 @@ def add_resolution(request):
         email_data = {}
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
-        email_data["service_number"] = new_resolution.get_service_request_number()
+        email_data["service_number"] = new_resolution.get_identifier()
         email_data["status"] = resolution_data_form["serviceAccepted"]
         email_data["date"] = resolution_data_form["resolutionEstimatedDate"]
         # include the email for the user who requested the service
@@ -904,10 +904,10 @@ def add_in_progress(request):
             resolution_obj, "in_progress"
         ):
             # update the service status and in_porgress date
-            service_obj = service_obj.update_service_state("in_progress")
+            service_obj = service_obj.update_state("in_progress")
         email_data = {}
         email_data["user_email"] = service_obj.get_user_email()
-        email_data["user_name"] = service_obj.get_service_requested_user()
+        email_data["user_name"] = service_obj.get_user_name()
         email_data["resolution_number"] = resolution_number
         drylab.utils.resolutions.send_resolution_in_progress_email(
             email_data
@@ -1001,7 +1001,7 @@ def add_delivery(request):
                 request.POST
             )
         )
-        resolution_obj = delivery_recorded["delivery_resolutionID"]
+        resolution_obj = delivery_recorded["delivery_resolution_id"]
         if delivery_recorded is not None:
             email_data = {}
             email_data["user_email"] = request.user.email
@@ -1015,8 +1015,8 @@ def add_delivery(request):
                 resolution_obj, "delivered"
             ):
                 service_obj = resolution_obj.get_service_obj()
-                service_obj = service_obj.update_service_state("delivered")
-                service_obj.update_service_delivered_date(date.today())
+                service_obj = service_obj.update_state("delivered")
+                service_obj.update_delivered_date(date.today())
             return render(
                 request,
                 "drylab/addDelivery.html",
@@ -1305,7 +1305,7 @@ def stats_by_services_request(request):
             # preparing stats for services request by users
             user_services = {}
             for service in services_found:
-                user = service.get_service_requested_user()
+                user = service.get_user_name()
                 if user in user_services:
                     user_services[user] += 1
                 else:
@@ -1332,7 +1332,7 @@ def stats_by_services_request(request):
             # preparing stats for status of the services
             status_services = {}
             for service in services_found:
-                status = service.get_service_state(to_display=True)
+                status = service.get_state(to_display=True)
                 if status in status_services:
                     status_services[status] += 1
                 else:
@@ -1356,7 +1356,7 @@ def stats_by_services_request(request):
             # preparing stats for request by Area
             user_area_dict = {}
             for service in services_found:
-                user_service_obj = service.get_user_service_obj()
+                user_service_obj = service.get_user_obj()
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_service_obj
                 ).exists():
@@ -1389,13 +1389,13 @@ def stats_by_services_request(request):
             # preparing stats for services request by Center
             user_center_dict = {}
             for service in services_found:
-                user_service_obj = service.get_user_service_obj()
+                user_service_obj = service.get_user_obj()
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_service_obj
                 ).exists():
                     user_center = django_utils.models.Profile.objects.get(
                         profile_user_id=user_service_obj
-                    ).get_center_abbr()
+                    ).get_user_center_abbr()
                 else:
                     user_center = "Not defined"
                 if user_center in user_center_dict:
@@ -1432,14 +1432,14 @@ def stats_by_services_request(request):
             user_services_period = {}
             time_values_dict = {}
             for service in services_found:
-                user_service_obj = service.get_user_service_obj()
+                user_service_obj = service.get_user_obj()
                 date_service = service.service_created_date.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_service_obj
                 ).exists():
                     user_center = django_utils.models.Profile.objects.get(
                         profile_user_id=user_service_obj
-                    ).get_center_abbr()
+                    ).get_user_center_abbr()
                 else:
                     user_center = "Not defined"
                 if date_service not in time_values_dict:
@@ -1479,7 +1479,7 @@ def stats_by_services_request(request):
             user_area_services_period = {}
             time_values_dict = {}
             for service in services_found:
-                user_id = service.get_service_user_id()
+                user_id = service.get_user_id()
                 date_service = service.service_created_date.strftime(period_year_month)
                 if django_utils.models.Profile.objects.filter(
                     profile_user_id=user_id
