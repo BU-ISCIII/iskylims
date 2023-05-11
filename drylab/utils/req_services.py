@@ -267,7 +267,7 @@ def get_pending_services_info():
 
     state_services = list(
         drylab.models.ServiceState.objects.filter(show_in_stats=True)
-        .exclude(state_value="recorded")
+        .exclude(state_value__in=["recorded", "delivered"])
         .values_list("state_display", flat=True)
     )
 
@@ -282,9 +282,14 @@ def get_pending_services_info():
         service_state__state_value__in=["delivered", "rejected", "cancelled"]
     ).order_by("-service_created_date")
 
+    info_by_state[
+        drylab.models.ServiceState.objects.get(state_value="recorded").get_state(
+            to_display=True
+        )
+    ] = []
     for service_obj in service_objs:
         if service_obj.get_state() == "recorded":
-            # fetch service id and name        
+            # fetch service id and name
             services_number[service_obj.get_state(to_display=True)] = len(service_objs)
             service_data = [service_obj.get_service_id()]
             service_data.append(service_obj.get_identifier())
@@ -299,14 +304,16 @@ def get_pending_services_info():
     for state in state_services:
         info_by_state[state] = []
         services_number[service_obj.get_state(to_display=True)] = len(service_objs)
+        import pdb;pdb.set_trace()
         if drylab.models.Resolution.objects.filter(
-            resolution_service_id=service_obj, resolution_state__state_value=state
+            resolution_state__state_display=state
         ).exists():
             resolution_objs = drylab.models.Resolution.objects.filter(
-                resolution_service_id=service_obj, resolution_state__state_display=state
+                resolution_state__state_display=state
             )
             for resolution_obj in resolution_objs:
                 # fetch service id and name
+                service_obj = resolution_obj.get_service_obj()
                 service_data = [service_obj.get_service_id()]
                 service_data.append(service_obj.get_identifier())
                 # fetch requested user
@@ -320,16 +327,16 @@ def get_pending_services_info():
                 service_data.append(resolution_obj.get_resolution_estimated_date())
                 info_by_state[state].append(service_data)
 
-            # calculate the number of services per center
-            unit_req_serv = service_obj.get_user_center_name()
-            if unit_req_serv not in pending_services_per_unit:
-                pending_services_per_unit[unit_req_serv] = {}
-            if state not in pending_services_per_unit[unit_req_serv]:
-                pending_services_per_unit[unit_req_serv][state] = 0
-            pending_services_per_unit[unit_req_serv][state] += 1
+                # calculate the number of requests per center
+                unit_req_serv = service_obj.get_user_center_name()
+                if unit_req_serv not in pending_services_per_unit:
+                    pending_services_per_unit[unit_req_serv] = {}
+                if state not in pending_services_per_unit[unit_req_serv]:
+                    pending_services_per_unit[unit_req_serv][state] = 0
+                pending_services_per_unit[unit_req_serv][state] += 1
 
     pending_services_details["data"] = info_by_state
-
+    
     data_source = drylab.utils.graphics.graphic_3D_pie(
         "Number of Pending Services", "", "", "", "fint", services_number
     )
@@ -353,7 +360,6 @@ def get_pending_services_info():
         "graphic_pending_unit_services"
     ] = graphic_unit_pending_services.render()
     pending_services_details["graphics"] = pending_services_graphics
-    import pdb;pdb.set_trace()
 
     return pending_services_details
 
@@ -548,7 +554,7 @@ def get_display_service_info(service_id, service_manager):
         resolution_obj = drylab.models.Resolution.objects.filter(
             resolution_service_id=service_obj
         ).first()
-        in_progress_date = resolution_obj.get_in_progress_date()
+        in_progress_date = resolution_obj.get_in_progress_date(format=False)
         if in_progress_date is not None:
             time_in_queue = (in_progress_date - created_date).days
             dates.append(["Time in Queue", time_in_queue])
