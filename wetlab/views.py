@@ -8,7 +8,7 @@ import time
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
 from django_utils.models import Center, Profile
@@ -21,14 +21,15 @@ from core.utils.common import (
 )
 
 # Local imports
+import core.fusioncharts.fusioncharts
 import core.utils.load_batch
 import core.utils.platforms
 import core.utils.protocols
 import core.utils.samples
-import core.fusioncharts.fusioncharts
+import core.utils.commercial_kits
+
 import wetlab.config
 import wetlab.models
-
 import wetlab.utils.additional_kits
 import wetlab.utils.collection_index
 import wetlab.utils.common
@@ -42,7 +43,6 @@ import wetlab.utils.sequencers
 import wetlab.utils.statistics
 import wetlab.utils.stats_graphs
 import wetlab.utils.test_conf
-
 
 def index(request):
     org_name = wetlab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
@@ -354,12 +354,12 @@ def create_nextseq_run(request):
         # Check that runName is not already used in the database.
         # Error page is showed if runName is already  defined
 
-        if (RunProcess.objects.filter(run_name__iexact=run_name)).exists():
-            if RunProcess.objects.filter(
+        if (wetlab.models.RunProcess.objects.filter(run_name__iexact=run_name)).exists():
+            if wetlab.models.RunProcess.objects.filter(
                 run_name__iexact=run_name, state__run_state_name__exact="Pre-Recorded"
             ).exists():
                 # Delete the Sample Sheet file and the row in database
-                delete_run_objs = RunProcess.objects.filter(
+                delete_run_objs = wetlab.models.RunProcess.objects.filter(
                     run_name__iexact=run_name, state__run_state_name__exact="Pre-Recorded"
                 )
                 for delete_run in delete_run_objs:
@@ -367,8 +367,8 @@ def create_nextseq_run(request):
                     # full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
                     # os.remove(full_path_sample_sheet_file)
 
-                    if Projects.objects.filter(run_process=delete_run).exists():
-                        project_objs = Projects.objects.filter(run_process=delete_run)
+                    if wetlab.models.Projects.objects.filter(run_process=delete_run).exists():
+                        project_objs = wetlab.models.Projects.objects.filter(run_process=delete_run)
                         for project_obj in project_objs:
                             project_obj.run_process.remove(delete_run)
 
@@ -425,7 +425,7 @@ def create_nextseq_run(request):
         for key in project_list.keys():
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
-            if Projects.objects.filter(project_name__icontains=key).exists():
+            if wetlab.models.Projects.objects.filter(project_name__icontains=key).exists():
                    project_already_defined.append(key)
 
         if len(project_already_defined) > 0 and project_in_several_runs != "TRUE":
@@ -461,10 +461,10 @@ def create_nextseq_run(request):
             profile_user_id=request.user
         ).profile_center.id
         center_requested_by = Center.objects.get(pk=center_requested_id)
-        new_run_obj = RunProcess(
+        new_run_obj = wetlab.models.RunProcess(
             run_name=run_name,
             sample_sheet=file_name,
-            state=RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
+            state=wetlab.models.RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
             center_requested_by=center_requested_by,
         )
         new_run_obj.save()
@@ -477,18 +477,18 @@ def create_nextseq_run(request):
         run_info_values["experiment_name"] = experiment_name
         run_info_values["index_library_name"] = index_library_name
         for key, val in project_list.items():
-            if User.objects.filter(username__exact=val).exists():
-                user_id = User.objects.get(username__exact=val)
+            if django.contrib.auth.models.User.objects.filter(username__exact=val).exists():
+                user_id = django.contrib.auth.models.User.objects.get(username__exact=val)
             else:
                 user_id = None
 
-            if not wetlab.models.Projects.objects.filter(project_name__iexact=key).exists():
+            if not wetlab.models.wetlab.models.Projects.objects.filter(project_name__iexact=key).exists():
                 data = {}
                 data["user_id"] = user_id
                 data["projectName"] = key
-                project_obj = Projects.objects.create_new_empty_project(data)
+                project_obj = wetlab.models.Projects.objects.create_new_empty_project(data)
             else:
-                project_obj = Projects.objects.filter(project_name__iexact=key).last()
+                project_obj = wetlab.models.Projects.objects.filter(project_name__iexact=key).last()
 
             project_obj.add_run(new_run_obj)
             projects.append([key, val])
@@ -496,13 +496,13 @@ def create_nextseq_run(request):
         run_info_values["projects_user"] = projects
         run_info_values["runname"] = run_name
         # Get the list of the library kit used (libraryKit)
-        list_libraries = LibraryKit.objects.order_by().values_list(
+        list_libraries = wetlab.models.LibraryKit.objects.order_by().values_list(
             "library_name", flat=True
         )
         run_info_values["used_libraryKit"] = list_libraries
 
         user_names = []
-        all_users = User.objects.all()
+        all_users = django.contrib.auth.models.User.objects.all()
         for user in all_users:
             user_names.append(user.username)
         run_info_values["aval_users"] = user_names
@@ -523,7 +523,7 @@ def create_nextseq_run(request):
         project_index_kit = request.POST.getlist("projectindexlibraryname")
 
         # get the sample sheet used in the run. return error if run already exists
-        if not RunProcess.objects.filter(run_name__exact=run_name).exists():
+        if not wetlab.models.RunProcess.objects.filter(run_name__exact=run_name).exists():
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -535,7 +535,7 @@ def create_nextseq_run(request):
                     ]
                 },
             )
-        run_p = RunProcess.objects.get(run_name__exact=run_name)
+        run_p = wetlab.models.RunProcess.objects.get(run_name__exact=run_name)
         s_file = run_p.get_sample_file()
         # get the different type of library kit used in the run and
         # convert the sample sheet into Base Space. Number of converted
@@ -567,16 +567,16 @@ def create_nextseq_run(request):
         # save the project information on database
         for p in range(len(projects)):
             my_project = projects[p]
-            library_kit_id = LibraryKit.objects.filter(
+            library_kit_id = wetlab.models.LibraryKit.objects.filter(
                 library_name__exact=library_kit[p]
             ).last()
-            update_info_proj = Projects.objects.get(project_name=my_project)
+            update_info_proj = wetlab.models.Projects.objects.get(project_name=my_project)
             update_info_proj.libraryKit = project_index_kit[p]
             # removed the link to base space file
             # update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
             update_info_proj.baseSpaceFile = None
             update_info_proj.LibraryKit_id = library_kit_id
-            update_info_proj.user_id = User.objects.get(username__exact=user_name[p])
+            update_info_proj.user_id = django.contrib.auth.models.User.objects.get(username__exact=user_name[p])
             update_info_proj.save()
         results.append(["runname", experiment_name])
         run_p.set_run_state("Recorded")
@@ -622,7 +622,7 @@ def add_basespace_library(request):
     basespace_library_information = {}
     basespace_library = []
 
-    basespace_library_objects = LibraryKit.objects.all()
+    basespace_library_objects = wetlab.models.LibraryKit.objects.all()
     if len(basespace_library_objects) > 0:
         for l_kit in basespace_library_objects:
             basespace_library.append(l_kit.library_name)
@@ -631,7 +631,7 @@ def add_basespace_library(request):
         new_basespace_library_name = request.POST["newBasespaceLibrary"]
 
         # Check that library kit is not already defined in database
-        if LibraryKit.objects.filter(
+        if wetlab.models.LibraryKit.objects.filter(
             library_name__icontains=new_basespace_library_name
         ).exists():
             return render(
@@ -651,7 +651,7 @@ def add_basespace_library(request):
         ] = new_basespace_library_name
         basespace_library.append(new_basespace_library_name)
         # save the new library on database
-        b_library = LibraryKit(libraryName=new_basespace_library_name)
+        b_library = wetlab.models.LibraryKit(libraryName=new_basespace_library_name)
         b_library.save()
 
     basespace_library_information["libraries"] = basespace_library
@@ -718,7 +718,7 @@ def add_collection_index_kit(request):
     collection_index_information = {}
     collection_index_names = []
 
-    collection_indexes = CollectionIndexKit.objects.all()
+    collection_indexes = wetlab.models.CollectionIndexKit.objects.all()
     if len(collection_indexes) > 0:
         for c_index in collection_indexes:
             collection_index_names.append(
@@ -848,7 +848,7 @@ def search_run(request):
 
     """
     # check user privileges
-    groups = Group.objects.filter(name=wetlab.config.WETLAB_MANAGER).last()
+    groups = django.contrib.auth.models.Group.objects.filter(name=wetlab.config.WETLAB_MANAGER).last()
     if groups not in request.user.groups.all():
         allowed_all_runs = False
     else:
@@ -894,18 +894,18 @@ def search_run(request):
 
         # Get all the available runs to start the filtering
         if allowed_all_runs:
-            runs_found = RunProcess.objects.all().order_by("run_date").reverse()
+            runs_found = wetlab.models.RunProcess.objects.all().order_by("run_date").reverse()
         else:
             user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
-            user_projects = wetlab.models.Projects.objects.filter(user_id__in=user_ids)
+            user_projects = wetlab.models.wetlab.models.Projects.objects.filter(user_id__in=user_ids)
             run_list = []
             for user_project in user_projects:
                 # run_list.append(user_project.runprocess_id.id)
                 run_objs = user_project.runProcess.all()
                 for run_obj in run_objs:
                     run_list.append(run_obj.get_run_id())
-            if RunProcess.objects.filter(pk__in=run_list).exists():
-                runs_found = RunProcess.objects.filter(pk__in=run_list)
+            if wetlab.models.RunProcess.objects.filter(pk__in=run_list).exists():
+                runs_found = wetlab.models.RunProcess.objects.filter(pk__in=run_list)
             else:
                 error_message = [
                     "There are not run where " + request.user.username + " was involved"
@@ -918,8 +918,8 @@ def search_run(request):
 
         # Get runs when run name is not empty
         if run_name != "":
-            if RunProcess.objects.filter(run_name__iexact=run_name).exists():
-                run_name_found = RunProcess.objects.filter(run_name__iexact=run_name)
+            if wetlab.models.RunProcess.objects.filter(run_name__iexact=run_name).exists():
+                run_name_found = wetlab.models.RunProcess.objects.filter(run_name__iexact=run_name)
                 if len(run_name_found) == 1:
                     return redirect("display_run", run_id=run_name_found[0].pk)
             if runs_found.filter(run_name__icontains=run_name).exists():
@@ -946,7 +946,7 @@ def search_run(request):
                 )
         # Check if state is not empty
         if run_state != "":
-            s_state = RunStates.objects.filter(run_state_name__exact=run_state).last()
+            s_state = wetlab.models.RunStates.objects.get(run_state_name__exact=run_state)
             if runs_found.filter(state__run_state_name__exact=s_state).exists():
                 runs_found = runs_found.filter(
                     state__run_state_name__exact=s_state
@@ -1097,17 +1097,17 @@ def search_project(request):
                     },
                 )
 
-        projects_found = Projects.objects.all()
+        projects_found = wetlab.models.Projects.objects.all()
 
         if project_name != "":
             projects_found = projects_found.filter(project_name__icontains=project_name)
         if sequencer_name != "":
-            run_objs = RunProcess.objects.filter(
+            run_objs = wetlab.models.RunProcess.objects.filter(
                 used_sequencer__sequencer_name__exact=sequencer_name
             )
             projects_found = projects_found.filter(run_process__in=run_objs)
         if run_state != "":
-            run_objs = RunProcess.objects.filter(state__run_state_name__exact=run_state)
+            run_objs = wetlab.models.RunProcess.objects.filter(state__run_state_name__exact=run_state)
             projects_found = projects_found.filter(run_process__in=run_objs)
         if user_name != "":
             # check if user has a shared user
@@ -1167,7 +1167,7 @@ def retry_error_run(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -1195,8 +1195,8 @@ def retry_error_run(request):
         return redirect("/accounts/login")
     if request.method == "POST" and (request.POST["action"] == "retry_correct_error"):
         run_id = request.POST["run_id"]
-        if RunProcess.objects.filter(pk__exact=run_id).exists():
-            run_name_found = RunProcess.objects.get(pk__exact=run_id)
+        if wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
+            run_name_found = wetlab.models.RunProcess.objects.get(pk__exact=run_id)
             previous_error_state = run_name_found.get_state_before_error()
             run_name_found.set_run_state(previous_error_state)
             detail_description = {}
@@ -1222,7 +1222,7 @@ def skip_cancel_situation(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -1250,8 +1250,8 @@ def skip_cancel_situation(request):
         return redirect("/accounts/login")
     if request.method == "POST" and (request.POST["action"] == "skip_cancel_situation"):
         run_id = request.POST["run_id"]
-        if RunProcess.objects.filter(pk__exact=run_id).exists():
-            run_name_found = RunProcess.objects.get(pk__exact=run_id)
+        if wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
+            run_name_found = wetlab.models.RunProcess.objects.get(pk__exact=run_id)
             run_name_found.set_run_state("Sample Sent")
             run_name_found.set_forced_continue_on_error()
             detail_description = {}
@@ -1278,12 +1278,12 @@ def display_run(request, run_id):
     if not request.user.is_authenticated:
         # redirect to login webpage
         return redirect("/accounts/login")
-    groups = Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
+    groups = django.contrib.auth.models.Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
     if groups not in request.user.groups.all():
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
-        if wetlab.models.Projects.objects.filter(run_process__exact=run_id).exists():
-            projects = wetlab.models.Projects.objects.filter(run_process__exact=run_id)
+        if wetlab.models.wetlab.models.Projects.objects.filter(run_process__exact=run_id).exists():
+            projects = wetlab.models.wetlab.models.Projects.objects.filter(run_process__exact=run_id)
             allowed = False
             for project in projects:
                 if int(project.get_user_center_name()) in shared_user_ids:
@@ -1307,8 +1307,8 @@ def display_run(request, run_id):
                 {"content": ["No matches have been found for the run "]},
             )
 
-    if wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
-        run_name_found = wetlab.models.RunProcess.objects.get(pk=run_id)
+    if wetlab.models.wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
+        run_name_found = wetlab.models.wetlab.models.RunProcess.objects.get(pk=run_id)
         r_data_display = wetlab.utils.fetch_info.get_information_run(run_name_found)
         return render(
             request,
@@ -1328,7 +1328,7 @@ def last_run_by_sequencer(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -1374,7 +1374,7 @@ def incompleted_runs(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -1400,7 +1400,7 @@ def incompleted_runs(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if wetlab.models.RunProcess.objects.all().exclude(state__run_state_name="Completed").exists():
+    if wetlab.models.wetlab.models.RunProcess.objects.all().exclude(state__run_state_name="Completed").exists():
         display_incompleted_run = wetlab.utils.fetch_info.get_information_for_incompleted_run()
         return render(
             request,
@@ -1412,7 +1412,7 @@ def incompleted_runs(request):
 
 
 def check_user_access(request, project_found_id):
-    groups = Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
+    groups = django.contrib.auth.models.Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
     # check if user belongs to WetlabManager . If true allow to see the page
     if groups not in request.user.groups.all():
         # check if project belongs to the same user as the one requesting the page
@@ -1426,11 +1426,11 @@ def display_project(request, project_id):
     if not request.user.is_authenticated:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if Projects.objects.filter(pk=project_id).exists():
-        project_obj = Projects.objects.filter(pk=project_id).last()
+    if wetlab.models.Projects.objects.filter(pk=project_id).exists():
+        project_obj = wetlab.models.Projects.objects.filter(pk=project_id).last()
 
         # check that user is allow to see the project
-        groups = Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
+        groups = django.contrib.auth.models.Group.objects.get(name=wetlab.config.WETLAB_MANAGER)
         if groups not in request.user.groups.all():
             p_shared_list = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
             if int(project_obj.get_user_center_name()) not in p_shared_list:
@@ -1524,7 +1524,7 @@ def search_collection_index_library(request):
                             {"error_message": wetlab.config.ERROR_INVALID_SEQUENCE_CHARACTERS},
                         )
 
-        collection_indexes = CollectionIndexKit.objects.all()
+        collection_indexes = wetlab.models.CollectionIndexKit.objects.all()
         if collection_index_kit_name != "":
             if collection_indexes.filter(
                 collection_index_name__icontains=collection_index_kit_name
@@ -1567,7 +1567,7 @@ def search_collection_index_library(request):
                 )
 
         if index_name != "" or index_sequence != "":
-            collection_values = CollectionIndexValues.objects.all()
+            collection_values = wetlab.models.CollectionIndexValues.objects.all()
             if index_name != "":
                 if collection_values.filter(
                     index_7_contains=index_name,
@@ -1674,12 +1674,12 @@ def search_collection_index_library(request):
 
 @login_required
 def change_run_name(request, run_id):
-    if RunProcess.objects.filter(pk=run_id).exists():
-        run = RunProcess.objects.get(pk=run_id)
+    if wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
+        run = wetlab.models.RunProcess.objects.get(pk=run_id)
         if not request.user.is_authenticated:
             return redirect("/accounts/login")
         # check if user is allow to make the change
-        groups = Group.objects.get(name="WetlabManager")
+        groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
         # check if user belongs to WetlabManager . If true allow to see the page
         if groups not in request.user.groups.all():
             return render(
@@ -1700,7 +1700,7 @@ def change_run_name(request, run_id):
                     "wetlab/error_page.html",
                     {"content": ["Empty value is not allowed for the Run Name "]},
                 )
-            if RunProcess.objects.filter(run_name__exact=new_run_name).exists():
+            if wetlab.models.RunProcess.objects.filter(run_name__exact=new_run_name).exists():
                 return render(
                     request,
                     "wetlab/error_page.html",
@@ -1742,8 +1742,8 @@ def change_run_name(request, run_id):
 @login_required
 def change_project_libKit(request, project_id):
     # check if project exists
-    if Projects.objects.filter(pk=project_id).exists():
-        project = Projects.objects.get(pk=project_id)
+    if wetlab.models.Projects.objects.filter(pk=project_id).exists():
+        project = wetlab.models.Projects.objects.get(pk=project_id)
         if not request.user.is_authenticated:
             # redirect to login webpage
             return redirect("/accounts/login")
@@ -1785,11 +1785,11 @@ def change_project_libKit(request, project_id):
                 project_run_id = project.runprocess_id.id
                 project_lib_kit = project.libraryKit
                 if (
-                    Projects.objects.filter(runprocess_id=project_run_id)
+                    wetlab.models.Projects.objects.filter(runprocess_id=project_run_id)
                     .exclude(pk=project_id)
                     .exists()
                 ):
-                    all_project_with_same_run_id = Projects.objects.filter(
+                    all_project_with_same_run_id = wetlab.models.Projects.objects.filter(
                         runprocess_id=project_run_id
                     ).exclude(pk=project_id)
                     # there are more than 1 project on the same Run.
@@ -1983,10 +1983,10 @@ def stats_per_time(request):
         ########
         if start_date != "" and end_date != "":
             stat_per_time = {}
-            if RunProcess.objects.filter(
+            if wetlab.models.RunProcess.objects.filter(
                 state__run_state_name="Completed", run_date__range=(start_date, end_date)
             ).exists():
-                run_stats_list = RunProcess.objects.filter(
+                run_stats_list = wetlab.models.RunProcess.objects.filter(
                     state__run_state_name="Completed",
                     run_date__range=(start_date, end_date),
                 ).order_by("run_date")
@@ -2047,16 +2047,16 @@ def stats_per_time(request):
 
                 ########
                 # collect statistics for Projects
-                if RunProcess.objects.filter(
+                if wetlab.models.RunProcess.objects.filter(
                     state__run_state_name__exact="Completed",
                     run_completed_date__range=(start_date, end_date),
                 ).exists():
-                    run_objs = RunProcess.objects.filter(
+                    run_objs = wetlab.models.RunProcess.objects.filter(
                         state__run_state_name__exact="Completed",
                         run_completed_date__range=(start_date, end_date),
                     )
-                    if Projects.objects.filter(run_process__in=run_objs).exists():
-                        project_found_list = Projects.objects.filter(
+                    if wetlab.models.Projects.objects.filter(run_process__in=run_objs).exists():
+                        project_found_list = wetlab.models.Projects.objects.filter(
                             run_process__in=run_objs
                         )
 
@@ -2123,11 +2123,11 @@ def stats_per_time(request):
 
                 for run in run_stats_list:
                     run_obj = run.get_run_id()
-                    run_param_obj = RunningParameters.objects.get(run_name_id=run_obj)
+                    run_param_obj = wetlab.models.RunningParameters.objects.get(run_name_id=run_obj)
                     lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     top_unbarcode_all_runs = {}
                     for lane_number in range(1, lanes_in_sequencer + 1):
-                        lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(
+                        lane_unbarcodes = wetlab.models.RawTopUnknowBarcodes.objects.filter(
                             runprocess_id=run, lane_number__exact=lane_number
                         )
                         for lane_unbarcode in lane_unbarcodes:
@@ -2272,13 +2272,13 @@ def get_list_of_libraries_values(
         # This line must changed to handle project name is reused in several runs
         run_used_in_project = project_to_compare.runProcess.all().last()
 
-        run_param_obj = RunningParameters.objects.get(run_name_id=run_used_in_project)
+        run_param_obj = wetlab.models.RunningParameters.objects.get(run_name_id=run_used_in_project)
         # get the number of lanes by quering the SequencerModel in the RunProcess
         # number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
         number_of_lanes = int(run_param_obj.get_number_of_lanes())
         for lane_number in range(1, number_of_lanes + 1):
             try:
-                lane_in_project = StatsLaneSummary.objects.get(
+                lane_in_project = wetlab.models.StatsLaneSummary.objects.get(
                     project_id=project_to_compare, lane__exact=lane_number
                 )
             except Exception:
@@ -2364,11 +2364,11 @@ def stats_per_library(request):
                 )
 
         if library_kit_name != "":
-            if Projects.objects.filter(
+            if wetlab.models.Projects.objects.filter(
                 library_kit__icontains=library_kit_name,
                 run_process__state__run_state_name__exact="Completed",
             ).exists():
-                library_found = Projects.objects.filter(
+                library_found = wetlab.models.Projects.objects.filter(
                     library_kit__icontains=library_kit_name,
                     run_process__state__run_state_name__exact="Completed",
                 )
@@ -2380,7 +2380,7 @@ def stats_per_library(request):
                     {"error_message": error_message},
                 )
         else:
-            library_found = Projects.objects.filter(
+            library_found = wetlab.models.Projects.objects.filter(
                 run_process__state__run_state_name__exact="Completed"
             )
         if start_date != "" and end_date != "":
@@ -2443,7 +2443,7 @@ def stats_per_library(request):
                     project_id = project.get_project_id()
                     # Get quality information for each Lane summary of the project id
                     #
-                    lane_in_project = StatsLaneSummary.objects.get(
+                    lane_in_project = wetlab.models.StatsLaneSummary.objects.get(
                         project_id__exact=project_id, lane__exact=lane_number
                     )
                     (
@@ -2560,13 +2560,13 @@ def stats_per_library(request):
             # get the data for the libraries to compare with
             if start_date == "" and end_date == "":
                 if (
-                    Projects.objects.filter(
+                    wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed"
                     )
                     .exclude(libraryKit__exact=library_name)
                     .exists()
                 ):
-                    libraries_to_compare = Projects.objects.filter(
+                    libraries_to_compare = wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed"
                     ).exclude(library_kit__exact=library_name)
                 else:
@@ -2576,14 +2576,14 @@ def stats_per_library(request):
 
             if start_date != "" and end_date == "":
                 if (
-                    Projects.objects.filter(
+                    wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed",
                         generate_dat__gte=start_date,
                     )
                     .exclude(library_kit__exact=library_name)
                     .exists()
                 ):
-                    libraries_to_compare = Projects.objects.filter(
+                    libraries_to_compare = wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed",
                         generate_dat__gte=start_date,
                     ).exclude(library_kit__exact=library_name)
@@ -2595,14 +2595,14 @@ def stats_per_library(request):
 
             if start_date == "" and end_date != "":
                 if (
-                    Projects.objects.filter(
+                    wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed",
                         generate_dat__lte=end_date,
                     )
                     .exclude(library_kit__exact=library_name)
                     .exists()
                 ):
-                    libraries_to_compare = Projects.objects.filter(
+                    libraries_to_compare = wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed",
                         generate_dat__lte=end_date,
                     ).exclude(library_kit__exact=library_name)
@@ -2614,14 +2614,14 @@ def stats_per_library(request):
 
             if start_date != "" and end_date != "":
                 if (
-                    Projects.objects.filter(
+                    wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed",
                         generatedat__range=(start_date, end_date),
                     )
                     .exclude(library_kit__exact=library_name)
                     .exists()
                 ):
-                    libraries_to_compare = Projects.objects.filter(
+                    libraries_to_compare = wetlab.models.Projects.objects.filter(
                         runprocess_id__state__run_state_name__exact="Completed",
                         generate_dat__range=(start_date, end_date),
                     ).exclude(library_kit__exact=library_name)
@@ -2643,10 +2643,10 @@ def stats_per_library(request):
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [], []
 
                     run_obj = project_to_compare.get_run_obj()
-                    run_param_obj = RunningParameters.objects.get(run_id=run_obj)
+                    run_param_obj = wetlab.models.RunningParameters.objects.get(run_id=run_obj)
                     lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     for lane_number in range(1, lanes_in_sequencer + 1):
-                        lane_in_project = StatsLaneSummary.objects.get(
+                        lane_in_project = wetlab.models.StatsLaneSummary.objects.get(
                             project_id__exact=project_to_compare_id,
                             lane__exact=lane_number,
                         )
@@ -2843,7 +2843,7 @@ def stats_per_library(request):
             #
             # get data for displaying the libraries found in the request form
             #
-            all_libraries = Projects.objects.filter(
+            all_libraries = wetlab.models.Projects.objects.filter(
                 run_process__state__run_state_name__exact="Completed"
             )
             if start_date != "" and end_date != "":
@@ -2968,7 +2968,7 @@ def annual_report(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -3013,11 +3013,11 @@ def annual_report(request):
                 },
             )
 
-        completed_run_in_year = RunProcess.objects.filter(
+        completed_run_in_year = wetlab.models.RunProcess.objects.filter(
             run_date__year=year_selected, state__run_state_name__exact="Completed"
         )
         #
-        uncompleted_run_in_year = RunProcess.objects.filter(
+        uncompleted_run_in_year = wetlab.models.RunProcess.objects.filter(
             run_date__year=year_selected
         ).exclude(state__run_state_name__exact="Completed")
         if len(completed_run_in_year) == 0 and len(uncompleted_run_in_year) == 0:
@@ -3062,7 +3062,7 @@ def annual_report(request):
 
         #
         # Collecting information from StatsRunSummary
-        run_found_bin_summary_year = StatsRunSummary.objects.filter(
+        run_found_bin_summary_year = wetlab.models.StatsRunSummary.objects.filter(
             stats_summary_run_date__year=year_selected, level__exact="Total"
         )
         q30_year, aligned_year, error_rate_year = {}, {}, {}
@@ -3126,7 +3126,7 @@ def annual_report(request):
 
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
-        investigator_projects = Projects.objects.filter(
+        investigator_projects = wetlab.models.Projects.objects.filter(
             project_run_date__year=year_selected
         ).order_by("user_id")
         project_by_user = {}
@@ -3203,7 +3203,7 @@ def monthly_report(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -3304,13 +3304,13 @@ def monthly_report(request):
                 },
             )
 
-        completed_run_in_year_month = RunProcess.objects.filter(
+        completed_run_in_year_month = wetlab.models.RunProcess.objects.filter(
             run_date__year=year_selected,
             run_date__month=month_selected,
             state__run_state_name__exact="Completed",
         )
         #
-        uncompleted_run_in_year_month = RunProcess.objects.filter(
+        uncompleted_run_in_year_month = wetlab.models.RunProcess.objects.filter(
             run_date__year=year_selected, run_date__month=month_selected
         ).exclude(state__run_state_name__exact="Completed")
         if (
@@ -3364,7 +3364,7 @@ def monthly_report(request):
 
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1, 2, more than 2
-        investigator_projects = Projects.objects.filter(
+        investigator_projects = wetlab.models.Projects.objects.filter(
             project_run_date__year=year_selected, project_run_date__month=month_selected
         ).order_by("user_id")
         project_by_user = {}
@@ -3435,7 +3435,7 @@ def monthly_report(request):
         ] = pie_p_user_monthly_graphic.render()
 
         # Collecting information from StatsRunSummary
-        run_found_bin_summary_month = StatsRunSummary.objects.filter(
+        run_found_bin_summary_month = wetlab.models.StatsRunSummary.objects.filter(
             stats_summary_run_date__year=year_selected,
             stats_summary_run_date__month=month_selected,
             level__exact="Total",
@@ -3518,7 +3518,7 @@ def quarter_report(request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name="WetlabManager")
+            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -3598,11 +3598,11 @@ def quarter_report(request):
             )
 
         #
-        completed_run_in_quarter = RunProcess.objects.filter(
+        completed_run_in_quarter = wetlab.models.RunProcess.objects.filter(
             run_date__range=(start_date, end_date), state__run_state_name="Completed"
         )
         #
-        uncompleted_run_in_quarter = RunProcess.objects.filter(
+        uncompleted_run_in_quarter = wetlab.models.RunProcess.objects.filter(
             run_date__range=(start_date, end_date)
         ).exclude(state__run_state_name="Completed")
         if len(completed_run_in_quarter) == 0 and len(uncompleted_run_in_quarter) == 0:
@@ -3649,7 +3649,7 @@ def quarter_report(request):
 
         #
         # Collecting information from StatsRunSummary
-        run_found_bin_summary_quarter = StatsRunSummary.objects.filter(
+        run_found_bin_summary_quarter = wetlab.models.StatsRunSummary.objects.filter(
             stats_summary_run_date__range=(start_date, end_date), level__exact="Total"
         )
         q30_quarter, aligned_quarter, error_rate_quarter = {}, {}, {}
@@ -3730,7 +3730,7 @@ def quarter_report(request):
 
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
-        investigator_projects = Projects.objects.filter(
+        investigator_projects = wetlab.models.Projects.objects.filter(
             project_run_date__range=(start_date, end_date)
         ).order_by("user_id")
         project_by_user = {}
@@ -3842,22 +3842,22 @@ def create_protocol(request):
                 },
             )
     # get the list of defined protocols
-    defined_protocols, other_protocol_list = display_available_protocols(__package__)
+    defined_protocols, other_protocol_list = core.utils.protocols.display_available_protocols(__package__)
     additional_kits = wetlab.utils.additional_kits.get_additional_kits_list(__package__)
-    defined_protocol_types = display_protocol_types(__package__)
+    defined_protocol_types = core.utils.protocols.display_protocol_types(__package__)
 
     if request.method == "POST" and request.POST["action"] == "addNewProtocol":
         new_protocol = request.POST["newProtocolName"]
         protocol_type = request.POST["protocolType"]
         description = request.POST["description"]
 
-        if check_if_protocol_exists(new_protocol, __package__):
+        if core.utils.protocols.check_if_protocol_exists(new_protocol, __package__):
             return render(
                 request,
                 "wetlab/create_protocol.html",
                 {"ERROR": "Protocol Name " + new_protocol + "Already exists."}
             )
-        new_protocol_id = create_new_protocol(
+        new_protocol_id = core.utils.protocols.create_new_protocol(
             new_protocol, protocol_type, description, __package__
         )
 
@@ -3971,7 +3971,7 @@ def define_additional_kits(request, protocol_id):
         )
 
     else:
-        if not check_if_protocol_exists(protocol_id, __package__):
+        if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4018,7 +4018,7 @@ def display_protocol(request, protocol_id):
                 ]
             },
         )
-    if not check_if_protocol_exists(protocol_id, __package__):
+    if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
         return render(
             request,
             "wetlab/error_page.html",
@@ -4029,7 +4029,7 @@ def display_protocol(request, protocol_id):
                 ]
             },
         )
-    protocol_data = get_all_protocol_info(protocol_id)
+    protocol_data = core.utils.protocols.get_all_protocol_info(protocol_id)
     kit_data = wetlab.utils.additional_kits.get_all_additional_kit_info(protocol_id)
 
     return render(
@@ -4062,7 +4062,7 @@ def define_protocol_parameters(request, protocol_id):
         request.method == "POST"
         and request.POST["action"] == "define_protocol_parameters"
     ):
-        recorded_prot_parameters = set_protocol_parameters(request)
+        recorded_prot_parameters = core.utils.protocols.set_protocol_parameters(request)
 
         return render(
             request,
@@ -4071,7 +4071,7 @@ def define_protocol_parameters(request, protocol_id):
         )
 
     else:
-        if not check_if_protocol_exists(protocol_id, __package__):
+        if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4083,7 +4083,7 @@ def define_protocol_parameters(request, protocol_id):
                 },
             )
 
-        prot_parameters = define_table_for_prot_parameters(protocol_id)
+        prot_parameters = core.utils.protocols.define_table_for_prot_parameters(protocol_id)
         return render(
             request,
             "wetlab/defineProtocolParameters.html",
@@ -4094,12 +4094,12 @@ def define_protocol_parameters(request, protocol_id):
 @login_required
 def add_commercial_kit(request):
     app_name = __package__.split(".")[0]
-    defined_protocols = get_defined_protocols(app_name, False)
+    defined_protocols = core.utils.protocols.get_defined_protocols(app_name, False)
     defined_platforms = core.utils.platforms.get_defined_platforms_and_ids("NGS")
-    commercial_kits_data = get_data_for_commercial_kits("NGS")
+    commercial_kits_data = core.utils.commercial_kits.get_data_for_commercial_kits("NGS")
 
     if request.method == "POST" and request.POST["action"] == "addCommercialKit":
-        if get_commercial_kit_id(request.POST["kitName"]):
+        if core.utils.commercial_kits.get_commercial_kit_id(request.POST["kitName"]):
             return render(
                 request,
                 "wetlab/addCommercialKit.html",
@@ -4108,8 +4108,8 @@ def add_commercial_kit(request):
                     "invalid_name": request.POST["kitName"],
                 },
             )
-        new_kit = store_commercial_kit(request.POST)
-        new_kit_data = get_commercial_kit_basic_data(new_kit)
+        new_kit = core.utils.commercial_kits.store_commercial_kit(request.POST)
+        new_kit_data = core.utils.commercial_kits.get_commercial_kit_basic_data(new_kit)
         return render(
             request,
             "wetlab/addCommercialKit.html",
@@ -4129,9 +4129,9 @@ def add_commercial_kit(request):
 
 @login_required
 def add_user_lot_commercial_kit(request):
-    defined_kits = get_defined_commercial_kits()
+    defined_kits = core.utils.commercial_kits.get_defined_commercial_kits()
     if request.method == "POST" and request.POST["action"] == "addUserLotKit":
-        if get_lot_user_commercial_kit_id(request.POST["barCode"]):
+        if core.utils.commercial_kits.get_lot_user_commercial_kit_id(request.POST["barCode"]):
             return render(
                 request,
                 "wetlab/addUserLotCommercialKit.html",
@@ -4140,8 +4140,8 @@ def add_user_lot_commercial_kit(request):
                     "invalid_name": request.POST["nickName"],
                 },
             )
-        new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
-        new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
+        new_lot_kit = core.utils.commercial_kits.store_lot_user_commercial_kit(request.POST, request.user)
+        new_lot_kit_data = core.utils.commercial_kits.get_lot_user_commercial_kit_basic_data(new_lot_kit)
         return render(
             request,
             "wetlab/addUserLotCommercialKit.html",
@@ -4488,7 +4488,7 @@ def modify_additional_kits(request, protocol_id):
             {"additional_kits_data_saved": additional_kits_data_saved},
         )
     else:
-        if not check_if_protocol_exists(protocol_id, __package__):
+        if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4527,14 +4527,14 @@ def modify_protocol_fields(request, protocol_id):
         return redirect("/accounts/login")
 
     if request.method == "POST" and request.POST["action"] == "modifyProtocolFields":
-        protocol_field_saved = modify_fields_in_protocol(request.POST)
+        protocol_field_saved = core.utils.protocols.modify_fields_in_protocol(request.POST)
         return render(
             request,
             "wetlab/modifyProtocolFields.html",
             {"protocol_field_saved": protocol_field_saved},
         )
     else:
-        if not check_if_protocol_exists(protocol_id, __package__):
+        if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4545,7 +4545,7 @@ def modify_protocol_fields(request, protocol_id):
                     ]
                 },
             )
-        protocol_field = get_protocol_fields(protocol_id)
+        protocol_field = core.utils.protocols.get_protocol_fields(protocol_id)
         return render(
             request,
             "wetlab/modifyProtocolFields.html",
@@ -4651,7 +4651,7 @@ def display_sample(request, sample_id):
     """
     sample_information = core.utils.samples.get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
-        sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
+        sample_information.update(core.utils.commercial_kits.get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(wetlab.utils.library.get_all_library_information(sample_id))
         sample_information.update(wetlab.utils.additional_kits.get_additional_kits_used_in_sample(sample_id))
         sample_information.update(wetlab.utils.run.get_run_user_lot_kit_used_in_sample(sample_id))
@@ -5444,7 +5444,7 @@ def create_pool(request):
     if request.method == "POST" and request.POST["action"] == "createPool":
         new_pool = wetlab.utils.pool.define_new_pool(request.POST, request.user)
 
-        if not isinstance(new_pool, LibraryPool):
+        if not isinstance(new_pool, wetlab.models.LibraryPool):
             display_list.update(new_pool)
             return render(
                 request,
@@ -5575,7 +5575,7 @@ def create_new_run(request):
 
         sample_sheet_name = wetlab.utils.run.store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
-        pools_obj = LibraryPool.objects.filter(run_process_id=run_obj)
+        pools_obj = wetlab.models.LibraryPool.objects.filter(run_process_id=run_obj)
 
         for pool_obj in pools_obj:
             pool_obj.set_pool_state("Used")
@@ -5646,8 +5646,8 @@ def compare_samples(request):
 
 @login_required
 def user_commercial_kit_inventory(request):
-    expired_kit = get_expired_lot_user_kit(request.user)
-    valid_kit = get_valid_lot_user_kit(request.user)
+    expired_kit = core.utils.commercial_kits.get_expired_lot_user_kit(request.user)
+    valid_kit = core.utils.commercial_kits.get_valid_lot_user_kit(request.user)
     if request.method == "POST" and request.POST["action"] == "runOutUserLotKit":
         selected_user_kits = request.POST.getlist("userKit")
         if len(selected_user_kits) == 0:
@@ -5660,7 +5660,7 @@ def user_commercial_kit_inventory(request):
                     "user_name": request.user.username,
                 },
             )
-        run_out_kits = set_user_lot_kit_to_run_out(selected_user_kits)
+        run_out_kits = core.utils.commercial_kits.set_user_lot_kit_to_run_out(selected_user_kits)
         return render(
             request,
             "wetlab/userCommercialKitInventory.html",
@@ -5714,7 +5714,7 @@ def search_user_lot_kit(request):
                 },
             )
 
-        user_kits_objs = search_user_lot_kit_from_user_form(request.POST)
+        user_kits_objs = core.utils.commercial_kits.search_user_lot_kit_from_user_form(request.POST)
         if user_kits_objs == "No defined":
             error_message = wetlab.config.ERROR_NO_USER_LOT_KIT_DEFINED
             return render(
@@ -5727,7 +5727,7 @@ def search_user_lot_kit(request):
                 },
             )
         if len(user_kits_objs) > 1:
-            display_user_kit_list = display_user_lot_kit_information_from_query_list(
+            display_user_kit_list = core.utils.commercial_kits.display_user_lot_kit_information_from_query_list(
                 user_kits_objs
             )
             return render(
@@ -5759,14 +5759,14 @@ def search_user_lot_kit(request):
 
 @login_required
 def display_user_lot_kit(request, user_kit_id):
-    user_kit_obj = get_user_lot_commercial_kit_obj_from_id(user_kit_id)
+    user_kit_obj = core.utils.commercial_kits.get_user_lot_commercial_kit_obj_from_id(user_kit_id)
     if user_kit_obj is None:
         return render(
             request,
             "wetlab/error_page.html",
             {"content": ["Invalid User Lot Commercial Kit"]},
         )
-    user_lot_kit_data = get_user_lot_kit_data_to_display(user_kit_obj)
+    user_lot_kit_data = core.utils.commercial_kits.get_user_lot_kit_data_to_display(user_kit_obj)
     return render(
         request,
         "wetlab/displayUserLotKit.html",
