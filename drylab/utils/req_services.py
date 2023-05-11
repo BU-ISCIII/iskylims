@@ -5,6 +5,7 @@ import os
 import django.conf
 import django.contrib.auth.models
 import django.core.mail
+import django_utils.models
 
 # Local imports
 import core.fusioncharts.fusioncharts
@@ -15,6 +16,7 @@ import drylab.models
 import drylab.utils.multi_files
 import drylab.utils.common
 import drylab.utils.graphics
+import core.fusioncharts.fusioncharts
 
 # API from Wetlab #
 try:
