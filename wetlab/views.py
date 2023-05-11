@@ -27,7 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-from .utils.test_conf import *
 import wetlab.models
 
 import wetlab.utils.additional_kits
@@ -42,7 +41,7 @@ import wetlab.utils.samplesheet
 import wetlab.utils.sequencers
 import wetlab.utils.statistics
 import wetlab.utils.stats_graphs
-
+import wetlab.utils.test_conf
 
 
 def index(request):
