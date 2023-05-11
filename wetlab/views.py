@@ -27,7 +27,6 @@ import core.utils.protocols
 import core.utils.samples
 import core.fusioncharts.fusioncharts
 import wetlab.config
-from .utils.statistics import *
 from .utils.stats_graphs import *
 from .utils.test_conf import *
 import wetlab.models
@@ -42,6 +41,7 @@ import wetlab.utils.run
 import wetlab.utils.sample
 import wetlab.utils.samplesheet
 import wetlab.utils.sequencers
+import wetlab.utils.statistics
 
 
 
@@ -1944,7 +1944,7 @@ def stats_per_researcher(request):
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
 
-        researcher_statistics = get_researcher_statistics(r_name, start_date, end_date)
+        researcher_statistics = wetlab.utils.statistics.get_researcher_statistics(r_name, start_date, end_date)
         if "ERROR" in researcher_statistics:
             error_message = researcher_statistics["ERROR"]
             return render(
