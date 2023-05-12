@@ -3,12 +3,13 @@
 {% block content %}
 
   <!--========== TOP MENU ==========-->
-<nav class="navbar navbar-expand-sm navbar-light">
+<nav id="navbar" class="navbar navbar-expand-sm navbar-light">
     <div class="container">
         <a  class="navbar-brand" href="/">
             <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
         </a>
-        <div class="collapse navbar-collapse me-auto me-lg-0" id="navbarSupportedContent">
+        {% comment %} <div class="collapse navbar-collapse me-auto me-lg-0" id="navbarSupportedContent"> {% endcomment %}
+            <div class="collapse navbar-collapse me-auto me-lg-0" id="navbar">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                   <a class="nav-link active" aria-current="page" href="/">HOME</a>
@@ -36,7 +37,7 @@
 
 {% include 'registration/login_inline.html' %}
  
-
+<section class="iskylims">
 <div class="row mt-5">
     {% for app , text in apps_in_iskylims %}
          <div class="col-sm-4">
@@ -51,4 +52,5 @@
         </div> <!--// end col-sm-4-->
     {% endfor %}
 </div> <!--// end row -->
+</section>
 {% endblock %}
