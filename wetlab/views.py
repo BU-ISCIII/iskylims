@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
 from django_utils.models import Center, Profile
-from django_utils.views import check_user_group
+import django_utils.views
 from core.utils.common import (
     get_email_data,
     get_inital_sample_settings_values,
@@ -28,7 +28,11 @@ from core.fusioncharts.fusioncharts import FusionCharts
 from .models import *
 from .utils.additional_kits import *
 from .utils.collection_index import *
-from .utils.common import *
+# updated --
+import wetlab.utils.common
+import logging
+# end updated --
+
 from .utils.fetch_info import *
 from .utils.library import *
 from .utils.pool import *
@@ -42,7 +46,7 @@ from .utils.test_conf import *
 
 
 def index(request):
-    org_name = get_configuration_from_database("ORGANIZATION_NAME")
+    org_name = wetlab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
     return render(
         request, "wetlab/index.html", {"organization_name": org_name}
     )
@@ -53,31 +57,31 @@ def configuration_email(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
     email_conf_data = get_email_data()
-    email_conf_data["EMAIL_ISKYLIMS"] = get_configuration_from_database(
+    email_conf_data["EMAIL_ISKYLIMS"] = wetlab.utils.common.get_configuration_from_database(
         "EMAIL_FOR_NOTIFICATIONS"
     )
     if request.method == "POST" and (request.POST["action"] == "emailconfiguration"):
         result_email = send_test_email(request.POST)
         if result_email != "OK":
-            email_conf_data = get_email_data()
+            email_conf_data = wetlab.utils.common.get_email_data()
             email_conf_data["EMAIL_ISKYLIMS"] = request.POST["EMAIL_ISKYLIMS"]
             email_conf_data["test_email"] = request.POST["test_email"]
             return render(
                 request,
-                "wetlab/configurationEmail.html",
+                "wetlab/configuration_email.html",
                 {"ERROR": result_email, "email_conf_data": email_conf_data},
             )
-        save_database_configuration_value(
+        wetlab.utils.common.save_database_configuration_value(
             "EMAIL_FOR_NOTIFICATIONS", request.POST["EMAIL_ISKYLIMS"]
         )
         return render(
             request,
-            "wetlab/configurationEmail.html",
+            "wetlab/configuration_email.html",
             {"succesful_settings": True},
         )
     return render(
         request,
-        "wetlab/configurationEmail.html",
+        "wetlab/configuration_email.html",
         {"email_conf_data": email_conf_data},
     )
 
@@ -86,7 +90,7 @@ def configuration_email(request):
 def configuration_samba(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
-    samba_conf_data = get_samba_connection_data()
+    samba_conf_data = wetlab.utils.common.get_samba_connection_data()
     if request.method == "POST" and (request.POST["action"] == "sambaconfiguration"):
         # reload configuration samba settings
         samba_user_field = {}
@@ -99,9 +103,9 @@ def configuration_samba(request):
                     samba_user_field[field] = request.POST[field]
             except KeyError:
                 samba_user_field[field] = "False"
-        save_samba_connection_data(samba_user_field)
+        wetlab.utils.common.save_samba_connection_data(samba_user_field)
         try:
-            open_samba_connection()
+            wetlab.utils.common.open_samba_connection()
             return render(
                 request,
                 "wetlab/configuration_samba.html",
@@ -128,7 +132,7 @@ def initial_settings(request):
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    if not is_wetlab_manager(request):
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/error_page.html",
@@ -179,7 +183,7 @@ def create_nextseq_run(request):
     if not request.user.is_authenticated:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if not is_wetlab_manager(request):
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/error_page.html",
@@ -245,7 +249,7 @@ def create_nextseq_run(request):
 
         # Fetch the experiment name and the library name from the sample sheet file
         index_library_name = get_index_library_name(stored_file)
-        run_name = get_experiment_name_from_file(stored_file)
+        run_name = wetlab.utils.common.get_experiment_name_from_file(stored_file)
 
         if run_name == "":
             # define an temporary unique value for the run name
@@ -320,7 +324,7 @@ def create_nextseq_run(request):
         # Error page is showed if projects are already defined on database
 
         project_already_defined = []
-        project_in_several_runs = get_configuration_value(
+        project_in_several_runs = wetlab.utils.common.get_configuration_value(
             "PROJECTS_ALLOWED_IN_MULTIPLE_RUNS"
         )
         for key in project_list.keys():
@@ -773,7 +777,7 @@ def search_run(request):
     ########
     # Search for runs that fullfil the input values
     ########
-    run_form_data = get_run_search_fields_form()
+    run_form_data = wetlab.utils.common.get_run_search_fields_form()
     error_message = ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == "POST" and (request.POST["action"] == "runsearch"):
         run_name = request.POST["runname"]
@@ -793,7 +797,7 @@ def search_run(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -801,7 +805,7 @@ def search_run(request):
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not wetlab.utils.common.check_valid_date_format(end_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -813,7 +817,7 @@ def search_run(request):
         if allowed_all_runs:
             runs_found = RunProcess.objects.all().order_by("run_date").reverse()
         else:
-            user_ids = get_allowed_user_for_sharing(request.user)
+            user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
             user_projects = Projects.objects.filter(user_id__in=user_ids)
             run_list = []
             for user_project in user_projects:
@@ -954,7 +958,7 @@ def search_project(request):
             ---run_list         # in case several run matches the user conditions.
 
     """
-    project_form_data = get_project_search_fields_form()
+    project_form_data = wetlab.utils.common.get_project_search_fields_form()
     error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
     if request.method == "POST" and (request.POST["action"] == "searchproject"):
         project_name = request.POST["projectname"]
@@ -991,7 +995,7 @@ def search_project(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1003,7 +1007,7 @@ def search_project(request):
                 )
 
         if end_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1029,7 +1033,7 @@ def search_project(request):
         if user_name != "":
             # check if user has a shared user
             if user_name == request.user.username:
-                p_shared_list = get_allowed_user_for_sharing(request.user)
+                p_shared_list = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
                 projects_found = projects_found.filter(user_id__in=p_shared_list)
             else:
                 projects_found = projects_found.filter(
@@ -1198,7 +1202,7 @@ def display_run(request, run_id):
     groups = Group.objects.get(name=config.WETLAB_MANAGER)
     if groups not in request.user.groups.all():
         # check if user is owner of the run or belongs to the shared user
-        shared_user_ids = get_allowed_user_for_sharing(request.user)
+        shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
         if Projects.objects.filter(run_process__exact=run_id).exists():
             projects = Projects.objects.filter(run_process__exact=run_id)
             allowed = False
@@ -1358,7 +1362,7 @@ def display_project(request, project_id):
         # check that user is allow to see the project
         groups = Group.objects.get(name=config.WETLAB_MANAGER)
         if groups not in request.user.groups.all():
-            p_shared_list = get_allowed_user_for_sharing(request.user)
+            p_shared_list = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
             if int(project_obj.get_user_center_name()) not in p_shared_list:
                 return render(
                     request,
@@ -1711,7 +1715,7 @@ def change_project_libKit(request, project_id):
             # check if there is no other project in the same Run with the same Library Kit
             # if the library is shared with other project then error message is displayed
 
-            if not check_user_group(request, "WetlabManager"):
+            if not django_utils.views.check_user_group(request, "WetlabManager"):
                 project_run_id = project.runprocess_id.id
                 project_lib_kit = project.libraryKit
                 if (
@@ -1817,7 +1821,7 @@ def stats_per_sequencer(request):
         end_date = request.POST["enddate"]
 
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1828,7 +1832,7 @@ def stats_per_sequencer(request):
                     },
                 )
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not wetlab.utils.common.check_valid_date_format(end_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -1898,12 +1902,12 @@ def stats_per_time(request):
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
         # check the right format of start and end date
-        if start_date != "" and not check_valid_date_format(start_date):
+        if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
             error_message = config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
             )
-        if end_date != "" and not check_valid_date_format(start_date):
+        if end_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
             error_message = config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request, "wetlab/StatsPerTime.html", {"ERROR": error_message}
@@ -2277,7 +2281,7 @@ def stats_per_library(request):
 
         # check the right format of start and end date
         if start_date != "":
-            if not check_valid_date_format(start_date):
+            if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -2285,7 +2289,7 @@ def stats_per_library(request):
                     {"error_message": error_message},
                 )
         if end_date != "":
-            if not check_valid_date_format(end_date):
+            if not wetlab.utils.common.check_valid_date_format(end_date):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
@@ -3759,7 +3763,7 @@ def update_tables(request):
     if RunProcess.objects.filter(
         state__run_state_name="Completed", useSpaceImgMb=0
     ).exists():
-        conn = open_samba_connection()
+        conn = wetlab.utils.common.open_samba_connection()
         run_list_be_updated = RunProcess.objects.filter(
             state__run_state_name="Completed", useSpaceImgMb=0
         )
@@ -3843,7 +3847,7 @@ def update_tables_date(request):
     if RunProcess.objects.filter(
         state__run_state_name="Completed", run_finish_date=None
     ).exists():
-        conn = open_samba_connection()
+        conn = wetlab.utils.common.open_samba_connection()
         run_list_be_updated = RunProcess.objects.filter(
             state__run_state_name="Completed", run_finish_date=None
         )
@@ -4013,7 +4017,7 @@ def configuration_test(request):
 def create_protocol(request):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4075,7 +4079,7 @@ def create_protocol(request):
 def define_sample_projects(request):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4128,7 +4132,7 @@ def define_sample_projects(request):
 def define_additional_kits(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4196,7 +4200,7 @@ def display_sample_project(request, sample_project_id):
 
 @login_required
 def display_protocol(request, protocol_id):
-    if not is_wetlab_manager(request):
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/error_page.html",
@@ -4232,7 +4236,7 @@ def display_protocol(request, protocol_id):
 def define_protocol_parameters(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4560,7 +4564,7 @@ def record_samples(request):
 def define_sample_projects_fields(request, sample_project_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4652,7 +4656,7 @@ def define_sample_projects_fields(request, sample_project_id):
 def modify_additional_kits(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4700,7 +4704,7 @@ def modify_additional_kits(request, protocol_id):
 def modify_protocol_fields(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -4747,7 +4751,7 @@ def modify_sample_project_fields(request, sample_project_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
 
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -5005,7 +5009,7 @@ def handling_library_preparations(request):
                 "wetlab/handlingLibraryPreparations.html",
                 {"ERROR": data["ERROR"], "samples_in_lib_prep": samples_in_lib_prep},
             )
-        user_in_description = get_configuration_value(
+        user_in_description = wetlab.utils.common.get_configuration_value(
             "DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME"
         )
         if user_in_description == "TRUE":
@@ -5427,7 +5431,7 @@ def search_sample(request):
             )
         # check the right format of start and end date
 
-        if start_date != "" and not check_valid_date_format(start_date):
+        if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -5439,7 +5443,7 @@ def search_sample(request):
                     ]
                 },
             )
-        if end_date != "" and not check_valid_date_format(end_date):
+        if end_date != "" and not wetlab.utils.common.check_valid_date_format(end_date):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -5613,7 +5617,7 @@ def set_molecule_values(request):
 def create_pool(request):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -5656,7 +5660,7 @@ def create_pool(request):
 @login_required
 def create_new_run(request):
     if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
+        if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
                 "wetlab/error_page.html",
@@ -5708,7 +5712,7 @@ def create_new_run(request):
 
     elif request.method == "POST" and request.POST["action"] == "continueWithRun":
         run_id = request.POST["run_ids"]
-        experiment_name = get_experiment_name(run_id)
+        experiment_name = wetlab.utils.common.get_experiment_name(run_id)
         pool_objs = LibraryPool.objects.filter(run_process_id__exact=run_id)
         pool_ids = []
         for pool in pool_objs:
@@ -5806,7 +5810,7 @@ def pending_sample_preparations(request):
 
 @login_required
 def compare_samples(request):
-    user_is_wetlab_manager = is_wetlab_manager(request)
+    user_is_wetlab_manager = wetlab.utils.common.is_wetlab_manager(request)
     samples_data = get_list_of_samples_in_projects(request.user, user_is_wetlab_manager)
     samples_data["user"] = request.user.username
     if request.method == "POST" and request.POST["action"] == "compareSamples":
@@ -5889,7 +5893,7 @@ def search_user_lot_kit(request):
                 },
             )
 
-        if request.POST["expired"] != "" and not check_valid_date_format(
+        if request.POST["expired"] != "" and not wetlab.utils.common.check_valid_date_format(
             request.POST["expired"]
         ):
             error_message = ERROR_INVALID_FORMAT_FOR_DATES
@@ -5969,7 +5973,7 @@ def sequencer_configuration(request):
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    if not is_wetlab_manager(request):
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/error_page.html",
