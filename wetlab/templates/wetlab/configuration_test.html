@@ -1,0 +1,432 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+<style>
+    .panel-wrapper-sm-6 {
+        max-height: 450px;
+        overflow: auto;
+        display:inline-block;
+        width: 670px;
+    }
+    .panel-wrapper-sm-10 {
+        max-height: 250px;
+        overflow: auto;
+        display:inline-block;
+        width: 950px;
+    }
+    .panel-wrapper-sm-12 {
+        max-height: 450px;
+        overflow: auto;
+        display:inline-block;
+        width: 1150px;
+    }
+    
+    p {
+       font-size: 18px;
+    }
+    
+    </style>
+<section class="iskylims">
+    {% if error %}
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-7 offset-3" >
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><H3>Unable to execute the configuration test</H3></div>
+                    <div class="card-body">
+                        {% for value in error %}
+                            <p>{{value}}</p>
+                        {% endfor %}
+                    </div>
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        </div> <!--// end row  -->
+    {% endif %}
+    {% if delete_successful %}
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-7 offset-3" >
+                <div class="card ">
+                    <div class="card-header"><H3>Successful deletion</H3></div>
+                    <div class="card-body">
+                        <p>The test run {{delete_successful.run_name}} was deleted </p>
+                    </div>
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        </div> <!--// end row  -->
+    {% endif %}
+    {% if test_results %}
+        <div class="row mt-2 mb-4">
+            <div class="col" >
+                    <h3 style:"text-align:center">Wetlab configuration testing results</h3>
+            </div> 
+        </div> 
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-12">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="basic" aria-selected="true">Configuration Files</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="folder-tab" data-bs-toggle="tab" data-bs-target="#folder" type="button" role="tab" aria-controls="folder" aria-selected="false">Folder Permissions</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="database-tab" data-bs-toggle="tab" data-bs-target="#database" type="button" role="tab" aria-controls="database" aria-selected="false">Database Access</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="samba-tab" data-bs-toggle="tab" data-bs-target="#samba" type="button" role="tab" aria-controls="samba" aria-selected="false">Samba Connection</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="config" role="tabpanel" aria-labelledby="config-tab">
+                        <div class="container-md">
+                            <div class="row mt-4">
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header"><H3>iSkyLIMS configuration settings</H3></div>
+                                        <div class="card-body">
+                                            <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#settings">Display iSkyLIMS.settings.py</button>
+                                            <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#wetlab">Display wetlab_settings.py</button>
+                                            <button class="btn btn-outline-primary mx-2 float-end" onclick="downloadInnerHtml('settings.py','settings')">Download settings.py </button>
+                                            <button class="btn btn-outline-primary float-end" onclick="downloadInnerHtml('wetlab_settings.py','wetlab')">Download config.py</button>
+                                            <div id="settings" class="collapse">
+                                                {% for line in test_results.iSkyLIMS_settings %}
+                                                    {{line}}<br>
+                                                {% endfor %}
+                                            </div>
+                                            <div id="wetlab" class="collapse">
+                                                {% for line in test_results.config_file %}
+                                                    {{line}}<br>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            function downloadInnerHtml(filename, elId, mimeType) {
+                            var elHtml = document.getElementById(elId).innerHTML;
+                            var link = document.createElement('a');
+                            mimeType = mimeType || 'text/plain';
+
+                            link.setAttribute('download', filename);
+                            link.setAttribute('href', 'data:' + mimeType  +  ';charset=utf-8,' + encodeURIComponent(elHtml));
+                            link.click();
+                        }
+
+                        var fileName =  'tags.html';
+                        </script>
+                    </div><!-- // end of tab config -->
+                   
+                    <div class="tab-pane fade" id="folder" role="tabpanel" aria-labelledby="folder-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="card">
+                                    <h3 style="text-align:center">Files used for Massive sequencing application</h3>
+                                    <div class="card-body">
+                                        <div class="overflow-auto">
+                                            <table id="permissions" class="table  table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Permissions</th>
+                                                        <th>User</th>
+                                                        <th>Group</th>
+                                                        <th>Folder</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for line in test_results.attr_files %}
+                                                        <tr>
+                                                            {% for value in line %}
+                                                                <td>{{value}}</td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>  
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                    </div><!-- // end of tab folder -->
+                    <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
+                        <div class="container">
+                            <div class="card">
+                                <h3 style="text-align:center">Database access result</h3> 
+                                <div class="card-body">
+                                    <div class="row">           
+                                        {% if test_results.database_access  == 'OK' %}
+                                            <div class="col-md-6">
+                                                <h4>Success to connect to database</h4>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <i class="bi bi-check-lg float-end" style="font-size:40px;color:green"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-md-6">
+                                                <h4>Unable to connect to database</h4>
+                                            </div>
+                                                <div class="col-md-6">
+                                                <i class="bi bi-x-circle float-end" style="font-size:40px;color:red"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                    </div><!-- // end of tab database -->
+                    <div class="tab-pane fade" id="samba" role="tabpanel" aria-labelledby="samba-tab">
+                        <div class="container">
+                            <div class="card">
+                                <h3 style="text-align:center">Samba connection result</h3> 
+                                <div class="card-body">
+                                    <div class="row">           
+                                        {% if test_results.samba_connection  == 'OK' %}
+                                            <div class="col-md-6">
+                                                <h4>Success connection to samba server</h4>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <i class="bi bi-check-lg float-end" style="font-size:40px;color:green"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-md-6">
+                                                <h4>Unable to stablish samba connection</h4>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <i class="bi bi-x-circle float-end" style="font-size:40px;color:red"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div> 
+                        </div> 
+                    </div><!-- // end of tab samba -->
+                </div> <!--  end tab -->
+            </div> <!--  end of col -->
+        </div> <!--// end row  -->
+
+
+        {% if test_results.basic_checks_ok == 'OK' %}
+            {% if available_run_test %}
+                <div class="row mt-2 mb-4">
+                    <div class="col-sm-12" >
+                        <div class="card ">
+                            <div class="card-header"><H3>Execute the test Run</H3> </div>
+                            <div class="card-body">
+                                <p><strong>Once the basic check test has been pass, Select the run test to complete the testing</strong></p>
+                                <form method="post" enctype="multipart/form-data" name="executeRunTest" id="executeRunTest" class="form-horizontal well">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="executeRunTest"/>
+                                    <div class="col-sm-4"><select required = "required" class="form-control" name="runTest" id="runTest">
+                                                                <option value="">Choose a value</option>
+                                                                {% for name, folder  in available_run_test %}
+                                                                    <option value="{{folder}}">{{name}}</option>
+                                                                {% endfor %}
+
+                                                        </select>
+                                    </div>  <!-- end select input -->
+                                    <input class="btn pull-right btn-primary"  name = "btnSubmit" id = "btnSubmit" type="submit" value="Run Test">
+                                    <br><br>
+                                </form>
+
+                            </div> <!--// end panel body -->
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-12  -->
+                </div> <!--// end row  -->
+                <script>
+                    $(document).ready(function () {
+                        $("#executeRunTest").submit(function (e) {
+                            $("#btnSubmit").attr("disabled", true);
+                            return true;
+                        });
+                    });
+                </script>
+            {% else %}
+                <div class="row mt-2 mb-4">
+                    <div class="col-sm-12" >
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><H3>No defined test Run </H3> </div>
+                            <div class="card-body">
+                                <p><strong>There are not available test run defined on database</strong></p>
+                            </div> <!--// end panel -->
+                        </div> <!--// end col-sm-12  -->
+                    </div> <!--// end row  -->
+            {% endif %}
+        {% else %}
+        <div class="row mt-2 mb-4">
+            <div class="col" >
+                <div class="card border-danger mb-3 ">
+                    <h3 class="card-title text-danger" style="text-align:center">Basic test not passed</h3> 
+                    <div class="card-body">
+                        <h5>Some of the test cases were not passed. Check the configuration files to find out the error and re-run the test again.</h5>
+                        <h5>You can not go further in the testing while the Basic test are not passed OK.</h5>
+                        <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="basicTest"/>
+                            <input class="btn btn-outline-primary float-end mt-2 me-2" type="submit" value="Re-Run Basic Test">
+                        </form>
+                    </div> <!--// end panel body -->
+
+        {% endif %}
+
+    {% elif run_test_result %}
+        {% if run_test_result.ERROR %}
+            <div class="row mt-2 mb-4">
+                <div class="col-sm-7 offset-3" >
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><H3>Test run was not successful</H3></div>
+                        {% for value in run_test_result.ERROR %}
+                            <p>{{value}}</p>
+                        {% endfor %}
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-7  -->
+            </div> <!--// end row  -->
+
+        {% endif %}
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-12" >
+                <div class="card ">
+                    <div class="card-header"><H3>Results execution for {{run_test_result.run_test_name}} test Run
+
+                        {% if run_test_result.Completed == "OK" %}
+                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                            <p>The run test is successfully completed</p>
+                        {% else %}
+                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                            <p>{{run_test_result.error}}</p>
+                        {% endif %}
+                    </H3></div>
+                    <div class="card-body">
+                        <div class="tab">
+                            <button class="tablinks" onclick="summaryBin(event, 'results')" id="defaultOpen">Run test result</button>
+                            {% if  log_trace %}
+                                <button class="tablinks" onclick="summaryBin(event, 'log')">Log file information</button>
+                            {% endif %}
+                            <button class="tablinks" onclick="summaryBin(event, 'moreOptions')">Available Options</button>
+
+                        </div>
+                        <div class="row mt-2 mb-4">
+                            <div id="results" class="tabcontent">
+                                <div class="row mt-2 mb-4">
+                                    <div class="col-sm-7">
+                                        <div class="card ">
+                                            <div class="card-header"><H3>Information per run test state</H3></div>
+                                            <div class="card-body">
+                                                {% for key, value in run_test_result.items %}
+                                                    {% if key != "run_test_name" and key != 'ERROR' %}
+                                                        <p> Result of run test for the state {{key}}
+
+                                                            {% if  value == 'OK' %}
+                                                                <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                                                            {% else %}
+                                                                <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                                                            {% endif %}
+                                                        </p>
+                                                        <br><br>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div> <!--// end panel body -->
+                                        </div> <!--// end panel -->
+                                    </div> <!--// end col-sm-7  -->
+                                </div> <!--// end row  -->
+                            </div><!-- // end of tab results -->
+
+                            {% if  log_trace %}
+                                <div id="log" class="tabcontent">
+                                    <div class="row mt-2 mb-4">
+                                        <div class="col-sm-12">
+                                            <div class="card ">
+                                                <div class="card-header"><H3>Information stored in log file for run test </H3></div>
+                                                <div class="card-body">
+                                                    <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#loginfo">Display log information</button>
+                                                    <div id="loginfo" class="collapse">
+                                                        {% for line in log_trace %}
+                                                            {{line}}<br>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> <!--  end of col-sm-5 -->
+                                    </div> <!--  end of row -->
+                                </div><!-- // end of tab log -->
+                            {% endif %}
+                            <div id="moreOptions" class="tabcontent">
+                                <div class="row mt-2 mb-4">
+                                    <div class="col-sm-10">
+                                        <div class="card ">
+                                            <div class="card-header"><H3>Available options</H3></div>
+                                            <div class="card-body">
+                                                    <p><strong>Click on the "Delete Run test" button . if you want to delete this test run in iSkyLIMS</strong></p>
+                                                    <form method="post" enctype="multipart/form-data" name="deleteTestRun" id="deleteTestRun" class="form-horizontal well">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="deleteTestRun"/>
+                                                        <input type="hidden" name="deleteRun" value="{{run_test_result.run_test_name}}"/>
+                                                        <br>
+                                                        <input class="btn pull-left btn-default" onclick="window.location.href=''" value="Return to configuration Test">
+                                                        <input class="btn pull-right btn-primary" type="submit" value="Delete test run" name="Delete">
+                                                        <br><br>
+                                                    </form>
+                                                </div> <!--// end panel body -->
+                                        </div> <!--// end panel -->
+                                    </div>  <!--// end col-sm-10  -->
+                                </div> <!--// end row  -->
+                            </div><!-- // end of tab moreOptions -->
+                        </div> <!--// end panel body -->
+                    </div> <!--// end panel -->
+                </div> <!--  end of col-sm-12 -->
+            </div> <!--  end of row -->
+        </div> <!--// end row  -->
+
+    {% else %}
+        <!-- FORM for selecting annual Report Information -->
+
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-7 offset-3" >
+                <div class="card ">
+                    <div class="card-header"><H3>Page for starting wetlab configuration testing</H3></div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="basicTest"/>
+                            <br>
+                            <p>This is the test page to check the configuration settings defined in your installation.</p>
+                            <p>The tests are divided into several parts to cover the run life, from recorded until the run is completed.</p>
+                            <ul>
+                                <li>Basic test cases. Where testing:</li>
+                                <ul>
+                                    <li>Configuration files accesibility.</li>
+                                    <li>Samba connection to remote server</li>
+                                    <li>Database access</li>
+                                    <BR>
+                                </ul>
+                                <li>Test run. Using a predefined test data store on remote server</li>
+                                <ul>
+                                    <li>Fetch the sample sheet to create the run in recorded state</li>
+                                    <li>Updating the run from recorded until completed</li>
+                                </ul>
+                            </ul>
+                            <p><strong>Click on the "SUBMIT" button to start the testing</strong></p>
+                            <br>
+                            <input class="btn btn-outline-primary float-end me-2" name ="btnSubmit" id = "btnSubmit" type="submit" value="Submit">
+                            <br>
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#configurationtest").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    //disable the submit button
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        </div> <!--// end row  -->
+
+    {% endif %}
+</section>
+{% endblock %}
