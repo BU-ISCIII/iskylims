@@ -127,6 +127,105 @@ def configuration_samba(request):
 
 
 @login_required
+def configuration_test(request):
+    # check user privileges
+    if request.user.is_authenticated:
+        if request.user.username != "admin":
+            return redirect("/wetlab")
+    if request.method == "POST" and request.POST["action"] == "basicTest":
+        test_results = {}
+        config_file = os.path.join(
+            settings.BASE_DIR, "wetlab", "config.py"
+        )
+        test_results["iSkyLIMS_settings"] = get_iSkyLIMS_settings()
+        test_results["config_file"] = get_config_file(config_file)
+        test_results["attr_files"] = get_files_attribute(
+            os.path.join(settings.MEDIA_ROOT, "wetlab")
+        )
+        test_results["database_access"] = check_access_database()
+        test_results["samba_connection"] = check_samba_connection()
+
+        test_results["basic_checks_ok"] = "OK"
+        for result in test_results:
+            if test_results[result] == "NOK":
+                test_results["basic_checks_ok"] = "NOK"
+                break
+        available_run_test = []
+        if RunConfigurationTest.objects.all().exists():
+            run_test_objs = RunConfigurationTest.objects.all()
+            for run_test_obj in run_test_objs:
+                available_run_test.append(
+                    [run_test_obj.get_run_test_name(), run_test_obj.get_run_test_id()]
+                )
+        return render(
+            request,
+            "wetlab/configuration_test.html",
+            {"test_results": test_results, "available_run_test": available_run_test},
+        )
+
+    elif request.method == "POST" and request.POST["action"] == "executeRunTest":
+        if RunConfigurationTest.objects.filter(
+            pk__exact=request.POST["runTest"]
+        ).exists():
+            run_test_obj = RunConfigurationTest.objects.filter(
+                pk__exact=request.POST["runTest"]
+            ).last()
+            run_test_folder = run_test_obj.get_run_test_folder()
+            run_test_name = run_test_obj.get_run_test_name()
+        if not folder_test_exists(run_test_folder):
+            return render(
+                request,
+                "wetlab/ConfigurationTest.html",
+                {"error": config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
+            )
+        run_test_result = execute_test_for_testing_run(run_test_name)
+        run_test_result["run_test_name"] = run_test_name
+        if "ERROR" in run_test_result:
+            log_trace = []
+            with open(
+                logging.getLoggerClass().root.handlers[0].baseFilename, "r"
+            ) as fh:
+                for line in fh:
+                    if run_test_name in line:
+                        line = line.replace("\n", "")
+                        log_trace.append(line)
+
+            return render(
+                request,
+                "wetlab/configuration_test.html",
+                {"run_test_result": run_test_result, "log_trace": log_trace},
+            )
+        else:
+            return render(
+                request,
+                "wetlab/configuration_test.html",
+                {"run_test_result": run_test_result},
+            )
+    elif request.method == "POST" and request.POST["action"] == "deleteTestRun":
+        if RunConfigurationTest.objects.filter(
+            run_test_name__exact=request.POST["deleteRun"]
+        ).exists():
+            if RunProcess.objects.filter(
+                run_name__exact=request.POST["deleteRun"]
+            ).exists():
+                run_test_objs = RunProcess.objects.filter(
+                    run_name__exact=request.POST["deleteRun"]
+                )
+                for run_test_obj in run_test_objs:
+                    delete_test_run(run_test_obj)
+                    delete_successful = {"run_name": request.POST["deleteRun"]}
+                return render(
+                    request,
+                    "wetlab/ConfigurationTest.html",
+                    {"delete_successful": delete_successful},
+                )
+            return render(request, "wetlab/configuration_test.html")
+    else:
+        return render(request, "wetlab/configuration_test.html")
+
+
+
+@login_required
 def initial_settings(request):
     if not request.user.is_authenticated:
         # redirect to login webpage
@@ -3901,116 +4000,6 @@ def update_tables_date(request):
                 ]
             },
         )
-
-
-@login_required
-def configuration_test(request):
-    # check user privileges
-    if request.user.is_authenticated:
-        if not request.user.is_staff or not request.user.is_superuser:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    if request.method == "POST" and request.POST["action"] == "basicTest":
-        test_results = {}
-        config_file = os.path.join(
-            settings.BASE_DIR, "wetlab", "config.py"
-        )
-        test_results["iSkyLIMS_settings"] = get_iSkyLIMS_settings()
-        test_results["config_file"] = get_config_file(config_file)
-        test_results["attr_files"] = get_files_attribute(
-            os.path.join(settings.MEDIA_ROOT, "wetlab")
-        )
-        test_results["database_access"] = check_access_database()
-        test_results["samba_connection"] = check_samba_connection()
-
-        test_results["basic_checks_ok"] = "OK"
-        for result in test_results:
-            if test_results[result] == "NOK":
-                test_results["basic_checks_ok"] = "NOK"
-                break
-        available_run_test = []
-        if RunConfigurationTest.objects.all().exists():
-            run_test_objs = RunConfigurationTest.objects.all()
-            for run_test_obj in run_test_objs:
-                available_run_test.append(
-                    [run_test_obj.get_run_test_name(), run_test_obj.get_run_test_id()]
-                )
-        return render(
-            request,
-            "wetlab/ConfigurationTest.html",
-            {"test_results": test_results, "available_run_test": available_run_test},
-        )
-
-    elif request.method == "POST" and request.POST["action"] == "executeRunTest":
-        if RunConfigurationTest.objects.filter(
-            pk__exact=request.POST["runTest"]
-        ).exists():
-            run_test_obj = RunConfigurationTest.objects.filter(
-                pk__exact=request.POST["runTest"]
-            ).last()
-            run_test_folder = run_test_obj.get_run_test_folder()
-            run_test_name = run_test_obj.get_run_test_name()
-        if not folder_test_exists(run_test_folder):
-            return render(
-                request,
-                "wetlab/ConfigurationTest.html",
-                {"error": config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
-            )
-        run_test_result = execute_test_for_testing_run(run_test_name)
-        run_test_result["run_test_name"] = run_test_name
-        if "ERROR" in run_test_result:
-            log_trace = []
-            with open(
-                logging.getLoggerClass().root.handlers[0].baseFilename, "r"
-            ) as fh:
-                for line in fh:
-                    if run_test_name in line:
-                        line = line.replace("\n", "")
-                        log_trace.append(line)
-
-            return render(
-                request,
-                "wetlab/ConfigurationTest.html",
-                {"run_test_result": run_test_result, "log_trace": log_trace},
-            )
-        else:
-            return render(
-                request,
-                "wetlab/ConfigurationTest.html",
-                {"run_test_result": run_test_result},
-            )
-    elif request.method == "POST" and request.POST["action"] == "deleteTestRun":
-        if RunConfigurationTest.objects.filter(
-            run_test_name__exact=request.POST["deleteRun"]
-        ).exists():
-            if RunProcess.objects.filter(
-                run_name__exact=request.POST["deleteRun"]
-            ).exists():
-                run_test_objs = RunProcess.objects.filter(
-                    run_name__exact=request.POST["deleteRun"]
-                )
-                for run_test_obj in run_test_objs:
-                    delete_test_run(run_test_obj)
-                    delete_successful = {"run_name": request.POST["deleteRun"]}
-                return render(
-                    request,
-                    "wetlab/ConfigurationTest.html",
-                    {"delete_successful": delete_successful},
-                )
-            return render(request, "wetlab/ConfigurationTest.html")
-    else:
-        return render(request, "wetlab/ConfigurationTest.html")
 
 
 @login_required
