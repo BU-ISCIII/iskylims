@@ -11,11 +11,11 @@
         }
 </style>
 {% if ERROR %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-10">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3>Unable to record your request.</h3></div>
-                <div class="panel-body">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3>Unable to record your request.</h3></div>
+                <div class="card-body">
                     {% for value in ERROR %}
                         <p>{{value}}</p>
                     {% endfor %}
@@ -29,11 +29,11 @@
 
 {% if lib_prep_protocol_parameters %}
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Update the following samples with library protocol parameters.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Update the following samples with library protocol parameters.</h3></div>
+                <div class="card-body">
 
                    <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
                        {% csrf_token %}
@@ -115,11 +115,11 @@
              white-space: nowrap;
         }
     </style>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Update the following molecules ID with used protocol to prepare the library.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Update the following molecules ID with used protocol to prepare the library.</h3></div>
+                <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addLibraryProtocol"  id="addLibraryProtocol" class="form-horizontal well">
                         {% csrf_token %}
                         <div class="scrolling-wrapper">
@@ -191,18 +191,18 @@
             white-space: nowrap;
         }
     </style>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The present information was collected from sample sheet file</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The present information was collected from sample sheet file</h3></div>
+                <div class="card-body">
                     <h5 style="text-align:center">Check that all information is ok, then click on the "Submit" bottom</h5>
                     <h5 style="text-align:center">If some information is wrong then modify the sample sheet and upload again the the right information.</h5>
 
                     <div class="col-sm-7" >
-                        <div class="panel-heading"><h5 style="text-align:center">Main Information</h5></div>
+                        <div class="card-header"><h5 style="text-align:center">Main Information</h5></div>
 
-                        <div class="panel-body">
+                        <div class="card-body">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -230,8 +230,8 @@
                         </div> <!--  end of panel  -->
                     </div>  <!-- end class-sm-8   -->
                     <div class="col-sm-5" >
-                        <div class="panel-heading"><h5 style="text-align:center">Summary Information</h5></div>
-                        <div class="panel-body">
+                        <div class="card-header"><h5 style="text-align:center">Summary Information</h5></div>
+                        <div class="card-body">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
@@ -338,11 +338,11 @@
 
 
 {% elif stored_params %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-10">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following samples have been updated with Library Preparation Parameters.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following samples have been updated with Library Preparation Parameters.</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -371,11 +371,11 @@
     </div> <!--  end of row -->
 
 {% elif additional_kits %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Define the User Lot additional kits</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Define the User Lot additional kits</h3></div>
+                <div class="card-body">
 
                     <form method="post" enctype="multipart/form-data" name="storeAdditionalKits"  id="storeAdditionalKits" class="form-horizontal well">
                         {% csrf_token %}
@@ -441,11 +441,11 @@
     </div> <!--  end of row -->
 
 {% elif stored_additional_kits %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The additional kits Lot are recorded</h3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-2" >
+            <div class="card ">
+                <div class="card-header"><h3>The additional kits Lot are recorded</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -472,11 +472,11 @@
     </div> <!--  end of row -->
 
 {% elif stored_index %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-10">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The Sample Index information is stored now on iSkyLIMS.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The Sample Index information is stored now on iSkyLIMS.</h3></div>
+                <div class="card-body">
                     <h5 style="text-align:center">Wetlab manger can start now, to create a pool with these samples</h5>
                     <br><br><br>
 
@@ -487,11 +487,11 @@
     </div> <!--  end of row -->
 {% else %}
     {% if samples_in_lib_prep.no_samples %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-10">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>No Samples available.</h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3>No Samples available.</h3></div>
+                    <div class="card-body">
                         <h4>There are samples defined to add the Library Preparation information.</h4>
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
@@ -499,7 +499,7 @@
             </div> <!--  end of col-sm-6 -->
         </div> <!--  end of row -->
     {% else %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12">
                 <h3>Library Preparation</h3>
                 <div class="tab">
@@ -510,9 +510,9 @@
 
                     <div id="assigningProtocol" class="tabcontent">
                         <div class="col-sm-11" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Assign Library protocol to the samples.</h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Assign Library protocol to the samples.</h3></div>
+                                <div class="card-body">
                                     {% if  samples_in_lib_prep.avail_samples.samplesID %}
                                         <form method="post" enctype="multipart/form-data" name="assignProtocol"  id="assignProtocol" class="form-horizontal well">
                                             {% csrf_token %}
@@ -583,9 +583,9 @@
 
                     <div id="defined" class="tabcontent">
                         <div class="col-sm-11" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
+                                <div class="card-body">
                                     {% if samples_in_lib_prep.lib_prep_defined %}
                                         {% for key, values in samples_in_lib_prep.lib_prep_defined.items %}
                                             <h4>Library Preparation defined for using protocol {{key}}</h4>
@@ -629,9 +629,9 @@
 
                     <div id="pendingKits" class="tabcontent">
                         <div class="col-sm-11" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Select the Library Preparation to include additional kits Information</h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Select the Library Preparation to include additional kits Information</h3></div>
+                                <div class="card-body">
                                     {% if samples_in_lib_prep.lib_prep_updated_param %}
                                         {% for key, values in samples_in_lib_prep.lib_prep_updated_param.items %}
                                             <h4>Library Preparation defined for using protocol {{key}}</h4>
@@ -685,9 +685,9 @@
 
                         </style>
                         <div class="col-sm-11" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Upload the sample sheet file</h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Upload the sample sheet file</h3></div>
+                                <div class="card-body">
                                     {% if samples_in_lib_prep.display_sample_sheet %}
                                         <p>Import the Sample Sheet file, generated by Illumina Experiment Manager (IEM), with your samples </p>
                                         <br>

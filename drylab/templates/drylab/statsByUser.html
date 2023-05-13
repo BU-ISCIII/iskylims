@@ -11,12 +11,12 @@
     width: 1150px;
 </style>
 {% if ERROR %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
-        <div class="col-sm-6  col-sm-offset-3"">
+        <div class="col-sm-6  offset-3"">
             <div class="panel panel-warning">
-                <div class="panel-heading"><h3> Result of your request</h3></div>
-                <div class="panel-body">
+                <div class="card-header"><h3> Result of your request</h3></div>
+                <div class="card-body">
                     {% for message in ERROR %}
                         <p>{{message}}</p>
                     {% endfor %}
@@ -26,11 +26,11 @@
     </div> <!--// end row -->
 {% endif %}
 {% if stats_info %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
     	<div class="col-sm-12">  <!--col-sm-8  User statatistics Information  -->
-    	    <div class="panel panel-default">
-        		<div class="panel-heading"><h3>Service requested statistics for the user {{stats_info.user_name}}</h3></div>
-    		    <div class="panel-body">
+    	    <div class="card ">
+        		<div class="card-header"><h3>Service requested statistics for the user {{stats_info.user_name}}</h3></div>
+    		    <div class="card-body">
                     <button onclick="exportTableToExcel('servicesFound')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                     <BR>
                     <div class="table-wrapper">
@@ -62,11 +62,11 @@
     	</div> <!--// end col-sm-12  -->
     </div> <!-- //  end row  -->
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
     	<div class="col-sm-5 ">
-    	    <div class="panel panel-default">
-    		<div class="panel-heading"><h3>Calculation media for delivering time for user {{ stats_info.user_name }} .</h3></div>
-    		    <div class="panel-body">
+    	    <div class="card ">
+    		<div class="card-header"><h3>Calculation media for delivering time for user {{ stats_info.user_name }} .</h3></div>
+    		    <div class="card-body">
         			{% if stats_info.time_mean_for_user %}
         			    The mean for delivering the services to this user is : <BR>
         			    <b>{{ stats_info.time_mean_for_user }} </b> days
@@ -78,9 +78,9 @@
     		</div> <!--  end of panel  -->
     	</div> <!--// end col-sm-5  Media stats for delivering services  -->
     	<div class="col-sm-7 ">  <!--col-sm-7  graphics for user stats services  -->
-    	    <div class="panel panel-default">
-        		<div class="panel-heading"><h3>Percentage of Requested Services.</h3></div>
-        		<div class="panel-body">
+    	    <div class="card ">
+        		<div class="card-header"><h3>Percentage of Requested Services.</h3></div>
+        		<div class="card-body">
         		    {% if stats_info.graphic_by_user_date_services %}
         		        <!-- Pie chart for number of pending Services chart will start here-->
         		        <div id="chart-1"> </div>
@@ -93,11 +93,11 @@
     	</div> <!--// end col-sm-7  graphics for pending services  -->
     </div> <!--// end row -->
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
     	<div class="col-sm-6 ">  <!--col-sm-7  graphics for user stats services  -->
-    	    <div class="panel panel-default">
-        		<div class="panel-heading"><h3>Number of Requested Services.</h3></div>
-        		<div class="panel-body">
+    	    <div class="card ">
+        		<div class="card-header"><h3>Number of Requested Services.</h3></div>
+        		<div class="card-body">
         		    {% if stats_info.graphic_requested_services %}
         		        <!-- Pie chart for number of pending Services chart will start here-->
         		        <div id="chart-2"> </div>
@@ -109,9 +109,9 @@
     	    </div> <!--  end of panel  -->
     	</div> <!--// end col-sm-6  graphics for pending services  -->
     	<div class="col-sm-6 ">  <!--col-sm-7  graphics for user stats services  -->
-    	    <div class="panel panel-default">
-        		<div class="panel-heading"><h3>Requested Services per month.</h3></div>
-        		<div class="panel-body">
+    	    <div class="card ">
+        		<div class="card-header"><h3>Requested Services per month.</h3></div>
+        		<div class="card-body">
         		    {% if stats_info.graphic_date_requested_services %}
         		        <!-- Pie chart for number of pending Services chart will start here-->
         		        <div id="chart-3"> </div>
@@ -125,11 +125,11 @@
     </div> <!--// end row -->
 {% else %}
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h1>Services Request Statistics</h1></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h1>Services Request Statistics</h1></div>
+                <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="userStatistics" id="userStatistics" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="userStatistics"/>

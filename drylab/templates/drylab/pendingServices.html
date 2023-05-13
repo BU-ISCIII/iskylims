@@ -27,13 +27,13 @@
     }
 </style>
     <h1><div class="color-heading">Pending Services</div></h1>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
             <div class="tab">
                 <button class="tablinks" onclick="summaryBin(event, 'pending_services')"  id="defaultOpen">List of Pending Services</button>
                 <button class="tablinks" onclick="summaryBin(event, 'my_pendings')">My Pending Taks</button>
             </div> <!--  end tabs -->
-            <div class="row row-space-2 margin-b-4">
+            <div class="row mt-2 mb-4">
              <!-- Resolution and Delivery Information from service -->
                 <div id="pending_services" class="tabcontent">
                     <div class="col-sm-12">
@@ -48,11 +48,11 @@
                         </div> <!--  end tabs -->
                         {% for key, values in pending_services.data.items %}
                             <div id="{{key}}" class="tabcontent2">
-                                <div class="row row-space-2 margin-b-4">
+                                <div class="row mt-2 mb-4">
                                     <div class="col-sm-11"> 
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3 style="text-align:center">List of Services in {{key}} State</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3 style="text-align:center">List of Services in {{key}} State</h3></div>
+                                            <div class="card-body">
                                                 {% if values %}
                                                     <div class="scrolling-wrapper">
                                                         <table class="table table-hover">
@@ -94,12 +94,12 @@
                         {% endfor %}
 
                         <div id="graphicServices" class="tabcontent2">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-10 col-sm-offset-1"> <!-- Graphic -->
+                            <div class="row mt-2 mb-4">
+                                <div class="col-sm-10 offset-1"> <!-- Graphic -->
                                     {% if pending_services.graphics.all_state %}
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>Percentage of pending Services.</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Percentage of pending Services.</h3></div>
+                                            <div class="card-body">
                                             <!-- Pie chart for number of pending Services chart will start here-->
                                                 <div id="chart-1"> </div>
                                                 <!-- dumping JavaScript code here -->
@@ -112,12 +112,12 @@
                         </div><!-- // end of tab Graphic Services -->
 
                         <div id="graphicUnitServices" class="tabcontent2">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-10 col-sm-offset-1"> <!-- Graphic -->
+                            <div class="row mt-2 mb-4">
+                                <div class="col-sm-10 offset-1"> <!-- Graphic -->
                                     {% if pending_services.graphics %}
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>Pending Services per Unit.</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Pending Services per Unit.</h3></div>
+                                            <div class="card-body">
                                             <!-- Pie chart for number of pending Services chart will start here-->
                                                 <div id="chart-2"> </div>
                                                 <!-- dumping JavaScript code here -->
@@ -134,22 +134,22 @@
                 <div id="my_pendings" class="tabcontent">
 
                     {% if not user_pending_services.heading_in_queued  and not user_pending_services.heading_in_progress %}
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">Pending tasks</h3></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">Pending tasks</h3></div>
+                                    <div class="card-body">
                                         <h5 style="text-align:center">No tasks are assigned to you.</h5>
                                     </div> <!--// end panel body -->
                                 </div> <!--// end panel -->
                             </div> <!--// end row -->
                         </div> <!--// end row -->
                     {% else %}
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">  <!-- Queued  pending services -->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">List of Resolutions in Queued State</h3></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">List of Resolutions in Queued State</h3></div>
+                                    <div class="card-body">
                                         {% if user_pending_services.heading_in_queued %}
                                             <div class="scrolling-wrapper-short">
                                                 <table class="table table-hover">
@@ -181,11 +181,11 @@
                             </div> <!--// end col-sm-12  In Queued  pending services  -->
                         </div> <!--// end row -->
 
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">  <!-- in progress  pending services -->
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">List of Resolutions in Progress State</h3></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">List of Resolutions in Progress State</h3></div>
+                                    <div class="card-body">
                                         {% if user_pending_services.heading_in_progress %}
                                             <div class="scrolling-wrapper-short">
                                                 <table class="table table-hover">

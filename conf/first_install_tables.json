@@ -1891,6 +1891,15 @@
     }
 },
 {
+    "model": "wetlab.configsetting",
+    "pk": 12,
+    "fields": {
+        "configuration_name": "ORGANIZATION_NAME",
+        "configuration_value": "-",
+        "generated_at": "2022-10-02T09:58:05.242"
+    }
+},
+{
     "model": "wetlab.collectionindexvalues",
     "pk": 2073,
     "fields": {

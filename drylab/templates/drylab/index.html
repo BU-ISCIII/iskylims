@@ -11,11 +11,11 @@
  </style>
     <h1><div class="color-heading">{{organization_name}}</div></h1>
     <h2>iSkyLIMS: DryLab</h2>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Welcome</h3></div>
-            <div class="panel-body">
+        <div class="card ">
+            <div class="card-header"><h3>Welcome</h3></div>
+            <div class="card-body">
 			    <p>This section will allow you to check {{organization_name}} service activity. </p>
                 <p>Available processes are: </p>
                 <ul>
@@ -27,7 +27,7 @@
 		  </div> <!--// end panel body -->
         </div> <!--// end panel -->
       </div> <!--// end col-sm-8 -->
-      <div class="col-sm-2 col-sm-offset-1">
+      <div class="col-sm-2 offset-1">
             <img class="promo-block-img img-responsive" src="{% static "drylab/custom/img/support.png" %}" align="Avatar">
         </div> <!--// end img -->
       </div> <!--// end col-sm-4 -->
@@ -35,12 +35,12 @@
 
         <!--  Second paragraph -->
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
             <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Recorded Services</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Recorded Services</h3></div>
+                <div class="card-body">
                     {% if service_list.recorded %}
                         <div class="scrolling-wrapper">
                              <table class="table table-hover" >
@@ -69,9 +69,9 @@
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-6 -->
             <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>In progress Services</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>In progress Services</h3></div>
+                <div class="card-body">
                     {% if service_list.ongoing %}
                         <div class="scrolling-wrapper">
                              <table class="table table-hover" >

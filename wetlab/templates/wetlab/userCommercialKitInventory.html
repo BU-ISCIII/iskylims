@@ -20,11 +20,11 @@
         }
 </style>
 {% if run_out_kits %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>User Lot Commercial Kits Set to Run Out</h3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-2">
+            <div class="card ">
+                <div class="card-header"><h3>User Lot Commercial Kits Set to Run Out</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -45,7 +45,7 @@
     </div> <!-- // end of row -->
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
             <div class="tab">
                 <button class="tablinks" onclick="summaryBin(event, 'available_kits')" id="tablinksdefaultOpen">Available User Lot Commercial Kits </button>
@@ -54,9 +54,9 @@
 
                 <div id="available_kits" class="tabcontent">
                     <div class="col-sm-11" >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>User Lot Commercial Kits for {{user_name}}</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>User Lot Commercial Kits for {{user_name}}</h3></div>
+                            <div class="card-body">
                                 {% if valid_kit %}
                                     <form method="post" enctype="multipart/form-data" name="runOutUserLotKit"  id="runOutUserLotKit" class="form-horizontal well">
                                         {% csrf_token %}
@@ -100,9 +100,9 @@
 
                 <div id="expired_kits" class="tabcontent">
                     <div class="col-sm-11" >
-                        <div class="panel panel-danger">
-                            <div class="panel-heading"><h3>Expired User Lot Commercial Kits for {{user_name}}</h3></div>
-                            <div class="panel-body">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><h3>Expired User Lot Commercial Kits for {{user_name}}</h3></div>
+                            <div class="card-body">
                                 {% if expired_kit %}
                                     <div class="table-wrapper-sm-10">
                                         {% for key , values in expired_kit.data.items %}

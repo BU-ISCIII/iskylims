@@ -13,11 +13,11 @@
 {% if collection_index_information %}
 
     <BR>
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-6" >
-            <div class="panel panel-default">
-              <div class="panel-heading">New Collection Index Kit has been added </div>
-              <div class="panel-body">
+            <div class="card ">
+              <div class="card-header">New Collection Index Kit has been added </div>
+              <div class="card-body">
                   <table class="table ">
                    <thead>
                       <tr>
@@ -35,11 +35,11 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
 
-        <div class="col-sm-5 col-sm-offset-1" >
+        <div class="col-sm-5 offset-1" >
             <BR> <BR> <BR>
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Collection Index kits defined</h3></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h3>Collection Index kits defined</h3></div>
+          <div class="card-body">
           {% if collection_index_information.collection_index %}
 
                 <table class="table table-hover">
@@ -66,11 +66,11 @@
         </div> <!--// end row -->
 {% else %}
     <BR>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-6" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Form to add a new collection index kit</h3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Form to add a new collection index kit</h3> </div>
+                <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addCollectionIndexKit" id="addCollectionIndexKit" class="form-horizontal">
                         {% csrf_token %}
                         <div class="form-group required">
@@ -102,11 +102,11 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
 
-        <div class="col-sm-5 col-sm-offset-1" >
+        <div class="col-sm-5 offset-1" >
             <BR> <BR> <BR>
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Collection Index Kit defined</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Collection Index Kit defined</h3></div>
+                <div class="card-body">
                 {% if list_of_collection_index.collection_index %}
                     <div class="table-wrapper-sm-5">
                         <table class="table table-hover">

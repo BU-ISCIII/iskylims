@@ -8,11 +8,11 @@ function goBack() {
 }
 </script>
 {% if changed_run_name %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-7">
-            <div class="panel panel-default">
-                <div class="panel-heading">Successful change for Run Name  </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header">Successful change for Run Name  </div>
+                <div class="card-body">
                     <div class="col-sm-10"> <!-- start run information   -->
                         <div class="col-sm-6"> Old Run name  </div>
                         <div class="col-sm-6"> {{ changed_run_name.old_run_name }} </div>
@@ -34,10 +34,10 @@ function goBack() {
 <!-- FORM for Updating the library Kit in the Run -->
           
 <div class="row row-space-4 margin-b-4">
-    <div class="col-sm-7 col-sm-offset-1" >
-        <div class="panel panel-default">
-            <div class="panel-heading">Change the Run Name </div>
-            <div class="panel-body">
+    <div class="col-sm-7 offset-1" >
+        <div class="card ">
+            <div class="card-header">Change the Run Name </div>
+            <div class="card-body">
                 <div class="col-sm-10"> <!-- start run information   -->
                     
                 </div> <!-- end run information   -->

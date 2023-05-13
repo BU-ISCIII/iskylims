@@ -37,25 +37,25 @@ p {
 
 </style>
 {% if test_results %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Drylab configuration testing results</H3></div>
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>Drylab configuration testing results</H3></div>
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>iSkyLIMS configuration settings
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>iSkyLIMS configuration settings
                 {% if test_results.iSkyLIMS_settings %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
                         <div class="col-sm-12">
                             {% if test_results.iSkyLIMS_settings %}
@@ -75,17 +75,17 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Drylab configuration settings
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>Drylab configuration settings
                 {% if test_results.config_file %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
                         <div class="col-sm-12">
                             {% if test_results.config_file %}
@@ -105,17 +105,17 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Database access
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>Database access
                 {% if test_results.database_access == 'OK' %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
-                 <div class="panel-body">
+                 <div class="card-body">
                     <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
                         <div class="col-sm-12">
                             {% if test_results.database_access %}
@@ -131,17 +131,17 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Drylab services definition
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>Drylab services definition
                 {% if test_results.services %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
-                 <div class="panel-body">
+                 <div class="card-body">
                     <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
                         <div class="col-sm-12">
                             {% if test_results.services %}
@@ -161,11 +161,11 @@ p {
     
     
     {% if test_results.basic_checks_ok == 'OK' %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Execute the resolution test</H3> </div>
-                    <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><H3>Execute the resolution test</H3> </div>
+                    <div class="card-body">
                             <p><strong>Once the basic check test has been pass, you can execute the testing for creating a resolution</strong></p>
                             <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
                                 {% csrf_token %}
@@ -179,11 +179,11 @@ p {
     </div> <!--// end row  -->
     
     {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Basic test not passed</H3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><H3>Basic test not passed</H3> </div>
+                <div class="card-body">
                     <p><strong>Some of the test cases were not passed. Check the configuration files to find out the error and re-run the test again.</strong></p>
                     <p></p><p><strong>You can not go further in the testing while the Basic test are not passed OK.</strong></p>
                     <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
@@ -197,38 +197,38 @@ p {
     {% endif %}
     
 {% elif resolution_results %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Additional test for drylab
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>Additional test for drylab
                  {% if resolution_results.completed_ok %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <p><strong>Check below for the test performed for every test in the service handling for drylab </strong></p>
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
     </div> <!--// end row  -->
     
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Specific Test Cases for Drylab</H3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><H3>Specific Test Cases for Drylab</H3></div>
+                <div class="card-body">
                     <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>1. - Test Executed to create service Test
+                    <div class="card ">
+                        <div class="card-header"><H3>1. - Test Executed to create service Test
                          {% if resolution_results.create_service_ok == "OK" %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
                             <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
                         {% endif %}
                         </H3> </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% for test_case, result in resolution_results.CreateService %}
                                 <p><strong> {{ test_case }} 
                                 {% if result == 'OK' %}
@@ -244,15 +244,15 @@ p {
                         
                     {%if resolution_results.resolution_test %}
                     <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>2. - Test Executed to create Resolution
+                    <div class="card ">
+                        <div class="card-header"><H3>2. - Test Executed to create Resolution
                          {% if resolution_results.create_resolution_ok == "OK" %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
                             <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
                         {% endif %}
                         </H3> </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% for test_case, result in resolution_results.resolution_test %}
                                 <p><strong> {{ test_case }} 
                                 {% if result == 'OK' %}
@@ -275,11 +275,11 @@ p {
     
     
     
-    <div class="row row-space-2 margin-b-4">   
-        <div class="col-sm-8 col-sm-offset-3">
-                <div class="panel panel-default">
-                <div class="panel-heading"><H3>Test Options</H3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">   
+        <div class="col-sm-8 offset-3">
+                <div class="card ">
+                <div class="card-header"><H3>Test Options</H3></div>
+                <div class="card-body">
                         <p><strong>Click on the "Re-Run Resolution test" button . if you want to repeat the test </strong></p>
                         <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
                             {% csrf_token %}
@@ -297,11 +297,11 @@ p {
 {% else %}
     <!-- FORM for selecting annual Report Information -->
   
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Page for starting drylab configuration testing</H3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3" >
+            <div class="card ">
+                <div class="card-header"><H3>Page for starting drylab configuration testing</H3></div>
+                <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="basicTest"/>

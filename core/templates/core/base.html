@@ -15,6 +15,7 @@
 
         <link href="{% static "core/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
         <link href="{% static "core/main_style/css/main.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "core/custom/css/core_custom.css" %}" rel="stylesheet" type="text/css"/>
         
         
         {% comment %}         
@@ -68,7 +69,7 @@
                 {% endblock %}
             </div> <!--// end container -->
         </div> <!--// end bg-color -->
-                {% include "core/footer.html" %}
+        {% include "core/footer.html" %}
         <!--========== END FOOTER ==========-->
         <!-- Back To Top -->
         <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

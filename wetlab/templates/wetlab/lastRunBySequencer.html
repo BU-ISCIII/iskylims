@@ -2,22 +2,22 @@
 {% load static %}
 {% block content %}
 {% if no_runs %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8">
             <div class="panel panel-warning">
-                <div class="panel-heading"><h3 style="text-align:center">There are not Runs yet defined on database.</h3> </div>
-                <div class="panel-body">
+                <div class="card-header"><h3 style="text-align:center">There are not Runs yet defined on database.</h3> </div>
+                <div class="card-body">
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
     </div> <!--  end of row -->
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Last Run executed for each sequencer</h3> </div>
-                <div class="panel-body scroll-wrapper-sm-7">
+            <div class="card ">
+                <div class="card-header"><h3>Last Run executed for each sequencer</h3> </div>
+                <div class="card-body scroll-wrapper-sm-7">
                     <table class="table table-hover">
                         <thead>
                             <tr>

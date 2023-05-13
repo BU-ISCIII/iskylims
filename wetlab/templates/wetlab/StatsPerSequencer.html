@@ -20,11 +20,11 @@
 </style>
 
 {% if error_message %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 style="text-align:center">Not matches</h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3 style="text-align:center">Not matches</h3> </div>
+                <div class="card-body">
                     {% for values in error_message %}
                         <h4>{{values}}</h4>
                     {% endfor %}
@@ -36,12 +36,12 @@
 
 {% if sequencer_data  %}
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
             <div class="col-sm-6" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Statistics results for Machine {{sequencer_data.sequencer_name}} </h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3>Statistics results for Machine {{sequencer_data.sequencer_name}} </h3></div>
+                    <div class="card-body">
                         {%if sequencer_data.run_completed %}
                             <h5> Runs Completed: </h5>
                             <button onclick="exportTableToExcel('runcompleted')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
@@ -71,9 +71,9 @@
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
                 {%if sequencer_data.not_run_completed %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Not completed runs on {{sequencer_data.sequencer_name}} </h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>Not completed runs on {{sequencer_data.sequencer_name}} </h3></div>
+                        <div class="card-body">
                             <button onclick="exportTableToExcel('runnotcompleted')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                             <div class="scroll-wrapper-sm-6-short">
                                 <table id="runnotcompleted" class="table  table-hover">
@@ -102,9 +102,9 @@
             <div class="col-sm-6" >
                 <div class="col-sm-12" >
                     <br><br><br>
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3 style="text-align:center">Comparation Runs in each sequencer</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3 style="text-align:center">Comparation Runs in each sequencer</h3></div>
+                        <div class="card-body">
                             <!-- Sequencer pie Chart starts here-->
                                 <div id="run_pie_chart"> </div>
                                 {{ sequencer_data.run_pie_graph |safe }}
@@ -112,9 +112,9 @@
                     </div> <!--// end panel -->
                 </div> <!--// end col-sm-12  -->
                 <div class="col-sm-12" >
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3 style="text-align:center">Time spent in sequencing</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3 style="text-align:center">Time spent in sequencing</h3></div>
+                        <div class="card-body">
                             <h5> Mean value for the time that run starts until {{sequencer_data.sequencer}} ends the sequencing is :</h5>
                             <h5 style="text-align:center"> {{sequencer_data.mean_time_duration}} days</h5>
                         </div> <!--  end of panel body -->
@@ -124,11 +124,11 @@
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
     {% if sequencer_data.sequencer_runs_per_month_graph %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3 style="text-align:center">Runs Completed per per months</h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3 style="text-align:center">Runs Completed per per months</h3></div>
+                    <div class="card-body">
                         <div class="col-sm-6" >
                             <!-- Sequencer pie Chart starts here-->
                             <div id="chart_seq_month"> </div>
@@ -145,10 +145,10 @@
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->
     {% endif %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-              <div class="panel-body">
+            <div class="card ">
+              <div class="card-body">
                 {% for sequencer in sequencer_statistics.projects_data  %}
                     {% for sequencer_name, values_in_dict in sequencer.items %}
                         <h3> Projects using the sequencer {{sequencer_name }} : </h3>
@@ -185,11 +185,11 @@
 {% else %}
     {% load user_groups %}
     <!-- FORM for searching project research  Information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics per Sequencer</h2></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h2>Statistics per Sequencer</h2></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="statsmachine" id="statsmachine" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="machine"/>
@@ -228,10 +228,10 @@
 
         <!-- Insert the help panel -->
         <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading">Searching information project per Machine</div>
-             <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header">Searching information project per Machine</div>
+             <div class="card-body">
              <p>Searching information for the projects created by a Machine<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>

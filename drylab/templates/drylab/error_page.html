@@ -10,11 +10,11 @@ function goBack() {
 <div class="alert alert-danger">
   <strong>ERROR!</strong> Your last action request was unsuccessful.
 </div>
-<div class="row row-space-2 margin-b-4">
-        <div class="col-sm-4 col-sm-offset-4">
-        <div class="panel panel-danger">
-          <div class="panel-heading">ERROR</div>
-          <div class="panel-body">
+<div class="row mt-2 mb-4">
+        <div class="col-sm-4 offset-4">
+        <div class="card border-danger mb-3">
+          <div class="card-header">ERROR</div>
+          <div class="card-body">
               <img class="promo-block-img  img-responsive img-center" src="{% static "drylab/main_style/error-icon.jpg" %}">
               <p></p>
               <p>You are geting this error page because:</p><BR>
@@ -29,10 +29,10 @@ function goBack() {
       </div> <!--// end col-sm-4 -->
 </div> <!-- end row  -->
 {% if detail_description %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-3">
-            <div class="panel panel-default">
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-3">
+            <div class="card ">
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -58,17 +58,17 @@ function goBack() {
 {% endif %}
 
 
-<div class="row row-space-2 margin-b-4">
-  <div class="col-sm-4 col-sm-offset-4">
-  <div class="panel panel-default">
-     <div class="panel-body">
+<div class="row mt-2 mb-4">
+  <div class="col-sm-4 offset-4">
+  <div class="card ">
+     <div class="card-body">
         <p>Click on the Go Back button to return to the previous page</p>
             </div> <!--// end panel body -->
         </div> <!--// end panel -->
       </div> <!--// end col-sm-4 -->
 </div> <!-- end row  -->
-<div class="row row-space-2 margin-b-4">
-  <div class="col-sm-4 col-sm-offset-4">
+<div class="row mt-2 mb-4">
+  <div class="col-sm-4 offset-4">
     <button type="button" class="btn btn-default" onclick="goBack()">Go Back</button>
   </div> <!--// end col-sm-4 -->
 </div> <!-- end row  -->

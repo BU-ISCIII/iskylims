@@ -28,12 +28,12 @@
    </style>
 {% if display_one_run %}
     {% if display_one_run.no_stable_data %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-7">
-                <div class="panel panel-default">
+                <div class="card ">
                     {% for run, state in display_one_run.no_stable_data %}
-                        <div class="panel-heading">Information for the run : <strong>{{ run }}</strong>  </div>
-                        <div class="panel-body">
+                        <div class="card-header">Information for the run : <strong>{{ run }}</strong>  </div>
+                        <div class="card-body">
                         <h4>The Run {{ run }} is in {{state }} state. </h4>
                         <BR>
                         <p>The system is now processing output files and stored the result in database.</p>
@@ -46,11 +46,11 @@
         </div> <!--  end of row space -->
     {% else %}
         {% if display_one_run.error_run %}
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-7 col-sm-offset-2">
-                    <div class="panel panel-danger">
-                        <div class="panel-heading"><h3>{{ display_one_run.error_run.0 }} is on ERROR state</h3></div>
-                        <div class="panel-body">
+            <div class="row mt-2 mb-4">
+                <div class="col-sm-7 offset-2">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3>{{ display_one_run.error_run.0 }} is on ERROR state</h3></div>
+                        <div class="card-body">
                             <h4>Run was in {{display_one_run.error_run.1 }} state before error was found. </h4>
                             <BR>
                             <table>
@@ -79,11 +79,11 @@
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
         {% elif display_one_run.cancel_run %}
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-7 col-sm-offset-2">
-                    <div class="panel panel-danger">
-                        <div class="panel-heading"><h3>{{ display_one_run.cancel_run.0 }} is on Cancel state</h3></div>
-                        <div class="panel-body">
+            <div class="row mt-2 mb-4">
+                <div class="col-sm-7 offset-2">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3>{{ display_one_run.cancel_run.0 }} is on Cancel state</h3></div>
+                        <div class="card-body">
                             <h4>Run was in {{display_one_run.cancel_run.1 }} state before the run was cancelled </h4>
                             <BR>
                             <table>
@@ -112,9 +112,9 @@
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
         {% endif %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <h3 style="text-align:center">Information for Run : {{ display_one_run.run_name }} </h3>
-            <div class="row row-space-2 margin-b-4">
+            <div class="row mt-2 mb-4">
                 <div class="col-sm-12">
                     <div class="tab">
                         <button class="tablinks" onclick="summaryBin(event, 'mainData')" id="defaultOpen">Main Data</button>
@@ -138,13 +138,13 @@
                             <button class="tablinks" onclick="summaryBin(event, 'charts')">Charts</button>
                         {% endif %}
                     </div>
-                    <div class="row row-space-2 margin-b-4">
+                    <div class="row mt-2 mb-4">
                         <div id="mainData" class="tabcontent">
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-7">  <!-- first column with list of pending services in state Recorded and Approved -->
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">Main data used in Run</h3> </div>
-                                        <div class="panel-body">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">Main data used in Run</h3> </div>
+                                        <div class="card-body">
                                             {% if display_one_run.change_run_name %}
                                                 {% for key, value in display_one_run.change_run_name %}
                                                     <div class="col-sm-6">Run Name </div>
@@ -171,9 +171,9 @@
                                         </div> <!--  end of panel body -->
                                     </div> <!--  end of panel  -->
                                     {%if display_one_run.library_kit%}
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h5>Associated Library Kits using on this run :</h5> </div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h5>Associated Library Kits using on this run :</h5> </div>
+                                            <div class="card-body">
                                                 <table class="table table-hover">
                                                     <thead>
                                                         <tr>
@@ -191,9 +191,9 @@
                                             </div> <!--  end of panel body -->
                                         </div> <!--  end of panel  -->
                                     {% else%}
-                                        <div class="panel panel-danger">
-                                            <div class="panel-heading"><h5>Associated Library Kits</h5> </div>
-                                            <div class="panel-body"> There is no Library Kits associated to the run.
+                                        <div class="card border-danger mb-3">
+                                            <div class="card-header"><h5>Associated Library Kits</h5> </div>
+                                            <div class="card-body"> There is no Library Kits associated to the run.
                                                 <BR> Contact with your system administrator to get more information.
 
                                             </div> <!--  end of panel body -->
@@ -203,10 +203,10 @@
                                 </div> <!--  end of col-sm-7 -->
                                 <!-- new panel on the right to show progress state -->
                                 <div class="col-sm-5">
-                                    <div class="col-sm-9 col-sm-offset-1">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>State run is : {{ display_one_run.run_state }} </h3></div>
-                                            <div class="panel-body">
+                                    <div class="col-sm-9 offset-1">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>State run is : {{ display_one_run.run_state }} </h3></div>
+                                            <div class="card-body">
                                                 <div class="circle-progress {{ display_one_run.graphic_color }}">
                                                 {% if display_one_run.graphic_value > 50 %}
                                                     <span class="circle-progress-left">
@@ -222,10 +222,10 @@
                                         </div> <!--  end of panel  -->
                                     </div> <!--  end of col-sm-9 -->
 
-                                    <div class="col-sm-9 col-sm-offset-1">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3 style="text-align:center">Sequencer used in Run</h3> </div>
-                                            <div class="panel-body">
+                                    <div class="col-sm-9 offset-1">
+                                        <div class="card ">
+                                            <div class="card-header"><h3 style="text-align:center">Sequencer used in Run</h3> </div>
+                                            <div class="card-body">
                                                 <br>
                                                 <h3 style="text-align:center">{{display_one_run.used_sequencer}}</h3> </div>
                                             </div> <!--  end of panel body -->
@@ -238,9 +238,9 @@
                             {% if display_one_run.lane_summary %}
                                 <div class="row row-space-10 margin-b-1">
                                     <div class="col-sm-10 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">Lane Summary for all projects in the run.</div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header">Lane Summary for all projects in the run.</div>
+                                            <div class="card-body">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
@@ -283,9 +283,9 @@
                             {% if display_one_run.default_lane_summary %}
                                 <div class="row row-space-10 margin-b-1">
                                     <div class="col-sm-10 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">Lane Summary for default information project in the run.</div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header">Lane Summary for default information project in the run.</div>
+                                            <div class="card-body">
                                               <table class="table">
                                                     <thead>
                                                         <tr>
@@ -328,11 +328,11 @@
 
 
                         <div id="parameters" class="tabcontent">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-9 col-sm-offset-1">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">Parameters used by sequencer in the Run</h3></div>
-                                        <div class="panel-body">
+                            <div class="row mt-2 mb-4">
+                                <div class="col-sm-9 offset-1">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">Parameters used by sequencer in the Run</h3></div>
+                                        <div class="card-body">
                                             {%if display_one_run.running_parameters %}
                                                 <!-- display run parameters in run is not in recorded state -->
                                                 <table class="table table-hover">
@@ -363,9 +363,9 @@
                             {% if display_one_run.unknow_bar_0 %}
                                 <div class="row row-space-4 margin-b-1">
                                     <div class="col-sm-12 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>Top Unknow Barcodes in the Run.</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Top Unknow Barcodes in the Run.</h3></div>
+                                            <div class="card-body">
                                                 <div class="col-sm-3">
                                                     <table class="table">
                                                         <thead>
@@ -464,9 +464,9 @@
                             {% if display_one_run.unknow_pie3d %}
                                 <div class="row row-space-4 margin-b-1">
                                     <div class="col-sm-7 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>Chart for the Top Unknow Barcodes in the Run.</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Chart for the Top Unknow Barcodes in the Run.</h3></div>
+                                            <div class="card-body">
                                                 <!-- Column 2 Chart will start here-->
                                                 <div id="chart-1"> </div>
                                                 <!-- dumping JavaScript code here -->
@@ -476,9 +476,9 @@
                                     </div> <!--  end of col-sm-7 -->
 
                                      <div class="col-sm-5 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
+                                            <div class="card-body">
                                                 <table class="table table-hover">
                                                     <thead>
                                                         <tr>
@@ -504,12 +504,12 @@
 
 
                         <div id="projects" class="tabcontent">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-6 col-sm-offset-3">
+                            <div class="row mt-2 mb-4">
+                                <div class="col-sm-6 offset-3">
                                     {%if display_one_run.projects%}
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3 style="text-align:center">Projects associated to the Run</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3 style="text-align:center">Projects associated to the Run</h3></div>
+                                            <div class="card-body">
                                                     <table class="table table-hover">
                                                         <thead>
                                                             <tr>
@@ -527,9 +527,9 @@
                                                 </div> <!--  end of panel body -->
                                              </div> <!--  end of panel  -->
                                     {% else%}
-                                        <div class="panel panel-danger">
-                                            <div class="panel-heading">Associated projects: </div>
-                                            <div class="panel-body">
+                                        <div class="card border-danger mb-3">
+                                            <div class="card-header">Associated projects: </div>
+                                            <div class="card-body">
                                                 <p>There is no projects associated to the run.</p>
                                                 <BR>
                                                 <p>Contact with your system administrator to get more information.</p>
@@ -540,12 +540,12 @@
 
                             </div> <!--  end of row -->
 
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 {% if display_one_run.fl_summary %}
                                     <div class="col-sm-6 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h5>Flowcell Summary for all projects in the run.</h5></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h5>Flowcell Summary for all projects in the run.</h5></div>
+                                            <div class="card-body">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
@@ -570,9 +570,9 @@
                                 {% if display_one_run.default_fl_summary %}
 
                                     <div class="col-sm-6 ">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h5>Flowcell Summary for lanes that could not identified with any projects in the run.</h5></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h5>Flowcell Summary for lanes that could not identified with any projects in the run.</h5></div>
+                                            <div class="card-body">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
@@ -599,9 +599,9 @@
                                 {% if display_one_run.run_project_comparation %}
                                     <div class="row row-space-8 margin-b-1">
                                         <div class="col-sm-10 ">
-                                            <div class="panel panel-default">
-                                                <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
-                                                <div class="panel-body">
+                                            <div class="card ">
+                                                <div class="card-header">Percent of PF Cluster used for each project in the run.</div>
+                                                <div class="card-body">
                                                     <div id="column_chart1"> </div>
                                                     <!-- dumping JavaScript code -->
                                                     {{ display_one_run.run_project_comparation |safe }}
@@ -613,11 +613,11 @@
                         </div><!-- // end of tab projects -->
 
                         <div id="samples_run" class="tabcontent">
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-7 col-sm-offset-2">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">Samples included in the Run</h3></div>
-                                        <div class="panel-body">
+                            <div class="row mt-2 mb-4">
+                                <div class="col-sm-7 offset-2">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">Samples included in the Run</h3></div>
+                                        <div class="card-body">
                                             {%if display_one_run.sample_run_data %}
                                                 <div class="table-wrapper-sm-7">
                                                 <!-- display run parameters in run is not in recorded state -->
@@ -644,20 +644,20 @@
                         </div><!-- // end of tab parameters -->
 
                         <div id="graphComparation" class="tabcontent">
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-10 ">
-                                    <div class="panel panel-default">
+                                    <div class="card ">
                                         {% if display_one_run.boxplot %}
-                                            <div class="panel-heading"><h3>Graphic to compare run quality data versus all runs on the same year</h3></div>
-                                            <div class="panel-body">
+                                            <div class="card-header"><h3>Graphic to compare run quality data versus all runs on the same year</h3></div>
+                                            <div class="card-body">
                                                 <div id="box_chart1"> </div>
                                                 <!-- dumping JavaScript code here -->
                                                 {{ display_one_run.boxplot |safe }}
                                             </div> <!--  end of panel body -->
                                         {% endif %}
                                         {% if display_one_run.not_boxplot %}
-                                            <div class="panel-heading"><h3>Graphic boxplot comparation can not be displayed</h3></div>
-                                                <div class="panel-body">
+                                            <div class="card-header"><h3>Graphic boxplot comparation can not be displayed</h3></div>
+                                                <div class="card-body">
                                                     <p class="text-center">There is only one run in the same year as {{ display_one_run.data.0.1 }}.</p>
                                                     <p class="text-center">For that reason it cannot be compared</p>
                                                 </div> <!--  end of panel body -->
@@ -727,10 +727,10 @@
                             <div id="charts" class="tabcontent">
                                 <h3>Charts</h3>
                                 {% for key, values in display_one_run.runGraphic %}
-                                    <div class="col-sm-5 col-sm-offset-1">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3>{{ key }} </h3></div>
-                                            <div class="panel-body">
+                                    <div class="col-sm-5 offset-1">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>{{ key }} </h3></div>
+                                            <div class="card-body">
                                                 <img class="promo-block-img img-responsive" src="{{ values }}" >
                                             </div> <!--  end of panel body -->
                                         </div> <!--  end of panel  -->

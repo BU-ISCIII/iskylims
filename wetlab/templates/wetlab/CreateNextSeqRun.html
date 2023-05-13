@@ -5,11 +5,11 @@
 {% block content %}
 {% csrf_token %}
 {% if get_user_names %}
-    <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-8 col-sm-offset-2">
-          <div class="panel panel-default">
-            <div class="panel-heading">Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }} </div>
-            <div class="panel-body"> This is the second, and the last, FORM that user need to fill down to have the information about the run<BR>
+    <div class="row mt-2 mb-4">
+      <div class="col-sm-8 offset-2">
+          <div class="card ">
+            <div class="card-header">Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }} </div>
+            <div class="card-body"> This is the second, and the last, FORM that user need to fill down to have the information about the run<BR>
              Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the successful run creation
              </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
@@ -17,8 +17,8 @@
     </div> <!--  end of row -->
       <!--    Progress Step bar for the Form -->
     <BR>
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2" >
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-2" >
             <ol class="track-progress" data-steps="3">
                 <li class="done"> <span>Upload Sample Sheet</span><i></i></li><!--
                 --><li class="active"><span>Assign Library Kit</span></li><!--
@@ -27,8 +27,8 @@
         </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
     <BR>
-      <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2">
+      <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-2">
             <p>The following information have been collected from the Sample Sheet uploaded previously.<br>
             It contains the userid information. Correct in the user name field if this information need to be changed</p>
             <p>Write down the Library kit used for each project</p>
@@ -36,11 +36,11 @@
     </div> <!--// end row -->
 
     <!-- Prepare the FORM for step 2 -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8" >
-        <div class="panel panel-default">
-          <div class="panel-heading">Form to upload the Sample Sheet file. Run Parameters definition</div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header">Form to upload the Sample Sheet file. Run Parameters definition</div>
+          <div class="card-body">
             <form method="post" required name="getSample2" id="getSample2" class="form-horizontal">
             {% csrf_token %}
                 <input type="hidden"name="action" value="displayResult"/>
@@ -83,14 +83,14 @@
           </div> <!--// end panel  -->
          </div> <!--// end col-sm-8  -->
          </div> <!--// end row -->
-          <div class="row row-space-2 margin-b-4">
+          <div class="row mt-2 mb-4">
             <div class="col-sm-8" >
-                <div class="panel panel-default">
-                    <div class="panel-heading">Notes for user validation</div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header">Notes for user validation</div>
+                    <div class="card-body">
                         <p> <strong>Submit button is disabled</strong> if any of the user names is not previoulsy defined in database or if it is set by using the autocompleted function <BR>
                         </p>
-                    </div> <!--// end panel-body  -->
+                    </div> <!--// end card-body  -->
                 </div> <!--// end panel  -->
             </div> <!--// end col-sm-8  -->
           </div> <!--// end row -->
@@ -144,8 +144,8 @@
           {%if key == "runname" %}
           <BR>
 
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-8 col-sm-offset-2" >
+            <div class="row mt-2 mb-4">
+                <div class="col-sm-8 offset-2" >
                     <ol class="track-progress" data-steps="3">
                         <li class="done"> <span>Upload Sample Sheet</span><i></i></li><!--
                         --><li class="done"><span>Assign Library Kit</span></li><!--
@@ -154,11 +154,11 @@
                 </div> <!--// end col-sm-4  -->
             </div> <!--// end row -->
         <BR>
-             <div class="row row-space-2 margin-b-4">
-               <div class="col-sm-8 col-sm-offset-2">
-                 <div class="panel panel-default">
-                   <div class="panel-heading"><b>Run configuration have been sucessfully stored</b><BR>For the run name : <b>{{ val }} </b></div>
-                   <div class="panel-body"> All the required information is stored now on database. <BR>
+             <div class="row mt-2 mb-4">
+               <div class="col-sm-8 offset-2">
+                 <div class="card ">
+                   <div class="card-header"><b>Run configuration have been sucessfully stored</b><BR>For the run name : <b>{{ val }} </b></div>
+                   <div class="card-body"> All the required information is stored now on database. <BR>
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
              </div> <!--  end of col-sm-8 -->
@@ -170,8 +170,8 @@
 <!--    Progress Step bar for the Form -->
     <BR>
 
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2" >
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-2" >
             <ol class="track-progress" data-steps="3">
                 <li class="active"> <span>Upload Sample Sheet</span><i></i></li><!--
                 --><li><span>Assign Library Kit</span></li><!--
@@ -182,19 +182,19 @@
 
     <BR>
 
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-1">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-1">
             <p>This FORM will be used to generated the input file that <a href="https://basespace.illumina.com/home/index">BaseSpace</a> requires to execute the run</p>
             <BR>
 
 
         </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading">Form to upload the Sample Sheet file</div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header">Form to upload the Sample Sheet file</div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="getSample" id="getSample" class="form-horizontal">
             {% csrf_token %}
                 <div class="form-group required">
@@ -216,11 +216,11 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
 
-        <div class="col-sm-4 col-sm-offset-1" >
+        <div class="col-sm-4 offset-1" >
             <BR> <BR> <BR>
-        <div class="panel panel-default">
-          <div class="panel-heading">Form to upload the Sample Sheet file</div>
-          <div class="panel-body">This Form is used to upload the Sample Sheet generated by Illumina Experience Manager tool.
+        <div class="card ">
+          <div class="card-header">Form to upload the Sample Sheet file</div>
+          <div class="card-body">This Form is used to upload the Sample Sheet generated by Illumina Experience Manager tool.
           <BR> Guide for Sample Sheet creation and download the IEM tool can be found at illumina Web page.
           <BR> Click <a href="https://www.illumina.com/informatics/research/experimental-design/illumina-experiment-manager.html" target="_blank"> here</a> for getting this information.
           </div>  <!--  end of panel body  -->

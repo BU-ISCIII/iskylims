@@ -2,12 +2,12 @@
 {% load static %}
 {% block content %}
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-11">
-        <div class="panel panel-default">
+        <div class="card ">
             <h3>Information for User Lot Commercial Kit {{ user_lot_kit_data.sample_definition.0 }} </h3>
-            <div class="panel-heading"><h4>User Lot. Basic Information</h4></div>
-            <div class="panel-body">
+            <div class="card-header"><h4>User Lot. Basic Information</h4></div>
+            <div class="card-body">
                 <table class="table">
                     <thead>
                         <tr>
@@ -26,8 +26,8 @@
                 </table>
             </div> <!--  end of panel body -->
 
-            <div class="panel-heading"><h4>Commercial Kit Information {{user_lot_kit_data.sample_project_name }}</h4></div>
-            <div class="panel-body">
+            <div class="card-header"><h4>Commercial Kit Information {{user_lot_kit_data.sample_project_name }}</h4></div>
+            <div class="card-body">
 
                     <table class="table">
                         <thead>

@@ -44,11 +44,11 @@
  </style>
 
 {% if error_message %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 style="text-align:center"></h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3 style="text-align:center"></h3> </div>
+                <div class="card-body">
                     {% for values in error_message %}
                         <h4>{{values}}</h4>
                     {% endfor %}
@@ -58,11 +58,11 @@
     </div> <!--  end of row -->
 {% endif %}
 {% if confirmation_result %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
+                <div class="card-body">
                     <p>The services that you have recorded are:</p>
                     {% for values in confirmation_result.text %}
                         <h5>{{values}}</h5>
@@ -86,22 +86,22 @@
     </div> <!--  end of row -->
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Request Service form for Sequencing Data.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Request Service form for Sequencing Data.</h3></div>
+                <div class="card-body">
                     <form id="fileupload" method="post" action="/drylab/requestSequencingService"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well">
                     <!-- <form id="fileupload" method="post" action="/drylab/multipleFiles"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well"> -->
                         {% csrf_token %}
                         <input type="hidden" name="subAction" value="createservice"/>
 
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">
                                 {% if service_data_information.users %}
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">User assigned to service </h3></div>
-                                        <div class="panel-body">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">User assigned to service </h3></div>
+                                        <div class="card-body">
                                             <div class="form-group">
                                                 <div class="col-sm-6">
                                                     <label class="col-sm-6 control-label" for="fileExtension" >Select the userid for this service</label>
@@ -126,9 +126,9 @@
                                 <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
                                     <div id="sequencingSamples" class="tabcontent">
 
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3 style="text-align:center">Internal Samples.</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3 style="text-align:center">Internal Samples.</h3></div>
+                                            <div class="card-body">
                                                 {% if service_data_information.samples_heading %}
 
                                                     <br>
@@ -192,9 +192,9 @@
 
                                     <div id="onlyRecordedSamples" class="tabcontent">
                                         <div class="col-sm-12">
-                                            <div class="panel panel-default">
-                                                <div class="panel-heading"><h3 style="text-align:center">Only recorded Samples </h3></div>
-                                                <div class="panel-body">
+                                            <div class="card ">
+                                                <div class="card-header"><h3 style="text-align:center">Only recorded Samples </h3></div>
+                                                <div class="card-body">
                                                     {% if service_data_information.sample_only_recorded_heading %}
                                                         <h5 style="text-align:center">Select the samples to be included in the service.</h5>
                                                         <p  style="text-align:center" class="text-primary">Contact with Bioinformatic unit to provide the sample files</p>
@@ -238,11 +238,11 @@
                             </div> <!--  end of col-sm-12 -->
                         </div> <!--  end of row -->
 
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">Service Selection</h3></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">Service Selection</h3></div>
+                                    <div class="card-body">
                                         {% if service_data_information.nodes %}
                                             <div class="scrolling-wrapper">
                                                 <div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %} >
@@ -281,11 +281,11 @@
                         </div> <!--  end of row -->
 
                         <!-- #########################################################333  -->
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">Additional Information</h3></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">Additional Information</h3></div>
+                                    <div class="card-body">
 
                                         <div class="row fileupload-buttonbar">
                                             <div class="col-lg-7">
@@ -321,9 +321,9 @@
                                                 <div class="progress-extended">&nbsp;</div>
                                             </div>
                                         </div>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading"><h3 class="panel-title">Upload Files</h3></div>
-                                            <div class="panel-body">
+                                        <div class="card ">
+                                            <div class="card-header"><h3 class="panel-title">Upload Files</h3></div>
+                                            <div class="card-body">
                                                 <h5>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage (if Browser support).</h5>
                                                 <h5>The Maximun file size to upload is <strong>5MB</strong>. For including files bigger than 5MB contact Bioinformatic Unit Responsible</h5>
                                                 <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>

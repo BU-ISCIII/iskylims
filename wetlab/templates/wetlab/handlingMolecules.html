@@ -27,11 +27,11 @@
 
 
 {% if molecule_protocol %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Assign the Molecule Protocol to following samples.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Assign the Molecule Protocol to following samples.</h3></div>
+                <div class="card-body">
                     <br>
                     <form method="post" action= "/wetlab/handlingMolecules" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
                         {% csrf_token %}
@@ -120,11 +120,11 @@
 {% elif molecule_recorded %}
     {% if molecule_recorded.incomplete_sample_ids %}
         {% if molecule_recorded.heading %}
-            <div class="row row-space-2 margin-b-4">
+            <div class="row mt-2 mb-4">
                 <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>The following molecules are now assigned to Protocol.</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>The following molecules are now assigned to Protocol.</h3></div>
+                        <div class="card-body">
                             <table class="table table-hover">
                                 <thead>
                                    <tr>
@@ -147,11 +147,11 @@
                 </div> <!--  end of col-sm-12 -->
             </div> <!--  end of row -->
         {% endif %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12">
                 <div class="panel panel-warning">
-                    <div class="panel-heading"><h3>Information missing.</h3></div>
-                    <div class="panel-body">
+                    <div class="card-header"><h3>Information missing.</h3></div>
+                    <div class="card-body">
                         <br>
                         <p>Please add the missing information and click on the submit bottom</p>
                         <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
@@ -243,11 +243,11 @@
 
         {% if show_molecule_parameters %}
             {% if not show_molecule_parameters.lot_kit %}
-                <div class="row row-space-2 margin-b-4">
-                    <div class="col-sm-10 col-sm-offset-1">
-                        <div class="panel panel-danger">
-                            <div class="panel-heading"><h3>Not Available User Lot Kits.</h3></div>
-                            <div class="panel-body">
+                <div class="row mt-2 mb-4">
+                    <div class="col-sm-10 offset-1">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><h3>Not Available User Lot Kits.</h3></div>
+                            <div class="card-body">
                                <p>There is not User Lot Kit defined on your name.</p>
                                <p>Click on the bottom below to define your Lot Kit first. Then return again to assign the molecule parameter</p>
 
@@ -258,11 +258,11 @@
                     </div> <!--  end of col-sm-6 -->
                </div> <!--  end of row -->
             {% endif %}
-            <div class="row row-space-2 margin-b-4">
+            <div class="row mt-2 mb-4">
                 <div class="col-sm-12">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Update the following molecules with quality parameters.</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>Update the following molecules with quality parameters.</h3></div>
+                        <div class="card-body">
                             {% if show_molecule_parameters.pending_id %}
                                 <p>The selected molecules contain different protocol</p>
                                 <p>After Clicking the Submit buttom the next molecules will be displayed</p>
@@ -356,11 +356,11 @@
     {% endif %}
 
 {% elif molecule_parameters_updated  %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following molecules have been updated with quality Parameters.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following molecules have been updated with quality Parameters.</h3></div>
+                <div class="card-body">
                    <table class="table table-hover">
                        <thead>
                           <tr>
@@ -381,11 +381,11 @@
        </div> <!--  end of col-sm-12 -->
    </div> <!--  end of row -->
    {% if show_molecule_parameters %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
            <div class="col-sm-12">
-               <div class="panel panel-default">
-                   <div class="panel-heading"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
-                   <div class="panel-body">
+               <div class="card ">
+                   <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
+                   <div class="card-body">
                        {% if show_molecule_parameters.pending_id %}
                              <p>The selected molecules contain different protocol</p>
                              <p>After Clicking ----- the Submit buttom the next molecules will be displayed</p>
@@ -470,11 +470,11 @@
    {%endif %}
 
 {% elif molecule_use %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Molecule uses updated.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Molecule uses updated.</h3></div>
+                <div class="card-body">
                    <table class="table table-hover">
                        <thead>
                           <tr>
@@ -509,9 +509,9 @@
 
                 <div id="molecules" class="tabcontent">
                     <div class="col-sm-11" >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Select the molecules to add Extraction information</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Select the molecules to add Extraction information</h3></div>
+                            <div class="card-body">
                                 {% if user_molecules %}
                                     <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedOwnerMolecules"  id="selectedOwnerMolecules" class="form-horizontal well">
                                         {% csrf_token %}
@@ -555,10 +555,10 @@
 
                 <div id="new_samples" class="tabcontent">
                     <div class="col-sm-11" >
-                        <div class="panel panel-default">
+                        <div class="card ">
                             {% if sample_availables.sample_heading %}
-                                <div class="panel-heading"><h3>Select the Samples to add Molecule information</h3></div>
-                                <div class="panel-body">
+                                <div class="card-header"><h3>Select the Samples to add Molecule information</h3></div>
+                                <div class="card-body">
                                     <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedMolecules"  id="selectedMolecules" class="form-horizontal well">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="selectedMolecules"/>
@@ -620,8 +620,8 @@
                                      </form>
                                  </div>  <!--  end of panel body  -->
                             {% else %}
-                                <div class="panel-heading"><h3>Molecule information</h3></div>
-                                <div class="panel-body">
+                                <div class="card-header"><h3>Molecule information</h3></div>
+                                <div class="card-body">
                                     <h4>There is no samples to add Molecule Extraction information</h4>
                                 </div>  <!--  end of panel body  -->
                             {% endif %}
@@ -632,11 +632,11 @@
             <div id="molecule_used_for" class="tabcontent">
                 <div class="col-sm-12" >
                     {% if molecule_use_defined %}
-                        <div class="panel panel-default">
+                        <div class="card ">
 
                             {% if request_molecule_use.heading %}
-                                <div class="panel-heading"><h3>Select in these samples the use that will be given of them</h3></div>
-                                <div class="panel-body">
+                                <div class="card-header"><h3>Select in these samples the use that will be given of them</h3></div>
+                                <div class="card-body">
                                     <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="requestMoleculeUse"  id="requestMoleculeUse" class="form-horizontal well">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="requestMoleculeUse"/>
@@ -697,16 +697,16 @@
                                 </div>  <!--  end of panel body  -->
 
                             {% else %}
-                                <div class="panel-heading"><h3>Molecule information</h3></div>
-                                <div class="panel-body">
+                                <div class="card-header"><h3>Molecule information</h3></div>
+                                <div class="card-body">
                                     <h4>All Molecule extraction have already assigned to an use</h4>
                                 </div>  <!--  end of panel body  -->
                             {% endif %}
                         </div> <!--// end panel -->
                     {% else %}
-                        <div class="panel panel-danger">
-                            <div class="panel-heading"><h3>Molecule uses defined</h3></div>
-                            <div class="panel-body">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><h3>Molecule uses defined</h3></div>
+                            <div class="card-body">
                                 <p>Not molecule uses have been defined yet</p>
                             </div>  <!--  end of panel body  -->
                          </div> <!--// end panel -->

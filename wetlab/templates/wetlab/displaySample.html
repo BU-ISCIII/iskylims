@@ -10,12 +10,12 @@
     }
  </style>
 {% if sample_information.sample_definition_heading %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-11">
-            <div class="panel panel-default">
+            <div class="card ">
                 <h3>Information for Sample {{ sample_information.sample_definition.0 }} </h3>
-                <div class="panel-heading"><h4>Basic Information</h4></div>
-                <div class="panel-body">
+                <div class="card-header"><h4>Basic Information</h4></div>
+                <div class="card-body">
                     <table class="table">
                         <thead>
                             <tr>
@@ -34,8 +34,8 @@
                     </table>
                 </div> <!--  end of panel body -->
                 {% if sample_information.sample_project_name %}
-                    <div class="panel-heading"><h4>Additional Sample Information {{sample_information.sample_project_name }}</h4></div>
-                    <div class="panel-body">
+                    <div class="card-header"><h4>Additional Sample Information {{sample_information.sample_project_name }}</h4></div>
+                    <div class="card-body">
                         <div class="scrolling-wrapper">
                             <table class="table table-bordered">
                                 <thead>
@@ -88,15 +88,15 @@
                     {% if sample_information.molecule_definition_heading %}
 
                         {% for molecule_values, molecule_param_heading , molecule_param_values in sample_information.molecule_definition_data %}
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-12">
-                                    <div class="panel panel-default">
-                                        <div class="panel-body">
+                                    <div class="card ">
+                                        <div class="card-body">
                                             <div class="col-sm-11">
-                                                <div class="panel panel-default">
+                                                <div class="card ">
                                                     <h3>Information for Molecule using the sample {{ sample_information.sample_definition.0 }} </h3>
-                                                    <div class="panel-heading"><h4>Molecule Information</h4></div>
-                                                    <div class="panel-body">
+                                                    <div class="card-header"><h4>Molecule Information</h4></div>
+                                                    <div class="card-body">
                                                         <table class="table table-hover">
                                                             <thead>
                                                                 <tr>
@@ -122,9 +122,9 @@
                                             {% if molecule_param_heading is not None %}
 
                                                 <div class="col-sm-12">
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
-                                                        <div class="panel-body">
+                                                    <div class="card ">
+                                                        <div class="card-header"><h4>Quality Parameter Molecule Information</h4></div>
+                                                        <div class="card-body">
                                                             <table class="table table-hover">
                                                                 <thead>
                                                                     <tr>
@@ -161,11 +161,11 @@
                         <br>
 
                     {% else %}
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-11">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h4>Molecule Information</h4></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h4>Molecule Information</h4></div>
+                                    <div class="card-body">
                                         <p class="text-center">There is no Molecule Extraction information </p>
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
@@ -178,15 +178,15 @@
                 {% if sample_information.library_definition_heading %}
                     <div id="library" class="tabcontent">
                         {% for lib_values, lib_param_heading , lib_param_values, lib_prep_id , lib_prep_code, molecule_id, sample_id in sample_information.lib_prep_data %}
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-12">
-                                    <div class="panel panel-default">
-                                        <div class="panel-body">
+                                    <div class="card ">
+                                        <div class="card-body">
                                             <div class="col-sm-11">
-                                                <div class="panel panel-default">
+                                                <div class="card ">
 
-                                                    <div class="panel-heading"><h4>Index used for sample {{ lib_prep_code }}</h4></div>
-                                                    <div class="panel-body">
+                                                    <div class="card-header"><h4>Index used for sample {{ lib_prep_code }}</h4></div>
+                                                    <div class="card-body">
                                                         <table class="table table-hover">
                                                             <thead>
                                                               <tr>
@@ -209,11 +209,11 @@
 
                                             {% if lib_param_heading is not None %}
 
-                                              <div class="row row-space-2 margin-b-4">
+                                              <div class="row mt-2 mb-4">
                                                   <div class="col-sm-12">
-                                                      <div class="panel panel-default">
-                                                          <div class="panel-heading"><h4>Quality Parameter Library Preparation Information</h4></div>
-                                                          <div class="panel-body">
+                                                      <div class="card ">
+                                                          <div class="card-header"><h4>Quality Parameter Library Preparation Information</h4></div>
+                                                          <div class="card-body">
                                                             <table class="table table-hover">
                                                                 <thead>
                                                                     <tr>
@@ -255,12 +255,12 @@
 
                 {% if sample_information.pool_heading %}
                     <div id="runData" class="tabcontent">
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-11">
-                                <div class="panel panel-default">
+                                <div class="card ">
                                     <h3>Information for Pool definition for sample {{ sample_information.sample_definition.0 }} </h3>
-                                    <div class="panel-heading"><h4>Pool Information</h4></div>
-                                    <div class="panel-body">
+                                    <div class="card-header"><h4>Pool Information</h4></div>
+                                    <div class="card-body">
                                         <table class="table table-hover">
                                             <thead>
                                               <tr>
@@ -299,12 +299,12 @@
                 {% if  sample_information.molecule_heading_lot_kits or sample_information.heading_add_kits %}
                     <div id="userLotKit" class="tabcontent">
                         {% if  sample_information.molecule_heading_lot_kits %}
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-11">
-                                    <div class="panel panel-default">
+                                    <div class="card ">
                                         <h3>Information for User Lot kits used in Molecule Extraction for  {{ sample_information.sample_definition.0 }} </h3>
-                                        <div class="panel-heading"><h4>User Lot Kit Information</h4></div>
-                                        <div class="panel-body">
+                                        <div class="card-header"><h4>User Lot Kit Information</h4></div>
+                                        <div class="card-body">
                                             {% for key, values in sample_information.molecule_user_kits.items %}
                                                 <h5>Kits used for protocol {{key}}</h5>
                                                 <table class="table table-hover">
@@ -334,12 +334,12 @@
                             </div> <!--end of row     -->
                         {% endif %}
                         {% if  sample_information.protocols_add_kits %}
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-11">
-                                    <div class="panel panel-default">
+                                    <div class="card ">
                                         <h3>Information for User Lot kits used for the library preparation {{ sample_information.sample_definition.0 }} </h3>
-                                        <div class="panel-heading"><h4>User Lot Kit Information</h4></div>
-                                        <div class="panel-body">
+                                        <div class="card-header"><h4>User Lot Kit Information</h4></div>
+                                        <div class="card-body">
                                             {% for key, values in sample_information.protocols_add_kits.items %}
                                                 <h5>Kits used for protocol {{key}}</h5>
                                                 <table class="table table-hover">
@@ -373,12 +373,12 @@
                             </div> <!--  end of row -->
                         {% endif %}
                         {% if  sample_information.heading_run_kits %}
-                            <div class="row row-space-2 margin-b-4">
+                            <div class="row mt-2 mb-4">
                                 <div class="col-sm-11">
-                                    <div class="panel panel-default">
+                                    <div class="card ">
                                         <h3>Information for User Lot kits used for the Run preparation {{ sample_information.sample_definition.0 }} </h3>
-                                        <div class="panel-heading"><h4>User Lot Kit Information</h4></div>
-                                        <div class="panel-body">
+                                        <div class="card-header"><h4>User Lot Kit Information</h4></div>
+                                        <div class="card-body">
                                             {% for key, values in sample_information.run_kits_from_sample.items %}
                                                 <h5>Kits used for protocol {{key}}</h5>
                                                 <table class="table table-hover">
@@ -417,12 +417,12 @@
                 {% if sample_information.heading_samples_info %}
                     {% include "core/graphic_chart_functionality.html" %}
                     <div id="sequencing" class="tabcontent">
-                        <div class="row row-space-2 margin-b-4">
+                        <div class="row mt-2 mb-4">
                             <div class="col-sm-12">
-                                <div class="col-sm-6 col-sm-offset-1">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h4>Sample information collecting from Run</h4></div>
-                                        <div class="panel-body">
+                                <div class="col-sm-6 offset-1">
+                                    <div class="card ">
+                                        <div class="card-header"><h4>Sample information collecting from Run</h4></div>
+                                        <div class="card-body">
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>
@@ -448,9 +448,9 @@
                                     </div> <!--  end of panel  -->
                                 </div> <!--  end of col-sm-6 -->
                                 <div class="col-sm-5" >
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3> Overall Quality of the Sample</h3></div>
-                                        <div class="panel-body">
+                                    <div class="card ">
+                                        <div class="card-header"><h3> Overall Quality of the Sample</h3></div>
+                                        <div class="card-body">
                                             <!-- Quality Sample graphic -->
                                             <div id="chart-1"> </div>
                                             <!-- dumping JavaScript code  -->
@@ -461,11 +461,11 @@
                             </div> <!--// end col-sm-12  -->
                         </div> <!--  end of row -->
 
-                        <div class="row row-space-2 margin-b-4">
-                            <div class="col-sm-10 col-sm-offset-1" >
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3> Sample Quality Information</h3></div>
-                                    <div class="panel-body">
+                        <div class="row mt-2 mb-4">
+                            <div class="col-sm-10 offset-1" >
+                                <div class="card ">
+                                    <div class="card-header"><h3> Sample Quality Information</h3></div>
+                                    <div class="card-body">
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
@@ -487,11 +487,11 @@
                             </div> <!--// end col-sm-6  -->
                         </div> <!--  end of row -->
 
-                        <div class="row row-space-2 margin-b-4">
-                            <div class="col-sm-10 col-sm-offset-1" >
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3> Percentage of the Sample inside the project</h3></div>
-                                    <div class="panel-body">
+                        <div class="row mt-2 mb-4">
+                            <div class="col-sm-10 offset-1" >
+                                <div class="card ">
+                                    <div class="card-header"><h3> Percentage of the Sample inside the project</h3></div>
+                                    <div class="card-body">
                                         <!-- Quality Sample graphic -->
                                         <div id="samples-chart-2"> </div>
                                         <!-- dumping JavaScript code  -->

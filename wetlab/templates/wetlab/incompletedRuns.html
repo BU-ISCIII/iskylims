@@ -14,11 +14,11 @@
 }
 </style>
 {% if display_incompleted_run %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Runs in Recorded state</h3></div>
-                <div class="panel-body scroll-wrapper-sm-6">
+            <div class="card ">
+                <div class="card-header"><h3>Runs in Recorded state</h3></div>
+                <div class="card-body scroll-wrapper-sm-6">
                     <table class="table table-hover">
                         <thead>
                            <tr>
@@ -42,9 +42,9 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Graphic for incomplete Runs</h3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Graphic for incomplete Runs</h3> </div>
+                <div class="card-body">
                     <!-- Quality Sample graphic -->
                     <div id="chart-1"> </div>
                     <!-- dumping JavaScript code  -->
@@ -55,13 +55,13 @@
     </div> <!--  end of row -->
 
     {% if display_incompleted_run.error or display_incompleted_run.cancelled %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-6">
                 {% if display_incompleted_run.error %}
-                    <div class="panel panel-default">
+                    <div class="card ">
 
-                        <div class="panel-heading"><h3>Runs incompleted because they got an Error</h3></div>
-                        <div class="panel-body scroll-wrapper-sm-6">
+                        <div class="card-header"><h3>Runs incompleted because they got an Error</h3></div>
+                        <div class="card-body scroll-wrapper-sm-6">
                             <table class="table table-hover">
                                 <thead>
                                    <tr>
@@ -91,10 +91,10 @@
             </div> <!--  end of col-sm-6 -->
             <div class="col-sm-6">
                 {% if display_incompleted_run.cancelled %}
-                    <div class="panel panel-default">
+                    <div class="card ">
 
-                        <div class="panel-heading"><h3>Runs Cancelled</h3></div>
-                        <div class="panel-body scroll-wrapper-sm-6">
+                        <div class="card-header"><h3>Runs Cancelled</h3></div>
+                        <div class="card-body scroll-wrapper-sm-6">
                             <table class="table table-hover">
                                 <thead>
                                    <tr>
@@ -121,12 +121,12 @@
         </div> <!--  end of row -->
     {% endif %}
     {% if display_incompleted_run.other %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-6">
-                <div class="panel panel-default">
+                <div class="card ">
 
-                    <div class="panel-heading"><h3>Runs pending to complete </h3></div>
-                    <div class="panel-body scroll-wrapper-sm-6">
+                    <div class="card-header"><h3>Runs pending to complete </h3></div>
+                    <div class="card-body scroll-wrapper-sm-6">
                         <table class="table table-hover">
                             <thead>
                                <tr>
@@ -155,11 +155,11 @@
     {% endif %}
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-7">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>All runs are Completed</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>All runs are Completed</h3></div>
+                <div class="card-body">
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->

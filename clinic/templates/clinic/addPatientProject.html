@@ -4,10 +4,10 @@
 {% csrf_token %}
 {% if defined_project.fields %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-6  col-sm-offset-2" >
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>Define the additional information that project requires.</h3></div>
-                <div class="panel-body" >
+        <div  class="col-sm-6  offset-2" >
+            <div class="card " >
+                <div class="card-header"><h3>Define the additional information that project requires.</h3></div>
+                <div class="card-body" >
                     <form method="post" enctype="multipart/form-data" name="defineProjectFields"  id="defineProjectFields" class="form-horizontal well" style="min-height: 300px;">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="defineProjectFields"/>
@@ -20,7 +20,7 @@
                             </div>  <!-- end from-group   -->
                         {% endfor %}
                         <BR>
-                        <div class="col-sm-10 col-sm-offset-1">
+                        <div class="col-sm-10 offset-1">
                             <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                             <input class="btn pull-right btn-primary" type="submit" value="Submit">
                         </div>
@@ -33,10 +33,10 @@
     </div> <!--// end row  -->
 {% elif project_fields_added %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-10  col-sm-offset-1" >
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>Information requested by Project {{project_fields_added.project_name}} was successful recorded.</h3></div>
-                <div class="panel-body" >
+        <div  class="col-sm-10  offset-1" >
+            <div class="card " >
+                <div class="card-header"><h3>Information requested by Project {{project_fields_added.project_name}} was successful recorded.</h3></div>
+                <div class="card-body" >
 
                     <br>
                     <p>Click on the button below to retun to the main page</p>

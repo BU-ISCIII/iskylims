@@ -26,11 +26,11 @@
 </style>
 <!--  Start Run created during the year   -->
 <div class="container">
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Runs performed on the year {{ display_annual_report.year }}.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Runs performed on the year {{ display_annual_report.year }}.</h3></div>
+                <div class="card-body"> 
                     <div class="table-wrapper">
                         <div class="col-sm-6">
                             <table id="runsPerformed" class="table table-fixed" >
@@ -48,7 +48,7 @@
                                 {% endif %}
                             </table>
                         </div> <!--  end of col-sm-5 -->
-                        <div class="col-sm-5 col-sm-offset-1">
+                        <div class="col-sm-5 offset-1">
                             <table class="table table-fixed">
                                 <thead>
                                     <tr><th>Not Completed Runs </th></tr>
@@ -71,9 +71,9 @@
             </div> <!--  end of col-sm-6 -->
         {% if display_annual_report.graphic_completed_run %}
         <div class="col-sm-5">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Relation of Completed and Unfinished Runs.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Relation of Completed and Unfinished Runs.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="chart-1"> </div>
                     <!-- dumping JavaScript code here -->
@@ -87,10 +87,10 @@
 </div> <!--  end of container -->
 <!--  End Run created during the year   -->
 <!--  Start Projects created by investigator during the year   -->
-    <div class="row row-space-2 margin-b-4">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Projects performed by investigator during year {{ display_annual_report.year }}.</h3></div>
-            <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="card ">
+            <div class="card-header"><h3>Projects performed by investigator during year {{ display_annual_report.year }}.</h3></div>
+            <div class="card-body">
                 <div class="col-sm-12">
                     <div class="col-sm-4">
                         <table class="table table-hover" >
@@ -154,7 +154,7 @@
                     <!-- dumping JavaScript code here -->
                     {{ display_annual_report.p_user_year_graphic |safe }}
                     </div>   <!--  end of col-sm-5 --> 
-                    <div class="col-sm-5 col-sm-offset-1">
+                    <div class="col-sm-5 offset-1">
                     <!-- Start graphics for projects created by investigator during the year   -->
                         <div id="p_user_chart-2"> </div>
                     <!-- dumping JavaScript code here -->
@@ -172,13 +172,13 @@
 
 <!--  End Projects created by investigator during the year   -->
     <!--  Q30 year report -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of quality >30 for the year {{ display_annual_report.year }}.</h3>
+            <div class="card ">
+                <div class="card-header"><h3>Percentage of quality >30 for the year {{ display_annual_report.year }}.</h3>
                 <button onclick="exportTableToExcel('reportQ30')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                 <BR></div>
-                <div class="panel-body"> 
+                <div class="card-body"> 
                 {% if display_annual_report.q30_data %}
                     <div class="table-wrapper-sm-4">
                         <table id="reportQ30" class="table table-fixed">
@@ -204,10 +204,10 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         {% if display_annual_report.q30_graphic %}
-        <div class="col-sm-7 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Relation of Q 30 for the year {{ display_annual_report.year }}.</h3></div>
-                <div class="panel-body"> 
+        <div class="col-sm-7 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Relation of Q 30 for the year {{ display_annual_report.year }}.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="q30_chart-2"> </div>
                     <!-- dumping JavaScript code here -->
@@ -220,13 +220,13 @@
     </div> <!--  end of row -->
 
     <!--  Aligned year report -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_annual_report.year }}.</h3>
+            <div class="card ">
+                <div class="card-header"><h3>Percentage of aligned for the year {{ display_annual_report.year }}.</h3>
                 <button onclick="exportTableToExcel('reportAligment')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                 <BR></div>
-                <div  class="panel-body"> 
+                <div  class="card-body"> 
                 {% if display_annual_report.aligned_data %}
                     <div class="table-wrapper-sm-4">
                         <table id="reportAligment" class="table table-fixed">
@@ -251,10 +251,10 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         {% if display_annual_report.aligned_graphic %}
-        <div class="col-sm-7 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Aligned for the year {{ display_annual_report.year }}.</h3></div>
-                <div class="panel-body"> 
+        <div class="col-sm-7 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Aligned for the year {{ display_annual_report.year }}.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="aligned_chart-3"> </div>
                     <!-- dumping JavaScript code here -->
@@ -267,13 +267,13 @@
     </div> <!--  end of row -->
                 
     <!--  Error Rate year report -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error rate for the year {{ display_annual_report.year }}.</h3>
+            <div class="card ">
+                <div class="card-header"><h3>Error rate for the year {{ display_annual_report.year }}.</h3>
                 <button onclick="exportTableToExcel('reportError')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                 <BR></div>
-                <div class="panel-body"> 
+                <div class="card-body"> 
                 {% if display_annual_report.error_rate_data %}
                     <div class="table-wrapper-sm-4">
                         <table id="reportError" class="table table-fixed">
@@ -298,10 +298,10 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         {% if display_annual_report.error_rate_graphic %}
-        <div class="col-sm-7 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error Rate for the year {{ display_annual_report.year }}.</h3></div>
-                <div class="panel-body"> 
+        <div class="col-sm-7 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Error Rate for the year {{ display_annual_report.year }}.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="error_rate_chart-4"> </div>
                     <!-- dumping JavaScript code here -->
@@ -317,11 +317,11 @@
 {% else %}
     <!-- FORM for selecting annual Report Information -->
   
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><strong>Form for annual Report</strong></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><strong>Form for annual Report</strong></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="searchannualreport" id="searchannualreport" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchannualReport"/>
@@ -342,10 +342,10 @@
         
         <!-- Insert the help panel -->
         <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading">annual Report information</div>
-             <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header">annual Report information</div>
+             <div class="card-body">
              <p>annual reports generate graphics and data for all runs that have been started on the selected year. <BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>

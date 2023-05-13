@@ -3,11 +3,11 @@
 {% block content %}
 
 {% if detail_pipelines_data %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Service Pipelines defined.</h3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-2">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Service Pipelines defined.</h3></div>
+                <div class="card-body">
                     <table class="table">
                         <thead>
                             <tr>
@@ -35,7 +35,7 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-8 -->
     </div> <!--  end of row -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
             <div class="tab">
                 <button class="tablinks" onclick="summaryBin(event, 'additional')" id="defaultOpen" >Additional data</button>
@@ -45,10 +45,10 @@
 
                 <div id="additional" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
-                        <div class="col-sm-10 col-sm-offset-1" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3 style="text-align:center">Additional Pipeline data</h3></div>
-                                <div class="panel-body">
+                        <div class="col-sm-10 offset-1" >
+                            <div class="card ">
+                                <div class="card-header"><h3 style="text-align:center">Additional Pipeline data</h3></div>
+                                <div class="card-body">
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
@@ -74,10 +74,10 @@
 
                 <div id="parameters" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
-                        <div class="col-sm-10 col-sm-offset-1" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3 style="text-align:center">Parameters used for the Pipeline</h3></div>
-                                <div class="panel-body">
+                        <div class="col-sm-10 offset-1" >
+                            <div class="card ">
+                                <div class="card-header"><h3 style="text-align:center">Parameters used for the Pipeline</h3></div>
+                                <div class="card-body">
                                     {% if detail_pipelines_data.parameter_heading %}
                                         <table class="table table-hover">
                                             <thead>
@@ -107,10 +107,10 @@
 
                 <div id="services" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
-                        <div class="col-sm-10 col-sm-offset-1" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3 style="text-align:center">Services that use this pipeline</h3></div>
-                                <div class="panel-body">
+                        <div class="col-sm-10 offset-1" >
+                            <div class="card ">
+                                <div class="card-header"><h3 style="text-align:center">Services that use this pipeline</h3></div>
+                                <div class="card-body">
                                     {% if detail_pipelines_data.services_using_pipeline_heading %}
                                         <table class="table table-hover">
                                             <thead>
@@ -151,11 +151,11 @@
     </script>
 
 {% else%}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2" >
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 style="text-align:center">The requested Pipeline Services does not exists</h3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-8 offset-2" >
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3 style="text-align:center">The requested Pipeline Services does not exists</h3></div>
+                <div class="card-body">
                     <h5 style="text-align:center">Check the User Guide to define new Pipelines</h5>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->

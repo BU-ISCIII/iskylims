@@ -13,11 +13,11 @@
 </style>
 {% if researcher_statistics %}
     {% if 'ERROR' in researcher_statistics %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.ERROR.1}} </h2></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h2>Statistics results for Investigator {{researcher_statistics.ERROR.1}} </h2></div>
+                    <div class="card-body">
                         <h3>{{researcher_statistics.ERROR.0}}</h3>
                     </div> <!--  end of panel body -->
                 </div> <!--// end panel -->
@@ -25,11 +25,11 @@
         </div> <!--// end row -->
 
     {% else %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
+                    <div class="card-body">
                         <div class="col-sm-12">
                             <div class="tab">
                                 {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
@@ -42,12 +42,12 @@
                                 {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
                                     <div id="{{sequencer}}" class="tabcontent">
                                         <div class="col-sm-12" >
-                                            <div class="panel panel-default">
-                                                <div class="panel-heading"><h3>Investigator samples run in sequencer {{sequencer}}</h3></div>
+                                            <div class="card ">
+                                                <div class="card-header"><h3>Investigator samples run in sequencer {{sequencer}}</h3></div>
                                                 {% if samples_data %}
                                                     <button onclick="exportTableToExcel('sequencer{{sequencer}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                                                     <BR>
-                                                    <div class="panel-body scroll-wrapper-sm-12">
+                                                    <div class="card-body scroll-wrapper-sm-12">
 
                                                         <div class="table-responsive">
                                                             <table id="sequencer{{sequencer}}" class="table  table-hover">
@@ -73,7 +73,7 @@
                                                     </div> <!--  end of col-scroll-wrapper -->
 
                                                 {% else %}
-                                                    <div class="panel-body">
+                                                    <div class="card-body">
                                                         <h5> There are no Samples runs on this sequencer </h5>
                                                     </div> <!--// end panel -->
                                                 {% endif %}
@@ -88,11 +88,11 @@
             </div> <!--// end col-sm-12  -->
         </div> <!--// end row -->
 
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                    <div class="card-body">
                         <div class="col-sm-6" >
                             <!-- Showing graph-->
                             <div id="run_chart"> </div>
@@ -111,11 +111,11 @@
 
 
 
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3><center>Quality Statistics for Samples handled by  {{researcher_statistics.researcher_name}} </center></h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3><center>Quality Statistics for Samples handled by  {{researcher_statistics.researcher_name}} </center></h3></div>
+                    <div class="card-body">
                         <div class="col-sm-6" >
                             <!-- Showing graph-->
                             <div id="q30_chart"> </div>
@@ -132,11 +132,11 @@
         </div> <!--// end row -->
 
         {% if researcher_statistics.comp_graphs %}
-            <div class="row row-space-2 margin-b-4">
+            <div class="row mt-2 mb-4">
                 <div class="col-sm-12" >
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
+                        <div class="card-body">
                         <!-- comparations chart starts here-->
 
                         </div> <!--  end of panel body -->
@@ -153,11 +153,11 @@
 {% else %}
     {% load user_groups %}
     <!-- FORM for searching project research  Information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics per Investigator</h2></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h2>Statistics per Investigator</h2></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="statsresearcher" id="statsresearcher" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="researcher"/>
@@ -193,10 +193,10 @@
 
         <!-- Insert the help panel -->
         <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading"><h5>Statistics information per Investigator</h5></div>
-             <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header"><h5>Statistics information per Investigator</h5></div>
+             <div class="card-body">
              <p>Statistics information for the projects created by a Investigator<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>

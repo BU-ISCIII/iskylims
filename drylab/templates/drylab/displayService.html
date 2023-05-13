@@ -14,13 +14,13 @@
 <h1>
     <div class="color-heading">Service Information for the service {{ display_service.service_name}}</div>
 </h1>
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-6"> <!-- general information from service -->
-        <div class="panel panel-default">
-            <div class="panel-heading">
+        <div class="card ">
+            <div class="card-header">
                 <h3>Service requested information</h3>
             </div>
-            <div class="panel-body">
+            <div class="card-body">
                 <table class="table table-hover">
                     <tbody>
                         {% if display_service.resolution_folder %}
@@ -62,11 +62,11 @@
             </div> <!--// end panel body -->
         </div> <!--// end panel -->
         <br>
-        <div class="panel panel-default">
-            <div class="panel-heading">
+        <div class="card ">
+            <div class="card-header">
                 <h3>Calculation dates</h3>
             </div>
-            <div class="panel-body">
+            <div class="card-body">
                 {% if display_service.calculation_dates %}
                 <table class="table table-hover">
                     <thead>
@@ -92,19 +92,19 @@
     </div> <!--// end col-sm-6    -->
     {% if display_service.service_manager %}
     <div class="col-sm-6 "> <!-- Actions  allowed-->
-        <div class="panel panel-default">
-            <div class="panel-heading">
+        <div class="card ">
+            <div class="card-header">
                 <h3>Allowed actions on {{ display_service.service_name}}</h3>
             </div>
-            <div class="panel-body">
+            <div class="card-body">
                 <h5>Click on the following buttons to update the service</h5>
                 {% if display_service.allowed_waiting_info %}
-                <div class="row row-space-2 margin-b-4">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                <div class="row mt-2 mb-4">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Put service on hold</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <form class="" action="/drylab/serviceInWaitingInfo" method="post">
                                 {% csrf_token %}
                                 <p>Click on the bottom below to indicate that service requires input information from
@@ -121,12 +121,12 @@
                 </div> <!--// end row -->
                 {% endif %}
                 {% if display_service.add_resolution_action %}
-                <div class="row row-space-2 margin-b-4">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                <div class="row mt-2 mb-4">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Select the services to add new resolution </h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <form class="" action="/drylab/addResolution" method="post">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="formToaddResolutionService">
@@ -162,12 +162,12 @@
                 </div> <!--// end row -->
                 {% endif%}
                 {% if display_service.resolution_progress %}
-                <div class="row row-space-2 margin-b-4">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                <div class="row mt-2 mb-4">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Resolution to update the state to "In Progress"</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% for res_id , res_name, services in display_service.resolution_progress %}
                             <form class="" action="/drylab/addInProgress" method="post">
                                 {% csrf_token %}
@@ -192,7 +192,7 @@
                                     </table>
                                     {% endif %}
                                 </div> <!--// end col-sm-8 -->
-                                <div class="col-sm-3 col-sm-offset-1"> <!-- col-sm-3  progress button  -->
+                                <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
                                     <br>
                                     <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
                                         value="In Progress">
@@ -204,12 +204,12 @@
                 </div> <!--// end row -->
                 {% endif%}
                 {% if display_service.resolution_delivery %}
-                <div class="row row-space-2 margin-b-4">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                <div class="row mt-2 mb-4">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Delivery resolutions</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% for res_id , res_name, services in display_service.resolution_delivery %}
                             <form class="" action="/drylab/addDelivery" method="post">
                                 {% csrf_token %}
@@ -234,7 +234,7 @@
                                     </table>
                                     {% endif %}
                                 </div> <!--// end col-sm-8 -->
-                                <div class="col-sm-3 col-sm-offset-1"> <!-- col-sm-3  progress button  -->
+                                <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
                                     <br>
                                     <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
                                         value="Delivery">
@@ -246,12 +246,12 @@
                 </div> <!--// end row -->
                 {% endif%}
                 {% if display_service.resolution_delivered %}
-                <div class="row row-space-2 margin-b-4">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                <div class="row mt-2 mb-4">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Resolution already delivered</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <form class="" action="/drylab/addResolution" method="post">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="formToaddResolutionService">
@@ -274,7 +274,7 @@
                                     </div> <!-- end from-group   -->
                                     {% endif %}
                                 </div> <!--// end col-sm-8 -->
-                                <div class="col-sm-3 col-sm-offset-1"> <!-- col-sm-3  progress button  -->
+                                <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
                                     <br>
                                     <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
                                         value="Reopen Resolution">
@@ -290,7 +290,7 @@
     {% endif %}
 </div> <!--// end row -->
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-12">
         <div class="tab">
             <button class="tablinks" onclick="summaryBin(event, 'request_services')" id="defaultOpen">Requested
@@ -303,11 +303,11 @@
         <div class="col-sm-12"> <!-- Resolution and Delivery Information from service -->
             <div id="request_services" class="tabcontent">
                 <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Requested Services</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <ul class="root">
                                 {% recursetree display_service.nodes %}
                                 <li>
@@ -325,11 +325,11 @@
                     </div> <!--// end panel -->
                 </div> <!--// end col-sm-6 -->
                 <div class="col-sm-12"> <!-- Notes in the Requested services -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Notes included in the service request</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {{display_service.service_notes}}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
@@ -337,17 +337,17 @@
             </div><!-- // end of tab request_services -->
             <div id="r_samples" class="tabcontent">
                 <div class="col-sm-8"> <!-- Samples Requested services -->
-                    <div class="panel panel-default">
+                    <div class="card ">
                         {% if display_service.service_manager %}
                         <form class="" action="/drylab/deleteSamplesInService" method="post">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="deleteSamplesInService">
                             <input type="hidden" name="service_id" value="{{display_service.service_id}}">
                             {% endif %}
-                            <div class="panel-heading">
+                            <div class="card-header">
                                 <h3>Sequencing Samples requested in service</h3>
                             </div>
-                            <div class="panel-body">
+                            <div class="card-body">
                                 {% if display_service.samples_sequenced|length > 0 %}
                                 <br>
                                 <h5>Number of Sequenced samples in Service: {{display_service.samples_sequenced|length}}
@@ -391,10 +391,10 @@
                                 {% endif %}
                             </div> <!--// end panel body -->
                             {% if display_service.only_recorded_samples %}
-                            <div class="panel-heading">
+                            <div class="card-header">
                                 <h3>External Samples requested in service</h3>
                             </div>
-                            <div class="panel-body">
+                            <div class="card-body">
                                 <h5>Number of only recorded samples in Service:
                                     {{display_service.only_recorded_samples|length}}</h5>
                                 <div class="scrolling-wrapper">
@@ -452,11 +452,11 @@
 
             <div id="pipelines" class="tabcontent">
                 <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Pipelines used in this service </h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% if display_service.pipelines_heading %}
                             {% for pipe, values in display_service.pipelines_data.items %}
                             <table class="table table-hover">
@@ -490,11 +490,11 @@
 
             <div id="resolutions" class="tabcontent">
                 <div class="col-sm-8"> <!-- Resolution information from service -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Resolution requested information</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% if display_service.resolutions %}
                             {% for resolution_number, resolution_information in display_service.resolutions %}
                             <table class="table table-hover">
@@ -539,11 +539,11 @@
             </div><!-- // end of tab resolutions -->
             <div id="deliveries" class="tabcontent">
                 <div class="col-sm-6"> <!-- Resolution information from service -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                    <div class="card ">
+                        <div class="card-header">
                             <h3>Delivery information</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="card-body">
                             {% if display_service.delivery %}
                             {% for delivery in display_service.delivery %}
                             {% for resolution_number, delivery_date, notes in delivery %}

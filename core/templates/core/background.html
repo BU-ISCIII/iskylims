@@ -3,17 +3,17 @@
 {% block content %}
     <div class="container">
 	<div class="row margin-b-4">
- 		<div class="col-sm-6 col-sm-offset-6">
+ 		<div class="col-sm-6 offset-6">
  			{% include 'registration/login_inline.html' %}
  		</div>
  	</div>
 	<h1><div class="color-heading">BU-ISCIII</div></h1>
     <h2>Background</h2>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8">
-            <div class="panel panel-default">
-                <div class="panel-heading">Background</div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header">Background</div>
+                <div class="card-body">
            Life-science laboratories make increasing use of Next Generation Sequencing (NGS)
             for studying bio- macromolecules and their interactions. <br>
             Array-based methods for measuring gene expression or protein-DNA interactions are being replaced
@@ -28,18 +28,18 @@
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8 -->
-        <div class="col-sm-2 col-sm-offset-1">
+        <div class="col-sm-2 offset-1">
             <img class="promo-block-img img-responsive" src="{% static "core/custom/img/nextseqReduced.png" %}" align="Avatar">
         </div> <!--// end col-sm-2 -->
     </div> <!--// end row -->
 
         <!--  Second paragraph -->
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">Benefits of using LIMS</div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header">Benefits of using LIMS</div>
+                <div class="card-body">
                 The first version of iSkyLIMS had been deployed in December 2017. Since then, more than 4000 samples sequenced on 170 flow cells have been re-runed and processed, to have historic information from the last years.<br>
                 The use of SpaceLIMS led to a drastic reduction on time and human errors that takes to carry out primary and secondary data analyses.<br>
                 Primary data analysis refers to de-multiplexing and conversion of BCL to FASTQ format.<br>
@@ -48,10 +48,10 @@
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6 -->
-        <div class="col-sm-4 col-sm-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">Results</div>
-                <div class="panel-body">
+        <div class="col-sm-4 offset-2">
+            <div class="card ">
+                <div class="card-header">Results</div>
+                <div class="card-body">
                 Results: iSkyLIMS runs automatically and limits direct human interaction mainly to administrative tasks. iSkyLIMS data-delivery procedures were standardized making it easier for biologists and analysts to navigate the data. Automation also helps saving time. The workflows are available through an API provided by the workflow management system. The parameters and input data are passed to the workflow engine that performs de-multiplexing, quality control, alignments, etc.
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->

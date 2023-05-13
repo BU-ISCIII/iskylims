@@ -12,11 +12,11 @@
 </style>
 
 {% if error_message %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 style="text-align:center">Not matches</h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3 style="text-align:center">Not matches</h3> </div>
+                <div class="card-body">
                     {% for values in error_message %}
                         <h4>{{values}}</h4>
                     {% endfor %}
@@ -30,11 +30,11 @@
 
 
 {% if display_run_list %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-7">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following list matches with yor search:</h3> </div>
-                <div class="panel-body scroll-wrapper-sm-7">
+            <div class="card ">
+                <div class="card-header"><h3>The following list matches with yor search:</h3> </div>
+                <div class="card-body scroll-wrapper-sm-7">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -59,11 +59,11 @@
 
 {% else %}
     <!-- FORM for searching RUN  Information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><strong>Searching RUN</strong></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><strong>Searching RUN</strong></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="searchrun" id="searchrun" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="runsearch"/>
@@ -115,10 +115,10 @@
 
         <!-- Insert the help panel -->
         <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading">Searching information of the RUN</div>
-                <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+            <div class="card ">
+                <div class="card-header">Searching information of the RUN</div>
+                <div class="card-body">
                     <p>Searching information can be done on Runs or on Projects: <BR>
                     <p>For extended help click on the button below.</p>
                     <center><button id="myBtn"> Help </button></center>

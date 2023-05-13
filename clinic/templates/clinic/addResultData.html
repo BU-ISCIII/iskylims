@@ -17,12 +17,12 @@
 
  {% if result_protocol %}
     {%if result_protocol.pending_protocol%}
-         <div class="row row-space-2 margin-b-4">
+         <div class="row mt-2 mb-4">
              <div class="col-sm-12">
-                 <div class="panel panel-default">
+                 <div class="card ">
 
-                     <div class="panel-heading"><h3>Assign Protocol to following Clinic Samples.</h3></div>
-                     <div class="panel-body">
+                     <div class="card-header"><h3>Assign Protocol to following Clinic Samples.</h3></div>
+                     <div class="card-body">
                          <br>
                          <form method="post" enctype="multipart/form-data" name="updateClinicSampleProtocol"  id="updateClinicSampleProtocol" class="form-horizontal well">
                              {% csrf_token %}
@@ -108,11 +108,11 @@
     {% endif %}
 
     {% if result_protocol.pending_results %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Update the following clinic samples with Result Parameters.</h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3>Update the following clinic samples with Result Parameters.</h3></div>
+                    <div class="card-body">
                         {% if result_protocol.pending_results.pending_id %}
                               <p>The selected clinic samples contain different protocol</p>
                               <p>After Clicking the Submit buttom the next clinic samples will be displayed</p>
@@ -192,11 +192,11 @@
 
 
 {% elif show_result_parameters %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Update the following clinic samples with Result Parameters.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Update the following clinic samples with Result Parameters.</h3></div>
+                <div class="card-body">
                     {% if show_result_parameters.pending_id %}
                           <p>The selected clinic samples contain different protocol</p>
                           <p>After Clicking the Submit buttom the next clinic samples will be displayed</p>
@@ -271,11 +271,11 @@
     </div> <!--  end of row -->
 
 {% elif added_result_protocol_parameters %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following clinic samples have been updated with quality Parameters.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following clinic samples have been updated with quality Parameters.</h3></div>
+                <div class="card-body">
                    <table class="table table-hover">
                        <thead>
                           <tr>
@@ -296,11 +296,11 @@
        </div> <!--  end of col-sm-12 -->
    </div> <!--  end of row -->
    {% elif show_result_parameters %}
-       <div class="row row-space-2 margin-b-4">
+       <div class="row mt-2 mb-4">
            <div class="col-sm-12">
-               <div class="panel panel-default">
-                   <div class="panel-heading"><h3>Update the following clinic samples with Result Parameters.</h3></div>
-                   <div class="panel-body">
+               <div class="card ">
+                   <div class="card-header"><h3>Update the following clinic samples with Result Parameters.</h3></div>
+                   <div class="card-body">
                        {% if show_result_parameters.pending_id %}
                              <p>The selected clinic samples contain different protocol</p>
                              <p>After Clicking the Submit buttom the next clinic smamples will be displayed</p>
@@ -375,11 +375,11 @@
        </div> <!--  end of row -->
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Clinic Samples.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Clinic Samples.</h3></div>
+                <div class="card-body">
                     <h4>There are no clinic samples that need to add result pararameter information </h4>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->

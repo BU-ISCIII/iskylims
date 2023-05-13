@@ -8,11 +8,11 @@ function goBack() {
 }
 </script>
 {% if changed_lib_kit %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-7">
-            <div class="panel panel-default">
-                <div class="panel-heading">Successful library change for project : <strong>{{ changed_lib_kit.project_name }}</strong>  </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header">Successful library change for project : <strong>{{ changed_lib_kit.project_name }}</strong>  </div>
+                <div class="card-body">
                     <div class="col-sm-6"> New Library Kit </div>
                     <div class="col-sm-6"> {{ changed_lib_kit.library_name }}  </div>
                     <div class="col-sm-6"> File to upload to BaseSpace </div>
@@ -28,10 +28,10 @@ function goBack() {
 <!-- FORM for Updating the library Kit in the Project -->
           
 <div class="row row-space-4 margin-b-4">
-    <div class="col-sm-7 col-sm-offset-1" >
-        <div class="panel panel-default">
-            <div class="panel-heading">Change the library kit for the Project <strong>{{ form_change_lib_kit.project_name }}</strong></div>
-            <div class="panel-body">
+    <div class="col-sm-7 offset-1" >
+        <div class="card ">
+            <div class="card-header">Change the library kit for the Project <strong>{{ form_change_lib_kit.project_name }}</strong></div>
+            <div class="card-body">
                 <div class="col-sm-10"> <!-- start project information   -->
                     <table class="table table-hover">
                       <tbody>

@@ -2,13 +2,13 @@
 {% load static %}
 {% block content %}
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-12">
         {% if sequencer_data %}
             {%  for platform , values in sequencer_data.items %}
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Sequecencer platform {{platform}}</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Sequecencer platform {{platform}}</h3></div>
+                <div class="card-body">
                     {%for platform, name, description, location, serial, state, start_date, end_date, n_lanes, id in values %}
                     <div class="col-sm-8">
                         <table class="table ">

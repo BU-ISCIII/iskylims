@@ -15,11 +15,11 @@
  </style>
 
 {% if error_message %}
-     <div class="row row-space-2 margin-b-4">
-         <div class="col-sm-7 col-sm-offset-3">
-             <div class="panel panel-danger">
-                 <div class="panel-heading"><h3 style="text-align:center">Unable to upload the batch file</h3> </div>
-                 <div class="panel-body">
+     <div class="row mt-2 mb-4">
+         <div class="col-sm-7 offset-3">
+             <div class="card border-danger mb-3">
+                 <div class="card-header"><h3 style="text-align:center">Unable to upload the batch file</h3> </div>
+                 <div class="card-body">
                      {% for values in error_message %}
                          <h4>{{values}}</h4>
                      {% endfor %}
@@ -29,11 +29,11 @@
      </div> <!--  end of row -->
 {% endif %}
 {% if successfuly_batch_load %}
-     <div class="row row-space-2 margin-b-4">
-         <div class="col-sm-7 col-sm-offset-3">
-             <div class="panel panel-default">
-                 <div class="panel-heading"><h3 style="text-align:center">Successful load the batch file</h3> </div>
-                 <div class="panel-body">
+     <div class="row mt-2 mb-4">
+         <div class="col-sm-7 offset-3">
+             <div class="card ">
+                 <div class="card-header"><h3 style="text-align:center">Successful load the batch file</h3> </div>
+                 <div class="card-body">
                     <h4>Your batch file was successfuly stored in iSkyLIMS database</h4>
                  </div> <!--  end of panel body -->
              </div> <!--  end of panel  -->
@@ -45,10 +45,10 @@
 
     {% if sample_recorded.defined_samples %}
         <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-7 col-sm-offset-1" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>The following Samples have been sucessfuly recorded</h3></div>
-                    <div class="panel-body">
+            <div class="col-sm-7 offset-1" >
+                <div class="card ">
+                    <div class="card-header"><h3>The following Samples have been sucessfuly recorded</h3></div>
+                    <div class="card-body">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -74,10 +74,10 @@
     {% endif %}
     {% if sample_recorded.display_samples %}
         <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-5 col-sm-offset-3" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>The following Samples have been sucessfuly recorded</h3></div>
-                    <div class="panel-body">
+            <div class="col-sm-5 offset-3" >
+                <div class="card ">
+                    <div class="card-header"><h3>The following Samples have been sucessfuly recorded</h3></div>
+                    <div class="card-body">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -98,13 +98,13 @@
         </div> <!--// end row -->
     {% endif %}
     {% if sample_recorded.invalid_samples %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-11 col-sm-offset-1">
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-11 offset-1">
                 <div class="panel panel-warning ">
-                    <div class="panel-heading"><h3>You have already recorded the following Samples Names.</h3></div>
-                    <div class="panel-body">
+                    <div class="card-header"><h3>You have already recorded the following Samples Names.</h3></div>
+                    <div class="card-body">
                         {% if sample_recorded.reprocess_result %}
-                            <div class="col-sm-11 col-sm-offset-1">
+                            <div class="col-sm-11 offset-1">
                                 {% if  sample_recorded.reprocess_result == 'True' %}
                                     <p class="Text-info">Sucessful handle your request. Continue with the next one.</p>
                                 {% else %}
@@ -114,7 +114,7 @@
                             </div>
                         {% endif%}
 
-                        <div class="col-sm-11 col-sm-offset-1">
+                        <div class="col-sm-11 offset-1">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
@@ -252,9 +252,9 @@
     <div class="row row-space-4 margin-b-4">
         <div  class="col-sm-12" >
 
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>The following samples were not completed filled. </h3></div>
-                <div class="panel-body" >
+            <div class="card " >
+                <div class="card-header"><h3>The following samples were not completed filled. </h3></div>
+                <div class="card-body" >
                     <br>
                     <p>Write down the missing information and then click on the Submit bottom</p>
                     <br><br>
@@ -329,10 +329,10 @@
         <div class="row row-space-4 margin-b-4">
             <div  class="col-sm-12" >
 
-                <div class="panel panel-default" >
-                    <div class="panel-heading"><h3>The following samples require additional information as requested by project.</h3></div>
+                <div class="card " >
+                    <div class="card-header"><h3>The following samples require additional information as requested by project.</h3></div>
 
-                        <div class="panel-body" >
+                        <div class="card-body" >
 
                             <br>
                             <br><br>
@@ -412,10 +412,10 @@
 
 {% elif all_sucessful_reprocess %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-7 col-sm-offset-2" >
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>All samples have been set to reprocess </h3></div>
-                <div class="panel-body" >
+        <div  class="col-sm-7 offset-2" >
+            <div class="card " >
+                <div class="card-header"><h3>All samples have been set to reprocess </h3></div>
+                <div class="card-body" >
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
 
@@ -426,10 +426,10 @@
 
     {% if sample_information.pre_defined_heading %}
         <div class="row row-space-4 margin-b-4">
-            <div  class="col-sm-7 col-sm-offset-2" >
-                <div class="panel panel-default" >
-                    <div class="panel-heading"><h3>These samples require additional information </h3></div>
-                    <div class="panel-body" >
+            <div  class="col-sm-7 offset-2" >
+                <div class="card " >
+                    <div class="card-header"><h3>These samples require additional information </h3></div>
+                    <div class="card-body" >
                         <form method="post" action="/wetlab/recordSamples" enctype="multipart/form-data" name="select_samples_pre_defined"  id="select_samples_pre_defined" class="form-horizontal well">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="select_samples_pre_defined"/>
@@ -473,9 +473,9 @@
                 <div id="newSamples" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
                         <div class="col-sm-12" >
-                            <div class="panel panel-default" >
-                                <div class="panel-heading"><h3>Record new Samples</h3></div>
-                                <div class="panel-body" >
+                            <div class="card " >
+                                <div class="card-header"><h3>Record new Samples</h3></div>
+                                <div class="card-body" >
 
                                     <br><br><br>
                                     <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" class="form-horizontal well" style="min-height: 500px;">
@@ -549,17 +549,17 @@
 
                 <div id="batchSamples" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
-                        <div class="col-sm-10 col-sm-offset-1" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3 style="text-align:center">Load New Samples in batch</h3></div>
-                                <div class="panel-body">
+                        <div class="col-sm-10 offset-1" >
+                            <div class="card ">
+                                <div class="card-header"><h3 style="text-align:center">Load New Samples in batch</h3></div>
+                                <div class="card-body">
                                     <form method="post" enctype="multipart/form-data" name="defineBatchSamples"  id="defineBatchSamples" class="form-horizontal well" style="min-height: 700px;">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="defineBatchSamples"/>
                                         <div  class="col-sm-12" >
-                                            <div class="panel panel-default" >
-                                                <div class="panel-heading"><h3  style="text-align:center">Upload the excel file to define a batch of samples. </h3></div>
-                                                <div class="panel-body" >
+                                            <div class="card " >
+                                                <div class="card-header"><h3  style="text-align:center">Upload the excel file to define a batch of samples. </h3></div>
+                                                <div class="card-body" >
                                                     <div class="form-group required">
                                                         <label class="col-sm-5  control-label" for="samplesExcel" ><td> Upload Samples file</td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel" ></div>

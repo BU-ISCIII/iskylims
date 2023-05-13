@@ -13,9 +13,9 @@
 {% if additional_kits_data_saved %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Sucessful store of Additional kits for Protocol {{additional_kits_data_saved.protocol_name}} </h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Sucessful store of Additional kits for Protocol {{additional_kits_data_saved.protocol_name}} </h3></div>
+                <div class="card-body">
 
                     <div class="scrolling-wrapper">
                         <table class="table table-hover">
@@ -57,9 +57,9 @@
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
 
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Modify Additional Kits used for Protocol {{additional_kits_data.protocol_name}}</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Modify Additional Kits used for Protocol {{additional_kits_data.protocol_name}}</h3></div>
+                <div class="card-body">
                      <form method="post" enctype="multipart/form-data" name="modifyAdditionalKits"  id="modifyAdditionalKits" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="modifyAdditionalKits"/>

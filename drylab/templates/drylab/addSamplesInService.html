@@ -14,11 +14,11 @@
     }
 </style>
 {% if error_message %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 style="text-align:center"></h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3 style="text-align:center"></h3> </div>
+                <div class="card-body">
                     {% for values in error_message %}
                         <h4>{{values}}</h4>
                     {% endfor %}
@@ -28,11 +28,11 @@
     </div> <!--  end of row -->
 {% endif %}
 {% if samples_added %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">More samples are added to the service {{samples_added.service_name}}</h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">More samples are added to the service {{samples_added.service_name}}</h3> </div>
+                <div class="card-body">
                     {% if samples_added.samples %}
                         <h5> The new samples included in the services are:</h5>
                         <br>
@@ -53,11 +53,11 @@
     </div> <!--  end of row -->
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Request Service form for Adding more samples to an existing Service.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Request Service form for Adding more samples to an existing Service.</h3></div>
+                <div class="card-body">
                     <div class="tab">
                         <button type="button" class="tablinks" onclick="summaryBin(event, 'sequencingSamples')"  id="defaultOpen">Samples in iSkyLIMS with Sequencing data</button>
                         <button type="button" class="tablinks" onclick="summaryBin(event, 'onlyRecordedSamples')">Samples with only recorded data</button>
@@ -69,9 +69,9 @@
                             <input type="hidden" name="service_id" value="{{service_data_information.service_id}}"/>
                             <div id="sequencingSamples" class="tabcontent">
 
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">Internal Samples.</h3></div>
-                                    <div class="panel-body">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">Internal Samples.</h3></div>
+                                    <div class="card-body">
                                         {% if service_data_information.samples_heading %}
 
                                             <br>
@@ -122,9 +122,9 @@
 
                             <div id="onlyRecordedSamples" class="tabcontent">
                                 <div class="col-sm-12">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h3 style="text-align:center">Only recorded Samples </h3></div>
-                                        <div class="panel-body">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">Only recorded Samples </h3></div>
+                                        <div class="card-body">
                                             {% if service_data_information.sample_only_recorded_heading %}
                                                 <h5 style="text-align:center">Select the samples to be included in the service.</h5>
                                                 <p  style="text-align:center" class="text-primary">Contact with Bioinformatic unit to provide the sample files</p>
