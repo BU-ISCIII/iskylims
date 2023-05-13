@@ -2,11 +2,11 @@
 {% load static %}
 {% block content %}
 {% if NoSamples %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The are not samples.</h3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>The are not samples.</h3></div>
+                <div class="card-body">
                     <p><strong>All samples in iSkyLIMS have already the informmation </strong>requested during the Library Preparation process</p>
                     <p>If you are <strong>missing any Sample </strong> that should be listed, you can search it through the search menu</p>
                     <p></p>
@@ -17,10 +17,10 @@
     </div> <!--  end of row -->
 {% elif DisplayList %}
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-1" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following Samples can be updated with the libary preparation</h3></div>
-                <div class="panel-body">
+        <div class="col-sm-7 offset-1" >
+            <div class="card ">
+                <div class="card-header"><h3>The following Samples can be updated with the libary preparation</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -47,10 +47,10 @@
     </div> <!--// end row -->
 {% else %}
 <div class="row row-space-4 margin-b-4">
-    <div class="col-sm-7 col-sm-offset-1" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>The following Samples can be updated with the libary preparation</h3></div>
-            <div class="panel-body">
+    <div class="col-sm-7 offset-1" >
+        <div class="card ">
+            <div class="card-header"><h3>The following Samples can be updated with the libary preparation</h3></div>
+            <div class="card-body">
                 <p> ERRORRRRR</p>
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->

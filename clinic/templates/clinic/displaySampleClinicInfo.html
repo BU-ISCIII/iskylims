@@ -6,10 +6,10 @@
 
 
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-10 col-sm-offset-1" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Main Information for Sample {{display_sample_info.s_name}}</h3></div>
-                <div class="panel-body">
+        <div class="col-sm-10 offset-1" >
+            <div class="card ">
+                <div class="card-header"><h3>Main Information for Sample {{display_sample_info.s_name}}</h3></div>
+                <div class="card-body">
                     <table class="table">
                         <thead>
                            <tr>
@@ -46,9 +46,9 @@
 
                     <div class="col-sm-12 ">
                     <div class="col-sm-6 " >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
+                            <div class="card-body">
                                 <br>
                                 <table class="table table-hover">
                                     <thead>
@@ -70,9 +70,9 @@
                         </div> <!--// end panel -->
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6 " >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
+                            <div class="card-body">
                                 <br>
                                 <table class="table table-hover">
                                     <thead>
@@ -102,17 +102,17 @@
                 <div class="col-sm-11 ">
                     <h3>Information collection during DNA/RNA extraction</h3>
                     <div class="col-sm-12 " >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Information for Sample {{display_sample_info.s_name}}</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Information for Sample {{display_sample_info.s_name}}</h3></div>
+                            <div class="card-body">
                                 <br>
                                 {% if display_sample_info.not_massive.parameter_heading_values %}
-                                    <div class="row row-space-2 margin-b-4">
+                                    <div class="row mt-2 mb-4">
                                         <div class="col-sm-11">
-                                            <div class="panel panel-default">
+                                            <div class="card ">
                                                 <h3>DNA/RNA extraction using for not massive methods on sample {{ display_sample_info.not_massive.sample_definition.0 }} </h3>
-                                                <div class="panel-heading"><h4>Molecule Information</h4></div>
-                                                <div class="panel-body">
+                                                <div class="card-header"><h4>Molecule Information</h4></div>
+                                                <div class="card-body">
                                                     <table class="table table-hover">
                                                         <thead>
                                                             <tr>
@@ -138,12 +138,12 @@
                                 {% endif %}
 
                                 {% if display_sample_info.not_massive.parameter_heading_values %}
-                                    <div class="row row-space-2 margin-b-4">
+                                    <div class="row mt-2 mb-4">
                                         <div class="col-sm-11">
-                                            <div class="panel panel-default">
+                                            <div class="card ">
                                                 <h3>Parameter Information for Molecules using for the sample {{ display_sample_info.not_massive.sample_definition.0 }} </h3>
-                                                <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
-                                                <div class="panel-body">
+                                                <div class="card-header"><h4>Quality Parameter Molecule Information</h4></div>
+                                                <div class="card-body">
                                                     {% for heading, values in display_sample_info.not_massive.parameter_heading_values %}
                                                         <table class="table">
                                                             <thead>
@@ -170,12 +170,12 @@
                                 {% endif %}
                                 <br><br><br>
                                 {% if display_sample_info.massive.parameter_heading_values %}
-                                    <div class="row row-space-2 margin-b-4">
+                                    <div class="row mt-2 mb-4">
                                         <div class="col-sm-11">
-                                            <div class="panel panel-default">
+                                            <div class="card ">
                                                 <h3>DNA/RNA extraction using for massive methods on sample {{ display_sample_info.massive.sample_definition.0 }} </h3>
-                                                <div class="panel-heading"><h4>Molecule Information</h4></div>
-                                                <div class="panel-body">
+                                                <div class="card-header"><h4>Molecule Information</h4></div>
+                                                <div class="card-body">
                                                     <table class="table table-hover">
                                                         <thead>
                                                             <tr>
@@ -201,12 +201,12 @@
                                 {% endif %}
 
                                 {% if display_sample_info.massive.parameter_heading_values %}
-                                    <div class="row row-space-2 margin-b-4">
+                                    <div class="row mt-2 mb-4">
                                         <div class="col-sm-11">
-                                            <div class="panel panel-default">
+                                            <div class="card ">
                                                 <h3>Parameter Information for Molecules using for the sample {{ display_sample_info.massive.sample_definition.0 }} </h3>
-                                                <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
-                                                <div class="panel-body">
+                                                <div class="card-header"><h4>Quality Parameter Molecule Information</h4></div>
+                                                <div class="card-body">
                                                     {% for heading, values in display_sample_info.massive.parameter_heading_values %}
                                                         <table class="table">
                                                             <thead>
@@ -243,10 +243,10 @@
 {% else%}
     <br><br>
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-10 col-sm-offset-1" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Clinic Samples</h3></div>
-                <div class="panel-body">
+        <div class="col-sm-10 offset-1" >
+            <div class="card ">
+                <div class="card-header"><h3>Clinic Samples</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>

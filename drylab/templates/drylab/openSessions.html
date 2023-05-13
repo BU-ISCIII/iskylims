@@ -3,11 +3,11 @@
 {% block content %}
 {% csrf_token %}
     <h1><div class="color-heading">User connected to iSkyLIMS</div></h1>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8">  <!-- general information from service -->
-            <div class="panel panel-default">
-                  <div class="panel-heading">There are {{ user_connected.number_of_users}} users connected to iSkyLIMs </div>
-                  <div class="panel-body">
+            <div class="card ">
+                  <div class="card-header">There are {{ user_connected.number_of_users}} users connected to iSkyLIMs </div>
+                  <div class="card-body">
                       <table class="table table-hover">
                           <thead>
                             <tr>

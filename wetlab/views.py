@@ -49,12 +49,6 @@ def index(request):
 
 
 @login_required
-def register_wetlab(request):
-    #
-    return render(request, "wetlab/index.html")
-
-
-@login_required
 def configuration_email(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
@@ -91,32 +85,39 @@ def configuration_email(request):
 @login_required
 def configuration_samba(request):
     if request.user.username != "admin":
-        return redirect("")
+        return redirect("/wetlab")
     samba_conf_data = get_samba_connection_data()
     if request.method == "POST" and (request.POST["action"] == "sambaconfiguration"):
         # reload configuration samba settings
         samba_user_field = {}
         for field in SAMBA_CONFIGURATION_FIELDS:
-            samba_user_field[field] = request.POST[field]
+            # set values for switch fields
+            try:
+                if request.POST[field] == "on":
+                    samba_user_field[field] = "True"
+                else:
+                    samba_user_field[field] = request.POST[field]
+            except KeyError:
+                samba_user_field[field] = "False"
         save_samba_connection_data(samba_user_field)
         try:
             open_samba_connection()
             return render(
                 request,
-                "wetlab/configurationSamba.html",
+                "wetlab/configuration_samba.html",
                 {"succesful_settings": True},
             )
         except Exception:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(
                 request,
-                "wetlab/configurationSamba.html",
+                "wetlab/configuration_samba.html",
                 {"samba_conf_data": samba_user_field, "error_message": error_message},
             )
     else:
         return render(
             request,
-            "wetlab/configurationSamba.html",
+            "wetlab/configuration_samba.html",
             {"samba_conf_data": samba_conf_data},
         )
 

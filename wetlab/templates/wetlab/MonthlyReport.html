@@ -10,11 +10,11 @@
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
 <!--  Start Run created during the month and the year selected  -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-7">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Runs performed on the month  {{ display_monthly_report.month_year }}.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Runs performed on the month  {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="card-body"> 
                 {% if display_monthly_report.completed_run %}
                     <div class="col-sm-5">
                         <table class="table table-hover" >
@@ -32,7 +32,7 @@
                     </div> <!--  end of col-sm-5 -->
                 {% endif %}
                 {% if display_monthly_report.uncompleted_run %}
-                    <div class="col-sm-5 col-sm-offset-1">
+                    <div class="col-sm-5 offset-1">
                         <table class="table table-hover">
                             <thead>
                                 <tr><th>Not Completed Runs </th></tr>
@@ -52,9 +52,9 @@
         </div> <!--  end of col-sm-6 -->
         {% if display_monthly_report.graphic_completed_run %}
         <div class="col-sm-5">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Relation of Completed and Unfinished Runs.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Relation of Completed and Unfinished Runs.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="chart-1"> </div>
                     <!-- dumping JavaScript code here -->
@@ -67,10 +67,10 @@
     </div> <!--  end of row -->
 <!--  End Run created during the year   -->
 <!--  Start Projects created by investigator during the year   -->
-    <div class="row row-space-2 margin-b-4">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Projects performed by investigator during  {{ display_monthly_report.month_year }}.</h3></div>
-            <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="card ">
+            <div class="card-header"><h3>Projects performed by investigator during  {{ display_monthly_report.month_year }}.</h3></div>
+            <div class="card-body">
                 <div class="col-sm-12">
                     <div class="col-sm-4">
                         <table class="table table-hover" >
@@ -133,7 +133,7 @@
                     <!-- dumping JavaScript code here -->
                     {{ display_monthly_report.p_user_monthly_graphic |safe }}
                     </div>   <!--  end of col-sm-5 --> 
-                    <div class="col-sm-5 col-sm-offset-1">
+                    <div class="col-sm-5 offset-1">
                     <!-- Start graphics for projects created by investigator during the month   -->
                         <div id="p_user_chart-2"> </div>
                     <!-- dumping JavaScript code here -->
@@ -148,11 +148,11 @@
 <!--  End Projects created by investigator during the year   -->
 
     <!--  Q30 year report -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of quality >30 for the  {{ display_monthly_report.month_year }}.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Percentage of quality >30 for the  {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="card-body"> 
                 {% if display_monthly_report.q30_data %}
                         <table class="table table-hover">
                             <thead>
@@ -175,10 +175,10 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         {% if display_monthly_report.q30_graphic %}
-        <div class="col-sm-7 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Relation of Q 30 for the  {{ display_monthly_report.month_year }}.</h3></div>
-                <div class="panel-body"> 
+        <div class="col-sm-7 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Relation of Q 30 for the  {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="q30_chart-2"> </div>
                     <!-- dumping JavaScript code here -->
@@ -191,11 +191,11 @@
     </div> <!--  end of row -->
 
     <!--  Aligned year report -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_monthly_report.month_year }}.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Percentage of aligned for the year {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="card-body"> 
                 {% if display_monthly_report.aligned_data %}
                         <table class="table table-hover">
                             <thead>
@@ -218,10 +218,10 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         {% if display_monthly_report.aligned_graphic %}
-        <div class="col-sm-7 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Aligned for the year {{ display_monthly_report.year }}.</h3></div>
-                <div class="panel-body"> 
+        <div class="col-sm-7 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Aligned for the year {{ display_monthly_report.year }}.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="aligned_chart-3"> </div>
                     <!-- dumping JavaScript code here -->
@@ -234,11 +234,11 @@
     </div> <!--  end of row -->
                 
     <!--  Error Rate year report -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error rate for the year {{ display_monthly_report.month_year }}.</h3></div>
-                <div class="panel-body"> 
+            <div class="card ">
+                <div class="card-header"><h3>Error rate for the year {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="card-body"> 
                 {% if display_monthly_report.error_rate_data %}
                         <table class="table table-hover">
                             <thead>
@@ -261,10 +261,10 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         {% if display_monthly_report.error_rate_graphic %}
-        <div class="col-sm-7 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error Rate for the year {{ display_monthly_report.month_year }}.</h3></div>
-                <div class="panel-body"> 
+        <div class="col-sm-7 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Error Rate for the year {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="card-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="error_rate_chart-4"> </div>
                     <!-- dumping JavaScript code here -->
@@ -281,11 +281,11 @@
 {% else %}
     <!-- FORM for selecting Monthly Report Information -->
   
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><strong>Form for Monthly Report</strong></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><strong>Form for Monthly Report</strong></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="searchmonthlyreport" id="searchmonthlyreport" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchmonthlyreport"/>
@@ -306,10 +306,10 @@
         
         <!-- Insert the help panel -->
         <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading">Monthly Report information</div>
-             <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header">Monthly Report information</div>
+             <div class="card-body">
              <p>Monthly reports generate graphics and data for all runs that have been started on the selected month of the year. <BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>

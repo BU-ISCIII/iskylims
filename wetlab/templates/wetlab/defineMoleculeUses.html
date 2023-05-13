@@ -3,11 +3,11 @@
 {% block content %}
 {% csrf_token %}
 {% if molecule_use_data.error_message %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-2"" >
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-2"" >
             <div class="panel panel-warning">
-                <div class="panel-heading"><h3>Unable to record your Sample Type</h3> </div>
-                <div class="panel-body">
+                <div class="card-header"><h3>Unable to record your Sample Type</h3> </div>
+                <div class="card-body">
                     <p>
                         {% for value in molecule_use_data.error_message %}
                             {{ value }} <br>
@@ -19,13 +19,13 @@
     </div> <!--// end row -->
 {% endif %}
 <BR>
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-12" >
         {% if molecule_use_data.new_defined_molecule_use %}
             <div class="col-sm-6" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>New molecule use added</h3> </div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3>New molecule use added</h3> </div>
+                    <div class="card-body">
                         <p>New Molecule use :<br> {{ molecule_use_data.new_defined_molecule_use }} is recorded</p>
                         <br><br><br>
 
@@ -34,9 +34,9 @@
             </div> <!--// end col-sm-6 -->
         {% endif %}
         <div class="col-sm-6" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Form to add a new Molecule use</h3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Form to add a new Molecule use</h3> </div>
+                <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="record_molecule_use" id="record_molecule_use" class="form-horizontal">
                         {% csrf_token %}
                         <div class="form-group required">
@@ -61,12 +61,12 @@
     </div> <!--// end of sm-12 -->
 </div> <!--// end row -->
 {% if molecule_use_data.defined_molecule_use %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8" >
             <BR> <BR> <BR>
-            <div class="panel panel-default">
-              <div class="panel-heading"><h3>Molecule uses already defined</h3></div>
-              <div class="panel-body">
+            <div class="card ">
+              <div class="card-header"><h3>Molecule uses already defined</h3></div>
+              <div class="card-body">
                     <table class="table table-hover">
                        <thead>
                           <tr>

@@ -25,7 +25,7 @@ class ContactForm(forms.Form):
         self.helper.layout = layout.Layout(
             layout.Div(
                 layout.HTML(
-                    """<div class="panel-heading">
+                    """<div class="card-header">
                         <h3 class="panel-title">Write your email and your request </h3>
                         </div>"""
                 ),
@@ -51,8 +51,8 @@ class ContactForm(forms.Form):
                         ),
                         css_class="col-md-10",
                     ),
-                    css_class="row panel-body",
+                    css_class="row card-body",
                 ),
-                css_class="panel panel-default",
+                css_class="card ",
             ),
         )

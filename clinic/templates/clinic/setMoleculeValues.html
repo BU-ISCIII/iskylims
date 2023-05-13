@@ -14,11 +14,11 @@
     }
  </style>
 {% if molecule_protocol %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Assign the Molecule Protocol to following samples.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Assign the Molecule Protocol to following samples.</h3></div>
+                <div class="card-body">
                     <br>
                     <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
                         {% csrf_token %}
@@ -103,11 +103,11 @@
     </div> <!--  end of row -->
 {% elif molecule_recorded %}
     {% if molecule_recorded.heading %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following molecules are now assigned to Protocol.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following molecules are now assigned to Protocol.</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                            <tr>
@@ -140,11 +140,11 @@
     </div> <!--  end of row -->
     {% endif %}
     {% if molecule_recorded.incomplete_molecules_ids %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-12">
                 <div class="panel panel-warning">
-                    <div class="panel-heading"><h3>Information missing for these samples.</h3></div>
-                    <div class="panel-body">
+                    <div class="card-header"><h3>Information missing for these samples.</h3></div>
+                    <div class="card-body">
                         <br>
                         <p>Please add the missing information and click on the submit bottom</p>
                         <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
@@ -232,11 +232,11 @@
     {% endif %}
 {% elif show_molecule_parameters %}
     {% if show_molecule_parameters.lot_kit == '' %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <div class="col-sm-8">
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Warning. There is not User Lot Commercial kit available for this protocol.</h3></div>
-                    <div class="panel-body">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3>Warning. There is not User Lot Commercial kit available for this protocol.</h3></div>
+                    <div class="card-body">
                         <p>Applying information to this page will make that none of these samples will have linked to the User Commercial Kit</p>
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
@@ -244,12 +244,12 @@
         </div> <!--  end of row -->
         <br><br>
     {% endif %}
-            <div class="row row-space-2 margin-b-4">
+            <div class="row mt-2 mb-4">
                 <div class="col-sm-12">
-                <div class="panel panel-default">
-                <div class="panel-heading"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
+                <div class="card ">
+                <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     {% if show_molecule_parameters.pending_id %}
                           <p>The selected molecules contain different protocol</p>
                           <p>After Clicking the Submit buttom the next molecules will be displayed</p>
@@ -324,11 +324,11 @@
     </div> <!--  end of row -->
 
 {% elif added_molecule_protocol_parameters %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following molecules have been updated with Extraction Parameters.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following molecules have been updated with Extraction Parameters.</h3></div>
+                <div class="card-body">
                    <table class="table table-hover">
                        <thead>
                           <tr>
@@ -349,11 +349,11 @@
        </div> <!--  end of col-sm-12 -->
    </div> <!--  end of row -->
    {% if added_molecule_protocol_parameters.show_molecule_parameters %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
            <div class="col-sm-12">
-               <div class="panel panel-default">
-                   <div class="panel-heading"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
-                   <div class="panel-body">
+               <div class="card ">
+                   <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
+                   <div class="card-body">
                        {% if show_molecule_parameters.pending_id %}
                              <p>The selected molecules contain different protocol</p>
                              <p>After Clicking the Submit buttom the next molecules will be displayed</p>
@@ -430,9 +430,9 @@
 {% else %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
-                    <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                    <div class="card-body">
 
                         <form method="post" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
                         {% csrf_token %}

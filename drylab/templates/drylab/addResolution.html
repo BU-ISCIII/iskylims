@@ -5,10 +5,10 @@
 
 {% if created_resolution %}
 	<div class="row row-space-4 margin-b-4">
-		<div class="col-sm-10 col-sm-offset-1" >
-			<div class="panel panel-default">
-				<div class="panel-heading"><h3 style="text-align:center">Resolution has been created</h3></div>
-                <div class="panel-body">
+		<div class="col-sm-10 offset-1" >
+			<div class="card ">
+				<div class="card-header"><h3 style="text-align:center">Resolution has been created</h3></div>
+                <div class="card-body">
 					<h5>Your resolution proposal has been successfully recorded with Resolution Number {{created_resolution.resolution_number}}</h5>
 					<br><br>
 					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
@@ -21,9 +21,9 @@
 	{%include 'core/jexcel_functionality.html' %}
 		<div class="row row-space-4 margin-b-1">
 	        <div class="col-sm-12 ">
-				<div class="panel panel-default">
-					<div class="panel-heading"><h3 style="text-align:center">Add Resolution Form for Service {{resolution_form_data.service_number}}</h3></div>
-		            <div class="panel-body">
+				<div class="card ">
+					<div class="card-header"><h3 style="text-align:center">Add Resolution Form for Service {{resolution_form_data.service_number}}</h3></div>
+		            <div class="card-body">
 						<form method="post" enctype="multipart/form-data" name="addResolutionService" id="addResolutionService" class="form-horizontal well">
 		                    {% csrf_token %}
 							{% if resolution_form_data.selected_avail_services_data %}
@@ -71,7 +71,7 @@
 								<br>
 			                    <br>
 								{% if resolution_form_data.pipelines_data %}
-									<div class="col-sm-9 col-sm-offset-2">
+									<div class="col-sm-9 offset-2">
 
 
 									<div id="spreadsheet"></div>

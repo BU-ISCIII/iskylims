@@ -3,13 +3,13 @@ clinic{% extends 'clinic/base.html' %}
 {% block content %}
 {% csrf_token %}
 <BR>
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-12" >
         {% if new_project %}
             <div class="col-sm-6" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Project has been succesfuly created</h3> </div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3>Project has been succesfuly created</h3> </div>
+                    <div class="card-body">
                         <p>New protocol <strong>{{ new_project.project_name }}</strong> has been recorded</p>
                         <p>Click on the "add Project Fields" button  to define the custom information used in the project</p>
                         <p></p>
@@ -19,9 +19,9 @@ clinic{% extends 'clinic/base.html' %}
             </div> <!--// end col-sm-6 -->
         {% endif %}
         <div class="col-sm-6" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Form to add a new Project</h3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Form to add a new Project</h3> </div>
+                <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addNewProject" id="addNewProject" class="form-horizontal">
                         {% csrf_token %}
                         <div class="form-group required">
@@ -54,12 +54,12 @@ clinic{% extends 'clinic/base.html' %}
         </div> <!--// end of sm-6 -->
     </div> <!--// end of sm-12 -->
 </div> <!--// end row -->
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-10" >
         <BR> <BR> <BR>
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Projects already defined </h3></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h3>Projects already defined </h3></div>
+          <div class="card-body">
                 {% if defined_projects %}
                     <table class="table table-hover">
                        <thead>

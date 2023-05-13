@@ -13,12 +13,12 @@
 </style>
 
 {% if sample_list  or run_sample_list %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3> These samples have matched your query :</h3></div>
-                <div class="panel-body scroll-wrapper-sm-6">
+            <div class="card ">
+                <div class="card-header"><h3> These samples have matched your query :</h3></div>
+                <div class="card-body scroll-wrapper-sm-6">
                     {% if sample_list %}
                         <table class="table table-hover">
                             <thead>
@@ -52,9 +52,9 @@
         </div> <!--  end of col-sm-6 -->
 
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h4> Run samples that have matched your query :</h4></div>
-                <div class="panel-body scroll-wrapper-sm-6">
+            <div class="card ">
+                <div class="card-header"><h4> Run samples that have matched your query :</h4></div>
+                <div class="card-body scroll-wrapper-sm-6">
                     {% if run_sample_list %}
                         <table class="table table-hover" >
                             <thead>
@@ -88,12 +88,12 @@
 {% else %}
 {% load user_groups %}
     {% if no_samples %}
-        <div class="row row-space-2 margin-b-4">
+        <div class="row mt-2 mb-4">
             <BR>
-            <div class="col-sm-6  col-sm-offset-3"">
+            <div class="col-sm-6  offset-3"">
                 <div class="panel panel-warning">
-                    <div class="panel-heading"><h3> Result of your request</h3></div>
-                    <div class="panel-body">
+                    <div class="card-header"><h3> Result of your request</h3></div>
+                    <div class="card-body">
                         {% for value in no_samples %}
                             <p>{{value}}</p>
                         {% endfor %}
@@ -106,11 +106,11 @@
 <!-- FORM for searching  Library Sample Information -->
     <div class="row row-space-4 margin-b-4">
 
-      <div class="col-sm-7 col-sm-offset-1" >
+      <div class="col-sm-7 offset-1" >
 
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Form for Searching Samples </h3></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h3>Form for Searching Samples </h3></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="searchsample" id="searchsample" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchsample"/>

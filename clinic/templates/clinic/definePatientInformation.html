@@ -15,10 +15,10 @@
 {% if patient_information %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Set the Patient Information for the samples below</h3></div>
+            <div class="card ">
+                <div class="card-header"><h3>Set the Patient Information for the samples below</h3></div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <br><br><br>
 
                     <form method="post" enctype="multipart/form-data" name="storePatientInfo"  id="storePatientInfo" class="form-horizontal well" style="min-height: 500px;">
@@ -100,10 +100,10 @@
     {% if updated_information.not_match %}
         <div class="row row-space-4 margin-b-4">
             <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>The following samples have an invalid history number.</h3></div>
+                <div class="card ">
+                    <div class="card-header"><h3>The following samples have an invalid history number.</h3></div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                         <br>
                         <table class="table table-hover">
                             <thead>
@@ -131,10 +131,10 @@
     {% if updated_information.incomplete_clinic_samples_ids %}
         <div class="row row-space-4 margin-b-4">
             <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>The following samples requires to complete the information.</h3></div>
+                <div class="card ">
+                    <div class="card-header"><h3>The following samples requires to complete the information.</h3></div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
 
                         <form method="post" enctype="multipart/form-data" name="storePatientInfo"  id="storePatientInfo" class="form-horizontal well" style="min-height: 500px;">
                             {% csrf_token %}
@@ -211,11 +211,11 @@
     {% endif %}
     {% if updated_information.stored_samples_heading %}
         <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-8 col-sm-offset-2" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>The following samples have been successfully recorded.</h3></div>
+            <div class="col-sm-8 offset-2" >
+                <div class="card ">
+                    <div class="card-header"><h3>The following samples have been successfully recorded.</h3></div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -242,12 +242,12 @@
 {% else %}
     <br><br>
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-2"" >
+        <div class="col-sm-7 offset-2"" >
             <div class="panel panel-info">
-                <div class="panel-heading"><h3>There is not Samples for adding Patient Information</h3></div>
+                <div class="card-header"><h3>There is not Samples for adding Patient Information</h3></div>
                     <br><br>
                     <p align="center">All recorded samples already have the Information related to the Patient</p>
-                <div class="panel-body">
+                <div class="card-body">
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->

@@ -6,9 +6,9 @@
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
         <div class="col-sm-6" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Main Information for {{display_patient_info.patient_name.0}} {{display_patient_info.patient_name.1}}</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Main Information for {{display_patient_info.patient_name.0}} {{display_patient_info.patient_name.1}}</h3></div>
+                <div class="card-body">
 
                     <br>
                     <table class="table table-hover">
@@ -32,9 +32,9 @@
             </div> <!--// end panel -->
 
             <br>
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Project Information</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Project Information</h3></div>
+                <div class="card-body">
                     {% if display_patient_info.project_information %}
                         {% for key, values in display_patient_info.project_information.items %}
 
@@ -96,7 +96,7 @@
 
                              </div>  <!-- end from-group   -->
 
-                            <div class="col-sm-10 col-sm-offset-1">
+                            <div class="col-sm-10 offset-1">
                                 <input class="btn pull-right btn-primary" type="submit" value="Assign new Project">
                             </div>
                         </form>
@@ -106,9 +106,9 @@
 
         </div> <!--// end col-sm-6  -->
         <div class="col-sm-6" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Additional Information</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Additional Information</h3></div>
+                <div class="card-body">
                     {% if display_patient_info.patient_data %}
 
                         <table class="table table-hover">
@@ -170,7 +170,7 @@
                                     </div>  <!-- end from-group   -->
                                     <br>
 
-                                    <div class="col-sm-10 col-sm-offset-1">
+                                    <div class="col-sm-10 offset-1">
                                         <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                                         <input class="btn pull-right btn-primary" type="submit" value="Submit">
                                     </div>
@@ -196,9 +196,9 @@
                     <div class="col-sm-11 ">
                         <br>
                         <div class="col-sm-10 " >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Patient History</h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Patient History</h3></div>
+                                <div class="card-body">
                                     <br>
                                     {%  if display_patient_info.pat_hist.heading %}
                                     <table class="table table-hover">
@@ -224,7 +224,7 @@
                                         <input type="hidden" name="action" value="addPatientHistory"/>
                                         <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
 
-                                        <div class="col-sm-10 col-sm-offset-1">
+                                        <div class="col-sm-10 offset-1">
                                             <input class="btn pull-right btn-primary" type="submit" value="Create New Patient History">
                                         </div>
                                     </form>
@@ -240,9 +240,9 @@
                     <div class="col-sm-11 ">
                         <br>
                         <div class="col-sm-10 " >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Samples of Patient </h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Samples of Patient </h3></div>
+                                <div class="card-body">
                                     <br>
                                     <table class="table table-hover">
                                         <thead>

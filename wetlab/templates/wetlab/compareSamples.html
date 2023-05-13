@@ -14,11 +14,11 @@
     }
  </style>
  {% if ERROR %}
-     <div class="row row-space-2 margin-b-4">
-         <div class="col-sm-7 col-sm-offset-3">
-             <div class="panel panel-danger">
-                 <div class="panel-heading"><h3 style="text-align:center">No Samples</h3> </div>
-                 <div class="panel-body">
+     <div class="row mt-2 mb-4">
+         <div class="col-sm-7 offset-3">
+             <div class="card border-danger mb-3">
+                 <div class="card-header"><h3 style="text-align:center">No Samples</h3> </div>
+                 <div class="card-body">
                      {% for values in ERROR %}
                          <h4>{{values}}</h4>
                      {% endfor %}
@@ -28,12 +28,12 @@
      </div> <!--  end of row -->
  {% endif %}
 {% if compared_data %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-           <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Samples Comparations</h3></div>
-                <div class="panel-body">
-                    <div class="panel-body scrolling-wrapper-sm-11">
+           <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Samples Comparations</h3></div>
+                <div class="card-body">
+                    <div class="card-body scrolling-wrapper-sm-11">
 
                         <button onclick="exportTableToExcel('compareSamples')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                         <table id=compareSamples class="table table-hover">
@@ -60,11 +60,11 @@
        </div> <!--// end col-sm-12  -->
    </div> <!--  end of row -->
 {% else %}
-     <div class="row row-space-2 margin-b-4">
+     <div class="row mt-2 mb-4">
          <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Available Samples for {{samples_data.user}} </h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Available Samples for {{samples_data.user}} </h3></div>
+                <div class="card-body">
                     {% if samples_data.heading %}
                         <h5 style="text-align:center">Select the samples to be included in the sample comparation.</h5>
                             <form method="post" enctype="multipart/form-data" name="compareSamples"  id="compareSamples" class="form-horizontal well">

@@ -2,12 +2,12 @@
 {% load static %}
 {% block content %}
 {% if ERROR %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
-        <div class="col-sm-6  col-sm-offset-3"">
+        <div class="col-sm-6  offset-3"">
             <div class="panel panel-warning">
-                <div class="panel-heading"><h3> Unable to delete the samples requested in services</h3></div>
-                <div class="panel-body">
+                <div class="card-header"><h3> Unable to delete the samples requested in services</h3></div>
+                <div class="card-body">
                     {% for message in ERROR %}
                         <p>{{message}}</p>
                     {% endfor %}
@@ -18,12 +18,12 @@
 {% endif %}
 {% if deleted_samples %}
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3> Deleted Samples for service {{service_name}}</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3> Deleted Samples for service {{service_name}}</h3></div>
+                <div class="card-body">
                     <h4 tyle="text-align:center"> The following samples were deleted from service {{service_data.service_name}}</h4>
                     {% for sample in deleted_samples %}
                         <h5>{{sample}}</h5>

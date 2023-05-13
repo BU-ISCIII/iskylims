@@ -17,10 +17,11 @@
 .iskylims {
   width: 100%;
   min-height: 50vh;
-  background:  #f8f8f8 center center;
+  background:  #f8f8f8;
   background-size: cover;
   position: relative;
-  padding: 135px 0 0;
+  padding: 20px 0 0;
+  
 }
 
 

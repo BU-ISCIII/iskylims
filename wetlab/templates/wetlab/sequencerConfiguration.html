@@ -10,11 +10,11 @@
     width: 420px;
 </style>
 {% if ERROR %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8" >
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3>Unable to accept your request</h3> </div>
-                <div class="panel-body">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3>Unable to accept your request</h3> </div>
+                <div class="card-body">
                     <p> <strong>
                             {% for error in ERROR.ERROR %}
                                 {{ error }} <br>
@@ -27,11 +27,11 @@
     </div> <!--// end row -->
 {% endif %}
 {% if new_defined_sequencer %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>New Sequencer has been added</h3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>New Sequencer has been added</h3> </div>
+                <div class="card-body">
                     <p>New sequencer <strong>{{ new_defined_sequencer }}</strong> is defined</p>
                     <br><br><br>
                     <button type="button" class="btn btn-primary" onclick="window.location.href = '/wetlab/sequencerConfiguration';">Add new Sequencer</button>
@@ -42,11 +42,11 @@
 {% endif %}
 
 {% if new_defined_configuration %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-8" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>New Configuration has been added</h3> </div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>New Configuration has been added</h3> </div>
+                <div class="card-body">
                     <p>New configuration <strong>{{ new_defined_configuration.1 }}</strong> is defined for {{new_defined_configuration.0}}</p>
                     <br><br><br>
                     <button type="button" class="btn btn-primary" onclick="window.location.href = '/wetlab/sequencerConfiguration';">Add new Sequencer Configuration</button>
@@ -55,11 +55,11 @@
         </div> <!--// end of sm-8 -->
     </div> <!--// end row -->
 {% endif %}
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-8" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Form to add a new Sequencer</h3> </div>
-            <div class="panel-body">
+        <div class="card ">
+            <div class="card-header"><h3>Form to add a new Sequencer</h3> </div>
+            <div class="card-body">
                 <form method="post" enctype="multipart/form-data" name="addNewSequencer" id="addNewSequencer" class="form-horizontal">
                     {% csrf_token %}
                     <div class="form-group required">
@@ -106,11 +106,11 @@
 <br>
 
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-8" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Form to add Sequencer Configuration</h3> </div>
-            <div class="panel-body">
+        <div class="card ">
+            <div class="card-header"><h3>Form to add Sequencer Configuration</h3> </div>
+            <div class="card-body">
                 <form method="post" enctype="multipart/form-data" name="addNewConfiguration" id="addNewConfiguration" class="form-horizontal">
                     {% csrf_token %}
                     <div class="form-group required">
@@ -143,7 +143,7 @@
 
 
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-12" >
         <h3>Sequencer Information</h3>
         <div class="tab">
@@ -152,9 +152,9 @@
 
             <div id="sequencer" class="tabcontent">
                     <div class="col-sm-10" >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Sequencers defined</h3> </div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Sequencers defined</h3> </div>
+                            <div class="card-body">
                                 {% if sequencer_info.sequencer_names %}
                                     <table class="table table-hover">
                                         <thead>
@@ -187,9 +187,9 @@
 
             <div id="configuration" class="tabcontent">
                     <div class="col-sm-10" >
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Sequencer Configurations defined</h3> </div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Sequencer Configurations defined</h3> </div>
+                            <div class="card-body">
                                 {% if sequencer_info.sequencer_data %}
                                     {% for  platform, confs in sequencer_info.sequencer_data.items %}
                                         <div class="table-wrapper">

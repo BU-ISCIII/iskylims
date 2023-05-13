@@ -13,11 +13,11 @@
 </style>
 {% if matched_collection_index %}
 
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-3">
-            <div class="panel panel-default">
-                <div class="panel-heading">The following list matches with yor search: </div>
-                <div class="panel-body scroll-wrapper-sm-6">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-3">
+            <div class="card ">
+                <div class="card-header">The following list matches with yor search: </div>
+                <div class="card-body scroll-wrapper-sm-6">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -39,11 +39,11 @@
 
 {% else %}
     {% if not_found_matchs %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-6 col-sm-offset-3" >
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-6 offset-3" >
                 <div class="panel panel-warning">
-                    <div class="panel-heading"><h3>No Results</h3></div>
-                    <div class="panel-body">
+                    <div class="card-header"><h3>No Results</h3></div>
+                    <div class="card-body">
                         <p>There are no matches that meet your search parameters</p>
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
@@ -51,11 +51,11 @@
         </div> <!--  end of row -->
     {% endif %}
     {% if error_message %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-6 col-sm-offset-3" >
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Incorrect input parameters</h3></div>
-                    <div class="panel-body">
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-6 offset-3" >
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3>Incorrect input parameters</h3></div>
+                    <div class="card-body">
                         {% for values in error_message %}
                             <p>{{values}}</p>
                         {% endfor %}
@@ -66,11 +66,11 @@
     {% endif %}
 
     <!-- FORM for searching index Library -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><strong>Searching Collection Index Kit</strong></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><strong>Searching Collection Index Kit</strong></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="searchcollectionindexkit" id="searchcollectionindexkit" class="form-horizontal well">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="searchcollectionindexkit"/>

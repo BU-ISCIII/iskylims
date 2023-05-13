@@ -3,11 +3,11 @@
 {% block content %}
 
 {% if error_message %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3 style="text-align:center"></h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3 style="text-align:center"></h3> </div>
+                <div class="card-body">
                     {% for values in error_message %}
                         <h4>{{values}}</h4>
                     {% endfor %}
@@ -17,11 +17,11 @@
     </div> <!--  end of row -->
 {% endif %}
 {% if confirmation_result %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-7 offset-3">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
+                <div class="card-body">
                     <p>The services that you have recorded are:</p>
                     {% for values in confirmation_result.text %}
                         <h5>{{values}}</h5>
@@ -49,11 +49,11 @@
     </div> <!--  end of row -->
 
 {% else %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Infrastructure Request Service form.</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3 style="text-align:center">Infrastructure Request Service form.</h3></div>
+                <div class="card-body">
                     <form  name="infrastructureService" method="post" enctype="multipart/form-data" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="createService"/>

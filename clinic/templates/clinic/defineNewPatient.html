@@ -6,10 +6,10 @@
 
 {% if defined_patient %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-6  col-sm-offset-2" >
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>Patient information has been successfuly recorded. </h3></div>
-                <div class="panel-body" >
+        <div  class="col-sm-6  offset-2" >
+            <div class="card " >
+                <div class="card-header"><h3>Patient information has been successfuly recorded. </h3></div>
+                <div class="card-body" >
                     <br>
                     <table class="table table-hover">
                         <tbody>
@@ -33,10 +33,10 @@
     </div> <!--// end row  -->
     {% if defined_patient.fields %}
         <div class="row row-space-4 margin-b-4">
-            <div  class="col-sm-6  col-sm-offset-2" >
-                <div class="panel panel-default" >
-                    <div class="panel-heading"><h3>Define the additional information that project requires.</h3></div>
-                    <div class="panel-body" >
+            <div  class="col-sm-6  offset-2" >
+                <div class="card " >
+                    <div class="card-header"><h3>Define the additional information that project requires.</h3></div>
+                    <div class="card-body" >
                         <form method="post" enctype="multipart/form-data" name="defineProjectFields"  id="defineProjectFields" class="form-horizontal well" style="min-height: 300px;">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="defineProjectFields"/>
@@ -49,7 +49,7 @@
                                 </div>  <!-- end from-group   -->
                             {% endfor %}
                             <BR>
-                            <div class="col-sm-10 col-sm-offset-1">
+                            <div class="col-sm-10 offset-1">
                                 <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                                 <input class="btn pull-right btn-primary" type="submit" value="Submit">
                             </div>
@@ -63,10 +63,10 @@
     {% endif %}
 {% elif project_fields_added %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-10  col-sm-offset-1" >
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>Information requested by Project {{project_fields_added.project_name}} was successful recorded.</h3></div>
-                <div class="panel-body" >
+        <div  class="col-sm-10  offset-1" >
+            <div class="card " >
+                <div class="card-header"><h3>Information requested by Project {{project_fields_added.project_name}} was successful recorded.</h3></div>
+                <div class="card-body" >
 
                     <br>
                     <p>Click on the button below to retun to the main page</p>
@@ -81,10 +81,10 @@
     </div> <!--// end row  -->
 {% elif defined_batch_patient %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-10  col-sm-offset-1" >
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>Suceesful batch patient recorded.</h3></div>
-                <div class="panel-body" >
+        <div  class="col-sm-10  offset-1" >
+            <div class="card " >
+                <div class="card-header"><h3>Suceesful batch patient recorded.</h3></div>
+                <div class="card-body" >
                     <h5 tyle="text-align:center">New {{defined_batch_patient.patients}} have been loaded into iSkyLIMS</h5>
                     <br>
                     {% if defined_batch_patient.no_valid_projects %}
@@ -107,10 +107,10 @@
 {% else %}
     {%if error %}
         <div class="row row-space-4 margin-b-4">
-            <div  class="col-sm-6  col-sm-offset-2" >
-                <div class="panel panel-danger" >
-                    <div class="panel-heading"><h3>Unable to record your Patient information data. </h3></div>
-                    <div class="panel-body" >
+            <div  class="col-sm-6  offset-2" >
+                <div class="card border-danger mb-3" >
+                    <div class="card-header"><h3>Unable to record your Patient information data. </h3></div>
+                    <div class="card-body" >
                         {% for message in error %}
                             <h3 style="text-align:center"> {{message}}</h3>
                         {% endfor %}
@@ -127,17 +127,17 @@
 
                 <div id="newPatient" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
-                        <div class="col-sm-11 col-sm-offset-1" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Define new Patient. </h3></div>
-                                <div class="panel-body" >
+                        <div class="col-sm-11 offset-1" >
+                            <div class="card ">
+                                <div class="card-header"><h3>Define new Patient. </h3></div>
+                                <div class="card-body" >
                                     <form method="post" enctype="multipart/form-data" name="defineNewPatient"  id="defineNewPatient" class="form-horizontal well" style="min-height: 700px;">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="defineNewPatient"/>
                                         <div  class="col-sm-5" >
-                                            <div class="panel panel-default" >
-                                                <div class="panel-heading"><h3>Mandatory Patient data. </h3></div>
-                                                <div class="panel-body" >
+                                            <div class="card " >
+                                                <div class="card-header"><h3>Mandatory Patient data. </h3></div>
+                                                <div class="card-body" >
                                                     <div class="form-group required">
                                                         <label class="col-sm-5  control-label" for="patientName" ><td> {{patient_definition_data.p_name}} </td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="patientName" id="patientName" size="80" maxlength="80"></div>
@@ -167,9 +167,9 @@
                                                 </div> <!-- End   Panel Body   -->
                                             </div>  <!-- End   Panel    -->
                                             {% if patient_definition_data.project_names %}
-                                                <div class="panel panel-default" >
-                                                    <div class="panel-heading"><h3>Patient Project. </h3></div>
-                                                    <div class="panel-body" >
+                                                <div class="card " >
+                                                    <div class="card-header"><h3>Patient Project. </h3></div>
+                                                    <div class="card-body" >
                                                         <p> If patient belongs to a project, select it from the options below</p>
                                                         <div class="form-group">
                                                             <label class="col-sm-5 control-label" for="patientProject" >Patient Project</label>
@@ -186,10 +186,10 @@
                                                 </div>  <!-- End   Panel    -->
                                             {% endif %}
                                         </div> <!-- end col-sm-6 -->
-                                        <div  class="col-sm-6 col-sm-offset-1" >
-                                            <div class="panel panel-default" >
-                                                <div class="panel-heading"><h3>Optional data for patient. </h3></div>
-                                                <div class="panel-body" >
+                                        <div  class="col-sm-6 offset-1" >
+                                            <div class="card " >
+                                                <div class="card-header"><h3>Optional data for patient. </h3></div>
+                                                <div class="card-body" >
                                                     <div class="form-group">
                                                         <label class="col-sm-5  control-label" for="address" >Patient Address </label>
                                                         <div class="col-sm-5"><textarea rows="2" cols="25" name="address" form="defineNewPatient"></textarea></div>
@@ -224,7 +224,7 @@
                                                 </div> <!-- End   Panel Body   -->
                                             </div>  <!-- End   Panel    -->
                                         </div> <!-- end col-sm-6 -->
-                                        <div class="col-sm-10 col-sm-offset-1">
+                                        <div class="col-sm-10 offset-1">
                                             <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                                             <input class="btn pull-right btn-primary" type="submit" value="Submit">
                                         </div>
@@ -240,17 +240,17 @@
 
                 <div id="batchPatient" class="tabcontent">
                     <div class="row row-space-4 margin-b-4">
-                        <div class="col-sm-10 col-sm-offset-1" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3 style="text-align:center">Load Patient in batch</h3></div>
-                                <div class="panel-body">
+                        <div class="col-sm-10 offset-1" >
+                            <div class="card ">
+                                <div class="card-header"><h3 style="text-align:center">Load Patient in batch</h3></div>
+                                <div class="card-body">
                                     <form method="post" enctype="multipart/form-data" name="defineBatchPatient"  id="defineBatchPatient" class="form-horizontal well" style="min-height: 700px;">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="defineBatchPatient"/>
                                         <div  class="col-sm-12" >
-                                            <div class="panel panel-default" >
-                                                <div class="panel-heading"><h3  style="text-align:center">Upload the excel file to define a batch of Patients. </h3></div>
-                                                <div class="panel-body" >
+                                            <div class="card " >
+                                                <div class="card-header"><h3  style="text-align:center">Upload the excel file to define a batch of Patients. </h3></div>
+                                                <div class="card-body" >
                                                     <div class="form-group required">
                                                         <label class="col-sm-5  control-label" for="patientExcel" ><td> Upload Patient file</td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="patientExcel" id="patientExcel" ></div>

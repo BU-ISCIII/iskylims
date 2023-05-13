@@ -5,10 +5,10 @@
 
 {% if ERROR %}
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-10 col-sm-offset-1" >
-            <div class="panel panel-danger">
-                <div class="panel-heading"><h3>Unable to accept your request</h3></div>
-                <div class="panel-body">
+        <div class="col-sm-10 offset-1" >
+            <div class="card border-danger mb-3">
+                <div class="card-header"><h3>Unable to accept your request</h3></div>
+                <div class="card-body">
                     {% for value in ERROR %}
                         <p class="text-center">{{value}}</p>
                     {% endfor %}
@@ -29,9 +29,9 @@
     </style>
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Library Preparation information to create the new Run</h3></div>
-                    <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Library Preparation information to create the new Run</h3></div>
+                    <div class="card-body">
                         <form method="post" enctype="multipart/form-data" name="storeDataNewRun"  id="storeDataNewRun" class="form-horizontal well">
                             {% csrf_token %}
                             <h3>{{display_sample_information.experiment_name}}</h3>
@@ -147,10 +147,10 @@
 
 {% elif created_new_run %}
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-10 col-sm-offset-1" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Successful creation of Run {{created_new_run.exp_name}}</h3></div>
-                <div class="panel-body">
+        <div class="col-sm-10 offset-1" >
+            <div class="card ">
+                <div class="card-header"><h3>Successful creation of Run {{created_new_run.exp_name}}</h3></div>
+                <div class="card-body">
                     <h5 style="text-align:center">Run name {{created_new_run.exp_name}} is Recorded State</h5>
                     <p>Click on the link below to check the Run information </p>
                     <br><br>
@@ -177,10 +177,10 @@
 
     {% if display_pools_for_run.invalid_run_data.heading %}
         <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-10 col-sm-offset-1" >
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Invalid pools </h3></div>
-                    <div class="panel-body">
+            <div class="col-sm-10 offset-1" >
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3>Invalid pools </h3></div>
+                    <div class="card-body">
                         <p>Some of the samples in the following pools are missing.</p>
                         <br>
                         <table class="table">
@@ -227,17 +227,17 @@
                 {% if display_pools_for_run.run_data.heading %}
                     <div id="defined" class="tabcontent">
                         <div class="col-sm-11" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>The following Run have been defined, but not yet completed</h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>The following Run have been defined, but not yet completed</h3></div>
+                                <div class="card-body">
                                     <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="continueWithRun"/>
                                         {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
                                             <div class="col-sm-12">
-                                                <div class="panel panel-default">
-                                                    <div class="panel-heading"><h4>Run Name {{r_name }}</h4></div>
-                                                    <div class="panel-body">
+                                                <div class="card ">
+                                                    <div class="card-header"><h4>Run Name {{r_name }}</h4></div>
+                                                    <div class="card-body">
                                                         <div class="col-sm-8">
                                                             <table class="table">
                                                                 <thead>
@@ -291,9 +291,9 @@
 
                     <div id="{{key}}" class="tabcontent">
                         <div class="col-sm-11" >
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Fill the information to create the New Run </h3></div>
-                                <div class="panel-body">
+                            <div class="card ">
+                                <div class="card-header"><h3>Fill the information to create the New Run </h3></div>
+                                <div class="card-body">
                                     <form method="post" enctype="multipart/form-data" name="createNewRun"  id="createNewRun" class="form-horizontal well">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="createNewRun"/>
@@ -361,10 +361,10 @@
 
     {% if not display_pools_for_run.pool_data.heading and not display_pools_for_run.run_data.heading %}
         <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-10 col-sm-offset-1" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Not available Pools </h3></div>
-                    <div class="panel-body">
+            <div class="col-sm-10 offset-1" >
+                <div class="card ">
+                    <div class="card-header"><h3>Not available Pools </h3></div>
+                    <div class="card-body">
                         <p>There is not available pools to create a new Run</p>
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->

@@ -13,13 +13,13 @@
 </style>
 <BR>
 {% if new_setting_defined %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
 
                 <div class="col-sm-6" >
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>New {{new_setting_defined.settings}} , <strong>{{new_setting_defined.value}}</strong> was defined</h3> </div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>New {{new_setting_defined.settings}} , <strong>{{new_setting_defined.value}}</strong> was defined</h3> </div>
+                        <div class="card-body">
                             <br>
                         </div>  <!--  end of panel body  -->
                     </div> <!--// end panel -->
@@ -29,13 +29,13 @@
     </div> <!--// end row -->
 {% endif %}
 {% if ERROR %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12" >
 
                 <div class="col-sm-6" >
-                    <div class="panel panel-danger">
-                        <div class="panel-heading"><h3> {{ERROR.0.0}} </h3> </div>
-                        <div class="panel-body">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3> {{ERROR.0.0}} </h3> </div>
+                        <div class="card-body">
                             <br>
                             <p>The <strong>{{ERROR.1}}</strong> {{ERROR.0.0}}</p>
                         </div>  <!--  end of panel body  -->
@@ -46,7 +46,7 @@
     </div> <!--// end row -->
 {% endif %}
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-12" >
         <h3>Define the Inital Settings</h3>
         <div class="tab">
@@ -61,9 +61,9 @@
                 <div class="col-sm-11">
                     <div class="col-sm-8">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new Specie </h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Define new Specie </h3></div>
+                            <div class="card-body">
                                 <form method="post" enctype="multipart/form-data" name="defineNewSpecie" id="defineNewSpecie" class="form-horizontal">
                                     {% csrf_token %}
                                     <div class="form-group required">
@@ -79,9 +79,9 @@
                     </div> <!--  end of col-sm-6 -->
                     <div class="col-sm-4">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Species defined</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Species defined</h3></div>
+                            <div class="card-body">
                                 {% if initial_data.species_data %}
                                     <table class="table table-hover">
                                        <thead>
@@ -110,9 +110,9 @@
                 <div class="col-sm-12">
                     <div class="col-sm-7">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new State where the Laboratory is located</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Define new State where the Laboratory is located</h3></div>
+                            <div class="card-body">
                                 <form method="post" enctype="multipart/form-data" name="defineNewState" id="defineNewState" class="form-horizontal">
                                     {% csrf_token %}
                                     <h5>Fill the follwing form to define a new State</h5>
@@ -132,9 +132,9 @@
                     </div> <!--  end of sm-7  -->
                     <div class="col-sm-4">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>States defined</h3></div>
-                            <div class="panel-body scroll-wrapper-sm-4">
+                        <div class="card ">
+                            <div class="card-header"><h3>States defined</h3></div>
+                            <div class="card-body scroll-wrapper-sm-4">
                                 {% if initial_data.states_data %}
                                     <table class="table table-hover">
                                        <thead>
@@ -160,9 +160,9 @@
                 </div>  <!--  end of col-sm-11 -->
                 <div class="col-sm-12">
                     <div class="col-sm-7">
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new City where the Laboratory is located</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Define new City where the Laboratory is located</h3></div>
+                            <div class="card-body">
                                 {% if initial_data.states_data %}
                                     <form method="post" enctype="multipart/form-data" name="defineNewCity" id="defineNewCity" class="form-horizontal">
                                         {% csrf_token %}
@@ -203,9 +203,9 @@
                         </div> <!--  end of panel  -->
                     </div> <!--  end of col-sm-7 -->
                     <div class="col-sm-4">
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Cities defined</h3></div>
-                            <div class="panel-body scroll-wrapper-sm-4">
+                        <div class="card ">
+                            <div class="card-header"><h3>Cities defined</h3></div>
+                            <div class="card-body scroll-wrapper-sm-4">
                                 {% if initial_data.cities_data %}
                                     <table class="table table-hover">
                                        <thead>
@@ -234,9 +234,9 @@
                 <div class="col-sm-12">
                     <div class="col-sm-7">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new Laboratory from the samples came from</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Define new Laboratory from the samples came from</h3></div>
+                            <div class="card-body">
                                 {% if initial_data.cities_data%}
                                     <form method="post" enctype="multipart/form-data" name="defineNewLabRequest" id="defineNewLabRequest" class="form-horizontal">
                                         {% csrf_token %}
@@ -295,9 +295,9 @@
                 </div> <!--  end of col-sm-12 -->
                 <div class="col-sm-12">
                     <br><br>
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Laboratory/Hospital/Institution request defined</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>Laboratory/Hospital/Institution request defined</h3></div>
+                        <div class="card-body">
                             {% if initial_data.lab_request_data %}
                                 <table class="table table-hover">
                                    <thead>
@@ -337,9 +337,9 @@
                 <div class="col-sm-11">
                     <div class="col-sm-8">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new Molecule type </h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Define new Molecule type </h3></div>
+                            <div class="card-body">
                                 <form method="post" enctype="multipart/form-data" name="defineMoleculeType" id="defineMoleculeType" class="form-horizontal">
                                     {% csrf_token %}
                                     <div class="form-group required">
@@ -355,9 +355,9 @@
                     </div> <!--  end of col-sm-8 -->
                     <div class="col-sm-4">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Molecule types defined</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Molecule types defined</h3></div>
+                            <div class="card-body">
                                 {% if initial_data.molecule_type_data %}
                                     <table class="table table-hover">
                                        <thead>
@@ -386,9 +386,9 @@
                 <div class="col-sm-11">
                     <div class="col-sm-8">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new Protocol Type</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Define new Protocol Type</h3></div>
+                            <div class="card-body">
                                 <form method="post" enctype="multipart/form-data" name="defineProtocolType" id="defineProtocolType" class="form-horizontal">
                                     {% csrf_token %}
                                     <div class="form-group required">
@@ -414,9 +414,9 @@
                     </div> <!--  end of col-sm-8 -->
                     <div class="col-sm-4">
                         <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Protocol types defined</h3></div>
-                            <div class="panel-body">
+                        <div class="card ">
+                            <div class="card-header"><h3>Protocol types defined</h3></div>
+                            <div class="card-body">
                                 {% if initial_data.protocol_type_data %}
                                     <table class="table table-hover">
                                        <thead>

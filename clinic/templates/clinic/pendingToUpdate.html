@@ -25,10 +25,10 @@
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-7" >
-                <div class="panel panel-default">
+                <div class="card ">
                     {% if pending.defined.sample_heading %}
-                        <div class="panel-heading"><h3>Samples need to be updated with DNA/RNA Extraction</h3></div>
-                        <div class="panel-body">
+                        <div class="card-header"><h3>Samples need to be updated with DNA/RNA Extraction</h3></div>
+                        <div class="card-body">
 
                             <form method="post" action="/clinic/setMoleculeValues" enctype="multipart/form-data" name="continueWithMolecule"  id="continueWithMolecule" class="form-horizontal well">
                             {% csrf_token %}
@@ -64,8 +64,8 @@
                                 <input class="btn pull-right btn-primary" type="submit" value="Submit">
                             </form>
                     {% else %}
-                        <div class="panel-heading"><h3>Samples waiting for adding Patient information</h3></div>
-                        <div class="panel-body">
+                        <div class="card-header"><h3>Samples waiting for adding Patient information</h3></div>
+                        <div class="card-body">
                             <p>There are not samples waiting for adding Patient information </p>
                     {% endif %}
                         </div>  <!--  end of panel body  -->
@@ -73,9 +73,9 @@
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-7  -->
             <div class="col-sm-5" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Sample state graphic</h3></div>
-                    <div class="panel-body">
+                <div class="card ">
+                    <div class="card-header"><h3>Sample state graphic</h3></div>
+                    <div class="card-body">
                         {% if pending.graphic_pending_samples %}
 
                             <!-- Pie chart for number of pending Services chart will start here-->
@@ -96,9 +96,9 @@
 {% if pending.patient_update.sample_heading %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Samples waiting for samples analysis start</h3></div>
-                    <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Samples waiting for samples analysis start</h3></div>
+                    <div class="card-body">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -127,9 +127,9 @@
 {% if pending.sequencing.sample_heading  %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-12" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Samples waiting for sequencing analysis to be completed</h3></div>
-                <div class="panel-body">
+        <div class="card ">
+            <div class="card-header"><h3>Samples waiting for sequencing analysis to be completed</h3></div>
+                <div class="card-body">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -159,10 +159,10 @@
 {% if pending.pending_protocol.sample_heading %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-12" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>The following Samples require to define the used protocol</h3></div>
+        <div class="card ">
+            <div class="card-header"><h3>The following Samples require to define the used protocol</h3></div>
                         <br>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <p>Select the samples for adding the protocol used</p>
                         <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="updateClinicSampleProtocol"  id="updateClinicSampleProtocol" class="form-horizontal well">
                         {% csrf_token %}
@@ -201,10 +201,10 @@
 {% if pending.pending_results.sample_heading %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-12" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>The following Samples require to add the result parameters</h3></div>
+        <div class="card ">
+            <div class="card-header"><h3>The following Samples require to add the result parameters</h3></div>
                         <br>
-                        <div class="panel-body">
+                        <div class="card-body">
                             <p>Select the samples to add the result parameters</p>
                         <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="showTableResultParameters"  id="showTableResultParameters" class="form-horizontal well">
                         {% csrf_token %}

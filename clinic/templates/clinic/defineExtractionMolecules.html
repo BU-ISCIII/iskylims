@@ -27,10 +27,10 @@
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-7" >
-                <div class="panel panel-default">
+                <div class="card ">
                     {% if extraction_molecules.extract_molecule.sample_heading %}
-                    <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
-                        <div class="panel-body">
+                    <div class="card-header"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                        <div class="card-body">
                             <form method="post" action="/clinic/setMoleculeValues" enctype="multipart/form-data" name="continueWithMolecule"  id="continueWithMolecule" class="form-horizontal well">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithMolecule"/>
@@ -62,8 +62,8 @@
                              </form>
 
                             {% else %}
-                                <div class="panel-heading"><h3>Samples to be updated with the Molecule information</h3></div>
-                                    <div class="panel-body">
+                                <div class="card-header"><h3>Samples to be updated with the Molecule information</h3></div>
+                                    <div class="card-body">
                                     <p>There is not new samples that requieres to add Molecule Information data </p>
                             {% endif %}
                         </div>  <!--  end of panel body  -->
@@ -77,11 +77,11 @@
 
 {% else %}
 <!-- FORM for searching Samples  Information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7">
-        <div class="panel panel-default">
-          <div class="panel-heading"><h4>Select batch Samples</h4></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h4>Select batch Samples</h4></div>
+          <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="selectBatchSample" id="selectBatchSample" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="selectBatchSample"/>
@@ -108,10 +108,10 @@
         <!-- Insert the help panel -->
         <BR><BR>
 
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading">Searching information of the RUN</div>
-             <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header">Searching information of the RUN</div>
+             <div class="card-body">
              <p>Searching information can be done on Patients or on Samples: <BR>
              <p>For extended help click on the button below.</p>
             <center><button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal">Click for Help</button></center>

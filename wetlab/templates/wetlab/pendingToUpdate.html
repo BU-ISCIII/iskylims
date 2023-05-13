@@ -25,10 +25,10 @@
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-7" >
-                <div class="panel panel-default">
+                <div class="card ">
                     {% if pending.defined.sample_heading %}
-                    <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
-                        <div class="panel-body">
+                    <div class="card-header"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                        <div class="card-body">
                             <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
                             {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithMolecule"/>
@@ -61,8 +61,8 @@
                              </form>
 
                             {% else %}
-                            <div class="panel-heading"><h3>Samples to be updated with the Molecule information</h3></div>
-                                <div class="panel-body">
+                            <div class="card-header"><h3>Samples to be updated with the Molecule information</h3></div>
+                                <div class="card-body">
                                 <p>There is not new samples that requieres to add Molecule Information data </p>
                             {% endif %}
                         </div>  <!--  end of panel body  -->
@@ -70,9 +70,9 @@
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-7  -->
         <div class="col-sm-5" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Sample state graphic</h3></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>Sample state graphic</h3></div>
+                <div class="card-body">
                     {% if pending.graphic_pending_samples %}
 
                         <!-- Pie chart for number of pending Services chart will start here-->
@@ -93,9 +93,9 @@
 {% if pending.extract_molecule.molecule_heading %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following Samples can be updated with the Molecule quality parameter</h3></div>
-                    <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h3>The following Samples can be updated with the Molecule quality parameter</h3></div>
+                    <div class="card-body">
                         {% if pending.extract_molecule.molecule_heading %}
                         <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="displayMoleculeParameters"  id="displayMoleculeParameters" class="form-horizontal well">
                         {% csrf_token %}

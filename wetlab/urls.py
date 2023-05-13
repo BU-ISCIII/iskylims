@@ -145,7 +145,6 @@ urlpatterns = [
     path("pendingToUpdate/", views.pending_to_update, name="pending_to_update"),
     path("QuarterReport/", views.quarter_report, name="quarter_report"),
     path("recordSamples", views.record_samples, name="record_samples"),
-    path("register_wetlab/", views.register_wetlab, name="register_wetlab"),
     path(
         "repeatLibraryPreparation",
         views.repeat_library_preparation,

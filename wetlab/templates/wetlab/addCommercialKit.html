@@ -2,11 +2,11 @@
 {% load static %}
 {% block content %}
 {% if new_kit_data %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Successful definition for Commercial Kit </h3></div>
-                <div class="panel-body">
+    <div class="row mt-2 mb-4">
+        <div class="col-sm-6 offset-1">
+            <div class="card ">
+                <div class="card-header"><h3>Successful definition for Commercial Kit </h3></div>
+                <div class="card-body">
                     <table class="table ">
                         <thead>
                             <tr>
@@ -44,18 +44,18 @@
         }
     </style>
     {% if invalid_name %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-6 col-sm-offset-1">
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Commercial Kit already exists</h3></div>
-                    <div class="panel-body">
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-6 offset-1">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3>Commercial Kit already exists</h3></div>
+                    <div class="card-body">
                         <p>The Commercial kit Name <strong>{{invalid_name}}  already exists</strong></p>
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-7  -->
         </div> <!--// end row -->
     {% endif %}
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-6">
         <h3>Form to add new Commercial Kit.</h3>
         <div class="tab">
@@ -64,9 +64,9 @@
 
             <div id="protocolKit" class="tabcontent">
                 <div class="col-sm-12" >
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Commercial Kit.</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>Commercial Kit.</h3></div>
+                        <div class="card-body">
                             <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" class="form-horizontal well">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="addCommercialKit"/>
@@ -115,9 +115,9 @@
 
             <div id="platformKit" class="tabcontent">
                 <div class="col-sm-12" >
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Reagent Commercial Kit .</h3></div>
-                        <div class="panel-body">
+                    <div class="card ">
+                        <div class="card-header"><h3>Reagent Commercial Kit .</h3></div>
+                        <div class="card-body">
                             <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" class="form-horizontal well">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="addCommercialKit"/>
@@ -170,13 +170,13 @@
 
     </div> <!--// end col-sm-6  -->
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <br>
         {% if commercial_kits_data.protocol.data %}
-            <div class="col-sm-5 col-sm-offset-1">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Commercial Kits defined for protocols</h3></div>
-                    <div class="panel-body scroll-wrapper-sm-5"">
+            <div class="col-sm-5 offset-1">
+                <div class="card ">
+                    <div class="card-header"><h3>Commercial Kits defined for protocols</h3></div>
+                    <div class="card-body scroll-wrapper-sm-5"">
                         {% for key , values in commercial_kits_data.protocol.data.items %}
                         <h4>{{key}} </h4>
                             <table class="table ">
@@ -204,10 +204,10 @@
             </div> <!--// end col-sm-7  -->
         {% endif %}
         {% if commercial_kits_data.platform.data %}
-            <div class="col-sm-5 col-sm-offset-1">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Commercial Kits defined for platform</h3></div>
-                    <div class="panel-body scroll-wrapper-sm-5"">
+            <div class="col-sm-5 offset-1">
+                <div class="card ">
+                    <div class="card-header"><h3>Commercial Kits defined for platform</h3></div>
+                    <div class="card-body scroll-wrapper-sm-5"">
                         {% for key , values in commercial_kits_data.platform.data.items %}
                         <h4>{{key}} </h4>
                             <table class="table ">

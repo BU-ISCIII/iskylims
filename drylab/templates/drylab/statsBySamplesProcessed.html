@@ -7,12 +7,12 @@
 <h1><div class="color-heading">Services Request Statistics</div></h1>
 {% if services_stats_info %}
 
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
 	<div class="col-sm-12">  
 	    <div class="col-sm-6 ">  <!--col-sm-6  graphics for services requested -->
-		<div class="panel panel-default">
-		    <div class="panel-heading"><h3>Number of Requested Services per users.</h3></div>
-		    <div class="panel-body"> 
+		<div class="card ">
+		    <div class="card-header"><h3>Number of Requested Services per users.</h3></div>
+		    <div class="card-body"> 
 		     {% if services_stats_info.graphic_requested_services %}
 			<div id="chart-1"> </div>
 			<!-- dumping JavaScript code here -->
@@ -22,9 +22,9 @@
 		</div> <!--  end of panel  -->
 	    </div> <!--// end col-sm-7  graphics for services requested  --> 
 	    <div class="col-sm-6 ">  <!--col-sm-6  graphics for status services requested -->
-		<div class="panel panel-default">
-		    <div class="panel-heading"><h3>Status of the Requested Services.</h3></div>
-		    <div class="panel-body"> 
+		<div class="card ">
+		    <div class="card-header"><h3>Status of the Requested Services.</h3></div>
+		    <div class="card-body"> 
 		     {% if services_stats_info.graphic_status_requested_services %}
 			<div id="chart-2"> </div>
 			<!-- dumping JavaScript code here -->
@@ -39,11 +39,11 @@
     </div> <!--// end row -->
 
 
-    <div class="row row-space-2 margin-b-4">    
+    <div class="row mt-2 mb-4">    
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for Area -->
-	    <div class="panel panel-default">
-		<div class="panel-heading"><h3>Number of Requested Services per Area.</h3></div>
-		<div class="panel-body"> 
+	    <div class="card ">
+		<div class="card-header"><h3>Number of Requested Services per Area.</h3></div>
+		<div class="card-body"> 
 		 {% if services_stats_info.graphic_area_services %}
 		    <div id="chart-3"> </div>
 		    <!-- dumping JavaScript code here -->
@@ -56,11 +56,11 @@
     </div> <!--// end row -->
     
 
-    <div class="row row-space-2 margin-b-4">    
+    <div class="row mt-2 mb-4">    
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for Area -->
-	    <div class="panel panel-default">
-		<div class="panel-heading"><h3>Number of Requested Services per Center.</h3></div>
-		<div class="panel-body"> 
+	    <div class="card ">
+		<div class="card-header"><h3>Number of Requested Services per Center.</h3></div>
+		<div class="card-body"> 
 		 {% if services_stats_info.graphic_center_services %}
 		    <div id="chart-4"> </div>
 		    <!-- dumping JavaScript code here -->
@@ -71,12 +71,12 @@
 	</div> <!--// end col-sm-7  graphics for area  --> 
     </div> <!--// end row -->
     
-    <div class="row row-space-2 margin-b-4">    
+    <div class="row mt-2 mb-4">    
 	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per period of time -->
 	    <div class="col-sm-6 ">  <!--col-sm-6  Statistics per Center -->
-		<div class="panel panel-default">
-		    <div class="panel-heading"><h3>Requested Services Statistics per Center</h3></div>
-		    <div class="panel-body"> 
+		<div class="card ">
+		    <div class="card-header"><h3>Requested Services Statistics per Center</h3></div>
+		    <div class="card-body"> 
 			<h4> {{services_stats_info.period_time}}.</h4>
 		     {% if services_stats_info.graphic_center_services_per_time %}
 			<div id="chart-5"> </div>
@@ -87,9 +87,9 @@
 		</div> <!--  end of panel  -->
 	    </div> <!--// end col-sm-6  graphics for area  -->
 	    <div class="col-sm-6 ">  <!--col-sm-6  Statistics per Center -->
-		<div class="panel panel-default">
-		    <div class="panel-heading"><h3>Requested Services Statistics per Area</h3></div>
-		    <div class="panel-body"> 
+		<div class="card ">
+		    <div class="card-header"><h3>Requested Services Statistics per Area</h3></div>
+		    <div class="card-body"> 
 			<h4> {{services_stats_info.period_time}}.</h4>
 		     {% if services_stats_info.graphic_area_services_per_time %}
 			<div id="chart-6"> </div>
@@ -104,7 +104,7 @@
    
 {% else %}
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-8">  <!--col-sm-8  Sample processed statistics Form  -->
 	<div class="container-fluid margin-t-40">	
 	    {% crispy form %}

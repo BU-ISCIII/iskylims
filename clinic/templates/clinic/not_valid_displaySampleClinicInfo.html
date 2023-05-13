@@ -2,12 +2,12 @@
 {% load static %}
 {% block content %}
 
-<div class="row row-space-2 margin-b-4">
+<div class="row mt-2 mb-4">
     <div class="col-sm-11">
-        <div class="panel panel-default">
+        <div class="card ">
             <h3>Information for Sample {{ sample_information.sample_definition.0 }} </h3>
-            <div class="panel-heading"><h4>Basic Information</h4></div>
-            <div class="panel-body">
+            <div class="card-header"><h4>Basic Information</h4></div>
+            <div class="card-body">
                 <table class="table">
                     <thead>
                         <tr>
@@ -26,8 +26,8 @@
                 </table>
             </div> <!--  end of panel body -->
             {% if sample_information.sample_project_name %}
-                <div class="panel-heading"><h4>Sample Information {{sample_information.sample_project_name }}</h4></div>
-                <div class="panel-body">
+                <div class="card-header"><h4>Sample Information {{sample_information.sample_project_name }}</h4></div>
+                <div class="card-body">
 
                         <table class="table">
                             <thead>
@@ -54,12 +54,12 @@
 </div> <!--  end of row -->
 
 {% if sample_information.molecule_definition %}
-  <div class="row row-space-2 margin-b-4">
+  <div class="row mt-2 mb-4">
       <div class="col-sm-11">
-          <div class="panel panel-default">
+          <div class="card ">
               <h3>Information for Molecule using the sample {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Molecule Information</h4></div>
-              <div class="panel-body">
+              <div class="card-header"><h4>Molecule Information</h4></div>
+              <div class="card-body">
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -85,12 +85,12 @@
 {% endif %}
 
 {% if sample_information.parameter_heading_values %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-11">
-            <div class="panel panel-default">
+            <div class="card ">
                 <h3>Parameter Information for Molecules using for the sample {{ sample_information.sample_definition.0 }} </h3>
-                <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
-                <div class="panel-body">
+                <div class="card-header"><h4>Quality Parameter Molecule Information</h4></div>
+                <div class="card-body">
                     {% for heading, values in sample_information.parameter_heading_values %}
                         <table class="table">
                             <thead>
@@ -118,12 +118,12 @@
 
 
 {% if sample_information.library_definition_heading %}
-  <div class="row row-space-2 margin-b-4">
+  <div class="row mt-2 mb-4">
       <div class="col-sm-11">
-          <div class="panel panel-default">
+          <div class="card ">
               <h3>Library Preparation Information for sample  {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Index used for sample {{ sample_information.sample_definition.0 }}</h4></div>
-              <div class="panel-body">
+              <div class="card-header"><h4>Index used for sample {{ sample_information.sample_definition.0 }}</h4></div>
+              <div class="card-body">
                 <table class="table table-hover">
                     <thead>
                       <tr>
@@ -149,12 +149,12 @@
 {% endif %}
 
 {% if sample_information.library_parameter_heading %}
-  <div class="row row-space-2 margin-b-4">
+  <div class="row mt-2 mb-4">
       <div class="col-sm-11">
-          <div class="panel panel-default">
+          <div class="card ">
               <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Quality Parameter Library Preparation Information</h4></div>
-              <div class="panel-body">
+              <div class="card-header"><h4>Quality Parameter Library Preparation Information</h4></div>
+              <div class="card-body">
                 <table class="table table-hover">
                     <thead>
                       <tr>
@@ -180,12 +180,12 @@
 {% endif %}
 
 {% if sample_information.lib_prep_param_heading %}
-  <div class="row row-space-2 margin-b-4">
+  <div class="row mt-2 mb-4">
       <div class="col-sm-11">
-          <div class="panel panel-default">
+          <div class="card ">
               <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Library Preparation Quality Parameter Information</h4></div>
-              <div class="panel-body">
+              <div class="card-header"><h4>Library Preparation Quality Parameter Information</h4></div>
+              <div class="card-body">
                 <table class="table table-hover">
                     <thead>
                       <tr>
@@ -212,12 +212,12 @@
 
 
 {% if sample_information.pool_heading %}
-  <div class="row row-space-2 margin-b-4">
+  <div class="row mt-2 mb-4">
       <div class="col-sm-11">
-          <div class="panel panel-default">
+          <div class="card ">
               <h3>Information for Pool definition for sample {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Pool Information</h4></div>
-              <div class="panel-body">
+              <div class="card-header"><h4>Pool Information</h4></div>
+              <div class="card-body">
                 <table class="table table-hover">
                     <thead>
                       <tr>

@@ -32,7 +32,7 @@ class ProfileCreationForm(forms.ModelForm):
         self.helper.layout = layout.Layout(
             layout.Div(
                 layout.HTML(
-                    """<div class="panel-heading"><h3 class="panel-title">User data</h3></div>"""
+                    """<div class="card-header"><h3 class="panel-title">User data</h3></div>"""
                 ),
                 layout.Div(
                     layout.Div(
@@ -45,9 +45,9 @@ class ProfileCreationForm(forms.ModelForm):
                         layout.Field("profileExtension"),
                         css_class="col-md-6",
                     ),
-                    css_class="row panel-body",
+                    css_class="row card-body",
                 ),
-                css_class="panel panel-default",
+                css_class="card ",
             ),
         )
 
@@ -84,7 +84,7 @@ class UserCreationForm(UserCreationForm):
         self.helper.layout = layout.Layout(
             layout.Div(
                 layout.HTML(
-                    """<div class="panel-heading"><h3 class="panel-title">Researcher data</h3></div>"""
+                    """<div class="card-header"><h3 class="panel-title">Researcher data</h3></div>"""
                 ),
                 layout.Div(
                     layout.Div(
@@ -104,8 +104,8 @@ class UserCreationForm(UserCreationForm):
                         layout.Field("password2"),
                         css_class="col-md-6",
                     ),
-                    css_class="row panel-body",
+                    css_class="row card-body",
                 ),
-                css_class="panel panel-default",
+                css_class="card ",
             ),
         )

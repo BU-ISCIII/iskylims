@@ -14,12 +14,12 @@
     width: 390px;
 </style>
 {% if ERROR %}
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
-        <div class="col-sm-6  col-sm-offset-3"">
+        <div class="col-sm-6  offset-3"">
             <div class="panel panel-warning">
-                <div class="panel-heading"><h3> Result of your request</h3></div>
-                <div class="panel-body">
+                <div class="card-header"><h3> Result of your request</h3></div>
+                <div class="card-body">
 
                         <p>{{ERROR}}</p>
 
@@ -29,18 +29,18 @@
     </div> <!--// end row -->
 {% endif %}
     <!--  Start Run information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4>
+            <div class="card ">
+                <div class="card-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4>
                 That have been found for the selected period from : {{ display_stats_per_time.dates }}
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
-            <div class="panel panel-default">
-                <div class="panel-heading"><h4>Runs graphics  </h4></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h4>Runs graphics  </h4></div>
+                <div class="card-body">
                     <!-- Run Column Chart will start here-->
                     <div id="run_period_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
@@ -51,9 +51,9 @@
 
 
         <BR>
-        <div class="col-sm-4 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading">These are the Runs found according your query. To get all information of the run , click on it:
+        <div class="col-sm-4 offset-1">
+            <div class="card ">
+                <div class="card-header">These are the Runs found according your query. To get all information of the run , click on it:
                 <button onclick="exportTableToExcel('runsFound')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                 <BR>
                 </div>
@@ -83,11 +83,11 @@
     </div> <!--// end row -->
         <BR>
         <!--  start the disk space utilization  -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h4>Disk space utilization per each Run  </h4></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h4>Disk space utilization per each Run  </h4></div>
+                <div class="card-body">
                     <!-- Run Column Chart will start here-->
                     <div id="disk_usage_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
@@ -100,18 +100,18 @@
     <!--  End Run information -->
 
     <!--  Start Project information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         <BR>
         <div class="col-sm-6">
-            <div class="panel panel-default">
-                <div class="panel-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4>
+            <div class="card ">
+                <div class="card-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4>
                     For the selected period from : {{ display_stats_per_time.dates }}
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
-            <div class="panel panel-default">
-                <div class="panel-heading"><h4>Projects graphics  </h4></div>
-                <div class="panel-body">
+            <div class="card ">
+                <div class="card-header"><h4>Projects graphics  </h4></div>
+                <div class="card-body">
                     <!-- Run Column Chart will start here-->
                     <div id="project_period_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
@@ -122,9 +122,9 @@
 
 
         <BR>
-        <div class="col-sm-4 col-sm-offset-1"">
-            <div class="panel panel-default">
-                <div class="panel-heading">These are the Projects found according your query. To get all information of the Project , click on it:
+        <div class="col-sm-4 offset-1"">
+            <div class="card ">
+                <div class="card-header">These are the Projects found according your query. To get all information of the Project , click on it:
                 <button onclick="exportTableToExcel('projectsFound')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                 <BR>
                 </div>
@@ -156,12 +156,12 @@
     <!--  End Project information -->
 
     <!--  Start Undetermined Barcode information -->
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
         {% for unbar_chart ,lane_number, unbar_graph in display_stats_per_time.unbar_lane_chart %}
       <div class="col-sm-6" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane {{lane_number}}</h3></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h3>Undetermined Barcode Statistics for Lane {{lane_number}}</h3></div>
+          <div class="card-body">
             <div id="{{ unbar_chart }}"> </div>
                 {{ unbar_graph |safe }}
             </div>  <!--  end of panel body  -->
@@ -169,11 +169,11 @@
         </div> <!--// end col-sm-6  -->
         {% endfor %}
 
-    <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-6 col-sm-offset-2" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Unknow Barcode Statistics all Lanes</h3></div>
-          <div class="panel-body">
+    <div class="row mt-2 mb-4">
+      <div class="col-sm-6 offset-2" >
+        <div class="card ">
+          <div class="card-header"><h3>Unknow Barcode Statistics all Lanes</h3></div>
+          <div class="card-body">
                 <!-- Unknow Barcode Pie Chart will start here-->
             <div id="chart-5"> </div>
                 <!-- dumping JavaScript code here -->
@@ -186,11 +186,11 @@
 {% else %}
     <!-- FORM for searching RUN  Information -->
     <BR>
-    <div class="row row-space-2 margin-b-4">
+    <div class="row mt-2 mb-4">
       <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Run Statatistics for a period of time</h3></div>
-          <div class="panel-body">
+        <div class="card ">
+          <div class="card-header"><h3>Run Statatistics for a period of time</h3></div>
+          <div class="card-body">
            <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod" class="form-horizontal">
             {% csrf_token %}
             <div class="form-group required" >
@@ -214,10 +214,10 @@
 
         <!-- Insert the help panel -->
         <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading">Creating Run Statistics </div>
-             <div class="panel-body">
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header">Creating Run Statistics </div>
+             <div class="card-body">
              <p>This form will be used to create Run Statistics. The Tool will search for all those runs which the creation date is between the Start Date and the End Date: <BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
