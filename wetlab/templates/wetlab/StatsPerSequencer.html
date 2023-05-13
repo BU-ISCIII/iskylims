@@ -28,8 +28,8 @@
                     {% for values in error_message %}
                         <h4>{{values}}</h4>
                     {% endfor %}
-                </div> <!--  end of panel body -->
-            </div> <!--  end of panel  -->
+                </div>
+            </div>
         </div> <!--  end of col-sm-7 -->
     </div> <!--  end of row -->
 {% endif %}
@@ -108,7 +108,7 @@
                             <!-- Sequencer pie Chart starts here-->
                                 <div id="run_pie_chart"> </div>
                                 {{ sequencer_data.run_pie_graph |safe }}
-                        </div> <!--  end of panel body -->
+                        </div>
                     </div> <!--// end panel -->
                 </div> <!--// end col-sm-12  -->
                 <div class="col-sm-12" >
@@ -117,7 +117,7 @@
                         <div class="card-body">
                             <h5> Mean value for the time that run starts until {{sequencer_data.sequencer}} ends the sequencing is :</h5>
                             <h5 style="text-align:center"> {{sequencer_data.mean_time_duration}} days</h5>
-                        </div> <!--  end of panel body -->
+                        </div>
                     </div> <!--// end panel -->
                 </div> <!--// end col-sm-12  -->
             </div> <!--// end col-sm-6  -->
@@ -140,7 +140,7 @@
                             {{ sequencer_data.other_sequencers_runs_per_month_graph |safe }}
                         </div> <!--// end col-sm-6  -->
 
-                    </div> <!--  end of panel body -->
+                    </div>
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->

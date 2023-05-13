@@ -39,9 +39,9 @@
                         <p>The system is now processing output files and stored the result in database.</p>
                         <BR>
                         Please check again later.
-                         </div> <!--  end of panel body -->
+                         </div>
                     {% endfor %}
-                </div> <!--  end of panel  -->
+                </div>
             </div> <!--  end of col-sm-7 -->
         </div> <!--  end of row space -->
     {% else %}
@@ -74,8 +74,8 @@
                                 <input class="btn pull-right btn-default" type="submit" value="Corrected fault">
                             </form>
                             <br>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
+                        </div>
+                    </div>
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
         {% elif display_one_run.cancel_run %}
@@ -107,8 +107,8 @@
                                 <input class="btn pull-right btn-default" type="submit" value="Skip Cancel situation">
                             </form>
                             <br>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
+                        </div>
+                    </div>
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
         {% endif %}
@@ -168,8 +168,8 @@
                                                     {% endif %}
                                                 </div>
                                             {% endif %}
-                                        </div> <!--  end of panel body -->
-                                    </div> <!--  end of panel  -->
+                                        </div>
+                                    </div>
                                     {%if display_one_run.library_kit%}
                                         <div class="card ">
                                             <div class="card-header"><h5>Associated Library Kits using on this run :</h5> </div>
@@ -188,16 +188,16 @@
                                                         {% endfor %}
                                                     </tbody>
                                                 </table>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     {% else%}
                                         <div class="card border-danger mb-3">
                                             <div class="card-header"><h5>Associated Library Kits</h5> </div>
                                             <div class="card-body"> There is no Library Kits associated to the run.
                                                 <BR> Contact with your system administrator to get more information.
 
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     {% endif%}
 
                                 </div> <!--  end of col-sm-7 -->
@@ -218,8 +218,8 @@
                                                     </span>
                                                     <div class="circle-progress-value">{{ display_one_run.graphic_value }}%</div>
                                                 </div>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-9 -->
 
                                     <div class="col-sm-9 offset-1">
@@ -228,8 +228,8 @@
                                             <div class="card-body">
                                                 <br>
                                                 <h3 style="text-align:center">{{display_one_run.used_sequencer}}</h3> </div>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-9 -->
 
                                 </div> <!--  end of col-sm-5 -->
@@ -272,8 +272,8 @@
                                                         </tr>
                                                     </tbody>
                                                 </table>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-10 -->
                                 </div> <!--  end of row -->
                             {% endif%}
@@ -317,8 +317,8 @@
                                                         </tr>
                                                     </tbody>
                                               </table>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-4 -->
                                 </div> <!--  end of row -->
                             {% endif%}
@@ -353,8 +353,8 @@
                                                     </tbody>
                                                 </table>
                                             {% endif %}
-                                        </div> <!--  end of panel body -->
-                                    </div> <!--  end of panel  -->
+                                        </div>
+                                    </div>
                                 </div> <!--  end of col-sm-10 -->
                             </div> <!--  end of row -->
                         </div><!-- // end of tab parameters -->
@@ -455,8 +455,8 @@
                                                         </table>
                                                     </div> <!--  end of sm 3 -->
                                                 {% endif%}
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-12 -->
                                 </div> <!--  end of row -->
                             {% endif%}
@@ -471,8 +471,8 @@
                                                 <div id="chart-1"> </div>
                                                 <!-- dumping JavaScript code here -->
                                                 {{ display_one_run.unknow_pie3d |safe }}
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-7 -->
 
                                      <div class="col-sm-5 ">
@@ -495,8 +495,8 @@
                                                         {% endfor %}
                                                     </tbody>
                                                 </table>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-5 -->
                                 </div> <!--  end of row -->
                             {% endif %}
@@ -524,8 +524,8 @@
                                                             {% endfor %}
                                                         </tbody>
                                                     </table>
-                                                </div> <!--  end of panel body -->
-                                             </div> <!--  end of panel  -->
+                                                </div>
+                                             </div>
                                     {% else%}
                                         <div class="card border-danger mb-3">
                                             <div class="card-header">Associated projects: </div>
@@ -533,8 +533,8 @@
                                                 <p>There is no projects associated to the run.</p>
                                                 <BR>
                                                 <p>Contact with your system administrator to get more information.</p>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     {% endif%}
                                 </div> <!--  end of col-sm-6 -->
 
@@ -562,8 +562,8 @@
                                                         </tr>
                                                     </tbody>
                                                 </table>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-6 -->
 
                                 {% endif%}
@@ -589,8 +589,8 @@
                                                         </tr>
                                                     </tbody>
                                                 </table>
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                    </div> <!--  end of col-sm-10 -->
 
                                 {% endif%}
@@ -605,8 +605,8 @@
                                                     <div id="column_chart1"> </div>
                                                     <!-- dumping JavaScript code -->
                                                     {{ display_one_run.run_project_comparation |safe }}
-                                                </div> <!--  end of panel body -->
-                                            </div> <!--  end of panel  -->
+                                                </div>
+                                            </div>
                                         </div> <!--  end of col-sm-10 -->
                                     </div> <!--  end of row -->
                                 {% endif %}
@@ -637,8 +637,8 @@
                                                     </table>
                                                 </div> <!--  end of table wrapper -->
                                             {% endif %}
-                                        </div> <!--  end of panel body -->
-                                    </div> <!--  end of panel  -->
+                                        </div>
+                                    </div>
                                 </div> <!--  end of col-sm-10 -->
                             </div> <!--  end of row -->
                         </div><!-- // end of tab parameters -->
@@ -653,17 +653,17 @@
                                                 <div id="box_chart1"> </div>
                                                 <!-- dumping JavaScript code here -->
                                                 {{ display_one_run.boxplot |safe }}
-                                            </div> <!--  end of panel body -->
+                                            </div>
                                         {% endif %}
                                         {% if display_one_run.not_boxplot %}
                                             <div class="card-header"><h3>Graphic boxplot comparation can not be displayed</h3></div>
                                                 <div class="card-body">
                                                     <p class="text-center">There is only one run in the same year as {{ display_one_run.data.0.1 }}.</p>
                                                     <p class="text-center">For that reason it cannot be compared</p>
-                                                </div> <!--  end of panel body -->
-                                            </div> <!--  end of panel  -->
+                                                </div>
+                                            </div>
                                         {% endif %}
-                                    </div> <!--  end of panel  -->
+                                    </div>
                                 </div> <!--  end of col-sm-10 -->
                             </div> <!--  end of row -->
                         </div><!-- // end of tab graphComparation -->
@@ -732,8 +732,8 @@
                                             <div class="card-header"><h3>{{ key }} </h3></div>
                                             <div class="card-body">
                                                 <img class="promo-block-img img-responsive" src="{{ values }}" >
-                                            </div> <!--  end of panel body -->
-                                        </div> <!--  end of panel  -->
+                                            </div>
+                                        </div>
                                     </div> <!--  end of col-sm-5 -->
                                 {% endfor %}
                             </div>

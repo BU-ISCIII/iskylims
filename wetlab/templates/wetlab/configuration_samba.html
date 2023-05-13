@@ -4,38 +4,35 @@
 {% include "wetlab/menu.html" %}
 {% include 'registration/login_inline.html' %}
 <section class="iskylims">
-{% if error_message %}
-    <div class="row mt-2 mb-4">
-        <div class="col-sm-7 offset-3">
-            <div class="card border-danger mb-3">
-                <div class="card-header"><h3 style="text-align:center">Invalid settings</h3> </div>
-                <div class="card-body">
-                    {% for values in error_message %}
-                        <h4>{{values}}</h4>
-                    {% endfor %}
-                </div> <!--  end of panel body -->
-            </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-7 -->
-    </div> <!--  end of row -->
-{% endif %}
-{% if succesful_settings %}
-    <div class="row mt-2 mb-4">
-        <div class="col-sm-7 offset-3">
+    {% if error_message %}
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-7 offset-3">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3 style="text-align:center">Invalid settings</h3> </div>
+                    <div class="card-body">
+                        {% for values in error_message %}
+                            <h4>{{values}}</h4>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row -->
+    {% endif %}
+    {% if succesful_settings %}
+        <div class="row mt-2 mb-4">
+            <div class="col-sm-7 offset-3">
+                <div class="card">
+                    <div class="card-header"><h3 style="text-align:center">Sucessful Configuration settings</h3> </div>
+                    <div class="card-body">
+                        <h5 style="text-align:center">Your Samba settings are OK</h5>
+                    </div>
+                </div>
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row -->
+
+    {% else %}
+        <div class="container px-4">
             <div class="card">
-                <div class="card-header"><h3 style="text-align:center">Sucessful Configuration settings</h3> </div>
-                <div class="card-body">
-                    <h5 style="text-align:center">Your Samba settings are OK</h5>
-                </div> <!--  end of panel body -->
-            </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-7 -->
-    </div> <!--  end of row -->
-
-{% else %}
-
-  <hr />
-
-    <div class="container px-4">
-        <div class="card">
                 <div class="card-header"><h3 style="text-align:center">Configuration settings for Samba connection</h3></div>
                     <form method="post" enctype="multipart/form-data" name="sambaconfiguration" id="sambaconfiguration" class="form-horizontal well">
                         <input type="hidden" name="action" value="sambaconfiguration"/>
@@ -121,6 +118,6 @@
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
+    {% endif %}
 </section>
-{% endif %}
 {% endblock %}
