@@ -1,0 +1,234 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+<section class="iskylims">
+    {% if ERROR %}
+        <div class="row mt-2 mb-4">
+            <div class="col-md-7 offset-3">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3 style="text-align:center">Invalid definition </h3> </div>
+                    <div class="card-body">
+                            <h4>{{ERROR}}</h4>
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    {% endif %}
+    
+    {% if new_defined_protocol %}
+        <div class="row my-2">
+            <div class="col-md-7 offset-3" >
+                <div class="card">
+                    <div class="card-header"><h3 style="text-align-center">New protocol has been added</h3> </div>
+                    <div class="card-body">
+                        <p class="mt-2">New protocol <strong>{{ new_defined_protocol }}</strong> has been added</p>
+                        <p class="mb-2">Click on the "add Protocol Parameters" button  to define the custom parameters used in the protocol</p>
+                        <button type="button" class="btn btn-outline-secondary float-end" onclick="window.location.href = '/wetlab/createProtocol';">Define New Protocol</button>
+                        <button type="button" class="btn btn-outline-primary float-end me-2" onclick="window.location.href = '/wetlab/defineProtocolParameters={{new_protocol_id}}';">Define Protocol Parameters</button>
+                    </div>  
+            </div>
+        </div> 
+    {% else %}
+        <div class="row my-2">
+            <div class="col">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab" aria-controls="new" aria-selected="true">Add new protocol</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="molecule-tab" data-bs-toggle="tab" data-bs-target="#molecule" type="button" role="tab" aria-controls="molecule" aria-selected="false">Defined molecule protocols</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="other-tab" data-bs-toggle="tab" data-bs-target="#other" type="button" role="tab" aria-controls="other" aria-selected="false">Other defined protocols</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="col-sm-6" >
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">Add a new Protocol</h3> </div>
+                                        <div class="card-body">
+                                            <form method="post" enctype="multipart/form-data" name="addNewProtocol" id="addNewProtocol" class="form-horizontal">
+                                                {% csrf_token %}
+                                                <div class="form-control required">
+                                                    <input type="hidden" name="action" value="addNewProtocol"/>
+                                                    <label class="col-sm-5 control-label">Select Protocol Type</label>
+
+                                                    <div class="col">
+                                                        <select class="form-select"  required = "required" name="protocolType" id="protocolType">
+                                                            <option value="">Choose a value</option>
+                                                            {% for value in defined_protocol_types %}
+                                                                <option value="{{value}}">{{value}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>  
+                                                    <label class="col-sm-5 control-label mt-2">Define new Protocol name</label>
+                                                    <div class="col">
+                                                        <input class="form-control" required = "required" type="text"  name="newProtocolName" size="80">
+                                                    </div>
+                                                    <label class="col-sm-5 control-label mt-2">Description</label>
+                                                    <div class="form-floating">
+                                                        <textarea class="form-control" rows="4" cols="50" name="description" id="description" form="addNewProtocol"></textarea>
+                                                        <label for="description">Describe the use for this protocol</label>
+                                                    </div>
+                                                </div>
+                                                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                                                <input class="btn float-end btn-outline-primary me-2" type="submit" value="Submit" id="btnSubmit">
+                                            </form>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>  
+                        </div>
+                    </div> <!-- end new tab-->
+                    <div class="tab-pane fade" id="molecule" role="tabpanel" aria-labelledby="molecule-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align-center">Protocols already defined for Molecules</h3></div>
+                                    <div class="card-body">
+                                        {% if defined_protocols %}
+                                            <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Molecule Name</th>
+                                                    <th>Protocol Type</th>
+                                                    <th>Protocol Name</th>
+                                                    <th>Protocol Parameter</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for  molecule, prot_type, name, id, add_par in defined_protocols %}
+                                                    <tr>
+                                                        <td>{{ molecule }}</td>
+                                                        <td>{{ prot_type }}</td>
+
+                                                        {% if add_par %}
+                                                            <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
+                                                            <td>Parameters already defined</td>
+                                                        {% else %}
+                                                            <td>{{ name }}</td>
+                                                            <td><button onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';">Define Protocol Parameters</button></td>
+                                                        {% endif %}
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% else %}
+                                            <p>No Protocol  has been defined so far</p>
+                                        {% endif %}
+                                    </div>  
+                                </div>
+                            </div> 
+                        </div>
+                    </div> <!-- end molecule tab-->
+                    <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="card">
+                                    <div class="card-header"><h3 style="text-align:center">Protocols already defined for Library Preparations</h3></div>
+                                    <div class="col">
+                                        <ul class="nav nav-tabs" id="mySubTab" role="tablist">
+                                            {% if other_protocol_list %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link active" id="other-prot-tab" data-bs-toggle="tab" data-bs-target="#other-prot" type="button" role="tab" aria-controls="other-prot" aria-selected="true">Other protocols</button>
+                                                </li>
+                                            {% endif %}
+                                            {% if additional_kits %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link " id="kits-tab" data-bs-toggle="tab" data-bs-target="#kits" type="button" role="tab" aria-controls="kits" aria-selected="false">Aditional Lot Kits</button>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                       
+                                        <div class="tab-content" id="subTabContent">
+                                            {% if other_protocol_list %}
+                                                <div class="tab-pane fade show active" id="other-prot" role="tabpanel" aria-labelledby="other-prot-tab">
+                                                    <div class="container">
+                                                        <div class="row mt-4">
+                                                            <div class="card">
+                                                                <div class="card-header"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
+                                                                <div class="card-body">
+                                                                    <table class="table table-hover">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Protocol Type</th>
+                                                                                <th>Protocol Name</th>
+                                                                                <th>Protocol Parameter</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for   prot_type, name, id, add_par in other_protocol_list %}
+                                                                                <tr>
+                                                                                    <td>{{ prot_type }}</td>
+                    
+                                                                                    {% if add_par %}
+                                                                                        <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
+                                                                                        <td>Parameters already defined</td>
+                                                                                    {% else %}
+                                                                                        <td>{{ name }}</td>
+                                                                                        <td><input class="btn pull-center btn-default" type="submit" onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';" value ="Define Library Preparation Parameters"/></td>
+                                                                                    {% endif %}
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div> 
+                                                    </div>
+                                                </div> <!--  end of other-prot -->
+                                            {% endif %}
+                                            {% if additional_kits %}
+                                                <div class="tab-pane fade" id="kits" role="tabpanel" aria-labelledby="kits-tab">
+                                                    <div class="container">
+                                                        <div class="row mt-4">
+                                                            <div class="col-md-6">
+                                                                <div class="card ">
+                                                                    <div class="card-header"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
+                                                                    <div class="card-body">
+                                                                        <table class="table table-hover">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>Protocol Name</th>
+                                                                                    <th>Additional User Lot Kit defined</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for name, id, add_kit in additional_kits %}
+                                                                                    <tr>
+                                                                                        {% if add_kit == "Defined" %}
+                                                                                            <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
+                                                                                            <td>Parameters already defined</td>
+                                                                                        {% else %}
+                                                                                            <td>{{ name }}</td>
+                                                                                            <td><input class="btn pull-center btn-default" type="submit" onclick="window.location.href = '/wetlab/defineAdditionalKits={{id}}';" value ="Define Additional Kits"/></td>
+                                                                                        {% endif %}
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div> 
+                                                        </div>
+                                                    </div> 
+                                                </div> <!--  end of kits -->
+                                            {% endif %}
+                                        </div> 
+                                    </div> <!--  end of libPrepParameterProtocol -->
+                                </div> <!--  end of tab -->
+                            </div>
+                        </div>
+                    </div> <!-- end other tab-->
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

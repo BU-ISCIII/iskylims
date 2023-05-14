@@ -213,7 +213,9 @@ def get_additional_kits_list(app_name):
         additional index
     """
     additional_kits = []
-    if ProtocolType.objects.filter(molecule=None, apps_name__exact=app_name).exists():
+    if ProtocolType.objects.filter(
+        molecule=None, protocol_type__icontains="additional", apps_name__exact=app_name
+    ).exists():
         protocol_types = ProtocolType.objects.filter(
             molecule=None, apps_name__exact=app_name
         )
@@ -404,8 +406,6 @@ def set_additional_kits(form_data, user):
             name__exact=kit_data["commercial_kit"]
         ).last()
         kit_data["user"] = user
-        AdditionaKitsLibPrepare.objects.create_additional_kit(
-            kit_data
-        )
+        AdditionaKitsLibPrepare.objects.create_additional_kit(kit_data)
         kit_names.append(kit_data["kitName"])
     return kit_names

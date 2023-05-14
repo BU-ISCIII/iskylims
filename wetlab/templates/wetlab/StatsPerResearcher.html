@@ -20,7 +20,7 @@
                     <div class="card-body">
                         <h3>{{researcher_statistics.ERROR.0}}</h3>
                     </div>
-                </div> <!--// end panel -->
+                </div>
             </div> <!--// end col-sm-12  -->
         </div> <!--// end row -->
 
@@ -75,16 +75,16 @@
                                                 {% else %}
                                                     <div class="card-body">
                                                         <h5> There are no Samples runs on this sequencer </h5>
-                                                    </div> <!--// end panel -->
+                                                    </div>
                                                 {% endif %}
-                                            </div> <!--// end panel -->
+                                            </div>
                                         </div> <!--// end col-sm-12  -->
                                     </div> <!--// end  tab {{sequencer}} -->
                                 {% endfor %}
                             </div> <!--// end tabs -->
                         </div> <!--// end col-sm-12  -->
                     </div> <!--// end panel body-->
-                </div> <!--// end panel -->
+                </div>
             </div> <!--// end col-sm-12  -->
         </div> <!--// end row -->
 
@@ -104,7 +104,7 @@
                                 {{ researcher_statistics.project_graphic|safe }}
                         </div> <!--// end col-sm-6  -->
                     </div>
-                </div> <!--// end panel -->
+                </div>
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->
 
@@ -127,7 +127,7 @@
                                 {{ researcher_statistics.mean_graphic|safe }}
                         </div> <!--// end col-sm-6  -->
                     </div>
-                </div> <!--// end panel -->
+                </div>
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->
 
@@ -140,7 +140,7 @@
                         <!-- comparations chart starts here-->
 
                         </div>
-                    </div> <!--// end panel -->
+                    </div>
                 </div> <!--// end col-sm-8  -->
             </div> <!--// end row -->
         {% endif %}
@@ -187,8 +187,8 @@
                 <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
             <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+         </div>  
+        </div>
         </div> <!--// end col-sm-7  -->
 
         <!-- Insert the help panel -->
@@ -200,8 +200,8 @@
              <p>Statistics information for the projects created by a Investigator<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
-            </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+            </div>  
+        </div>
         <!-- Insert the Help window when clicking on the button -->
         {% include 'wetlab/statistics-researcher-help.html' %}
 
