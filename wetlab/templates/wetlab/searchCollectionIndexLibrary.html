@@ -13,7 +13,7 @@
 </style>
 {% if matched_collection_index %}
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-3">
             <div class="card ">
                 <div class="card-header">The following list matches with yor search: </div>
@@ -39,7 +39,7 @@
 
 {% else %}
     {% if not_found_matchs %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6 offset-3" >
                 <div class="panel panel-warning">
                     <div class="card-header"><h3>No Results</h3></div>
@@ -51,7 +51,7 @@
         </div> <!--  end of row -->
     {% endif %}
     {% if error_message %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6 offset-3" >
                 <div class="card border-danger mb-3">
                     <div class="card-header"><h3>Incorrect input parameters</h3></div>
@@ -66,7 +66,7 @@
     {% endif %}
 
     <!-- FORM for searching index Library -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
       <div class="col-sm-7" >
         <div class="card ">
           <div class="card-header"><strong>Searching Collection Index Kit</strong></div>
@@ -74,37 +74,37 @@
             <form method="post" enctype="multipart/form-data" name="searchcollectionindexkit" id="searchcollectionindexkit" class="form-horizontal well">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="searchcollectionindexkit"/>
-             <div class="form-group">
+             <div class="form-control">
                   <label class="col-sm-5  control-label" for="collectionindexkitname" >Collection Index Kit name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="collectionindexkitname" id="collectionindexkitname" size="100" maxlength="200"></div>
              </div>  <!-- end from-group   -->
              <BR>
-             <div class="form-group">
+             <div class="form-control">
                   <label class="col-sm-5  control-label" for="adapter1" >Adapter 1</label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="adapter1" id="adapter1" size="100" maxlength="200"></div>
 
              </div>  <!-- end from-group   -->
              <BR>
-             <div class="form-group">
+             <div class="form-control">
                   <label class="col-sm-5  control-label" for="adapter2" >Adapter 2</label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="adapter2" id="adapter2" size="100" maxlength="200"></div>
 
              </div>  <!-- end from-group   -->
              <BR>
-             <div class="form-group">
+             <div class="form-control">
                   <label class="col-sm-5  control-label" for="indexname" >Index name</label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="indexname" id="indexname" size="10" maxlength="50"></div>
 
              </div>  <!-- end from-group   -->
              <BR>
-             <div class="form-group">
+             <div class="form-control">
                   <label class="col-sm-5  control-label" for="indexbase" >Index Sequence</label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="indexbase" id="indexbase" size="10" maxlength="50"></div>
 
              </div>  <!-- end from-group   -->
              <br>
-                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->

@@ -161,7 +161,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="createPool"/>
                                             <input type="hidden" name="platform" value="{{key}}"/>
-                                            <div class="form-group required ">
+                                            <div class="form-control required ">
                                                 <label class="col-sm-5 control-label">Define the Pool Name</label>
                                                 <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="poolName" size="80"></div>
                                                 <br><br><br>
@@ -192,7 +192,7 @@
                                             </table>
                                             <br><br>
                                             <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                            <input class="btn pull-right btn-primary" name ="{{key}}" type="submit" value="Submit">
+                                            <input class="btn float-end btn-outline-primary" name ="{{key}}" type="submit" value="Submit">
                                         </form>
                                     </div>  <!--  end of panel body  -->
                                 </div>

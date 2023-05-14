@@ -5,7 +5,7 @@
 {% block content %}
 {% csrf_token %}
 {% if get_user_names %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
       <div class="col-sm-8 offset-2">
           <div class="card ">
             <div class="card-header">Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }} </div>
@@ -17,7 +17,7 @@
     </div> <!--  end of row -->
       <!--    Progress Step bar for the Form -->
     <BR>
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8 offset-2" >
             <ol class="track-progress" data-steps="3">
                 <li class="done"> <span>Upload Sample Sheet</span><i></i></li><!--
@@ -27,7 +27,7 @@
         </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
     <BR>
-      <div class="row mt-2 mb-4">
+      <div class="row my-2">
         <div class="col-sm-8 offset-2">
             <p>The following information have been collected from the Sample Sheet uploaded previously.<br>
             It contains the userid information. Correct in the user name field if this information need to be changed</p>
@@ -36,7 +36,7 @@
     </div> <!--// end row -->
 
     <!-- Prepare the FORM for step 2 -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8" >
         <div class="card ">
           <div class="card-header">Form to upload the Sample Sheet file. Run Parameters definition</div>
@@ -44,7 +44,7 @@
             <form method="post" required name="getSample2" id="getSample2" class="form-horizontal">
             {% csrf_token %}
                 <input type="hidden"name="action" value="displayResult"/>
-                    <div class="form-group required">
+                    <div class="form-control required">
                         <label class="col-sm-4 control-label" for="experimentname">Run Name : </label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text" name="experimentname" size="60" maxlength="50" value="{{ get_user_names.experiment_name }}"></div>
                         <br><br>
@@ -53,7 +53,7 @@
                         <br><br>
                     </div>
                     {% for key, values in get_user_names.projects_user %}
-                         <div class="form-group required">
+                         <div class="form-control required">
                              <label class="col-sm-10" for="project">Project name : {{ key }}</label><br><br>
                                <input type="hidden" name="project" value="{{key}}"/>
                              <label class="col-sm-4 control-label" for="username" >User name : </label>
@@ -77,13 +77,13 @@
                      <input type="hidden" name="runname" value="{{get_user_names.runname}}"/>
                     <br>
                     <br>
-                    <input id = "btnSubmit"  class="btn pull-right btn-primary" type="submit" value="Submit">
+                    <input id = "btnSubmit"  class="btn float-end btn-outline-primary" type="submit" value="Submit">
 
           </form>
           </div> <!--// end panel  -->
          </div> <!--// end col-sm-8  -->
          </div> <!--// end row -->
-          <div class="row mt-2 mb-4">
+          <div class="row my-2">
             <div class="col-sm-8" >
                 <div class="card ">
                     <div class="card-header">Notes for user validation</div>
@@ -144,7 +144,7 @@
           {%if key == "runname" %}
           <BR>
 
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-8 offset-2" >
                     <ol class="track-progress" data-steps="3">
                         <li class="done"> <span>Upload Sample Sheet</span><i></i></li><!--
@@ -154,7 +154,7 @@
                 </div> <!--// end col-sm-4  -->
             </div> <!--// end row -->
         <BR>
-             <div class="row mt-2 mb-4">
+             <div class="row my-2">
                <div class="col-sm-8 offset-2">
                  <div class="card ">
                    <div class="card-header"><b>Run configuration have been sucessfully stored</b><BR>For the run name : <b>{{ val }} </b></div>
@@ -170,7 +170,7 @@
 <!--    Progress Step bar for the Form -->
     <BR>
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8 offset-2" >
             <ol class="track-progress" data-steps="3">
                 <li class="active"> <span>Upload Sample Sheet</span><i></i></li><!--
@@ -182,7 +182,7 @@
 
     <BR>
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8 offset-1">
             <p>This FORM will be used to generated the input file that <a href="https://basespace.illumina.com/home/index">BaseSpace</a> requires to execute the run</p>
             <BR>
@@ -190,25 +190,25 @@
 
         </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7" >
         <div class="card ">
           <div class="card-header">Form to upload the Sample Sheet file</div>
           <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="getSample" id="getSample" class="form-horizontal">
             {% csrf_token %}
-                <div class="form-group required">
+                <div class="form-control required">
                   <input type="hidden" name="action" value="uploadFile"/>
                   <label class="col-sm-4 control-label" for="filecsv" >Upload Sample Sheet file </label>
                   <div class="col-sm-8"><input class="form-control" type="file" required = "required" accept ="text/csv" name="myfile"size="80"></div>
                 <br>
                 <br>
                 </div>
-                <!--<div class="form-group">
+                <!--<div class="form-control">
                   <label class="col-sm-4 control-label" for="center" >Fill the Request Center </label>
                   <div class="col-sm-8"><input class="form-control" type="text" name="center" size="60" maxlength="100"></div>
                 </div>-->
-                <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
             </form>
 
          </div>  <!--  end of panel body  -->

@@ -27,7 +27,7 @@
 
 
 {% if molecule_protocol %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>Assign the Molecule Protocol to following samples.</h3></div>
@@ -92,7 +92,7 @@
 
                         <br>
                         <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                        <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                        <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                     </form>
                     <script>
                         $(document).ready(function () {
@@ -120,7 +120,7 @@
 {% elif molecule_recorded %}
     {% if molecule_recorded.incomplete_sample_ids %}
         {% if molecule_recorded.heading %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-6">
                     <div class="card ">
                         <div class="card-header"><h3>The following molecules are now assigned to Protocol.</h3></div>
@@ -147,7 +147,7 @@
                 </div> <!--  end of col-sm-12 -->
             </div> <!--  end of row -->
         {% endif %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12">
                 <div class="panel panel-warning">
                     <div class="card-header"><h3>Information missing.</h3></div>
@@ -214,7 +214,7 @@
 
                             <br>
                             <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                            <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                         </form>
                         <script>
                             $(document).ready(function () {
@@ -243,7 +243,7 @@
 
         {% if show_molecule_parameters %}
             {% if not show_molecule_parameters.lot_kit %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="col-sm-10 offset-1">
                         <div class="card border-danger mb-3">
                             <div class="card-header"><h3>Not Available User Lot Kits.</h3></div>
@@ -258,7 +258,7 @@
                     </div> <!--  end of col-sm-6 -->
                </div> <!--  end of row -->
             {% endif %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-12">
                     <div class="card ">
                         <div class="card-header"><h3>Update the following molecules with quality parameters.</h3></div>
@@ -315,7 +315,7 @@
                                 </script>
                                 <br><br>
                                 <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                                <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                             </form>
                             <script>
                                 $(document).ready(function () {
@@ -356,7 +356,7 @@
     {% endif %}
 
 {% elif molecule_parameters_updated  %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>The following molecules have been updated with quality Parameters.</h3></div>
@@ -381,7 +381,7 @@
        </div> <!--  end of col-sm-12 -->
    </div> <!--  end of row -->
    {% if show_molecule_parameters %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
            <div class="col-sm-12">
                <div class="card ">
                    <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
@@ -442,7 +442,7 @@
                           </script>
                           <br><br>
                           <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                          <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                          <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
 
                        </form>
                        <script>
@@ -470,7 +470,7 @@
    {%endif %}
 
 {% elif molecule_use %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>Molecule uses updated.</h3></div>
@@ -542,7 +542,7 @@
                                         </div> <!--  end of table wrapper  -->
                                         <br><br>
                                         <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                      </form>
                                 {% else %}
                                     <h4> Your pending  molecule list is empty </h4>
@@ -616,7 +616,7 @@
 
                                         <br><br>
                                         <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                      </form>
                                  </div>  <!--  end of panel body  -->
                             {% else %}
@@ -670,7 +670,7 @@
                                             </script>
                                             <br><br>
                                             <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                                            <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                                         </div>
                                     </form>
                                    <script>

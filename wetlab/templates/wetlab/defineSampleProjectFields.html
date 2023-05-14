@@ -12,7 +12,7 @@
     }
  </style>
 {% if error_message %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3">
             <div class="card border-danger mb-3">
                 <div class="card-header"><h3 style="text-align:center">Unable to upload the schema file</h3> </div>
@@ -141,7 +141,7 @@
                                                 </div> <!--// end col-sm-8  -->
                                             </div> <!--// end row -->
                                         </div>
-                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                     </form>
                                     <script>
                                         $(document).ready(function () {
@@ -180,16 +180,16 @@
                                             <div class="card " >
                                                 <div class="card-header"><h3  style="text-align:center">Upload schema file for {{sample_project_data.sample_project_name}} </h3></div>
                                                 <div class="card-body" >
-                                                    <div class="form-group required">
+                                                    <div class="form-control required">
                                                         <label class="col-sm-5  control-label" for="jsonSchema" ><td> Upload Schema</td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="file" accept=".json" name="jsonSchema" id="jsonSchema" ></div>
                                                     </div>  <!-- end from-group   -->
                                                     <BR>
-                                                    <div class="form-group required">
+                                                    <div class="form-control required">
                                                         <label class="col-sm-5  control-label" for="classification" ><td>Property where to fetch fields</td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="classification" id="classification" ></div>
                                                     </div>  <!-- end from-group   -->
-                                                    <div class="form-group">
+                                                    <div class="form-control">
                                                         <label class="col-sm-5  control-label" for="subfilter" ><td>Select the values to be filtered</td> </label>
                                                         <div class="col-sm-5"><textarea class="form-control" name="subfilter" value="" id="subfilter" rows="4" cols="60" maxlength="220"></textarea></div>
 
@@ -197,8 +197,8 @@
                                                 </div> <!-- End   Panel Body   -->
                                             </div>  <!-- End   Panel    -->
 
-                                            <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                            <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                         </div> <!-- end col-sm-8 -->
 
                                     </form>

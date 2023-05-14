@@ -3,7 +3,7 @@
 {% block content %}
 {% csrf_token %}
 {% if sample_types.error_message %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-2" >
             <div class="panel panel-warning">
                 <div class="card-header"><h3>Unable to record your Sample Type</h3> </div>
@@ -20,7 +20,7 @@
 {% endif %}
 <BR>
 
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-12" >
         {% if sample_types.new_defined_sample_type %}
             <div class="col-sm-6" >
@@ -40,7 +40,7 @@
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addNewSampleType" id="addNewSampleType" class="form-horizontal">
                         {% csrf_token %}
-                        <div class="form-group required">
+                        <div class="form-control required">
                             <input type="hidden" name="action" value="addNewSampleType"/>
                             <label class="col-sm-5 control-label">Type of sample</label>
                             <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sampleTypeName" size="80"></div>
@@ -54,7 +54,7 @@
                         <div class="col-sm-6" >
                             <p>Check the <strong>Mandatory</strong> Fields when recording a new Sample</p>
                         </div>
-                        <div class="form-group">
+                        <div class="form-control">
                             {% for values  in sample_types.optional_values  %}
                                 <label class="col-sm-5 control-label">{{values}}</label>
                                 <div class="col-sm-6"><input class="form-control" type="checkbox"  name="{{values}}" size="80"></div>
@@ -63,7 +63,7 @@
 
                             <BR> <BR> <BR>
                         </div>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
                     </form>
                 </div>  <!--  end of panel body  -->
                 <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
@@ -72,7 +72,7 @@
     </div> <!--// end of sm-12 -->
 </div> <!--// end row -->
 {% if sample_types.defined_sample_types %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8" >
             <BR> <BR> <BR>
             <div class="card ">

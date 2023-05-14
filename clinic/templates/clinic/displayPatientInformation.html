@@ -83,7 +83,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="addPatientProject"/>
                             <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
-                            <div class="form-group">
+                            <div class="form-control">
                                 <label class="col-sm-5 control-label" for="projectName" >Assign project to patient</label>
                                 <div class="col-sm-4">
                                     <select class="form-control" name="projectName" id="projectName">
@@ -97,7 +97,7 @@
                              </div>  <!-- end from-group   -->
 
                             <div class="col-sm-10 offset-1">
-                                <input class="btn pull-right btn-primary" type="submit" value="Assign new Project">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Assign new Project">
                             </div>
                         </form>
                     {% endif %}
@@ -139,31 +139,31 @@
                                     <input type="hidden" name="action" value="addAdditionalInformation"/>
                                     <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
 
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="address" >Patient Address </label>
                                         <div class="col-sm-5"><textarea rows="2" cols="25" name="address" form="addAdditionalInformation"></textarea></div>
                                     </div>  <!-- end from-group   -->
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="phone" >Patient Phone Number </label>
                                         <div class="col-sm-5"><input class="form-control" type="text" name="phone" id="phone" size="80" maxlength="80"></div>
                                     </div>  <!-- end from-group   -->
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="email" >Patient email </label>
                                         <div class="col-sm-5"><input class="form-control" type="text" name="email" id="email" size="80" maxlength="80"></div>
                                     </div>  <!-- end from-group   -->
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="birthday" >Patient Birthday </label>
                                         <div class="col-sm-5"><input class="form-control" type="date" name="birthday" id="birthday" size="80" maxlength="80"></div>
                                     </div>  <!-- end from-group   -->
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="smoker" >Patient is Smoker? </label>
                                         <div class="col-sm-5"><input class="form-control" type="text" name="smoker" id="smoker" size="80" maxlength="80"></div>
                                     </div>  <!-- end from-group   -->
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="notificationPreference" >Notification Preferences</label>
                                         <div class="col-sm-5"><input class="form-control" type="text" name="notificationPreference" id="notificationPreference" size="80" maxlength="80"></div>
                                     </div>  <!-- end from-group   -->
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5  control-label" for="comments" >Comments </label>
                                         <div class="col-sm-5"><textarea rows="2" cols="25" name="comments" form="addAdditionalInformation"></textarea></div>
 
@@ -171,8 +171,8 @@
                                     <br>
 
                                     <div class="col-sm-10 offset-1">
-                                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                        <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                     </div>
 
                                 </form>
@@ -225,7 +225,7 @@
                                         <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
 
                                         <div class="col-sm-10 offset-1">
-                                            <input class="btn pull-right btn-primary" type="submit" value="Create New Patient History">
+                                            <input class="btn float-end btn-outline-primary" type="submit" value="Create New Patient History">
                                         </div>
                                     </form>
                                 </div>  <!--  end of panel body  -->

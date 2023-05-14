@@ -10,7 +10,7 @@
     }
  </style>
 {% if sample_information.sample_definition_heading %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-11">
             <div class="card ">
                 <h3>Information for Sample {{ sample_information.sample_definition.0 }} </h3>
@@ -88,7 +88,7 @@
                     {% if sample_information.molecule_definition_heading %}
 
                         {% for molecule_values, molecule_param_heading , molecule_param_values in sample_information.molecule_definition_data %}
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-12">
                                     <div class="card ">
                                         <div class="card-body">
@@ -156,12 +156,12 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="repeat_extraction">
                             <input type="hidden" name="sample_id" value="{{sample_information.sample_id}}">
-                            <input class="btn pull-right btn-default" type="submit" value="Repeat Molecule Extraction">
+                            <input class="btn float-end btn-default" type="submit" value="Repeat Molecule Extraction">
                         </form>
                         <br>
 
                     {% else %}
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-11">
                                 <div class="card ">
                                     <div class="card-header"><h4>Molecule Information</h4></div>
@@ -178,7 +178,7 @@
                 {% if sample_information.library_definition_heading %}
                     <div id="library" class="tabcontent">
                         {% for lib_values, lib_param_heading , lib_param_values, lib_prep_id , lib_prep_code, molecule_id, sample_id in sample_information.lib_prep_data %}
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-12">
                                     <div class="card ">
                                         <div class="card-body">
@@ -209,7 +209,7 @@
 
                                             {% if lib_param_heading is not None %}
 
-                                              <div class="row mt-2 mb-4">
+                                              <div class="row my-2">
                                                   <div class="col-sm-12">
                                                       <div class="card ">
                                                           <div class="card-header"><h4>Quality Parameter Library Preparation Information</h4></div>
@@ -242,7 +242,7 @@
                                                 <input type="hidden" name="sample_id" value="{{sample_id}}">
                                                 <input type="hidden" name="molecule_code_id" value="{{molecule_id}}">
                                                 <input type="hidden" name="lib_prep_id" value="{{lib_prep_id}}">
-                                                <input class="btn pull-right btn-default" type="submit" value="Repeat by reusing extraction">
+                                                <input class="btn float-end btn-default" type="submit" value="Repeat by reusing extraction">
                                             </form>
                                         </div>
                                     </div>
@@ -255,7 +255,7 @@
 
                 {% if sample_information.pool_heading %}
                     <div id="runData" class="tabcontent">
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-11">
                                 <div class="card ">
                                     <h3>Information for Pool definition for sample {{ sample_information.sample_definition.0 }} </h3>
@@ -282,7 +282,7 @@
                                                                 {% csrf_token %}
                                                                 <input type="hidden" name="action" value="repeat_pool">
                                                                 <input type="hidden" name="lib_prep_id" value="{{lib_prep_id}}">
-                                                                <input class="btn pull-right btn-default" type="submit" value="Reuse in new Pool">
+                                                                <input class="btn float-end btn-default" type="submit" value="Reuse in new Pool">
                                                             </form>
                                                         </td>
                                                     </tr>
@@ -299,7 +299,7 @@
                 {% if  sample_information.molecule_heading_lot_kits or sample_information.heading_add_kits %}
                     <div id="userLotKit" class="tabcontent">
                         {% if  sample_information.molecule_heading_lot_kits %}
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-11">
                                     <div class="card ">
                                         <h3>Information for User Lot kits used in Molecule Extraction for  {{ sample_information.sample_definition.0 }} </h3>
@@ -334,7 +334,7 @@
                             </div> <!--end of row     -->
                         {% endif %}
                         {% if  sample_information.protocols_add_kits %}
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-11">
                                     <div class="card ">
                                         <h3>Information for User Lot kits used for the library preparation {{ sample_information.sample_definition.0 }} </h3>
@@ -373,7 +373,7 @@
                             </div> <!--  end of row -->
                         {% endif %}
                         {% if  sample_information.heading_run_kits %}
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-11">
                                     <div class="card ">
                                         <h3>Information for User Lot kits used for the Run preparation {{ sample_information.sample_definition.0 }} </h3>
@@ -417,7 +417,7 @@
                 {% if sample_information.heading_samples_info %}
                     {% include "core/graphic_chart_functionality.html" %}
                     <div id="sequencing" class="tabcontent">
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-12">
                                 <div class="col-sm-6 offset-1">
                                     <div class="card ">
@@ -461,7 +461,7 @@
                             </div> <!--// end col-sm-12  -->
                         </div> <!--  end of row -->
 
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-10 offset-1" >
                                 <div class="card ">
                                     <div class="card-header"><h3> Sample Quality Information</h3></div>
@@ -487,7 +487,7 @@
                             </div> <!--// end col-sm-6  -->
                         </div> <!--  end of row -->
 
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-10 offset-1" >
                                 <div class="card ">
                                     <div class="card-header"><h3> Percentage of the Sample inside the project</h3></div>

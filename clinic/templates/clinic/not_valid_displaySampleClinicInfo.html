@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-11">
         <div class="card ">
             <h3>Information for Sample {{ sample_information.sample_definition.0 }} </h3>
@@ -54,7 +54,7 @@
 </div> <!--  end of row -->
 
 {% if sample_information.molecule_definition %}
-  <div class="row mt-2 mb-4">
+  <div class="row my-2">
       <div class="col-sm-11">
           <div class="card ">
               <h3>Information for Molecule using the sample {{ sample_information.sample_definition.0 }} </h3>
@@ -85,7 +85,7 @@
 {% endif %}
 
 {% if sample_information.parameter_heading_values %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-11">
             <div class="card ">
                 <h3>Parameter Information for Molecules using for the sample {{ sample_information.sample_definition.0 }} </h3>
@@ -118,7 +118,7 @@
 
 
 {% if sample_information.library_definition_heading %}
-  <div class="row mt-2 mb-4">
+  <div class="row my-2">
       <div class="col-sm-11">
           <div class="card ">
               <h3>Library Preparation Information for sample  {{ sample_information.sample_definition.0 }} </h3>
@@ -149,7 +149,7 @@
 {% endif %}
 
 {% if sample_information.library_parameter_heading %}
-  <div class="row mt-2 mb-4">
+  <div class="row my-2">
       <div class="col-sm-11">
           <div class="card ">
               <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
@@ -180,7 +180,7 @@
 {% endif %}
 
 {% if sample_information.lib_prep_param_heading %}
-  <div class="row mt-2 mb-4">
+  <div class="row my-2">
       <div class="col-sm-11">
           <div class="card ">
               <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
@@ -212,7 +212,7 @@
 
 
 {% if sample_information.pool_heading %}
-  <div class="row mt-2 mb-4">
+  <div class="row my-2">
       <div class="col-sm-11">
           <div class="card ">
               <h3>Information for Pool definition for sample {{ sample_information.sample_definition.0 }} </h3>

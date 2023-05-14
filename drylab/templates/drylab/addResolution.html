@@ -12,7 +12,7 @@
 					<h5>Your resolution proposal has been successfully recorded with Resolution Number {{created_resolution.resolution_number}}</h5>
 					<br><br>
 					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-					<input class="btn pull-right btn-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
+					<input class="btn float-end btn-outline-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
 				</div>
             </div>
         </div> <!--  end of col-sm-10 -->
@@ -37,7 +37,7 @@
 							{% endif %}
 							<br>
 
-				             	<div class="form-group required ">
+				             	<div class="form-control required ">
 				                	<label class="col-sm-5 control-label" for="resolutionEstimatedDate" >Estimated resolution date</label>
 				                	<div class="col-sm-5"><input class="form-control" required = "required" type="date" name="resolutionEstimatedDate" id="resolutionEstimatedDate"></div>
 				                	<br><br>
@@ -60,7 +60,7 @@
 	                                </div>  <!-- end  radio -->
 			                        <br><br>
 								</div>  <!-- end from-group   -->
-								<div class="form-group ">
+								<div class="form-control ">
 									<label class="col-sm-5 control-label" for="resolutionNotes" >User Notes</label>
 			                        <div class="col-sm-5">
 			                            <textarea class="form-control" name="resolutionNotes" value="" id="resolutionNotes" rows="4" cols="60" maxlength="440"></textarea>
@@ -112,8 +112,8 @@
 							<br>
 		                    <br>
 
-			                    <input class="btn btn-primary" type="reset" value="Reset Fields">
-			                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+			                    <input class="btn btn-outline-primary" type="reset" value="Reset Fields">
+			                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
 
 						</form>
 		                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>

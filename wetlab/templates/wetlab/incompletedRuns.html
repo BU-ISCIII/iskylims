@@ -14,7 +14,7 @@
 }
 </style>
 {% if display_incompleted_run %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6">
             <div class="card ">
                 <div class="card-header"><h3>Runs in Recorded state</h3></div>
@@ -55,7 +55,7 @@
     </div> <!--  end of row -->
 
     {% if display_incompleted_run.error or display_incompleted_run.cancelled %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6">
                 {% if display_incompleted_run.error %}
                     <div class="card ">
@@ -121,7 +121,7 @@
         </div> <!--  end of row -->
     {% endif %}
     {% if display_incompleted_run.other %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6">
                 <div class="card ">
 
@@ -155,7 +155,7 @@
     {% endif %}
 
 {% else %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7">
             <div class="card ">
                 <div class="card-header"><h3>All runs are Completed</h3></div>

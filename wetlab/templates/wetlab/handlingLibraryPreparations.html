@@ -11,7 +11,7 @@
         }
 </style>
 {% if ERROR %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-10">
             <div class="card border-danger mb-3">
                 <div class="card-header"><h3>Unable to record your request.</h3></div>
@@ -29,7 +29,7 @@
 
 {% if lib_prep_protocol_parameters %}
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>Update the following samples with library protocol parameters.</h3></div>
@@ -81,7 +81,7 @@
                            <div class="col-sm-12">
                                <br>
                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                           <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                           <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                         </div> <!--  end of scrolling  -->
                         </form>
                         <script>
@@ -115,7 +115,7 @@
              white-space: nowrap;
         }
     </style>
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>Update the following molecules ID with used protocol to prepare the library.</h3></div>
@@ -158,7 +158,7 @@
                        </script>
 
                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                       <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                       <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                     </div> <!--  end of scrolling  -->
                     </form>
                     <script>
@@ -191,7 +191,7 @@
             white-space: nowrap;
         }
     </style>
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12" >
             <div class="card ">
                 <div class="card-header"><h3>The present information was collected from sample sheet file</h3></div>
@@ -307,7 +307,7 @@
                                     });
                                 </script>
                                 <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                                <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
 
                             </div> <!--  end of scrolling  -->
                         </form>
@@ -338,7 +338,7 @@
 
 
 {% elif stored_params %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-10">
             <div class="card ">
                 <div class="card-header"><h3>The following samples have been updated with Library Preparation Parameters.</h3></div>
@@ -371,7 +371,7 @@
     </div> <!--  end of row -->
 
 {% elif additional_kits %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12" >
             <div class="card ">
                 <div class="card-header"><h3>Define the User Lot additional kits</h3></div>
@@ -415,7 +415,7 @@
                         <div class="col-sm-12">
                             <br>
                             <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                            <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                            <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                         </div> <!--  end of scrolling  -->
                     </form>
                     <script>
@@ -441,7 +441,7 @@
     </div> <!--  end of row -->
 
 {% elif stored_additional_kits %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8 offset-2" >
             <div class="card ">
                 <div class="card-header"><h3>The additional kits Lot are recorded</h3></div>
@@ -472,7 +472,7 @@
     </div> <!--  end of row -->
 
 {% elif stored_index %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-10">
             <div class="card ">
                 <div class="card-header"><h3>The Sample Index information is stored now on iSkyLIMS.</h3></div>
@@ -487,7 +487,7 @@
     </div> <!--  end of row -->
 {% else %}
     {% if samples_in_lib_prep.no_samples %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-10">
                 <div class="card ">
                     <div class="card-header"><h3>No Samples available.</h3></div>
@@ -499,7 +499,7 @@
             </div> <!--  end of col-sm-6 -->
         </div> <!--  end of row -->
     {% else %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12">
                 <h3>Library Preparation</h3>
                 <div class="tab">
@@ -516,7 +516,7 @@
                                     {% if  samples_in_lib_prep.avail_samples.samplesID %}
                                         <form method="post" enctype="multipart/form-data" name="assignProtocol"  id="assignProtocol" class="form-horizontal well">
                                             {% csrf_token %}
-                                            <div class="form-group required">
+                                            <div class="form-control required">
                                                 <input type="hidden" name="action" value="assignProtocol"/>
                                                 <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.avail_samples.samplesID}}">
                                                 <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.avail_samples.samplesNames}}">
@@ -549,7 +549,7 @@
                                                     });
                                                 </script>
                                                 <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                                                <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                                              </div> <!--  end of scrolling  -->
                                              </form>
                                              <script>
@@ -592,7 +592,7 @@
                                             <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="addProtocolParameter"/>
-                                                <div class="form-group">
+                                                <div class="form-control">
                                                     <table class="table table-hover">
                                                         <thead>
                                                             <tr>
@@ -614,7 +614,7 @@
                                                 </div> <!--  end of from group -->
                                                 <br><br>
                                                 <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                <input class="btn pull-right btn-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                                <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
                                             </form>
                                             <br><br>
                                         {% endfor %}
@@ -638,7 +638,7 @@
                                             <form method="post" enctype="multipart/form-data" name="assignAdditionalKits"  id="assignAdditionalKits" class="form-horizontal well">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="assignAdditionalKits"/>
-                                                <div class="form-group">
+                                                <div class="form-control">
                                                     <table class="table table-hover">
                                                         <thead>
                                                             <tr>
@@ -660,7 +660,7 @@
                                                 </div> <!--  end of from group -->
                                                 <br><br>
                                                 <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                <input class="btn pull-right btn-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                                <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
                                             </form>
                                             <br><br>
                                         {% endfor %}
@@ -693,7 +693,7 @@
                                         <br>
                                         <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="importsamplesheet"  id="importsamplesheet" class="form-horizontal well">
                                             {% csrf_token %}
-                                            <div class="form-group required">
+                                            <div class="form-control required">
                                                 <input type="hidden" name="action" value="importsamplesheet"/>
                                                 <label class="col-sm-6 control-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
                                                 <div class="col-sm-6"><input class="form-control" type="file" required = "required" accept ="text/csv" id="uploadfile"  name="uploadfile" size="80"><br>
@@ -761,7 +761,7 @@
                                                 <br><br>
                                                 <div class="col-sm-11">
                                                     <br>
-                                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmitFile">
+                                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmitFile">
                                                 </div>
                                                 <br><br><br>
                                             </div> <!-- End ofform-control required -->

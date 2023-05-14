@@ -20,7 +20,7 @@
         }
 </style>
 {% if run_out_kits %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-2">
             <div class="card ">
                 <div class="card-header"><h3>User Lot Commercial Kits Set to Run Out</h3></div>
@@ -45,7 +45,7 @@
     </div> <!-- // end of row -->
 
 {% else %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="tab">
                 <button class="tablinks" onclick="summaryBin(event, 'available_kits')" id="tablinksdefaultOpen">Available User Lot Commercial Kits </button>
@@ -88,7 +88,7 @@
                                             {% endfor %}
                                         </div> <!--  end of table wrapper  -->
                                         <br><br>
-                                        <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                                        <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                                     </form>
                                 {% else %}
                                     <h5>There is not available User Lot Commercial Kits</h5>

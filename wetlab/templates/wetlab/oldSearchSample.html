@@ -7,7 +7,7 @@
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-1">
             <div class="card ">
                 <div class="card-header"><h3>The Sample {{ display_one_sample.sample_name }}  has matched the criteria from your query.</h3></div>
@@ -50,7 +50,7 @@
         </div> <!--// end col-sm-4  -->
     </div> <!--  end of row -->
     <!-- #################################################  -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-10 offset-1" >
             <div class="card ">
                 <div class="card-header"><h3> Sample Quality Information</h3></div>
@@ -76,7 +76,7 @@
         </div> <!--// end col-sm-6  -->
    </div> <!--  end of row -->
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-10 offset-1" >
             <div class="card ">
                 <div class="card-header"><h3> Percentage of the Sample inside the project</h3></div>
@@ -91,7 +91,7 @@
    </div> <!--  end of row -->
 
 {% elif multiple_samples %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
         <BR>
         <div class="col-sm-5 offset-1">
             <div class="card ">
@@ -133,26 +133,26 @@
             <form method="post" enctype="multipart/form-data" name="searchsample" id="searchsample" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchsample"/>
-            <div class="form-group">
+            <div class="form-control">
                   <label class="col-sm-5  control-label" for="samplename" >Fill the sample name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="samplename" id="samplename" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <BR>
 
-             <div class="form-group">
+             <div class="form-control">
                 <label class="col-sm-5 control-label" for="startdate" >From Date (DD-MM-YYYY)</label>
                 <div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <br>
-             <div class="form-group">
+             <div class="form-control">
                 <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY)</label>
                 <div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <br>
              <br>
-            <div class="form-group">
+            <div class="form-control">
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
                   {% if request.user|has_group:"WetlabManager" %}
                     <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
@@ -162,8 +162,8 @@
              </div>  <!-- end from-group   -->
             <br>
             <br>
-                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->

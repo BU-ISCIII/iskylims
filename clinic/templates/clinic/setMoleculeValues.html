@@ -14,7 +14,7 @@
     }
  </style>
 {% if molecule_protocol %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>Assign the Molecule Protocol to following samples.</h3></div>
@@ -77,7 +77,7 @@
 
                         <br>
                         <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                        <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                        <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                     </form>
                     <script>
                         $(document).ready(function () {
@@ -103,7 +103,7 @@
     </div> <!--  end of row -->
 {% elif molecule_recorded %}
     {% if molecule_recorded.heading %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>The following molecules are now assigned to Protocol.</h3></div>
@@ -131,7 +131,7 @@
                         <input type="hidden" name= "molecules" value="{{molecule_recorded.molecules}}"/>
                         <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
                         <input type="button" value="Return Pendig Samples" onclick="location.href ='/clinic/pendingToUpdate' ;"/>
-                        <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Continue Adding Extraction Parameters">
+                        <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Continue Adding Extraction Parameters">
                     </form>
                 </div>
             </div>
@@ -140,7 +140,7 @@
     </div> <!--  end of row -->
     {% endif %}
     {% if molecule_recorded.incomplete_molecules_ids %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12">
                 <div class="panel panel-warning">
                     <div class="card-header"><h3>Information missing for these samples.</h3></div>
@@ -205,7 +205,7 @@
 
                             <br>
                             <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                            <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                         </form>
                         <script>
                             $(document).ready(function () {
@@ -232,7 +232,7 @@
     {% endif %}
 {% elif show_molecule_parameters %}
     {% if show_molecule_parameters.lot_kit == '' %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-8">
                 <div class="card border-danger mb-3">
                     <div class="card-header"><h3>Warning. There is not User Lot Commercial kit available for this protocol.</h3></div>
@@ -244,7 +244,7 @@
         </div> <!--  end of row -->
         <br><br>
     {% endif %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-12">
                 <div class="card ">
                 <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
@@ -297,7 +297,7 @@
                        </script>
                        <br><br>
                        <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
-                       <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                       <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
 
                     </form>
                     <script>
@@ -324,7 +324,7 @@
     </div> <!--  end of row -->
 
 {% elif added_molecule_protocol_parameters %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3>The following molecules have been updated with Extraction Parameters.</h3></div>
@@ -349,7 +349,7 @@
        </div> <!--  end of col-sm-12 -->
    </div> <!--  end of row -->
    {% if added_molecule_protocol_parameters.show_molecule_parameters %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
            <div class="col-sm-12">
                <div class="card ">
                    <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
@@ -401,7 +401,7 @@
                           </script>
                           <br><br>
                           <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
-                          <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                          <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
 
                        </form>
                        <script>
@@ -465,7 +465,7 @@
                             </table>
                             <br><br>
                             <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
-                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                            <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
                          </form>
 
                     </div>  <!--  end of panel body  -->

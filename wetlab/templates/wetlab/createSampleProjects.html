@@ -3,7 +3,7 @@
 {% block content %}
 {% csrf_token %}
 {% if error_message %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-2"" >
             <div class="panel panel-warning">
                 <div class="card-header"><h3>Unable to record your Sample Project</h3> </div>
@@ -20,7 +20,7 @@
 {% endif %}
 <BR>
 
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-12" >
         {% if new_defined_sample_project %}
             <div class="col-sm-6" >
@@ -30,7 +30,7 @@
                         <p>New <strong>{{ new_defined_sample_project }}</strong> has been added</p>
                         <p>Click on the "add Sample Project Fields" button  to define the custom fields used when recorded new sample</p>
                         <p></p>
-                        <button type="button" class="btn btn-primary" onclick="window.location.href = '/wetlab/defineSampleProjectFields={{new_sample_project_id}}';">Define Sample Project Fields</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href = '/wetlab/defineSampleProjectFields={{new_sample_project_id}}';">Define Sample Project Fields</button>
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-6 -->
@@ -41,7 +41,7 @@
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addNewSampleProject" id="addNewSampleProject" class="form-horizontal">
                         {% csrf_token %}
-                        <div class="form-group required">
+                        <div class="form-control required">
                             <input type="hidden" name="action" value="addNewSampleProject"/>
                             <label class="col-sm-5 control-label">Sample Project name</label>
                             <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sampleProyectName" size="80"></div>
@@ -50,7 +50,7 @@
                             <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sampleProyectManager" size="80"></div>
                             <br><br>
                         </div>
-                        <div class="form-group">
+                        <div class="form-control">
                             <label class="col-sm-5 control-label">Project Manager details contact</label>
                             <div class="col-sm-6"><input class="form-control"  type="text"  name="sampleProyectManagerContact" size="80"></div>
                             <br><br><br>
@@ -60,7 +60,7 @@
                             </div>
                             <BR> <BR> <BR>
                         </div>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
                     </form>
                 </div>  <!--  end of panel body  -->
                 <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
@@ -69,7 +69,7 @@
     </div> <!--// end of sm-12 -->
 </div> <!--// end row -->
 {% if defined_samples_projects %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8" >
             <BR> <BR> <BR>
             <div class="card ">

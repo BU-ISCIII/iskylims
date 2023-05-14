@@ -28,7 +28,7 @@
    </style>
 {% if display_one_run %}
     {% if display_one_run.no_stable_data %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-7">
                 <div class="card ">
                     {% for run, state in display_one_run.no_stable_data %}
@@ -46,7 +46,7 @@
         </div> <!--  end of row space -->
     {% else %}
         {% if display_one_run.error_run %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-7 offset-2">
                     <div class="card border-danger mb-3">
                         <div class="card-header"><h3>{{ display_one_run.error_run.0 }} is on ERROR state</h3></div>
@@ -71,7 +71,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="retry_correct_error">
                                 <input type="hidden" name="run_id" value="{{display_one_run.error_run.3}}">
-                                <input class="btn pull-right btn-default" type="submit" value="Corrected fault">
+                                <input class="btn float-end btn-default" type="submit" value="Corrected fault">
                             </form>
                             <br>
                         </div>
@@ -79,7 +79,7 @@
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
         {% elif display_one_run.cancel_run %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-7 offset-2">
                     <div class="card border-danger mb-3">
                         <div class="card-header"><h3>{{ display_one_run.cancel_run.0 }} is on Cancel state</h3></div>
@@ -104,7 +104,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="skip_cancel_situation">
                                 <input type="hidden" name="run_id" value="{{display_one_run.cancel_run.3}}">
-                                <input class="btn pull-right btn-default" type="submit" value="Skip Cancel situation">
+                                <input class="btn float-end btn-default" type="submit" value="Skip Cancel situation">
                             </form>
                             <br>
                         </div>
@@ -112,9 +112,9 @@
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
         {% endif %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <h3 style="text-align:center">Information for Run : {{ display_one_run.run_name }} </h3>
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-12">
                     <div class="tab">
                         <button class="tablinks" onclick="summaryBin(event, 'mainData')" id="defaultOpen">Main Data</button>
@@ -138,9 +138,9 @@
                             <button class="tablinks" onclick="summaryBin(event, 'charts')">Charts</button>
                         {% endif %}
                     </div>
-                    <div class="row mt-2 mb-4">
+                    <div class="row my-2">
                         <div id="mainData" class="tabcontent">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-7">  <!-- first column with list of pending services in state Recorded and Approved -->
                                     <div class="card ">
                                         <div class="card-header"><h3 style="text-align:center">Main data used in Run</h3> </div>
@@ -328,7 +328,7 @@
 
 
                         <div id="parameters" class="tabcontent">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-9 offset-1">
                                     <div class="card ">
                                         <div class="card-header"><h3 style="text-align:center">Parameters used by sequencer in the Run</h3></div>
@@ -504,7 +504,7 @@
 
 
                         <div id="projects" class="tabcontent">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-6 offset-3">
                                     {%if display_one_run.projects%}
                                         <div class="card ">
@@ -540,7 +540,7 @@
 
                             </div> <!--  end of row -->
 
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 {% if display_one_run.fl_summary %}
                                     <div class="col-sm-6 ">
                                         <div class="card ">
@@ -613,7 +613,7 @@
                         </div><!-- // end of tab projects -->
 
                         <div id="samples_run" class="tabcontent">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-7 offset-2">
                                     <div class="card ">
                                         <div class="card-header"><h3 style="text-align:center">Samples included in the Run</h3></div>
@@ -644,7 +644,7 @@
                         </div><!-- // end of tab parameters -->
 
                         <div id="graphComparation" class="tabcontent">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-10 ">
                                     <div class="card ">
                                         {% if display_one_run.boxplot %}

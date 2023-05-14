@@ -260,18 +260,18 @@ def initial_settings(request):
         if "ERROR" in new_inital_data:
             return render(
                 request,
-                "wetlab/initialSettings.html",
+                "wetlab/initial_settings.html",
                 {"initial_data": initial_data, "ERROR": new_inital_data["ERROR"]},
             )
         return render(
             request,
-            "wetlab/initialSettings.html",
+            "wetlab/initial_settings.html",
             {"initial_data": initial_data, "new_setting_defined": new_inital_data},
         )
     else:
         return render(
             request,
-            "wetlab/initialSettings.html",
+            "wetlab/initial_settings.html",
             {"initial_data": initial_data},
         )
 

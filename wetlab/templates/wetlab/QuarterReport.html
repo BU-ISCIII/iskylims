@@ -10,7 +10,7 @@
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
 <!--  Start Run created during the Quarter   -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7">
             <div class="card ">
                 <div class="card-header"><h3>Runs performed on the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
@@ -67,7 +67,7 @@
     </div> <!--  end of row -->
 <!--  End Run created during the year   -->
 <!--  Start Projects created by investigator during the Quarter   -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="card ">
             <div class="card-header"><h3>Projects performed by investigator during Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
             <div class="card-body">
@@ -148,7 +148,7 @@
 
 <!--  End Projects created by investigator during the year   -->
     <!--  Q30 year report -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-4">
             <div class="card ">
                 <div class="card-header"><h3>Percentage of quality >30 for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
@@ -191,7 +191,7 @@
     </div> <!--  end of row -->
 
     <!--  Aligned year report -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-4">
             <div class="card ">
                 <div class="card-header"><h3>Percentage of aligned for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
@@ -234,7 +234,7 @@
     </div> <!--  end of row -->
 
     <!--  Error Rate year report -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-4">
             <div class="card ">
                 <div class="card-header"><h3>Error rate for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
@@ -280,7 +280,7 @@
 {% else %}
     <!-- FORM for selecting Quarter Report Information -->
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
       <div class="col-sm-7" >
         <div class="card ">
           <div class="card-header"><strong>Form for Quarter Report</strong></div>
@@ -289,11 +289,11 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="searchQuarterReport"/>
              <br>
-                <div class="form-group required">
+                <div class="form-control required">
                     <label class="col-sm-6 control-label" for="yearselected" >Select the year for the annual Report (YYYY)</label>
                     <div class="col-sm-4"><input class="form-control" type="number" min="2016" max="2199" step="1" required = "required" value="" name="yearselected"  id="yearselected"></div>
                 </div>  <!-- end from-group   -->
-                <div class="form-group required">
+                <div class="form-control required">
                     <label class="col-sm-6 control-label" for="quarter" >Select the Quarter </label>
                     <div class="col-sm-4"><select class="form-control" name="quarter" id="quarter" required = "required">
                                				<option value="">Choose a value</option>
@@ -306,8 +306,8 @@
 
                 </div>  <!-- end from-group   -->
             <br>
-                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
          </div>  <!--  end of panel body  -->
         <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>

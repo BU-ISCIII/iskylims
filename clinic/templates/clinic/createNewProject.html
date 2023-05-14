@@ -3,7 +3,7 @@ clinic{% extends 'clinic/base.html' %}
 {% block content %}
 {% csrf_token %}
 <BR>
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-12" >
         {% if new_project %}
             <div class="col-sm-6" >
@@ -13,7 +13,7 @@ clinic{% extends 'clinic/base.html' %}
                         <p>New protocol <strong>{{ new_project.project_name }}</strong> has been recorded</p>
                         <p>Click on the "add Project Fields" button  to define the custom information used in the project</p>
                         <p></p>
-                        <button type="button" class="btn btn-primary" onclick="window.location.href = '/clinic/defineProjectFields={{new_project.project_id}}';">Define Project Fields</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href = '/clinic/defineProjectFields={{new_project.project_id}}';">Define Project Fields</button>
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-6 -->
@@ -24,7 +24,7 @@ clinic{% extends 'clinic/base.html' %}
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addNewProject" id="addNewProject" class="form-horizontal">
                         {% csrf_token %}
-                        <div class="form-group required">
+                        <div class="form-control required">
                             <input type="hidden" name="action" value="addNewProject"/>
 
                             <br><br>
@@ -38,14 +38,14 @@ clinic{% extends 'clinic/base.html' %}
                             <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="projectContact" size="80"></div>
                             <br><br><br>
                         </div>
-                        <div class="form-group">
+                        <div class="form-control">
                             <label class="col-sm-5 control-label">Description</label>
                             <div class="col-sm-6">
                                 <textarea rows="2" cols="25" name="projectDescription" form="addNewProject"></textarea>
                             </div>
                             <BR> <BR> <BR>
                         </div>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
                     </form>
 
                 </div>  <!--  end of panel body  -->
@@ -54,7 +54,7 @@ clinic{% extends 'clinic/base.html' %}
         </div> <!--// end of sm-6 -->
     </div> <!--// end of sm-12 -->
 </div> <!--// end row -->
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-10" >
         <BR> <BR> <BR>
         <div class="card ">

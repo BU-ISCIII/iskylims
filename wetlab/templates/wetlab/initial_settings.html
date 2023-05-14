@@ -1,0 +1,487 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims">
+    {% if new_setting_defined %}
+        <div class="row my-2">
+            <div class="col" >
+                <div class="card ">
+                    <h3 class="card-title">New {{new_setting_defined.settings}} , <strong>{{new_setting_defined.value}}</strong> was defined</h3>
+                </div>
+            </div> 
+        </div>
+    {% endif %}
+    {% if ERROR %}
+        <div class="row my-2">
+            <div class="col" >
+                <div class="card border-danger mb-3">
+                    <div class="card-header text-danger"><h3 style="text-align:center"> {{ERROR.0.0}} </h3> </div>
+                    <div class="card-body">
+                        <p class="my-2">The <strong>{{ERROR.1}}</strong> {{ERROR.0.0}}</p>
+                    </div>
+                </div> 
+            </div>
+        </div> 
+    {% endif %}
+
+    <div class="row my-2">
+        <div class="col" >
+            <h3 style="text-align:center">Inital Settings definitions</h3>
+            <div class="col">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="species-tab" data-bs-toggle="tab" data-bs-target="#species" type="button" role="tab" aria-controls="species" aria-selected="true">Species</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="cities-tab" data-bs-toggle="tab" data-bs-target="#cities" type="button" role="tab" aria-controls="cities" aria-selected="false">Cities and States</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="laboratory-tab" data-bs-toggle="tab" data-bs-target="#laboratory" type="button" role="tab" aria-controls="laboratory" aria-selected="false">Laboratory Request</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="molecule-tab" data-bs-toggle="tab" data-bs-target="#molecule" type="button" role="tab" aria-controls="molecule" aria-selected="false">Molecule Type</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="protocol-tab" data-bs-toggle="tab" data-bs-target="#protocol" type="button" role="tab" aria-controls="protocol" aria-selected="false">Protocol Type</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="species" role="tabpanel" aria-labelledby="species-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header"><h3 style="text-align:center">Define new Specie </h3></div>
+                                        <div class="card-body">
+                                            <form method="post" enctype="multipart/form-data" name="defineNewSpecie" id="defineNewSpecie" class="form-horizontal">
+                                                {% csrf_token %}
+                                                <div class="form-control required">
+                                                    <input type="hidden" name="action" value="defineNewSpecie"/>
+                                                    <label class="col-md-5 control-label">Define new Specie</label>
+                                                    <div class="col">
+                                                        <input class="form-control" required="required" type="text"  name="specieName">
+                                                    </div>
+                                                </div>
+                                                <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                <input class="btn btn-outline-primary float-end me-2 mt-1" type="submit" value="Submit" id="btnSubmit">
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header"><h3>Species already defined</h3></div>
+                                        <div class="card-body">
+                                            {% if initial_data.species_data %}
+                                                <table id="s_table" class="table table-striped table-bordered">
+                                                    <thead>
+                                                        <tr scope="row">
+                                                            <th>Specie Name</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for name , id in initial_data.species_data %}
+                                                            <tr>
+                                                                <td>{{name}}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            {% else %}
+                                                <h5>No Species have been defined yet</h5>
+                                            {% endif %}
+                                        </div> 
+                                    </div>
+                                </div> 
+                                <script type="text/javascript">
+                                    $(document).ready(function() {
+                                        $('#s_table').DataTable({
+                                            responsive: true,
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>    
+                    </div> <!--  end of species -->
+                    <div class="tab-pane fade" id="cities" role="tabpanel" aria-labelledby="cities-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header"><h3>Define new State where the Laboratory is located</h3></div>
+                                        <div class="card-body">
+                                            <form method="post" enctype="multipart/form-data" name="defineNewState" id="defineNewState" class="form-horizontal">
+                                                {% csrf_token %}
+                                                <div class="form-control required">
+                                                    <input type="hidden" name="action" value="defineNewState"/>
+                                                    <label class="col-md-5 control-label">Define new State</label>
+                                                    <div class="col">
+                                                        <input class="form-control" required = "required" type="text"  name="stateName" size="70">
+                                                    </div>
+                                                </div>
+                                                <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                <input class="btn btn-outline-primary float-end me-2" type="submit" value="Submit" id="btnSubmit">
+                                            </form> 
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">States defined</h3></div>
+                                        <div class="card-body">
+                                            {% if initial_data.states_data %}
+                                                <table id="state_table" class="table table-striped table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>State Name</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for name , id in initial_data.states_data %}
+                                                            <tr>
+                                                                <td>{{name}}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        </tbody>
+                                                </table>
+                                            {% else %}
+                                                <h5>No States have been defined yet</h5>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <script type="text/javascript">
+                                    $(document).ready(function() {
+                                        $('#state_table').DataTable({
+                                            responsive: true,
+                                        });
+                                    });
+                                </script>
+                            </div> 
+                            <div class="row mt-2">
+                                <div class="col-md-8">
+                                    <div class="card ">
+                                        <div class="card-header"><h3>Define new City where the Laboratory is located</h3></div>
+                                        <div class="card-body">
+                                            {% if initial_data.states_data %}
+                                                <form method="post" enctype="multipart/form-data" name="defineNewCity" id="defineNewCity" class="form-horizontal">
+                                                    {% csrf_token %}
+                                                    <div class="form-control required">
+                                                        <input type="hidden" name="action" value="defineNewCity"/>
+                                                        <div class="form-control">
+                                                            <label class="col-md-5 control-label">Define new City</label>
+                                                            <div class="col">
+                                                                <input class="form-control" required = "required" type="text"  name="cityName" size="70">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-control">
+                                                            <label class="col-md-5 control-label">Select the State</label>
+                                                            <div class="col">
+                                                                <select class="form-control" required = "required" name="state" id="state">
+                                                                    <option value="">Select State</option>
+                                                                    {% for value, id in initial_data.states_data %}
+                                                                        <option value="{{id}}">{{value}}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-control">
+                                                            <label class="col-md-5 control-label">Define latitude</label>
+                                                            <div class="col">
+                                                                <input class="form-control" required = "required" type="text"  name="latitude" size="70">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-control">
+                                                            <label class="col-md-5 control-label">Define longitude</label>
+                                                            <div class="col">
+                                                                <input class="form-control" required = "required" type="text"  name="longitude" size="70">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                    <input class="btn btn-outline-primary float-end me-2" type="submit" value="Submit" id="btnSubmit">
+                                                </form> <!--  end of from -->
+                                            {% else %}
+                                                <h5>States must be created before, to assign it to the City</h5>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div> <!--  end of col-md-7 -->
+                                <div class="col-md-4">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align:center">Cities defined</h3></div>
+                                        <div class="card-body">
+                                            {% if initial_data.cities_data %}
+                                                <table id="city_table" class="table table-striped table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>City Name</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for name , id in initial_data.cities_data %}
+                                                        <tr>
+                                                            <td>{{name}}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            {% else %}
+                                                <h5>No Cities have been defined yet</h5>
+                                            {% endif %}
+                                        </div> 
+                                    </div>
+                                </div>
+                                <script type="text/javascript">
+                                    $(document).ready(function() {
+                                        $('#city_table').DataTable({
+                                            responsive: true,
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div> <!--  end of cities -->
+
+                    <div class="tab-pane fade" id="laboratory" role="tabpanel" aria-labelledby="laboratory-tab">
+                        <div class="container">
+                            <div class="row">
+                                <div class="card ">
+                                    <div class="card-header"><h3 style="text-align:center">Define a new laboratory from which the samples will be received</h3></div>
+                                    <div class="card-body">
+                                        {% if initial_data.cities_data%}
+                                            <form method="post" enctype="multipart/form-data" name="defineNewLabRequest" id="defineNewLabRequest" class="form-horizontal">
+                                                {% csrf_token %}
+                                                <h5>Fill the follwing form for the Laboratory, Hospital or any institution from which could receive samples</h5>
+                                                <div class="form-control required">
+                                                    <input type="hidden" name="action" value="defineNewLabRequest"/>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Define new Laboratory/Organization</label>
+                                                        <div class="col">
+                                                            <input class="form-control" required = "required" type="text"  name="labRequestName" size="80">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Define Laboratory/organization coding name</label>
+                                                        <div class="col">
+                                                            <input class="form-control" required = "required" type="text"  name="labRequesCoding" size="80">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Department Unit</label>
+                                                        <div class="col">
+                                                            <input class="form-control" type="text"  name="department" size="80">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Contact Name</label>
+                                                        <div class="col">
+                                                            <input class="form-control" type="text"  name="contact" size="80">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Contact Phone</label>
+                                                        <div class="col">
+                                                            <input class="form-control" type="text"  name="phone" size="80">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Email Contact</label>
+                                                        <div class="col">
+                                                            <input class="form-control" type="email"  name="email" size="80">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Define address</label>
+                                                        <textarea class="col" id="address" name="address" rows="6" cols="50"></textarea>
+                                                    </div>
+                                                    <div class="form-control">
+                                                        <label class="col-md-5 control-label">Select the City</label>
+                                                        <div class="col">
+                                                            <select class="form-control" required = "required" name="city" id="city">
+                                                                <option value="">Select City</option>
+                                                                {% for value , id in initial_data.cities_data %}
+                                                                    <option value="{{id}}">{{value}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                <input class="btn btn-outline-primary float-end me-2" type="submit" value="Submit" id="btnSubmit">
+                                            </form> <!--  end of from -->
+                                        {% else %}
+                                            <h5 class="text-danger"> Define First the cities where the Laboratories are located </h5>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div> 
+                            <div class="row">
+                                <div class="card mt-2">
+                                    <div class="card-header"><h3 style="text-align:center">Laboratory/Hospital/Institution defined</h3></div>
+                                    <div class="card-body">
+                                        {% if initial_data.lab_request_data %}
+                                            <table id="lab_table" class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Lab Request Name</th>
+                                                    <th>Lab code</th>
+                                                    <th>Department</th>
+                                                    <th>Contact Name</th>
+                                                    <th>Contact phone</th>
+                                                    <th>Email</th>
+                                                    <th>Address</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for name, code, dept, contact, phone, email, addr, id in initial_data.lab_request_data %}
+                                                    <tr>
+                                                        <td>{{name}}</td>
+                                                        <td>{{code}}</td>
+                                                        <td>{{dept}}</td>
+                                                        <td>{{contact}}</td>
+                                                        <td>{{phone}}</td>
+                                                        <td>{{email}}</td>
+                                                        <td>{{addr}}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% else %}
+                                            <h5>No Laboratory, Hospital or Institution has been defined yet</h5>
+                                        {% endif %}
+                                    </div> 
+                                </div>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            $(document).ready(function() {
+                                $('#lab_table').DataTable({
+                                    responsive: true,
+                                });
+                            });
+                        </script>
+                    </div> <!--  end of laboratory -->
+
+                    <div class="tab-pane fade" id="molecule" role="tabpanel" aria-labelledby="molecule-tab">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align_center">Define new Molecule type </h3></div>
+                                        <div class="card-body">
+                                            <form method="post" enctype="multipart/form-data" name="defineMoleculeType" id="defineMoleculeType" class="form-horizontal">
+                                                {% csrf_token %}
+                                                <div class="form-control required">
+                                                    <input type="hidden" name="action" value="defineMoleculeType"/>
+                                                    <label class="col-md-5 control-label">Define new Molecule type</label>
+                                                    <div class="col">
+                                                        <input class="form-control" required = "required" type="text"  name="moleculeName" size="80">
+                                                    </div>
+                                                </div>
+                                                <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align_center">Molecule types defined</h3></div>
+                                        <div class="card-body">
+                                            {% if initial_data.molecule_type_data %}
+                                                <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Molecule Type</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for name , id in initial_data.molecule_type_data %}
+                                                        <tr>
+                                                            <td>{{name}}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            {% else %}
+                                                <h5>No Molecule type have been defined yet</h5>
+                                            {% endif %}
+                                        </div> <!-- end of panel body -->
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>  
+                    </div> <!--  end of molecule -->
+
+                    <div class="tab-pane fade" id="protocol" role="tabpanel" aria-labelledby="protocol-tab">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align_center">Define new Protocol Type</h3></div>
+                                        <div class="card-body">
+                                            <form method="post" enctype="multipart/form-data" name="defineProtocolType" id="defineProtocolType" class="form-horizontal">
+                                                {% csrf_token %}
+                                                <div class="form-control required">
+                                                    <input type="hidden" name="action" value="defineProtocolType"/>
+                                                    <label class="col-md-5 control-label">Define new Protocol type</label>
+                                                    <div class="col">
+                                                        <input class="form-control" required = "required" type="text"  name="protocolName" size="80">
+                                                    </div>
+                                                    <label class="col control-label">Select the Molecule type used for the protocol type</label>
+                                                    <div class="col">
+                                                        <select class="form-control" required = "required" name="moleculeType" id="moleculeType">
+                                                            <option value="">Select an option</option>
+                                                            <option value="None">None</option>
+                                                            {% for value , id in initial_data.molecule_type_data %}
+                                                                <option value="{{value}}">{{value}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div> 
+                                                </div>
+                                                <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                <input class="btn float-end btn-outline-primary me-2" type="submit" value="Submit" id="btnSubmit">
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div> 
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header"><h3 style="text-align_center">Protocol types defined</h3></div>
+                                        <div class="card-body">
+                                            {% if initial_data.protocol_type_data %}
+                                                <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Protocol Type</th>
+                                                        <th>Molecule Type</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for name , id, molecule in initial_data.protocol_type_data %}
+                                                        <tr>
+                                                            <td>{{name}}</td>
+                                                            <td>{{molecule}}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            {% else %}
+                                                <h5>No Protocol type have been defined yet</h5>
+                                            {% endif %}
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div>  
+                        </div> 
+                    </div> <!--  end of protocol -->
+                </div>
+            </div> 
+        </div> 
+    </div>  
+</section>
+{% endblock %}

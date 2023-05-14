@@ -13,7 +13,7 @@
 </style>
 {% if researcher_statistics %}
     {% if 'ERROR' in researcher_statistics %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12">
                 <div class="card ">
                     <div class="card-header"><h2>Statistics results for Investigator {{researcher_statistics.ERROR.1}} </h2></div>
@@ -25,7 +25,7 @@
         </div> <!--// end row -->
 
     {% else %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12">
                 <div class="card ">
                     <div class="card-header"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
@@ -45,7 +45,7 @@
                                             <div class="card ">
                                                 <div class="card-header"><h3>Investigator samples run in sequencer {{sequencer}}</h3></div>
                                                 {% if samples_data %}
-                                                    <button onclick="exportTableToExcel('sequencer{{sequencer}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                                                    <button onclick="exportTableToExcel('sequencer{{sequencer}}')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                                                     <BR>
                                                     <div class="card-body scroll-wrapper-sm-12">
 
@@ -88,7 +88,7 @@
             </div> <!--// end col-sm-12  -->
         </div> <!--// end row -->
 
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12" >
                 <div class="card ">
                     <div class="card-header"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
@@ -111,7 +111,7 @@
 
 
 
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12" >
                 <div class="card ">
                     <div class="card-header"><h3><center>Quality Statistics for Samples handled by  {{researcher_statistics.researcher_name}} </center></h3></div>
@@ -132,7 +132,7 @@
         </div> <!--// end row -->
 
         {% if researcher_statistics.comp_graphs %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-12" >
                     <div class="card ">
                         <div class="card-header"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
@@ -153,7 +153,7 @@
 {% else %}
     {% load user_groups %}
     <!-- FORM for searching project research  Information -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
       <div class="col-sm-7" >
         <div class="card ">
           <div class="card-header"><h2>Statistics per Investigator</h2></div>
@@ -161,7 +161,7 @@
             <form method="post" enctype="multipart/form-data" name="statsresearcher" id="statsresearcher" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="researcher"/>
-             <div class="form-group required">
+             <div class="form-control required">
                   <label class="col-sm-5  control-label" for="researchername" >Investigator UserID </label>
                   {% if request.user|has_group:"WetlabManager" %}
                   <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
@@ -172,19 +172,19 @@
 
                 <br>
 
-                <div class="form-group">
+                <div class="form-control">
                   <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
                   <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
                 <br>
             </div>  <!-- end from-group   -->
-                <div class="form-group">
+                <div class="form-control">
                   <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
                   <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
                 <br>
 
             </div>  <!-- end from-group   -->
-                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
             <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
          </div>  <!--  end of panel body  -->

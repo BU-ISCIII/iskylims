@@ -27,13 +27,13 @@
     }
 </style>
     <h1><div class="color-heading">Pending Services</div></h1>
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="tab">
                 <button class="tablinks" onclick="summaryBin(event, 'pending_services')"  id="defaultOpen">List of Pending Services</button>
                 <button class="tablinks" onclick="summaryBin(event, 'my_pendings')">My Pending Taks</button>
             </div> <!--  end tabs -->
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
              <!-- Resolution and Delivery Information from service -->
                 <div id="pending_services" class="tabcontent">
                     <div class="col-sm-12">
@@ -48,7 +48,7 @@
                         </div> <!--  end tabs -->
                         {% for key, values in pending_services.data.items %}
                             <div id="{{key}}" class="tabcontent2">
-                                <div class="row mt-2 mb-4">
+                                <div class="row my-2">
                                     <div class="col-sm-11"> 
                                         <div class="card ">
                                             <div class="card-header"><h3 style="text-align:center">List of Services in {{key}} State</h3></div>
@@ -94,7 +94,7 @@
                         {% endfor %}
 
                         <div id="graphicServices" class="tabcontent2">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-10 offset-1"> <!-- Graphic -->
                                     {% if pending_services.graphics.all_state %}
                                         <div class="card ">
@@ -112,7 +112,7 @@
                         </div><!-- // end of tab Graphic Services -->
 
                         <div id="graphicUnitServices" class="tabcontent2">
-                            <div class="row mt-2 mb-4">
+                            <div class="row my-2">
                                 <div class="col-sm-10 offset-1"> <!-- Graphic -->
                                     {% if pending_services.graphics %}
                                         <div class="card ">
@@ -134,7 +134,7 @@
                 <div id="my_pendings" class="tabcontent">
 
                     {% if not user_pending_services.heading_in_queued  and not user_pending_services.heading_in_progress %}
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-12">
                                 <div class="card ">
                                     <div class="card-header"><h3 style="text-align:center">Pending tasks</h3></div>
@@ -145,7 +145,7 @@
                             </div> <!--// end row -->
                         </div> <!--// end row -->
                     {% else %}
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-12">  <!-- Queued  pending services -->
                                 <div class="card ">
                                     <div class="card-header"><h3 style="text-align:center">List of Resolutions in Queued State</h3></div>
@@ -181,7 +181,7 @@
                             </div> <!--// end col-sm-12  In Queued  pending services  -->
                         </div> <!--// end row -->
 
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div class="col-sm-12">  <!-- in progress  pending services -->
                                 <div class="card ">
                                     <div class="card-header"><h3 style="text-align:center">List of Resolutions in Progress State</h3></div>
