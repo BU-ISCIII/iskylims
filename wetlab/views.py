@@ -3858,149 +3858,6 @@ def get_size_dir(
     return count_file_size
 
 
-def update_tables(request):
-    if RunProcess.objects.filter(
-        state__run_state_name="Completed", useSpaceImgMb=0
-    ).exists():
-        conn = wetlab.utils.common.open_samba_connection()
-        run_list_be_updated = RunProcess.objects.filter(
-            state__run_state_name="Completed", useSpaceImgMb=0
-        )
-        for run_be_updated in run_list_be_updated:
-            run_id = run_be_updated.id
-            run_parameter_id = RunningParameters.objects.get(pk=run_id)
-
-            runID_value = run_parameter_id.RunID
-            get_full_list = conn.listPath(
-                config.SAMBA_SHARED_FOLDER_NAME, runID_value
-            )
-            rest_of_dir_size = 0
-            data_dir_size = 0
-            images_dir_size = 0
-            in_mega_bytes = 1024 * 1024
-            #
-            for item_list in get_full_list:
-                if item_list.filename == "." or item_list.filename == "..":
-                    continue
-                if item_list.filename == "Data":
-                    dir_data = os.path.join(runID_value, "Data")
-                    data_dir_size = get_size_dir(dir_data, conn)
-                    continue
-
-                elif item_list.filename == "Images":
-                    dir_images = os.path.join(runID_value, "Images")
-                    images_dir_size = get_size_dir(dir_images, conn)
-                    continue
-
-                if item_list.isDirectory:
-                    item_dir = os.path.join(runID_value, item_list.filename)
-                    rest_of_dir_size += get_size_dir(item_dir, conn)
-                else:
-                    rest_of_dir_size += item_list.file_size
-            #
-            # format file space and save it into database
-            data_dir_size_formated = "{0:,}".format(
-                round(data_dir_size / in_mega_bytes)
-            )
-            images_dir_size_formated = "{0:,}".format(
-                round(images_dir_size / in_mega_bytes)
-            )
-            rest_of_dir_size_formated = "{0:,}".format(
-                round(rest_of_dir_size / in_mega_bytes)
-            )
-            run_be_updated.useSpaceImgMb = images_dir_size_formated
-            run_be_updated.useSpaceFastaMb = data_dir_size_formated
-            run_be_updated.useSpaceOtherMb = rest_of_dir_size_formated
-            #
-            run_be_updated.save()
-
-        """
-
-        get_full_list = conn.listPath('NGS_Data' ,run_name)
-        rest_of_dir_size = 0
-        data_dir_size = 0
-        images_dir_size = 0
-
-
-        conn.close()
-
-        """
-        return render(
-            request,
-            "wetlab/info_page.html",
-            {"content": ["The Disk space usage have been updated"]},
-        )
-    else:
-        return render(
-            request,
-            "wetlab/error_page.html",
-            {
-                "content": [
-                    "There is no tables which requiered to update with Disk space usage information"
-                ]
-            },
-        )
-
-
-def update_tables_date(request):
-    if RunProcess.objects.filter(
-        state__run_state_name="Completed", run_finish_date=None
-    ).exists():
-        conn = wetlab.utils.common.open_samba_connection()
-        run_list_be_updated = RunProcess.objects.filter(
-            state__run_state_name="Completed", run_finish_date=None
-        )
-        for run_be_updated in run_list_be_updated:
-            run_id = run_be_updated.id
-            run_parameter_id = RunningParameters.objects.get(pk=run_id)
-            runID_value = run_parameter_id.RunID
-            completion_file = os.path.join(runID_value, "RunCompletionStatus.xml")
-            try:
-                completion_attributes = conn.getAttributes(
-                    config.SAMBA_SHARED_FOLDER_NAME, completion_file
-                )
-                # fetching the time creation on the RunCompletionStatus.xml for Run finish datetime
-                run_be_updated.run_finish_date = datetime.fromtimestamp(
-                    int(completion_attributes.create_time)
-                ).strftime("%Y-%m-%d %H:%M:%S")
-            except Exception:
-                pass
-            conversion_stats_file = os.path.join(
-                runID_value, "Data/Intensities/BaseCalls/Stats/", "ConversionStats.xml"
-            )
-            try:
-                conversion_attributes = conn.getAttributes(
-                    config.SAMBA_SHARED_FOLDER_NAME, conversion_stats_file
-                )
-                #
-                run_be_updated.bcl2fastq_finish_date = datetime.fromtimestamp(
-                    int(conversion_attributes.create_time)
-                ).strftime("%Y-%m-%d %H:%M:%S")
-            except Exception:
-                pass
-            finish_process_date = StatsRunSummary.objects.filter(
-                runprocess_id__exact=run_id
-            )
-            run_be_updated.process_completed_date = finish_process_date[0].generatedat
-
-            run_be_updated.save()
-
-        return render(
-            request,
-            "wetlab/info_page.html",
-            {"content": ["The dates for the Runs have been updated"]},
-        )
-    else:
-        return render(
-            request,
-            "wetlab/error_page.html",
-            {
-                "content": [
-                    "There is no tables which requiered to update with date information"
-                ]
-            },
-        )
-
 
 @login_required
 def create_protocol(request):
@@ -4017,9 +3874,6 @@ def create_protocol(request):
                     ]
                 },
             )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols(__package__)
     additional_kits = get_additional_kits_list(__package__)
@@ -4033,8 +3887,8 @@ def create_protocol(request):
         if check_if_protocol_exists(new_protocol, __package__):
             return render(
                 request,
-                "wetlab/error_page.html",
-                {"content": ["Protocol Name ", new_protocol, "Already exists."]},
+                "wetlab/create_protocol.html",
+                {"ERROR": "Protocol Name " + new_protocol + "Already exists."}
             )
         new_protocol_id = create_new_protocol(
             new_protocol, protocol_type, description, __package__
@@ -4042,7 +3896,7 @@ def create_protocol(request):
 
         return render(
             request,
-            "wetlab/createProtocol.html",
+            "wetlab/create_protocol.html",
             {
                 "defined_protocols": defined_protocols,
                 "defined_protocol_types": defined_protocol_types,
@@ -4054,7 +3908,7 @@ def create_protocol(request):
 
     return render(
         request,
-        "wetlab/createProtocol.html",
+        "wetlab/create_protocol.html",
         {
             "defined_protocols": defined_protocols,
             "defined_protocol_types": defined_protocol_types,
@@ -4079,9 +3933,6 @@ def define_sample_projects(request):
                     ]
                 },
             )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
     # get the information of defined sample Projects
     defined_samples_projects = get_info_for_defined_sample_projects(__package__)
 
