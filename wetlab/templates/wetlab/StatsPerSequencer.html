@@ -68,8 +68,8 @@
                             <h5> There is no Runs Completed for this sequencer </h5>
 
                         {% endif %}
-                    </div>  <!--  end of panel body  -->
-                </div> <!--// end panel -->
+                    </div>  
+                </div>
                 {%if sequencer_data.not_run_completed %}
                     <div class="card ">
                         <div class="card-header"><h3>Not completed runs on {{sequencer_data.sequencer_name}} </h3></div>
@@ -94,8 +94,8 @@
                                     </tbody>
                                 </table>
                             </div>  <!-- end of wrapper -->
-                        </div>  <!--  end of panel body  -->
-                    </div> <!--// end panel -->
+                        </div>  
+                    </div>
                 {% endif %}
             </div> <!--// end col-sm-6  -->
 
@@ -109,7 +109,7 @@
                                 <div id="run_pie_chart"> </div>
                                 {{ sequencer_data.run_pie_graph |safe }}
                         </div>
-                    </div> <!--// end panel -->
+                    </div>
                 </div> <!--// end col-sm-12  -->
                 <div class="col-sm-12" >
                     <div class="card ">
@@ -118,7 +118,7 @@
                             <h5> Mean value for the time that run starts until {{sequencer_data.sequencer}} ends the sequencing is :</h5>
                             <h5 style="text-align:center"> {{sequencer_data.mean_time_duration}} days</h5>
                         </div>
-                    </div> <!--// end panel -->
+                    </div>
                 </div> <!--// end col-sm-12  -->
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm-12  -->
@@ -141,7 +141,7 @@
                         </div> <!--// end col-sm-6  -->
 
                     </div>
-                </div> <!--// end panel -->
+                </div>
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->
     {% endif %}
@@ -177,8 +177,8 @@
                         </div> <!--  end of col-table-responsive -->
                     {% endfor%}
                 {% endfor %}
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
+                </div>  
+            </div>
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
 
@@ -222,8 +222,8 @@
                 <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
             <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+         </div>  
+        </div>
         </div> <!--// end col-sm-7  -->
 
         <!-- Insert the help panel -->
@@ -235,8 +235,8 @@
              <p>Searching information for the projects created by a Machine<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
-            </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+            </div>  
+        </div>
         <!-- Insert the Help window when clicking on the button -->
         {% include 'wetlab/statistics-researcher-help.html' %}
 

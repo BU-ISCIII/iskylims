@@ -164,8 +164,8 @@
           <div class="card-body">
             <div id="{{ unbar_chart }}"> </div>
                 {{ unbar_graph |safe }}
-            </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
+            </div>  
+            </div>
         </div> <!--// end col-sm-6  -->
         {% endfor %}
 
@@ -178,8 +178,8 @@
             <div id="chart-5"> </div>
                 <!-- dumping JavaScript code here -->
                 {{ display_stats_per_time.unknow_pie3d |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+         </div>  
+        </div>
         </div> <!--// end col-sm-6  -->
     </div> <!--// end row -->
     <!--  End Undetermined Barcode information -->
@@ -206,10 +206,10 @@
                 <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
                 <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
             </form>
-            </div>  <!--  end of panel body  -->
+            </div>  
             <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
 
-        </div> <!--// end panel -->
+        </div>
         </div> <!--// end col-sm-7  -->
 
         <!-- Insert the help panel -->
@@ -221,8 +221,8 @@
              <p>This form will be used to create Run Statistics. The Tool will search for all those runs which the creation date is between the Start Date and the End Date: <BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
-            </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+            </div>  
+        </div>
         <!-- Insert the Help window when clicking on the button -->
         {% include 'wetlab/search-help.html' %}
 

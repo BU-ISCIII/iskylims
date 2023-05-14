@@ -108,10 +108,14 @@ def display_available_protocols(app_name):
                         data_prot.append(False)
                     molecule_protocol_list.append(data_prot)
     other_protocol_list = []
-    if ProtocolType.objects.filter(molecule=None, apps_name__exact=app_name).exists():
+    if (
+        ProtocolType.objects.filter(molecule=None, apps_name__exact=app_name)
+        .exclude(protocol_type__icontains="additional")
+        .exists()
+    ):
         protocol_types = ProtocolType.objects.filter(
             molecule=None, apps_name__exact=app_name
-        )
+        ).exclude(protocol_type__icontains="additional")
         for protocol_type in protocol_types:
             prot_type_str = protocol_type.get_name()
             if Protocols.objects.filter(type=protocol_type).exists():
