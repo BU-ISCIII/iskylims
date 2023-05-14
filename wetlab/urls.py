@@ -181,8 +181,6 @@ urlpatterns = [
         "StatsPerResearcher/", views.stats_per_researcher, name="stats_per_researcher"
     ),
     path("StatsPerTime/", views.stats_per_time, name="stats_per_time"),
-    path("updateTables/", views.update_tables, name="update_tables"),
-    path("updateTablesDate/", views.update_tables_date, name="update_tables_date"),
     path(
         "userCommercialKitInventory/",
         views.user_commercial_kit_inventory,
