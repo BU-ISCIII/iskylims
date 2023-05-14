@@ -15,7 +15,7 @@
  </style>
 
 {% if error_message %}
-     <div class="row mt-2 mb-4">
+     <div class="row my-2">
          <div class="col-sm-7 offset-3">
              <div class="card border-danger mb-3">
                  <div class="card-header"><h3 style="text-align:center">Unable to upload the batch file</h3> </div>
@@ -29,7 +29,7 @@
      </div> <!--  end of row -->
 {% endif %}
 {% if successfuly_batch_load %}
-     <div class="row mt-2 mb-4">
+     <div class="row my-2">
          <div class="col-sm-7 offset-3">
              <div class="card ">
                  <div class="card-header"><h3 style="text-align:center">Successful load the batch file</h3> </div>
@@ -98,7 +98,7 @@
         </div> <!--// end row -->
     {% endif %}
     {% if sample_recorded.invalid_samples %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-11 offset-1">
                 <div class="panel panel-warning ">
                     <div class="card-header"><h3>You have already recorded the following Samples Names.</h3></div>
@@ -219,9 +219,9 @@
 
                                 </script>
                                 {% if sample_recorded.invalid_samples_id %}
-                                    <input class="btn pull-right btn-primary" type="submit" value="Submit and Continue with next">
+                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit and Continue with next">
                                 {% else %}
-                                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                 {% endif %}
                             </form>
                             <script>
@@ -297,7 +297,7 @@
                             </script>
                         <br><br><br><br><br><br><br><br><br><br><br>
                         <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                     </form>
                     <script>
                         $(document).ready(function () {
@@ -380,7 +380,7 @@
                                 </div> <!--  end of scrolling  -->
                                 <br><br><br><br><br>
                                 <input type="button" value="Download Spreadsheet" onclick="pre_def_table.download()"/>
-                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                             </form>
 
                             <script>
@@ -454,7 +454,7 @@
 
                                 </tbody>
                             </table>
-                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                         </form>
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
@@ -519,7 +519,7 @@
                                         <br><br>
                                         <br>
                                         <input type="button" value="Download Spreadsheet" onclick="table1.download()"/>
-                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                     </form>
 
                                     <script>
@@ -560,7 +560,7 @@
                                             <div class="card " >
                                                 <div class="card-header"><h3  style="text-align:center">Upload the excel file to define a batch of samples. </h3></div>
                                                 <div class="card-body" >
-                                                    <div class="form-group required">
+                                                    <div class="form-control required">
                                                         <label class="col-sm-5  control-label" for="samplesExcel" ><td> Upload Samples file</td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel" ></div>
                                                     </div>  <!-- end from-group   -->
@@ -568,8 +568,8 @@
                                                 </div> <!-- End   Panel Body   -->
                                             </div>  <!-- End   Panel    -->
 
-                                            <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                            <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                         </div> <!-- end col-sm-8 -->
 
                                     </form>

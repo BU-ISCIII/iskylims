@@ -14,7 +14,7 @@
     }
 </style>
 {% if error_message %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3">
             <div class="card border-danger mb-3">
                 <div class="card-header"><h3 style="text-align:center"></h3> </div>
@@ -28,7 +28,7 @@
     </div> <!--  end of row -->
 {% endif %}
 {% if samples_added %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3">
             <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">More samples are added to the service {{samples_added.service_name}}</h3> </div>
@@ -53,7 +53,7 @@
     </div> <!--  end of row -->
 
 {% else %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">Request Service form for Adding more samples to an existing Service.</h3></div>
@@ -164,7 +164,7 @@
                                     </div> <!--// end panel -->
                                 </div> <!--// end col-sm-12  Projects Requested services  -->
                             </div><!-- // end of tab external_samples -->
-                            <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                            <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
                         </form>
                     </div> <!--  end of col-sm-12 -->
                     <script>

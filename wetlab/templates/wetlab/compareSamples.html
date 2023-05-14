@@ -14,7 +14,7 @@
     }
  </style>
  {% if ERROR %}
-     <div class="row mt-2 mb-4">
+     <div class="row my-2">
          <div class="col-sm-7 offset-3">
              <div class="card border-danger mb-3">
                  <div class="card-header"><h3 style="text-align:center">No Samples</h3> </div>
@@ -28,14 +28,14 @@
      </div> <!--  end of row -->
  {% endif %}
 {% if compared_data %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
            <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">Samples Comparations</h3></div>
                 <div class="card-body">
                     <div class="card-body scrolling-wrapper-sm-11">
 
-                        <button onclick="exportTableToExcel('compareSamples')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                        <button onclick="exportTableToExcel('compareSamples')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                         <table id=compareSamples class="table table-hover">
                             <thead>
                                 <tr>
@@ -60,7 +60,7 @@
        </div> <!--// end col-sm-12  -->
    </div> <!--  end of row -->
 {% else %}
-     <div class="row mt-2 mb-4">
+     <div class="row my-2">
          <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">Available Samples for {{samples_data.user}} </h3></div>
@@ -99,7 +99,7 @@
                                     });
                                 </script>
                                 <br>
-                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                                <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
                             </form>
                             <script>
                                 $(document).ready(function () {

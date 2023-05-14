@@ -4,7 +4,7 @@
 {% csrf_token %}
 {% if list_of_libraries.new_basespace_library %}
     <BR>
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6" >
             <div class="card ">
               <div class="card-header">New BaseSpace Library name has been added </div>
@@ -56,20 +56,20 @@
 
 {% else %}
     <BR>
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6" >
         <div class="card ">
           <div class="card-header">Form to add a new Library name for BaseSpace</div>
           <div class="card-body">
             <form method="post" enctype="multipart/form-data" name="addBasespaceLibrary" id="addBasespaceLibrary" class="form-horizontal">
             {% csrf_token %}
-                <div class="form-group required">
+                <div class="form-control required">
                   <input type="hidden" name="action" value="addNewBasespaceLibrary"/>
                   <label class="col-sm-4 control-label">New Basespace Library</label>
                   <div class="col-sm-8"><input class="form-control" required = "required" type="text"  name="newBasespaceLibrary"size="80"></div>
                   <BR> <BR> <BR>
                 </div>
-                <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
             </form>
 
          </div>  <!--  end of panel body  -->

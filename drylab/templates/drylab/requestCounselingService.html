@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if error_message %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3">
             <div class="card border-danger mb-3">
                 <div class="card-header"><h3 style="text-align:center"></h3> </div>
@@ -17,7 +17,7 @@
     </div> <!--  end of row -->
 {% endif %}
 {% if confirmation_result %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3">
             <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
@@ -49,7 +49,7 @@
     </div> <!--  end of row -->
 
 {% else %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12">
             <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">Counseling Request Service form.</h3></div>
@@ -75,12 +75,12 @@
                                 </div> <!--  end of scrolling wrapper -->
                             </div> <!--  end of scrolling wrapper -->
                             <br>
-                            <div class="form-group">
+                            <div class="form-control">
                                 <label class="col-sm-3 control-label" for="description" >Service Notes</label>
                                 <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
                             </div>  <!-- end from-group   -->
                             <br><br>
-                            <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                            <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
                             <script>
                                 $(document).ready(function() {
                                     $("input:checkbox").change(function() {

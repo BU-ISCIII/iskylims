@@ -3,34 +3,9 @@
 {% block content %}
 {% include "wetlab/menu.html" %}
 {% include 'registration/login_inline.html' %}
-<style>
-    .panel-wrapper-sm-6 {
-        max-height: 450px;
-        overflow: auto;
-        display:inline-block;
-        width: 670px;
-    }
-    .panel-wrapper-sm-10 {
-        max-height: 250px;
-        overflow: auto;
-        display:inline-block;
-        width: 950px;
-    }
-    .panel-wrapper-sm-12 {
-        max-height: 450px;
-        overflow: auto;
-        display:inline-block;
-        width: 1150px;
-    }
-    
-    p {
-       font-size: 18px;
-    }
-    
-    </style>
 <section class="iskylims">
     {% if error %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-7 offset-3" >
                 <div class="card border-danger mb-3">
                     <div class="card-header"><H3>Unable to execute the configuration test</H3></div>
@@ -44,7 +19,7 @@
         </div> <!--// end row  -->
     {% endif %}
     {% if delete_successful %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-7 offset-3" >
                 <div class="card ">
                     <div class="card-header"><H3>Successful deletion</H3></div>
@@ -56,13 +31,13 @@
         </div> <!--// end row  -->
     {% endif %}
     {% if test_results %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col" >
                     <h3 style:"text-align:center">Wetlab configuration testing results</h3>
             </div> 
         </div> 
-        <div class="row mt-2 mb-4">
-            <div class="col-sm-12">
+        <div class="row my-2">
+            <div class="col">
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="basic" aria-selected="true">Configuration Files</button>
@@ -210,7 +185,7 @@
 
         {% if test_results.basic_checks_ok == 'OK' %}
             {% if available_run_test %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="col-sm-12" >
                         <div class="card ">
                             <div class="card-header"><H3>Execute the test Run</H3> </div>
@@ -227,7 +202,7 @@
 
                                                         </select>
                                     </div>  <!-- end select input -->
-                                    <input class="btn pull-right btn-primary"  name = "btnSubmit" id = "btnSubmit" type="submit" value="Run Test">
+                                    <input class="btn float-end btn-outline-primary"  name = "btnSubmit" id = "btnSubmit" type="submit" value="Run Test">
                                     <br><br>
                                 </form>
 
@@ -244,7 +219,7 @@
                     });
                 </script>
             {% else %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="col-sm-12" >
                         <div class="card border-danger mb-3">
                             <div class="card-header"><H3>No defined test Run </H3> </div>
@@ -255,7 +230,7 @@
                     </div> <!--// end row  -->
             {% endif %}
         {% else %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col" >
                 <div class="card border-danger mb-3 ">
                     <h3 class="card-title text-danger" style="text-align:center">Basic test not passed</h3> 
@@ -273,7 +248,7 @@
 
     {% elif run_test_result %}
         {% if run_test_result.ERROR %}
-            <div class="row mt-2 mb-4">
+            <div class="row my-2">
                 <div class="col-sm-7 offset-3" >
                     <div class="card border-danger mb-3">
                         <div class="card-header"><H3>Test run was not successful</H3></div>
@@ -285,16 +260,16 @@
             </div> <!--// end row  -->
 
         {% endif %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-12" >
                 <div class="card ">
                     <div class="card-header"><H3>Results execution for {{run_test_result.run_test_name}} test Run
 
                         {% if run_test_result.Completed == "OK" %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                            <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                             <p>The run test is successfully completed</p>
                         {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                            <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                             <p>{{run_test_result.error}}</p>
                         {% endif %}
                     </H3></div>
@@ -307,9 +282,9 @@
                             <button class="tablinks" onclick="summaryBin(event, 'moreOptions')">Available Options</button>
 
                         </div>
-                        <div class="row mt-2 mb-4">
+                        <div class="row my-2">
                             <div id="results" class="tabcontent">
-                                <div class="row mt-2 mb-4">
+                                <div class="row my-2">
                                     <div class="col-sm-7">
                                         <div class="card ">
                                             <div class="card-header"><H3>Information per run test state</H3></div>
@@ -319,9 +294,9 @@
                                                         <p> Result of run test for the state {{key}}
 
                                                             {% if  value == 'OK' %}
-                                                                <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                                                                <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                                                             {% else %}
-                                                                <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                                                                <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                                                             {% endif %}
                                                         </p>
                                                         <br><br>
@@ -335,7 +310,7 @@
 
                             {% if  log_trace %}
                                 <div id="log" class="tabcontent">
-                                    <div class="row mt-2 mb-4">
+                                    <div class="row my-2">
                                         <div class="col-sm-12">
                                             <div class="card ">
                                                 <div class="card-header"><H3>Information stored in log file for run test </H3></div>
@@ -353,7 +328,7 @@
                                 </div><!-- // end of tab log -->
                             {% endif %}
                             <div id="moreOptions" class="tabcontent">
-                                <div class="row mt-2 mb-4">
+                                <div class="row my-2">
                                     <div class="col-sm-10">
                                         <div class="card ">
                                             <div class="card-header"><H3>Available options</H3></div>
@@ -365,7 +340,7 @@
                                                         <input type="hidden" name="deleteRun" value="{{run_test_result.run_test_name}}"/>
                                                         <br>
                                                         <input class="btn pull-left btn-default" onclick="window.location.href=''" value="Return to configuration Test">
-                                                        <input class="btn pull-right btn-primary" type="submit" value="Delete test run" name="Delete">
+                                                        <input class="btn float-end btn-outline-primary" type="submit" value="Delete test run" name="Delete">
                                                         <br><br>
                                                     </form>
                                                 </div> <!--// end panel body -->
@@ -382,7 +357,7 @@
     {% else %}
         <!-- FORM for selecting annual Report Information -->
 
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-7 offset-3" >
                 <div class="card ">
                     <div class="card-header"><H3>Page for starting wetlab configuration testing</H3></div>

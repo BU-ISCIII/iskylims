@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 {% if new_lot_kit_data %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-1">
             <div class="card ">
                 <div class="card-header"><h3>Successful definition for User Lot Commercial Kit </h3></div>
@@ -31,7 +31,7 @@
 
 {% else %}
     {% if invalid_name %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6 offset-1">
                 <div class="card border-danger mb-3">
                     <div class="card-header"><h3>Lot User Commercial Kit already exists</h3></div>
@@ -42,7 +42,7 @@
             </div> <!--// end col-sm-7  -->
         </div> <!--// end row -->
     {% endif %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-1">
             <div class="card ">
                 <div class="card-header"><h3>User Lot Commercial Kit.</h3></div>
@@ -50,7 +50,7 @@
                     <form method="post" enctype="multipart/form-data" name="addUserLotKit" id="addUserLotKit" class="form-horizontal well">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="addUserLotKit"/>
-                    <div class="form-group required">
+                    <div class="form-control required">
                         <label class="col-sm-5 control-label" for="commercialKit" >Select the Commercial Kit name</label>
                         <div class="col-sm-7"><select class="form-control" name="commercialKit" id="commercialKit">
                                           				<option value="">Choose a value</option>
@@ -61,13 +61,13 @@
                         </div>  <!-- end select input -->
                     </div>  <!-- end from-group   -->
                     <BR>
-                        <div class="form-group required">
+                        <div class="form-control required">
                              <label class="col-sm-5  control-label" for="nickName" >Define the nick name</label>
                                <div class="col-sm-5"><input class="form-control" type="text" name="nickName" id="nickName" size="100" maxlength="100"></div>
                         </div>  <!-- end from-group   -->
 
                         <br>
-                        <div class="form-group required">
+                        <div class="form-control required">
                             <label class="col-sm-5  control-label" for="txtCode" >Enter the Lot barcode  </label>
                             <input type="text" id="txtCode" class="barcodeinput" name="txtCode"/>
                             <input type="button" value="OK" class="nextcontrol"/>
@@ -75,13 +75,13 @@
                         </div>  <!-- end from-group   -->
                         <br>
 
-                        <div class="form-group required">
+                        <div class="form-control required">
                           <label class="col-sm-5 control-label" for="expirationDate" >Kit Expiration Date (DD-MM-YYYY)</label>
                           <div class="col-sm-5"><input class="form-control" type="date" name="expirationDate" value="" id="expirationDate"></div>
                     </div>  <!-- end from-group   -->
                     <br>
-                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                     </form>
 
                 </div>  <!--  end of panel body  -->

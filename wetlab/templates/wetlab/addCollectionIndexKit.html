@@ -13,7 +13,7 @@
 {% if collection_index_information %}
 
     <BR>
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-6" >
             <div class="card ">
               <div class="card-header">New Collection Index Kit has been added </div>
@@ -66,20 +66,20 @@
         </div> <!--// end row -->
 {% else %}
     <BR>
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6" >
             <div class="card ">
                 <div class="card-header"><h3>Form to add a new collection index kit</h3> </div>
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data" name="addCollectionIndexKit" id="addCollectionIndexKit" class="form-horizontal">
                         {% csrf_token %}
-                        <div class="form-group required">
+                        <div class="form-control required">
                             <input type="hidden" name="action" value="addCollectionIndexKit"/>
                             <label class="col-sm-4 control-label">Upload Collection Index kit file</label>
                             <div class="col-sm-8"><input class="form-control" required = "required" type="file" id="upfile" name="newCollectionIndexFile" size="80"></div>
                             <BR> <BR> <BR>
                         </div>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
                     </form>
                 </div>  <!--  end of panel body  -->
                 <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>

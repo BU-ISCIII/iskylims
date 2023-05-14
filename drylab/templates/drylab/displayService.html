@@ -14,7 +14,7 @@
 <h1>
     <div class="color-heading">Service Information for the service {{ display_service.service_name}}</div>
 </h1>
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-6"> <!-- general information from service -->
         <div class="card ">
             <div class="card-header">
@@ -99,7 +99,7 @@
             <div class="card-body">
                 <h5>Click on the following buttons to update the service</h5>
                 {% if display_service.allowed_waiting_info %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="card ">
                         <div class="card-header">
                             <h3>Put service on hold</h3>
@@ -112,7 +112,7 @@
                                 <input type="hidden" name="action" value="serviceInWaitingInfo">
                                 <input type="hidden" name="service_id" value="{{display_service.service_id}}">
                                 <div class="col-sm-4 ">
-                                    <input class="btn pull-right btn-primary" type="submit" id="btnSubmit2"
+                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit2"
                                         value="Waiting information">
                                 </div>
                             </form>
@@ -121,7 +121,7 @@
                 </div> <!--// end row -->
                 {% endif %}
                 {% if display_service.add_resolution_action %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="card ">
                         <div class="card-header">
                             <h3>Select the services to add new resolution </h3>
@@ -136,7 +136,7 @@
                                         None or all to handle all in the new resolution</p>
                                     <input type="hidden" name="children_services_id"
                                         value="{% for id, name in display_service.children_services %}{{id}},{% endfor %}">
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-5 control-label" for="childrenServices">Select services</label>
                                         <div class="col-sm-10">
                                             <select class="custom-select" name="childrenServices" id="childrenServices"
@@ -153,7 +153,7 @@
                                 {% endif %}
                                 <div class="col-sm-4 "> <!-- col-sm-4  resolution button  -->
                                     <br><br>
-                                    <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
+                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
                                         value="Add Resolution">
                                 </div> <!--// end col-sm-4   resolution button  -->
                             </form>
@@ -162,7 +162,7 @@
                 </div> <!--// end row -->
                 {% endif%}
                 {% if display_service.resolution_progress %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="card ">
                         <div class="card-header">
                             <h3>Resolution to update the state to "In Progress"</h3>
@@ -194,7 +194,7 @@
                                 </div> <!--// end col-sm-8 -->
                                 <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
                                     <br>
-                                    <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
+                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
                                         value="In Progress">
                                 </div> <!--// end col-sm-4   resolution button  -->
                             </form>
@@ -204,7 +204,7 @@
                 </div> <!--// end row -->
                 {% endif%}
                 {% if display_service.resolution_delivery %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="card ">
                         <div class="card-header">
                             <h3>Delivery resolutions</h3>
@@ -236,7 +236,7 @@
                                 </div> <!--// end col-sm-8 -->
                                 <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
                                     <br>
-                                    <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
+                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
                                         value="Delivery">
                                 </div> <!--// end col-sm-4   resolution button  -->
                             </form>
@@ -246,7 +246,7 @@
                 </div> <!--// end row -->
                 {% endif%}
                 {% if display_service.resolution_delivered %}
-                <div class="row mt-2 mb-4">
+                <div class="row my-2">
                     <div class="card ">
                         <div class="card-header">
                             <h3>Resolution already delivered</h3>
@@ -260,7 +260,7 @@
                                     {% if display_service.all_requested_services %}
                                     <input type="hidden" name="children_services_id"
                                         value="{% for id, name in display_service.all_requested_services %}{{id}},{% endfor %}">
-                                    <div class="form-group">
+                                    <div class="form-control">
                                         <label class="col-sm-8 control-label" for="childrenServices">Select
                                             services</label>
                                         <div class="col-sm-8">
@@ -276,7 +276,7 @@
                                 </div> <!--// end col-sm-8 -->
                                 <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
                                     <br>
-                                    <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
+                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
                                         value="Reopen Resolution">
                                 </div> <!--// end col-sm-4   resolution button  -->
                             </form>
@@ -290,7 +290,7 @@
     {% endif %}
 </div> <!--// end row -->
 
-<div class="row mt-2 mb-4">
+<div class="row my-2">
     <div class="col-sm-12">
         <div class="tab">
             <button class="tablinks" onclick="summaryBin(event, 'request_services')" id="defaultOpen">Requested
@@ -433,7 +433,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="addSamplesInService">
                             <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                            <input class="btn pull-right btn-primary" type="submit" id="btnSubmit"
+                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
                                 value="Add new Samples">
                         </form>
                         <script>

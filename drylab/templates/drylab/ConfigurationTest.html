@@ -37,7 +37,7 @@ p {
 
 </style>
 {% if test_results %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>Drylab configuration testing results</H3></div>
@@ -45,14 +45,14 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>iSkyLIMS configuration settings
                 {% if test_results.iSkyLIMS_settings %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                    <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                    <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
                 <div class="card-body">
@@ -75,14 +75,14 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>Drylab configuration settings
                 {% if test_results.config_file %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                    <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                    <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
                 <div class="card-body">
@@ -105,14 +105,14 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>Database access
                 {% if test_results.database_access == 'OK' %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                    <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                    <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
                  <div class="card-body">
@@ -131,14 +131,14 @@ p {
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
     
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>Drylab services definition
                 {% if test_results.services %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                    <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                    <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
                  <div class="card-body">
@@ -161,7 +161,7 @@ p {
     
     
     {% if test_results.basic_checks_ok == 'OK' %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12" >
             <div class="card ">
                 <div class="card-header"><H3>Execute the resolution test</H3> </div>
@@ -171,7 +171,7 @@ p {
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="resolutionTest"/>
                                 <br>
-                                <input class="btn pull-right btn-primary" type="submit" value="Run Resolution Test">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Run Resolution Test">
                             </form>
                         </div> <!--// end panel body -->
             </div> <!--// end panel -->
@@ -179,7 +179,7 @@ p {
     </div> <!--// end row  -->
     
     {% else %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12" >
             <div class="card ">
                 <div class="card-header"><H3>Basic test not passed</H3> </div>
@@ -190,21 +190,21 @@ p {
                         {% csrf_token %}
                         <input type="hidden" name="action" value="basicTest"/>
                         <br>
-                        <input class="btn pull-right btn-primary" type="submit" value="Re-Run Basic Test">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Re-Run Basic Test">
                     </form>
                 </div> <!--// end panel body -->
                 
     {% endif %}
     
 {% elif resolution_results %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-6 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>Additional test for drylab
                  {% if resolution_results.completed_ok %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                    <i class="float-end glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                    <i class="float-end glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
                 {% endif %}
                 </H3> </div>
                 <div class="card-body">
@@ -214,7 +214,7 @@ p {
         </div> <!--// end col-sm-6  -->
     </div> <!--// end row  -->
     
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-12" >
             <div class="card ">
                 <div class="card-header"><H3>Specific Test Cases for Drylab</H3></div>
@@ -223,18 +223,18 @@ p {
                     <div class="card ">
                         <div class="card-header"><H3>1. - Test Executed to create service Test
                          {% if resolution_results.create_service_ok == "OK" %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
+                            <i class="float-end glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
+                            <i class="float-end glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
                         {% endif %}
                         </H3> </div>
                         <div class="card-body">
                             {% for test_case, result in resolution_results.CreateService %}
                                 <p><strong> {{ test_case }} 
                                 {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
+                                    <i class="float-end glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
+                                    <i class="float-end glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
                                 {% endif %}
                                 </strong></p>
                             {% endfor %}
@@ -247,18 +247,18 @@ p {
                     <div class="card ">
                         <div class="card-header"><H3>2. - Test Executed to create Resolution
                          {% if resolution_results.create_resolution_ok == "OK" %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
+                            <i class="float-end glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
+                            <i class="float-end glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
                         {% endif %}
                         </H3> </div>
                         <div class="card-body">
                             {% for test_case, result in resolution_results.resolution_test %}
                                 <p><strong> {{ test_case }} 
                                 {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
+                                    <i class="float-end glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
+                                    <i class="float-end glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
                                 {% endif %}
                                 </strong></p>
                             {% endfor %}
@@ -275,7 +275,7 @@ p {
     
     
     
-    <div class="row mt-2 mb-4">   
+    <div class="row my-2">   
         <div class="col-sm-8 offset-3">
                 <div class="card ">
                 <div class="card-header"><H3>Test Options</H3></div>
@@ -285,9 +285,9 @@ p {
                             {% csrf_token %}
                             <input type="hidden" name="action" value="resolutionTest"/>
                             <br>
-                            <input class="btn pull-left btn-primary" onclick="window.location.href=''" value="Back to Test Page">
-                            <input class="btn pull-center btn-primary" type="submit" value="Delete test run" name="Delete">
-                            <input class="btn pull-right btn-primary" type="submit" value="Re-Run Resolution Test" name "resolutionTest">
+                            <input class="btn pull-left btn-outline-primary" onclick="window.location.href=''" value="Back to Test Page">
+                            <input class="btn pull-center btn-outline-primary" type="submit" value="Delete test run" name="Delete">
+                            <input class="btn float-end btn-outline-primary" type="submit" value="Re-Run Resolution Test" name "resolutionTest">
                         </form>
                     </div> <!--// end panel body -->
             </div> <!--// end panel -->
@@ -297,7 +297,7 @@ p {
 {% else %}
     <!-- FORM for selecting annual Report Information -->
   
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3" >
             <div class="card ">
                 <div class="card-header"><H3>Page for starting drylab configuration testing</H3></div>
@@ -328,7 +328,7 @@ p {
                         <p><strong>Click on the "SUBMIT" button to start the testing</strong></p>
                         <br>
 
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                     </form>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->

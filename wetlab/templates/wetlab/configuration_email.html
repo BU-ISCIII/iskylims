@@ -5,7 +5,7 @@
 {% include 'registration/login_inline.html' %}
 <section class="iskylims">
     {% if ERROR %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-7 offset-3">
                 <div class="card border-danger mb-3">
                     <div class="card-header"><h3 style="text-align:center">Invalid settings</h3> </div>
@@ -17,7 +17,7 @@
         </div> 
     {% endif %}
     {% if succesful_settings %}
-        <div class="row mt-2 mb-4">
+        <div class="row my-2">
             <div class="col-sm-7 offset-3">
                 <div class="card ">
                     <div class="card-header"><h3 style="text-align:center">Sucessful Configuration settings</h3> </div>
@@ -39,7 +39,7 @@
                 <form method="post" enctype="multipart/form-data" name="emailconfiguration" id="emailconfiguration">
                     <input type="hidden" name="action" value="emailconfiguration"/>
                     {% csrf_token %}
-                    <div class="row mt-2 mb-4">
+                    <div class="row my-2">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-title" style="text-align:center">Email setting fields</div>

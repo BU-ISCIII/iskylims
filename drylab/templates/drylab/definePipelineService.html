@@ -12,7 +12,7 @@
     }
  </style>
 {% if defined_service_pipeline %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8 offset-2">
             <div class="card ">
                 <div class="card-header"><h3  style="text-align:center">Successful service Pipeline recorded.</h3></div>
@@ -35,7 +35,7 @@
                     </table>
                     <br><br>
                     <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-                    <input class="btn pull-right" type="button" value="Create New Service Pipeline" onclick="location.href ='/drylab/definePipelineService' ;"/>
+                    <input class="btn float-end" type="button" value="Create New Service Pipeline" onclick="location.href ='/drylab/definePipelineService' ;"/>
                 </div>
             </div>
         </div> <!--  end of col-sm-12 -->
@@ -43,7 +43,7 @@
 
 {% else %}
     {% if error_message %}
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-7 offset-3">
             <div class="card border-danger mb-3">
                 <div class="card-header"><h3 style="text-align:center">UNABLE TO RECORD YOUR REQUEST</h3> </div>
@@ -57,7 +57,7 @@
     </div> <!--  end of row -->
     {% endif %}
 
-    	<div class="row mt-2 mb-4">
+    	<div class="row my-2">
     		<div class="col-sm-12">
     			<div class="card ">
     				<div class="card-header"><h3>Define the pipeline for using on services.</h3></div>
@@ -65,8 +65,8 @@
     					<form method="post" enctype="multipart/form-data" name="definePipeline"  id="definePipeline" class="form-horizontal well">
     						{% csrf_token %}
                             <input type="hidden" name="action" value="definePipeline"/>
-    						<div class="row mt-2 mb-4">
-                                <div class="form-group required">
+    						<div class="row my-2">
+                                <div class="form-control required">
 
         							<div class="col-sm-10">
                                         <label class="col-sm-4  control-label" for="pipeline_name" >Pipeline Name </label>
@@ -77,7 +77,7 @@
                                         <BR><br>
                                     </div> <!--  end of col-sm-10-->
                                 </div>  <!-- end from-group   -->
-                                <div class="form-group">
+                                <div class="form-control">
                                     <div class="col-sm-10">
                                         <label class="col-sm-4  control-label" for="urlLocation" >Location Pipeline URL  </label>
                                         <div class="col-sm-8"><input class="form-control" type="text"  name="urlLocation" id="urlLocation"  size="80" maxlength="80"></div>
@@ -121,7 +121,7 @@
             	                           });
             	                        </script>
             	                       <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-            	                       <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+            	                       <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
         				   		    </div> <!--  end of scrolling  -->
                                 </div> <!--  end of col-sm-10-->
                             </div> <!--  end of row -->

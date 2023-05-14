@@ -6,7 +6,7 @@
 
 {% if services_stats_info %}
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
 	<div class="col-sm-12">
 	    <div class="col-sm-6 ">  <!--col-sm-6  graphics for services requested -->
 		<div class="card ">
@@ -38,7 +38,7 @@
     </div> <!--// end row -->
 
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for Area -->
 	    <div class="card ">
 		<div class="card-header"><h3>Number of Requested Services per Area.</h3></div>
@@ -55,7 +55,7 @@
     </div> <!--// end row -->
 
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for Area -->
 	    <div class="card ">
 		<div class="card-header"><h3>Number of Requested Services per Center.</h3></div>
@@ -70,7 +70,7 @@
 	</div> <!--// end col-sm-7  graphics for area  -->
     </div> <!--// end row -->
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
 	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per period of time -->
 	    <div class="col-sm-6 ">  <!--col-sm-6  Statistics per Center -->
 		<div class="card ">
@@ -101,7 +101,7 @@
 	</div> <!--// end col-sm-12  graphics for area  -->
     </div> <!--// end row -->
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
 	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per Service request -->
 	    <div class="col-sm-10 ">  <!--col-sm-10  Services on level 2 -->
 		<div class="card ">
@@ -118,7 +118,7 @@
 	    </div> <!--// end col-sm-10  graphics for area  -->
 	</div> <!--// end col-sm-12  graphics for area  -->
     </div> <!--// end row -->
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
 	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per Service request -->
 	    <div class="col-sm-10 ">  <!--col-sm-10  Services on level 3-->
 		<div class="card ">
@@ -138,7 +138,7 @@
 
 {% else %}
 
-    <div class="row mt-2 mb-4">
+    <div class="row my-2">
         <div class="col-sm-8" >
             <div class="card ">
                 <div class="card-header"><h1>Services Request Statistics</h1></div>
@@ -147,18 +147,18 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="serviceStatistics"/>
                         <br>
-                        <div class="form-group required">
+                        <div class="form-control required">
                             <label class="col-sm-5 control-label" for="startdate" >Start Date (DD-MM-YYYY)</label>
                             <div class="col-sm-5"><input class="form-control" required = "required" type="date" name="startdate" value="" id="startdate"></div>
                         </div>  <!-- end from-group   -->
                         <br>
-                        <div class="form-group">
+                        <div class="form-control">
                             <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY)</label>
                             <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
                         </div>  <!-- end from-group   -->
                         <br>
-                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                     </form>
                 </div>  <!--  end of panel body  -->
                 <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>

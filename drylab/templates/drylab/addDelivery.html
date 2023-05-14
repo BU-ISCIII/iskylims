@@ -25,7 +25,7 @@
 					<h5>The resolution  has been successfully recorded with Resolution Number {{delivery_recorded.resolution_number}}</h5>
 					<br><br>
 					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-					<input class="btn pull-right btn-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
+					<input class="btn float-end btn-outline-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
 				</div>
             </div>
         </div> <!--  end of col-sm-10 -->
@@ -42,22 +42,22 @@
 						{% csrf_token %}
 						<input type="hidden" name="action" value="addDeliveryResolution"/>
 						<input type="hidden" name="resolution_id" value="{{delivery_data.resolution_id}}"/>
-						<div class="form-group">
+						<div class="form-control">
 							<label class="col-sm-5 control-label" for="startdate" >Date that job was sent for execution (DD-MM-YYYY)</label>
 							<div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
 							<br><br>
 							<label class="col-sm-5 control-label" for="enddate" >Execution ending date (DD-MM-YYYY)</label>
 							<div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
 							<br><br>
-							<div class="form-group">
+							<div class="form-control">
 				                  <label class="col-sm-5  control-label" for="time" >CPU hours used for execution</label>
 				                    <div class="col-sm-5"><input class="form-control" type="text" name="time" id="time" size="100" maxlength="100"></div>
 				             </div>  <!-- end from-group   -->
-							 <div class="form-group">
+							 <div class="form-control">
  				                  <label class="col-sm-5  control-label" for="pspace" >Space disk used in the execution in (GB)</label>
  				                    <div class="col-sm-5"><input class="form-control" type="text" name="pspace" id="pspace" size="100" maxlength="100"></div>
  				             </div>  <!-- end from-group   -->
-							 <div class="form-group">
+							 <div class="form-control">
  				                  <label class="col-sm-5  control-label" for="tspace" >Temporal space disk used during execution in (GB)</label>
  				                    <div class="col-sm-5"><input class="form-control" type="text" name="tspace" id="tspace" size="100" maxlength="100"></div>
  				             </div>  <!-- end from-group   -->
@@ -92,7 +92,7 @@
 							{% endif %}
 						</div>  <!-- end from-group   -->
 
-						<div class="form-group required ">
+						<div class="form-control required ">
 							<label class="col-sm-5 control-label" for="delivery_notes" >Notes</label>
 							<div class="col-sm-7">
 								<textarea class="form-control" required name="delivery_notes" value="" id="delivery_notes" rows="8" cols="60" maxlength="800"></textarea>
@@ -101,8 +101,8 @@
 						</div>  <!-- end from-group   -->
 						<br>
 
-	                    <input class="btn btn-primary" type="reset" value="Reset Fields">
-	                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+	                    <input class="btn btn-outline-primary" type="reset" value="Reset Fields">
+	                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
 					</form>
 	                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
 				</div>  <!--  end of panel body  -->
