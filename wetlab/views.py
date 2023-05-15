@@ -843,36 +843,19 @@ def search_run(request):
     Return:
         Return the different information depending on the execution:
         -- Error page in case no run is founded on the matching conditions.
-        -- SearchRun.html is returned with one of the following information :
+        -- search_run.html is returned with one of the following information :
             -- r_data_display   # in case that only one run is matched
             ---run_list         # in case several run matches the user conditions.
 
     """
     # check user privileges
-    if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name=config.WETLAB_MANAGER)
-            if groups not in request.user.groups.all():
-                allowed_all_runs = False
-            else:
-                allowed_all_runs = True
-        except Exception:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
+    groups = Group.objects.filter(name=config.WETLAB_MANAGER).last()
+    if groups not in request.user.groups.all():
+        allowed_all_runs = False
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    ########
+        allowed_all_runs = True
+
     # Search for runs that fullfil the input values
-    ########
     run_form_data = wetlab.utils.common.get_run_search_fields_form()
     error_message = ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == "POST" and (request.POST["action"] == "runsearch"):
@@ -889,7 +872,7 @@ def search_run(request):
             and run_state == ""
             and platform_name == ""
         ):
-            return render(request, "wetlab/SearchRun.html")
+            return render(request, "wetlab/search_run.html")
 
         # check the right format of start and end date
         if start_date != "":
@@ -897,7 +880,7 @@ def search_run(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if end_date != "":
@@ -905,7 +888,7 @@ def search_run(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
@@ -929,7 +912,7 @@ def search_run(request):
                 ]
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
@@ -946,7 +929,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if platform_name != "":
@@ -958,12 +941,12 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         # Check if state is not empty
         if run_state != "":
-            s_state = RunStates.objects.get(run_state_name__exact=run_state)
+            s_state = RunStates.objects.filter(run_state_name__exact=run_state).last()
             if runs_found.filter(state__run_state_name__exact=s_state).exists():
                 runs_found = runs_found.filter(
                     state__run_state_name__exact=s_state
@@ -971,7 +954,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         # Check if start_date is not empty
@@ -981,7 +964,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if start_date != "" and end_date == "":
@@ -990,7 +973,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
         if start_date == "" and end_date != "":
@@ -999,7 +982,7 @@ def search_run(request):
             else:
                 return render(
                     request,
-                    "wetlab/SearchRun.html",
+                    "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
 
@@ -1021,12 +1004,12 @@ def search_run(request):
                 )
             return render(
                 request,
-                "wetlab/SearchRun.html",
+                "wetlab/search_run.html",
                 {"display_run_list": run_list},
             )
     else:
         return render(
-            request, "wetlab/SearchRun.html", {"run_form_data": run_form_data}
+            request, "wetlab/search_run.html", {"run_form_data": run_form_data}
         )
 
 
@@ -1049,7 +1032,7 @@ def search_project(request):
     Return:
         Return the different information depending on the execution:
         -- Error page in case no run is founded on the matching conditions.
-        -- SearchRun.html is returned with one of the following information :
+        -- search_run.html is returned with one of the following information :
             -- r_data_display   # in case that only one run is matched
             ---run_list         # in case several run matches the user conditions.
 
