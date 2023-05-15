@@ -1,0 +1,247 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+{% include "core/graphic_chart_functionality.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims">
+   {% if display_incompleted_run %}
+        <div class="row my-2">
+            <div class="col" >
+                <h3 style="text-align:center">List of runs that are not completed</h3>
+                <div class="col">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="recorded-tab" data-bs-toggle="tab" data-bs-target="#recorded" type="button" role="tab" aria-controls="recorded" aria-selected="true">Recorded</button>
+                        </li>
+                        {% if  display_incompleted_run.cancelled %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab" aria-controls="cancelled" aria-selected="false">Cancelled</button>
+                            </li>
+                        {% endif %}
+                        {% if  display_incompleted_run.error %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="erro-tab" data-bs-toggle="tab" data-bs-target="#error" type="button" role="tab" aria-controls="error" aria-selected="false">Error</button>
+                            </li>
+                        {% endif %}    
+                        {% if  display_incompleted_run.other %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="erro-tab" data-bs-toggle="tab" data-bs-target="#error" type="button" role="tab" aria-controls="error" aria-selected="false">Error</button>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="graphics-tab" data-bs-toggle="tab" data-bs-target="#graphics" type="button" role="tab" aria-controls="graphics" aria-selected="false">Graphics</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="recorded" role="tabpanel" aria-labelledby="recorded-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col">
+                                        <div class="card">
+                                            <div class="card-header"><h3 style="text-align:center">Runs which are recorded</h3></div>
+                                            <div class="card-body">
+                                                <table id="rec_table" class="table table-striped table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Run Name </th>
+                                                            <th>Recorded date</th>
+                                                            <th>Number of days in recorded</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for id, name, date , days in display_incompleted_run.recorded %}
+                                                            <tr>
+                                                                <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                <td> {{ date }} </td>
+                                                                <td align="center"> {{ days }} </td>
+                        
+                                                            </tr>
+                                                        {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {% if  display_incompleted_run.recorded|length > 7 %}
+                                                <script type="text/javascript">
+                                                    $(document).ready(function() {
+                                                        $('#rec_table').DataTable({
+                                                            responsive: true,
+                                                        });
+                                                    });
+                                                </script>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!--end tab recorded -->
+                        {% if  display_incompleted_run.error %}
+                            <div class="tab-pane fade" id="error" role="tabpanel" aria-labelledby="error-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Runs which are in error</h3></div>
+                                                <div class="card-body">
+                                                    <table id="error_table" class="table table-striped table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Run Name </th>
+                                                                <th>Run date</th>
+                                                                <th>State before error</th>
+                                                                <th>Error type</th>
+                                                                <th>Number of days</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for id, name, date ,state, error, days in display_incompleted_run.error %}
+                                                                <tr>
+                                                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                    <td> {{ date }} </td>
+                                                                    <td> {{ state }} </td>
+                                                                    <td> {{ error }} </td>
+                                                                    <td align="center"> {{ days }} </td>
+                    
+                                                                </tr>
+                                                            {%endfor%}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if  display_incompleted_run.error|length > 7 %}
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            $('#error_table').DataTable({
+                                                                responsive: true,
+                                                            });
+                                                        });
+                                                    </script>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!--end tab error -->
+                        {% endif %}
+                        {% if  display_incompleted_run.cancelled %}
+                            <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="cancelled-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Runs which are cancelled</h3></div>
+                                                <div class="card-body">
+                                                    <table id="cancelled_table" class="table table-striped table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Run Name </th>
+                                                                <th>Run date</th>
+                                                                <th>Number of days</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for id, name, date , days in display_incompleted_run.cancelled %}
+                                                                <tr>
+                                                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                    <td> {{ date }} </td>
+                                                                    <td align="center"> {{ days }} </td>
+                    
+                                                                </tr>
+                                                            {%endfor%}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if  display_incompleted_run.cancelled|length > 7 %}
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            $('#cancelled_table').DataTable({
+                                                                responsive: true,
+                                                            });
+                                                        });
+                                                    </script>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!--end tab cancelled -->
+                        {% endif %}
+                        {% if  display_incompleted_run.other %}
+                            <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Runs which are in other state</h3></div>
+                                                <div class="card-body">
+                                                    <table id="other_table" class="table table-striped table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Run Name </th>
+                                                                <th>Run date</th>
+                                                                <th>State </th>
+                                                                <th>Number of days</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for id, name, date ,state, days in display_incompleted_run.other %}
+                                                                <tr>
+                                                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                    <td> {{ date }} </td>
+                                                                    <td> {{ state }} </td>
+                                                                    <td align="center"> {{ days }} </td>
+                        
+                                                                </tr>
+                                                            {%endfor%}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if  display_incompleted_run.other|length > 7 %}
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            $('#cancelled_table').DataTable({
+                                                                responsive: true,
+                                                            });
+                                                        });
+                                                    </script>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!--end tab other -->
+                        {% endif %}
+                        <div class="tab-pane fade" id="graphics" role="tabpanel" aria-labelledby="graphics-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md-6 offset-3">
+                                        <div class="card">
+                                            <div class="card-header"><h3 style="text-align:center">Graphics for incomplete runs</h3></div>
+                                            <div class="card-body">
+                                                <div id="chart-1"> </div>
+                                                {{ display_incompleted_run.incompleted_graphic|safe }}
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div> 
+                            </div>
+                        </div>
+                    </div> 
+                </div> 
+            </div>
+        </div>
+    {% else %}
+        <div class="row my-2">
+            <div class="col-sm-7 offset-3">
+                <div class="card ">
+                    <div class="card-header"><h3 class="text-center">All runs are Completed</h3></div>
+                    <div class="card-body">
+                        <p>There are no runs which are pending to be completed</p>
+                    </div>
+                </div>
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row -->
+
+    {% endif %}
+</section>
+{% endblock %}

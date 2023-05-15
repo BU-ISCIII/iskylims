@@ -1375,11 +1375,11 @@ def last_run_by_sequencer(request):
     last_runs = get_last_runs_by_sequencer()
     if len(last_runs) == 0:
         return render(
-            request, "wetlab/lastRunBySequencer.html", {"no_runs": "no_runs"}
+            request, "wetlab/last_run_by_sequencer.html", {"no_runs": "no_runs"}
         )
     if len(last_runs) > 1:
         return render(
-            request, "wetlab/lastRunBySequencer.html", {"last_runs": last_runs}
+            request, "wetlab/last_run_by_sequencer.html", {"last_runs": last_runs}
         )
     else:
         # if only 1 sequencer is defined, then display the information of the latest run
@@ -1421,20 +1421,11 @@ def incompleted_runs(request):
         display_incompleted_run = get_information_for_incompleted_run()
         return render(
             request,
-            "wetlab/incompletedRuns.html",
+            "wetlab/incompleted_runs.html",
             {"display_incompleted_run": display_incompleted_run},
         )
     else:
-        return render(
-            request,
-            "wetlab/info_page.html",
-            {
-                "content": [
-                    "There is no project in incompleted state",
-                    "All Runs are finished",
-                ]
-            },
-        )
+        return render(request,"wetlab/incompleted_runs.html")
 
 
 def check_user_access(request, project_found_id):

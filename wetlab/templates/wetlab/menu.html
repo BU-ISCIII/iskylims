@@ -65,13 +65,13 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             {% if request.user|has_group:"WetlabManager" %}
                                 <li><a class="dropdown-item" href="/wetlab/lastRunBySequencer">Last Run by Sequencer</a></li>
-                                <li><a class="dropdown-item" href="/wetlabincompletedRuns">Get incomplete Runs</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/incompletedRuns">Get incomplete Runs</a></li>
                             {% endif %}
                             <li><a class="dropdown-item" href="/wetlab/SearchRun">Search by RUN</a></li>
                             <li><a class="dropdown-item" href="/wetlab/searchProject">Search by Project</a></li>
                             <li><a class="dropdown-item" href="/wetlab/searchSample">Search by Sample</a></li>
                             <li><a class="dropdown-item" href="/wetlab/compareSamples">Compare Samples</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/</a>searchCollectionIndexLibrary">Search by Index Library</a></li>
+                            <li><a class="dropdown-item" href="/wetlab/searchCollectionIndexLibrary">Search by Index Library</a></li>
                             <li><a class="dropdown-item" href="/wetlab/searchUserLotKit">Search by User Lot Kit</a></li>
                         </ul>
                     </li>
