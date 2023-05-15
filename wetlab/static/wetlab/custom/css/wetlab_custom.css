@@ -1,10 +1,4 @@
 
-
-.form-control.required .control-label:after {
-  content:"*";
-  color:red;
-}
-
 .img-center {margin:0 auto;}
 
 
@@ -45,78 +39,6 @@ div.panelaccordion {
     transition: max-height 0.2s ease-out;
 }
 
-/* Style the tab */
-div.tab {
-    overflow: hidden;
-    border: 1px solid #ccc;
-    background-color: #f1f1f1;
-}
-
-/* Style the buttons inside the tab */
-div.tab button {
-    background-color: inherit;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 14px 16px;
-    transition: 0.3s;
-    font-size: 17px;
-}
-
-/* Change background color of buttons on hover */
-div.tab button:hover {
-    background-color: #ddd;
-}
-
-/* Create an active/current tablink class */
-div.tab button.active {
-    background-color: #ccc;
-}
-
-/* Style the tab content */
-.tabcontent {
-    display: none;
-    padding: 6px 12px;
-    -webkit-animation: fadeEffect 1s;
-    animation: fadeEffect 1s;
-}
-
-/* Fade in tabs */
-@-webkit-keyframes fadeEffect {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-
-@keyframes fadeEffect {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-
-/* END of Fade in tabs  */
-
-/* scroll horizontal table  */
-div.dataTables_wrapper {
-        width: 800px;
-        margin: 0 auto;
-	overflow-x: scroll;
-	white-space : nowrap;
-    }
-/* END of scroll horizontal table */
-
-
-.table-responsive
-{
-    width: 100%;
-    margin-bottom: 15px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: -ms-autohiding-scrollbar;
-    border: 1px solid #000000;
-    white-space : nowrap;
-
-}
 
 
 <style>
@@ -183,7 +105,7 @@ div.dataTables_wrapper {
 }
 
 .modal-body {padding: 2px 16px;
-	background-color:#f2f2f2;
+    background-color:#f2f2f2;
     color: white;}
 
 .modal-footer {
