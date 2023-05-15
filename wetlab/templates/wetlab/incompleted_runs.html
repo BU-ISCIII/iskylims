@@ -53,7 +53,7 @@
                                                     <tbody>
                                                         {% for id, name, date , days in display_incompleted_run.recorded %}
                                                             <tr>
-                                                                <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                <td><a href="/wetlab/displayRun={{ id }} class="text-decoration-none"">{{ name }}</a> </td>
                                                                 <td> {{ date }} </td>
                                                                 <td align="center"> {{ days }} </td>
                         
@@ -97,7 +97,7 @@
                                                         <tbody>
                                                             {% for id, name, date ,state, error, days in display_incompleted_run.error %}
                                                                 <tr>
-                                                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                    <td><a href="/wetlab/displayRun={{ id }} class="text-decoration-none"">{{ name }}</a> </td>
                                                                     <td> {{ date }} </td>
                                                                     <td> {{ state }} </td>
                                                                     <td> {{ error }} </td>
@@ -142,7 +142,7 @@
                                                         <tbody>
                                                             {% for id, name, date , days in display_incompleted_run.cancelled %}
                                                                 <tr>
-                                                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                    <td><a href="/wetlab/displayRun={{ id }}" class="text-decoration-none">{{ name }}</a> </td>
                                                                     <td> {{ date }} </td>
                                                                     <td align="center"> {{ days }} </td>
                     
@@ -186,7 +186,7 @@
                                                         <tbody>
                                                             {% for id, name, date ,state, days in display_incompleted_run.other %}
                                                                 <tr>
-                                                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                                                    <td><a href="/wetlab/displayRun={{ id }}" class="text-decoration-none">{{ name }}</a> </td>
                                                                     <td> {{ date }} </td>
                                                                     <td> {{ state }} </td>
                                                                     <td align="center"> {{ days }} </td>
