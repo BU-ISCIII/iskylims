@@ -1057,7 +1057,7 @@ def search_project(request):
         ):
             return render(
                 request,
-                "wetlab/SearchProject.html",
+                "wetlab/search_project.html",
                 {"project_form_data": project_form_data},
             )
 
@@ -1065,7 +1065,7 @@ def search_project(request):
             error_message = ERROR_USER_NAME_TOO_SHORT
             return render(
                 request,
-                "wetlab/SearchProject.html",
+                "wetlab/search_project.html",
                 {
                     "project_form_data": project_form_data,
                     "error_message": error_message,
@@ -1078,7 +1078,7 @@ def search_project(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "wetlab/SearchProject.html",
+                    "wetlab/search_project.html",
                     {
                         "project_form_data": project_form_data,
                         "error_message": error_message,
@@ -1090,7 +1090,7 @@ def search_project(request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(
                     request,
-                    "wetlab/SearchProject.html",
+                    "wetlab/search_project.html",
                     {
                         "project_form_data": project_form_data,
                         "error_message": error_message,
@@ -1130,7 +1130,7 @@ def search_project(request):
             error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
             return render(
                 request,
-                "wetlab/SearchProject.html",
+                "wetlab/search_project.html",
                 {
                     "project_form_data": project_form_data,
                     "error_message": error_message,
@@ -1150,14 +1150,14 @@ def search_project(request):
             project_list_dict["projects"] = project_list
             return render(
                 request,
-                "wetlab/SearchProject.html",
+                "wetlab/search_project.html",
                 {"display_project_list": project_list_dict},
             )
 
     else:
         return render(
             request,
-            "wetlab/SearchProject.html",
+            "wetlab/search_project.html",
             {"project_form_data": project_form_data},
         )
 

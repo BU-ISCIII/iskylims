@@ -5,91 +5,93 @@
 {% include 'registration/login_inline.html' %}
 {% include "core/cdn_table_functionality.html" %}
 <section class="iskylims">
+
     {% if error_message %}
         <div class="row my-2">
             <div class="col-sm-7 offset-3">
                 <div class="card border-danger mb-3">
-                    <div class="card-header"><h3 class="text-center">Not matches</h3> </div>
+                    <div class="card-header"><h3 style="text-align:center">Not matches</h3> </div>
                     <div class="card-body">
                         {% for values in error_message %}
                             <h4>{{values}}</h4>
                         {% endfor %}
                     </div>
                 </div>
-            </div> 
-        </div> 
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row -->
     {% endif %}
 
-    {% if display_run_list %}
+
+    {% if display_project_list %}
         <div class="row my-2">
-            <div class="col-sm-7 offset-3">
+            <div class="col-sm-6 offset-3">
                 <div class="card ">
-                    <div class="card-header"><h3>The following list matches with yor search</h3> </div>
+                    <div class="card-header"><h3>The following list matches with yor search</h3></div>
                     <div class="card-body">
-                        <p>Click on the run name to get full information</p>
-                        <table class="table table-hover" id="run_table">
+                        <p>Click on project name to get full information</p>
+                        <table class="table table-hover" id="project_table">
                             <thead>
                                 <tr>
-                                    <th>Run Name</th>
-                                    <th>Run Completion date</th>
+                                    <th>Project Name</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for id, name, date in display_run_list %}
+                                {% for key, values in display_project_list.projects %}
                                     <tr>
-                                        <td><a href="/wetlab/displayRun={{id}}" class="text-decoration-none">{{name}}</a> </td>
-                                        <td>{{date}}</td>
+                                        <td><a href="/wetlab/displayProject={{ values }}" class="text-decoration-none">{{key}}</a> </td>
+                                        
                                     </tr>
                                 {%endfor%}
                             </tbody>
                         </table>
                     </div>
-                    {% if display_run_list|length > 7 %}
+                    {% if display_project_list.projects|length > 7 %}
                         <script type="text/javascript">
                             $(document).ready(function() {
-                                $('#run_table').DataTable({
+                                $('#project_table').DataTable({
                                     responsive: true,
                                 });
                             });
                         </script>
                     {% endif %}
                 </div>
-            </div> <!--  end of col-sm-7 -->
+            </div> <!--  end of col-sm-6 -->
         </div> <!--  end of row -->
-
     {% else %}
+        {% load user_groups %}
+
         <div class="container">
             <div class="row my-2">
                 <div class="col-sm-7 offset-3" >
                     <div class="card ">
-                        <div class="card-header"><h3 class="text-center">Search RUN</h3></div>
+                        <div class="card-header"><h3 class="text-center">Search Project</h3></div>
                         <div class="card-body">
-                            <form method="post" enctype="multipart/form-data" name="searchrun" id="searchrun">
+                            <form method="post" enctype="multipart/form-data" name="searchproject" id="searchproject">
                                 {% csrf_token %}
-                                <input type="hidden" name="action" value="runsearch"/>
+                                <input type="hidden" name="action" value="searchproject"/>
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" name="runname" id="runname" placeholder="Run name">
-                                    <label for="runname">Run name</label>
+                                    <input type="text" class="form-control" name="projectname" id="projectname" placeholder="Project name">
+                                    <label for="projectname">Project name</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <select class="form-select" name="platform" id="floatingPlatform" aria-label="Floating label select example">
+                                    <select class="form-select" name="sequencer" id="sequencer" aria-label="Floating label select example">
                                         <option value="">Choose a value</option>
-                                        {% for value in run_form_data.available_platforms %}
+                                        {% for value in project_form_data.available_sequencers %}
                                             <option value="{{value}}">{{value}}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="floatingPlatform">Select the sequencer platform</label>
+                                    <label for="sequencer">Select the sequencer instrument name </label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <select class="form-select" name="runstate" id="floatingState" aria-label="Floating label select example">
+                                    <select class="form-select" name="runstate" id="runstate" aria-label="Floating label select example">
                                         <option value="">Choose a value</option>
-                                        {% for value in run_form_data.run_states %}
+                                        {% for value in project_form_data.run_states %}
                                             <option value="{{value}}">{{value}}</option>
                                         {% endfor %}
                                     </select>
-                                    <label for="floatingState">Select the state of the run</label>
+                                    <label for="runstate">Select the state of the run</label>
                                 </div>
-                                <div class="row g-2">
+                                <div class="row g-2 mb-3">
                                     <div class="col-md">
                                         <div class="form-floating">
                                             <input type="date" class="form-control" id="start_date" name="startdate" placeholder="Filter run from start date" >
@@ -102,6 +104,15 @@
                                             <label for="start-date">End Date (DD-MM-YYYY)</label>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    {% if request.user|has_group:"WetlabManager" %}
+                                        <input type="text" class="form-control" name="username" id="username" placeholder="User name">
+                                        <label for="username">User name of the project responsible</label>
+                                    {% else %}
+                                        <input type="text" class="form-control" value="{{user.get_username}}" name="username" id="username" placeholder="User name" readonly>
+                                        <label for="username">User name</label>
+                                    {% endif%}
                                 </div>
                                 <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
                                 <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
