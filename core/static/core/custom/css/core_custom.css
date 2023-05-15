@@ -1,5 +1,5 @@
 
-.form-control.required .control-label:after {
+.form-control.required .form-label:after {
   content:"  *";
   color:red;
 }

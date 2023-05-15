@@ -651,7 +651,7 @@ def display_sample_types(app_name):
     defined_sample_types = []
 
     if SampleType.objects.filter(apps_name__exact=app_name).exists():
-        s_types = SampleType.objects.filter(apps_name__exact=app_name)
+        s_types = SampleType.objects.filter(apps_name__exact=app_name).order_by("sample_type")
         for s_type in s_types:
             defined_sample_types.append([s_type.get_sample_type_id, s_type.get_name])
         sample_types["defined_sample_types"] = defined_sample_types
@@ -702,42 +702,27 @@ def save_type_of_sample(form_data, app_name):
         save_s_type
     """
     save_s_type = {}
-    mandatory_index_field_list = []
+    optional_index_field_list = []
     if SampleType.objects.filter(
         sample_type__exact=form_data["sampleTypeName"], apps_name__exact=app_name
     ).exists():
         save_s_type["ERROR"] = ERROR_TYPE_OF_SAMPLE_EXISTS
         return save_s_type
     # select the optional fields and get the indexes
-    # get the main mandatory fields when recording a new sample
-    for m_field in HEADING_FOR_RECORD_SAMPLES:
-        if m_field in HEADING_FOR_OPTIONAL_FIELD_SAMPLES:
-            continue
-        mandatory_index_field_list.append(HEADING_FOR_RECORD_SAMPLES.index(m_field))
     for field in HEADING_FOR_RECORD_SAMPLES:
-        if field not in form_data:
-            continue
-        mandatory_index_field_list.append(HEADING_FOR_RECORD_SAMPLES.index(field))
-    # get the index that are optional
-    index_opt_field_list = list(
-        map(
-            str,
-            list(
-                set(list(range(0, len(HEADING_FOR_RECORD_SAMPLES), 1)))
-                - set(mandatory_index_field_list)
-            ),
-        )
-    )
-
+        if field not in form_data and field in HEADING_FOR_OPTIONAL_FIELD_SAMPLES:
+            optional_index_field_list.append(str(HEADING_FOR_RECORD_SAMPLES.index(field)))
+    # add only recorded as always optional 
+    optional_index_field_list.append("9")
     data = {}
     data["sampleType"] = form_data["sampleTypeName"]
     data["apps_name"] = app_name
-    data["optional_fields"] = ",".join(index_opt_field_list)
-
-    sample_type = SampleType.objects.create_sample_type(data)
-
+    data["optional_fields"] = ",".join(optional_index_field_list)
+    # Store in database
+    sample_type_obj = SampleType.objects.create_sample_type(data)
+    save_s_type = {}
     save_s_type["new_defined_sample_type"] = form_data["sampleTypeName"]
-    save_s_type["new_defined_id"] = sample_type.get_sample_type_id()
+    save_s_type["new_defined_id"] = sample_type_obj.get_sample_type_id()
     return save_s_type
 
 

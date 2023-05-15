@@ -1,0 +1,105 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims">
+    {% if sample_types.ERROR %}
+        <div class="row my-2">
+            <div class="col-sm-6 offset-2" >
+                <div class="card border-danger mb-3">
+                    <div class="card-header text-danger"><h3>Unable to record your Sample Type</h3> </div>
+                    <div class="card-body">
+                        <p>
+                            {{ sample_types.ERROR.0 }}
+                        </p>
+                    </div>  
+                </div>
+            </div> <!--// end of sm-6 -->
+        </div> <!--// end row -->
+    {% endif %}
+    
+    {% if sample_types.new_defined_sample_type %}
+        <div class="container">
+            <div class="row my-2">
+                <div class="col-sm-6 offset-3" >
+                    <div class="card ">
+                        <div class="card-header"><h3 style="text-align:center">New sample type has been added</h3> </div>
+                        <div class="card-body">
+                            <p>Sample type :</p> 
+                            <p>{{ sample_types.new_defined_sample_type }} has been recorded</p>
+                            <button type="button" class="btn btn-outline-secondary float-end" onclick="window.location.href = '/wetlab/defineTypeOfSamples';">Define new type of sample</button>
+
+                        </div>  
+                    </div>
+                </div> <!--// end col-sm-6 -->
+            </div>
+        </div>
+    {% else %}
+        <div class="container">
+            <div class="row my-2">
+                <div class="col-sm-6" >
+                    <div class="card">
+                        <div class="card-header"><h3>Define a new type of sample</h3> </div>
+                        <form method="post" enctype="multipart/form-data" name="addNewSampleType" id="addNewSampleType">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="addNewSampleType"/>
+                            <div class="card-body">
+                                <div class="form-control required">
+                                    <label class="col-sm-5 form-label">Type of sample</label>
+                                    <div class="col">
+                                        <input class="form-control" required = "required" type="text"  name="sampleTypeName">
+                                    </div>
+                                </div>
+                                <p class="mt-2"> Check the Mandatory Fields required when recording a new sample</p>
+                                <div class="form-control">
+                                    {% for values  in sample_types.optional_values  %}
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="{{values}}">{{values}}</label>
+                                            <input class="form-check-input" type="checkbox" name="{{values}}" id="{{values}}" >
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+                                <p class="mt-2"> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                            </div>
+                            <input class="btn float-end btn-outline-primary mb-2 me-2" type="submit" value="Submit" id="btnSubmit">
+                        </form>
+                    </div>
+                </div>
+                {% if sample_types.defined_sample_types %}
+                    <div class="col-sm-6" >
+                       <div class="card ">
+                        <div class="card-header"><h3>Type of Samples already defined</h3></div>
+                        <div class="card-body">
+                            <table id="s_table" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Type of Sample</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for  id, name in sample_types.defined_sample_types %}
+                                        <tr>
+                                            <td><a href="/wetlab/displayTypeOfSample={{id}}" style="text-decoration:none">{{name}}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>  
+                    </div>
+                    <script type="text/javascript">
+                        $(document).ready(function() {
+                            $('#s_table').DataTable({
+                                responsive: true,
+                            });
+                        });
+                    </script>
+                {% endif %}
+            </div> <!--// end col-sm-8  -->
+        </div> <!--// end row -->
+               
+    {% endif %}
+</section>
+{% endblock %}

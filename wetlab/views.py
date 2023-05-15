@@ -279,9 +279,6 @@ def initial_settings(request):
 @login_required
 def create_nextseq_run(request):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if not request.user.is_authenticated:
-        # redirect to login webpage
-        return redirect("/accounts/login")
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
@@ -371,12 +368,12 @@ def create_nextseq_run(request):
                     # full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
                     # os.remove(full_path_sample_sheet_file)
 
-                    if Projects.objects.filter(runProcess=delete_run).exists():
+                    if Projects.objects.filter(run_process=delete_run).exists():
                         project_objs = Projects.objects.filter(run_process=delete_run)
                         for project_obj in project_objs:
-                            project_obj.runProcess.remove(delete_run)
+                            project_obj.run_process.remove(delete_run)
 
-                            if project_obj.runProcess.all().count() == 0:
+                            if project_obj.run_process.all().count() == 0:
                                 project_obj.delete()
                     delete_run.delete()
 
@@ -513,7 +510,7 @@ def create_nextseq_run(request):
         # displays the list of projects and the user names found on Sample Sheet
         return render(
             request,
-            "wetlab/CreateNextSeqRun.html",
+            "wetlab/create_next_seq_run.html",
             {"get_user_names": run_info_values},
         )
 
@@ -572,7 +569,7 @@ def create_nextseq_run(request):
         for p in range(len(projects)):
             my_project = projects[p]
             library_kit_id = LibraryKit.objects.filter(
-                libraryame__exact=library_kit[p]
+                library_name__exact=library_kit[p]
             ).last()
             update_info_proj = Projects.objects.get(project_name=my_project)
             update_info_proj.libraryKit = project_index_kit[p]
@@ -590,11 +587,11 @@ def create_nextseq_run(request):
 
         return render(
             request,
-            "wetlab/CreateNextSeqRun.html",
+            "wetlab/create_next_seq_run.html",
             {"completed_form": results},
         )
 
-    return render(request, "wetlab/CreateNextSeqRun.html")
+    return render(request, "wetlab/create_next_seq_run.html")
 
 
 @login_required
@@ -4226,7 +4223,7 @@ def record_samples(request):
             sample_information = prepare_sample_input_table(__package__)
             return render(
                 request,
-                "wetlab/recordSample.html",
+                "wetlab/record_sample.html",
                 {"sample_information": sample_information},
             )
 
@@ -4245,7 +4242,7 @@ def record_samples(request):
             )
         return render(
             request,
-            "wetlab/recordSample.html",
+            "wetlab/record_sample.html",
             {"sample_recorded": sample_recorded},
         )
 
@@ -4269,7 +4266,7 @@ def record_samples(request):
             if to_be_reprocessed_ids[0] == "":
                 return render(
                     request,
-                    "wetlab/recordSample.html",
+                    "wetlab/record_sample.html",
                     {"all_sucessful_reprocess": True},
                 )
             else:
@@ -4283,7 +4280,7 @@ def record_samples(request):
                 sample_recorded["reprocess_result"] = "True"
                 return render(
                     request,
-                    "wetlab/recordSample.html",
+                    "wetlab/record_sample.html",
                     {"sample_recorded": sample_recorded},
                 )
 
@@ -4307,7 +4304,7 @@ def record_samples(request):
 
         return render(
             request,
-            "wetlab/recordSample.html",
+            "wetlab/record_sample.html",
             {"reprocess_result": sample_recorded["reprocess_result"]},
         )
 
@@ -4321,7 +4318,7 @@ def record_samples(request):
         sample_recorded = prepare_sample_project_input_table(pre_defined_samples_id)
         return render(
             request,
-            "wetlab/recordSample.html",
+            "wetlab/record_sample.html",
             {"sample_recorded": sample_recorded},
         )
 
@@ -4337,13 +4334,13 @@ def record_samples(request):
             )
             return render(
                 request,
-                "wetlab/recordSample.html",
+                "wetlab/record_sample.html",
                 {"sample_recorded": sample_recorded},
             )
         else:
             return render(
                 request,
-                "wetlab/recordSample.html",
+                "wetlab/record_sample.html",
                 {"sample_recorded": sample_recorded},
             )
     # Load batch file
@@ -4354,7 +4351,7 @@ def record_samples(request):
             if "ERROR" in samples_batch_df:
                 return render(
                     request,
-                    "wetlab/recordSample.html",
+                    "wetlab/record_sample.html",
                     {
                         "sample_information": sample_information,
                         "error_message": samples_batch_df["ERROR"],
@@ -4364,7 +4361,7 @@ def record_samples(request):
             if valid_file_result != "OK":
                 return render(
                     request,
-                    "wetlab/recordSample.html",
+                    "wetlab/record_sample.html",
                     {
                         "sample_information": sample_information,
                         "error_message": valid_file_result,
@@ -4376,7 +4373,7 @@ def record_samples(request):
             if result_recorded != "OK":
                 return render(
                     request,
-                    "wetlab/recordSample.html",
+                    "wetlab/record_sample.html",
                     {
                         "sample_information": sample_information,
                         "error_message": result_recorded,
@@ -4384,7 +4381,7 @@ def record_samples(request):
                 )
             return render(
                 request,
-                "wetlab/recordSample.html",
+                "wetlab/record_sample.html",
                 {
                     "sample_information": sample_information,
                     "successfuly_batch_load": "ok",
@@ -4395,7 +4392,7 @@ def record_samples(request):
         sample_information = prepare_sample_input_table(__package__)
         return render(
             request,
-            "wetlab/recordSample.html",
+            "wetlab/record_sample.html",
             {"sample_information": sample_information},
         )
 
@@ -4668,7 +4665,7 @@ def define_type_of_samples(request):
 
     return render(
         request,
-        "wetlab/defineTypeOfSamples.html",
+        "wetlab/define_type_of_samples.html",
         {"sample_types": sample_types},
     )
 
@@ -4741,7 +4738,7 @@ def display_type_of_sample(request, sample_type_id):
     type_of_sample_data = get_type_of_sample_information(sample_type_id)
     return render(
         request,
-        "wetlab/displayTypeOfSample.html",
+        "wetlab/display_type_of_sample.html",
         {"type_of_sample_data": type_of_sample_data},
     )
 
@@ -4989,14 +4986,14 @@ def handling_molecules(request):
         if "ERROR" in molecule_protocol:
             return render(
                 request,
-                "wetlab/error_page.html",
-                {"content": ["There was no valid sample selected "]},
+                "wetlab/handling_molecules.html",
+                {"ERROR": "There was no valid sample selected "},
             )
         molecule_protocol["samples"] = ",".join(samples)
 
         return render(
             request,
-            "wetlab/handlingMolecules.html",
+            "wetlab/handling_molecules.html",
             {"molecule_protocol": molecule_protocol},
         )
 
@@ -5025,7 +5022,7 @@ def handling_molecules(request):
 
             return render(
                 request,
-                "wetlab/handlingMolecules.html",
+                "wetlab/handling_molecules.html",
                 {"molecule_recorded": molecule_recorded},
             )
 
@@ -5034,7 +5031,7 @@ def handling_molecules(request):
         )
         return render(
             request,
-            "wetlab/handlingMolecules.html",
+            "wetlab/handling_molecules.html",
             {
                 "molecule_recorded": molecule_recorded,
                 "show_molecule_parameters": show_molecule_parameters,
@@ -5071,7 +5068,7 @@ def handling_molecules(request):
             )
             return render(
                 request,
-                "wetlab/handlingMolecules.html",
+                "wetlab/handling_molecules.html",
                 {
                     "molecule_parameters_updated": molecule_parameters_updated,
                     "show_molecule_parameters": show_molecule_parameters,
@@ -5080,7 +5077,7 @@ def handling_molecules(request):
         else:
             return render(
                 request,
-                "wetlab/handlingMolecules.html",
+                "wetlab/handling_molecules.html",
                 {"molecule_parameters_updated": molecule_parameters_updated},
             )
 
@@ -5088,7 +5085,7 @@ def handling_molecules(request):
         molecule_use = set_molecule_use(request.POST, __package__)
         return render(
             request,
-            "wetlab/handlingMolecules.html",
+            "wetlab/handling_molecules.html",
             {"molecule_use": molecule_use},
         )
 
@@ -5112,7 +5109,7 @@ def handling_molecules(request):
 
         return render(
             request,
-            "wetlab/handlingMolecules.html",
+            "wetlab/handling_molecules.html",
             {
                 "sample_availables": sample_availables,
                 "user_molecules": user_molecules,
