@@ -1,0 +1,198 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims">
+    {% if no_samples %}
+        <div class="row my-2">
+            <div class="col-sm-7 offset-3">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3 style="text-align:center">Not matches</h3> </div>
+                    <div class="card-body">
+                        {% for value in no_samples %}
+                            <p>{{value}}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--// end row -->
+    {% endif %}
+
+    {% if sample_list  or run_sample_list %}
+        <div class="row my-2">
+            <div class="col" >
+                <h3 style="text-align:center">Samples that are matched your query</h3>
+                <div class="col">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="preparation-tab" data-bs-toggle="tab" data-bs-target="#preparation" type="button" role="tab" aria-controls="preparation" aria-selected="true">Sample preparation</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="sequencing-tab" data-bs-toggle="tab" data-bs-target="#sequencing" type="button" role="tab" aria-controls="sequencing" aria-selected="false">Sequencing data</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="preparation" role="tabpanel" aria-labelledby="preparation-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col">
+                                        <div class="card">
+                                            <div class="card-header"><h3 style="text-align:center">Sample preparation information </h3></div>
+                                            <div class="card-body">
+                                                {% if sample_list %}
+                                                    <p>The following samples have been recorded and they contain information about how sample was prepare for sequencing</p>
+                                                    <p>Click on sample name to get full information</p>
+                                                    <table class="table table-hover" id="preparation_table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Sample name</th>
+                                                                <th>Sample State</th>
+                                                                <th>Extraction Date</th>
+                                                                <th>Sample Code ID</th>
+                                                                <th>Sample Type</th>
+                                                                <th>Species</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for id, s_name, s_state, s_date, s_codeID, s_type, species in sample_list %}
+                                                                <tr>
+                                                                    <td><a href="/wetlab/displaySample={{id}}" class="text-decoration-none">{{ s_name }}</a> </td>
+                                                                    <td> {{ s_state }} </td>
+                                                                    <td> {{ s_date }} </td>
+                                                                    <td>{{s_codeID}}</td>
+                                                                    <td>{{s_type}}</td>
+                                                                    <td>{{species}}</td>
+                                                                </tr>
+                                                            {%endfor%}
+                                                        </tbody>
+                                                    </table>
+                                                    {% if sample_list|length > 7 %}
+                                                        <script type="text/javascript">
+                                                            $(document).ready(function() {
+                                                                $('#preparation_table').DataTable({
+                                                                    responsive: true,
+                                                                });
+                                                            });
+                                                        </script>
+                                                    {% endif %}
+                                                {% else %}
+                                                <p>There is not recorded samples which have matched your request </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                    </div> <!-- end preparation tab -->
+                    <div class="tab-pane fade" id="sequencing" role="tabpanel" aria-labelledby="sequencing-tab">
+                        <div class="container">
+                            <div class="row mt-4">
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-header"><h3 style="text-align:center">Sample information after sequencing</h3></div>
+                                        <div class="card-body">
+                                            <p>Click on sample name to get full information</p>
+                                            {% if run_sample_list %}
+                                                <table class="table table-hover" id="sequencing_table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Sample name</th>
+                                                            <th>Project name</th>
+                                                            <th>Run name</th>
+                                                            <th>Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for id, s_name, p_name, r_name, date in run_sample_list %}
+                                                            <tr>
+                                                                <td><a href="/wetlab/displaySampleInRun={{id}}" class="text-decoration-none">{{ s_name }}</a> </td>
+                                                                <td> {{ p_name }} </td>
+                                                                <td> {{ r_name }} </td>
+                                                                <td>{{date}}</td>
+                                                            </tr>
+                                                        {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                                {% if run_sample_list|length > 7 %}
+                                                        <script type="text/javascript">
+                                                            $(document).ready(function() {
+                                                                $('#sequencing_table').DataTable({
+                                                                    responsive: true,
+                                                                });
+                                                            });
+                                                        </script>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <p>Not matches found</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    {% else %}
+        {% load user_groups %}
+        
+        <div class="container">
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3" >
+                    <div class="card ">
+                        <div class="card-header"><h3 class="text-center">Search Samples</h3></div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="searchsample" id="searchsample" class="form-horizontal well">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="searchsample"/>
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="samplename" id="projecsamplenametname" placeholder="Sample name">
+                                    <label for="samplename">Sample name</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" name="sampleState" id="sampleState" aria-label="Floating label state">
+                                        <option value="">Choose a value</option>
+                                        {% for value in search_data.s_state %}
+                                            <option value="{{value}}">{{value}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="runstate">Select the state of the sample</label>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="date" class="form-control" id="start_date" name="startdate" placeholder="Filter run from start date" >
+                                            <label for="start-date">From Start Date (DD-MM-YYYY)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="date" class="form-control" id="end_date" name="enddate" placeholder="Filter run from end date" >
+                                            <label for="start-date">End Date (DD-MM-YYYY)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    {% if request.user|has_group:"WetlabManager" %}
+                                        <input type="text" class="form-control" name="username" id="username" placeholder="User name">
+                                        <label for="username">User name of the sample responsible</label>
+                                    {% else %}
+                                        <input type="text" class="form-control" value="{{user.get_username}}" name="username" id="username" placeholder="User name" readonly>
+                                        <label for="username">User name</label>
+                                    {% endif%}
+                                </div>
+                                <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
+                                <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
+                            </form>
+                        </div>  
+                    </div>
+                </div> 
+            </div>
+        </div> 
+    {% endif %}
+</section>
+{% endblock %}
