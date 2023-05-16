@@ -5224,7 +5224,7 @@ def search_sample(request):
         ):
             return render(
                 request,
-                "wetlab/searchSample.html",
+                "wetlab/search_sample.html",
                 {"search_data": search_data},
             )
 
@@ -5280,7 +5280,7 @@ def search_sample(request):
         if len(sample_list) == 0 and len(run_sample_list) == 0:
             return render(
                 request,
-                "wetlab/searchSample.html",
+                "wetlab/search_sample.html",
                 {
                     "no_samples": ERROR_NO_SAMPLE_FOUND,
                     "sample_list": sample_list,
@@ -5302,13 +5302,13 @@ def search_sample(request):
                 run_sample_list = [run_sample_obj.get_basic_info()]
             return render(
                 request,
-                "wetlab/searchSample.html",
+                "wetlab/search_sample.html",
                 {"sample_list": sample_list, "run_sample_list": run_sample_list},
             )
 
     else:
         return render(
-            request, "wetlab/searchSample.html", {"search_data": search_data}
+            request, "wetlab/search_sample.html", {"search_data": search_data}
         )
 
 

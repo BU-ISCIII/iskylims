@@ -17,8 +17,8 @@
                         {% endfor %}
                     </div>
                 </div>
-            </div> <!--  end of col-sm-7 -->
-        </div> <!--  end of row -->
+            </div> 
+        </div>
     {% endif %}
 
 
@@ -55,8 +55,8 @@
                         </script>
                     {% endif %}
                 </div>
-            </div> <!--  end of col-sm-6 -->
-        </div> <!--  end of row -->
+            </div>
+        </div> 
     {% else %}
         {% load user_groups %}
 
@@ -83,7 +83,7 @@
                                     <label for="sequencer">Select the sequencer instrument name </label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <select class="form-select" name="runstate" id="runstate" aria-label="Floating label select example">
+                                    <select class="form-select" name="runstate" id="runstate" aria-label="Floating label state">
                                         <option value="">Choose a value</option>
                                         {% for value in project_form_data.run_states %}
                                             <option value="{{value}}">{{value}}</option>
