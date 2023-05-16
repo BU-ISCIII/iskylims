@@ -1,0 +1,507 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+<section class="iskylims">
+    {% if sample_information.sample_definition_heading %}
+        <div class="row my-2">
+            <div class="col-sm-11">
+                <div class="card ">
+                    <h3>Information for Sample {{ sample_information.sample_definition.0 }} </h3>
+                    <div class="card-header"><h4>Basic Information</h4></div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                {% for values in sample_information.sample_definition_heading %}
+                                <th>{{ values }} </th>
+                                {%endfor%}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for values in sample_information.sample_definition %}
+                                        <td>{{ values }} </td>
+                                    {%endfor%}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if sample_information.sample_project_name %}
+                        <div class="card-header"><h4>Additional Sample Information {{sample_information.sample_project_name }}</h4></div>
+                        <div class="card-body">
+                            <div class="scrolling-wrapper">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                        {% for values in sample_information.sample_project_field_heading %}
+                                        <th>{{ values }} </th>
+                                        {%endfor%}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            {% for values in sample_information.sample_project_field_value %}
+                                                <td style="text-align: center">{{ values }} </td>
+                                            {%endfor%}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div> <!--  end of scrolling  -->
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div> <!--  end of col-sm-11 -->
+        </div> <!--  end of row -->
+    {% endif %}
+    <div class="row row-space-4 margin-b-1">
+            <div class="col-sm-12 ">
+                <div class="tab">
+                    {% if sample_information.molecule_definition_heading %}
+                        <button class="tablinks" onclick="summaryBin(event, 'molecule')" id="defaultOpen">Molecule Extraction </button>
+                    {% endif %}
+                    {% if sample_information.library_definition_heading %}
+                        <button class="tablinks" onclick="summaryBin(event, 'library')">Library Preparation</button>
+                    {% endif %}
+                    {% if sample_information.pool_heading %}
+                        <button class="tablinks" onclick="summaryBin(event, 'runData')">Run Preparation Data</button>
+                    {% endif %}
+                    {% if sample_information.heading_add_kits  or sample_information.molecule_heading_lot_kits %}
+                        <button class="tablinks" onclick="summaryBin(event, 'userLotKit')">Kits Used </button>
+                    {% endif %}
+                    {% if sample_information.heading_samples_info %}
+                        {% if not sample_information.molecule_definition_heading %}
+                            <button class="tablinks" onclick="summaryBin(event, 'sequencing')" id="defaultOpen" >Sequencing Information</button>
+                        {% else %}
+                            <button class="tablinks" onclick="summaryBin(event, 'sequencing')" >Sequencing Information</button>
+                        {% endif %}
+                    {% endif %}
+
+                    <div id="molecule" class="tabcontent">
+                        {% if sample_information.molecule_definition_heading %}
+
+                            {% for molecule_values, molecule_param_heading , molecule_param_values in sample_information.molecule_definition_data %}
+                                <div class="row my-2">
+                                    <div class="col-sm-12">
+                                        <div class="card ">
+                                            <div class="card-body">
+                                                <div class="col-sm-11">
+                                                    <div class="card ">
+                                                        <h3>Information for Molecule using the sample {{ sample_information.sample_definition.0 }} </h3>
+                                                        <div class="card-header"><h4>Molecule Information</h4></div>
+                                                        <div class="card-body">
+                                                            <table class="table table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for values in sample_information.molecule_definition_heading %}
+                                                                            <th>{{ values }} </th>
+                                                                        {%endfor%}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        {% for mol_values in molecule_values %}
+                                                                            <td>{{ mol_values }} </td>
+                                                                        {%endfor%}
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                        </div>
+                                                    </div>
+                                                </div> <!--  end of col-sm-11 -->
+
+
+                                                {% if molecule_param_heading is not None %}
+
+                                                    <div class="col-sm-12">
+                                                        <div class="card ">
+                                                            <div class="card-header"><h4>Quality Parameter Molecule Information</h4></div>
+                                                            <div class="card-body">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            {% for mol_par_head in molecule_param_heading %}
+                                                                                <th>{{ mol_par_head }} </th>
+                                                                            {%endfor%}
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            {% for value in molecule_param_values %}
+                                                                                <td>{{ value }} </td>
+                                                                            {%endfor%}
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div> <!--  end of col-sm-12 -->
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div> <!--  end of col-sm-12 -->
+                                </div> <!--  end of row -->
+
+                            {% endfor %}
+                            <br>
+                            <form class="" action="/wetlab/repeatMoleculeExtraction" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="repeat_extraction">
+                                <input type="hidden" name="sample_id" value="{{sample_information.sample_id}}">
+                                <input class="btn float-end btn-default" type="submit" value="Repeat Molecule Extraction">
+                            </form>
+                            <br>
+
+                        {% else %}
+                            <div class="row my-2">
+                                <div class="col-sm-11">
+                                    <div class="card ">
+                                        <div class="card-header"><h4>Molecule Information</h4></div>
+                                        <div class="card-body">
+                                            <p class="text-center">There is no Molecule Extraction information </p>
+                                        </div>
+                                    </div>
+                                </div> <!--  end of col-sm-11 -->
+                            </div> <!--  end of row -->
+                        {% endif %}
+
+                    </div> <!-- // end of tab molecule -->
+
+                    {% if sample_information.library_definition_heading %}
+                        <div id="library" class="tabcontent">
+                            {% for lib_values, lib_param_heading , lib_param_values, lib_prep_id , lib_prep_code, molecule_id, sample_id in sample_information.lib_prep_data %}
+                                <div class="row my-2">
+                                    <div class="col-sm-12">
+                                        <div class="card ">
+                                            <div class="card-body">
+                                                <div class="col-sm-11">
+                                                    <div class="card ">
+
+                                                        <div class="card-header"><h4>Index used for sample {{ lib_prep_code }}</h4></div>
+                                                        <div class="card-body">
+                                                            <table class="table table-hover">
+                                                                <thead>
+                                                                <tr>
+                                                                {% for values in sample_information.library_definition_heading %}
+                                                                    <th>{{ values }} </th>
+                                                                {%endfor%}
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        {% for lib_value in lib_values %}
+                                                                            <td>{{ lib_value }} </td>
+                                                                        {%endfor%}
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div> <!--  end of col-sm-11 -->
+
+                                                {% if lib_param_heading is not None %}
+
+                                                <div class="row my-2">
+                                                    <div class="col-sm-12">
+                                                        <div class="card ">
+                                                            <div class="card-header"><h4>Quality Parameter Library Preparation Information</h4></div>
+                                                            <div class="card-body">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            {% for lib_par_head in lib_param_heading %}
+                                                                                <th>{{ lib_par_head }} </th>
+                                                                            {%endfor%}
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            {% for value in lib_param_values %}
+                                                                                <td>{{ value }} </td>
+                                                                            {%endfor%}
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        </div> <!--  end of col-sm-12 -->
+                                                    </div> <!--  end of row -->
+                                                {% endif %}
+
+                                                <form class="" action="/wetlab/repeatLibraryPreparation" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="repeat_library_preparation">
+                                                    <input type="hidden" name="sample_id" value="{{sample_id}}">
+                                                    <input type="hidden" name="molecule_code_id" value="{{molecule_id}}">
+                                                    <input type="hidden" name="lib_prep_id" value="{{lib_prep_id}}">
+                                                    <input class="btn float-end btn-default" type="submit" value="Repeat by reusing extraction">
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div> <!--  end of col-sm-12 -->
+                                </div> <!--  end of row -->
+
+                            {% endfor %}
+                        </div> <!-- // end of tab libary -->
+                    {% endif %}
+
+                    {% if sample_information.pool_heading %}
+                        <div id="runData" class="tabcontent">
+                            <div class="row my-2">
+                                <div class="col-sm-11">
+                                    <div class="card ">
+                                        <h3>Information for Pool definition for sample {{ sample_information.sample_definition.0 }} </h3>
+                                        <div class="card-header"><h4>Pool Information</h4></div>
+                                        <div class="card-body">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                <tr>
+                                                {% for values in sample_information.pool_heading %}
+                                                    <th>{{ values }} </th>
+                                                {%endfor%}
+                                                    <th></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for lib_prep_code_id,  pool_name, pool_code, run_name, lib_prep_id in sample_information.pool_information %}
+                                                        <tr>
+                                                            <td>{{ lib_prep_code_id }} </td>
+                                                            <td>{{ pool_name }} </td>
+                                                            <td>{{ pool_code }} </td>
+                                                            <td>{{ run_name }} </td>
+                                                            <td>
+                                                                <form class="" action="/wetlab/repeatPool" method="post">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="action" value="repeat_pool">
+                                                                    <input type="hidden" name="lib_prep_id" value="{{lib_prep_id}}">
+                                                                    <input class="btn float-end btn-default" type="submit" value="Reuse in new Pool">
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+
+                                                    {%endfor%}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div> <!--  end of col-sm-11 -->
+                            </div> <!--  end of row -->
+                        </div> <!-- // end of tab library -->
+                    {% endif %}
+                    {% if  sample_information.molecule_heading_lot_kits or sample_information.heading_add_kits %}
+                        <div id="userLotKit" class="tabcontent">
+                            {% if  sample_information.molecule_heading_lot_kits %}
+                                <div class="row my-2">
+                                    <div class="col-sm-11">
+                                        <div class="card ">
+                                            <h3>Information for User Lot kits used in Molecule Extraction for  {{ sample_information.sample_definition.0 }} </h3>
+                                            <div class="card-header"><h4>User Lot Kit Information</h4></div>
+                                            <div class="card-body">
+                                                {% for key, values in sample_information.molecule_user_kits.items %}
+                                                    <h5>Kits used for protocol {{key}}</h5>
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                        <tr>
+                                                        {% for name in sample_information.heading_lot_kits %}
+                                                            <th>{{ name }} </th>
+                                                        {%endfor%}
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for commercial, lotname, date , molecule in values %}
+                                                                <tr>
+                                                                    <td>{{molecule}}</td>
+                                                                    <td>{{lotname}} </td>
+                                                                    <td>{{commercial}} </td>
+                                                                    <td>{{date}} </td>
+                                                                </tr>
+                                                            {%endfor%}
+                                                        </tbody>
+                                                    </table>
+                                                    <br><br>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div> <!--  end of col-sm-11 -->
+                                </div> <!--end of row     -->
+                            {% endif %}
+                            {% if  sample_information.protocols_add_kits %}
+                                <div class="row my-2">
+                                    <div class="col-sm-11">
+                                        <div class="card ">
+                                            <h3>Information for User Lot kits used for the library preparation {{ sample_information.sample_definition.0 }} </h3>
+                                            <div class="card-header"><h4>User Lot Kit Information</h4></div>
+                                            <div class="card-body">
+                                                {% for key, values in sample_information.protocols_add_kits.items %}
+                                                    <h5>Kits used for protocol {{key}}</h5>
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                        <tr>
+                                                        {% for name in sample_information.heading_add_kits %}
+                                                            <th>{{ name }} </th>
+                                                        {%endfor%}
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for lotname, commercial, lot, date, libprepcode in values %}
+                                                                <tr>
+                                                                    <td>{{libprepcode}}</td>
+                                                                    <td>{{lotname}} </td>
+                                                                    <td>{{commercial}} </td>
+                                                                    <td>{{lot}}</td>
+                                                                    <td>{{date}} </td>
+                                                                </tr>
+
+                                                            {%endfor%}
+
+                                                        </tbody>
+                                                    </table>
+                                                    <br><br>
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+                                    </div> <!--  end of col-sm-11 -->
+                                </div> <!--  end of row -->
+                            {% endif %}
+                            {% if  sample_information.heading_run_kits %}
+                                <div class="row my-2">
+                                    <div class="col-sm-11">
+                                        <div class="card ">
+                                            <h3>Information for User Lot kits used for the Run preparation {{ sample_information.sample_definition.0 }} </h3>
+                                            <div class="card-header"><h4>User Lot Kit Information</h4></div>
+                                            <div class="card-body">
+                                                {% for key, values in sample_information.run_kits_from_sample.items %}
+                                                    <h5>Kits used for protocol {{key}}</h5>
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                        <tr>
+                                                        {% for name in sample_information.heading_run_kits %}
+                                                            <th>{{ name }} </th>
+                                                        {%endfor%}
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for lib_id, lot, commercial, exp_date ,  gen_date in values %}
+                                                                <tr>
+                                                                    <td>{{lib_id}} </td>
+                                                                    <td>{{lot}} </td>
+                                                                    <td>{{commercial}} </td>
+                                                                    <td>{{exp_date}}</td>
+                                                                    <td>{{gen_date}} </td>
+                                                                </tr>
+
+                                                            {%endfor%}
+
+                                                        </tbody>
+                                                    </table>
+                                                    <br><br>
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+                                    </div> <!--  end of col-sm-11 -->
+                                </div> <!--  end of row -->
+                            {% endif %}
+                        </div> <!-- // end of tab library -->
+                    {% endif %}
+
+                    {% if sample_information.heading_samples_info %}
+                        {% include "core/graphic_chart_functionality.html" %}
+                        <div id="sequencing" class="tabcontent">
+                            <div class="row my-2">
+                                <div class="col-sm-12">
+                                    <div class="col-sm-6 offset-1">
+                                        <div class="card ">
+                                            <div class="card-header"><h4>Sample information collecting from Run</h4></div>
+                                            <div class="card-body">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th colspan="2"> Related Information Sample</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Run Name </td>
+                                                            <td> <a href="/wetlab/displayRun={{ sample_information.run_id }}">{{ sample_information.run_name }}</a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Project Name </td>
+                                                            <td> <a href="/wetlab/displayProject={{ sample_information.project_id }}">{{ sample_information.project_name }}</a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Investigator Name </td>
+                                                            <td>{{ sample_information.investigator_name }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div> <!--  end of col-sm-6 -->
+                                    <div class="col-sm-5" >
+                                        <div class="card ">
+                                            <div class="card-header"><h3> Overall Quality of the Sample</h3></div>
+                                            <div class="card-body">
+                                                <!-- Quality Sample graphic -->
+                                                <div id="chart-1"> </div>
+                                                <!-- dumping JavaScript code  -->
+                                                {{ sample_information.quality_chart1 |safe }}
+                                            </div>  
+                                        </div>
+                                    </div> <!--// end col-sm-4  -->
+                                </div> <!--// end col-sm-12  -->
+                            </div> <!--  end of row -->
+
+                            <div class="row my-2">
+                                <div class="col-sm-10 offset-1" >
+                                    <div class="card ">
+                                        <div class="card-header"><h3> Sample Quality Information</h3></div>
+                                        <div class="card-body">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        {% for values in sample_information.heading_samples_info %}
+                                                            <th>{{ values }}</th>
+                                                        {% endfor %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        {% for values in sample_information.data_samples_info %}
+                                                            <td>{{ values }}</td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>  
+                                    </div>
+                                </div> <!--// end col-sm-6  -->
+                            </div> <!--  end of row -->
+
+                            <div class="row my-2">
+                                <div class="col-sm-10 offset-1" >
+                                    <div class="card ">
+                                        <div class="card-header"><h3> Percentage of the Sample inside the project</h3></div>
+                                        <div class="card-body">
+                                            <!-- Quality Sample graphic -->
+                                            <div id="samples-chart-2"> </div>
+                                            <!-- dumping JavaScript code  -->
+                                            {{ sample_information.percentage_chart |safe }}
+                                        </div>  
+                                    </div>
+                                </div> <!--// end col-sm-6  -->
+                            </div> <!--  end of row -->
+                        </div> <!-- // end of tab sequencing -->
+                    {% endif %}
+        </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+    <script>
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+    </script>
+</section>
+{% endblock %}

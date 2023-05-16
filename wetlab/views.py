@@ -4677,7 +4677,7 @@ def display_sample(request, sample_id):
     else:
         return render(
             request,
-            "wetlab/displaySample.html",
+            "wetlab/display_sample.html",
             {"sample_information": sample_information},
         )
 
@@ -4698,7 +4698,7 @@ def display_sample_in_run(request, sample_run_id):
     sample_information = get_info_sample_in_run(sample_run_obj)
     return render(
         request,
-        "wetlab/displaySample.html",
+        "wetlab/display_sample.html",
         {"sample_information": sample_information},
     )
 
