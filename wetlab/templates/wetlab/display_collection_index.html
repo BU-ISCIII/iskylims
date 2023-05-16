@@ -1,33 +1,26 @@
-{% extends 'wetlab/base.html' %}
+{% extends "core/base.html" %}
 {% load static %}
 {% block content %}
-<style>
-.table-wrapper {
-    max-height: 450px;
-    overflow: auto;
-    display:inline-block;
-    width: 550px;
-}
-.table-wrapper-sm-4 {
-    max-height: 450px;
-    overflow: auto;
-    display:inline-block;
-    width: 370px;
-}
-.table-wrapper-sm-5 {
-        max-height: 450px;
-        overflow: auto;
-        display:inline-block;
-        width: 460px;
-}
-.table-wrapper-sm-10 {
-        max-height: 450px;
-        overflow: auto;
-        display:inline-block;
-        width: 920px;
-}
-</style>
-<script type="text/javascript" src="{% static "wetlab/js/wetlab.js" %}"></script>
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+{% include "core/cdn_table_functionality.html" %}
+
+
+
+
+ <section class="iskylims">
+    {% if error_message %}
+    <div class="row my-2">
+        <div class="col-sm-7 offset-3">
+            <div class="card border-danger mb-3">
+                <div class="card-header text-align-center text-danger"><h3 class="text-center">Not Found</h3> </div>
+                <div class="card-body">
+                    <h4 class="text-align-center ">{{error_message}}</h4>
+                </div>
+            </div>
+        </div> 
+    </div> 
+{% endif %}
 {% if display_one_collection_index %}
     <div class="row my-2">
         <div class="col-sm-7">
@@ -78,7 +71,7 @@
                 <div id="IndexI7" class="card-body">
                     {% if display_one_collection_index.I7_indexes %}
                       <div class="table-wrapper-sm-5">
-                      <table class="table table-hover">
+                      <table class="table table-hover" id="i7_index_table">
                        <thead>
                           <tr>
                             <th>Index Name</th>
@@ -94,6 +87,17 @@
                        </tbody>
                      </table>
                     </div> <!--  end table wrapper -->
+                    {% if display_one_collection_index.I7_indexes|length > 7 %}
+                    <script type="text/javascript">
+                        $(document).ready(function() {
+                            $('#i7_index_table').DataTable({
+                                dom: 'Bfrtip',
+                                responsive: true,
+                                buttons: ['copy' , "excel"]
+                            });
+                        });
+                    </script>
+                    {% endif %}
                     {% else %}
                         There is no index sequence for I7 on this library
 

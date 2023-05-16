@@ -284,13 +284,9 @@ def is_wetlab_manager(request):
     Return:
         Return True if the user belongs to Wetlab Manager, False if not
     """
-    try:
-        groups = Group.objects.get(name=config.WETLAB_MANAGER)
-        if groups not in request.user.groups.all():
-            return False
-    except Exception:
+    groups = Group.objects.filter(name=config.WETLAB_MANAGER).last()
+    if groups not in request.user.groups.all():
         return False
-
     return True
 
 
