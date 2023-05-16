@@ -1466,25 +1466,23 @@ def display_collection_index(request, collection_index_id):
         if collection_index_dict is not False:
             return render(
                 request,
-                "wetlab/DisplayCollectionIndex.html",
+                "wetlab/display_collection_index.html",
                 {"display_one_collection_index": collection_index_dict},
             )
         else:
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/display_collection_index.html",
                 {
-                    "content": [
+                    "error_message": 
                         "There are recorded information for the collection index for your request"
-                    ]
                 },
             )
-
     else:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["No matches have been found for the Collection index "]},
+            "wetlab/display_collection_index.html",
+            {"error_message": "There is no information for the Collection index "},
         )
 
 
@@ -1507,13 +1505,13 @@ def search_collection_index_library(request):
             and index_name == ""
             and index_sequence == ""
         ):
-            return render(request, "wetlab/searchCollectionIndexLibrary.html")
+            return render(request, "wetlab/search_collection_index_library.html")
 
         if index_sequence != "":
             if len(index_sequence) < 6:
                 return render(
                     request,
-                    "wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/search_collection_index_library.html",
                     {"error_message": ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE},
                 )
             else:
@@ -1522,7 +1520,7 @@ def search_collection_index_library(request):
                     if letter not in valid_seq_characters:
                         return render(
                             request,
-                            "wetlab/searchCollectionIndexLibrary.html",
+                            "wetlab/search_collection_index_library.html",
                             {"error_message": ERROR_INVALID_SEQUENCE_CHARACTERS},
                         )
 
@@ -1540,12 +1538,10 @@ def search_collection_index_library(request):
                         collection_index_id=collection_indexes[0].get_id(),
                     )
             else:
-                error_message = ERROR_NO_COLLECTION_INDEX_FOUND
-                error_message.append(collection_index_kit_name)
                 return render(
                     request,
-                    "wetlab/searchCollectionIndexLibrary.html",
-                    {"error_message": error_message},
+                    "wetlab/search_collection_index_library.html",
+                    {"not_found_matchs": "not_found_matchs"},
                 )
         if adapter_1 != "":
             if collection_indexes.filter(adapter_1__icontains=adapter_1).exists():
@@ -1555,7 +1551,7 @@ def search_collection_index_library(request):
             else:
                 return render(
                     request,
-                    "wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/search_collection_index_library.html",
                     {"not_found_matchs": "not_found_matchs"},
                 )
         if adapter_2 != "":
@@ -1566,7 +1562,7 @@ def search_collection_index_library(request):
             else:
                 return render(
                     request,
-                    "wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/search_collection_index_library.html",
                     {"not_found_matchs": "not_found_matchs"},
                 )
 
@@ -1592,7 +1588,7 @@ def search_collection_index_library(request):
                 else:
                     return render(
                         request,
-                        "wetlab/searchCollectionIndexLibrary.html",
+                        "wetlab/search_collection_index_library.html",
                         {"not_found_matchs": "not_found_matchs"},
                     )
 
@@ -1613,7 +1609,7 @@ def search_collection_index_library(request):
                 else:
                     return render(
                         request,
-                        "wetlab/searchCollectionIndexLibrary.html",
+                        "wetlab/search_collection_index_library.html",
                         {"not_found_matchs": "not_found_matchs"},
                     )
 
@@ -1648,7 +1644,7 @@ def search_collection_index_library(request):
                 else:
                     return render(
                         request,
-                        "wetlab/searchCollectionIndexLibrary.html",
+                        "wetlab/search_collection_index_library.html",
                         {"matched_collection_index": matched_collection_index},
                     )
         else:
@@ -1668,12 +1664,12 @@ def search_collection_index_library(request):
                     )
                 return render(
                     request,
-                    "wetlab/searchCollectionIndexLibrary.html",
+                    "wetlab/search_collection_index_library.html",
                     {"matched_collection_index": matched_collection_index},
                 )
 
     else:
-        return render(request, "wetlab/searchCollectionIndexLibrary.html")
+        return render(request, "wetlab/search_collection_index_library.html")
 
 
 @login_required
@@ -5622,6 +5618,8 @@ def pending_sample_preparations(request):
 @login_required
 def compare_samples(request):
     user_is_wetlab_manager = wetlab.utils.common.is_wetlab_manager(request)
+
+    import pdb; pdb.set_trace()
     samples_data = get_list_of_samples_in_projects(request.user, user_is_wetlab_manager)
     samples_data["user"] = request.user.username
     if request.method == "POST" and request.POST["action"] == "compareSamples":

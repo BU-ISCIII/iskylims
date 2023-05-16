@@ -705,10 +705,6 @@ ERROR_TOO_SHORT_INDEX_LIBRAY_NAME = [
     "",
 ]
 
-ERROR_NO_COLLECTION_INDEX_FOUND = [
-    "There are no recorded information for the Collection index kit"
-]
-
 ERROR_INVALID_SEQUENCE_CHARACTERS = ["Invalid characters in Index sequene", ""]
 
 ERROR_NO_POOL_WAS_SELECTED_IN_FORM = [
