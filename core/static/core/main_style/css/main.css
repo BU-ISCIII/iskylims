@@ -55,11 +55,6 @@
 .footer {
     color: var(--color-black);
     font-size: 14px;
-    position: absolute;
-    width: 100%;
-    min-height: 120px;
-    bottom: 0px;
-    left: 0;
 }
 .footer {
     z-index:1000;
