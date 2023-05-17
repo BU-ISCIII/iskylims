@@ -12,7 +12,7 @@ urlpatterns = [
     path(
         "addInProgress", drylab.views.add_in_progress, name="add_in_progress"
     ),
-    path("addDelivery", drylab.views.add_delivery, name="add_delivery"),
+    path("add-delivery", drylab.views.add_delivery, name="add_delivery"),
     path(
         "addSamplesInService",
         drylab.views.add_samples_in_service,
