@@ -968,7 +968,7 @@ def add_delivery(request):
 
         return render(
             request,
-            "drylab/addDelivery.html",
+            "drylab/add_delivery.html",
             {"delivery_data": delivery_data},
         )
 
@@ -992,7 +992,7 @@ def add_delivery(request):
             error_message = drylab.config.ERROR_INCORRECT_FORMAT_DATE
             return render(
                 request,
-                "drylab/addDelivery.html",
+                "drylab/add_delivery.html",
                 {"delivery_data": delivery_data, "ERROR": error_message},
             )
 
@@ -1019,7 +1019,7 @@ def add_delivery(request):
                 service_obj.update_delivered_date(date.today())
             return render(
                 request,
-                "drylab/addDelivery.html",
+                "drylab/add_delivery.html",
                 {"delivery_recorded": delivery_recorded},
             )
 

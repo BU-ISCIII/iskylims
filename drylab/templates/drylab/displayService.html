@@ -211,7 +211,7 @@
                         </div>
                         <div class="card-body">
                             {% for res_id , res_name, services in display_service.resolution_delivery %}
-                            <form class="" action="/drylab/addDelivery" method="post">
+                            <form class="" action="/drylab/add-delivery" method="post">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="deliveryResolutionService">
                                 <input type="hidden" name="resolution_id" value="{{res_id}}">
