@@ -10,183 +10,210 @@
 
  <section class="iskylims">
     {% if error_message %}
-    <div class="row my-2">
-        <div class="col-sm-7 offset-3">
-            <div class="card border-danger mb-3">
-                <div class="card-header text-align-center text-danger"><h3 class="text-center">Not Found</h3> </div>
-                <div class="card-body">
-                    <h4 class="text-align-center ">{{error_message}}</h4>
+        <div class="row my-2">
+            <div class="col-sm-7 offset-3">
+                <div class="card border-danger mb-3">
+                    <div class="card-header text-align-center text-danger"><h3 class="text-center">Not Found</h3> </div>
+                    <div class="card-body">
+                        <h4 class="text-align-center ">{{error_message}}</h4>
+                    </div>
                 </div>
-            </div>
+            </div> 
         </div> 
-    </div> 
-{% endif %}
-{% if display_one_collection_index %}
-    <div class="row my-2">
-        <div class="col-sm-7">
-            <p>The following information belongs to :</p>
-            <div class="card ">
-                {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_collection_index.general_information %}
+    {% endif %}
+    {% if display_one_collection_index %}
+        <div class="row my-2">
+            <div class="col-sm-7">
+                <div class="card ">
+                    {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_collection_index.general_information %}
 
-                <div class="card-header"><h3> {{ lib_name }}</h3></div>
-                <div class="card-body">
-                  <table class="table table-hover">
-                   <thead>
-                      <tr>
-                        <th>Parameter</th>
-                        <th>Value</th>
-                      </tr>
-                   </thead>
-                   <tbody>
+                    <div class="card-header"><h3> {{ lib_name }}</h3></div>
+                    <div class="card-body">
+                    <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-                     <tr>
-                       <td>Library Version </td><td>{{ version }} </td>
-                     </tr>
-                     <tr>
-                       <td>Plate Extension </td><td>{{ plate }} </td>
-                     </tr>
-                     <tr>
-                       <td>Adapter 1 </td><td>{{ adapter1 }} </td>
-                     </tr>
-                     <tr>
-                       <td>Adapter 2 </td><td>{{ adapter2 }} </td>
-                     </tr>
-                     <tr>
-                       <td>Index Library File </td><td><a href ="/documents/{{ index_file }}" download > Download Index File <span class="glyphicon glyphicon-pencil"></span></a></td>
-                     </tr>
-                    {%endfor%}
-                    </tbody>
-                 </table>
+                        <tr>
+                        <td>Library Version </td>
+                        <td>{{ version }} </td>
+                        </tr>
+                        <tr>
+                        <td>Plate Extension </td>
+                        <td>{{ plate }} </td>
+                        </tr>
+                        <tr>
+                        <td>Adapter 1 </td>
+                        <td>{{ adapter1 }} </td>
+                        </tr>
+                        <tr>
+                        <td>Adapter 2 </td>
+                        <td>{{ adapter2 }} </td>
+                        </tr>
+                        <tr>
+                        <td>Index Library File </td>
+                        <td><a href ="/documents/{{ index_file }}" download > Download Index File <i class="bi bi-file-earmark-arrow-down"></i></a></td>
+                        </tr>
+                        {%endfor%}
+                        </tbody>
+                    </table>
+                    </div>
                 </div>
-            </div>
-        </div> <!--  end of col-sm-7 -->
-      </div> <!--  end of row -->
-      <div class="row my-2">
-        <div class="col-sm-5">
-            <div class="card ">
-              <div class="card-header"><h3> Index defined for I7 </h3>
-              <button onclick="exportTableToExcel('IndexI7')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                <BR>
-              </div>
-                <div id="IndexI7" class="card-body">
-                    {% if display_one_collection_index.I7_indexes %}
-                      <div class="table-wrapper-sm-5">
-                      <table class="table table-hover" id="i7_index_table">
-                       <thead>
-                          <tr>
-                            <th>Index Name</th>
-                            <th>Index Sequence</th>
-                          </tr>
-                       </thead>
-                       <tbody>
-                            {% for index_name, index_sequence in  display_one_collection_index.I7_indexes %}
-                                <tr>
-                                    <td>{{index_name}} </td><td>{{ index_sequence }} </td>
-                                </tr>
-                            {% endfor %}
-                       </tbody>
-                     </table>
-                    </div> <!--  end table wrapper -->
-                    {% if display_one_collection_index.I7_indexes|length > 7 %}
-                    <script type="text/javascript">
-                        $(document).ready(function() {
-                            $('#i7_index_table').DataTable({
-                                dom: 'Bfrtip',
-                                responsive: true,
-                                buttons: ['copy' , "excel"]
-                            });
-                        });
-                    </script>
-                    {% endif %}
-                    {% else %}
-                        There is no index sequence for I7 on this library
-
-                    {% endif %}
-                </div>
-            </div>
-        </div> <!--  end of col-sm-5 -->
-
-        <div class="col-sm-5 offset-1">
-
-            <div class="card ">
-              <div class="card-header"><h3> Index defined for I5 </h3>
-                {% if display_one_collection_index.I5_indexes %}
-                    <button onclick="exportTableToExcel('IndexI5')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                    <BR>
-                {% endif %}
-              </div>
-                <div class="card-body">
-                    {% if display_one_collection_index.I5_indexes %}
-                      <div class="table-wrapper-sm-5">
-                        <table id="IndexI5" class="table table-hover">
-                           <thead>
-                              <tr>
-                                <th>Index Name</th>
-                                <th>Index Sequence</th>
-                              </tr>
-                           </thead>
-                           <tbody>
-                                {% for index_name, index_sequence in  display_one_collection_index.I5_indexes %}
-                                    <tr>
-                                        <td>{{index_name}} </td><td>{{ index_sequence }} </td>
-                                    </tr>
-                                {% endfor %}
-                           </tbody>
-                         </table>
-                         </div> <!--  end table wrapper -->
-                    {% else %}
-                        There is no index sequence for I5 on this library
-
-                    {% endif %}
-                </div>
-            </div>
-
-
-
-        </div> <!--  end of col-sm-5 -->
-      </div> <!--  end of row -->
-
-      <div class="row my-2">
-        <div class="col-sm-10">
-            <div class="card ">
-              <div class="card-header"><h3> Default Layout for {{ display_one_collection_index.general_information.0.0 }} </h3>
-              <button onclick="exportTableToExcel('Layout')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                <BR>
-              </div>
-                <div id="Layout" class="card-body">
-                    {% if display_one_collection_index.default_layout %}
-                      <div class="table-wrapper-sm-10">
-                      <table class="table table-hover">
-                       <thead>
-                          <tr>
-                            <th>Well</th>
-                            <th>Index 7</th>
-                            <th>Index 7 Sequence</th>
-                            <th>Index 5</th>
-                            <th>Index 5 Sequence</th>
-                          </tr>
-                       </thead>
-                       <tbody>
-                            {% for well_row in  display_one_collection_index.default_layout %}
-                                <tr>
-                                  {% for value in well_row %}
-                                      <td>{{value}} </td>
-                                  {% endfor %}
-                                </tr>
-                            {% endfor %}
-                       </tbody>
-                     </table>
-                     </div> <!--  end of table wrapper -->
-                    {% else %}
-                        There is no default layout for this  library
-
-                    {% endif %}
-                </div>
-            </div>
-        </div> <!--  end of col-sm-10 -->
+            </div> <!--  end of col-sm-7 -->
         </div> <!--  end of row -->
-{% else %}
 
 
-{% endif %}
+
+        <div class="row my-2">
+            <div class="col" >
+                <div class="col">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="i7_index-tab" data-bs-toggle="tab" data-bs-target="#i7_index" type="button" role="tab" aria-controls="i7_index" aria-selected="true">I7  Index</button>
+                        </li>
+                        {% if display_one_collection_index.I5_indexes %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="i5_index-tab" data-bs-toggle="tab" data-bs-target="#i5_index" type="button" role="tab" aria-controls="i5_index" aria-selected="false">I5 Index</button>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="layout-tab" data-bs-toggle="tab" data-bs-target="#layout" type="button" role="tab" aria-controls="layout" aria-selected="false">Default layout </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="i7_index" role="tabpanel" aria-labelledby="i7_index-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md-8 offset-2">
+                                        <div class="card">
+                                            <div class="card-header"><h3 style="text-align:center">Index defined for I7 </h3></div>
+                                            <div class="card-body">
+                                                <table class="table table-hover" id="i7_index_table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Index Name</th>
+                                                        <th>Index Sequence</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for index_name, index_sequence in  display_one_collection_index.I7_indexes %}
+                                                            <tr>
+                                                                <td>{{index_name}} </td>
+                                                                <td>{{ index_sequence }} </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {% if display_one_collection_index.I7_indexes|length > 7 %}
+                                                <script type="text/javascript">
+                                                    $(document).ready(function() {
+                                                        $('#i7_index_table').DataTable({
+                                                            dom: 'Bfrtip',
+                                                            responsive: true,
+                                                            buttons: ['copy' , "excel"]
+                                                        });
+                                                    });
+                                                </script>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- end tab i7_index-->
+                        {% if display_one_collection_index.I5_indexes %}
+                            <div class="tab-pane fade" id="i5_index" role="tabpanel" aria-labelledby="i5_index-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md-8 offset-2">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Index defined for I5 </h3></div>
+                                                <div class="card-body">
+                                                    <table class="table table-hover" id="i5_index_table">
+                                                        <thead>
+                                                            <tr>
+                                                            <th>Index Name</th>
+                                                            <th>Index Sequence</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for index_name, index_sequence in  display_one_collection_index.I5_indexes %}
+                                                                <tr>
+                                                                    <td>{{index_name}} </td>
+                                                                    <td>{{ index_sequence }} </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if display_one_collection_index.I5_indexes|length > 7 %}
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function() {
+                                                            $('#i5_index_table').DataTable({
+                                                                dom: 'Bfrtip',
+                                                                responsive: true,
+                                                                buttons: ['copy' , "excel"]
+                                                            });
+                                                        });
+                                                    </script>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- end tab i5_index-->
+                        {% endif %}
+                        <div class="tab-pane fade" id="layout" role="tabpanel" aria-labelledby="layout-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col">
+                                        <div class="card">
+                                            <div class="card-header"><h3 style="text-align:center">Default layout for {{ display_one_collection_index.general_information.0.0 }}  </h3></div>
+                                            <div class="card-body">
+                                                <table class="table table-hover" id="layout_table">
+                                                    <thead>
+                                                        <tr>
+                                                        <th>Well</th>
+                                                        <th>Index 7</th>
+                                                        <th>Index 7 Sequence</th>
+                                                        <th>Index 5</th>
+                                                        <th>Index 5 Sequence</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for well_row in  display_one_collection_index.default_layout %}
+                                                            <tr>
+                                                                {% for value in well_row %}
+                                                                    <td>{{value}} </td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <script type="text/javascript">
+                                                $(document).ready(function() {
+                                                    $('#layout_table').DataTable({
+                                                        dom: 'Bfrtip',
+                                                        responsive: true,
+                                                        buttons: ['copy' , "excel"]
+                                                    });
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- end tab layout-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+    {% endif %}
+</section>
 {% endblock %}
