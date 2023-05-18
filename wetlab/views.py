@@ -6,28 +6,22 @@ import re
 import statistics
 import time
 
+import django.contrib.auth.models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
 from django.core.files.storage import FileSystemStorage
-from django.shortcuts import render, redirect
-from django_utils.models import Center, Profile
-from django_utils.views import check_user_group
-from core.utils.common import (
-    get_email_data,
-    get_inital_sample_settings_values,
-    save_inital_sample_setting_value,
-    send_test_email,
-)
+from django.shortcuts import redirect, render
 
 # Local imports
 import core.fusioncharts.fusioncharts
+import core.utils.commercial_kits
+import core.utils.common
 import core.utils.load_batch
 import core.utils.platforms
 import core.utils.protocols
 import core.utils.samples
-import core.utils.commercial_kits
-
+import django_utils.models
+import django_utils.views
 import wetlab.config
 import wetlab.models
 import wetlab.utils.additional_kits
@@ -44,6 +38,7 @@ import wetlab.utils.statistics
 import wetlab.utils.stats_graphs
 import wetlab.utils.test_conf
 
+
 def index(request):
     org_name = wetlab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
     return render(
@@ -55,14 +50,14 @@ def index(request):
 def configuration_email(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
-    email_conf_data = get_email_data()
+    email_conf_data = core.utils.common.get_email_data()
     email_conf_data["EMAIL_ISKYLIMS"] = wetlab.utils.common.get_configuration_from_database(
         "EMAIL_FOR_NOTIFICATIONS"
     )
     if request.method == "POST" and (request.POST["action"] == "emailconfiguration"):
-        result_email = send_test_email(request.POST)
+        result_email = core.utils.common.send_test_email(request.POST)
         if result_email != "OK":
-            email_conf_data = wetlab.utils.common.get_email_data()
+            email_conf_data = core.utils.common.get_email_data()
             email_conf_data["EMAIL_ISKYLIMS"] = request.POST["EMAIL_ISKYLIMS"]
             email_conf_data["test_email"] = request.POST["test_email"]
             return render(
@@ -236,7 +231,7 @@ def initial_settings(request):
             "wetlab/error_page.html",
             {"content": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
         )
-    initial_data = get_inital_sample_settings_values(__package__)
+    initial_data = core.utils.common.get_inital_sample_settings_values(__package__)
     form_data = {}
     if request.method == "POST" and request.POST["action"] == "defineNewSpecie":
         form_data["species"] = request.POST["specieName"]
@@ -255,7 +250,7 @@ def initial_settings(request):
         ]
 
     if form_data:
-        new_inital_data = save_inital_sample_setting_value(__package__, form_data)
+        new_inital_data = core.utils.common.save_inital_sample_setting_value(__package__, form_data)
         if "ERROR" in new_inital_data:
             return render(
                 request,
@@ -457,10 +452,10 @@ def create_nextseq_run(request):
         # Once the information looks good. it will be stores in runProcess and projects table
 
         # store data in runProcess table, run is in pre-recorded state
-        center_requested_id = Profile.objects.get(
+        center_requested_id = django_utils.models.Profile.objects.get(
             profile_user_id=request.user
         ).profile_center.id
-        center_requested_by = Center.objects.get(pk=center_requested_id)
+        center_requested_by = django_utils.models.Center.objects.get(pk=center_requested_id)
         new_run_obj = wetlab.models.RunProcess(
             run_name=run_name,
             sample_sheet=file_name,
@@ -1781,7 +1776,7 @@ def change_project_libKit(request, project_id):
             # check if there is no other project in the same Run with the same Library Kit
             # if the library is shared with other project then error message is displayed
 
-            if not check_user_group(request, "WetlabManager"):
+            if not django_utils.views.check_user_group(request, "WetlabManager"):
                 project_run_id = project.runprocess_id.id
                 project_lib_kit = project.libraryKit
                 if (

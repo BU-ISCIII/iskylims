@@ -10,10 +10,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-import django_utils.models
+
 
 # Local imports
 import core.utils.common
+import core.fusioncharts.fusioncharts
+import django_utils.models
 import drylab.config
 import drylab.models
 import drylab.utils.common
@@ -24,7 +26,6 @@ import drylab.utils.pipelines
 import drylab.utils.req_services
 import drylab.utils.resolutions
 import drylab.utils.test_conf
-import core.fusioncharts.fusioncharts
 
 
 @login_required
