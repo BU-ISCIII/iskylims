@@ -57,7 +57,7 @@
                                                 {% csrf_token %}
                                                 <div class="form-control required">
                                                     <input type="hidden" name="action" value="addNewProtocol"/>
-                                                    <label class="col-sm-5 control-label">Select Protocol Type</label>
+                                                    <label class="col-sm-5 form-label">Select Protocol Type</label>
 
                                                     <div class="col">
                                                         <select class="form-select"  required = "required" name="protocolType" id="protocolType">
@@ -67,11 +67,11 @@
                                                             {% endfor %}
                                                         </select>
                                                     </div>  
-                                                    <label class="col-sm-5 control-label mt-2">Define new Protocol name</label>
+                                                    <label class="col form-label mt-2">Define new Protocol name</label>
                                                     <div class="col">
                                                         <input class="form-control" required = "required" type="text"  name="newProtocolName" size="80">
                                                     </div>
-                                                    <label class="col-sm-5 control-label mt-2">Description</label>
+                                                    <label class="col form-label mt-2">Description</label>
                                                     <div class="form-floating">
                                                         <textarea class="form-control" rows="4" cols="50" name="description" id="description" form="addNewProtocol"></textarea>
                                                         <label for="description">Describe the use for this protocol</label>

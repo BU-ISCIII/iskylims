@@ -64,7 +64,7 @@
                     {% csrf_token %}
                     <div class="form-control required">
                         <input type="hidden" name="action" value="addNewSequencer"/>
-                        <label class="col-sm-5 control-label">Select Platform</label>
+                        <label class="col-sm-5 form-label">Select Platform</label>
 
                         <div class="col-sm-6"><select class="form-control"  required = "required" name="platformID" id="protocolType">
                                        				<option value="">Choose a value</option>
@@ -75,22 +75,22 @@
                                               </select>
                         </div>  <!-- end select input -->
                         <br><br>
-                        <label class="col-sm-5 control-label">Define Sequencer name</label>
+                        <label class="col-sm-5 form-label">Define Sequencer name</label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sequencerName" size="80"></div>
                         <br><br>
-                        <label class="col-sm-5 control-label">Number of lanes</label>
+                        <label class="col-sm-5 form-label">Number of lanes</label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sequencerNumberLanes" size="80"></div>
                         <br><br>
-                        <label class="col-sm-5 control-label">Sequencer location</label>
+                        <label class="col-sm-5 form-label">Sequencer location</label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sequencerLocation" size="80"></div>
                         <br><br>
-                        <label class="col-sm-5 control-label">Serial number</label>
+                        <label class="col-sm-5 form-label">Serial number</label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sequencerSerialNumber" size="80"></div>
                         <br><br>
-                        <label class="col-sm-5 control-label">Sequencer Start in sevice</label>
+                        <label class="col-sm-5 form-label">Sequencer Start in sevice</label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="date"  name="sequencerOperationStart" size="80"></div>
                         <br><br>
-                        <label class="col-sm-5 control-label" for="description" >Description</label>
+                        <label class="col-sm-5 form-label" for="description" >Description</label>
                         <div class="col-sm-6"><textarea class="form-control" name="sequencerDescription" value="" id="sequencerDescription" rows="4" cols="60" maxlength="220"></textarea></div>
                         <br>
                     </div>
@@ -115,7 +115,7 @@
                     {% csrf_token %}
                     <div class="form-control required">
                         <input type="hidden" name="action" value="addNewConfiguration"/>
-                        <label class="col-sm-5 control-label">Select Sequencing Platform</label>
+                        <label class="col-sm-5 form-label">Select Sequencing Platform</label>
 
                         <div class="col-sm-6"><select class="form-control"  required = "required" name="platformID" id="platformID">
                                        				<option value="">Choose a value</option>
@@ -126,7 +126,7 @@
                                               </select>
                         </div>  <!-- end select input -->
                         <br><br>
-                        <label class="col-sm-5 control-label">Define new Sequencer configuration</label>
+                        <label class="col-sm-5 form-label">Define new Sequencer configuration</label>
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sequencerConfiguration" size="80"></div>
                         <br><br><br>
                     </div>

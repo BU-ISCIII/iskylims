@@ -48,32 +48,32 @@
                                     <div class="col-sm-6" >
                                         <div class="form-control">
                                             <h4>Sample Sheet confirmation data</h4>
-                                            <label class="col-sm-5 control-label">Application</label>
+                                            <label class="col-sm-5 form-label">Application</label>
                                             <div class="col-sm-5"><input class="form-control" type="text" value="{{display_sample_information.application}}" name="application" size="80"></div>
                                             <br><br>
                                             {% if display_sample_information.instrument %}
-                                                <label class="col-sm-5 control-label">Instrument</label>
+                                                <label class="col-sm-5 form-label">Instrument</label>
                                                 <div class="col-sm-5"><input class="form-control"  required = "required" type="text" value="{{display_sample_information.instrument}}" name="instrument" size="80"></div>
                                                 <br><br>
                                             {% endif %}
-                                            <label class="col-sm-5 control-label">Assay</label>
+                                            <label class="col-sm-5 form-label">Assay</label>
                                             <div class="col-sm-5"><input class="form-control"   type="text"  value="{{display_sample_information.assay}}"  name="assay" size="80"></div>
                                             <br><br>
                                         </div> <!--  end ofform-control -->
                                         <div class="form-control required">
                                             {% if display_sample_information.collection_index %}
-                                                <label class="col-sm-5 control-label">Index Adapters</label>
+                                                <label class="col-sm-5 form-label">Index Adapters</label>
                                                 <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.collection_index}}"  name="collection_index" size="80"></div>
                                                 <br><br>
                                             {% endif %}
-                                            <label class="col-sm-5 control-label">Reads</label>
+                                            <label class="col-sm-5 form-label">Reads</label>
                                             <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.reads}}"  name="reads" size="80"></div>
                                             <br><br>
-                                            <label class="col-sm-5 control-label">Adapter</label>
+                                            <label class="col-sm-5 form-label">Adapter</label>
                                             <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter1}}"  name="adapter" size="80"></div>
                                             <br><br>
                                             {% if display_sample_information.adapter2 %}
-                                                <label class="col-sm-5 control-label">Adapter-2</label>
+                                                <label class="col-sm-5 form-label">Adapter-2</label>
                                                 <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter2}}"  name="adapter2" size="80"></div>
                                                 <br><br><br>
                                             {% endif %}
@@ -300,14 +300,14 @@
                                         <input type="hidden" name="platform" value="{{key}}"/>
                                         <input type="hidden" name="commercialKits" value="{{display_pools_for_run.commercial_kits|keyvalue:key}}"/>
                                         <div class="form-control required">
-                                            <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
+                                            <label class="col-sm-5 form-label">Define the Experiment Name for the Run</label>
                                             <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
                                             <br><br>
                                         </div>
 
                                         {% for reagent , lots in display_pools_for_run.reagents_kits|keyvalue:key %}
                                             <div class="form-control">
-                                                <label class="col-sm-5 control-label">{{reagent}}</label>
+                                                <label class="col-sm-5 form-label">{{reagent}}</label>
                                                 <div class="col-sm-5">
                                                     <select class="form-control" name="{{reagent}}" id="{{reagent}}">
                                                         <option value="">Choose a value</option>

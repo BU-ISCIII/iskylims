@@ -62,17 +62,17 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="searchPatient"/>
                         <div class="form-control">
-                            <label class="col-sm-5  control-label" for="patientname" >{{s_patient_data.p_name}}</label>
+                            <label class="col-sm-5  form-label" for="patientname" >{{s_patient_data.p_name}}</label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="patientname" id="patientname" size="80" maxlength="80"></div>
                         </div>  <!-- end from-group   -->
                         <BR>
                         <div class="form-control">
-                            <label class="col-sm-5 control-label" for="patientname" >{{s_patient_data.p_surname}}</label>
+                            <label class="col-sm-5 form-label" for="patientname" >{{s_patient_data.p_surname}}</label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="patientsurname" id="patientsurname" size="80" maxlength="80"></div>
                         </div>  <!-- end from-group   -->
                         <BR>
                         <div class="form-control">
-                            <label class="col-sm-5 control-label" for="historynumber" >Patient Code</label>
+                            <label class="col-sm-5 form-label" for="historynumber" >Patient Code</label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="patientcode" id="patientcode" size="80" maxlength="80"></div>
                         </div>  <!-- end from-group   -->
                         <BR>

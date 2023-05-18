@@ -63,7 +63,7 @@
                                                     {% csrf_token %}
                                                     <div class="form-control required">
                                                         <input type="hidden" name="action" value="defineNewSpecie"/>
-                                                        <label class="col-md-5 control-label">Define new Specie</label>
+                                                        <label class="col-md-5 form-label">Define new Specie</label>
                                                         <div class="col">
                                                             <input class="form-control" required="required" type="text"  name="specieName">
                                                         </div>
@@ -102,6 +102,7 @@
                                     <script type="text/javascript">
                                         $(document).ready(function() {
                                             $('#s_table').DataTable({
+                                                dom: 'frtip',
                                                 responsive: true,
                                             });
                                         });
@@ -120,7 +121,7 @@
                                                     {% csrf_token %}
                                                     <div class="form-control required">
                                                         <input type="hidden" name="action" value="defineNewState"/>
-                                                        <label class="col-md-5 control-label">Define new State</label>
+                                                        <label class="col-md-5 form-label">Define new State</label>
                                                         <div class="col">
                                                             <input class="form-control" required = "required" type="text"  name="stateName" size="70">
                                                         </div>
@@ -132,7 +133,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="card ">
+                                        <div class="card mb-2">
                                             <div class="card-header"><h3 style="text-align:center">States defined</h3></div>
                                             <div class="card-body">
                                                 {% if initial_data.states_data %}
@@ -159,6 +160,7 @@
                                     <script type="text/javascript">
                                         $(document).ready(function() {
                                             $('#state_table').DataTable({
+                                                dom: 'frtip',
                                                 responsive: true,
                                             });
                                         });
@@ -175,13 +177,13 @@
                                                         <div class="form-control required">
                                                             <input type="hidden" name="action" value="defineNewCity"/>
                                                             <div class="form-control">
-                                                                <label class="col-md-5 control-label">Define new City</label>
+                                                                <label class="col-md-5 form-label">Define new City</label>
                                                                 <div class="col">
                                                                     <input class="form-control" required = "required" type="text"  name="cityName" size="70">
                                                                 </div>
                                                             </div>
                                                             <div class="form-control">
-                                                                <label class="col-md-5 control-label">Select the State</label>
+                                                                <label class="col-md-5 form-label">Select the State</label>
                                                                 <div class="col">
                                                                     <select class="form-control" required = "required" name="state" id="state">
                                                                         <option value="">Select State</option>
@@ -192,13 +194,13 @@
                                                                 </div>
                                                             </div>
                                                             <div class="form-control">
-                                                                <label class="col-md-5 control-label">Define latitude</label>
+                                                                <label class="col-md-5 form-label">Define latitude</label>
                                                                 <div class="col">
                                                                     <input class="form-control" required = "required" type="text"  name="latitude" size="70">
                                                                 </div>
                                                             </div>
                                                             <div class="form-control">
-                                                                <label class="col-md-5 control-label">Define longitude</label>
+                                                                <label class="col-md-5 form-label">Define longitude</label>
                                                                 <div class="col">
                                                                     <input class="form-control" required = "required" type="text"  name="longitude" size="70">
                                                                 </div>
@@ -262,47 +264,47 @@
                                                     <div class="form-control required">
                                                         <input type="hidden" name="action" value="defineNewLabRequest"/>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Define new Laboratory/Organization</label>
+                                                            <label class="col-md-5 form-label">Define new Laboratory/Organization</label>
                                                             <div class="col">
                                                                 <input class="form-control" required = "required" type="text"  name="labRequestName" size="80">
                                                             </div>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Define Laboratory/organization coding name</label>
+                                                            <label class="col-md-5 form-label">Define Laboratory/organization coding name</label>
                                                             <div class="col">
                                                                 <input class="form-control" required = "required" type="text"  name="labRequesCoding" size="80">
                                                             </div>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Department Unit</label>
+                                                            <label class="col-md-5 form-label">Department Unit</label>
                                                             <div class="col">
                                                                 <input class="form-control" type="text"  name="department" size="80">
                                                             </div>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Contact Name</label>
+                                                            <label class="col-md-5 form-label">Contact Name</label>
                                                             <div class="col">
                                                                 <input class="form-control" type="text"  name="contact" size="80">
                                                             </div>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Contact Phone</label>
+                                                            <label class="col-md-5 form-label">Contact Phone</label>
                                                             <div class="col">
                                                                 <input class="form-control" type="text"  name="phone" size="80">
                                                             </div>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Email Contact</label>
+                                                            <label class="col-md-5 form-label">Email Contact</label>
                                                             <div class="col">
                                                                 <input class="form-control" type="email"  name="email" size="80">
                                                             </div>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Define address</label>
+                                                            <label class="col-md-5 form-label">Define address</label>
                                                             <textarea class="col" id="address" name="address" rows="6" cols="50"></textarea>
                                                         </div>
                                                         <div class="form-control">
-                                                            <label class="col-md-5 control-label">Select the City</label>
+                                                            <label class="col-md-5 form-label">Select the City</label>
                                                             <div class="col">
                                                                 <select class="form-control" required = "required" name="city" id="city">
                                                                     <option value="">Select City</option>
@@ -380,7 +382,7 @@
                                                     {% csrf_token %}
                                                     <div class="form-control required">
                                                         <input type="hidden" name="action" value="defineMoleculeType"/>
-                                                        <label class="col-md-5 control-label">Define new Molecule type</label>
+                                                        <label class="col form-label">Define new Molecule type</label>
                                                         <div class="col">
                                                             <input class="form-control" required = "required" type="text"  name="moleculeName" size="80">
                                                         </div>
@@ -431,11 +433,11 @@
                                                     {% csrf_token %}
                                                     <div class="form-control required">
                                                         <input type="hidden" name="action" value="defineProtocolType"/>
-                                                        <label class="col-md-5 control-label">Define new Protocol type</label>
+                                                        <label class="col form-label">Define new Protocol type</label>
                                                         <div class="col">
                                                             <input class="form-control" required = "required" type="text"  name="protocolName" size="80">
                                                         </div>
-                                                        <label class="col control-label">Select the Molecule type used for the protocol type</label>
+                                                        <label class="col form-label">Select the Molecule type used for the protocol type</label>
                                                         <div class="col">
                                                             <select class="form-control" required = "required" name="moleculeType" id="moleculeType">
                                                                 <option value="">Select an option</option>

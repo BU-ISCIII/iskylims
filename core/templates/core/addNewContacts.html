@@ -17,7 +17,7 @@
                 <div class="input_fields_wrap">
                   <div class="row">
                     <div class="col-sm-5" >
-                        <label for="apps" class="control-label requiredField ">Select iSkyLIMS application</label>
+                        <label for="apps" class="form-label requiredField ">Select iSkyLIMS application</label>
                             <select class="form-control" id="dropdown" name="apps">
                                 {% for app in apps_installed.apps_names %}
                                     <option value="{{ app }}">{{ app }}</option>
@@ -27,7 +27,7 @@
                     <div class="col-sm-5" >
                         <div class="form-control" >
                           <div id="div_id_email" class="form-control"> 
-                            <label for="id_email" class="control-label  requiredField">
+                            <label for="id_email" class="form-label  requiredField">
                                 Email address<span class="asteriskField">*</span> 
                             </label> 
                             <div class="input-group"> 
@@ -40,7 +40,7 @@
                     </div>
                     <div class="col-sm-5" >
                         <div id="div_id_last_name" class="form-control"> 
-                           <label for="contactName" class="control-label  requiredField">
+                           <label for="contactName" class="form-label  requiredField">
                                Contact Name <span class="asteriskField">*</span> 
                            </label>
                            <input class="form-control" type="text" name="contactName" id="contactName">
@@ -48,7 +48,7 @@
                     </div>
                     <div class="col-sm-5" >
                         <div id="div_id_last_name" class="form-control"> 
-                            <label for="phone" class="control-label  requiredField">
+                            <label for="phone" class="form-label  requiredField">
                                 Phone Number<span class="asteriskField">*</span> 
                             </label>
                             <input class="form-control" type="text" name="phone" id="phone">
@@ -80,7 +80,7 @@ $(add_button).click(function(e){ //on add input button click
 e.preventDefault();
 if(x < max_fields){ //max input box allowed
 x++; //text box increment
-$(wrapper).append('<div class="row"><div class="col-sm-5" ><label for="apps" class="control-label requiredField ">Select iSkyLIMS application</label><select class="form-control" id="dropdown" name="apps"> {% for app in apps_installed.apps_names %} <option value="{{ app|cut:"iSkyLIMS_" }}">{{ app|cut:"iSkyLIMS_" }}</option> {% endfor %}</select></div><div class="col-sm-5" ><div class="form-control" ><div id="div_id_email" class="form-control"><label for="id_email" class="control-label  requiredField">Email address<span class="asteriskField">*</span></label><div class="input-group"><span class="input-group-addon">@</span><input type="email" name="email" maxlength="254" class="input-block-level emailinput form-control" placeholder="contact@example.com" required id="id_email"></div><p id="hint_id_email" class="help-block">Enter contact person  email with domain </p></div></div></div><div class="col-sm-5" ><div id="div_id_last_name" class="form-control"><label for="contactName" class="control-label  requiredField">Contact Name <span class="asteriskField">*</span></label><input class="form-control" type="text" name="contactName" id="contactName"></div></div><div class="col-sm-5" ><div id="div_id_last_name" class="form-control"><label for="phone" class="control-label  requiredField">Phone Number<span class="asteriskField">*</span></label><input class="form-control" type="text" name="phone" id="phone"></div></div><BR><BR><BR><BR><BR><div style="cursor:pointer;background-color:red;" class="remove_field btn btn-info">Remove</div><p></p></div>'); //add input box
+$(wrapper).append('<div class="row"><div class="col-sm-5" ><label for="apps" class="form-label requiredField ">Select iSkyLIMS application</label><select class="form-control" id="dropdown" name="apps"> {% for app in apps_installed.apps_names %} <option value="{{ app|cut:"iSkyLIMS_" }}">{{ app|cut:"iSkyLIMS_" }}</option> {% endfor %}</select></div><div class="col-sm-5" ><div class="form-control" ><div id="div_id_email" class="form-control"><label for="id_email" class="form-label  requiredField">Email address<span class="asteriskField">*</span></label><div class="input-group"><span class="input-group-addon">@</span><input type="email" name="email" maxlength="254" class="input-block-level emailinput form-control" placeholder="contact@example.com" required id="id_email"></div><p id="hint_id_email" class="help-block">Enter contact person  email with domain </p></div></div></div><div class="col-sm-5" ><div id="div_id_last_name" class="form-control"><label for="contactName" class="form-label  requiredField">Contact Name <span class="asteriskField">*</span></label><input class="form-control" type="text" name="contactName" id="contactName"></div></div><div class="col-sm-5" ><div id="div_id_last_name" class="form-control"><label for="phone" class="form-label  requiredField">Phone Number<span class="asteriskField">*</span></label><input class="form-control" type="text" name="phone" id="phone"></div></div><BR><BR><BR><BR><BR><div style="cursor:pointer;background-color:red;" class="remove_field btn btn-info">Remove</div><p></p></div>'); //add input box
 }
 });
 $(wrapper).on("click",".remove_field", function(e){ //user click on remove text

@@ -45,35 +45,35 @@
                                 <div class="card-title" style="text-align:center">Email setting fields</div>
                                 <div class="card-body">
                                     <div class="form-control required">
-                                        <label class="col-sm-5  control-label" for="EMAIL_HOST" >Email Host</label>
+                                        <label class="col-sm-5  form-label" for="EMAIL_HOST" >Email Host</label>
                                         <div class="col mb-2">
                                             <input class="form-control" type="text" required = "required" name="EMAIL_HOST" id="EMAIL_HOST" value = "{{email_conf_data.EMAIL_HOST}}">
                                         </div>
-                                        <label class="col-sm-5  control-label" for="EMAIL_PORT" >Email Host Port</label>
+                                        <label class="col-sm-5  form-label" for="EMAIL_PORT" >Email Host Port</label>
                                         <div class="col mb-2">
                                             <input class="form-control" type="text" required = "required" name="EMAIL_PORT" id="EMAIL_PORT" value = "{{email_conf_data.EMAIL_PORT}}">
                                         </div>
-                                        <label class="col-sm-5  control-label" for="USER_EMAIL" >Host Email User </label>
+                                        <label class="col-sm-5  form-label" for="USER_EMAIL" >Host Email User </label>
                                         <div class="col mb-2">
                                             <input class="form-control" type="text" required = "required" name="USER_EMAIL" id="USER_EMAIL" value = "{{email_conf_data.USER_EMAIL}}">
                                         </div>
-                                        <label class="col-sm-5  control-label" for="USER_PASSWORD" >Host Email User Password </label>
+                                        <label class="col-sm-5  form-label" for="USER_PASSWORD" >Host Email User Password </label>
                                         <div class="col mb-2">
                                             <input class="form-control" type="password" name="USER_PASSWORD" id="USER_PASSWORD" value = "{{email_conf_data.USER_PASSWORD}}">
                                         </div>
-                                        <label class="col-sm-5  control-label" for="EMAIL_ISKYLIMS" >Email used for notifications</label>
+                                        <label class="col-sm-5  form-label" for="EMAIL_ISKYLIMS" >Email used for notifications</label>
                                         <div class="col mb-2">
                                             <input class="form-control" type="text" required = "required" name="EMAIL_ISKYLIMS" id="EMAIL_ISKYLIMS" value = "{{email_conf_data.EMAIL_ISKYLIMS}}">
                                         </div>
                                         <div class="form-check form-switch col mb-2">
-                                            <label class="form-check-label control-label" for="USE_TLS" >Use TLS</label>
+                                            <label class="form-check-label form-label" for="USE_TLS" >Use TLS</label>
                                             {% if email_conf_data.USE_TLS == True %}
                                                 <input class="form-check-input" type="checkbox" name="USE_TLS" id="USE_TLS" checked>
                                             {% else %}
                                                 <input class="form-check-input" type="checkbox" name="USE_TLS" id="USE_TLS">
                                             {% endif %}
                                         </div>
-                                        <label class="col-sm-5  control-label" for="test_email" >email for testing </label>
+                                        <label class="col-sm-5  form-label" for="test_email" >email for testing </label>
                                         <div class="col mb-2">
                                             <input class="form-control" type="email" required = "required" name="test_email" id="test_email" value = "{{email_conf_data.EMAIL_FOR_NOTIFICATIONS}}">
                                         </div>
