@@ -1,3 +1,4 @@
+# Generic imports
 from django.contrib import admin
 
 # Local imports
