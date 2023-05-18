@@ -1,16 +1,14 @@
-from datetime import datetime
-from django.conf import settings
-
-# from django.contrib.auth.models import User
 import os
 import traceback
-from wetlab import config
-from .utils.crontab_update_run import (
-    search_update_new_runs,
-    handle_not_completed_run,
-)
+from datetime import datetime, timedelta
 
-from .utils.common import open_log
+from django.conf import settings
+
+# Local imports
+import wetlab.config
+import wetlab.models
+import wetlab.utils.common
+import wetlab.utils.crontab_update_run
 
 
 def looking_for_new_runs():
@@ -53,15 +51,15 @@ def looking_for_new_runs():
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     config_file = os.path.join(
-        settings.BASE_DIR, "wetlab", config.LOGGING_CONFIG_FILE
+        settings.BASE_DIR, "wetlab", wetlab.config.LOGGING_CONFIG_FILE
     )
-    logger = open_log(config_file)
+    logger = wetlab.utils.common.open_log(config_file)
     logger.info("----------------------------------")
     logger.info("###########---Start Crontab-----############")
     logger.info("----------------------------------")
     logger.info("Start searching for new/updating runs")
     try:
-        search_update_new_runs("crontab_request")
+        wetlab.utils.crontab_update_run.search_update_new_runs("crontab_request")
     except Exception as e:
         print("****** Exiting abnormal the crontab  process with errors")
         print(e)
@@ -83,7 +81,7 @@ def looking_for_new_runs():
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     try:
-        handle_not_completed_run()
+        wetlab.utils.crontab_update_run.handle_not_completed_run()
     except Exception as e:
         print("****** Exiting abnormal the crontab  process with errors")
         print(e)
@@ -104,12 +102,6 @@ def looking_for_new_runs():
 
 
 def delete_invalid_run():
-    from datetime import datetime, timedelta
-    import os
-    from django.conf import settings
-    from wetlab import config
-    from wetlab.models import RunProcess, Projects
-
     time_start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(time_start)
     print(
@@ -117,15 +109,15 @@ def delete_invalid_run():
         datetime.today(),
     )
     date_for_removing = datetime.today() - timedelta(
-        days=int(config.RETENTION_TIME)
+        days=int(wetlab.config.RETENTION_TIME)
     )
-    run_found_for_deleting = RunProcess.objects.filter(
+    run_found_for_deleting = wetlab.models.RunProcess.objects.filter(
         state__run_state_name="Pre-Recorded", generate_dat__lte=date_for_removing
     )
 
     for run_found in run_found_for_deleting:
-        if Projects.objects.filter(runprocess_id=run_found).exists():
-            projects_to_be_deleted = Projects.objects.filter(runprocess_id=run_found)
+        if wetlab.models.Projects.objects.filter(runprocess_id=run_found).exists():
+            projects_to_be_deleted = wetlab.models.Projects.objects.filter(runprocess_id=run_found)
             for projects in projects_to_be_deleted:
                 projects.delete()
                 print("deleted project", projects)
@@ -137,7 +129,7 @@ def delete_invalid_run():
             print("deleted sample sheet file ")
         run_found.delete()
         print("deleted run", run_found)
-    all_runs = RunProcess.objects.all()
+    all_runs = wetlab.models.RunProcess.objects.all()
     sample_sheet_valid_files = []
 
     for run in all_runs:
