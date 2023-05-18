@@ -1,21 +1,14 @@
+# Generic imports
 import os
 import re
 
 from django.contrib.auth.models import User
 from django.db import models
-from django_utils.models import Center
-from core.models import (
-    CommercialKits,
-    MoleculePreparation,
-    ProtocolParameters,
-    Protocols,
-    Samples,
-    SequencerInLab,
-    SequencingConfiguration,
-    SequencingPlatform,
-    UserLotCommercialKits,
-)
-from . import config
+
+# Local imports
+import django_utils.models
+import core.models
+import wetlab.config
 
 
 class RunErrors(models.Model):
@@ -51,7 +44,7 @@ class RunProcessManager(models.Manager):
 
 class RunProcess(models.Model):
     used_sequencer = models.ForeignKey(
-        SequencerInLab, on_delete=models.CASCADE, blank=True, null=True
+        core.models.SequencerInLab, on_delete=models.CASCADE, blank=True, null=True
     )
     run_error = models.ForeignKey(
         RunErrors, on_delete=models.CASCADE, null=True, blank=True
@@ -67,12 +60,12 @@ class RunProcess(models.Model):
         blank=True,
     )
     center_requested_by = models.ForeignKey(
-        Center, on_delete=models.CASCADE, null=True, blank=True
+        django_utils.models.Center, on_delete=models.CASCADE, null=True, blank=True
     )
-    reagent_kit = models.ManyToManyField(UserLotCommercialKits, blank=True)
+    reagent_kit = models.ManyToManyField(core.models.UserLotCommercialKits, blank=True)
     run_name = models.CharField(max_length=45)
     sample_sheet = models.FileField(
-        upload_to=config.RUN_SAMPLE_SHEET_DIRECTORY, null=True, blank=True
+        upload_to=wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY, null=True, blank=True
     )
     generated_at = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now=False, null=True, blank=True)
@@ -962,7 +955,7 @@ class SamplesInProject(models.Model):
     )
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     sample_in_core = models.ForeignKey(
-        Samples, on_delete=models.CASCADE, null=True, blank=True
+        core.models.Samples, on_delete=models.CASCADE, null=True, blank=True
     )
     sample_name = models.CharField(max_length=255)
     barcode_name = models.CharField(max_length=255)
@@ -1075,7 +1068,7 @@ class CollectionIndexKit(models.Model):
     adapter_1 = models.CharField(max_length=125, null=True)
     adapter_2 = models.CharField(max_length=125, null=True)
     collection_index_file = models.FileField(
-        upload_to=config.COLLECTION_INDEX_KITS_DIRECTORY, max_length=500
+        upload_to=wetlab.config.COLLECTION_INDEX_KITS_DIRECTORY, max_length=500
     )
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -1151,7 +1144,7 @@ class LibPreparationUserSampleSheetManager(models.Manager):
             except Exception:
                 collection_index_kit_id = None
         file_name = os.path.basename(user_sample_sheet_data["file_name"])
-        configuration = SequencingConfiguration.objects.filter(
+        configuration = core.models.SequencingConfiguration.objects.filter(
             platform_id__platformName__exact=user_sample_sheet_data["platform"],
             configuration_name__exact=user_sample_sheet_data["configuration"],
         ).last()
@@ -1179,11 +1172,11 @@ class LibUserSampleSheet(models.Model):
     )
 
     sequencing_configuration = models.ForeignKey(
-        SequencingConfiguration, on_delete=models.CASCADE, null=True
+        core.models.SequencingConfiguration, on_delete=models.CASCADE, null=True
     )
 
     sample_sheet = models.FileField(
-        upload_to=config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+        upload_to=wetlab.config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
     )
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
     application = models.CharField(max_length=70, null=True, blank=True)
@@ -1266,7 +1259,7 @@ class PoolStates(models.Model):
 
 class LibraryPoolManager(models.Manager):
     def create_lib_pool(self, pool_data):
-        platform_obj = SequencingPlatform.objects.filter(
+        platform_obj = core.models.SequencingPlatform.objects.filter(
             platform_name__exact=pool_data["platform"]
         ).last()
         new_library_pool = self.create(
@@ -1290,7 +1283,7 @@ class LibraryPool(models.Model):
     )
 
     platform = models.ForeignKey(
-        SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
+        core.models.SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
     pool_name = models.CharField(max_length=50)
     sample_number = models.IntegerField(default=0)
@@ -1386,8 +1379,8 @@ class LibPrepareManager(models.Manager):
         register_user_obj = User.objects.get(
             username__exact=lib_prep_data["registerUser"]
         )
-        sample_obj = Samples.objects.get(pk__exact=lib_prep_data["sample_id"])
-        molecule_obj = MoleculePreparation.objects.get(
+        sample_obj = core.models.Samples.objects.get(pk__exact=lib_prep_data["sample_id"])
+        molecule_obj = core.models.MoleculePreparation.objects.get(
             pk__exact=lib_prep_data["molecule_id"]
         )
         lib_state_obj = LibPrepareStates.objects.get(lib_prep_state__exact="Defined")
@@ -1408,19 +1401,19 @@ class LibPrepareManager(models.Manager):
 
 class LibPrepare(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    molecule_id = models.ForeignKey(MoleculePreparation, on_delete=models.CASCADE)
+    molecule_id = models.ForeignKey(core.models.MoleculePreparation, on_delete=models.CASCADE)
     sample_id = models.ForeignKey(
-        Samples, on_delete=models.CASCADE, null=True, blank=True
+        core.models.Samples, on_delete=models.CASCADE, null=True, blank=True
     )
     protocol_id = models.ForeignKey(
-        Protocols, on_delete=models.CASCADE, null=True, blank=True
+        core.models.Protocols, on_delete=models.CASCADE, null=True, blank=True
     )
     lib_prep_state = models.ForeignKey(
         LibPrepareStates, on_delete=models.CASCADE, null=True, blank=True
     )
 
     user_lot_kit_id = models.ForeignKey(
-        UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
+        core.models.UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
 
     user_sample_sheet = models.ForeignKey(
@@ -1710,7 +1703,7 @@ class LibParameterValueManager(models.Manager):
 
 
 class LibParameterValue(models.Model):
-    parameter_id = models.ForeignKey(ProtocolParameters, on_delete=models.CASCADE)
+    parameter_id = models.ForeignKey(core.models.ProtocolParameters, on_delete=models.CASCADE)
     library_id = models.ForeignKey(LibPrepare, on_delete=models.CASCADE)
     parameter_value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
@@ -1743,8 +1736,8 @@ class AdditionaKitsLibPrepareManager(models.Manager):
 
 class AdditionaKitsLibPrepare(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    protocol_id = models.ForeignKey(Protocols, on_delete=models.CASCADE)
-    commercial_kit_id = models.ForeignKey(CommercialKits, on_delete=models.CASCADE)
+    protocol_id = models.ForeignKey(core.models.Protocols, on_delete=models.CASCADE)
+    commercial_kit_id = models.ForeignKey(core.models.CommercialKits, on_delete=models.CASCADE)
     kit_name = models.CharField(max_length=255)
     description = models.CharField(max_length=400, null=True, blank=True)
     kit_order = models.IntegerField()
@@ -1821,7 +1814,7 @@ class AdditionalUserLotKit(models.Model):
         AdditionaKitsLibPrepare, on_delete=models.CASCADE
     )
     user_lot_kit_id = models.ForeignKey(
-        UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
+        core.models.UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
     value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
@@ -1869,7 +1862,7 @@ class SambaConnectionData(models.Model):
 
     def get_samba_data(self):
         samba_data = {}
-        for field in config.SAMBA_CONFIGURATION_FIELDS:
+        for field in wetlab.config.SAMBA_CONFIGURATION_FIELDS:
             samba_data[field] = getattr(self, field)
         return samba_data
 
@@ -1886,7 +1879,7 @@ class SambaConnectionData(models.Model):
             return ""
 
     def update_data(self, data):
-        for field in config.SAMBA_CONFIGURATION_FIELDS:
+        for field in wetlab.config.SAMBA_CONFIGURATION_FIELDS:
             setattr(self, field, data[field])
         self.save()
         return self
