@@ -3,4 +3,7 @@
   content:"  *";
   color:red;
 }
-
+.horizontal-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+}
