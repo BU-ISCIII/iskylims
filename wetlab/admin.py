@@ -1,5 +1,7 @@
 from django.contrib import admin
-from wetlab.models import *
+
+# Local imports
+import wetlab.models
 
 
 class LibraryPreparationAdmin(admin.ModelAdmin):
@@ -259,28 +261,28 @@ class RunConfigurationTestAdmin(admin.ModelAdmin):
     list_display = ["run_test_name", "run_test_folder"]
 
 
-admin.site.register(LibPrepare, LibraryPreparationAdmin)
-admin.site.register(LibParameterValue, LibParameterValueAdmin)
-admin.site.register(LibraryPool, LibraryPoolAdmin)
-admin.site.register(LibUserSampleSheet, libPreparationUserSampleSheetAdmin)
-admin.site.register(AdditionaKitsLibPrepare, AdditionaKitsLibraryPreparationAdmin)
-admin.site.register(AdditionalUserLotKit, AdditionalUserLotKitAdmin)
-admin.site.register(RunningParameters, RunningParametersAdmin)
-admin.site.register(RunProcess, RunProcessAdmin)
-admin.site.register(CollectionIndexKit, CollectionIndexKitAdmin)
-admin.site.register(Projects, ProjectsAdmin)
-admin.site.register(RunErrors, RunErrorsAdmin)
-admin.site.register(RunStates, RunStatesAdmin)
-admin.site.register(LibPrepareStates, StatesForLibraryPreparationAdmin)
-admin.site.register(PoolStates, StatesForPoolAdmin)
-admin.site.register(SamplesInProject, SamplesInProjectAdmin)
-admin.site.register(StatsRunSummary, StatsRunSummaryAdmin)
-admin.site.register(StatsRunRead, StatsRunReadAdmin)
-admin.site.register(RawDemuxStats, RawDemuxStatsAdmin)
-admin.site.register(RawTopUnknowBarcodes, RawTopUnknowBarcodesdmin)
-admin.site.register(StatsLaneSummary, StatsLaneSummaryAdmin)
-admin.site.register(StatsFlSummary, StatsFlSummaryAdmin)
-admin.site.register(GraphicsStats, GraphicsStatsAdmin)
-admin.site.register(SambaConnectionData, SambaConnectionDataAdmin)
-admin.site.register(ConfigSetting, ConfigSettingAdmin)
-admin.site.register(RunConfigurationTest, RunConfigurationTestAdmin)
+admin.site.register(wetlab.models.LibPrepare, LibraryPreparationAdmin)
+admin.site.register(wetlab.models.LibParameterValue, LibParameterValueAdmin)
+admin.site.register(wetlab.models.LibraryPool, LibraryPoolAdmin)
+admin.site.register(wetlab.models.LibUserSampleSheet, libPreparationUserSampleSheetAdmin)
+admin.site.register(wetlab.models.AdditionaKitsLibPrepare, AdditionaKitsLibraryPreparationAdmin)
+admin.site.register(wetlab.models.AdditionalUserLotKit, AdditionalUserLotKitAdmin)
+admin.site.register(wetlab.models.RunningParameters, RunningParametersAdmin)
+admin.site.register(wetlab.models.RunProcess, RunProcessAdmin)
+admin.site.register(wetlab.models.CollectionIndexKit, CollectionIndexKitAdmin)
+admin.site.register(wetlab.models.Projects, ProjectsAdmin)
+admin.site.register(wetlab.models.RunErrors, RunErrorsAdmin)
+admin.site.register(wetlab.models.RunStates, RunStatesAdmin)
+admin.site.register(wetlab.models.LibPrepareStates, StatesForLibraryPreparationAdmin)
+admin.site.register(wetlab.models.PoolStates, StatesForPoolAdmin)
+admin.site.register(wetlab.models.SamplesInProject, SamplesInProjectAdmin)
+admin.site.register(wetlab.models.StatsRunSummary, StatsRunSummaryAdmin)
+admin.site.register(wetlab.models.StatsRunRead, StatsRunReadAdmin)
+admin.site.register(wetlab.models.RawDemuxStats, RawDemuxStatsAdmin)
+admin.site.register(wetlab.models.RawTopUnknowBarcodes, RawTopUnknowBarcodesdmin)
+admin.site.register(wetlab.models.StatsLaneSummary, StatsLaneSummaryAdmin)
+admin.site.register(wetlab.models.StatsFlSummary, StatsFlSummaryAdmin)
+admin.site.register(wetlab.models.GraphicsStats, GraphicsStatsAdmin)
+admin.site.register(wetlab.models.SambaConnectionData, SambaConnectionDataAdmin)
+admin.site.register(wetlab.models.ConfigSetting, ConfigSettingAdmin)
+admin.site.register(wetlab.models.RunConfigurationTest, RunConfigurationTestAdmin)
