@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Local imports
-import django_utils.models
 import core.models
+import django_utils.models
 import wetlab.config
 
 
