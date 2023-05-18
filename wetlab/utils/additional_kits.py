@@ -1,10 +1,12 @@
+# Generic imports
 import json
 
-from core.models import CommercialKits, Protocols, ProtocolType, UserLotCommercialKits
-from core.utils.protocols import get_protocol_obj_from_id
-from wetlab.models import *
-from wetlab.utils.library import get_lib_prep_obj_from_id
-from wetlab.config import *
+# Local imports
+import core.models
+import core.utils.protocols
+import wetlab.config
+import wetlab.models
+import wetlab.utils.library
 
 
 def analyze_and_store_input_additional_kits(form_data):
@@ -27,7 +29,7 @@ def analyze_and_store_input_additional_kits(form_data):
     lib_prep_code_ids = form_data["libPrepCodeIds"].split(",")
     # additional_kit_ids = form_data['additional_kit_ids'].split(',')
     json_data = json.loads(form_data["used_kits"])
-    fixed_heading_length = len(HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS)
+    fixed_heading_length = len(wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS)
 
     heading_in_excel = form_data["headings"].split(",")
     full_heading_length = len(heading_in_excel)
@@ -39,22 +41,22 @@ def analyze_and_store_input_additional_kits(form_data):
         stored_additional_kits['ERROR'] = ERROR_EMPTY_VALUES
         return stored_additional_kits
     """
-    protocol_obj = get_lib_prep_obj_from_id(lib_prep_ids[0]).get_protocol_obj()
+    protocol_obj = wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_ids[0]).get_protocol_obj()
     for row_index in range(len(json_data)):
         right_id = lib_prep_ids[lib_prep_code_ids.index(json_data[row_index][1])]
 
-        library_prep_obj = get_lib_prep_obj_from_id(right_id)
+        library_prep_obj = wetlab.utils.library.get_lib_prep_obj_from_id(right_id)
         sample_names.append(library_prep_obj.get_sample_name())
         for c_index in range(fixed_heading_length, full_heading_length):
             kit_name = heading_in_excel[c_index]
-            additional_kit_lib_obj = AdditionaKitsLibPrepare.objects.filter(
+            additional_kit_lib_obj = wetlab.models.AdditionaKitsLibPrepare.objects.filter(
                 kit_name__exact=kit_name, protocol_id=protocol_obj
             ).last()
             commercial_kit_obj = additional_kit_lib_obj.get_commercial_kit_obj()
             if json_data[row_index][c_index] == "":
                 user_lot_commercial_obj = None
             else:
-                user_lot_commercial_obj = UserLotCommercialKits.objects.filter(
+                user_lot_commercial_obj = core.models.UserLotCommercialKits.objects.filter(
                     based_commercial=commercial_kit_obj,
                     chip_lot__exact=json_data[row_index][c_index],
                 ).last()
@@ -66,7 +68,7 @@ def analyze_and_store_input_additional_kits(form_data):
             user_additional_kit["additionalLotKits"] = additional_kit_lib_obj
             user_additional_kit["userLotKit_id"] = user_lot_commercial_obj
 
-            AdditionalUserLotKit.objects.create_additional_user_lot_kit(
+            wetlab.models.AdditionalUserLotKit.objects.create_additional_user_lot_kit(
                 user_additional_kit
             )
 
@@ -93,16 +95,16 @@ def define_table_for_additional_kits(protocol_id):
         kit_data
     """
     kit_data = {}
-    protocol_obj = get_protocol_obj_from_id(protocol_id)
-    if CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
-        c_kits = CommercialKits.objects.filter(protocol_kits=protocol_obj)
+    protocol_obj = core.utils.protocols.get_protocol_obj_from_id(protocol_id)
+    if core.models.CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
+        c_kits = core.models.CommercialKits.objects.filter(protocol_kits=protocol_obj)
         c_kit_names = []
         for c_kit in c_kits:
             c_kit_names.append(c_kit.get_name())
         kit_data["kits"] = c_kit_names
         kit_data["protocol_name"] = protocol_obj.get_name()
         kit_data["protocol_id"] = protocol_id
-        kit_data["heading"] = HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+        kit_data["heading"] = wetlab.config.HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
     return kit_data
 
 
@@ -119,9 +121,9 @@ def get_additional_kits_data_to_modify(protocol_id):
         add_kit_info
     """
     add_kit_info = {}
-    protocol_obj = Protocols.objects.get(pk__exact=protocol_id)
-    if AdditionaKitsLibPrepare.objects.filter(protocol_id=protocol_obj).exists():
-        add_kit_objs = AdditionaKitsLibPrepare.objects.filter(
+    protocol_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
+    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(protocol_id=protocol_obj).exists():
+        add_kit_objs = wetlab.models.AdditionaKitsLibPrepare.objects.filter(
             protocol_id=protocol_obj
         ).order_by("kit_order")
         add_kit_info["add_kit_data"] = []
@@ -130,15 +132,15 @@ def get_additional_kits_data_to_modify(protocol_id):
             data.insert(1, "")
             data.append(add_kit_obj.get_add_kit_id())
             add_kit_info["add_kit_data"].append(data)
-        if CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
-            c_kits = CommercialKits.objects.filter(protocol_kits=protocol_obj)
+        if core.models.CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
+            c_kits = core.models.CommercialKits.objects.filter(protocol_kits=protocol_obj)
             add_kit_info["c_kit_names"] = []
             for c_kit in c_kits:
                 add_kit_info["c_kit_names"].append(c_kit.get_name())
 
         add_kit_info["protocol_name"] = protocol_obj.get_name()
         add_kit_info["protocol_id"] = protocol_id
-        add_kit_info["heading"] = HEADING_FOR_MODIFYING_ADDITIONAL_KITS
+        add_kit_info["heading"] = wetlab.config.HEADING_FOR_MODIFYING_ADDITIONAL_KITS
 
     return add_kit_info
 
@@ -159,12 +161,12 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
     additional_kits["data"] = []
     lib_prep_code_ids = []
     kit_name_list = []
-    protocol_obj = LibPrepare.objects.get(pk__exact=lib_prep_ids[0]).get_protocol_obj()
+    protocol_obj = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_ids[0]).get_protocol_obj()
     additional_kits["kit_heading"] = []
-    if AdditionaKitsLibPrepare.objects.filter(
+    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(
         protocol_id=protocol_obj, kitUsed=True
     ).exists():
-        additional_kits_objs = AdditionaKitsLibPrepare.objects.filter(
+        additional_kits_objs = wetlab.models.AdditionaKitsLibPrepare.objects.filter(
             protocol_id=protocol_obj, kitUsed=True
         ).order_by("kit_order")
 
@@ -173,22 +175,22 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
             kit_name_list.append(kit_name)
             kit_commercial_obj = additional_kit_obj.get_commercial_kit_obj()
             user_lot = []
-            if UserLotCommercialKits.objects.filter(
+            if core.models.UserLotCommercialKits.objects.filter(
                 based_commercial=kit_commercial_obj, run_out=False
             ).exists():
-                user_lot_kit_objs = UserLotCommercialKits.objects.filter(
+                user_lot_kit_objs = core.models.UserLotCommercialKits.objects.filter(
                     based_commercial=kit_commercial_obj, run_out=False
                 ).order_by("expiration_date")
                 for user_lot_kit_obj in user_lot_kit_objs:
                     user_lot.append(user_lot_kit_obj.get_lot_number())
             additional_kits["kit_heading"].append([kit_name, user_lot])
-    additional_kits["fix_heading"] = HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS
-    data_length = len(HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS) + len(
+    additional_kits["fix_heading"] = wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS
+    data_length = len(wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS) + len(
         additional_kits_objs
     )
 
     for lib_prep_id in lib_prep_ids:
-        lib_prep_obj = get_lib_prep_obj_from_id(lib_prep_id)
+        lib_prep_obj = wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id)
         lib_prep_code_ids.append(lib_prep_obj.get_lib_prep_code())
         row_data = [""] * data_length
         row_data[0] = lib_prep_obj.get_sample_name()
@@ -197,7 +199,7 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
     additional_kits["lib_prep_ids"] = ",".join(lib_prep_ids)
     additional_kits["lib_prep_code_ids"] = ",".join(lib_prep_code_ids)
     additional_kits["full_heading"] = ",".join(
-        HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS + kit_name_list
+        wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS + kit_name_list
     )
 
     return additional_kits
@@ -213,22 +215,22 @@ def get_additional_kits_list(app_name):
         additional index
     """
     additional_kits = []
-    if ProtocolType.objects.filter(
+    if core.models.ProtocolType.objects.filter(
         molecule=None, protocol_type__icontains="additional", apps_name__exact=app_name
     ).exists():
-        protocol_types = ProtocolType.objects.filter(
+        protocol_types = core.models.ProtocolType.objects.filter(
             molecule=None, apps_name__exact=app_name
         )
         for protocol_type in protocol_types:
-            if Protocols.objects.filter(type=protocol_type).exists():
-                protocols = Protocols.objects.filter(type=protocol_type).order_by(
+            if core.models.Protocols.objects.filter(type=protocol_type).exists():
+                protocols = core.models.Protocols.objects.filter(type=protocol_type).order_by(
                     "type"
                 )
                 for protocol in protocols:
                     data_prot = []
                     data_prot.append(protocol.get_name())
                     data_prot.append(protocol.pk)
-                    if AdditionaKitsLibPrepare.objects.filter(
+                    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(
                         protocol_id=protocol
                     ).exists():
                         data_prot.append("Defined")
@@ -251,11 +253,11 @@ def get_all_additional_kit_info(protocol_id):
         kit_info
     """
     kit_info = {}
-    protocol_obj = get_protocol_obj_from_id(protocol_id)
-    if AdditionaKitsLibPrepare.objects.filter(protocol_id=protocol_obj).exists():
-        kit_info["kit_heading"] = HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+    protocol_obj = core.utils.protocols.get_protocol_obj_from_id(protocol_id)
+    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(protocol_id=protocol_obj).exists():
+        kit_info["kit_heading"] = wetlab.config.HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
         kit_info["kit_data"] = []
-        kits = AdditionaKitsLibPrepare.objects.filter(
+        kits = wetlab.models.AdditionaKitsLibPrepare.objects.filter(
             protocol_id=protocol_obj
         ).order_by("kit_order")
         for kit in kits:
@@ -274,8 +276,8 @@ def get_additional_kit_obj_form_id(add_kit_id):
     Return:
         object of the additional kit or None
     """
-    if AdditionaKitsLibPrepare.objects.filter(pk__exact=add_kit_id).exists():
-        return AdditionaKitsLibPrepare.objects.filter(pk__exact=add_kit_id).last()
+    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(pk__exact=add_kit_id).exists():
+        return wetlab.models.AdditionaKitsLibPrepare.objects.filter(pk__exact=add_kit_id).last()
     else:
         return None
 
@@ -294,11 +296,11 @@ def get_additional_kits_used_in_sample(sample_id):
     """
     kit_data = {}
     kit_data["protocols_add_kits"] = {}
-    if LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
+    if wetlab.models.LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
         kit_data[
             "heading_add_kits"
-        ] = HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
-        library_preparation_items = LibPrepare.objects.filter(
+        ] = wetlab.config.HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
+        library_preparation_items = wetlab.models.LibPrepare.objects.filter(
             sample_id__pk__exact=sample_id
         ).order_by("protocol_id")
         for lib_prep in library_preparation_items:
@@ -306,7 +308,7 @@ def get_additional_kits_used_in_sample(sample_id):
             if protocol_name not in kit_data["protocols_add_kits"]:
                 kit_data["protocols_add_kits"][protocol_name] = []
 
-            kit_used_objs = AdditionalUserLotKit.objects.filter(lib_prep_id=lib_prep)
+            kit_used_objs = wetlab.models.AdditionalUserLotKit.objects.filter(lib_prep_id=lib_prep)
             for kit_used_obj in kit_used_objs:
                 data = kit_used_obj.get_additional_kit_info()
                 data.append(lib_prep.get_lib_prep_code())
@@ -330,9 +332,9 @@ def modify_fields_in_additional_kits(form_data, user):
     """
     saved_fields = {}
     protocol_id = form_data["protocol_id"]
-    protocol_obj = get_protocol_obj_from_id(protocol_id)
+    protocol_obj = core.utils.protocols.get_protocol_obj_from_id(protocol_id)
     saved_fields["protocol_name"] = protocol_obj.get_name()
-    saved_fields["heading"] = HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+    saved_fields["heading"] = wetlab.config.HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
 
     saved_fields["fields"] = []
     json_data = json.loads(form_data["add_kit_data"])
@@ -341,7 +343,7 @@ def modify_fields_in_additional_kits(form_data, user):
             continue
         kit_data = {}
 
-        kit_data["commercialKit_id"] = CommercialKits.objects.filter(
+        kit_data["commercialKit_id"] = core.models.CommercialKits.objects.filter(
             name__exact=row_data[4]
         ).last()
         kit_data["description"] = row_data[5]
@@ -354,7 +356,7 @@ def modify_fields_in_additional_kits(form_data, user):
             kit_data["kitName"] = row_data[1]
             kit_data["protocol_id"] = protocol_obj
             saved_fields["fields"].append(
-                AdditionaKitsLibPrepare.objects.create_additional_kit(
+                wetlab.models.AdditionaKitsLibPrepare.objects.create_additional_kit(
                     kit_data
                 ).get_all_kit_info()
             )
@@ -401,11 +403,13 @@ def set_additional_kits(form_data, user):
         kit_data = {}
         for i in range(len(kit_heading_names)):
             kit_data[kit_heading_names[i]] = json_data[row_index][i]
-        kit_data["protocol_id"] = get_protocol_obj_from_id(protocol_id)
-        kit_data["commercialKit_id"] = CommercialKits.objects.filter(
+        kit_data["protocol_id"] = core.utils.protocols.get_protocol_obj_from_id(protocol_id)
+        kit_data["commercialKit_id"] = core.models.CommercialKits.objects.filter(
             name__exact=kit_data["commercial_kit"]
         ).last()
         kit_data["user"] = user
-        AdditionaKitsLibPrepare.objects.create_additional_kit(kit_data)
+        wetlab.models.AdditionaKitsLibPrepare.objects.create_additional_kit(
+            kit_data
+        )
         kit_names.append(kit_data["kitName"])
     return kit_names
