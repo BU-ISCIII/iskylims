@@ -1,3 +1,4 @@
+# Generic imports
 import itertools
 import os
 import re
@@ -6,8 +7,9 @@ import time
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
-from wetlab.models import *
-from wetlab.config import *
+# Local imports
+import wetlab.models
+import wetlab.config
 
 
 def check_collection_index_file_format(input_file):
@@ -31,7 +33,7 @@ def check_collection_index_file_format(input_file):
     """
     with open(input_file, encoding="utf-8") as fh:
         read_data = fh.read()
-    for item_to_check in config.COLLECTION_INDEX_HEADING:
+    for item_to_check in wetlab.config.COLLECTION_INDEX_HEADING:
         if item_to_check not in read_data:
             return False
     return True
@@ -46,7 +48,7 @@ def check_collection_index_exists(collection_name):
     Return:
         True if exists on database , else if not
     """
-    if CollectionIndexKit.objects.filter(
+    if wetlab.models.CollectionIndexKit.objects.filter(
         collection_index_name__exact=collection_name
     ).exists():
         return True
@@ -145,15 +147,15 @@ def get_collection_settings(input_file):
 
 def get_collection_index_information(collection_index_id):
     collection_index_dict = {}
-    collection_index_obj = CollectionIndexKit.objects.get(pk=collection_index_id)
+    collection_index_obj = wetlab.models.CollectionIndexKit.objects.get(pk=collection_index_id)
 
     general_information = [collection_index_obj.get_collection_index_information()]
     collection_index_dict["general_information"] = general_information
 
-    if CollectionIndexValues.objects.filter(
+    if wetlab.models.CollectionIndexValues.objects.filter(
         collection_index_kit_id=collection_index_id
     ).exists():
-        index_list = CollectionIndexValues.objects.filter(
+        index_list = wetlab.models.CollectionIndexValues.objects.filter(
             collection_index_kit_id=collection_index_id
         )
 
@@ -306,7 +308,7 @@ def store_collection_kits_file(collection_file):
     f_extension = split_filename[2]
     fs_index_lib = FileSystemStorage()
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    index_directory = config.COLLECTION_INDEX_KITS_DIRECTORY
+    index_directory = wetlab.config.COLLECTION_INDEX_KITS_DIRECTORY
     if not os.path.exists(index_directory):
         os.makedirs(index_directory)
 
@@ -325,7 +327,7 @@ def store_collection_settings(collection_settings, file_name):
         collection_settings["adapters"] = [""] * 2
     elif len(collection_settings["adapters"]) == 1:
         collection_settings["adapters"].append("")
-    new_collection_settings = CollectionIndexKit(
+    new_collection_settings = wetlab.models.CollectionIndexKit(
         collection_index_name=collection_settings["name"],
         version=collection_settings["version"],
         plate_extension=collection_settings["plate_extension"],
@@ -340,7 +342,7 @@ def store_collection_settings(collection_settings, file_name):
 def store_collection_indexes(collection_index, new_collection_obj):
     # saving index values into database
     for row in collection_index:
-        index_to_store = CollectionIndexValues(
+        index_to_store = wetlab.models.CollectionIndexValues(
             collection_index_kit_id=new_collection_obj,
             default_well=row[0],
             index_7=row[1],
