@@ -8,8 +8,8 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
 # Local imports
-import wetlab.models
 import wetlab.config
+import wetlab.models
 
 
 def check_collection_index_file_format(input_file):
