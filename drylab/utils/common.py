@@ -1,10 +1,13 @@
 # Generic imports
 import datetime
-import django.core.files.storage
+
 import django.contrib.auth.models
-import django_utils.models
+import django.core.files.storage
+from django.contrib.sessions.models import Session
+from django.utils import timezone
 
 # Local imports
+import django_utils.models
 import drylab.config
 import drylab.models
 
@@ -224,8 +227,6 @@ def get_current_users():
     Return:
         User list
     """
-    from django.contrib.sessions.models import Session
-    from django.utils import timezone
 
     active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
     user_id_list = []
