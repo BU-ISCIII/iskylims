@@ -54,7 +54,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="addUserLotKit"/>
                     <div class="form-control required">
-                        <label class="col-sm-5 control-label" for="commercialKit" >Select the Commercial Kit name</label>
+                        <label class="col-sm-5 form-label" for="commercialKit" >Select the Commercial Kit name</label>
                         <div class="col-sm-7"><select class="form-control" required = "required"  name="commercialKit" id="commercialKit">
                                           				<option value="">Choose a value</option>
                                                        {% for value in defined_kits %}
@@ -67,7 +67,7 @@
 
                         <br>
                         <div class="form-control required">
-                            <label class="col-sm-5  control-label" for="barCode" >Enter the Lot barcode  </label>
+                            <label class="col-sm-5  form-label" for="barCode" >Enter the Lot barcode  </label>
                             <input type="text" id="barCode" required = "required"  class="barcodeinput" name="barCode"/>
                             <input type="button" value="OK" class="nextcontrol"/>
                             <h3 id="msg"/>
@@ -75,7 +75,7 @@
                         <br>
 
                         <div class="form-control required">
-                          <label class="col-sm-5 control-label" for="expirationDate" >Kit Expiration Date (DD-MM-YYYY)</label>
+                          <label class="col-sm-5 form-label" for="expirationDate" >Kit Expiration Date (DD-MM-YYYY)</label>
                           <div class="col-sm-5"><input class="form-control" type="date" required = "required"  name="expirationDate" value="" id="expirationDate"></div>
                     </div>  <!-- end from-group   -->
                     <br>

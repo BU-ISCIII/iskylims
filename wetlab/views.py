@@ -4049,7 +4049,7 @@ def define_sample_projects(request):
             error_message = wetlab.config.ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
-                "wetlab/createSampleProjects.html",
+                "wetlab/define_sample_projects.html",
                 {
                     "defined_samples_projects": defined_samples_projects,
                     "error_message": error_message,
@@ -4061,7 +4061,7 @@ def define_sample_projects(request):
         new_defined_sample_project = sample_project_name
         return render(
             request,
-            "wetlab/createSampleProjects.html",
+            "wetlab/define_sample_projects.html",
             {
                 "defined_samples_projects": defined_samples_projects,
                 "new_sample_project_id": new_sample_project_id,
@@ -4071,7 +4071,7 @@ def define_sample_projects(request):
 
     return render(
         request,
-        "wetlab/createSampleProjects.html",
+        "wetlab/define_sample_projects.html",
         {"defined_samples_projects": defined_samples_projects},
     )
 
@@ -4575,7 +4575,7 @@ def define_sample_projects_fields(request, sample_project_id):
         )
         return render(
             request,
-            "wetlab/defineSampleProjectFields.html",
+            "wetlab/define_sample_project_fields.html",
             {"sample_project_field_data": sample_project_field_data},
         )
 
@@ -4589,7 +4589,7 @@ def define_sample_projects_fields(request, sample_project_id):
             if "ERROR" in schema:
                 return render(
                     request,
-                    "wetlab/defineSampleProjectFields.html",
+                    "wetlab/define_sample_project_fields.html",
                     {
                         "sample_project_data": sample_project_data,
                         "error_message": schema["ERROR"],
@@ -4604,7 +4604,7 @@ def define_sample_projects_fields(request, sample_project_id):
             if "ERROR" in result:
                 return render(
                     request,
-                    "wetlab/defineSampleProjectFields.html",
+                    "wetlab/define_sample_project_fields.html",
                     {
                         "error_message": result["ERROR"],
                         "sample_project_data": sample_project_data,
@@ -4612,7 +4612,7 @@ def define_sample_projects_fields(request, sample_project_id):
                 )
             return render(
                 request,
-                "wetlab/defineSampleProjectFields.html",
+                "wetlab/define_sample_project_fields.html",
                 {"schema_result": result},
             )
         return render(
@@ -4624,12 +4624,10 @@ def define_sample_projects_fields(request, sample_project_id):
         if not core.utils.samples.check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/define_sample_project_fields.html",
                 {
-                    "content": [
-                        "The requested Protocol does not exist",
-                        "Create the protocol name before assigning custom protocol parameters.",
-                    ]
+                    "error_message": 
+                        "The requested Sample project does not exist",
                 },
             )
 
@@ -4638,7 +4636,7 @@ def define_sample_projects_fields(request, sample_project_id):
         )
         return render(
             request,
-            "wetlab/defineSampleProjectFields.html",
+            "wetlab/define_sample_project_fields.html",
             {"sample_project_data": sample_project_data},
         )
 
@@ -6014,7 +6012,7 @@ def search_user_lot_kit(request):
         ) and "exclude_runout" not in request.POST:
             return render(
                 request,
-                "wetlab/searchUserLotKit.html",
+                "wetlab/search_user_lot_kit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -6029,7 +6027,7 @@ def search_user_lot_kit(request):
             error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request,
-                "wetlab/searchUserLotKit.html",
+                "wetlab/search_user_lot_kit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -6044,7 +6042,7 @@ def search_user_lot_kit(request):
             error_message = wetlab.config.ERROR_NO_USER_LOT_KIT_DEFINED
             return render(
                 request,
-                "wetlab/searchUserLotKit.html",
+                "wetlab/search_user_lot_kit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -6057,14 +6055,14 @@ def search_user_lot_kit(request):
             )
             return render(
                 request,
-                "wetlab/searchUserLotKit.html",
+                "wetlab/search_user_lot_kit.html",
                 {"display_user_kit_list": display_user_kit_list},
             )
         elif len(user_kits_objs) == 0:
             error_message = wetlab.config.ERROR_NO_MATCHES_FOR_USER_LOT_KIT
             return render(
                 request,
-                "wetlab/searchUserLotKit.html",
+                "wetlab/search_user_lot_kit.html",
                 {
                     "protocol_list": protocol_list,
                     "platform_list": platform_list,
@@ -6077,7 +6075,7 @@ def search_user_lot_kit(request):
     else:
         return render(
             request,
-            "wetlab/searchUserLotKit.html",
+            "wetlab/search_user_lot_kit.html",
             {"protocol_list": protocol_list, "platform_list": platform_list},
         )
 

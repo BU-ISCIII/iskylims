@@ -44,7 +44,7 @@
                             <input type="hidden" name="patient_id" value="{{defined_patient.patient_id}}"/>
                             {% for f_name in defined_patient.fields %}
                                 <div class="form-control required">
-                                    <label class="col-sm-5  control-label" for="{{f_name}}" >{{f_name}}</label>
+                                    <label class="col-sm-5  form-label" for="{{f_name}}" >{{f_name}}</label>
                                     <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="{{f_name}}" id="{{f_name}}" size="80" maxlength="80"></div>
                                 </div>  <!-- end from-group   -->
                             {% endfor %}
@@ -139,23 +139,23 @@
                                                 <div class="card-header"><h3>Mandatory Patient data. </h3></div>
                                                 <div class="card-body" >
                                                     <div class="form-control required">
-                                                        <label class="col-sm-5  control-label" for="patientName" ><td> {{patient_definition_data.p_name}} </td> </label>
+                                                        <label class="col-sm-5  form-label" for="patientName" ><td> {{patient_definition_data.p_name}} </td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="patientName" id="patientName" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <BR>
                                                     <div class="form-control required">
-                                                        <label class="col-sm-5 control-label" for="patientSurname" >{{patient_definition_data.p_surname}}</label>
+                                                        <label class="col-sm-5 form-label" for="patientSurname" >{{patient_definition_data.p_surname}}</label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="patientSurname" id="patientSurname" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <BR>
                                                     <div class="form-control required">
-                                                        <label class="col-sm-5 control-label" for="patientCode" >Patient Code</label>
+                                                        <label class="col-sm-5 form-label" for="patientCode" >Patient Code</label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="patientCode" id="patientCode" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <BR>
                                                     <br>
                                                     <div class="form-control required">
-                                                        <label class="col-sm-5 control-label" for="patientSex" >Patient Sex</label>
+                                                        <label class="col-sm-5 form-label" for="patientSex" >Patient Sex</label>
                                                         <div class="col-sm-6">
                                                             <select class="form-control" id="dropdown" name="patientSex">
                                                                 {% for value in patient_definition_data.sex_values %}
@@ -172,7 +172,7 @@
                                                     <div class="card-body" >
                                                         <p> If patient belongs to a project, select it from the options below</p>
                                                         <div class="form-control">
-                                                            <label class="col-sm-5 control-label" for="patientProject" >Patient Project</label>
+                                                            <label class="col-sm-5 form-label" for="patientProject" >Patient Project</label>
                                                             <div class="col-sm-6">
                                                                 <select class="form-control" id="dropdown" name="patientProject">
                                                                     <option value="None">None</option>
@@ -191,31 +191,31 @@
                                                 <div class="card-header"><h3>Optional data for patient. </h3></div>
                                                 <div class="card-body" >
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="address" >Patient Address </label>
+                                                        <label class="col-sm-5  form-label" for="address" >Patient Address </label>
                                                         <div class="col-sm-5"><textarea rows="2" cols="25" name="address" form="defineNewPatient"></textarea></div>
                                                     </div>  <!-- end from-group   -->
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="phone" >Patient Phone Number </label>
+                                                        <label class="col-sm-5  form-label" for="phone" >Patient Phone Number </label>
                                                         <div class="col-sm-5"><input class="form-control" type="text" name="phone" id="phone" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="email" >Patient email </label>
+                                                        <label class="col-sm-5  form-label" for="email" >Patient email </label>
                                                         <div class="col-sm-5"><input class="form-control" type="text" name="email" id="email" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="birthday" >Patient Birthday </label>
+                                                        <label class="col-sm-5  form-label" for="birthday" >Patient Birthday </label>
                                                         <div class="col-sm-5"><input class="form-control" type="date" name="birthday" id="birthday" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="smoker" >Patient is Smoker? </label>
+                                                        <label class="col-sm-5  form-label" for="smoker" >Patient is Smoker? </label>
                                                         <div class="col-sm-5"><input class="form-control" type="text" name="smoker" id="smoker" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="notificationPreference" >Notification Preferences</label>
+                                                        <label class="col-sm-5  form-label" for="notificationPreference" >Notification Preferences</label>
                                                         <div class="col-sm-5"><input class="form-control" type="text" name="notificationPreference" id="notificationPreference" size="80" maxlength="80"></div>
                                                     </div>  <!-- end from-group   -->
                                                     <div class="form-control">
-                                                        <label class="col-sm-5  control-label" for="comments" >Comments </label>
+                                                        <label class="col-sm-5  form-label" for="comments" >Comments </label>
                                                         <div class="col-sm-5"><textarea rows="2" cols="25" name="comments" form="defineNewPatient"></textarea></div>
 
                                                     </div>  <!-- end from-group   -->
@@ -252,7 +252,7 @@
                                                 <div class="card-header"><h3  style="text-align:center">Upload the excel file to define a batch of Patients. </h3></div>
                                                 <div class="card-body" >
                                                     <div class="form-control required">
-                                                        <label class="col-sm-5  control-label" for="patientExcel" ><td> Upload Patient file</td> </label>
+                                                        <label class="col-sm-5  form-label" for="patientExcel" ><td> Upload Patient file</td> </label>
                                                         <div class="col-sm-5"><input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="patientExcel" id="patientExcel" ></div>
                                                     </div>  <!-- end from-group   -->
                                                     <BR>

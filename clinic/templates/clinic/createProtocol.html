@@ -26,7 +26,7 @@ clinic{% extends 'clinic/base.html' %}
                         {% csrf_token %}
                         <div class="form-control required">
                             <input type="hidden" name="action" value="addNewProtocol"/>
-                            <label class="col-sm-5 control-label">Select Protocol Type</label>
+                            <label class="col-sm-5 form-label">Select Protocol Type</label>
 
                             <div class="col-sm-6"><select class="form-control"  required = "required" name="protocolType" id="protocolType">
                                            				<option value="">Choose a value</option>
@@ -37,10 +37,10 @@ clinic{% extends 'clinic/base.html' %}
                                                   </select>
                             </div>  <!-- end select input -->
                             <br><br><p></p>
-                            <label class="col-sm-5 control-label">Define new Protocol name</label>
+                            <label class="col-sm-5 form-label">Define new Protocol name</label>
                             <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="newProtocolName" size="80"></div>
                             <br><br><br>
-                            <label class="col-sm-5 control-label">Description</label>
+                            <label class="col-sm-5 form-label">Description</label>
                             <div class="col-sm-6">
                                 <textarea rows="2" cols="25" name="description" form="addNewProtocol">Enter Protocol description here...</textarea>
                             </div>

@@ -25,22 +25,21 @@
             <div class="row my-2">
                 <div class="col-sm-6 offset-3" >
                     <div class="card ">
-                        <div class="card-header"><h3 style="text-align:center">New sample type has been added</h3> </div>
+                        <div class="card-header"><h3 class="text-center">New sample type has been added</h3> </div>
                         <div class="card-body">
                             <p>Sample type :</p> 
                             <p>{{ sample_types.new_defined_sample_type }} has been recorded</p>
                             <button type="button" class="btn btn-outline-secondary float-end" onclick="window.location.href = '/wetlab/defineTypeOfSamples';">Define new type of sample</button>
-
                         </div>  
                     </div>
-                </div> <!--// end col-sm-6 -->
+                </div> 
             </div>
         </div>
     {% else %}
         <div class="container">
             <div class="row my-2">
-                <div class="col-sm-6" >
-                    <div class="card">
+                <div class="col d-flex align-items-stretch" >
+                    <div class="card mb-2">
                         <div class="card-header"><h3>Define a new type of sample</h3> </div>
                         <form method="post" enctype="multipart/form-data" name="addNewSampleType" id="addNewSampleType">
                             {% csrf_token %}
@@ -69,8 +68,8 @@
                     </div>
                 </div>
                 {% if sample_types.defined_sample_types %}
-                    <div class="col-sm-6" >
-                       <div class="card ">
+                    <div class="col d-flex align-items-stretch" >
+                       <div class="card mb-2">
                         <div class="card-header"><h3>Type of Samples already defined</h3></div>
                         <div class="card-body">
                             <table id="s_table" class="table table-striped table-bordered">
@@ -92,6 +91,7 @@
                     <script type="text/javascript">
                         $(document).ready(function() {
                             $('#s_table').DataTable({
+                                dom: 'frtip',
                                 responsive: true,
                             });
                         });

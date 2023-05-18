@@ -695,7 +695,7 @@
                                             {% csrf_token %}
                                             <div class="form-control required">
                                                 <input type="hidden" name="action" value="importsamplesheet"/>
-                                                <label class="col-sm-6 control-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
+                                                <label class="col-sm-6 form-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
                                                 <div class="col-sm-6"><input class="form-control" type="file" required = "required" accept ="text/csv" id="uploadfile"  name="uploadfile" size="80"><br>
                                                     <p id="error1" style="display:none; color:#FF0000;">
                                                         Invalid File Extension. It Must Be "csv".
@@ -714,7 +714,7 @@
                                                     </div>
                                                 {% endif %}
                                                 {% if upload_file.index_adapter %}
-                                                    <label class="col-sm-6 control-label" for="index_adapter" >Select Index adapters</label>
+                                                    <label class="col-sm-6 form-label" for="index_adapter" >Select Index adapters</label>
                                                     <div class="col-sm-4">
                                                         <select class="form-control" name="index_adapter" id="index_adapter">
                                                             <option value="">Choose a value</option>
@@ -727,7 +727,7 @@
 
                                                 {% endif %}
                                                 <br><br>
-                                                <label class="col-sm-6 control-label" for="instrument" >Select Sequencer Platform</label>
+                                                <label class="col-sm-6 form-label" for="instrument" >Select Sequencer Platform</label>
                                                 <div class="col-sm-4">
                                                     {% for platform in samples_in_lib_prep.configuration_platform %}
                                                         {% if forloop.first %}
@@ -740,7 +740,7 @@
                                                     <input id="radio-nextseq" type="radio" name="category" value="2" />NextSeq Platform -->
                                                     <br><br>
                                                 </div>
-                                                <label class="col-sm-6 control-label" for="instrument" >Select Configuration</label>
+                                                <label class="col-sm-6 form-label" for="instrument" >Select Configuration</label>
                                                 <div class="col-sm-4">
 
                                                         {% for plat , conf_opt in samples_in_lib_prep.configuration_platform_option %}

@@ -134,26 +134,26 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="searchsample"/>
             <div class="form-control">
-                  <label class="col-sm-5  control-label" for="samplename" >Fill the sample name </label>
+                  <label class="col-sm-5  form-label" for="samplename" >Fill the sample name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="samplename" id="samplename" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <BR>
 
              <div class="form-control">
-                <label class="col-sm-5 control-label" for="startdate" >From Date (DD-MM-YYYY)</label>
+                <label class="col-sm-5 form-label" for="startdate" >From Date (DD-MM-YYYY)</label>
                 <div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <br>
              <div class="form-control">
-                <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY)</label>
+                <label class="col-sm-5 form-label" for="enddate" >End Date (DD-MM-YYYY)</label>
                 <div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <br>
              <br>
             <div class="form-control">
-                  <label class="col-sm-5  control-label" for="username" >Search from user name</label>
+                  <label class="col-sm-5  form-label" for="username" >Search from user name</label>
                   {% if request.user|has_group:"WetlabManager" %}
                     <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
                   {% else %}
