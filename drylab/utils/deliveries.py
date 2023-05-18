@@ -1,12 +1,13 @@
 # Generic imports
 import datetime
+
 import django.core.mail
 
 # Local imports
-import drylab.models
-import drylab.utils.resolutions
-import drylab.utils.pipelines
 import drylab.config
+import drylab.models
+import drylab.utils.pipelines
+import drylab.utils.resolutions
 
 
 def prepare_delivery_form(resolution_id):

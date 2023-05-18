@@ -1,15 +1,16 @@
 # Generic imports
-from datetime import date, datetime
 import json
+from datetime import date, datetime
 from smtplib import SMTPException
-import django.core.mail
+
 import django.contrib.auth.models
+import django.core.mail
 
 # Local imports
-import drylab.models
 import drylab.config
-import drylab.utils.req_services
+import drylab.models
 import drylab.utils.pipelines
+import drylab.utils.req_services
 
 
 def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
