@@ -4239,23 +4239,23 @@ def add_commercial_kit(request):
         if core.utils.commercial_kits.get_commercial_kit_id(request.POST["kitName"]):
             return render(
                 request,
-                "wetlab/addCommercialKit.html",
+                "wetlab/add_commercial_kit.html",
                 {
                     "defined_protocols": defined_protocols,
-                    "invalid_name": request.POST["kitName"],
+                    "error_message": "Commercial kit " + request.POST["kitName"] + " is already defined"
                 },
             )
         new_kit = core.utils.commercial_kits.store_commercial_kit(request.POST)
         new_kit_data = core.utils.commercial_kits.get_commercial_kit_basic_data(new_kit)
         return render(
             request,
-            "wetlab/addCommercialKit.html",
+            "wetlab/add_commercial_kit.html",
             {"new_kit_data": new_kit_data},
         )
     else:
         return render(
             request,
-            "wetlab/addCommercialKit.html",
+            "wetlab/add_commercial_kit.html",
             {
                 "defined_protocols": defined_protocols,
                 "defined_platforms": defined_platforms,
