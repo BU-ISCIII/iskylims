@@ -2,46 +2,10 @@
 {% load static %}
 {% block content %}
 
-<!--========== TOP MENU ==========-->
-<header class="header">
-    <nav id="navbar" class="navbar navbar-expand-lg fixed-top navbar-light bg-menu">
-        <div class="container-md">
-            <a class="navbar-brand" href="/">
-                <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse me-auto me-lg-0" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">HOME</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            ABOUT US
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="/background">Background</a></li>
-                            <li><a class="dropdown-item" href="https://github.com/BU-ISCIII">BU-ISCIII</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/user_creation">REGISTER</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/contact">CONTACT</a>
-                    </li>
-                </ul>
-            </div>
-            </div>
-    </nav>
-</header>
-<!--========== END TOP MENU ==========-->
+{% include "core/menu.html" %}
 
 <section class="iskylims d-flex flex-column fill-height">
-    <div class="container-md d-flex flex-column fill-height">
+    <div class="container-md">
         {% include 'registration/login_inline.html' %}
         <div class="row mt-3 pb-5">
             {% for app , text in apps_in_iskylims %}
