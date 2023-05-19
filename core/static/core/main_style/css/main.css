@@ -120,7 +120,7 @@ a:focus, a:hover, a:active {
 }
 .footer .footer-content {
     background: var(--color-white);
-    padding: 30px 0 30px 0;
+    padding: 10px 0 0 0;
 }
 
 /*--------------------------------------------------------------
