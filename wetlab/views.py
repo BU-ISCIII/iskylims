@@ -4275,10 +4275,10 @@ def add_user_lot_commercial_kit(request):
         ):
             return render(
                 request,
-                "wetlab/addUserLotCommercialKit.html",
+                "wetlab/add_user_lot_commercial_kit.html",
                 {
                     "defined_kits": defined_kits,
-                    "invalid_name": request.POST["nickName"],
+                    "error_message": request.POST["nickName"] + " is already defined"
                 },
             )
         new_lot_kit = core.utils.commercial_kits.store_lot_user_commercial_kit(
@@ -4291,13 +4291,13 @@ def add_user_lot_commercial_kit(request):
         )
         return render(
             request,
-            "wetlab/addUserLotCommercialKit.html",
+            "wetlab/add_user_lot_commercial_kit.html",
             {"new_lot_kit_data": new_lot_kit_data},
         )
     else:
         return render(
             request,
-            "wetlab/addUserLotCommercialKit.html",
+            "wetlab/add_user_lot_commercial_kit.html",
             {"defined_kits": defined_kits},
         )
 
