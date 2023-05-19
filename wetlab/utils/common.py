@@ -1,3 +1,4 @@
+# Generic imports
 import logging
 import os
 import re
@@ -11,10 +12,10 @@ from django.contrib.auth.models import Group, User
 from django.core.mail import send_mail
 from smb.SMBConnection import SMBConnection
 
-from core.models import SequencerInLab, SequencingPlatform
-from wetlab import config
-from wetlab.models import (ConfigSetting, RunningParameters,
-                                    RunProcess, RunStates, SambaConnectionData)
+# Local imports
+import core.models
+import wetlab.config
+import wetlab.models
 
 
 def get_configuration_value(parameter_name):
@@ -29,8 +30,8 @@ def get_configuration_value(parameter_name):
         parameter_value
     """
     parameter_value = "False"
-    if ConfigSetting.objects.filter(configuration_name__exact=parameter_name).exists():
-        parameter_obj = ConfigSetting.objects.filter(
+    if wetlab.models.ConfigSetting.objects.filter(configuration_name__exact=parameter_name).exists():
+        parameter_obj = wetlab.models.ConfigSetting.objects.filter(
             configuration_name__exact=parameter_name
         ).last()
         parameter_value = parameter_obj.get_configuration_value()
@@ -48,17 +49,17 @@ def get_run_in_same_year_to_compare(run_object):
         same_run_in_year run_object list
     """
     # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
-    chem_high_mid = RunningParameters.objects.get(
+    chem_high_mid = wetlab.models.RunningParameters.objects.get(
         run_name_id__exact=run_object
     ).get_run_chemistry()
-    run_different_chemistry = RunningParameters.objects.all().exclude(
+    run_different_chemistry = wetlab.models.RunningParameters.objects.all().exclude(
         chemistry__exact=chem_high_mid
     )
     run_year = run_object.get_run_year()
 
     start_date = str(run_year) + "-1-1"
     end_date = str(run_year) + "-12-31"
-    same_run_in_year = RunProcess.objects.filter(
+    same_run_in_year = wetlab.models.RunProcess.objects.filter(
         run_date__range=(start_date, end_date)
     ).exclude(run_name__in=run_different_chemistry)
     return same_run_in_year
@@ -80,8 +81,8 @@ def get_samba_connection_data():
         samba_data
     """
     samba_data = {}
-    if SambaConnectionData.objects.all().exists():
-        samba_connection_obj = SambaConnectionData.objects.all().last()
+    if wetlab.models.SambaConnectionData.objects.all().exists():
+        samba_connection_obj = wetlab.models.SambaConnectionData.objects.all().last()
         samba_data = samba_connection_obj.get_samba_data()
     return samba_data
 
@@ -96,10 +97,10 @@ def save_samba_connection_data(data):
     Return:
         samba_connection_obj
     """
-    if not SambaConnectionData.objects.all().exists():
-        samba_connection_obj = SambaConnectionData.objects.create()
+    if not wetlab.models.SambaConnectionData.objects.all().exists():
+        samba_connection_obj = wetlab.models.SambaConnectionData.objects.create()
     else:
-        samba_connection_obj = SambaConnectionData.objects.all().last()
+        samba_connection_obj = wetlab.models.SambaConnectionData.objects.all().last()
     samba_connection_obj.update_data(data)
     return samba_connection_obj
 
@@ -217,7 +218,7 @@ def get_experiment_name_from_file(l_run_parameter):
     """
 
     experiment_name = find_xml_tag_text(
-        l_run_parameter, config.EXPERIMENT_NAME_TAG
+        l_run_parameter, wetlab.config.EXPERIMENT_NAME_TAG
     )
 
     return experiment_name
@@ -231,10 +232,10 @@ def get_configuration_from_database(configuration_name):
         configuration_name      # configuration settings name
     """
     configuration_value = ""
-    if ConfigSetting.objects.filter(
+    if wetlab.models.ConfigSetting.objects.filter(
         configuration_name__exact=configuration_name
     ).exists():
-        configuration_settings_obj = ConfigSetting.objects.filter(
+        configuration_settings_obj = wetlab.models.ConfigSetting.objects.filter(
             configuration_name__exact=configuration_name
         ).last()
         configuration_value = configuration_settings_obj.get_configuration_value()
@@ -284,7 +285,7 @@ def is_wetlab_manager(request):
     Return:
         Return True if the user belongs to Wetlab Manager, False if not
     """
-    groups = Group.objects.filter(name=config.WETLAB_MANAGER).last()
+    groups = Group.objects.filter(name=wetlab.config.WETLAB_MANAGER).last()
     if groups not in request.user.groups.all():
         return False
     return True
@@ -322,14 +323,14 @@ def get_project_search_fields_form():
     project_form_data["run_states"] = []
     project_form_data["available_platforms"] = []
     project_form_data["available_sequencers"] = []
-    run_states = RunStates.objects.all()
+    run_states = wetlab.models.RunStates.objects.all()
     for r_state in run_states:
         project_form_data["run_states"].append(r_state.get_run_state_name())
 
-    platforms = SequencingPlatform.objects.all()
+    platforms = core.models.SequencingPlatform.objects.all()
     for platform in platforms:
         project_form_data["available_platforms"].append(platform.get_platform_name())
-    sequencers = SequencerInLab.objects.all()
+    sequencers = core.models.SequencerInLab.objects.all()
     for sequencer in sequencers:
         project_form_data["available_sequencers"].append(sequencer.get_sequencer_name())
 
@@ -342,14 +343,14 @@ def get_run_search_fields_form():
     run_form_data["run_states"] = []
     run_form_data["available_platforms"] = []
     run_form_data["available_sequencers"] = []
-    run_states = RunStates.objects.all()
+    run_states = wetlab.models.RunStates.objects.all()
     for r_state in run_states:
         run_form_data["run_states"].append(r_state.get_run_state_name())
 
-    platforms = SequencingPlatform.objects.all()
+    platforms = core.models.SequencingPlatform.objects.all()
     for platform in platforms:
         run_form_data["available_platforms"].append(platform.get_platform_name())
-    machines = SequencerInLab.objects.all()
+    machines = core.models.SequencerInLab.objects.all()
     for machine in machines:
         run_form_data["available_sequencers"].append(machine.get_sequencer_name())
 
@@ -364,15 +365,15 @@ def save_database_configuration_value(configuration_name, configuration_value):
         configurationName       # configuration setting name
         configuration_value     # value for this configuration settings
     """
-    if ConfigSetting.objects.filter(
+    if wetlab.models.ConfigSetting.objects.filter(
         configuration_name__exact=configuration_name
     ).exists():
-        config_settings_obj = ConfigSetting.objects.filter(
+        config_settings_obj = wetlab.models.ConfigSetting.objects.filter(
             configuration_name__exact=configuration_name
         ).last()
         config_settings_obj.set_configuration_value(configuration_value)
     else:
-        config_settings_obj = ConfigSetting.objects.create_config_setting(
+        config_settings_obj = wetlab.models.ConfigSetting.objects.create_config_setting(
             configuration_name, configuration_value
         )
     return config_settings_obj
@@ -397,17 +398,17 @@ def logging_errors(string_text, showing_traceback, print_on_screen):
     logger = logging.getLogger(__name__)
     logger.error("-----------------    ERROR   ------------------")
     logger.error(string_text)
-    if ConfigSetting.objects.filter(
+    if wetlab.models.ConfigSetting.objects.filter(
         configuration_name__exact="SENT_EMAIL_ON_ERROR"
     ).exists():
-        email_on_error_obj = ConfigSetting.objects.filter(
+        email_on_error_obj = wetlab.models.ConfigSetting.objects.filter(
             configuration_name__exact="SENT_EMAIL_ON_ERROR"
         ).last()
         if email_on_error_obj.get_configuration_value() == "TRUE":
-            if ConfigSetting.objects.filter(
+            if wetlab.models.ConfigSetting.objects.filter(
                 configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
             ).exists():
-                email_on_notification_obj = ConfigSetting.objects.filter(
+                email_on_notification_obj = wetlab.models.ConfigSetting.objects.filter(
                     configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
                 ).last()
                 email_notification = email_on_notification_obj.get_configuration_value()
