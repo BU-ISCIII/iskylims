@@ -6,28 +6,40 @@
     --color-bkg-menu-hover: #f8f8f8;
     --color-border-bottom: #ccf5ff;
     --color-white: #ffffff;
-    --color-background: #ccf5ff;
+    --color-background: #f8f8f8;
+    --font-primary: 'Source Sans Pro', sans-serif;
     --font-secondary: 'Poppins', sans-serif;
 }
 
 
 .font-secondary { font-family: var(--font-secondary) !important; }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
 .iskylims {
   width: 100%;
   min-height: 50vh;
-  background:  #f8f8f8;
+  background: var(--color-background);
   background-size: cover;
   position: relative;
-  padding: 20px 0 0;
-  
+  padding: 20px 0 20px 0;
+  flex: 1;
 }
 
 
 @media all and (min-width: 992px) {
     .navbar .nav-item .dropdown-menu{ display: none; }
-    .navbar .nav-item:hover .nav-link{   }
     .navbar .nav-item:hover .dropdown-menu{ display: block; }
     .navbar .nav-item .dropdown-menu{ margin-top:0; }
     .navbar a:hover:before, .navbar li:hover > a:before, .navbar .active:before {
@@ -55,10 +67,10 @@
 .footer {
     color: var(--color-black);
     font-size: 14px;
-}
-.footer {
+    margin-top: auto;
     z-index:1000;
 }
+
 .footer .footer-logo {
     width: 250px;
     height: auto;

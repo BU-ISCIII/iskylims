@@ -1,37 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>iSkyLIMS</title>
-        <meta name="iskylims" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        {% load static %}
-        <!-- GLOBAL STYLES -->
-        <link href="{% static "core/vendor/bootstrap-icons/bootstrap-icons.css" %}" rel="stylesheet" type="text/css"/>
-        <link href="{% static "core/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-        <link href="{% static "core/main_style/css/main.css" %}" rel="stylesheet" type="text/css"/>
-        <link href="{% static "core/custom/css/core_custom.css" %}" rel="stylesheet" type="text/css"/>
-        
-        <!--   Jquery scripts   -->
-        <script src="{% static 'core/vendor/jquery/js/jquery-3.6.4.min.js' %}"></script>      
-        
-    </head>
-    <body id="body" class="d-flex flex-column min-vh-100">
-        <div class="bg-color-sky-light">
-            <div class="container content-lg fill-height">
 
-                {% block content %}
-      
-                {% endblock %}
-            </div> 
-        </div> 
+<head>
+    <meta charset="utf-8">
+    <title>iskylims</title>
+    <meta name="iskylims" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% load static %}
+    <!-- global styles -->
+    <link href="{% static  'core/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'core/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'core/main_style/css/main.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'core/custom/css/core_custom.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- js scripts   -->
+    <script src="{% static 'core/vendor/jquery/js/jquery-3.6.4.min.js' %}"></script>
+    <script src="{% static 'core/main_style/js/main.js' %}"></script>
+    <script src="{% static 'core/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</head>
+
+<body id="body">
+    <div class="wrapper">
+        {% block content %}
+
+        {% endblock %}
         {% include "core/footer.html" %}
-
         <!-- Back To Top -->
-        <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-        
-        <script src="{% static 'core/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-        <!-- Template Main JS File -->
-        <script src="{% static 'core/main_style/js/main.js' %}"></script>
-  </body>
+        <a href="#" class="scroll-top"><i class="bi bi-arrow-up-short"></i></a>
+    </div>
+</body>
+
 </html>
