@@ -87,11 +87,11 @@ a:focus, a:hover, a:active {
     .navbar .nav-item:hover .dropdown-menu{ 
       display: block; 
     }
-    .navbar a:hover:before, .navbar li:hover > a:before, .navbar .active:before {
+    .navbar li:hover > a:before, .navbar .active:before {
         visibility: visible;
         transform: scaleX(0.7);
     }
-    .navbar a:hover, .navbar .active, .navbar .active:focus, .navbar li:hover > a {
+    .navbar .active, .navbar .active:focus, .navbar li:hover > a {
         color: var(--color-primary);
         background: var(--color-white);
         border-bottom: 2px solid var(--color-border-bottom);
