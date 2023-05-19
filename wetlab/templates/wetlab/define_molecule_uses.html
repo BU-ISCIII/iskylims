@@ -81,15 +81,15 @@
                             </div>  
                         </div>
                         {% if molecule_use_data.defined_molecule_use|length > 7 %}
-                        <script type="text/javascript">
-                            $(document).ready(function() {
-                                $('#m_table').DataTable({
-                                    dom:"frtip",
-                                    responsive: true,
+                            <script type="text/javascript">
+                                $(document).ready(function() {
+                                    $('#m_table').DataTable({
+                                        dom:"frtip",
+                                        responsive: true,
+                                    });
                                 });
-                            });
-                        </script>
-                    {% endif %}
+                            </script>
+                        {% endif %}
                     </div>  
                 {% endif %}
             </div>

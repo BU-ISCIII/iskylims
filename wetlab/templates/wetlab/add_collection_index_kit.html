@@ -1,0 +1,118 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims">
+    {% if error_message %}
+        <div class="row my-2">
+            <div class="col-sm-7 offset-3">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                    <div class="card-body">
+                        <h4>{{error_message}}</h4>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    {% endif %}
+
+    {% if collection_index_information %}
+        <div class="row my-2">
+            <div class="col-sm-6 offset-3" >
+            <div class="card ">
+                <div class="card-header">New Collection Index Kit has been added </div>
+                <div class="card-body">
+                    <p class="text-center mb-3">{{ collection_index_information.collection_index_names }}  has been succesfully stored</p>
+                    <p class="mb-2">Click on the "Add new collection kit" button  for adding a new kit</p>
+                        <button type="button" class="btn btn-outline-secondary float-end" onclick="window.location.href = '/wetlab/addCollectionIndexKit';">Add new collection kit</button>
+                </div> 
+
+            </div>
+        </div> 
+    {% else %}
+        <div class="row my-2">
+            <div class="col" >
+                <div class="card ">
+                    <div class="card-header"><h3>Add a new collection index kit</h3> </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" name="addCollectionIndexKit" id="addCollectionIndexKit" class="form-horizontal">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="addCollectionIndexKit"/>
+                            <div class="form-control required">
+                                <label class="col form-label">Upload Collection Index kit file</label>
+                                <div class="col"><input class="form-control" required = "required" type="file" id="upfile" name="newCollectionIndexFile" size="80"></div>
+                                <BR> <BR> <BR>
+                            </div>
+                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
+                        </form>
+                    </div>  
+                    <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                    <SCRIPT>
+                        //gets the element by its id
+                        var myFile = document.getElementById('upfile');
+                        //binds to onchange event of the input field
+                        myFile.addEventListener('change', function() {
+                            var max_size = 20480 // 20 KB
+                            //this.files[0].size gets the size of your file.
+                            if (this.files[0].size > max_size) {
+                                alert("Maximun size of the file is 20 KB ");
+                                document.getElementById("btnSubmit").disabled = true;
+                            }
+                            else {
+                                document.getElementById("btnSubmit").disabled = false;
+                            }
+                        });
+                    </SCRIPT>
+                </div>
+            </div> 
+            <div class="col" >
+                <div class="card ">
+                    <div class="card-header"><h3>Collection Index Kit defined</h3></div>
+                    <class="card-body">
+                        {% if list_of_collection_index.collection_index %}
+                            <table class="table table-hover" id="c_table">
+                                <thead>
+                                    <tr>
+                                        <th>Collection Index  Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for  key, value in list_of_collection_index.collection_index %}
+                                        <tr>
+                                            <td><a href="/wetlab/DisplayCollectionIndex={{ key }}">{{ value }}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% if  list_of_collection_index.collection_index|length > 7 %}
+                                <script type="text/javascript">
+                                    $(document).ready(function() {
+                                        $('#c_table').DataTable({
+                                            dom:"frtip",
+                                            responsive: true,
+                                        });
+                                    });
+                                </script>
+                            {% endif %}
+                        {% else %}
+                            No Collection Index kit has been defined so far
+                        {% endif %}
+                    </div>  
+                </div>
+            </div> <!--// end col-sm-4  -->
+        </div> <!--// end row -->
+    {% endif %}
+    <!--script to disable the submit button -->
+    <script>
+        $(document).ready(function () {
+            $("#getSample").submit(function (e) {
+                $("#btnSubmit").attr("disabled", true);
+                return true;
+            });
+        });
+    </script>
+ 
+</section>
+{% endblock %}
