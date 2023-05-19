@@ -86,7 +86,7 @@ def configuration_samba(request):
     if request.method == "POST" and (request.POST["action"] == "sambaconfiguration"):
         # reload configuration samba settings
         samba_user_field = {}
-        for field in SAMBA_CONFIGURATION_FIELDS:
+        for field in wetlab.config.SAMBA_CONFIGURATION_FIELDS:
             # set values for switch fields
             try:
                 if request.POST[field] == "on":
@@ -129,13 +129,13 @@ def configuration_test(request):
         config_file = os.path.join(
             settings.BASE_DIR, "wetlab", "config.py"
         )
-        test_results["iSkyLIMS_settings"] = get_iSkyLIMS_settings()
-        test_results["config_file"] = get_config_file(config_file)
-        test_results["attr_files"] = get_files_attribute(
+        test_results["iSkyLIMS_settings"] = wetlab.utils.test_conf.get_iSkyLIMS_settings()
+        test_results["config_file"] = wetlab.utils.test_conf.get_config_file(config_file)
+        test_results["attr_files"] = wetlab.utils.test_conf.get_files_attribute(
             os.path.join(settings.MEDIA_ROOT, "wetlab")
         )
-        test_results["database_access"] = check_access_database()
-        test_results["samba_connection"] = check_samba_connection()
+        test_results["database_access"] = wetlab.utils.test_conf.check_access_database()
+        test_results["samba_connection"] = wetlab.utils.test_conf.check_samba_connection()
 
         test_results["basic_checks_ok"] = "OK"
         for result in test_results:
@@ -143,8 +143,8 @@ def configuration_test(request):
                 test_results["basic_checks_ok"] = "NOK"
                 break
         available_run_test = []
-        if RunConfigurationTest.objects.all().exists():
-            run_test_objs = RunConfigurationTest.objects.all()
+        if wetlab.models.RunConfigurationTest.objects.all().exists():
+            run_test_objs = wetlab.models.RunConfigurationTest.objects.all()
             for run_test_obj in run_test_objs:
                 available_run_test.append(
                     [run_test_obj.get_run_test_name(), run_test_obj.get_run_test_id()]
@@ -156,21 +156,21 @@ def configuration_test(request):
         )
 
     elif request.method == "POST" and request.POST["action"] == "executeRunTest":
-        if RunConfigurationTest.objects.filter(
+        if wetlab.models.RunConfigurationTest.objects.filter(
             pk__exact=request.POST["runTest"]
         ).exists():
-            run_test_obj = RunConfigurationTest.objects.filter(
+            run_test_obj = wetlab.models.RunConfigurationTest.objects.filter(
                 pk__exact=request.POST["runTest"]
             ).last()
             run_test_folder = run_test_obj.get_run_test_folder()
             run_test_name = run_test_obj.get_run_test_name()
-        if not folder_test_exists(run_test_folder):
+        if not wetlab.utils.test_conf.folder_test_exists(run_test_folder):
             return render(
                 request,
                 "wetlab/ConfigurationTest.html",
-                {"error": config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
+                {"error": wetlab.config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
             )
-        run_test_result = execute_test_for_testing_run(run_test_name)
+        run_test_result = wetlab.utils.test_conf.execute_test_for_testing_run(run_test_name)
         run_test_result["run_test_name"] = run_test_name
         if "ERROR" in run_test_result:
             log_trace = []
@@ -194,17 +194,17 @@ def configuration_test(request):
                 {"run_test_result": run_test_result},
             )
     elif request.method == "POST" and request.POST["action"] == "deleteTestRun":
-        if RunConfigurationTest.objects.filter(
+        if wetlab.models.RunConfigurationTest.objects.filter(
             run_test_name__exact=request.POST["deleteRun"]
         ).exists():
-            if RunProcess.objects.filter(
+            if wetlab.models.RunProcess.objects.filter(
                 run_name__exact=request.POST["deleteRun"]
             ).exists():
-                run_test_objs = RunProcess.objects.filter(
+                run_test_objs = wetlab.models.RunProcess.objects.filter(
                     run_name__exact=request.POST["deleteRun"]
                 )
                 for run_test_obj in run_test_objs:
-                    delete_test_run(run_test_obj)
+                    wetlab.utils.test_conf.delete_test_run(run_test_obj)
                     delete_successful = {"run_name": request.POST["deleteRun"]}
                 return render(
                     request,
@@ -214,7 +214,6 @@ def configuration_test(request):
             return render(request, "wetlab/configuration_test.html")
     else:
         return render(request, "wetlab/configuration_test.html")
-
 
 
 @login_required
@@ -1486,7 +1485,7 @@ def incompleted_runs(request):
             {"display_incompleted_run": display_incompleted_run},
         )
     else:
-        return render(request,"wetlab/incompleted_runs.html")
+        return render(request, "wetlab/incompleted_runs.html")
 
 
 def check_user_access(request, project_found_id):
@@ -3955,7 +3954,6 @@ def get_size_dir(
             count_file_size += sh_file.file_size
 
     return count_file_size
-
 
 
 @login_required
