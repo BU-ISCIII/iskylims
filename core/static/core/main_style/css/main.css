@@ -77,7 +77,7 @@ a:focus, a:hover, a:active {
 # Menu
 --------------------------------------------------------------*/
 
-@media all and (min-width: 992px) {
+@media all {
     .bg-menu {
       background-color: var(--color-white);
     }
