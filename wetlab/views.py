@@ -758,7 +758,7 @@ def add_collection_index_kit(request):
             collection_index_names.append(
                 [c_index.get_id(), c_index.get_collection_index_name]
             )
-
+    collection_index_information["collection_index"] = collection_index_names
     if request.method == "POST" and request.POST["action"] == "addCollectionIndexKit":
         # fetch the file from user form and  build the file name  including
         # the date and time on now to store in database
@@ -775,13 +775,10 @@ def add_collection_index_kit(request):
             os.remove(saved_file)
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/add_collection_index_kit.html",
                 {
-                    "content": [
-                        "The Collection Index Kit file",
-                        file_name,
-                        "does not have the right format",
-                    ]
+                    "list_of_collection_index": collection_index_information,
+                    "error_message": file_name + " does not have the right format"
                 },
             )
 
@@ -793,29 +790,23 @@ def add_collection_index_kit(request):
             os.remove(saved_file)
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/add_collection_index_kit.html",
                 {
-                    "content": [
-                        "The Collection Index Kit file",
-                        file_name,
-                        "does not contain the  name",
-                    ]
+                    "list_of_collection_index": collection_index_information,
+                    "error_message":  file_name + " does not contain kit  name"
                 },
             )
 
         # check if library name is already defined on database
         if wetlab.utils.collection_index.check_collection_index_exists(collection_name):
             # removing the uploaded file
-            os.remove(saved_file)
+            os.remove(os.path.join(settings.MEDIA_ROOT,saved_file))
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/add_collection_index_kit.html",
                 {
-                    "content": [
-                        "The Collection Index Kit Name ",
-                        file_name,
-                        "is already defined on iSkyLIMS",
-                    ]
+                    "list_of_collection_index": collection_index_information,
+                    "error_message": file_name + " is already defined on iSkyLIMS",
                 },
             )
         # Get the collection settings included in the file
@@ -836,18 +827,16 @@ def add_collection_index_kit(request):
         collection_index_information["collection_index_names"] = collection_settings[
             "name"
         ]
-        collection_index_information["collection_index"] = collection_index_names
 
         return render(
             request,
-            "wetlab/addCollectionIndexKit.html",
+            "wetlab/add_collection_index_kit.html",
             {"collection_index_information": collection_index_information},
         )
     else:
-        collection_index_information["collection_index"] = collection_index_names
         return render(
             request,
-            "wetlab/addCollectionIndexKit.html",
+            "wetlab/add_collection_index_kit.html",
             {"list_of_collection_index": collection_index_information},
         )
 
