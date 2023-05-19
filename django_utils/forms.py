@@ -36,13 +36,13 @@ class ProfileCreationForm(forms.ModelForm):
                 ),
                 layout.Div(
                     layout.Div(
-                        layout.Field("profilePosition"),
-                        layout.Field("profileCenter"),
+                        layout.Field("profile_position"),
+                        layout.Field("profile_center"),
                         css_class="col-md-6",
                     ),
                     layout.Div(
-                        layout.Field("profileArea"),
-                        layout.Field("profileExtension"),
+                        layout.Field("profile_area"),
+                        layout.Field("profile_extension"),
                         css_class="col-md-6",
                     ),
                     css_class="row card-body",
