@@ -1,17 +1,19 @@
 {% if user.is_authenticated %}
-    <div class="row mt-1">
-        <div class="col-md-4 offset-8">
+    <div class="row mt-1 justify-content-end">
+        <div class="col-md-auto">
             <form id="signin"  role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">
                 {% csrf_token %} 
-                <div class="row g-3 align-items-center">
-                    <div class="col-auto">
-                        <i class="bi bi-person-check-fill" style="font-size: 20px;"></i>
-                        <label class="col-form-label">{{user.get_username}}</label>
+                <div class="row g-3">
+                    <div class="col-md-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="form-control">{{user.get_username}}</span>
+                        </div>
                     </div>
-                    <div class="col-auto">                                                                                                 
+                    <div class="col-md-auto">                                                                                                 
                         <button type="submit" class="btn btn-outline-primary"> Logout </button>
                     </div>
-                    <div class="col-auto"> 
+                    <div class="col-md-auto"> 
                         <a class="btn btn-outline-secondary" href="/utils/user_edit"> My account </a>
                     </div>
                 </div>
@@ -19,22 +21,27 @@
         </div>
     </div>                                                                                                                          
 {% else %}
-    <div class="row mt-1">
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end">                                                                                                               
-            <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
+    <div class="row mt-1 justify-content-end">
+        <div class="col-md-auto">                                                                                                               
+            <form id="signin" role="form" method="post" action="{% url 'login' %}">                          
                 {% csrf_token %}
-                <div class="form-floating mb-2">
-                    <input type="text" class="form-control" id="id_username" name="username" placeholder="User name">
-                    <label for="id_username">User name</label>
+                <div class="row g-3">
+                    <div class="col-md-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                            <input type="text" class="form-control" id="id_username" name="username" placeholder="User name">
+                        </div>
+                    </div>
+                    <div class="col-md-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" class="form-control" id="id_password"  name="password" placeholder="Password">
+                        </div>
+                    </div>                                                                                                            
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-outline-primary me-md-2">Login</button>
+                    </div>
                 </div>
-                <div class="form-floating mb-2">
-                    <input type="password" class="form-control" id="id_password"  name="password" placeholder="Password">
-                    <label for="id_password">Password</label>
-                </div>                                                                                                            
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-outline-primary me-md-2">Login</button>
-                    
-                  </div>
             </form>
         </div>
     </div>                                                                                                                          
