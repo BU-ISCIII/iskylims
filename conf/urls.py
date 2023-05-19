@@ -33,18 +33,13 @@ urlpatterns = [
         name="background",
     ),
     path(
-        "bu-isciii",
-        LoginView.as_view(template_name="core/bu_isciii.html"),
-        name="about-us",
-    ),
-    path(
         "contact", LoginView.as_view(template_name="core/contact.html"), name="contact"
     ),
     path("admin/", admin.site.urls),
     path("wetlab/", include("wetlab.urls")),
     path("drylab/", include("drylab.urls")),
     path("utils/", include("django_utils.urls")),
-    #path("clinic/", include("clinic.urls")),
+    # path("clinic/", include("clinic.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     # REST FRAMEWORK URLS
     path("drylab/api/", include("drylab.api.urls")),

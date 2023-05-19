@@ -6,38 +6,10 @@ from .forms import ContactForm
 from core.models import Contact
 from .utils.common import *
 
-# from django.conf import settings
-
-# Create your views here.
-
 
 def index(request):
     apps_in_iskylims = get_installed_apps()
     return render(request, "core/index.html", {"apps_in_iskylims": apps_in_iskylims})
-
-
-def add_new_contacts(request):
-    """
-    Description:
-        The function will use to add new user detail contacts that are showed
-        in the contact information.
-        This function is only available for admin
-    Input:
-        request     # contains the request dictionary sent by django
-    Variables:
-
-    Return:
-
-    """
-    apps_installed = {}
-    apps_installed["apps_names"] = get_installed_apps()
-
-    if request.method == "POST" and request.POST["action"] == "addNewContacts":
-        pass
-
-    return render(
-        request, "core/addNewContacts.html", {"apps_installed": apps_installed}
-    )
 
 
 def contact(request):
