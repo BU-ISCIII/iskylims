@@ -4242,6 +4242,8 @@ def add_commercial_kit(request):
                 "wetlab/add_commercial_kit.html",
                 {
                     "defined_protocols": defined_protocols,
+                    "defined_platforms": defined_platforms,
+                    "commercial_kits_data": commercial_kits_data,
                     "error_message": "Commercial kit " + request.POST["kitName"] + " is already defined"
                 },
             )

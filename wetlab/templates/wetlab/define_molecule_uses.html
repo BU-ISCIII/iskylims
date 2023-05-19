@@ -1,99 +1,100 @@
 {% extends "core/base.html" %}
-{% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
-{% include "registration/login_inline.html" %}
 {% include "core/cdn_table_functionality.html" %}
-<section class="iskylims">
-    {% if molecule_use_data.error_message %}
-        <div class="row my-2">
-            <div class="col-sm-6 offset-2">
-                <div class="panel panel-warning">
-                    <div class="card-header"><h3>Unable to record your Sample Type</h3> </div>
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if molecule_use_data.error_message %}
+            <div class="row my-2">
+                <div class="col-sm-6 offset-2">
+                    <div class="panel panel-warning">
+                        <div class="card-header"><h3>Unable to record your Sample Type</h3> </div>
+                        <div class="card-body">
+                            <p>
+                                {% for value in molecule_use_data.error_message %}
+                                    {{ value }} <br>
+                                {% endfor %}
+                            </p>
+                        </div>  
+                    </div>
+                </div>
+            </div> 
+        {% endif %}
+        {% if molecule_use_data.new_defined_molecule_use %}
+            <div class="col-sm-6 offset-3" >
+                <div class="card mb-3">
+                    <div class="card-header text-center"><h3>New molecule use added</h3> </div>
                     <div class="card-body">
-                        <p>
-                            {% for value in molecule_use_data.error_message %}
-                                {{ value }} <br>
-                            {% endfor %}
-                        </p>
+                        <p>New Molecule use :<br> {{ molecule_use_data.new_defined_molecule_use }} is recorded</p>
                     </div>  
                 </div>
             </div>
-        </div> 
-    {% endif %}
-    {% if molecule_use_data.new_defined_molecule_use %}
-        <div class="col-sm-6 offset-3" >
-            <div class="card mb-3">
-                <div class="card-header text-center"><h3>New molecule use added</h3> </div>
-                <div class="card-body">
-                    <p>New Molecule use :<br> {{ molecule_use_data.new_defined_molecule_use }} is recorded</p>
-                </div>  
-            </div>
-        </div>
-    {% else %}
-        <class="container">
-            <div class="row my-2">
-                <div class="col" >
-                    <div class="card ">
-                        <div class="card-header"><h3>Form to add a new Molecule use</h3> </div>
-                        <div class="card-body">
-                            <form method="post" enctype="multipart/form-data" name="record_molecule_use" id="record_molecule_use" class="form-horizontal">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="record_molecule_use"/>
-
-                                    <div class="form-floating mb-3">
-                                        <input class="form-control" type="text" required="required" name="moleculeUseName" id="moleculeUseName" placeholder="Molecule name">
-                                        <label class="text-danger" for="moleculeUseName">Name for Molecule use</label>
-                                    </div>
-                                    <div class="form-switch">
-                                        <label class="form-label">Requires Massive Sequencing ? </label>
-                                        <input class="form-check-input float-end me-3" type="checkbox" name="requiresMassive" id="requiresMassive" >
-                                    </div>
-
-                                <p class="my-3"> Fields in <FONT COLOR="Red">Red</FONT> are mandatory</p>
-                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
-                            </form>
-                        </div>  
-                    </div>
-                </div> 
-            
-                {% if molecule_use_data.defined_molecule_use %}
+        {% else %}
+            <class="container">
+                <div class="row my-2">
                     <div class="col" >
                         <div class="card ">
-                        <div class="card-header text-center"><h3>Molecule uses already defined</h3></div>
-                        <div class="card-body">
-                                <table class="table table-hover" id="m_table">
-                                <thead>
-                                    <tr>
-                                        <th>Molecule use Name</th>
-                                        <th>Require massive</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                        {% for  name , massive in molecule_use_data.defined_molecule_use %}
-                                            <tr>
-                                                <td>{{name}}</td>
-                                                <td>{{massive}}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                            <div class="card-header"><h3>Form to add a new Molecule use</h3> </div>
+                            <div class="card-body">
+                                <form method="post" enctype="multipart/form-data" name="record_molecule_use" id="record_molecule_use" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="record_molecule_use"/>
+
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" required="required" name="moleculeUseName" id="moleculeUseName" placeholder="Molecule name">
+                                            <label class="text-danger" for="moleculeUseName">Name for Molecule use</label>
+                                        </div>
+                                        <div class="form-switch">
+                                            <label class="form-label">Requires Massive Sequencing ? </label>
+                                            <input class="form-check-input float-end me-3" type="checkbox" name="requiresMassive" id="requiresMassive" >
+                                        </div>
+
+                                    <p class="my-3"> Fields in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
+                                </form>
                             </div>  
                         </div>
-                        {% if molecule_use_data.defined_molecule_use|length > 7 %}
-                            <script type="text/javascript">
-                                $(document).ready(function() {
-                                    $('#m_table').DataTable({
-                                        dom:"frtip",
-                                        responsive: true,
+                    </div> 
+                
+                    {% if molecule_use_data.defined_molecule_use %}
+                        <div class="col" >
+                            <div class="card ">
+                            <div class="card-header text-center"><h3>Molecule uses already defined</h3></div>
+                            <div class="card-body">
+                                    <table class="table table-hover" id="m_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Molecule use Name</th>
+                                            <th>Require massive</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                            {% for  name , massive in molecule_use_data.defined_molecule_use %}
+                                                <tr>
+                                                    <td>{{name}}</td>
+                                                    <td>{{massive}}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>  
+                            </div>
+                            {% if molecule_use_data.defined_molecule_use|length > 7 %}
+                                <script type="text/javascript">
+                                    $(document).ready(function() {
+                                        $('#m_table').DataTable({
+                                            dom:"frtip",
+                                            responsive: true,
+                                        });
                                     });
-                                });
-                            </script>
-                        {% endif %}
-                    </div>  
-                {% endif %}
-            </div>
-        </div>   
+                                </script>
+                            {% endif %}
+                        </div>  
+                    {% endif %}
+                </div>
+            </div>   
     {% endif %}
+    </div>
 </section>
 {% endblock %}

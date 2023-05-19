@@ -1,113 +1,114 @@
 {% load static %}
 {% load user_groups %}
-<nav id="navbar" class="navbar navbar-expand-sm navbar-light">
-    <div class="container">
-        <a  class="navbar-brand" href="/">
-            <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
-        </a>
+<header class="header">
+    <nav id="navbar" class="navbar navbar-expand-lg fixed-top navbar-light bg-menu">
+        <div class="container">
+            <a  class="navbar-brand" href="/">
+                <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
+            </a>
             <div class="collapse navbar-collapse me-auto me-lg-0">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="/wetlab">HOME</a>
-                </li>
-                {% if user.username == "admin" %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">CONFIGURATION</a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="/wetlab/configurationSamba">Samba Configuration</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/configurationEmail">Email Configuration</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/configurationTest">Testing Configuration</a></li>
-                        </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/wetlab">HOME</a>
                     </li>
-                {% endif %}
-                {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">PARAMETERS SETTINGS</a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            {% if request.user|has_group:"WetlabManager" %}
-                                <li><a class="dropdown-item" href="/wetlab/initialSettings">Initial Settings</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/createProtocol">Create New Protocol</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/defineTypeOfSamples">Define Type of Samples</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/defineSampleProjects">Define Sample Projects</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/defineMoleculeUses">Define Molecule Uses</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/addCommercialKit">Add Commercial Kit</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/addUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
+                    {% if user.username == "admin" %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">CONFIGURATION</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="/wetlab/configurationSamba">Samba Configuration</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/configurationEmail">Email Configuration</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/configurationTest">Testing Configuration</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">PARAMETERS SETTINGS</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                {% if request.user|has_group:"WetlabManager" %}
+                                    <li><a class="dropdown-item" href="/wetlab/initialSettings">Initial Settings</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/createProtocol">Create New Protocol</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/defineTypeOfSamples">Define Type of Samples</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/defineSampleProjects">Define Sample Projects</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/defineMoleculeUses">Define Molecule Uses</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/addCommercialKit">Add Commercial Kit</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/addUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="/wetlab/addUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
+                                {% endif %}
                                 <li><a class="dropdown-item" href="/wetlab/sequencerConfiguration">Sequencer Configuration</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            {% if request.user|has_group:"WetlabManager" %}
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">SAMPLE/RUN PREPARATIONS</a>
                             {% else %}
-                                <li><a class="dropdown-item" href="/wetlab/addUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">SAMPLE PREPARATIONS</a>
                             {% endif %}
-                            <li><a class="dropdown-item" href="/wetlab/sequencerConfiguration">Sequencer Configuration</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        {% if request.user|has_group:"WetlabManager" %}
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">SAMPLE/RUN PREPARATIONS</a>
-                        {% else %}
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">SAMPLE PREPARATIONS</a>
-                        {% endif %}
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="/wetlab/recordSamples">Record Samples</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/handlingMolecules">Handling Molecules</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/handlingLibraryPreparations">Handling Library Preparation</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/pendingSamplePreparations">Pending Sample Preparations</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/pendingToUpdate">Update Pending Samples</a></li>
-                            {% if request.user|has_group:"WetlabManager" %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/wetlab/createPool">Create Pool</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/createNewRun">Create New Run</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/createNextSeqRun">Create/Repeat New NextSeq Run</a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">SEARCH</a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            {% if request.user|has_group:"WetlabManager" %}
-                                <li><a class="dropdown-item" href="/wetlab/lastRunBySequencer">Last Run by Sequencer</a></li>
-                                <li><a class="dropdown-item" href="/wetlab/incompletedRuns">Get incomplete Runs</a></li>
-                            {% endif %}
-                            <li><a class="dropdown-item" href="/wetlab/searchRun">Search by RUN</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/searchProject">Search by Project</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/searchSample">Search by Sample</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/compareSamples">Compare Samples</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/searchCollectionIndexLibrary">Search by Index Library</a></li>
-                            <li><a class="dropdown-item" href="/wetlab/searchUserLotKit">Search by User Lot Kit</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        
-                            {% if request.user|has_group:"WetlabManager" %}
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">MANAGEMENT</a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li>INVENTORY</li>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="/wetlab/recordSamples">Record Samples</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/handlingMolecules">Handling Molecules</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/handlingLibraryPreparations">Handling Library Preparation</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/pendingSamplePreparations">Pending Sample Preparations</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/pendingToUpdate">Update Pending Samples</a></li>
+                                {% if request.user|has_group:"WetlabManager" %}
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/wetlab/userCommercialKitInventory">User's Kit Inventory</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/sequencerInventory">Sequencer Inventory</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a>STATISTICS</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/wetlab/StatsPerResearcher/">Projects per Investigator</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/StatsPerTime/">Period of time</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/StatsPerSequencer/">Per Sequencer</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>REPORTS</li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/wetlab/AnnualReport">Annual Reports</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/QuarterReport">Quarter Reports</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
-                                </ul>
-                            {% else %}
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">INVENTORY</a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="/wetlab/userCommercialKitInventory">User's Kit Inventory</a></li>
-                                    <li><a class="dropdown-item" href="/wetlab/sequencerInventory">Sequencer Inventory</a></li>
-                                </ul>
-                            {% endif %}
-                    </li>
-                {% endif %}
-            </ul>
+                                    <li><a class="dropdown-item" href="/wetlab/createPool">Create Pool</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/createNewRun">Create New Run</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/createNextSeqRun">Create/Repeat New NextSeq Run</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">SEARCH</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                {% if request.user|has_group:"WetlabManager" %}
+                                    <li><a class="dropdown-item" href="/wetlab/lastRunBySequencer">Last Run by Sequencer</a></li>
+                                    <li><a class="dropdown-item" href="/wetlab/incompletedRuns">Get incomplete Runs</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="/wetlab/searchRun">Search by RUN</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/searchProject">Search by Project</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/searchSample">Search by Sample</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/compareSamples">Compare Samples</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/searchCollectionIndexLibrary">Search by Index Library</a></li>
+                                <li><a class="dropdown-item" href="/wetlab/searchUserLotKit">Search by User Lot Kit</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            
+                                {% if request.user|has_group:"WetlabManager" %}
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">MANAGEMENT</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <li class="text-center">INVENTORY</li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="/wetlab/userCommercialKitInventory">User's Kit Inventory</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/sequencerInventory">Sequencer Inventory</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li class="text-center"><a>STATISTICS</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="/wetlab/StatsPerResearcher/">Projects per Investigator</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/StatsPerTime/">Period of time</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/StatsPerSequencer/">Per Sequencer</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li class="text-center">REPORTS</li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="/wetlab/AnnualReport">Annual Reports</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/QuarterReport">Quarter Reports</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
+                                    </ul>
+                                {% else %}
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">INVENTORY</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <li><a class="dropdown-item" href="/wetlab/userCommercialKitInventory">User's Kit Inventory</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/sequencerInventory">Sequencer Inventory</a></li>
+                                    </ul>
+                                {% endif %}
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
+</header>
