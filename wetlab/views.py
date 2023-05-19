@@ -4811,7 +4811,7 @@ def define_molecule_uses(request):
 
     return render(
         request,
-        "wetlab/defineMoleculeUses.html",
+        "wetlab/define_molecule_uses.html",
         {"molecule_use_data": molecule_use_data},
     )
 
