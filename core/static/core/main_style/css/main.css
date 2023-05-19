@@ -1,17 +1,17 @@
 
 
 :root {
-    --color-primary: #99d6ff;
+    --color-primary: #6ec0f7;
     --color-secondary: #dadada;
-    --color-menu: ; 
     --color-bkg-menu-hover: #f8f8f8;
     --color-border-bottom: #ccf5ff;
     --color-white: #ffffff;
     --color-background: #f8f8f8;
     --font-primary: 'Source Sans Pro', sans-serif;
     --font-secondary: 'Poppins', sans-serif;
+    --bs-primary: #6ec0f7;
+    --bs-secondary: #dadada;
 }
-
 
 .font-secondary { font-family: var(--font-secondary) !important; }
 
