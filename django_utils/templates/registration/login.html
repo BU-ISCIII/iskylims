@@ -6,9 +6,9 @@
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
+        {% if form.errors %}
         <div class="row justify-content-center pt-2 pb-2">
             <div class="col-md-8">
-                {% if form.errors %}
                 <div class="card border-danger">
                     <h4 class="card-header text-danger ">Your userid and/or password are incorrect</h4>
                     <div class="card-body">
@@ -16,8 +16,8 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
         <div class="row justify-content-center pt-2 pb-2">
             <div class="col-md-8">
                 <div class="card">

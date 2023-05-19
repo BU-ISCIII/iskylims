@@ -31,9 +31,6 @@ class ProfileCreationForm(forms.ModelForm):
 
         self.helper.layout = layout.Layout(
             layout.Div(
-                layout.HTML(
-                    """<div class="card-header"><h3 class="panel-title">User data</h3></div>"""
-                ),
                 layout.Div(
                     layout.Div(
                         layout.Field("profile_position"),
@@ -45,10 +42,9 @@ class ProfileCreationForm(forms.ModelForm):
                         layout.Field("profile_extension"),
                         css_class="col-md-6",
                     ),
-                    css_class="row card-body",
-                ),
-                css_class="card ",
-            ),
+                    css_class="row"
+                )
+            )
         )
 
 
@@ -73,6 +69,7 @@ class UserCreationForm(UserCreationForm):
         super(UserCreationForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_action = ""
+        self.helper.form_class = "container-md"
         self.helper.form_method = "POST"
         self.helper.form_tag = False
         self.helper.csrf = False
@@ -83,9 +80,6 @@ class UserCreationForm(UserCreationForm):
 
         self.helper.layout = layout.Layout(
             layout.Div(
-                layout.HTML(
-                    """<div class="card-header"><h3 class="panel-title">Researcher data</h3></div>"""
-                ),
                 layout.Div(
                     layout.Div(
                         layout.Field("username"),
@@ -104,8 +98,7 @@ class UserCreationForm(UserCreationForm):
                         layout.Field("password2"),
                         css_class="col-md-6",
                     ),
-                    css_class="row card-body",
+                    css_class="row"
                 ),
-                css_class="card ",
             ),
         )
