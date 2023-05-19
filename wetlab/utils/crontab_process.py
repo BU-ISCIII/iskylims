@@ -1,3 +1,4 @@
+# Generic imports
 import logging
 import os
 import re
@@ -9,11 +10,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from interop import py_interop_run, py_interop_run_metrics, py_interop_summary
 
-from wetlab.config import *
-from wetlab.models import *
-
-from .common import *
-from .samplesheet import *
+# Local imports
+import wetlab.config
+import wetlab.models
+import wetlab.utils.common
+import wetlab.utils.samplesheet
 
 ############################
 # CRONTAB COMMON FUNCTIONS #
@@ -46,7 +47,7 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
         get_full_list = conn.listPath(shared_folder, run_folder)
     except Exception:
         string_message = experiment_name + " : Unable to get the folder " + run_folder
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function get_run_disk_utilization with Exception", experiment_name
         )
@@ -146,7 +147,7 @@ def assign_used_library_in_run(
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function assign_used_library_in_run", experiment_name)
     if run_process_obj.get_index_library() == "None":
-        index_library_name = get_index_library_name(l_sample_sheet_path)
+        index_library_name = wetlab.utils.samplesheet.get_index_library_name(l_sample_sheet_path)
         run_process_obj.update_index_library(index_library_name)
         logger.info("%s : Defined index library name", experiment_name)
     else:
@@ -177,9 +178,9 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file, experiment_name):
         return
     # fetch the project from sample sheet
     projects_objs = []
-    project_with_users = get_projects_in_run(sample_sheet_file)
+    project_with_users = wetlab.utils.samplesheet.get_projects_in_run(sample_sheet_file)
     for project, user in project_with_users.items():
-        if not Projects.objects.filter(project_name__exact=project).exists():
+        if not wetlab.models.Projects.objects.filter(project_name__exact=project).exists():
             project_data = {}
             project_data["projectName"] = project
             if User.objects.filter(username__iexact=user).exists():
@@ -188,13 +189,13 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file, experiment_name):
                 ).last()
             else:
                 project_data["user_id"] = None
-            project_obj = Projects.objects.create_new_empty_project(project_data)
+            project_obj = wetlab.models.Projects.objects.create_new_empty_project(project_data)
             projects_objs.append(project_obj)
             # assign project to run
             project_obj.run_process.add(run_process_obj)
             logger.info("%s : Project name  %s added ", experiment_name, project)
         else:
-            project_obj = Projects.objects.filter(project_name__exact=project).last()
+            project_obj = wetlab.models.Projects.objects.filter(project_name__exact=project).last()
             if project_obj not in projects_objs:
                 projects_objs.append(project_obj)
                 project_obj.run_process.add(run_process_obj)
@@ -228,7 +229,7 @@ def check_sequencer_status_from_log_file(
     run_completion_date = ""
 
     if "Cancel" in log_file_content:
-        run_process_obj = RunProcess.objects.filter(
+        run_process_obj = wetlab.models.RunProcess.objects.filter(
             run_name__exact=experiment_name
         ).last()
         if run_process_obj.get_forced_continue_on_error():
@@ -287,8 +288,8 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
         experiment_name,
     )
     # check if NextSEq run have been successful completed
-    status_run = find_xml_tag_text(l_run_completion, COMPLETION_TAG)
-    if status_run not in COMPLETION_SUCCESS:
+    status_run = wetlab.utils.common.find_xml_tag_text(l_run_completion, wetlab.config.COMPLETION_TAG)
+    if status_run not in wetlab.config.COMPLETION_SUCCESS:
         logger.info(
             "%s : Run in sequencer was not completed but %s",
             experiment_name,
@@ -299,7 +300,7 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
             + " : Sequencer Run was not completed. Reason was "
             + status_run
         )
-        logging_warnings(string_message, False)
+        wetlab.utils.common.logging_warnings(string_message, False)
         logger.debug(
             "%s : End function for check_sequencer_status_from_completion_file",
             experiment_name,
@@ -345,14 +346,14 @@ def check_sequencer_run_is_completed(
         "%s : Starting function check_sequencer_run_is_completed", experiment_name
     )
     way_to_check = ""
-    for method in PLATFORM_WAY_TO_CHECK_RUN_COMPLETION:
+    for method in wetlab.config.PLATFORM_WAY_TO_CHECK_RUN_COMPLETION:
         if method[0] not in platform:
             continue
         way_to_check = method[1]
 
     if way_to_check == "logs":
         log_folder = os.path.join(
-            get_samba_application_shared_folder(), run_folder, RUN_LOG_FOLDER
+            get_samba_application_shared_folder(), run_folder, wetlab.config.RUN_LOG_FOLDER
         )
         try:
             log_cycles, log_file_content = get_latest_run_procesing_log(
@@ -366,7 +367,7 @@ def check_sequencer_run_is_completed(
                 + "/"
                 + log_folder
             )
-            logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_errors(string_message, True, False)
             logger.debug(
                 "%s : End function check_sequencer_run_is_completed with exeception",
                 experiment_name,
@@ -381,9 +382,9 @@ def check_sequencer_run_is_completed(
         return status, run_completion_date
 
     elif way_to_check == "xml_file":
-        l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_XML_FILE)
+        l_run_completion = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, wetlab.config.RUN_COMPLETION_XML_FILE)
         s_run_completion = os.path.join(
-            get_samba_application_shared_folder(), run_folder, RUN_COMPLETION_XML_FILE
+            get_samba_application_shared_folder(), run_folder, wetlab.config.RUN_COMPLETION_XML_FILE
         )
 
         try:
@@ -429,7 +430,7 @@ def check_sequencer_run_is_completed(
     elif way_to_check == "txt_file":
         # l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_TXT_FILE)
         s_run_completion = os.path.join(
-            get_samba_application_shared_folder(), run_folder, RUN_COMPLETION_TXT_FILE
+            get_samba_application_shared_folder(), run_folder, wetlab.config.RUN_COMPLETION_TXT_FILE
         )
 
         try:
@@ -467,7 +468,7 @@ def check_sequencer_run_is_completed(
             + " : way to check the completion run is not defined for  "
             + platform
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function check_sequencer_run_is_completed with exeception",
             experiment_name,
@@ -503,7 +504,7 @@ def copy_sample_sheet_to_remote_folder(
         "%s : Copy sample sheet to remote folder %s", experiment_name, run_folder
     )
     s_sample = os.path.join(
-        get_samba_application_shared_folder(), run_folder, SAMPLE_SHEET
+        get_samba_application_shared_folder(), run_folder, wetlab.config.SAMPLE_SHEET
     )
 
     try:
@@ -519,7 +520,7 @@ def copy_sample_sheet_to_remote_folder(
             + ": Unable to copy the Sample Sheet to remote folder "
             + run_folder
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         handling_errors_in_run(experiment_name, "23")
         logger.debug(
             "%s : End function for copy_sample_sheet_to_remote_folder with exception",
@@ -558,7 +559,7 @@ def copy_to_remote_file(conn, run_dir, remote_file, local_file):
             string_message = (
                 "Unable to copy the " + local_file + "file on folder " + run_dir
             )
-            logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_errors(string_message, True, False)
             raise Exception("File not copied")
     logger.debug("End function for copy file to remote")
     return True
@@ -585,11 +586,11 @@ def create_new_sequencer_lab_not_defined(sequencer_name, num_of_lanes, experimen
         "%s : Starting function create_new_sequencer_lab_not_defined", experiment_name
     )
     seq_data = {}
-    for item in EMPTY_FIELDS_IN_SEQUENCER:
+    for item in wetlab.config.EMPTY_FIELDS_IN_SEQUENCER:
         seq_data[item] = None
     seq_data["sequencerNumberLanes"] = num_of_lanes
     seq_data["sequencerName"] = sequencer_name
-    new_sequencer_obj = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
+    new_sequencer_obj = wetlab.models.SequencerInLab.objects.create_sequencer_in_lab(seq_data)
     logger.info("%s : Created the new sequencer in database", experiment_name)
     logger.debug(
         "%s : End function create_new_sequencer_lab_not_defined", experiment_name
@@ -627,7 +628,7 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
             string_message = (
                 "Unable to fetch the " + local_file + " file on folder : " + run_dir
             )
-            logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_errors(string_message, True, False)
             os.remove(local_file)
             logger.debug("%s : End function for fetching remote file", run_dir)
             raise Exception("File not found")
@@ -669,7 +670,7 @@ def get_latest_run_procesing_log(conn, log_folder, experiment_name):
                 max_cycle = cycle_number
                 latest_log = file_remote
     logger.info("%s : Fetching the latest log file  %s  ", experiment_name, latest_log)
-    temporary_log = os.path.join(RUN_TEMP_DIRECTORY, "miseq_cycle.log")
+    temporary_log = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, "miseq_cycle.log")
     s_latest_log = os.path.join(log_folder, latest_log)
 
     temporary_log = fetch_remote_file(conn, log_folder, s_latest_log, temporary_log)
@@ -742,9 +743,9 @@ def get_remote_sample_sheet(conn, new_run, experiment_name):
     logger = logging.getLogger(__name__)
     logger.debug("%s  : Starting function get_remote_sample_sheet", experiment_name)
 
-    l_sample_sheet_path = os.path.join(RUN_TEMP_DIRECTORY, SAMPLE_SHEET)
+    l_sample_sheet_path = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, wetlab.config.SAMPLE_SHEET)
     s_sample_sheet_path = os.path.join(
-        get_samba_application_shared_folder(), new_run, SAMPLE_SHEET
+        get_samba_application_shared_folder(), new_run, wetlab.config.SAMPLE_SHEET
     )
     try:
         fetch_remote_file(
@@ -753,7 +754,7 @@ def get_remote_sample_sheet(conn, new_run, experiment_name):
         logger.info("%s : Sucessfully fetch of Sample Sheet file", experiment_name)
     except Exception:
         error_message = "Unable to fetch Sample Sheet file for folder :" + new_run
-        logging_errors(error_message, True, False)
+        wetlab.utils.common.logging_errors(error_message, True, False)
         logger.debug("%s  : End function get_remote_sample_sheet", experiment_name)
         return None
 
@@ -772,14 +773,14 @@ def get_run_process_obj_or_create_if_not_exists(experiment_name):
     """
     logger = logging.getLogger(__name__)
     logger.debug("Starting function get_run_process_obj_or_create_if_not_exists")
-    if RunProcess.objects.filter(run_name__exact=experiment_name).exists():
-        run_process_obj = RunProcess.objects.filter(
+    if wetlab.models.RunProcess.objects.filter(run_name__exact=experiment_name).exists():
+        run_process_obj = wetlab.models.RunProcess.objects.filter(
             run_name__exact=experiment_name
         ).last()
     else:
         run_data = {}
         run_data["experiment_name"] = experiment_name
-        run_process_obj = RunProcess.objects.create_new_run_from_crontab(run_data)
+        run_process_obj = wetlab.models.RunProcess.objects.create_new_run_from_crontab(run_data)
         logger.info("%s  : New RunProcess instance created", experiment_name)
     logger.debug("End function get_run_process_obj_or_create_if_not_exists")
     return run_process_obj
@@ -799,10 +800,10 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
     """
     logger = logging.getLogger(__name__)
     logger.debug("Starting function get_sequencer_obj_or_create_if_no_exists")
-    if SequencerInLab.objects.filter(
+    if wetlab.models.SequencerInLab.objects.filter(
         sequencer_name__exact=running_parameters["instrument"]
     ).exists():
-        sequencer_obj = SequencerInLab.objects.filter(
+        sequencer_obj = wetlab.models.SequencerInLab.objects.filter(
             sequencer_name__exact=running_parameters["instrument"]
         ).last()
 
@@ -813,7 +814,7 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
             + running_parameters["instrument"]
             + " no sequencer defined "
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         sequencer_obj = create_new_sequencer_lab_not_defined(
             running_parameters["instrument"],
             running_parameters["running_data"]["NumLanes"],
@@ -836,7 +837,7 @@ def get_samba_application_shared_folder():
     Return:
         samba_folder_name
     """
-    return SambaConnectionData.objects.last().get_samba_application_folder_name()
+    return wetlab.models.SambaConnectionData.objects.last().get_samba_application_folder_name()
 
 
 def get_samba_shared_folder():
@@ -846,7 +847,7 @@ def get_samba_shared_folder():
     Return:
         samba_folder_name
     """
-    return SambaConnectionData.objects.last().get_samba_shared_folder_name()
+    return wetlab.models.SambaConnectionData.objects.last().get_samba_shared_folder_name()
 
 
 def handling_errors_in_run(experiment_name, error_code):
@@ -863,8 +864,8 @@ def handling_errors_in_run(experiment_name, error_code):
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function handling_errors_in_run", experiment_name)
     logger.info("%s : Set run to ERROR state", experiment_name)
-    if RunProcess.objects.filter(run_name__exact=experiment_name).exists():
-        run_process_obj = RunProcess.objects.filter(
+    if wetlab.models.RunProcess.objects.filter(run_name__exact=experiment_name).exists():
+        run_process_obj = wetlab.models.RunProcess.objects.filter(
             run_name__exact=experiment_name
         ).last()
         run_process_obj.set_run_error_code(error_code)
@@ -923,7 +924,7 @@ def parsing_run_info_and_parameter_information(
             experiment_name
             + " : Parameter  FlowcellLayout  not found in RunParameter.xml"
         )
-        logging_warnings(string_message, False)
+        wetlab.utils.common.logging_warnings(string_message, False)
 
     for i in run_root.iter("Name"):
         image_channel.append(i.text)
@@ -940,12 +941,11 @@ def parsing_run_info_and_parameter_information(
     parsing_data["instrument"] = p_run.find("Instrument").text
 
     # parsing RunParameter.xml file
-    
     logger.info("%s : Parsing the runParameter.xml file  ", experiment_name)
     parameter_data = ET.parse(l_run_parameter)
     parameter_data_root = parameter_data.getroot()
     # getting the common values NextSeq and MiSeq
-    for field in FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
+    for field in wetlab.config.FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
         try:
             running_data[field] = parameter_data_root.find(field).text
         except Exception:
@@ -966,7 +966,7 @@ def parsing_run_info_and_parameter_information(
                         + field
                         + " not found looking for case insensitive in RunParameter.xml"
                     )
-                    logging_warnings(string_message, False)
+                    wetlab.utils.common.logging_warnings(string_message, False)
             except Exception:
                 running_data[field] = ""
                 string_message = (
@@ -975,10 +975,10 @@ def parsing_run_info_and_parameter_information(
                     + field
                     + " unable to fetch in RunParameter.xml"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
 
     # get the nuber of lanes in case sequencer lab is not defined
-    if parameter_data_root.find(SETUP_TAG):
+    if parameter_data_root.find(wetlab.config.SETUP_TAG):
         param_in_setup = ["ApplicationVersion", "NumTilesPerSwath"]
         for i in range(len(param_in_setup)):
             try:
@@ -992,13 +992,13 @@ def parsing_run_info_and_parameter_information(
                     + param_in_setup[i]
                     + " not found in RunParameter.xml"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
                 continue
         # collect information for MiSeq and NextSeq
-        for setup_field in FIELDS_TO_FETCH_FROM_SETUP_TAG:
+        for setup_field in wetlab.config.FIELDS_TO_FETCH_FROM_SETUP_TAG:
             try:
                 running_data[setup_field] = (
-                    parameter_data_root.find(SETUP_TAG).find(setup_field).text
+                    parameter_data_root.find(wetlab.config.SETUP_TAG).find(setup_field).text
                 )
             except Exception:
                 running_data[setup_field] = ""
@@ -1008,29 +1008,29 @@ def parsing_run_info_and_parameter_information(
                     + setup_field
                     + " unable to fetch in RunParameter.xml"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
 
-        if "MiSeq" in running_data[APPLICATION_NAME_TAG]:
+        if "MiSeq" in running_data[wetlab.config.APPLICATION_NAME_TAG]:
             # initialize paramters in case there are not exists on runParameter file
-            for i in range(len(READ_NUMBER_OF_CYCLES)):
-                running_data[READ_NUMBER_OF_CYCLES[i]] = ""
+            for i in range(len(wetlab.config.READ_NUMBER_OF_CYCLES)):
+                running_data[wetlab.config.READ_NUMBER_OF_CYCLES[i]] = ""
             # get the length index number for reads and indexes for MiSeq Runs
-            for run_info_read in parameter_data_root.iter(RUN_INFO_READ_TAG):
+            for run_info_read in parameter_data_root.iter(wetlab.config.RUN_INFO_READ_TAG):
                 try:
-                    index_number = int(run_info_read.attrib[NUMBER_TAG]) - 1
+                    index_number = int(run_info_read.attrib[wetlab.config.NUMBER_TAG]) - 1
                     running_data[
-                        READ_NUMBER_OF_CYCLES[index_number]
-                    ] = run_info_read.attrib[NUMBER_CYCLES_TAG]
+                        wetlab.config.READ_NUMBER_OF_CYCLES[index_number]
+                    ] = run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
                 except Exception:
                     string_message = (
                         experiment_name
                         + " : Parameter RunInfoRead: Read Number not found in RunParameter.xml"
                     )
-                    logging_warnings(string_message, False)
+                    wetlab.utils.common.logging_warnings(string_message, False)
                     continue
     else:
         # Collect information for NovaSeq
-        for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
+        for novaseq_field in wetlab.config.FIELDS_NOVASEQ_TO_FETCH_TAG:
             try:
                 running_data[novaseq_field] = parameter_data_root.find(
                     novaseq_field
@@ -1043,7 +1043,7 @@ def parsing_run_info_and_parameter_information(
                     + novaseq_field
                     + " unable to fetch in RunParameter.xml"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
     # get date for miSeq and NextSeq with the format yymmdd
     date = p_run.find("Date").text
     try:
@@ -1083,8 +1083,8 @@ def save_run_parameters_data_to_database(
         "%s : Starting function save_run_parameters_data_to_database", experiment_name
     )
 
-    if RunningParameters.objects.filter(run_name_id=run_process_obj).exists():
-        run_parameter_objs = RunningParameters.objects.filter(
+    if wetlab.models.RunningParameters.objects.filter(run_name_id=run_process_obj).exists():
+        run_parameter_objs = wetlab.models.RunningParameters.objects.filter(
             run_name_id=run_process_obj
         )
         for run_parameter_obj in run_parameter_objs:
@@ -1092,7 +1092,7 @@ def save_run_parameters_data_to_database(
                 "%s  : Deleting RunParameters object from database", experiment_name
             )
             run_parameter_obj.delete()
-    run_parameter_obj = RunningParameters.objects.create_running_parameters(
+    run_parameter_obj = wetlab.models.RunningParameters.objects.create_running_parameters(
         run_parameters, run_process_obj
     )
     logger.info("%s  : Created RunParameters object on database", experiment_name)
@@ -1137,12 +1137,12 @@ def store_sample_sheet_if_not_defined_in_run(
     new_sample_sheet_name = "SampleSheet" + timestr + ".csv"
 
     new_sample_sheet_file = os.path.join(
-        settings.MEDIA_ROOT, RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
+        settings.MEDIA_ROOT, wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
     )
     logger.info("%s : new sample sheet name %s", experiment_name, new_sample_sheet_file)
     # Path to be included in database
     sample_sheet_on_database = os.path.join(
-        RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
+        wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
     )
     # Move sample sheet to final folder
     os.rename(l_sample_sheet_path, new_sample_sheet_file)
@@ -1211,7 +1211,7 @@ def create_run_metric_graphics(
     logger.debug("%s : Starting create_run_metric_graphics", experiment_name)
     present_working_dir = os.getcwd()
     run_graphic_dir = os.path.join(
-        settings.MEDIA_ROOT, RUN_IMAGES_DIRECTORY, run_folder
+        settings.MEDIA_ROOT, wetlab.config.RUN_IMAGES_DIRECTORY, run_folder
     )
     try:
         if os.path.exists(run_graphic_dir):
@@ -1224,7 +1224,7 @@ def create_run_metric_graphics(
             + " : Unable to create folder to store graphics on "
             + run_graphic_dir
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End create_run_metric_graphics with exception", experiment_name
         )
@@ -1237,10 +1237,10 @@ def create_run_metric_graphics(
     logger.info("%s : Creating plot graphics for run id ", experiment_name)
 
     full_path_run_processing_tmp = os.path.join(
-        present_working_dir, RUN_TEMP_DIRECTORY_PROCESSING
+        present_working_dir, wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING
     )
-    for graphic in RUN_METRIC_GRAPHIC_COMMANDS:
-        graphic_command = os.path.join(INTEROP_PATH, graphic)
+    for graphic in wetlab.config.RUN_METRIC_GRAPHIC_COMMANDS:
+        graphic_command = os.path.join(wetlab.config.INTEROP_PATH, graphic)
         plot_command = graphic_command + full_path_run_processing_tmp + "  | gnuplot"
         logger.debug(
             "%s : command used to create graphic is : %s", experiment_name, plot_command
@@ -1257,8 +1257,8 @@ def create_run_metric_graphics(
     for graphic_file in graphic_files:
         old_file_name = os.path.join(run_graphic_dir, graphic_file)
         split_file_name = graphic_file.split("_")
-        if not split_file_name[1].endswith(PLOT_EXTENSION):
-            split_file_name[1] = split_file_name[1] + PLOT_EXTENSION
+        if not split_file_name[1].endswith(wetlab.config.PLOT_EXTENSION):
+            split_file_name[1] = split_file_name[1] + wetlab.config.PLOT_EXTENSION
         new_file_name = os.path.join(run_graphic_dir, split_file_name[1])
         os.rename(old_file_name, new_file_name)
         logger.debug(
@@ -1269,7 +1269,7 @@ def create_run_metric_graphics(
         )
 
     # saving the graphic location in database
-    graphic_stats_obj = GraphicsStats.objects.create_graphic_run_metrics(
+    graphic_stats_obj = wetlab.models.GraphicsStats.objects.create_graphic_run_metrics(
         run_process_obj, run_folder
     )
 
@@ -1291,20 +1291,20 @@ def delete_existing_run_metrics_table_processed(run_process_obj, experiment_name
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function check_run_metrics_processed", experiment_name)
-    if StatsRunSummary.objects.filter(runprocess_id=run_process_obj).exists():
-        run_summary_objs = StatsRunSummary.objects.filter(runprocess_id=run_process_obj)
+    if wetlab.models.StatsRunSummary.objects.filter(runprocess_id=run_process_obj).exists():
+        run_summary_objs = wetlab.models.StatsRunSummary.objects.filter(runprocess_id=run_process_obj)
         for run_summary_obj in run_summary_objs:
             run_summary_obj.delete()
         logger.info("%s : Deleted rows on StatsRunSummary table", experiment_name)
 
-    if StatsRunRead.objects.filter(runprocess_id=run_process_obj).exists():
-        run_read_objs = StatsRunRead.objects.filter(runprocess_id=run_process_obj)
+    if wetlab.models.StatsRunRead.objects.filter(runprocess_id=run_process_obj).exists():
+        run_read_objs = wetlab.models.StatsRunRead.objects.filter(runprocess_id=run_process_obj)
         for run_read_obj in run_read_objs:
             run_read_obj.delete()
         logger.info("%s : Deleted rows on StatsRunSummary table", experiment_name)
 
-    if GraphicsStats.objects.filter(runprocess_id=run_process_obj).exists():
-        graph_stats_objs = GraphicsStats.objects.filter(runprocess_id=run_process_obj)
+    if wetlab.models.GraphicsStats.objects.filter(runprocess_id=run_process_obj).exists():
+        graph_stats_objs = wetlab.models.GraphicsStats.objects.filter(runprocess_id=run_process_obj)
         for graph_stats_obj in graph_stats_objs:
             graph_stats_obj.delete()
         logger.info("%s : Deleted rows on GraphicsStats table", experiment_name)
@@ -1323,9 +1323,9 @@ def delete_run_metric_files(experiment_name):
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function delete_run_metric_files", experiment_name)
-    local_metric_folder = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_METRIC_FOLDER)
-    l_run_parameter = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_PARAMETER_FILE)
-    l_run_info = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_INFO)
+    local_metric_folder = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab.config.RUN_METRIC_FOLDER)
+    l_run_parameter = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab.config.RUN_PARAMETER_FILE)
+    l_run_info = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab.config.RUN_INFO)
     local_files = [l_run_parameter, l_run_info]
     for local_file in local_files:
         if os.path.exists(local_file):
@@ -1333,7 +1333,7 @@ def delete_run_metric_files(experiment_name):
                 os.remove(local_file)
             except Exception:
                 string_message = experiment_name + " : Unable to delete " + local_file
-                logging_errors(string_message, True, False)
+                wetlab.utils.common.logging_errors(string_message, True, False)
                 continue
     logger.info("%s : Deleted temporary files", experiment_name)
     if os.path.exists(local_metric_folder):
@@ -1344,7 +1344,7 @@ def delete_run_metric_files(experiment_name):
             string_message = (
                 experiment_name + " : Unable to delete  folder " + local_metric_folder
             )
-            logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_errors(string_message, True, False)
 
     logger.debug("%s : End function delete_run_metric_files", experiment_name)
     return
@@ -1374,18 +1374,18 @@ def get_run_metric_files(conn, run_folder, experiment_name):
     logger.debug("%s : Starting function get_run_metric_files", experiment_name)
 
     # runInfo needed for run metrics stats
-    l_run_info = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_INFO)
+    l_run_info = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab.config.RUN_INFO)
     s_run_info = os.path.join(
-        get_samba_application_shared_folder(), run_folder, RUN_INFO
+        get_samba_application_shared_folder(), run_folder, wetlab.config.RUN_INFO
     )
     # runParameters needed for run metrics stats
-    l_run_parameter = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_PARAMETER_FILE)
+    l_run_parameter = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab.config.RUN_PARAMETER_FILE)
     s_run_parameter = os.path.join(
-        get_samba_application_shared_folder(), run_folder, RUN_PARAMETER_FILE
+        get_samba_application_shared_folder(), run_folder, wetlab.config.RUN_PARAMETER_FILE
     )
-    l_metric_folder = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_METRIC_FOLDER)
+    l_metric_folder = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab.config.RUN_METRIC_FOLDER)
     s_metric_folder = os.path.join(
-        get_samba_application_shared_folder(), run_folder, RUN_METRIC_FOLDER
+        get_samba_application_shared_folder(), run_folder, wetlab.config.RUN_METRIC_FOLDER
     )
     copied_files = {}
 
@@ -1397,7 +1397,7 @@ def get_run_metric_files(conn, run_folder, experiment_name):
             string_message = (
                 experiment_name + " : cannot create folder on " + l_metric_folder
             )
-            logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_errors(string_message, True, False)
             logger.debug(
                 "%s : End function get_run_metric_files with error", experiment_name
             )
@@ -1408,12 +1408,12 @@ def get_run_metric_files(conn, run_folder, experiment_name):
         logger.info("%s : Sucessfully fetch of RunInfo file", experiment_name)
     except Exception:
         string_message = experiment_name + " : Unable to fetch " + s_run_info
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function get_run_metric_files with error", experiment_name
         )
         return {"ERROR": 20}
-    copied_files[RUN_INFO] = l_run_info
+    copied_files[wetlab.config.RUN_INFO] = l_run_info
 
     try:
         l_run_parameter = fetch_remote_file(
@@ -1422,12 +1422,12 @@ def get_run_metric_files(conn, run_folder, experiment_name):
         logger.info("%s : Sucessfully fetch of RunParameter file", experiment_name)
     except Exception:
         string_message = experiment_name + " : Unable to fetch " + s_run_parameter
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function get_run_metric_files with error", experiment_name
         )
         return {"ERROR": 21}
-    copied_files[RUN_PARAMETER_FILE] = l_run_parameter
+    copied_files[wetlab.config.RUN_PARAMETER_FILE] = l_run_parameter
 
     try:
         file_list = conn.listPath(get_samba_shared_folder(), s_metric_folder)
@@ -1436,14 +1436,14 @@ def get_run_metric_files(conn, run_folder, experiment_name):
         )
     except Exception:
         string_message = experiment_name + " : Unable to fetch " + s_run_parameter
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         shutil.rmtree(l_metric_folder)
         logger.debug(
             "%s : End function get_run_metric_files with error", experiment_name
         )
         return {"ERROR": 27}
     # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
-    copied_files[RUN_METRIC_FOLDER] = []
+    copied_files[wetlab.config.RUN_METRIC_FOLDER] = []
     try:
         for sh in file_list:
             if sh.isDirectory:
@@ -1458,7 +1458,7 @@ def get_run_metric_files(conn, run_folder, experiment_name):
                 # copied_files[RUN_METRIC_FOLDER].append(l_run_metric_file)
     except Exception:
         string_message = experiment_name + " : Unable to fetch " + s_run_metric_file
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         shutil.rmtree(l_metric_folder)
         logger.debug(
             "%s : End function get_run_metric_files with error", experiment_name
@@ -1491,7 +1491,7 @@ def parsing_run_metrics_files(
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function parsing_run_metrics", experiment_name)
-    run_param_obj = RunningParameters.objects.get(run_name_id=run_process_obj)
+    run_param_obj = wetlab.models.RunningParameters.objects.get(run_name_id=run_process_obj)
     # get the number of lanes for the run
     number_of_lanes = int(run_param_obj.get_number_of_lanes())
     # get number of reads for the run
@@ -1646,7 +1646,7 @@ def parsing_run_metrics_files(
                 read_lane_density_mean = "NaN"
                 read_lane_density_stddev = "NaN"
                 string_message = experiment_name + " : Unable to convert to float "
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["density"] = (
                 read_lane_density_mean
                 + "  "
@@ -1669,7 +1669,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_percent_pf"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["cluster_PF"] = (
                 read_lane_percent_pf_mean
                 + "  "
@@ -1701,7 +1701,7 @@ def parsing_run_metrics_files(
                 string_message = (
                     experiment_name + " : Unable to format to float read_lane_phasing"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["phas_prephas"] = (
                 read_lane_phasing_mean
                 + "  "
@@ -1727,7 +1727,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float run_read_stats_level[reads]"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             # reads PF (M)
             try:
                 run_read_stats_level["reads_PF"] = format(
@@ -1740,7 +1740,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float run_read_stats_level[reads_PF]"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             # percent q30
             try:
                 run_read_stats_level["q30"] = format(
@@ -1752,7 +1752,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float run_read_stats_level[q30]"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             # yield _g
             try:
                 run_read_stats_level["yields"] = format(
@@ -1764,7 +1764,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float run_read_stats_level[yields]"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             # cycles err Rate
             try:
                 run_read_stats_level["cyclesErrRated"] = str(
@@ -1780,7 +1780,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float run_read_stats_level[cyclesErrRated]"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             # percent_aligned
             try:
                 read_lane_percent_aligned_mean = format(
@@ -1800,7 +1800,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_percent_aligned_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["aligned"] = (
                 read_lane_percent_aligned_mean
                 + "  "
@@ -1822,7 +1822,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_error_rate_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["errorRate"] = (
                 read_lane_error_rate_mean
                 + "  "
@@ -1849,7 +1849,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_error_rate_35_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["errorRate35"] = (
                 read_lane_error_rate_35_mean
                 + "  "
@@ -1876,7 +1876,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_error_rate_50_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["errorRate50"] = (
                 read_lane_error_rate_50_mean
                 + "  "
@@ -1903,7 +1903,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_error_rate_75_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["errorRate75"] = (
                 read_lane_error_rate_75_mean
                 + "  "
@@ -1930,7 +1930,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_error_rate_100_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["errorRate100"] = (
                 read_lane_error_rate_100_mean
                 + "  "
@@ -1963,7 +1963,7 @@ def parsing_run_metrics_files(
                     experiment_name
                     + " : Unable to format to float read_lane_intensity_cycle_mean"
                 )
-                logging_warnings(string_message, False)
+                wetlab.utils.common.logging_warnings(string_message, False)
             run_read_stats_level["intensityCycle"] = (
                 read_lane_intensity_cycle_mean
                 + "  "
@@ -2011,7 +2011,7 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
     statistics_folder = os.path.join(
         get_samba_application_shared_folder(),
         run_folder,
-        STATS_FILE_PATH,
+        wetlab.config.STATS_FILE_PATH,
     )
 
     try:
@@ -2022,7 +2022,7 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
             + " : Unable to fetch folder demultiplexing at  "
             + statistics_folder
         )
-        logging_warnings(string_message, True)
+        wetlab.utils.common.logging_warnings(string_message, True)
         logger.debug(
             "%s : End function check_demultiplexing_folder_exists with warning",
             experiment_name,
@@ -2034,14 +2034,14 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         experiment_name,
     )
 
-    s_conversion_stats = os.path.join(statistics_folder, CONVERSION_STATS_FILE)
+    s_conversion_stats = os.path.join(statistics_folder, wetlab.config.CONVERSION_STATS_FILE)
     try:
         conversion_attributes = conn.getAttributes(
             get_samba_shared_folder(), s_conversion_stats
         )
     except Exception:
-        string_message = experiment_name + " : Unable to fetch " + CONVERSION_STATS_FILE
-        logging_errors(string_message, True, False)
+        string_message = experiment_name + " : Unable to fetch " + wetlab.config.CONVERSION_STATS_FILE
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function check_demultiplexing_folder_exists with error",
             experiment_name,
@@ -2072,29 +2072,29 @@ def delete_existing_bcl2fastq_table_processed(run_process_obj, experiment_name):
         "%s : Starting function delete_existing_bcl2fastq_table_processed",
         experiment_name,
     )
-    if RawDemuxStats.objects.filter(runprocess_id=run_process_obj).exists():
-        raw_demux_objs = RawDemuxStats.objects.filter(runprocess_id=run_process_obj)
+    if wetlab.models.RawDemuxStats.objects.filter(runprocess_id=run_process_obj).exists():
+        raw_demux_objs = wetlab.models.RawDemuxStats.objects.filter(runprocess_id=run_process_obj)
         for raw_demux_obj in raw_demux_objs:
             raw_demux_obj.delete()
         logger.info("%s : Deleted RawDemuxStats tables ", experiment_name)
 
-    if StatsFlSummary.objects.filter(runprocess_id=run_process_obj).exists():
-        stats_fl_summary_objs = StatsFlSummary.objects.filter(
+    if wetlab.models.StatsFlSummary.objects.filter(runprocess_id=run_process_obj).exists():
+        stats_fl_summary_objs = wetlab.models.StatsFlSummary.objects.filter(
             runprocess_id=run_process_obj
         )
         for stats_fl_summary_obj in stats_fl_summary_objs:
             stats_fl_summary_obj.delete()
         logger.info("%s : Deleted StatsFlSummary tables ", experiment_name)
 
-    if StatsLaneSummary.objects.filter(runprocess_id=run_process_obj).exists():
-        stats_lane_summary_objs = StatsLaneSummary.objects.filter(
+    if wetlab.models.StatsLaneSummary.objects.filter(runprocess_id=run_process_obj).exists():
+        stats_lane_summary_objs = wetlab.models.StatsLaneSummary.objects.filter(
             runprocess_id=run_process_obj
         )
         for stats_lane_summary_obj in stats_lane_summary_objs:
             stats_lane_summary_obj.delete()
         logger.info("%s : Deleted StatsLaneSummary tables ", experiment_name)
-    if SamplesInProject.objects.filter(run_process_id=run_process_obj).exists():
-        sample_in_project_objs = SamplesInProject.objects.filter(
+    if wetlab.models.SamplesInProject.objects.filter(run_process_id=run_process_obj).exists():
+        sample_in_project_objs = wetlab.models.SamplesInProject.objects.filter(
             run_process_id=run_process_obj
         )
         for sample_in_project_obj in sample_in_project_objs:
@@ -2127,7 +2127,7 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function get_demultiplexing_files", experiment_name)
     statistics_folder = os.path.join(
-        get_samba_application_shared_folder(), run_folder, STATS_FILE_PATH
+        get_samba_application_shared_folder(), run_folder, wetlab.config.STATS_FILE_PATH
     )
     try:
         conn.listPath(get_samba_shared_folder(), statistics_folder)
@@ -2137,17 +2137,17 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
             + " : Unable to fetch folder demultiplexing at  "
             + statistics_folder
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function get_demultiplexing_files with exception", experiment_name
         )
         return {"ERROR": 29}
     # conversion stats file
-    l_conversion_stats = os.path.join(RUN_TEMP_DIRECTORY, CONVERSION_STATS_FILE)
-    s_conversion_stats = os.path.join(statistics_folder, CONVERSION_STATS_FILE)
+    l_conversion_stats = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, wetlab.config.CONVERSION_STATS_FILE)
+    s_conversion_stats = os.path.join(statistics_folder, wetlab.config.CONVERSION_STATS_FILE)
     # demultiplexion stats file
-    l_demux_stats = os.path.join(RUN_TEMP_DIRECTORY, DEMULTIPLEXION_STATS_FILE)
-    s_demux_stats = os.path.join(statistics_folder, DEMULTIPLEXION_STATS_FILE)
+    l_demux_stats = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, wetlab.config.DEMULTIPLEXION_STATS_FILE)
+    s_demux_stats = os.path.join(statistics_folder, wetlab.config.DEMULTIPLEXION_STATS_FILE)
     demux_files = {}
     try:
         demux_files["conversion_stats"] = fetch_remote_file(
@@ -2158,10 +2158,10 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
         string_message = (
             experiment_name
             + " : cannot copy or fetch the "
-            + CONVERSION_STATS_FILE
+            + wetlab.config.CONVERSION_STATS_FILE
             + " file"
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
             "%s : End function get_demultiplexing_files with execption", experiment_name
         )
@@ -2175,10 +2175,10 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
         string_message = (
             experiment_name
             + " : cannot copy or fetch the "
-            + DEMULTIPLEXION_STATS_FILE
+            + wetlab.config.DEMULTIPLEXION_STATS_FILE
             + " file"
         )
-        logging_errors(string_message, True, False)
+        wetlab.utils.common.logging_errors(string_message, True, False)
         os.remove(l_conversion_stats)
         logger.info("%s : deleted %s file", experiment_name, l_conversion_stats)
         logger.debug(
@@ -2538,7 +2538,7 @@ def process_and_store_fl_summary_data(
         "%s : Starting function process_and_store_fl_summary_data", experiment_name
     )
     M_BASE = 1.004361 / 1000000
-    run_param_obj = RunningParameters.objects.get(run_name_id=run_process_obj)
+    run_param_obj = wetlab.models.RunningParameters.objects.get(run_name_id=run_process_obj)
     number_of_lanes = int(run_param_obj.get_number_of_lanes())
 
     for project in parsed_data.keys():
@@ -2571,7 +2571,7 @@ def process_and_store_fl_summary_data(
             project_flowcell["project_id"] = None
             project_flowcell["defaultAll"] = project
         else:
-            project_flowcell["project_id"] = Projects.objects.filter(
+            project_flowcell["project_id"] = wetlab.models.Projects.objects.filter(
                 project_name__iexact=project
             ).last()
             project_flowcell["defaultAll"] = None
@@ -2581,7 +2581,7 @@ def process_and_store_fl_summary_data(
         logger.info(
             "%s : End processing flow Summary for project %s", experiment_name, project
         )
-        StatsFlSummary.objects.create_fl_summary(project_flowcell)
+        wetlab.models.StatsFlSummary.objects.create_fl_summary(project_flowcell)
 
     logger.debug("%s : End function process_and_store_fl_summary_data", experiment_name)
     return
@@ -2665,7 +2665,7 @@ def process_and_store_lane_summary_data(
                 project_lane["project_id"] = None
                 project_lane["defaultAll"] = project
             else:
-                project_lane["project_id"] = Projects.objects.filter(
+                project_lane["project_id"] = wetlab.models.Projects.objects.filter(
                     project_name__exact=project
                 ).last()
                 project_lane["defaultAll"] = None
@@ -2675,7 +2675,7 @@ def process_and_store_lane_summary_data(
         logger.info(
             "%s : Processed information for project %s", experiment_name, project
         )
-        StatsLaneSummary.objects.create_lane_summary(project_lane)
+        wetlab.models.StatsLaneSummary.objects.create_lane_summary(project_lane)
         logger.info(
             "%s : Saved information to StatsLaneSummary for project %s ",
             experiment_name,
@@ -2720,12 +2720,12 @@ def process_and_store_raw_demux_project_data(
         if project not in project_list:
             # create project and link to the run
             # check if project exists yet
-            if not Projects.objects.filter(project_name__exact=project).exists():
-                new_project_obj = Projects.objects.create_new_empty_project(
+            if not wetlab.models.Projects.objects.filter(project_name__exact=project).exists():
+                new_project_obj = wetlab.models.Projects.objects.create_new_empty_project(
                     {"user_id": None, "projectName": project}
                 )
             else:
-                new_project_obj = Projects.objects.filter(
+                new_project_obj = wetlab.models.Projects.objects.filter(
                     project_name__exact=project
                 ).last()
             new_project_obj.runProcess.add(run_process_obj)
@@ -2735,7 +2735,7 @@ def process_and_store_raw_demux_project_data(
                 + project
                 + "Because it was not store"
             )
-            logging_warnings(string_message, True)
+            wetlab.utils.common.logging_warnings(string_message, True)
 
     logger.info("%s : Processing demultiplexing raw project data", experiment_name)
     for project in parsed_data.keys():
@@ -2752,7 +2752,7 @@ def process_and_store_raw_demux_project_data(
             project_raw_data["project_id"] = None
             project_raw_data["defaultAll"] = project
         else:
-            project_raw_data["project_id"] = Projects.objects.filter(
+            project_raw_data["project_id"] = wetlab.models.Projects.objects.filter(
                 project_name__exact=project
             ).last()
             project_raw_data["defaultAll"] = None
@@ -2764,7 +2764,7 @@ def process_and_store_raw_demux_project_data(
         project_raw_data["PF_YieldQ30"] = parsed_data[project]["PF_YieldQ30"]
         project_raw_data["PF_QualityScore"] = parsed_data[project]["PF_QualityScore"]
 
-        RawDemuxStats.objects.create_stats_run_read(
+        wetlab.models.RawDemuxStats.objects.create_stats_run_read(
             project_raw_data, run_process_obj
         )
         logger.info(
@@ -2804,7 +2804,7 @@ def process_and_store_samples_projects_data(
     )
     # Read sample sheet to get the user id for each smaple
     sample_sheet = run_process_obj.get_sample_file()
-    samples_with_user_ids = get_sample_with_user_owner(sample_sheet)
+    samples_with_user_ids = wetlab.utils.samplesheet.get_sample_with_user_owner(sample_sheet)
     # get the total number of read per lane
     M_BASE = 1.004361 / 1000000
 
@@ -2854,7 +2854,7 @@ def process_and_store_samples_projects_data(
 
             project_sample_data["qualityQ30"] = bigger_q30
             project_sample_data["meanQuality"] = mean_quality
-            project_sample_data["project_id"] = Projects.objects.filter(
+            project_sample_data["project_id"] = wetlab.models.Projects.objects.filter(
                 project_name__exact=project
             ).last()
             project_sample_data["runProcess_id"] = run_process_obj
@@ -2863,7 +2863,7 @@ def process_and_store_samples_projects_data(
             except KeyError:
                 raise KeyError(33)
 
-            SamplesInProject.objects.create_sample_project(
+            wetlab.models.SamplesInProject.objects.create_sample_project(
                 project_sample_data
             )
 
@@ -2911,7 +2911,7 @@ def process_and_store_unknown_barcode_data(
                     unknow_barcode["sequence"] = barcode_line["sequence"]
                     top_number += 1
 
-                RawTopUnknowBarcodes.objects.create_unknow_barcode(
+                wetlab.models.RawTopUnknowBarcodes.objects.create_unknow_barcode(
                     unknow_barcode
                 )
 
