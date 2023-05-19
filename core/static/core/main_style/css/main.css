@@ -3,6 +3,7 @@
 :root {
     --color-primary: #99d6ff;
     --color-secondary: #dadada;
+    --color-menu: ; 
     --color-bkg-menu-hover: #f8f8f8;
     --color-border-bottom: #ccf5ff;
     --color-white: #ffffff;
@@ -21,6 +22,41 @@ html, body {
   font-family: var(--font-primary);
 }
 
+p {
+  font-size: 15px;
+  font-weight: 400;
+  font-family: var(--font-primary);
+  color: var(--color-black);
+  line-height: 1.4;
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+em,
+li,
+li a {
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font-primary);
+  color: var(--color-primary);
+}
+
+a {
+  font-family: var(--font-primary);
+  color: var(--color-primary);
+  outline: 0;
+}
+
+a:focus, a:hover, a:active {
+  outline: 0;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/*--------------------------------------------------------------
+# Layout
+--------------------------------------------------------------*/
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -33,15 +69,24 @@ html, body {
   background: var(--color-background);
   background-size: cover;
   position: relative;
-  padding: 20px 0 20px 0;
+  padding: 75px 0 20px 0;
   flex: 1;
 }
 
+/*--------------------------------------------------------------
+# Menu
+--------------------------------------------------------------*/
 
 @media all and (min-width: 992px) {
-    .navbar .nav-item .dropdown-menu{ display: none; }
-    .navbar .nav-item:hover .dropdown-menu{ display: block; }
-    .navbar .nav-item .dropdown-menu{ margin-top:0; }
+    .bg-menu {
+      background-color: var(--color-white);
+    }
+    .navbar .nav-item .dropdown-menu{ 
+      display: none; 
+    }
+    .navbar .nav-item:hover .dropdown-menu{ 
+      display: block; 
+    }
     .navbar a:hover:before, .navbar li:hover > a:before, .navbar .active:before {
         visibility: visible;
         transform: scaleX(0.7);
@@ -49,17 +94,11 @@ html, body {
     .navbar a:hover, .navbar .active, .navbar .active:focus, .navbar li:hover > a {
         color: var(--color-primary);
         background: var(--color-white);
-         
-    }
-    .navbar .active:hover {
         border-bottom: 2px solid var(--color-border-bottom);
         transition: 0.3s;
-        transform: scaleX(1.1);
         background: var(--color-bkg-menu-hover);
     }
-
 }
-
 
 /*--------------------------------------------------------------
 # Footer
@@ -113,8 +152,3 @@ html, body {
   visibility: visible;
   opacity: 1;
 }
-
-
-/*--------------------------------------------------------------
-# Menu
---------------------------------------------------------------*/
