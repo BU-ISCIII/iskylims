@@ -2,36 +2,47 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block content %}
-<h1>Contact Us</h1>
 {% csrf_token %}
-
-<div class="row my-2">
-    <div class="col-sm-8">  <!--col-sm-8  User statatistics Form  -->
-    <div class="container-fluid margin-t-40">
-        <div class="card ">
-            <div class="card-header">Contact information</div>
-            <div class="card-body">
-                <h4>Contact information</h4>
-                <table class="table table-hover" >
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for name, email in contact_info.items %}
-                            <tr>
-                                <td>{{ name }} </td>
-                                <td>{{ email }} </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+{% include 'core/menu.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <div class="row justify-content-center pt-2 pb-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">Contact information</div>
+                    <div class="card-body">
+                        <h4>Contact information</h4>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, email in contact_info.items %}
+                                <tr>
+                                    <td>{{ name }} </td>
+                                    <td>{{ email }} </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-        {% crispy form %}
+        <div class="row justify-content-center pt-2 pb-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">Contact form</div>
+                    <div class="card-body">
+                    {% crispy form %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    </div> <!--// end col-sm-8  User statatistics Form  -->
-</div> <!-- //  end row -->
+</section>
 {% endblock %}
