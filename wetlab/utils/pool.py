@@ -1,8 +1,11 @@
-import json
+# Generic imports
 from datetime import date
 
-from wetlab.models import *
-from wetlab.config import *
+from django.db.models import Q
+
+# Local imports
+import wetlab.config
+import wetlab.models
 
 
 def get_lib_prep_adapter(lib_prep_ids):
@@ -17,9 +20,9 @@ def get_lib_prep_adapter(lib_prep_ids):
     """
     adapters = []
     for lib_prep_id in lib_prep_ids:
-        if not LibPrepare.objects.filter(pk__exact=lib_prep_id).exists():
+        if not wetlab.models.LibPrepare.objects.filter(pk__exact=lib_prep_id).exists():
             continue
-        lib_prep_obj = LibPrepare.objects.get(pk__exact=lib_prep_id)
+        lib_prep_obj = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_id)
         adapters.append(lib_prep_obj.get_adapters()[0])
     adapter_list = list(set(adapters))
     return adapter_list
@@ -39,7 +42,7 @@ def check_if_duplicated_index(lib_prep_ids):
     """
     index_values = {}
     for lib_prep_id in lib_prep_ids:
-        lib_prep_obj = LibPrepare.objects.get(pk__exact=lib_prep_id)
+        lib_prep_obj = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_id)
         # lib_prep_count += 1
         lib_index = lib_prep_obj.get_indexes()
         combined_index = str(lib_index["i7_indexID"] + "_" + lib_index["i5_indexID"])
@@ -63,7 +66,7 @@ def check_if_duplicated_index(lib_prep_ids):
                 s_name = []
                 for value in values:
                     s_name.append(
-                        LibPrepare.objects.get(pk__exact=value).get_sample_name()
+                        wetlab.models.LibPrepare.objects.get(pk__exact=value).get_sample_name()
                     )
                 incompatible_index.append([" and  ".join(s_name), key])
         incompatible_samples["incompatible_index"] = incompatible_index
@@ -82,7 +85,7 @@ def get_single_paired(lib_prep_ids):
         PairedEnd or SingleRead
     """
     for lib_prep_id in lib_prep_ids:
-        i5_index_value = LibPrepare.objects.get(pk__exact=lib_prep_id).get_i5_index()
+        i5_index_value = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_id).get_i5_index()
         if i5_index_value != "":
             return "PairedEnd"
     return "SingleRead"
@@ -117,7 +120,7 @@ def define_new_pool(form_data, user_obj):
     error = {}
     lib_prep_ids = form_data.getlist("lib_prep_id")
     if len(lib_prep_ids) == 0:
-        error["ERROR"] = ERROR_NOT_LIBRARY_PREPARATION_SELECTED
+        error["ERROR"] = wetlab.config.ERROR_NOT_LIBRARY_PREPARATION_SELECTED
         return error
     # check if index are not duplicate in the library preparation
 
@@ -147,10 +150,10 @@ def define_new_pool(form_data, user_obj):
     pool_data["pairedEnd"] = get_single_paired(lib_prep_ids)
     pool_data["n_samples"] = len(lib_prep_ids)
 
-    new_pool = LibraryPool.objects.create_lib_pool(pool_data)
+    new_pool = wetlab.models.LibraryPool.objects.create_lib_pool(pool_data)
     # update pool_id in each library_preparation belongs the new pool
     for lib_prep in lib_prep_ids:
-        lib_prep_obj = LibPrepare.objects.get(pk__exact=lib_prep)
+        lib_prep_obj = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep)
         lib_prep_obj.set_pool(new_pool)
         # return back to state completed if a library prepatarion was used for reused pool
         if lib_prep_obj.get_state() == "Reused pool":
@@ -172,8 +175,8 @@ def generate_pool_code_id():
         today_date + subindex
     """
     today_date = date.today().strftime("%Y_%m_%d")
-    if LibraryPool.objects.filter(pool_code_id__icontains=today_date).exists():
-        lib_pool = LibraryPool.objects.filter(pool_code_id__icontains=today_date).last()
+    if wetlab.models.LibraryPool.objects.filter(pool_code_id__icontains=today_date).exists():
+        lib_pool = wetlab.models.LibraryPool.objects.filter(pool_code_id__icontains=today_date).last()
         latest_code_id = lib_pool.get_pool_code_id()
         last_seq_number = int(latest_code_id.split("_")[-1])
         return str(today_date + "_" + str(last_seq_number + 1))
@@ -194,13 +197,11 @@ def get_lib_prep_to_select_in_pool():
     display_list = {}
     display_list["data"] = {}
 
-    from django.db.models import Q
-
-    if LibPrepare.objects.filter(
+    if wetlab.models.LibPrepare.objects.filter(
         Q(lib_prep_state__lib_prep_state__exact="Completed", pools=None)
         | Q(lib_prep_state__lib_prep_state__exact="Reused pool")
     ).exists():
-        lib_preparations = LibPrepare.objects.filter(
+        lib_preparations = wetlab.models.LibPrepare.objects.filter(
             Q(lib_prep_state__lib_prep_state__exact="Completed", pools=None)
             | Q(lib_prep_state__lib_prep_state__exact="Reused pool")
         ).order_by("register_user")
@@ -213,7 +214,7 @@ def get_lib_prep_to_select_in_pool():
                 lib_prep.get_info_for_selection_in_pool()
             )
 
-        display_list["heading"] = config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL
+        display_list["heading"] = wetlab.config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL
 
     return display_list
 
@@ -222,15 +223,15 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool = {}
     information_for_created_pool["data"] = pool_obj.get_info()
     information_for_created_pool["pool_name"] = pool_obj.get_pool_name()
-    information_for_created_pool["heading_pool"] = HEADING_FOR_DISPLAY_CREATED_POOL
+    information_for_created_pool["heading_pool"] = wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
     lib_prep_data = []
-    if LibPrepare.objects.filter(pools=pool_obj).exists():
-        lib_prep_ids = LibPrepare.objects.filter(pools=pool_obj)
+    if wetlab.models.LibPrepare.objects.filter(pools=pool_obj).exists():
+        lib_prep_ids = wetlab.models.LibPrepare.objects.filter(pools=pool_obj)
         for lib_prep_obj in lib_prep_ids:
             lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
     information_for_created_pool["lib_prep_data"] = lib_prep_data
     information_for_created_pool[
         "heading_library_pool"
-    ] = HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
+    ] = wetlab.config.HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
 
     return information_for_created_pool
