@@ -1,73 +1,74 @@
-{% extends 'core/base.html' %}             
-{% load crispy_forms_tags %} 
-{% load static %}                
-                                              
+{% extends 'core/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
 {% block content %}
+<link href="{% static 'core/vendor/multi_select/css/multi-select.css' %}" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="{% static 'core/vendor/multi_select/js/jquery.multi-select.js' %}"></script>
 
-<link href="{% static "core/vendor/multi_select/css/multi-select.css" %}" rel="stylesheet" type="text/css"/>
- 
-<style>
-* {
-  .border-radius(0) !important;
-}
-
-#field {
-    margin-bottom:20px;
-}
-
-
-</style>
-<nav class="navbar navbar-expand-sm navbar-light">
-    <div class="container">
-        <a  class="navbar-brand" href="/">
-            <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
-        </a>
-    </div>
-</nav>
-<div class="row mt-5">                
-    <div class="container-fluid margin-t-40">    
-        {% csrf_token %}
-        <form action="" method="POST" enctype="multipart/form-data">
-            {% crispy form1 %}
-            {% crispy form2 %}
-            <section class="justify-content-center">
-                <div class="container d-flex px-4  justify-content-center align-items-center text-center">
-                    <div class="row mt-2">
-                        <div class="card">
-                            <div class="card-header"><h2>Sharing list</h2></div>
-                            <div class="card-body">
-                                <h3>Select the users to share your projects</h3>
-                                <!-- start -->
-                                <select name="shared_list" id="shared_list" multiple="multiple" >
-                                    {% for userid, username in username_list %}
+{% include 'core/menu.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <div class="row justify-content-center pt-2 pb-2">
+            <div class="col-md-12">
+                {% csrf_token %}
+                <form action="" method="POST" enctype="multipart/form-data">
+                    <div class="row pt-2 pb-2">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">User data</div>
+                                <div class="card-body">
+                                    {% crispy form1 %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row pt-2 pb-2">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">Researcher data</div>
+                                <div class="card-body">
+                                    {% crispy form2 %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row pt-2 pb-2">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Sharing list</h2>
+                                </div>
+                                <div class="card-body">
+                                    <h3>Select the users to share your projects</h3>
+                                    <!-- start -->
+                                    <select name="shared_list" id="shared_list" multiple="multiple">
+                                        {% for userid, username in username_list %}
                                         <option value="{{ userid }}">{{username}}</option>
-                                    {% endfor %}
-                                    {% if sharing_list %}
-                                        {% for userid, username in sharing_list %}
-                                            <option value="{{ userid }}" selected>{{username}}</option>
                                         {% endfor %}
-                                    {% endif %}
-                                </select>
-                                <script type="text/javascript" src="{% static "core/vendor/multi_select/js/jquery.multi-select.js" %}"></script>
-
-                                <script type="text/javascript">
-                                    // run pre selected options
-                                    $('#shared_list').multiSelect({
-                                    selectableHeader: "<div class='text-center'>  <div class='text-primary' ><strong>Available user to share</strong></div></div>",
-                                    selectionHeader: "<div class='text-center'>  <div class='text-success' >Your Shared user list</div></div>",
-                                    });
-                                </script>
-                            </div> <!--  //end card body   -->
-                        </div> <!-- // end card -->
-                    </div> <!--// end row -->
-                </div> <!--// end container  -->
-            </section>    
-
-            <button type="submit" class="btn btn-outline-primary"> Submit </button>                                                                                                                                                                                                      
-        </form>
-
+                                        {% if sharing_list %}
+                                        {% for userid, username in sharing_list %}
+                                        <option value="{{ userid }}" selected>{{username}}</option>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"> Submit </button>
+                </form>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
+<script type="text/javascript">
+    // run pre selected options
+    $('#shared_list').multiSelect({
+        selectableHeader: "<div class='text-center'>  <div class='text-primary' ><strong>Available user to share</strong></div></div>",
+        selectionHeader: "<div class='text-center'>  <div class='text-success' >Your Shared user list</div></div>",
+    });
+</script>
 
-{% endblock %}                               
+{% endblock %}
