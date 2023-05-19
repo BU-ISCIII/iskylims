@@ -1,16 +1,22 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block content %}
-<h1>Contact Us</h1>
-<div class="row my-2">
-    <div class="col-sm-8">  <!--col-sm-8  -->
-	<div class="card ">
-	    <div class="card-header"><h2>BU-ISCIII</h2></div>
-	    <div class="card-body">
-		<h3>Thanks for contacting us:</h3>
-		We will manage your request and we will contact you shortly
-	    </div> <!--// end panel body -->
+{% include 'core/menu.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+	<div class="container-md">
+		{% include 'registration/login_inline.html' %}
+		<div class="row justify-content-center pt-2 pb-2">
+			<div class="col-md-8">
+				<div class="card ">
+					<div class="card-header">
+						<h2>Thanks for contacting us:</h2>
+					</div>
+					<div class="card-body">
+						We have received your request and we will contact you shortly.
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-    </div> <!--// end col-sm-8 -->
-</div> <!-- //  end row -->
+</section>
 {% endblock %}
