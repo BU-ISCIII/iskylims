@@ -9,8 +9,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from interop import py_interop_run, py_interop_run_metrics, py_interop_summary
 
-from wetlab.models import *
 from wetlab.config import *
+from wetlab.models import *
 
 from .common import *
 from .samplesheet import *
