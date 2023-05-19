@@ -2,27 +2,29 @@
 {% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
-{% include "registration/login_inline.html" %}
-<section class="iskylims">
-    <h1 class="text-center">{{organization_name}} </h1>
-    <div class="container">
-        <div class="row mt-2">
-            <div class="col-md-9">
-                <div class="card">
-                    <div class="card-header text-center"><h3>iSkyLIMS : Wetlab</h3> </div>
-                    <div class="card-body">
-                        <p class="text-center">This section will allow you to check 
-                            your sequencing activity.
-                        </p>
-                        <p class="text-center">
-                            Available processes are: sequencing
-                            run information, project, samples and user statistics.
-                        </p>
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <h1 class="text-center">{{organization_name}} </h1>
+        <div class="container">
+            <div class="row mt-2">
+                <div class="col-md-9">
+                    <div class="card">
+                        <div class="card-header text-center"><h3>iSkyLIMS : Wetlab</h3> </div>
+                        <div class="card-body">
+                            <p class="text-center">This section will allow you to check 
+                                your sequencing activity.
+                            </p>
+                            <p class="text-center">
+                                Available processes are: sequencing
+                                run information, project, samples and user statistics.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col md-3">
-                <img class="pe-0" src="{% static "wetlab/custom/img/nextseq_small.png" %}" >
+                <div class="col md-3">
+                    <img class="pe-0" src="{% static "wetlab/custom/img/nextseq_small.png" %}" >
+                </div>
             </div>
         </div>
     </div>

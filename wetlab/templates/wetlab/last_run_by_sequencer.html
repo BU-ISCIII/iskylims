@@ -2,49 +2,51 @@
 {% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
-{% include 'registration/login_inline.html' %}
-<section class="iskylims">
-    {% if no_runs %}
-        <div class="row my-2">
-            <div class="col-sm-8">
-                <div class="card border-danger mb-3">
-                    <div class="card-header"><h3 class="text-center">There are not Runs yet defined on database.</h3> </div>
-                    <div class="card-body">
-                    </div>
-                </div>
-            </div> 
-        </div>
-    {% else %}
-        <div class="container">
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if no_runs %}
             <div class="row my-2">
-                <div class="col-sm-8 offset-2">
-                    <div class="card ">
-                        <div class="card-header"><h3 class="text-center">Last Run executed for each sequencer</h3> </div>
+                <div class="col-sm-8">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">There are not Runs yet defined on database.</h3> </div>
                         <div class="card-body">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Sequencer Name</th>
-                                        <th>Platform</th>
-                                        <th>Run Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for sequencer, platform, id, name in last_runs %}
-                                        <tr>
-                                            <td>{{sequencer}}</td>
-                                            <td>{{platform}}</td>
-                                            <td><a href="/wetlab/displayRun={{id}}" class="text-decoration-none">{{name}}</a> </td>
-
-                                        </tr>
-                                    {%endfor%}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
-                </div> <!--  end of col-sm-7 -->
-            </div> <!--  end of row -->
+                </div> 
+            </div>
+        {% else %}
+            <div class="container">
+                <div class="row my-2">
+                    <div class="col-sm-8 offset-2">
+                        <div class="card ">
+                            <div class="card-header"><h3 class="text-center">Last Run executed for each sequencer</h3> </div>
+                            <div class="card-body">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Sequencer Name</th>
+                                            <th>Platform</th>
+                                            <th>Run Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sequencer, platform, id, name in last_runs %}
+                                            <tr>
+                                                <td>{{sequencer}}</td>
+                                                <td>{{platform}}</td>
+                                                <td><a href="/wetlab/displayRun={{id}}" class="text-decoration-none">{{name}}</a> </td>
+
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div> <!--  end of col-sm-7 -->
+                </div> <!--  end of row -->
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </section>
 {% endblock %}
