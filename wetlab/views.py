@@ -3943,7 +3943,7 @@ def get_size_dir(
     conn,
 ):
     count_file_size = 0
-    file_list = conn.listPath(wetlab.config.SAMBA_SHARED_FOLDER_NAME, directory)
+    file_list = conn.listPath(config.SAMBA_SHARED_FOLDER_NAME, directory)
     for sh_file in file_list:
         if sh_file.isDirectory:
             if sh_file.filename == "." or sh_file.filename == "..":
