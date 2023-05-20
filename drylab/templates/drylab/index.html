@@ -1,105 +1,116 @@
-{% extends 'drylab/base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
+
 {% block content %}
-{% csrf_token %}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <div class="row pb-2 pt-2">
+            <div class="col-md-4">
+                <h1>{{organization_name}}</h1>
+                <h2>iSkyLIMS: DryLab</h2>
+            </div>
+        </div>
+        <div class="row justify-content-between pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">
+                        <h3>Welcome</h3>
+                    </div>
+                    <div class="card-body">
+                        This section will allow you to check {{organization_name}} service activity.
+                        Available processes are:
+                        <ul>
+                            <li>Sequencing</li>
+                            <li>Counseling</li>
+                            <li>Infrastructure</li>
+                        </ul>
+                        Email us for requesting detailed information about available services and conditions.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <img class="img-fluid" src="{% static 'drylab/custom/img/support.png' %}">
+            </div>
+        </div>
+        <div class="row pb-2 pt-2">
+            <div class="col-md-5">
+                <div class="card ">
+                    <div class="card-header">
+                        Recorded Services
+                    </div>
+                    <div class="card-body">
+                        {% if service_list.recorded %}
+                        <div class="scrolling-wrapper">
+                            <table class="table table-responsive table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service Number</th>
+                                        <th>Request Center</th>
+                                        <th>Requested by</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for values in service_list.recorded %}
+                                    <tr>
+                                        {% for value in values %}
+                                        <td>{{ value }} </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <h5>There is no new Requested Service </h5>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="card ">
+                    <div class="card-header">In progress Services</div>
+                    <div class="card-body">
+                        {% if service_list.ongoing %}
+                        <div class="scrolling-wrapper">
+                            <table class="table table-responsive table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service Number</th>
+                                        <th>Request Center</th>
+                                        <th>Expected delivery date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for values in service_list.ongoing %}
+                                    <tr>
+                                        {% for value in values %}
+                                        <td>{{ value }} </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <h5>At present all requested services which we were working on, they are delivered.</h5>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <style>
     .scrolling-wrapper {
         overflow-x: auto;
         overflow-y: auto;
         white-space: nowrap;
         height: 300px;
- </style>
-    <h1><div class="color-heading">{{organization_name}}</div></h1>
-    <h2>iSkyLIMS: DryLab</h2>
-    <div class="row my-2">
-        <div class="col-sm-8">
-        <div class="card ">
-            <div class="card-header"><h3>Welcome</h3></div>
-            <div class="card-body">
-			    <p>This section will allow you to check {{organization_name}} service activity. </p>
-                <p>Available processes are: </p>
-                <ul>
-                  <li>Sequencing Request Service</li>
-                  <li>Counseling Request Service</li>
-                  <li>Infra structure Request Service</li>
-                </ul>
-                <p>Email us for requesting detailed information about available services and conditions </p>
-		  </div> <!--// end panel body -->
-        </div>
-      </div> <!--// end col-sm-8 -->
-      <div class="col-sm-2 offset-1">
-            <img class="promo-block-img img-responsive" src="{% static "drylab/custom/img/support.png" %}" align="Avatar">
-        </div> <!--// end img -->
-      </div> <!--// end col-sm-4 -->
-    </div> <!--// end row -->
-
-        <!--  Second paragraph -->
-
-    <div class="row my-2">
-        <div class="col-sm-12">
-            <div class="col-sm-6">
-            <div class="card ">
-                <div class="card-header"><h3>Recorded Services</h3></div>
-                <div class="card-body">
-                    {% if service_list.recorded %}
-                        <div class="scrolling-wrapper">
-                             <table class="table table-hover" >
-                                    <thead>
-                                        <tr>
-                                            <th>Service Number</th>
-                                            <th>Request Center</th>
-                                            <th>Requested by</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for values in service_list.recorded %}
-                                            <tr>
-                                                {% for value in values %}
-                                                    <td>{{ value }} </td>
-                                                {% endfor %}
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div> <!--  end of scrolling wrapper -->
-                    {% else %}
-                        <h5>There is no new Requested Service </h5>
-                    {% endif %}
-    		        </div>  
-                </div>
-            </div> <!--// end col-sm-6 -->
-            <div class="col-sm-6">
-            <div class="card ">
-                <div class="card-header"><h3>In progress Services</h3></div>
-                <div class="card-body">
-                    {% if service_list.ongoing %}
-                        <div class="scrolling-wrapper">
-                             <table class="table table-hover" >
-                                    <thead>
-                                        <tr>
-                                            <th>Service Number</th>
-                                            <th>Request Center</th>
-                                            <th>Expected delivery date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for values in service_list.ongoing %}
-                                            <tr>
-                                                {% for value in values %}
-                                                    <td>{{ value }} </td>
-                                                {% endfor %}
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div> <!--  end of scrolling wrapper -->
-                    {% else %}
-                        <h5>At present all requested services which we were working on, they are delivered.</h5>
-                    {% endif %}
-    		        </div>  
-                </div>
-            </div> <!--// end col-sm-6 -->
-        </div> <!--// end col-sm-12 -->
-    </div> <!--// end row -->
-
+    }
+</style>
 {% endblock %}
