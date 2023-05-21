@@ -81,7 +81,7 @@ def configuration_email(request):
             email_conf_data["test_email"] = request.POST["test_email"]
             return render(
                 request,
-                "drylab/configurationEmail.html",
+                "drylab/configuration_email.html",
                 {"ERROR": result_email, "email_conf_data": email_conf_data},
             )
         drylab.utils.common.save_database_configuration_value(
@@ -89,12 +89,12 @@ def configuration_email(request):
         )
         return render(
             request,
-            "drylab/configurationEmail.html",
+            "drylab/configuration_email.html",
             {"succesful_settings": True},
         )
     return render(
         request,
-        "drylab/configurationEmail.html",
+        "drylab/configuration_email.html",
         {"email_conf_data": email_conf_data},
     )
 
