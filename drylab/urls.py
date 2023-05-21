@@ -24,7 +24,7 @@ urlpatterns = [
         name="counseling_service",
     ),
     path(
-        "configurationEmail",
+        "configuration_email",
         drylab.views.configuration_email,
         name="configuration_email",
     ),
