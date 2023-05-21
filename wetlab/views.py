@@ -4278,7 +4278,7 @@ def add_user_lot_commercial_kit(request):
                 "wetlab/add_user_lot_commercial_kit.html",
                 {
                     "defined_kits": defined_kits,
-                    "error_message": request.POST["nickName"] + " is already defined"
+                    "error_message": "Lot barcode " +request.POST["barCode"] + " is already defined"
                 },
             )
         new_lot_kit = core.utils.commercial_kits.store_lot_user_commercial_kit(

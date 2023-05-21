@@ -62,7 +62,7 @@ def add_commercial_kit(request):
 @login_required
 def add_user_lot_commercial_kit(request):
     if request.method == "POST" and request.POST["action"] == "addUserLotKit":
-        if get_lot_user_commercial_kit_id(request.POST["nickName"]):
+        if get_lot_user_commercial_kit_obj(request.POST["nickName"]):
             defined_kits = get_defined_commercial_kits()
             return render(
                 request,
