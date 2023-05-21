@@ -19,9 +19,9 @@ def get_defined_commercial_kits():
     return commercial_kit_list
 
 
-def get_lot_user_commercial_kit_id(lot_number):
+def get_lot_user_commercial_kit_obj(lot_number):
     if UserLotCommercialKits.objects.filter(chip_lot__iexact=lot_number).exists():
-        return UserLotCommercialKits.objects.get(chip_lot__iexact=lot_number)
+        return UserLotCommercialKits.objects.filter(chip_lot__iexact=lot_number).last()
     else:
         return None
 
