@@ -6113,12 +6113,12 @@ def sequencer_configuration(request):
         if "ERROR" in new_sequencer:
             return render(
                 request,
-                "wetlab/sequencerConfiguration.html",
-                {"sequencer_info": sequencer_info, "ERROR": new_sequencer},
+                "wetlab/sequencer_configuration.html",
+                {"sequencer_info": sequencer_info, "error_message": new_sequencer},
             )
         return render(
             request,
-            "wetlab/sequencerConfiguration.html",
+            "wetlab/sequencer_configuration.html",
             {"sequencer_info": sequencer_info, "new_defined_sequencer": new_sequencer},
         )
     if request.method == "POST" and request.POST["action"] == "addNewConfiguration":
@@ -6128,12 +6128,12 @@ def sequencer_configuration(request):
         if "ERROR" in new_defined_configuration:
             return render(
                 request,
-                "wetlab/sequencerConfiguration.html",
+                "wetlab/sequencer_configuration.html",
                 {"sequencer_info": sequencer_info, "ERROR": new_defined_configuration},
             )
         return render(
             request,
-            "wetlab/sequencerConfiguration.html",
+            "wetlab/sequencer_configuration.html",
             {
                 "sequencer_info": sequencer_info,
                 "new_defined_configuration": new_defined_configuration,
@@ -6142,7 +6142,7 @@ def sequencer_configuration(request):
     else:
         return render(
             request,
-            "wetlab/sequencerConfiguration.html",
+            "wetlab/sequencer_configuration.html",
             {"sequencer_info": sequencer_info},
         )
 
