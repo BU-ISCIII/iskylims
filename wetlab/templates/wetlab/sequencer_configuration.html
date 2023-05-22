@@ -1,0 +1,246 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-6 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+        {% endif %}
+        {% if new_defined_sequencer %}
+            <div class="row my-2">
+                <div class="col-sm-8 offset-2" >
+                    <div class="card ">
+                        <div class="card-header"><h3>New Sequencer has been added</h3> </div>
+                        <div class="card-body">
+                            <p>New sequencer <strong>{{ new_defined_sequencer }}</strong> is defined</p>
+                            <br><br><br>
+                            <button type="button" class="btn btn-outline-primary float-end" onclick="window.location.href = '/wetlab/sequencerConfiguration';">Add new Sequencer</button>
+                        </div>  
+                    </div>
+                </div> <!--// end of sm-8 -->
+            </div> <!--// end row -->
+        {% elif new_defined_configuration %}
+            <div class="row my-2">
+                <div class="col-sm-8 offset-2" >
+                    <div class="card ">
+                        <div class="card-header"><h3>New Configuration has been added</h3> </div>
+                        <div class="card-body">
+                            <p>New configuration <strong>{{ new_defined_configuration.1 }}</strong> is defined for {{new_defined_configuration.0}}</p>
+                            <br><br><br>
+                            <button type="button" class="btn btn-outline-primary float-end" onclick="window.location.href = '/wetlab/sequencerConfiguration';">Add new Sequencer Configuration</button>
+                        </div>  
+                    </div>
+                </div> <!--// end of sm-8 -->
+            </div> <!--// end row -->
+        {% else %}
+            <div class="row my-2">
+                <div class="col" >
+                    <h3 class="text-center">Form to add Sequencer information</h3>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="new_seq-tab" data-bs-toggle="tab" data-bs-target="#new_seq" type="button" role="tab" aria-controls="new_seq" aria-selected="true">New sequencer</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="sequencers-tab" data-bs-toggle="tab" data-bs-target="#sequencers" type="button" role="tab" aria-controls="sequencers" aria-selected="false">Defined sequencers</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="kit_seq-tab" data-bs-toggle="tab" data-bs-target="#kit_seq" type="button" role="tab" aria-controls="kit_seq" aria-selected="false">Sequencers used kits</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="kits-tab" data-bs-toggle="tab" data-bs-target="#kits" type="button" role="tab" aria-controls="kits" aria-selected="false">Defined kits used on sequencers </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="new_seq" role="tabpanel" aria-labelledby="new_seq-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Define new Sequencer </h3></div>
+                                                <div class="card-body">
+                                                    <form method="post" enctype="multipart/form-data" name="addNewSequencer" id="addNewSequencer" class="form-horizontal">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="addNewSequencer"/>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="sequencerName" id="sequencerName" size="50" placeholder="Sequencer name ">
+                                                                    <label class="text-danger" for="sequencerName">Sequencer name</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="sequencerSerialNumber" id="sequencerSerialNumber" placeholder="Serial number">
+                                                                    <label class="text-danger" for="sequencerSerialNumber">Kit Name </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <select class="form-select" required = "required"  name="platformID" id="platformID" aria-label="Platform">
+                                                                        <option value="">Choose a value</option>
+                                                                        {% for id , value  in sequencer_info.platforms %}
+                                                                            <option value="{{id}}">{{value}}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                    <label for="commercialKit" class="text-danger">Select commercial kit name</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="sequencerNumberLanes" id="sequencerNumberLanes" placeholder="number of lanes">
+                                                                    <label class="text-danger" for="sequencerNumberLanes">Nunber  of lanes</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="sequencerLocation" id="sequencerLocation" size="50" placeholder="Sequencer location ">
+                                                                    <label class="text-danger" for="sequencerLocation">Sequencer location</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-floating mb-3">
+                                                                <input type="date" class="form-control" id="sequencerOperationStart" name="sequencerOperationStart" placeholder="start in service date" >
+                                                                <label class="text-danger" for="sequencerOperationStart">Sequencer start in service date (DD-MM-YYYY)</label>
+                                                            </div>
+                                                        </div>
+                                                        <label class="col form-label" for="description" >Description</label>
+                                                        <div class="form-floating mb-3">
+                                                            <textarea class="form-control" name="description" value="" id="description" style="height:100px" maxlength="250"></textarea>
+                                                            <label for="description">Write some lines about this sequencer(Max 250 characters)</label>
+                                                        </div>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                        <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                                    </form>
+                                                </div> 
+                                            </div> 
+                                        </div>
+                                    </div> 
+                                </div> 
+                            </div> <!-- end of new-seq -->
+                            <div class="tab-pane fade " id="sequencers" role="tabpanel" aria-labelledby="sequencers-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Sequencer defined list</h3></div>
+                                                <div class="card-body">
+                                                    {% if sequencer_info.sequencer_names %}
+                                                        <table class="table table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Platform</th>
+                                                                    <th>Sequencer Name</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            {% for platform, seq_names in sequencer_info.sequencer_names.items %}
+                                                                <tr>
+                                                                    <td>{{ platform }}</td>
+                                                                    <td>
+                                                                        {% for seq_name in seq_names %}
+                                                                            {{ seq_name }} <br>
+                                                                        {% endfor %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    {% else %}
+                                                        <p> No Sequencers are defined </p>
+                                                    {% endif %}
+                                                </div>  
+                                            </div>
+                                        </div> 
+                                    </div>  
+                                </div>
+                            </div>  <!-- end sequencers-->
+                            <div class="tab-pane fade " id="kit_seq" role="tabpanel" aria-labelledby="kit_seq-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Add sequencer configuration</h3></div>
+                                                <div class="card-body">
+                                                    <form method="post" enctype="multipart/form-data" name="addNewConfiguration" id="addNewConfiguration" class="form-horizontal">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="addNewConfiguration"/>
+                                                        <div class="col-md">
+                                                            <div class="form-floating mb-3">
+                                                                <select class="form-select" required = "required"  name="platformID" id="platformID" aria-label="Platform">
+                                                                    <option value="">Choose a value</option>
+                                                                    {% for value, id in sequencer_info.platforms_used.items %}
+                                                                        <option value="{{id}}">{{value}}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                                <label for="platformID" class="text-danger">Select sequencer platform</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-floating mb-3">
+                                                            <input type="text" class="form-control" id="sequencerConfiguration" name="sequencerConfiguration" placeholder="define new sequencer configuration" >
+                                                            <label class="text-danger" for="sequencerConfiguration">Define new Sequencer configuration</label>
+                                                        </div>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                        <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                                    </form>
+                                                </div>
+                                            </div> 
+                                        </div> 
+                                    </div>
+                                </div> 
+                            </div> 
+                            <div class="tab-pane fade " id="kits" role="tabpanel" aria-labelledby="kits-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Sequencer configuration</h3></div>
+                                                <div class="card-body">
+                                                    {% if sequencer_info.sequencer_data %}
+                                                        {% for  platform, confs in sequencer_info.sequencer_data.items %}
+                                                            <table class="table table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>{{platform}}</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for  configuration in confs %}
+                                                                        <tr>
+                                                                            <td>{{ configuration }}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <p> No Sequencer Configurations are defined </p>
+                                                    {% endif %}
+                                            </div>  
+                                        </div> 
+                                    </div> 
+                                </div>
+                            </div> 
+                        </div> 
+                    </div>  
+                </div>
+            </div> 
+        {% endif%}
+    </div>
+</section>
+{% endblock %}
