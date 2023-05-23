@@ -1,10 +1,10 @@
-{% extends 'wetlab/base.html' %}
+{% extends "core/base.html" %}
 {% load static %}
 {% block content %}
-
-
-
-
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
 {% if information_for_created_pool %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-10 offset-1" >
@@ -213,4 +213,6 @@
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
 {% endif %}
+</div>
+</section>
 {% endblock %}

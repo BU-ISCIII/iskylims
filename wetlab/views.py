@@ -4315,7 +4315,7 @@ def pending_to_update(request):
         pending
     ).render()
 
-    return render(request, "wetlab/pendingToUpdate.html", {"pending": pending})
+    return render(request, "wetlab/pending_to_update.html", {"pending": pending})
 
 
 @login_required
@@ -4917,7 +4917,7 @@ def display_type_of_sample(request, sample_type_id):
 
 
 @login_required
-def handling_library_preparations(request):
+def handling_library_preparation(request):
     """
     Functions:
         analyze_and_store_input_additional_kits
@@ -4941,7 +4941,7 @@ def handling_library_preparations(request):
         if len(samples_in_lib_prep_protocol) == 0:
             return render(
                 request,
-                "wetlab/handlingLibraryPreparations.html",
+                "wetlab/handling_library_preparation.html",
                 {"stored_lib_prep": samples_in_lib_prep},
             )
         library_preparation_objs = (
@@ -4956,7 +4956,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"lib_prep_protocol_parameters": lib_prep_protocol_parameters},
         )
 
@@ -4975,7 +4975,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"lib_prep_protocol_parameters": lib_prep_protocol_parameters},
         )
 
@@ -5003,7 +5003,7 @@ def handling_library_preparations(request):
             )
             return render(
                 request,
-                "wetlab/handlingLibraryPreparations.html",
+                "wetlab/handling_library_preparation.html",
                 {
                     "ERROR": error_message,
                     "lib_prep_protocol_parameters": lib_prep_protocol_parameters,
@@ -5011,7 +5011,7 @@ def handling_library_preparations(request):
             )
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"stored_params": stored_params},
         )
 
@@ -5029,7 +5029,7 @@ def handling_library_preparations(request):
                 data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
-                "wetlab/handlingLibraryPreparations.html",
+                "wetlab/handling_library_preparation.html",
                 {"ERROR": data["ERROR"], "samples_in_lib_prep": samples_in_lib_prep},
             )
         user_in_description = wetlab.utils.common.get_configuration_value(
@@ -5048,7 +5048,7 @@ def handling_library_preparations(request):
                     )
                 return render(
                     request,
-                    "wetlab/handlingLibraryPreparations.html",
+                    "wetlab/handling_library_preparation.html",
                     {
                         "ERROR": user_id_in_s_sheet["ERROR"],
                         "samples_in_lib_prep": samples_in_lib_prep,
@@ -5066,7 +5066,7 @@ def handling_library_preparations(request):
                 )
             return render(
                 request,
-                "wetlab/handlingLibraryPreparations.html",
+                "wetlab/handling_library_preparation.html",
                 {
                     "ERROR": valid_data["ERROR"],
                     "samples_in_lib_prep": samples_in_lib_prep,
@@ -5096,7 +5096,7 @@ def handling_library_preparations(request):
             display_sample_sheet["user_list"] = wetlab.utils.common.get_userid_list()
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"display_sample_sheet": display_sample_sheet},
         )
 
@@ -5109,7 +5109,7 @@ def handling_library_preparations(request):
         if "ERROR" in store_data_result:
             return render(
                 request,
-                "wetlab/handlingLibraryPreparations.html",
+                "wetlab/handling_library_preparation.html",
                 {
                     "ERROR": valid_data["ERROR"],
                     "samples_in_lib_prep": samples_in_lib_prep,
@@ -5118,7 +5118,7 @@ def handling_library_preparations(request):
         stored_index = "True"
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"stored_index": stored_index},
         )
 
@@ -5132,7 +5132,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"stored_lib_prep": stored_lib_prep},
         )
         """
@@ -5144,7 +5144,7 @@ def handling_library_preparations(request):
         )
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"additional_kits": additional_kits},
         )
 
@@ -5165,19 +5165,19 @@ def handling_library_preparations(request):
             additional_kits["data"] = json.loads(request.POST["protocol_data"])
             return render(
                 request,
-                "wetlab/handlingLibraryPreparations.html",
+                "wetlab/handling_library_preparation.html",
                 {"ERROR": error_message, "additional_kits": additional_kits},
             )
 
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"stored_additional_kits": stored_additional_kits},
         )
     else:
         return render(
             request,
-            "wetlab/handlingLibraryPreparations.html",
+            "wetlab/handling_library_preparation.html",
             {"samples_in_lib_prep": samples_in_lib_prep},
         )
 
@@ -5734,7 +5734,7 @@ def create_pool(request):
             display_list.update(new_pool)
             return render(
                 request,
-                "wetlab/createPool.html",
+                "wetlab/create_pool.html",
                 {"display_list": display_list},
             )
         information_for_created_pool = (
@@ -5742,12 +5742,14 @@ def create_pool(request):
         )
         return render(
             request,
-            "wetlab/createPool.html",
+            "wetlab/create_pool.html",
             {"information_for_created_pool": information_for_created_pool},
         )
 
     else:
-        return render(request, "wetlab/createPool.html", {"display_list": display_list})
+        return render(
+            request, "wetlab/create_pool.html", {"display_list": display_list}
+        )
 
 
 @login_required
@@ -5774,7 +5776,7 @@ def create_new_run(request):
             error_message = wetlab.config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
             return render(
                 request,
-                "wetlab/CreateNewRun.html",
+                "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": error_message,
@@ -5786,7 +5788,7 @@ def create_new_run(request):
         if "ERROR" in compatibility:
             return render(
                 request,
-                "wetlab/CreateNewRun.html",
+                "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": compatibility["ERROR"],
@@ -5801,7 +5803,7 @@ def create_new_run(request):
 
         return render(
             request,
-            "wetlab/CreateNewRun.html",
+            "wetlab/create_new_run.html",
             {"display_sample_information": display_sample_information},
         )
 
@@ -5826,7 +5828,7 @@ def create_new_run(request):
         display_sample_information["run_process_id"] = run_id
         return render(
             request,
-            "wetlab/CreateNewRun.html",
+            "wetlab/create_new_run.html",
             {"display_sample_information": display_sample_information},
         )
 
@@ -5839,7 +5841,7 @@ def create_new_run(request):
             display_pools_for_run = wetlab.utils.run.display_available_pools()
             return render(
                 request,
-                "wetlab/CreateNewRun.html",
+                "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": error_message,
@@ -5856,7 +5858,7 @@ def create_new_run(request):
             display_pools_for_run = wetlab.utils.run.display_available_pools()
             return render(
                 request,
-                "wetlab/CreateNewRun.html",
+                "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
                     "ERROR": projects_objs["ERROR"],
@@ -5881,20 +5883,20 @@ def create_new_run(request):
 
         return render(
             request,
-            "wetlab/CreateNewRun.html",
+            "wetlab/create_new_run.html",
             {"created_new_run": created_new_run},
         )
     else:
         display_pools_for_run = wetlab.utils.run.display_available_pools()
         return render(
             request,
-            "wetlab/CreateNewRun.html",
+            "wetlab/create_new_run.html",
             {"display_pools_for_run": display_pools_for_run},
         )
 
 
 @login_required
-def pending_sample_preparations(request):
+def pending_sample_preparation(request):
     pending = {}
     # get the samples in defined state
     pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
@@ -5913,7 +5915,7 @@ def pending_sample_preparations(request):
         pending
     ).render()
     return render(
-        request, "wetlab/pendingSamplePreparations.html", {"pending": pending}
+        request, "wetlab/pending_sample_preparation.html", {"pending": pending}
     )
 
 

@@ -50,14 +50,14 @@
                             </table>
                         </div>
                         {% if display_user_kit_list.kit_data|length > 7 %}
-                                <script type="text/javascript">
-                                    $(document).ready(function() {
-                                        $('#kit_table').DataTable({
-                                            responsive: true,
-                                        });
+                            <script type="text/javascript">
+                                $(document).ready(function() {
+                                    $('#kit_table').DataTable({
+                                        responsive: true,
                                     });
-                                </script>
-                            {% endif %}
+                                });
+                            </script>
+                        {% endif %}
                 </div>
                 </div> 
             </div>

@@ -139,9 +139,15 @@ urlpatterns = [
     ),
     path("MonthlyReport/", wetlab.views.monthly_report, name="montly_report"),
     path(
+<<<<<<< HEAD
         "pendingSamplePreparations",
         wetlab.views.pending_sample_preparations,
         name="pending_sample_preparations",
+=======
+        "pendingSamplePreparation",
+        views.pending_sample_preparation,
+        name="pending_sample_preparation",
+>>>>>>> Update first  page of html files, waiting for defining samples to update the inside pages
     ),
     path("pendingToUpdate/", wetlab.views.pending_to_update, name="pending_to_update"),
     path("QuarterReport/", wetlab.views.quarter_report, name="quarter_report"),

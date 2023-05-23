@@ -1,7 +1,12 @@
-{% extends 'wetlab/base.html' %}
+{% extends "core/base.html" %}
 {% load static %}
 {% block content %}
 {%include 'core/jexcel_functionality.html' %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+
 
 {% if ERROR %}
     <div class="row row-space-4 margin-b-4">
@@ -374,5 +379,6 @@
     {% endif %}
 
 {% endif %}
-
+    </div>
+</section>
 {% endblock %}
