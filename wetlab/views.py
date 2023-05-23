@@ -1315,14 +1315,14 @@ def skip_cancel_situation(request):
             ] = wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
             return render(
                 request,
-                "wetlab/successful_page.html",
-                {"detail_description": detail_description, "return_main_menu": True},
+                "wetlab/skip_cancel_situation.html",
+                {"detail_description": detail_description},
             )
         else:
             return render(
                 request,
-                "wetlab/error_page.html",
-                {"content": ["Run does not exist "]},
+                "wetlab/skip_cancel_situation.html",
+                {"error_message": ["Run does not exist"]},
             )
     else:
         # return redirect (request,'/')
@@ -1355,19 +1355,14 @@ def display_run(request, run_id):
             if not allowed:
                 return render(
                     request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "You do have the enough privileges to see this page ",
-                            "Contact with your administrator .",
-                        ]
-                    },
+                    "wetlab/display_run.html",
+                    {"error_message": "You do have the enough privileges to see this page "}
                 )
         else:
             return render(
                 request,
-                "wetlab/error_page.html",
-                {"content": ["No matches have been found for the run "]},
+                "wetlab/display_run.html",
+                {"error_message": "No matches were found for the run "},
             )
 
     if wetlab.models.wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
@@ -1375,14 +1370,14 @@ def display_run(request, run_id):
         r_data_display = wetlab.utils.fetch_info.get_information_run(run_name_found)
         return render(
             request,
-            "wetlab/displayRun.html",
+            "wetlab/display_run.html",
             {"display_one_run": r_data_display},
         )
     else:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["No matches have been found for the run  "]},
+            "wetlab/display_run.html",
+            {"error_message": "No matches have been found for the run"}
         )
 
 
