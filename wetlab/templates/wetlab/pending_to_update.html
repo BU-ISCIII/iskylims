@@ -1,27 +1,11 @@
-{% extends 'wetlab/base.html' %}
-{% load static %}
+{% extends "core/base.html" %}
 {% block content %}
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
-<style >
-    .text-large {
-        font-size: 150%;
-    }
-</style>
-<style>
-.table-wrapper-sm-7 {
-    max-height: 450px;
-    overflow: auto;
-    display:inline-block;
-
-}
-.table-wrapper-sm-4 {
-    max-height: 450px;
-    overflow: auto;
-    display:inline-block;
-    width: 370px;
-}
-</style>
+{% include "core/cdn_table_functionality.html" %}
+{% include "core/graphic_chart_functionality.html" %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-7" >
@@ -137,4 +121,6 @@
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
 {% endif %}
+</div>
+</section>
 {% endblock %}

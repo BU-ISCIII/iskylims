@@ -2,11 +2,13 @@
 {% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
-{% include 'registration/login_inline.html' %}
+
 {% include "core/graphic_chart_functionality.html" %}
 {% include "core/cdn_table_functionality.html" %}
-<section class="iskylims">
-   {% if display_incompleted_run %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+    {% include 'registration/login_inline.html' %}
+    {% if display_incompleted_run %}
         <div class="row my-2">
             <div class="col" >
                 <h3 style="text-align:center">List of runs that are not completed</h3>
@@ -243,5 +245,6 @@
         </div> <!--  end of row -->
 
     {% endif %}
+    </div>
 </section>
 {% endblock %}
