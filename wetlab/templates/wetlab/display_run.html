@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% block content %}
 {% include "core/graphic_chart_functionality.html" %}
+{% include "core/cdn_table_functionality.html" %}
 {% include "core/easy_pie_functionality.html" %}
 {% include "wetlab/menu.html" %}
 <section class="iskylims d-flex flex-column fill-height">
@@ -107,18 +108,18 @@
                                     {% endif %}
                                     {% if display_one_run.boxplot %}
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link " id="laboratory-tab" data-bs-toggle="tab" data-bs-target="#laboratory" type="button" role="tab" aria-controls="laboratory" aria-selected="false">Comparison</button>
+                                            <button class="nav-link " id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="false">Comparison</button>
                                         </li>
                                     {% endif %}
                                     {% if display_one_run.runSummary %}
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link " id="molecule-tab" data-bs-toggle="tab" data-bs-target="#molecule" type="button" role="tab" aria-controls="molecule" aria-selected="false">Run metrics</button>
+                                            <button class="nav-link " id="run_metric-tab" data-bs-toggle="tab" data-bs-target="#run_metric" type="button" role="tab" aria-controls="run_metric" aria-selected="false">Run metrics</button>
                                         </li>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link " id="protocol-tab" data-bs-toggle="tab" data-bs-target="#protocol" type="button" role="tab" aria-controls="protocol" aria-selected="false">Metrics by lane</button>
+                                            <button class="nav-link " id="lane_metric-tab" data-bs-toggle="tab" data-bs-target="#lane_metric" type="button" role="tab" aria-controls="lane_metric" aria-selected="false">Metrics by lane</button>
                                         </li>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link " id="protocol-tab" data-bs-toggle="tab" data-bs-target="#protocol" type="button" role="tab" aria-controls="protocol" aria-selected="false">Charts</button>
+                                            <button class="nav-link " id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab" aria-controls="chart" aria-selected="false">Charts</button>
                                         </li>
                                     {% endif %}
                                 </ul>
@@ -157,7 +158,9 @@
                                                             {% endfor %}
                                                             {%if display_one_run.Sample_Sheet %}
                                                                 <div class="row mt-1 justify-content-start">
-                                                                    <div class="col-6">{{ display_one_run.Sample_Sheet.0.0 }}</div>
+                                                                    <div class="col-6">
+                                                                        {{ display_one_run.Sample_Sheet.0.0 }}
+                                                                    </div>
                                                                     <div class="col-6">
                                                                         {% if display_one_run.Sample_Sheet.0.1 == '' %}
                                                                             <p>No Sample Sheet available</p>
@@ -178,7 +181,9 @@
                                                                 <div class="card-body">
                                                                     <div class="container">
                                                                         <div class="box">
-                                                                          <div class="chart" data-percent="{{display_one_run.graphic_value}}" >{{display_one_run.graphic_value}}%</div>
+                                                                            <div class="chart" data-percent="{{display_one_run.graphic_value}}" >
+                                                                                {{display_one_run.graphic_value}}%
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -201,41 +206,41 @@
                                                             <div class="card text-center h-100">
                                                                 <div class="card-header"><h3>Sequencer used in Run</h3=> </div>
                                                                 <div class="card-body d-flex align-items-center justify-content-center">
-                                                                    <h3 class="my-3">{{display_one_run.used_sequencer}}</h3> </div>
+                                                                    <h3 class="my-3">{{display_one_run.used_sequencer}}</h3> 
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        {%if display_one_run.library_kit%} 
-                                                            <div class="col-md mt-1">
-                                                                <div class="card text-center">
-                                                                    <div class="card-header"><h3>Library kits used </h3=> </div>
-                                                                    <div class="card-body">
-                                                                        <table class="table table-hover">
-                                                                            <thead>
-                                                                                <tr>
-                                                                                    <th>Kits</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                {% for values in display_one_run.library_kit %}
-                                                                                    <tr>
-                                                                                        <td> {{ values }} </td>
-                                                                                    </tr>
-                                                                                {% endfor %}
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                </div> <!--  end of col-sm-9 -->
-                                                            </div>
-                                                        {% else%}
-                                                            <div class="card border-danger mb-3 text-center">
-                                                                <div class="card-header border-danger"><h5>Associated Library Kits</h5> </div>
-                                                                <div class="card-body text-danger"> 
-                                                                    <p class="text-danger">There is no Library Kits associated to the run.</p> 
-                                                                </div>
-                                                            </div>
-                                                        {% endif%}
                                                     </div>
+                                                    {%if display_one_run.library_kit%} 
+                                                        <div class="col-md mt-1">
+                                                            <div class="card text-center">
+                                                                <div class="card-header"><h3>Library kits used </h3=> </div>
+                                                                <div class="card-body">
+                                                                    <table class="table table-hover">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Kits</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for values in display_one_run.library_kit %}
+                                                                                <tr>
+                                                                                    <td> {{ values }} </td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div> <!--  end of col-sm-9 -->
+                                                        </div>
+                                                    {% else%}
+                                                        <div class="card border-danger mb-3 text-center">
+                                                            <div class="card-header border-danger"><h5>Associated Library Kits</h5> </div>
+                                                            <div class="card-body text-danger"> 
+                                                                <p class="text-danger">There is no Library Kits associated to the run.</p> 
+                                                            </div>
+                                                        </div>
+                                                    {% endif%}
                                                 </div>
                                             </div>
                                             {% if display_one_run.lane_summary %}
@@ -286,7 +291,7 @@
                                                         <div class="card ">
                                                             <div class="card-header text-center">Lane Summary for default information project in the run.</div>
                                                             <div class="card-body">
-                                                            <table class="table">
+                                                                <table class="table">
                                                                     <thead>
                                                                         <tr>
                                                                             {% for values in display_one_run.default_lane_summary.0 %}
@@ -316,8 +321,8 @@
                                                                             {% endfor %}
                                                                         </tr>
                                                                     </tbody>
-                                                            </table>
-                                                            
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -332,7 +337,7 @@
                                                         <div class="card">
                                                             <div class="card-header text-center"><h3>Parameters used by sequencer in the Run</h3></div>
                                                             <div class="card-body">
-                                                                {%if display_one_run.running_parameters %}
+                                                                {% if display_one_run.running_parameters %}
                                                                     <table class="table table-hover">
                                                                         <tbody>
                                                                             {% for key, values in display_one_run.running_parameters %}
@@ -602,268 +607,170 @@
                                             </div>
                                         </div>
                                     </div> <!-- end project-->
-    {% comment %} 
-
-                                    
-
-
-                                
-                                
-
-
-                                <div id="projects" class="tabcontent">
-                                    <div class="row my-2">
-                                        <div class="col-sm-6 offset-3">
-                                            {%if display_one_run.projects%}
-                                                <div class="card ">
-                                                    <div class="card-header"><h3 style="text-align:center">Projects associated to the Run</h3></div>
-                                                    <div class="card-body">
-                                                            <table class="table table-hover">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>The following projects are associate to the run:</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {% for key, values in display_one_run.projects %}
-                                                                        <tr>
-                                                                            <td><a href="/wetlab/displayProject={{ values }}">{{ key }}</a> </td>
-                                                                        </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
+                                    {% if display_one_run.sample_run_data %}
+                                        <div class="tab-pane fade" id="sample" role="tabpanel" aria-labelledby="sample-tab">
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Samples included in the Run</h3></div>
+                                                            <div class="card-body">
+                                                                <table class="table table-hover" id="sample_table">
+                                                                    <tbody>
+                                                                        <thead>
+                                                                            <th>Sample Name</th>
+                                                                            <th>Project Name</th>
+                                                                        </thead>
+                                                                        {% for s_id, s_name, p_name, r_name, date in display_one_run.sample_run_data %}
+                                                                            <tr>
+                                                                                <td><a href="/wetlab/displaySampleInRun={{s_id}}" class="text-decoration-none">{{s_name}}</a></td>
+                                                                                <td>{{p_name}}</td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            {% if display_one_run.sample_run_data|length > 7 %}
+                                                                <script type="text/javascript">
+                                                                    $(document).ready(function() {
+                                                                        $('#sample_table').DataTable({
+                                                                            responsive: true,
+                                                                        });
+                                                                    });
+                                                                </script>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
-                                            {% else%}
-                                                <div class="card border-danger mb-3">
-                                                    <div class="card-header">Associated projects: </div>
-                                                    <div class="card-body">
-                                                        <p>There is no projects associated to the run.</p>
-                                                        <BR>
-                                                        <p>Contact with your system administrator to get more information.</p>
-                                                    </div>
                                                 </div>
-                                            {% endif%}
-                                        </div> <!--  end of col-sm-6 -->
-
-                                    </div> <!--  end of row -->
-
-                                    <div class="row my-2">
-                                        {% if display_one_run.fl_summary %}
-                                            <div class="col-sm-6 ">
-                                                <div class="card ">
-                                                    <div class="card-header"><h5>Flowcell Summary for all projects in the run.</h5></div>
-                                                    <div class="card-body">
-                                                        <table class="table">
-                                                            <thead>
-                                                                <tr>
-                                                                    {% for values in display_one_run.fl_summary.0 %}
-                                                                        <th>{{ values }} </th>
-                                                                    {% endfor %}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    {% for values in display_one_run.fl_summary.1 %}
-                                                                        <td>{{ values }} </td>
-                                                                    {% endfor %}
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div> <!--  end of col-sm-6 -->
-
-                                        {% endif%}
-                                        {% if display_one_run.default_fl_summary %}
-
-                                            <div class="col-sm-6 ">
-                                                <div class="card ">
-                                                    <div class="card-header"><h5>Flowcell Summary for lanes that could not identified with any projects in the run.</h5></div>
-                                                    <div class="card-body">
-                                                        <table class="table">
-                                                            <thead>
-                                                                <tr>
-                                                                    {% for values in display_one_run.default_fl_summary.0 %}
-                                                                        <th>{{ values }} </th>
-                                                                    {% endfor %}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    {% for values in display_one_run.default_fl_summary.1 %}
-                                                                        <td>{{ values }} </td>
-                                                                    {% endfor %}
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                        </div> <!--  end of col-sm-10 -->
-
-                                        {% endif%}
-                                    </div> <!--  end of row -->
-
-                                        {% if display_one_run.run_project_comparation %}
-                                            <div class="row row-space-8 margin-b-1">
-                                                <div class="col-sm-10 ">
-                                                    <div class="card ">
-                                                        <div class="card-header">Percent of PF Cluster used for each project in the run.</div>
-                                                        <div class="card-body">
-                                                            <div id="column_chart1"> </div>
-                                                            <!-- dumping JavaScript code -->
-                                                            {{ display_one_run.run_project_comparation |safe }}
+                                            </div>
+                                        </div> <!-- end sample-->
+                                    {% endif %}
+                                    {% if  display_one_run.boxplot or display_one_run.not_boxplot %}
+                                        <div class="tab-pane fade" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Graphic to compare run quality data versus all runs on the same year</h3></div>
+                                                            <div class="card-body">
+                                                                {% if display_one_run.boxplot %}
+                                                                    <div id="box_chart1"> </div>
+                                                                    {{ display_one_run.boxplot |safe }}
+                                                                {% elif  display_one_run.not_boxplot %}
+                                                                    <p class="text-center">There is only one run in the same year as {{ display_one_run.data.0.1 }}.</p>
+                                                                    <p class="text-center">For that reason it cannot be compared</p>
+                                                                {% endif %}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div> <!--  end of col-sm-10 -->
-                                            </div> <!--  end of row -->
-                                        {% endif %}
-                                </div><!-- // end of tab projects -->
-
-                                <div id="samples_run" class="tabcontent">
-                                    <div class="row my-2">
-                                        <div class="col-sm-7 offset-2">
-                                            <div class="card ">
-                                                <div class="card-header"><h3 style="text-align:center">Samples included in the Run</h3></div>
-                                                <div class="card-body">
-                                                    {%if display_one_run.sample_run_data %}
-                                                        <div class="table-wrapper-sm-7">
-                                                        <!-- display run parameters in run is not in recorded state -->
-                                                            <table class="table table-hover">
-                                                                <tbody>
+                                                </div>
+                                            </div>
+                                        </div> <!-- end graphic-->
+                                    {% endif %}
+                                    {% if  display_one_run.runSummary %}
+                                        <div class="tab-pane fade" id="run_metric" role="tabpanel" aria-labelledby="run_metric-tab">
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Run metrics</h3></div>
+                                                            <div class="card-body">
+                                                                <table class="table table-hover">
                                                                     <thead>
-                                                                        <th>Sample Name</th>
-                                                                        <th>Project Name</th>
-                                                                    </thead>
-                                                                    {% for s_id, s_name, p_name, r_name, date in display_one_run.sample_run_data %}
                                                                         <tr>
-                                                                            <td><a href="/wetlab/displaySampleInRun={{s_id}}">{{s_name}}</a></td>
-                                                                            <td>{{p_name}}</td>
+                                                                            {% for values in display_one_run.runSummaryHeading %}
+                                                                                <th>{{ values }} </th>
+                                                                            {% endfor %}
                                                                         </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
-                                                        </div> <!--  end of table wrapper -->
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div> <!--  end of col-sm-10 -->
-                                    </div> <!--  end of row -->
-                                </div><!-- // end of tab parameters -->
-
-                                <div id="graphComparation" class="tabcontent">
-                                    <div class="row my-2">
-                                        <div class="col-sm-10 ">
-                                            <div class="card ">
-                                                {% if display_one_run.boxplot %}
-                                                    <div class="card-header"><h3>Graphic to compare run quality data versus all runs on the same year</h3></div>
-                                                    <div class="card-body">
-                                                        <div id="box_chart1"> </div>
-                                                        <!-- dumping JavaScript code here -->
-                                                        {{ display_one_run.boxplot |safe }}
-                                                    </div>
-                                                {% endif %}
-                                                {% if display_one_run.not_boxplot %}
-                                                    <div class="card-header"><h3>Graphic boxplot comparation can not be displayed</h3></div>
-                                                        <div class="card-body">
-                                                            <p class="text-center">There is only one run in the same year as {{ display_one_run.data.0.1 }}.</p>
-                                                            <p class="text-center">For that reason it cannot be compared</p>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for values in display_one_run.runSummary %}
+                                                                            <tr>
+                                                                                {% for value in values %}
+                                                                                    <td>{{ value }}</td>
+                                                                                {% endfor %}
+                                                                            </tr>
+                                                                        {% endfor%}
+                                                                        <tr class="info">
+                                                                            {% for value in display_one_run.runSummaryTotal %}
+                                                                                <td><b>{{ value }}</b></td>
+                                                                            {% endfor %}
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                {% endif %}
+                                                </div>
                                             </div>
-                                        </div> <!--  end of col-sm-10 -->
-                                    </div> <!--  end of row -->
-                                </div><!-- // end of tab graphComparation -->
-                                {% if display_one_run.runSummary %}
-                                    <div id="runMetrics" class="tabcontent">
-                                        <h3>Run metrics</h3>
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    {% for values in display_one_run.runSummaryHeading %}
-                                                        <th>{{ values }} </th>
-                                                    {% endfor %}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for values in display_one_run.runSummary %}
-                                                    <tr>
-                                                        {% for value in values %}
-                                                            <td>{{ value }}</td>
-                                                        {% endfor %}
-                                                    </tr>
-                                                {% endfor%}
-                                                <tr class="info">
-                                                    {% for value in display_one_run.runSummaryTotal %}
-                                                        <td><b>{{ value }}</b></td>
-                                                    {% endfor %}
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div id="laneMetrics" class="tabcontent">
-                                        <div class="col-sm-12 ">
-                                            <h3>Lane Metrics</h3>
-                                            {% for key, values_read in display_one_run.reads.items %}
-                                                <h3>{{ key }}</h3>
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover">
-                                                        <thead>
-                                                            <tr>
-                                                                {% for values in display_one_run.laneSummaryHeading %}
-                                                                    <th>{{ values }} </th>
+                                        </div> <!-- end run_metric-->
+                                        <div class="tab-pane fade" id="lane_metric" role="tabpanel" aria-labelledby="lane_metric-tab">
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Lane metrics</h3></div>
+                                                            <div class="card-body">
+                                                                {% for key, values_read in display_one_run.reads.items %}
+                                                                    <h3>{{ key }}</h3>
+                                                                    <div class="horizontal-scroll mb-3">
+                                                                        <table class="table table-hover">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    {% for values in display_one_run.laneSummaryHeading %}
+                                                                                        <th>{{ values }} </th>
+                                                                                    {% endfor %}
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for values in values_read %}
+                                                                                    <tr>
+                                                                                        {% for value in values %}
+                                                                                            <td>{{ value }}</td>
+                                                                                        {% endfor %}
+                                                                                    </tr>
+                                                                                {% endfor%}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
                                                                 {% endfor %}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for values in values_read %}
-                                                                <tr>
-                                                                    {% for value in values %}
-                                                                        <td>{{ value }}</td>
-                                                                    {% endfor %}
-                                                                </tr>
-                                                            {% endfor%}
-                                                        </tbody>
-                                                    </table>
-                                                </div> <!--  end of col-table-responsive -->
-                                            {% endfor%}
-                                        </div>  <!--  end of col-sm-12 -->
-                                    </div>
-
-                                    <div id="charts" class="tabcontent">
-                                        <h3>Charts</h3>
-                                        {% for key, values in display_one_run.runGraphic %}
-                                            <div class="col-sm-5 offset-1">
-                                                <div class="card ">
-                                                    <div class="card-header"><h3>{{ key }} </h3></div>
-                                                    <div class="card-body">
-                                                        <img class="promo-block-img img-responsive" src="{{ values }}" >
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div> <!--  end of col-sm-5 -->
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-
-
-                            </div> <!--  end of row -->
-                        </div> <!--  end of col-sm-12 -->
-                    </div> <!--  end of row -->
-                </div> <!--  end of row -->
-                {% endif %}
-
-
- {% endcomment %}
+                                            </div>
+                                        </div> <!-- end lane_metric-->
+                                        <div class="tab-pane fade" id="chart" role="tabpanel" aria-labelledby="chart-tab">
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Chart</h3></div>
+                                                            <div class="card-body">
+                                                                <div class="row mt-1 justify-content-start">
+                                                                    {% for key, values in display_one_run.runGraphic %}
+                                                                        <div class="col-sm-5 offset-1">
+                                                                            <div class="card ">
+                                                                                <div class="card-header"><h3>{{ key }} </h3></div>
+                                                                                <div class="card-body">
+                                                                                    <img  src="{{ values }}" >
+                                                                                </div>
+                                                                            </div>
+                                                                        </div> <!--  end of col-sm-5 -->
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> <!-- end chart-->
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-
-                {% endif %}
+                {% endif %}  
             {% endif%}
         {% endif%}
     </div>
