@@ -1505,9 +1505,7 @@ def display_project(request, project_id):
                 return render(
                     request,
                     "wetlab/display_project.html",
-                    {
-                        "error_message": "You do have the enough privileges to see this page "
-                    },
+                    {"error_message": "You do have the enough privileges to see this page "},
                 )
         # Display the proyect information
         display_project_data = wetlab.utils.fetch_info.get_information_project(
@@ -5955,7 +5953,7 @@ def user_commercial_kit_inventory(request):
         if len(selected_user_kits) == 0:
             return render(
                 request,
-                "wetlab/userCommercialKitInventory.html",
+                "wetlab/kit_inventory.html",
                 {
                     "expired_kit": expired_kit,
                     "valid_kit": valid_kit,
@@ -5967,14 +5965,14 @@ def user_commercial_kit_inventory(request):
         )
         return render(
             request,
-            "wetlab/userCommercialKitInventory.html",
+            "wetlab/kit_inventory.html",
             {"run_out_kits": run_out_kits},
         )
 
     else:
         return render(
             request,
-            "wetlab/userCommercialKitInventory.html",
+            "wetlab/kit_inventory.html",
             {
                 "expired_kit": expired_kit,
                 "valid_kit": valid_kit,

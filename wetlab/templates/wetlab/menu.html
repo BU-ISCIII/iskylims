@@ -76,27 +76,26 @@
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            
                                 {% if request.user|has_group:"WetlabManager" %}
                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">MANAGEMENT</a>
                                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                         <li class="text-center">INVENTORY</li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="/wetlab/userCommercialKitInventory">User's Kit Inventory</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/kitInventory">User's Kit Inventory</a></li>
                                         <li><a class="dropdown-item" href="/wetlab/sequencerInventory">Sequencer Inventory</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li class="text-center"><a>STATISTICS</a></li>
+                                        <li class="text-center">STATISTICS</li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="/wetlab/StatsPerResearcher/">Projects per Investigator</a></li>
-                                        <li><a class="dropdown-item" href="/wetlab/StatsPerTime/">Period of time</a></li>
-                                        <li><a class="dropdown-item" href="/wetlab/StatsPerSequencer/">Per Sequencer</a></li>
-                                        <li><a class="dropdown-item" href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/statsPerResearcher/">Projects per Investigator</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/statsPerTime/">Period of time</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/statsPerSequencer/">Per Sequencer</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/statsLibrary">Library Kit Quality</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li class="text-center">REPORTS</li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="/wetlab/AnnualReport">Annual Reports</a></li>
-                                        <li><a class="dropdown-item" href="/wetlab/QuarterReport">Quarter Reports</a></li>
-                                        <li><a class="dropdown-item" href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/annualReport">Annual Reports</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/quarterReport">Quarter Reports</a></li>
+                                        <li><a class="dropdown-item" href="/wetlab/statsLibrary">Library Kit Quality</a></li>
                                     </ul>
                                 {% else %}
                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">INVENTORY</a>
