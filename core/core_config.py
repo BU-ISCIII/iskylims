@@ -226,14 +226,16 @@ HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = [
 ]
 
 HEADING_FOR_USER_LOT_INVENTORY = [
+     "Kit used for",
     "Lot Number",
     "Expiration date",
     "Number of use",
     "Run Out",
 ]
 
-HEADING_FOR_RUNOUT_USER_LOT_INVENTORY = [
-    "Lot Number",
+HEADING_FOR_SOLDOUT_USER_LOT_INVENTORY = [
+    "Kit used for",
+    "Lot number",
     "Expiration date",
     "Number of use",
 ]

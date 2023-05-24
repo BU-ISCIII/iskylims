@@ -1086,7 +1086,7 @@ def get_info_sample_in_run(sample_run_obj):
     percentage_chart = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d",
         "samplesProject",
-        "750",
+        "900",
         "300",
         "samples-chart-2",
         "json",

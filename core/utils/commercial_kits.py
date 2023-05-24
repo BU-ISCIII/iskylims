@@ -161,7 +161,7 @@ def display_user_lot_kit_information_from_query_list(user_kits_objs):
     return user_lot
 
 
-def get_expired_lot_user_kit(register_user_obj):
+def get_expired_lot_user_kit(register_user_obj=None):
     """
     Description:
         The function gets the run out user kits and return a list with basic
@@ -180,7 +180,7 @@ def get_expired_lot_user_kit(register_user_obj):
             "based_commercial"
         )
 
-        if register_user_obj:
+        if register_user_obj is not None:
             if user_kits.filter(user=register_user_obj).exists():
                 user_kits = user_kits.filter(user=register_user_obj)
             else:
@@ -196,11 +196,11 @@ def get_expired_lot_user_kit(register_user_obj):
             if c_kit not in user_expired_kits["data"]:
                 user_expired_kits["data"][c_kit] = []
             user_expired_kits["data"][c_kit].append(data_kit)
-    user_expired_kits["headings"] = HEADING_FOR_RUNOUT_USER_LOT_INVENTORY
+    user_expired_kits["headings"] = HEADING_FOR_SOLDOUT_USER_LOT_INVENTORY
     return user_expired_kits
 
 
-def get_valid_lot_user_kit(register_user_obj):
+def get_valid_lot_user_kit(register_user_obj=None):
     """
     Description:
         The function gets the valid user kits and return a list with basic
@@ -219,7 +219,7 @@ def get_valid_lot_user_kit(register_user_obj):
             "based_commercial"
         )
 
-        if register_user_obj:
+        if register_user_obj is not None:
             if user_kits.filter(user=register_user_obj).exists():
                 user_kits = user_kits.filter(user=register_user_obj)
             else:
