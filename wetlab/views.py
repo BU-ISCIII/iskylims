@@ -1504,12 +1504,9 @@ def display_project(request, project_id):
             if int(project_obj.get_user_center_name()) not in p_shared_list:
                 return render(
                     request,
-                    "wetlab/error_page.html",
+                    "wetlab/display_project.html",
                     {
-                        "content": [
-                            "You do have the enough privileges to see this page ",
-                            "Contact with your administrator .",
-                        ]
+                        "error_message": "You do have the enough privileges to see this page "
                     },
                 )
         # Display the proyect information
@@ -1518,14 +1515,14 @@ def display_project(request, project_id):
         )
         return render(
             request,
-            "wetlab/displayProject.html",
+            "wetlab/display_project.html",
             {"display_project_data": display_project_data},
         )
     else:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["No matches have been found for the project  "]},
+            "wetlab/display_project.html",
+            {"error_message": "No matches have been found for the project"},
         )
 
 

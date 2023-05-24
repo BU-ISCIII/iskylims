@@ -1,0 +1,191 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            {% for values in error_message %}
+                                <h4>{{values}}</h4>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% elif display_project_data %}
+            <div class="row my-2">
+                <div class="col" >
+                    <h3 class="text-center">Project Information</h3>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="p_data-tab" data-bs-toggle="tab" data-bs-target="#p_data" type="button" role="tab" aria-controls="p_data" aria-selected="true">Project data</button>
+                            </li>
+                            {% if display_project_data.sample_heading%}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link " id="sample-tab" data-bs-toggle="tab" data-bs-target="#sample" type="button" role="tab" aria-controls="sample" aria-selected="false">Samples</button>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="p_data" role="tabpanel" aria-labelledby="p_data-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-header text-center"><h3>{{ display_project_data.p_name }} </h3></div>
+                                                <div class="card-body">
+                                                    <div class="row mt-1 justify-content-start">
+                                                        <div class="col-6">
+                                                            UserId
+                                                        </div>
+                                                        <div class="col-6">
+                                                            {{ display_project_data.user_id }}
+                                                        </div>
+                                                        {% for  field , value in display_project_data.dates %}
+                                                            <div class="col-6">
+                                                                {{ field }}
+                                                            </div>
+                                                            <div class="col-6">
+                                                                {{ value }}
+                                                            </div>
+                                                        {% endfor %}
+                                                        <div class="col-6">
+                                                            Collection Index kit
+                                                        </div>
+                                                        <div class="col-6">
+                                                            {{ display_project_data.collection_index }}
+                                                        </div>
+                                                        <div class="col-6">
+                                                            Run name
+                                                        </div>
+                                                        <div class="col-6">
+                                                            {% if display_project_data.manager_display_runs %}
+                                                                {% for id, name in display_project_data.run_name %}
+                                                                    <a href="/wetlab/displayRun={{id}}" class="text-decoration-none">{{name}}</a>
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                {% for id, name in display_project_data.run_name %}
+                                                                    {{name}}
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-header text-center"><h3> Flowcell Summary for this project</h3></div>
+                                                <div class="card-body">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                {% for values in display_project_data.fl_summary_heading %}
+                                                                    <th>{{ values }} </th>
+                                                                {%endfor%}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                {% for values in display_project_data.fl_summary_data %}
+                                                                    <td>{{ values }} </td>
+                                                                {%endfor%}
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>Lane Summary for this project</h3></div>
+                                                <div class="card-body">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                {% for values in display_project_data.lane_summary_heading %}
+                                                                    <th>{{ values }} </th>
+                                                                {%endfor%}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for values in display_project_data.lane_summary_data %}
+                                                                <tr>
+                                                                    {% for value in values %}
+                                                                        <td>{{ value }} </td>
+                                                                    {%endfor%}
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if display_project_data.sample_data %}
+                                <div class="tab-pane fade" id="sample" role="tabpanel" aria-labelledby="sample-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Samples processed in this project</h3></div>
+                                                    <div class="card-body">
+                                                        <table id="sample_table" class="table table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                {% for values in display_project_data.sample_heading %}
+                                                                <th>{{ values }} </th>
+                                                                {%endfor%}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for s_id, values_sample in display_project_data.sample_data %}
+                                                                    <tr>
+                                                                        {% for value in values_sample %}
+                                                                            {% if forloop.first %}
+                                                                                <td><a href="/wetlab/displaySampleInRun={{s_id}}">{{ value }}</a> </td>
+                                                                            {% else %}
+                                                                                <td>{{ value }} </td>
+                                                                            {% endif %}
+                                                                        {%endfor%}
+                                                                    </tr>
+                                                                {%endfor%}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    {% if display_project_data.sample_data|length > 7 %}
+                                                        <script type="text/javascript">
+                                                            $(document).ready(function() {
+                                                                $('#sample_table').DataTable({
+                                                                    responsive: true,
+                                                                });
+                                                            });
+                                                        </script>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif%}
+    </div>
+</section>
+{% endblock %}
