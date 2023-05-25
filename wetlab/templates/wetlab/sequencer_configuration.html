@@ -69,7 +69,7 @@
                                             <div class="card">
                                                 <div class="card-header"><h3 style="text-align:center">Define new Sequencer </h3></div>
                                                 <div class="card-body">
-                                                    <form method="post" enctype="multipart/form-data" name="addNewSequencer" id="addNewSequencer" class="form-horizontal">
+                                                    <form method="post" enctype="multipart/form-data" name="addNewSequencer" id="addNewSequencer">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="action" value="addNewSequencer"/>
                                                         <div class="row g-2">
@@ -101,7 +101,7 @@
                                                             <div class="col-md">
                                                                 <div class="form-floating mb-3">
                                                                     <input class="form-control" type="text" required="required" name="sequencerNumberLanes" id="sequencerNumberLanes" placeholder="number of lanes">
-                                                                    <label class="text-danger" for="sequencerNumberLanes">Nunber  of lanes</label>
+                                                                    <label class="text-danger" for="sequencerNumberLanes">Number of lanes</label>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -181,7 +181,7 @@
                                             <div class="card">
                                                 <div class="card-header"><h3 style="text-align:center">Add sequencer configuration</h3></div>
                                                 <div class="card-body">
-                                                    <form method="post" enctype="multipart/form-data" name="addNewConfiguration" id="addNewConfiguration" class="form-horizontal">
+                                                    <form method="post" enctype="multipart/form-data" name="addNewConfiguration" id="addNewConfiguration">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="action" value="addNewConfiguration"/>
                                                         <div class="col-md">

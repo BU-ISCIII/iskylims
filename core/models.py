@@ -1689,7 +1689,6 @@ class SequencerInLabManager(models.Manager):
             sequencer_operation_start=sequencer_value["sequencerOperationStart"],
             sequencer_number_lanes=sequencer_value["sequencerNumberLanes"],
         )
-
         return new_sequencer
 
 
@@ -1735,30 +1734,42 @@ class SequencerInLab(models.Model):
         else:
             return "%s" % (self.platform_id.get_platform_id())
 
-    def get_all_sequencer_data(self):
-        data = []
+    def get_all_sequencer_data(self, format_date):
+        data = {}
         if self.platform_id is not None:
             platform_name = self.platform_id.get_platform_name()
         else:
             platform_name = "Not Defined"
         if self.sequencer_operation_start is not None:
-            op_start = self.sequencer_operation_start.strftime("%B %d, %Y")
+            op_start = self.sequencer_operation_start.strftime(format_date)
         else:
             op_start = "Not available date"
         if self.sequencer_operation_end is not None:
-            op_end = self.sequencer_operation_end.strftime("%B %d, %Y")
+            op_end = self.sequencer_operation_end.strftime(format_date)
         else:
             op_end = "Not available date"
-        data.append(platform_name)
-        data.append(self.sequencer_name)
-        data.append(self.sequencer_description)
-        data.append(self.sequencer_location)
-        data.append(self.sequencer_serial_number)
-        data.append(self.sequencer_state)
-        data.append(op_start)
-        data.append(op_end)
-        data.append(self.sequencer_number_lanes)
+        data["platform"] = platform_name
+        data["seq_name"] = self.sequencer_name
+        data["description"]= self.sequencer_description
+        data["location"] = self.sequencer_location
+        data["serial"] = self.sequencer_serial_number
+        data["state"] = self.sequencer_state
+        data["start_date"] = op_start
+        data["end_date"] = op_end
+        data["lanes"] = self.sequencer_number_lanes
+        data["id"] = self.pk
         return data
+
+    def update_sequencer_data(self, data):
+        self.sequencer_description=data["description"]
+        self.sequencer_location=data["location"]
+        self.sequencer_serial_number=data["serial"]
+        self.sequencer_operation_end=data["end_date"]
+        self.sequencer_operation_start=data["start_date"]
+        self.sequencer_state=data["state"]
+        self.sequencer_number_lanes=data["lanes"]
+        import pdb; pdb.set_trace()
+        self.save()
 
     objects = SequencerInLabManager()
 

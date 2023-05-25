@@ -1,0 +1,172 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-6 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+        {% endif %}
+        {% if updated_sequencer %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col-md-8 offset-2">
+                        <div class="card">
+                            <div class="card-header text-center"><h3>Successful update information</h3></div>
+                            <div class="card-body">
+                                <h5 class="text-center"> Sequencer {{updated_sequencer}} is updated now with your latest input </h5>
+                                <input class="btn btn-outline-primary float-end my-3 me-3" type="submit" onclick="window.location.href = '/wetlab/sequencerInventory';" value ="Return to sequencer inventory"/>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        {% elif sequencer_detail_data %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col-md">
+                        <div class="card">
+                            <div class="card-header text-center"><h3>Sequencer Information for {{sequencer_detail_data.seq_name}}</h3></div>
+                            <div class="card-body">
+                                <h5 class="text-center my-3"> Update the information if needed</h5>
+                                <form method="post" enctype="multipart/form-data" name="updateSequencer" id="updateSequencer">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="updateSequencer"/>
+                                    <input type="hidden" name="seq_name" value="{{sequencer_detail_data.seq_name}}"/>
+                                    <div class="row g-2">
+                                        <div class="col-md">
+                                            <div class="form-floating mb-3">
+                                                <input class="form-control" type="text" required="required" name="seqSerial" id="seqSerial" size="50" placeholder="Serial number" value="{{sequencer_detail_data.serial}}"> 
+                                                <label for="seqSerial">Serial number</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating mb-3">
+                                                <input class="form-control" type="text" required="required" name="seqState" id="seqState" placeholder="Sequencer state" value="{{sequencer_detail_data.state}}">
+                                                <label  for="seqState">Sequencer state </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md">
+                                            <div class="form-floating mb-3">
+                                                <input class="form-control" type="text" value="{{sequencer_detail_data.platform}}" aria-label= "platform" readonly > 
+                                                <label for="platform">Platform</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating mb-3">
+                                                <input class="form-control" type="text" required="required" name="seqLanes" id="seqLanes" placeholder="number of lanes" value="{{sequencer_detail_data.lanes}}">
+                                                <label for="seqLanes">Number of lanes</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md">
+                                            <div class="form-floating mb-3">
+                                                {% if sequencer_detail_data.start_date == "Not available date" %}
+                                                    <input type="date" class="form-control" id="seqStart" required="required" name="seqStart" placeholder="start in service date" >
+                                                {% else %}
+                                                    <input class="form-control" type="date" name="seqStart" id="seqStart" placeholder="Start in service date" value="{{sequencer_detail_data.start_date}}">
+                                                {% endif %}
+                                                <label  for="seqStart">Sequencer start in service date (DD/MM/YYYY)</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating mb-3">
+                                                {% if sequencer_detail_data.end_date == "Not available date" %}
+                                                    <input type="date" class="form-control" id="seqEnd" name="seqEnd" placeholder="Out of service date" >
+                                                {% else %}
+                                                    <input class="form-control" type="text" name="seqEnd" id="sequencerseqEndOperationEnd" placeholder="Out of service date" value=>"{{sequencer_detail_data.end_date}}"
+                                                {% endif %}
+                                                <label for="seqEnd">Sequencer start in service date (DD/MM/YYYY)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" required="required" name="seqLoc" id="seqLoc" size="50" placeholder="Sequencer location" value="{{sequencer_detail_data.location}}">
+                                            <label for="seqLoc">Sequencer location</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <label class="col form-label ms-3" for="description" >Description</label>
+                                        <div class="form-floating mb-3">
+                                            <textarea class="form-control" name="description" value="{{sequencer_detail_data.description}}" id="description" style="height:100px" maxlength="250"></textarea>
+                                            <label for="description">Write some lines about this sequencer(Max 250 characters)</label>
+                                        </div>
+                                    </div>
+                                    <input class="btn btn-outline-primary float-end me-2" type="submit" value="Update changes" id="btnSubmit">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        {% elif sequencer_data %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col-md">
+                        <div class="card">
+                            <div class="card-header text-center"><h3>Sequencer Inventory </h3></div>
+                            <div class="card-body">
+                                <table class="table table-hover" id="seq_inv_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Platform</th>
+                                            <th>Sequencer name</th>
+                                            <th>Serial</th>
+                                            <th>State</th>
+                                            <th>In Operation date</th>
+                                            <th>Out of service date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key , values in sequencer_data.items %}
+                                            {% for value in values %}
+                                                <tr>
+                                                    <td>{{ value.platform }}</td>
+                                                    <td><a href="/wetlab/sequencerDetails={{value.id}}" class="text-decoration-none">{{ value.seq_name }}</a></td>
+                                                    <td>{{ value.serial }}</td>
+                                                    <td>{{ value.state }}</td>
+                                                    <td>{{ value.start_date }}</td>
+                                                    {% if value.end_date == 'Not available date' %}
+                                                        <td></td>
+                                                    {% else %}
+                                                        <td>{{value.end_date}}</td>
+                                                    {% endif %}
+                                                    
+                                                </tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>  
+                    </div>
+                </div>  
+            </div>
+        {% endif %}
+    </div> <!--// end col-sm-12  -->
+</section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#seq_inv_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
+
+{% endblock %}

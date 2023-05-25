@@ -69,8 +69,12 @@ def check_valid_date_format(date):
     try:
         datetime.strptime(date, "%Y-%m-%d")
         return True
-    except Exception:
-        return False
+    except ValueError:
+        try:
+            datetime.strptime(date, "%d-%m-%Y")
+            return True
+        except ValueError:  
+            return False
 
 
 def get_samba_connection_data():
