@@ -1768,7 +1768,6 @@ class SequencerInLab(models.Model):
         self.sequencer_operation_start=data["start_date"]
         self.sequencer_state=data["state"]
         self.sequencer_number_lanes=data["lanes"]
-        import pdb; pdb.set_trace()
         self.save()
 
     objects = SequencerInLabManager()
