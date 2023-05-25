@@ -6140,18 +6140,54 @@ def sequencer_configuration(request):
 
 
 @login_required
-def sequencer_inventory(request):
-    if not request.user.is_authenticated:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    if request.method == "POST" and request.POST["action"] == "setRunOutDate":
-        pass
-    else:
-        sequencer_data = wetlab.utils.sequencers.get_sequencer_inventory_data()
+def sequencer_details(request, seq_id):
+    seq_obj = wetlab.utils.sequencers.get_sequencer_obj_from_id(seq_id)
+    if seq_obj is None:
+        return render(request, "wetlab/sequencer_inventory.html", {"error_message": "Sequencer not found"})
+    if request.method == "POST" and  request.POST["action"] == "updateSequencer":
+        seq_data = {}
+        end_date = request.POST["seqEnd"]
+        start_date = request.POST["seqStart"]
+        import pdb; pdb.set_trace()
+        if end_date == "" or end_date == "None":
+            end_date = None
+        else:
+            if not wetlab.utils.common.check_valid_date_format(end_date):
+                return render(request, "wetlab/sequencer_inventory.html", {"error_message": "Format date is incorrect"})
+        if start_date == "" or start_date == "None":
+            start_date = None
+        else:
+            if not wetlab.utils.common.check_valid_date_format(start_date):
+                return render(request, "wetlab/sequencer_inventory.html", {"error_message": "Format date is incorrect"})
+
+        seq_data["serial"] = request.POST["seqSerial"]
+        seq_data["state"] = request.POST["seqState"]
+        seq_data["lanes"] = request.POST["seqLanes"]
+        seq_data["location"] = request.POST["seqLoc"]
+        seq_data["description"] = request.POST["description"]
+        seq_data["end_date"] = end_date
+        seq_data["start_date"] = start_date
+        
+        seq_obj.update_sequencer_data(seq_data)
+        
         return render(
             request,
-            "wetlab/sequencerInventory.html",
-            {"sequencer_data": sequencer_data},
+            "wetlab/sequencer_inventory.html",
+            {"updated_sequencer": request.POST["seq_name"]},
         )
+        
+    return render(
+        request,
+        "wetlab/sequencer_inventory.html",
+        {"sequencer_detail_data": seq_obj.get_all_sequencer_data("%Y-%m-%d")}
+    )
 
-    return
+
+@login_required
+def sequencer_inventory(request):
+    sequencer_data = get_sequencer_inventory_data("%d/%m/%Y")
+    return render(
+        request,
+        "wetlab/sequencer_inventory.html",
+        {"sequencer_data": sequencer_data},
+    )

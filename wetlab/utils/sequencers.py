@@ -176,8 +176,12 @@ def get_list_sequencer_configuration():
 
     return sequencer_configuration
 
+def get_sequencer_obj_from_id(seq_id):
+    if SequencerInLab.objects.filter(pk=seq_id).exists():
+        return SequencerInLab.objects.get(pk=seq_id)
+    return None
 
-def get_sequencer_inventory_data():
+def get_sequencer_inventory_data(format_date):
     """
     Description:
         The function get the sequencer data defined
@@ -193,8 +197,7 @@ def get_sequencer_inventory_data():
             platform_name = sequencer_obj.get_sequencing_platform_name()
             if platform_name not in sequencer_data:
                 sequencer_data[platform_name] = []
-            data = sequencer_obj.get_all_sequencer_data()
-            data.append(sequencer_obj.get_sequencer_id())
+            data = sequencer_obj.get_all_sequencer_data(format_date)
             sequencer_data[platform_name].append(data)
     return sequencer_data
 
