@@ -1,0 +1,302 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load user_groups %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+{% include "core/graphic_chart_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4 class="text-center">{{error_message}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+
+        {% if researcher_statistics %}
+            <div class="row my-2">
+                <div class="col" >
+                    <h3 class="text-center">Statistics results for Investigator {{researcher_statistics.researcher_name}}</h3>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="graphics-tab" data-bs-toggle="tab" data-bs-target="#graphics" type="button" role="tab" aria-controls="graphics" aria-selected="true">Research graphics</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="table-tab" data-bs-toggle="tab" data-bs-target="#table" type="button" role="tab" aria-controls="table" aria-selected="false">Research Samples</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="graphics" role="tabpanel" aria-labelledby="graphics-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>{{researcher_statistics.researcher_name}} statistics  </h3></div>
+                                                <div class="card-body">
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="research_vs_other_chart"> </div>
+                                                            {{ researcher_statistics.research_vs_other_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="research_usage_sequencer_chart"> </div>
+                                                            {{ researcher_statistics.research_usage_sequencer_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="research_run_chart"> </div>
+                                                            {{ researcher_statistics.research_run_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="research_project_chart"> </div>
+                                                            {{ researcher_statistics.research_project_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="research_q_30_chart"> </div>
+                                                            {{ researcher_statistics.research_q_30_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="research_mean_chart"> </div>
+                                                            {{ researcher_statistics.research_mean_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div> 
+                                </div>
+                            </div> <!-- end graphics tab-->
+                            <div class="tab-pane fade" id="table" role="tabpanel" aria-labelledby="table-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>Researcher statistics  </h3></div>
+                                                <div class="card-body">
+                                                    <table class="table table-hover" id="researcher_table">
+                                                        <thead>
+                                                            <tr>
+                                                                {% for column in researcher_statistics.table_heading %}
+                                                                    <th>{{column}}</th>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for sample, project, run, platform in researcher_statistics.samples %}
+                                                                <tr>
+                                                                    <td>{{sample}} </td>
+                                                                    <td>{{project}}</td>
+                                                                    <td>{{run}}</td>
+                                                                    <td>{{platform}}</td>
+                                                                </tr>
+                                                            {%endfor%}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div> 
+                                        </div> 
+                                    </div>
+                                </div>                     
+                            </div>  <!-- end table tab-->             
+                        </div> 
+                    </div> 
+                </div>
+            </div>
+ 
+
+ {% comment %}
+
+            <div class="row my-2">
+                <div class="col-sm-12">
+                    <div class="card ">
+                        <div class="card-header"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
+                        <div class="card-body">
+                            <div class="col-sm-12">
+                                <div class="tab">
+                                    {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
+                                        {% if forloop.first %}
+                                            <button class="tablinks" onclick="summaryBin(event, '{{sequencer}}')" id="tablinksdefaultOpen" >{{sequencer}} </button>
+                                        {% else %}
+                                            <button class="tablinks" onclick="summaryBin(event, '{{sequencer}}')" >{{sequencer}} </button>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
+                                        <div id="{{sequencer}}" class="tabcontent">
+                                            <div class="col-sm-12" >
+                                                <div class="card ">
+                                                    <div class="card-header"><h3>Investigator samples run in sequencer {{sequencer}}</h3></div>
+                                                    {% if samples_data %}
+                                                        <button onclick="exportTableToExcel('sequencer{{sequencer}}')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                                                        <BR>
+                                                        <div class="card-body scroll-wrapper-sm-12">
+
+                                                            <div class="table-responsive">
+                                                                <table id="sequencer{{sequencer}}" class="table  table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            {% for values  in researcher_statistics.sample_researcher_heading %}
+                                                                                <th>{{ values }} </th>
+                                                                            {% endfor %}
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for values in samples_data %}
+                                                                            <tr>
+                                                                                {% for value in values %}
+                                                                                    <td>{{ value }}</td>
+                                                                                {% endfor %}
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                                <BR>
+                                                            </div> <!--  end of table-responsiver -->
+                                                        </div> <!--  end of col-scroll-wrapper -->
+
+                                                    {% else %}
+                                                        <div class="card-body">
+                                                            <h5> There are no Samples runs on this sequencer </h5>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div> <!--// end col-sm-12  -->
+                                        </div> <!--// end  tab {{sequencer}} -->
+                                    {% endfor %}
+                                </div> <!--// end tabs -->
+                            </div> <!--// end col-sm-12  -->
+                        </div> <!--// end panel body-->
+                    </div>
+                </div> <!--// end col-sm-12  -->
+            </div> <!--// end row -->
+
+            <div class="row my-2">
+                <div class="col-sm-12" >
+                    <div class="card ">
+                        <div class="card-header"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                        <div class="card-body">
+                            <div class="col-sm-6" >
+                                <!-- Showing graph-->
+                                <div id="run_chart"> </div>
+                                    {{ researcher_statistics.run_graphic|safe }}
+                            </div> <!--// end col-sm-6  -->
+                            <div class="col-sm-6" >
+                                <!-- Showing graph-->
+                                <div id="project_chart"> </div>
+                                    {{ researcher_statistics.project_graphic|safe }}
+                            </div> <!--// end col-sm-6  -->
+                        </div>
+                    </div>
+                </div> <!--// end col-sm-8  -->
+            </div> <!--// end row -->
+
+
+
+
+            <div class="row my-2">
+                <div class="col-sm-12" >
+                    <div class="card ">
+                        <div class="card-header"><h3><center>Quality Statistics for Samples handled by  {{researcher_statistics.researcher_name}} </center></h3></div>
+                        <div class="card-body">
+                            <div class="col-sm-6" >
+                                <!-- Showing graph-->
+                                <div id="q30_chart"> </div>
+                                    {{ researcher_statistics.q30_graphic|safe }}
+                            </div> <!--// end col-sm-6  -->
+                            <div class="col-sm-6" >
+                                <!-- Showing graph-->
+                                <div id="mean_chart"> </div>
+                                    {{ researcher_statistics.mean_graphic|safe }}
+                            </div> <!--// end col-sm-6  -->
+                        </div>
+                    </div>
+                </div> <!--// end col-sm-8  -->
+            </div> <!--// end row -->
+
+            {% if researcher_statistics.comp_graphs %}
+                <div class="row my-2">
+                    <div class="col-sm-12" >
+                        <div class="card ">
+                            <div class="card-header"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
+                            <div class="card-body">
+                            <!-- comparations chart starts here-->
+
+                            </div>
+                        </div>
+                    </div> <!--// end col-sm-8  -->
+                </div> <!--// end row -->
+            {% endif %}
+        <script>
+            // Get the element with id="tablinksdefaultOpen" and click on it
+            document.getElementById("tablinksdefaultOpen").click();
+        </script>
+        {% endcomment %} 
+
+        {% else %}
+            <div class="container">
+                <div class="row my-2">
+                    <div class="col-sm-7 offset-3" >
+                        <div class="card ">
+                            <div class="card-header"><h3 class="text-center">Statistics per Investigator</h3></div>
+                            <div class="card-body">
+                                <form method="post" enctype="multipart/form-data" name="statsresearcher" id="statsresearcher" class="form-horizontal well">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="researcher"/>
+                                    <div class="form-floating mb-3">
+                                        {% if request.user|has_group:"WetlabManager" %}
+                                            <input type="text" class="form-control" name="researchername" id="researchername" required = "required" placeholder="Researcher name">
+                                            <label class="text-danger" for="researchername">Researcher name</label>
+                                        {% else %}
+                                            <input type="text" class="form-control" name="researchername" id="researchername" placeholder="Researcher name" value="{{user.get_username}}" readonly>
+                                            <label for="researchername">Researcher name</label>
+                                        {% endif %}
+                                        
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="start_date" name="startdate" placeholder="Filter run from start date" >
+                                                <label for="start-date">From Start Date (DD/MM/YYYY)</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="end_date" name="enddate" placeholder="Filter run from end date" >
+                                                <label for="start-date">End Date (DD/MM/YYYY)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if request.user|has_group:"WetlabManager" %}
+                                        <p class="ms-3 my-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                    {% endif %}
+                                    <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
+                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
+                                </form>
+                            </div>  
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        {% endif %}
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#researcher_table').DataTable({
+            dom: "Bfltirp",
+            responsive: true,
+            buttons: ['excel', 'csv']
+        });
+    });
+</script>
+{% endblock %}

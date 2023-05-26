@@ -561,16 +561,7 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5 = [
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 
-RESEARCHER_SAMPLE_HEADING_STATISTICS = [
-    "Samples",
-    "Project name",
-    "Run name",
-    "Date",
-    "Cluster PF",
-    "Yield Mb",
-    "% Q> 30",
-    "Mean",
-]
+RESEARCHER_SAMPLE_HEADING_STATISTICS = ["Samples","Project name","Run name","Platform"]
 
 
 NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER = 5
@@ -736,18 +727,14 @@ ERROR_NO_MATCHES_FOR_RUN_SEARCH = [
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = [
     "There is not any project that mathes your input conditions"
 ]
-ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = [
-    "There is not any Index Library Kit  that mathes your input conditions"
-]
+ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = "There is not any Index Library Kit  that mathes your input conditions"
 ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
     "There is not any User Lot Kit  that matches your input conditions"
 ]
-ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = [
-    "There is not any match for your input conditions "
-]
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = "There is not any match for your input conditions "
 ERROR_NO_USER_LOT_KIT_DEFINED = ["No User Lot Kit are defined"]
-ERROR_INVALID_FORMAT_FOR_DATES = ["Invalid date format. Use the format  (DD-MM-YYYY)"]
-ERROR_USER_NAME_TOO_SHORT = ["User name must contains at least 5 characters"]
+ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YYYY)"
+ERROR_USER_NAME_TOO_SHORT = "User name must contains at least 5 characters"
 ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = [
     "There is not any run that where using the sequencer"
 ]
