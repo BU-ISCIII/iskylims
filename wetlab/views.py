@@ -2030,20 +2030,19 @@ def stats_per_researcher(request):
         )
         if "ERROR" in researcher_statistics:
             error_message = researcher_statistics["ERROR"]
+            import pdb; pdb.set_trace()
             return render(
                 request,
-                "wetlab/StatsPerResearcher.html",
-                {"researcher_statistics": error_message},
+                "wetlab/stats_per_researcher.html",
+                {"error_message": error_message},
             )
-
         return render(
             request,
-            "wetlab/StatsPerResearcher.html",
+            "wetlab/stats_per_researcher.html",
             {"researcher_statistics": researcher_statistics},
         )
-
     else:
-        return render(request, "wetlab/StatsPerResearcher.html", {})
+        return render(request, "wetlab/stats_per_researcher.html")
 
 
 @login_required
@@ -2337,16 +2336,16 @@ def stats_per_time(request):
                 #
                 return render(
                     request,
-                    "wetlab/StatsPerTime.html",
+                    "wetlab/stats_per_time.html",
                     {"display_stats_per_time": stat_per_time},
                 )
 
             else:
                 return render(
                     request,
-                    "wetlab/error_page.html",
+                    "wetlab/stats_per_time.html",
                     {
-                        "content": [
+                        "error_message": [
                             "No matches have been found for Runs created between",
                             start_date,
                             " and the ",
@@ -2357,11 +2356,11 @@ def stats_per_time(request):
         else:
             return render(
                 request,
-                "wetlab/error_page.html",
-                {"content": "Start date and End Date cannot be empty "},
+                "wetlab/stats_per_time.html",
+                {"error_message": "Start date and End Date cannot be empty "},
             )
 
-    return render(request, "wetlab/StatsPerTime.html")
+    return render(request, "wetlab/stats_per_time.html")
 
 
 def get_list_of_libraries_values(

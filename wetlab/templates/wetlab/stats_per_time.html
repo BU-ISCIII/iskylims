@@ -1,33 +1,25 @@
-{% extends 'wetlab/base.html' %}
-{% load static %}
+{% extends "core/base.html" %}
 {% block content %}
-{% csrf_token %}
+{% load user_groups %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
 {% include "core/graphic_chart_functionality.html" %}
-{% if display_stats_per_time.run_names %}
-
-<script type="text/javascript" src="{% static 'wetlab/js/wetlab.js' %}"></script>
-<style>
-.table-wrapper {
-    height: 450px;
-    overflow: auto;
-    display:inline-block;
-    width: 390px;
-</style>
-{% if ERROR %}
-    <div class="row my-2">
-        <BR>
-        <div class="col-sm-6  offset-3"">
-            <div class="panel panel-warning">
-                <div class="card-header"><h3> Result of your request</h3></div>
-                <div class="card-body">
-
-                        <p>{{ERROR}}</p>
-
-                </div>
-           </div>
-        </div> <!--  end of col-sm-6 -->
-    </div> <!--// end row -->
-{% endif %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_messages}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+{% if  display_stats_per_time %}
     <!--  Start Run information -->
     <div class="row my-2">
         <BR>
@@ -212,22 +204,13 @@
         </div>
         </div> <!--// end col-sm-7  -->
 
-        <!-- Insert the help panel -->
-        <BR><BR>
-        <div class="col-sm-3 offset-1">
-          <div class="card ">
-             <div class="card-header">Creating Run Statistics </div>
-             <div class="card-body">
-             <p>This form will be used to create Run Statistics. The Tool will search for all those runs which the creation date is between the Start Date and the End Date: <BR>
-             <p>For extended help click on the button below.</p>
-            <center><button id="myBtn"> Help </button></center>
-            </div>  
-        </div>
-        <!-- Insert the Help window when clicking on the button -->
-        {% include 'wetlab/search-help.html' %}
+        
 
     </div> <!--// end row -->
 
     <!-- End of FORM for searching RUN information -->
+
 {% endif %}
+</div>
+</section>
 {% endblock %}
