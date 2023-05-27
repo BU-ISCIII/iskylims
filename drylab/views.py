@@ -146,11 +146,11 @@ def request_sequencing_service(request):
         # Send mail to user and drylab notification email
         email_data = {}
         if (
-            "requestedForUserid" in request.POST
-            and request.POST["requestedForUserid"] != ""
+            "user_id_request" in request.POST
+            and request.POST["user_id_request"] != ""
         ):
             user_obj = django.contrib.auth.models.User.objects.filter(
-                pk__exact=request.POST["requestedForUserid"]
+                pk__exact=request.POST["user_id_request"]
             ).last()
             email_data["user_name"] = user_obj.username
             email_data["user_email"] = user_obj.email

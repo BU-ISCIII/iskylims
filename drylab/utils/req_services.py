@@ -64,12 +64,12 @@ def save_sequencing_service(request):
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj(av_service))
 
-    if "requestedForUserid" in request.POST:
-        if request.POST["requestedForUserid"] == "":
+    if "user_id_request" in request.POST:
+        if request.POST["user_id_request"] == "":
             request_user = request.user
         else:
             request_user = django.contrib.auth.models.User.objects.get(
-                pk__exact=request.POST["requestedForUserid"]
+                pk__exact=request.POST["user_id_request"]
             )
     else:
         request_user = request.user
@@ -121,12 +121,12 @@ def save_counseling_infrastructure_service(request):
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj(av_service))
 
-    if "requestedForUserid" in request.POST:
-        if request.POST["requestedForUserid"] == "":
+    if "user_id_request" in request.POST:
+        if request.POST["user_id_request"] == "":
             request_user = request.user
         else:
             request_user = django.contrib.auth.models.User.objects.get(
-                pk__exact=request.POST["requestedForUserid"]
+                pk__exact=request.POST["user_id_request"]
             )
     else:
         request_user = request.user
