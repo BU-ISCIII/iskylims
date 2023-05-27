@@ -1,343 +1,429 @@
-{% extends 'drylab/base.html' %}
-{% include 'core/jexcel_functionality.html' %}
+{% extends 'core/base.html' %}
+{% include 'core/cdn_table_functionality.html' %}
 {% include "core/multifile_upload_functionality.html" %}
+{% include "bootstrap3/layout/field_errors_block.html" %}
+{% include "bootstrap3/layout/help_text.html" %}
+
 {% load mptt_tags %}
-{% block content %}
 {% load upload_tags %}
 
 
-{% if error_message %}
-    <div class="row my-2">
-        <div class="col-sm-7 offset-3">
-            <div class="card border-danger mb-3">
-                <div class="card-header"><h3 style="text-align:center"></h3> </div>
-                <div class="card-body">
-                    {% for values in error_message %}
+{% block content %}
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header">ERROR</div>
+                    <div class="card-body">
+                        {% for values in error_message %}
                         <h4>{{values}}</h4>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-{% endif %}
-{% if confirmation_result %}
-    <div class="row my-2">
-        <div class="col-sm-7 offset-3">
-            <div class="card ">
-                <div class="card-header"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
-                <div class="card-body">
-                    <p>The services that you have recorded are:</p>
-                    {% for values in confirmation_result.text %}
-                        <h5>{{values}}</h5>
-                    {% endfor %}
-                    {% if confirmation_result.samples %}
+        {% endif %}
+        {% if confirmation_result %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">
+                        Your Service Request is recorded
+                    </div>
+                    <div class="card-body">
+                        <p>The services that you have recorded are:</p>
+                        {% for values in confirmation_result.text %}
+                            <h5>{{values}}</h5>
+                        {% endfor %}
+                        {% if confirmation_result.samples %}
                         <h5> The samples included in the services are:</h5>
                         <p>
                             {% for sample in confirmation_result.samples %}
                                 {% if forloop.last %}
                                     and {{sample}}.
                                 {% else %}
-                                    {{sample }},
+                                    {{sample}} ,
                                 {% endif %}
                             {% endfor %}
                         </p>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div> <!--  end of col-sm-7 -->
-    </div> <!--  end of row -->
-
-{% else %}
-    <div class="row my-2">
-        <div class="col-sm-12">
-            <div class="card ">
-                <div class="card-header"><h3 style="text-align:center">Request Service form for Sequencing Data.</h3></div>
-                <div class="card-body">
-                    <form id="fileupload" method="post" action="/drylab/request_sequencing_service"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well">
-                    <!-- <form id="fileupload" method="post" action="/drylab/multipleFiles"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well"> -->
-                        {% csrf_token %}
-                        <input type="hidden" name="subAction" value="createservice"/>
-
-                        <div class="row my-2">
-                            <div class="col-sm-12">
+        </div>
+        {% else %}
+        <!-- div row big -->
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">Service request form for massive sequencing experiments</div>
+                    <div class="card-body">
+                        <form id="sequencing_form" method="post" action="/drylab/request_sequencing_service"
+                            name="sequencing_form" enctype="multipart/form-data" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="subAction" value="createservice" />
+                            <div class="container-md">
                                 {% if service_data_information.users %}
-                                    <div class="card ">
-                                        <div class="card-header"><h3 style="text-align:center">User assigned to service </h3></div>
-                                        <div class="card-body">
-                                            <div class="form-control">
+                                <!-- row card 1: select user id -->
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-8">
+                                        <div class="form-control">
+                                            <div class="col-md-6">
+                                                <label class="col-md-6 control-label" for="user_id_label">Select the
+                                                    user requesting the service</label>
                                                 <div class="col-sm-6">
-                                                    <label class="col-sm-6 control-label" for="fileExtension" >Select the userid for this service</label>
-                                                    <div class="col-sm-4">
-                                                        <select class="form-control" name="requestedForUserid" id="requestedForUserid">
-                                                            <option value="">Choose a value</option>
-                                                            {% for value , id  in service_data_information.users %}
-                                                                <option value="{{id}}">{{value}}</option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div> <!--  end of select -->
-                                                </div>  <!-- end col-sm-6-group   -->
-                                            </div>  <!-- end from-group   -->
+                                                    <select class="form-control" name="user_id_request"
+                                                        id="user_id_request">
+                                                        <option value="">Choose a value</option>
+                                                        {% for value , id in service_data_information.users %}
+                                                        <option value="{{id}}">{{value}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                 {% endif %}
-                                <br>
-                                <div class="tab">
-                                    <button type="button" class="tablinks" onclick="summaryBin(event, 'sequencingSamples')"  id="defaultOpen">Samples in iSkyLIMS with Sequencing data</button>
-                                    <button type="button" class="tablinks" onclick="summaryBin(event, 'onlyRecordedSamples')">Samples with only recorded data</button>
-                                </div> <!--  end tabs -->
-                                <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
-                                    <div id="sequencingSamples" class="tabcontent">
-
-                                        <div class="card ">
-                                            <div class="card-header"><h3 style="text-align:center">Internal Samples.</h3></div>
-                                            <div class="card-body">
-                                                {% if service_data_information.samples_heading %}
-                                                    <h4 style="text-align:center"> Select the samples to be included in the service</h4>
-                                                    <div  class="scrolling-wrapper">
-                                                        <div id="spreadsheet1"></div>
-                                                        <script>
-                                                            var data = [{% for values in service_data_information.samples_data %}
-                                                               [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                            ];
-                                                            var table1 = jexcel(document.getElementById('spreadsheet1'), {
-                                                           // mySpreadsheet = $('#spreadsheet1').jexcel({
-                                                               data:data,
-                                                               columns: [
-                                                                    {% for value in service_data_information.samples_heading %}
-                                                                        {% if forloop.counter|divisibleby:2 %}
-                                                                           { type: 'hidden' },
-                                                                        {% elif forloop.counter == 3 %}
-                                                                           { type: 'text', title:'{{value}}', width:300 , readOnly:true },
-                                                                        {% else %}
-                                                                            { type: 'text', title:'{{value}}', width:200 , readOnly:true },
-                                                                        {% endif %}
-                                                                   {% endfor %}
-                                                                   { type: 'checkbox',  title:'Select Sample', width:100 },
-                                                                ],
-                                                                allowInsertColumn:false,
-                                                                allowDeleteColumn:false,
-                                                                allowRenameColumn:false,
-                                                                allowInsertRow:false,
-                                                                allowDeleteRow:false,
-                                                                tableOverflow:false,
-                                                                search:true,
-                                                                pagination:20,
-                                                                csvFileName:'SamplesDefined.csv',
-
-                                                           });
-                                                        </script>
-                                                    </div> <!--  end of scrolling  -->
+                                <!-- row card 2: select samples tabs and tables -->
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-8">
+                                        <nav>
+                                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                                <button class="nav-link active" id="nav-sequenced-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#nav-sequenced" type="button" role="tab"
+                                                    aria-controls="nav-sequenced" aria-selected="true">Select samples sequenced
+                                                    in-house</button>
+                                                <button class="nav-link active" id="nav-recorded-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#nav-recorded" type="button" role="tab"
+                                                    aria-controls="nav-recorded" aria-selected="false">Select samples recorded
+                                                    but sequenced elsewhere</button>
+                                            </div>
+                                        </nav>
+                                        <div class="tab-content" id="nav-tabContent">
+                                            <!-- div tab 1 -->
+                                            <div class="tab-pane fade show active" id="nav-sequenced" role="tabpanel" aria-labelledby="nav-sequenced-tab">
+                                            {% if service_data_information.samples_heading %}
+                                                <table id="sequenced-samples" class="display">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for value in service_data_information.samples_heading %}
+                                                            <th>{{value}}</th>
+                                                            {% endfor %}
+                                                            <th>Select</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for values in service_data_information.samples_data %}
+                                                        <tr>
+                                                            {% for value in values %}
+                                                            <td>{{value}}</td>
+                                                            {% endfor %}
+                                                            <td><input type="checkbox" class="checkbox"></td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>      
+                                            {% else %}
+                                                <h3>There are no samples to select</h3>
+                                            {% endif %}
+                                            </div>
+                                            <!-- div tab 2 -->
+                                            <div class="tab-pane fade show active" id="nav-recorded" role="tabpanel" aria-labelledby="nav-recorded-tab" >
+                                                {% if service_data_information.sample_only_recorded_heading %}
+                                                <p class="text-primary">Contact with
+                                                    Bioinformatic unit to provide the sample files</p>
+                                                <table id="recorded-samples" class="display">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for value in service_data_information.only_recorded_samples_heading %}
+                                                            <th>{{value}}</th>
+                                                            {% endfor %}
+                                                            <th>Select</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for values in service_data_information.only_recorded_samples_data %}
+                                                        <tr>
+                                                            {% for value in values %}
+                                                            <td>{{value}}</td>
+                                                            {% endfor %}
+                                                            <td><input type="checkbox" class="checkbox"></td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
                                                 {% else %}
-                                                    <h3 style="text-align:center">There are no Samples to select, for user </h3>
-                                                    <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
-                                                    {% if not service_data_information.sample_only_recorded_heading %}
-                                                        <script>
-                                                            $(document).ready(function () {
-                                                                $("#createservice").submit(function (e) {
-                                                                    //stop submitting the form to see the disabled button effect
-                                                                    // e.preventDefault();
-                                                                    //disable the submit button
-                                                                    $("input:submit").attr("disabled", true);
-                                                                    return true;
-                                                                });
-                                                            });
-                                                        </script>
-                                                    {% endif %}
+                                                <h3>There are no samples recorded sequenced elsewhere</h3>
                                                 {% endif %}
                                             </div>
                                         </div>
-                                    </div><!-- // end of tab internal_samples -->
-
-                                    <div id="onlyRecordedSamples" class="tabcontent">
-                                        <div class="col-sm-12">
-                                            <div class="card ">
-                                                <div class="card-header"><h3 style="text-align:center">Only recorded Samples </h3></div>
-                                                <div class="card-body">
-                                                    {% if service_data_information.sample_only_recorded_heading %}
-                                                        <h5 style="text-align:center">Select the samples to be included in the service.</h5>
-                                                        <p  style="text-align:center" class="text-primary">Contact with Bioinformatic unit to provide the sample files</p>
-                                                        <div id="spreadsheet2"></div>
-                                                        <script>
-                                                            var data2 = [{% for values in service_data_information.sample_only_recorded %}
-                                                               [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                               ];
-                                                            var table2  = jexcel(document.getElementById('spreadsheet2'), {
-                                                                data:data2,
-                                                                columns: [
-                                                                    {% for item in  service_data_information.sample_only_recorded_heading %}
-                                                                        {% if forloop.last %}
-                                                                            { type: 'hidden' },
-                                                                        {% else %}
-                                                                        { type: 'text', title:'{{item}}', width:150 },
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                    { type: 'checkbox',  title:'Select Sample', width:100 },
-                                                                ],
-                                                                allowInsertColumn:false,
-                                                                allowDeleteColumn:false,
-                                                                allowRenameColumn:false,
-                                                                allowInsertRow:false,
-                                                                allowDeleteRow:false,
-                                                                tableOverflow:false,
-                                                                search:true,
-                                                                pagination:20,
-                                                                csvFileName:'only_recorded_samples',
-                                                            });
-                                                        </script>
-                                                    {% else %}
-                                                        <h3 style="text-align:center">There are no Samples which are defined as only recorded </h3>
-                                                        <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
-                                                    {% endif %}
-                                                </div> <!--// end panel body -->
-                                            </div>
-                                        </div> <!--// end col-sm-12  Projects Requested services  -->
-                                    </div><!-- // end of tab external_samples -->
-                                </div> <!--  end of col-sm-12 -->
-                            </div> <!--  end of col-sm-12 -->
-                        </div> <!--  end of row -->
-
-                        <div class="row my-2">
-                            <div class="col-sm-12">
-                                <div class="card ">
-                                    <div class="card-header"><h3 style="text-align:center">Service Selection</h3></div>
-                                    <div class="card-body">
-                                        {% if service_data_information.nodes %}
-                                            <div class="scrolling-wrapper">
-                                                <div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %} >
-                                            		{% include "bootstrap3/layout/field_errors_block.html" %}
-                                            		{% for category,structure in service_data_information.nodes|tree_info %}
-                                                        {% if structure.new_level %}<ul class="level-{{category.level}}" id="ul_{{forloop.counter}}"><li>{% else %}</li><li>{% endif %}
-                                                            <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}" >
-                                                                <input type="checkbox" {% if category.pk in value or category.pk|stringformat:"s" == value|stringformat:"s" %} checked="checked"{% endif %} class="level-{{category.level}}" name="RequestedServices" id="id_RequestedServices_{{forloop.counter}}" value="{{ category.pk }}" >
-                                                                    {{ category }}
-                                                			 </label>
-                                            			{% for level in structure.closed_levels %}</li></ul>{% endfor %}
-                                            		{% endfor %}
-                                            		{% include "bootstrap3/layout/help_text.html" %}
-                                        	    </div> <!--  end of scrolling wrapper -->
-                                            </div> <!--  end of scrolling wrapper -->
-                                            <script>
-                                                $(document).ready(function() {
-                                                	$("input:checkbox").change(function() {
-                                                		var ischecked= $(this).is(':checked');
-                                                		if (ischecked) {
-                                                			$(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",true)
-                                                		}else{
-                                                		    $(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",false)
-                                                		}
-                                                	});
-                                                });
-                                            </script>
-                                        {% else %}
-                                            <h3 style="text-align:center">No Services have been defined so far</h3>
-                                            <h5 style="text-align:center">Check the User Guide to define new Services</h5>
-                                        {% endif %}
                                     </div>
                                 </div>
-                            </div> <!--  end of col-sm-12 -->
-                        </div> <!--  end of row -->
-
-                        <!-- #########################################################333  -->
-                        <div class="row my-2">
-                            <div class="col-sm-12">
-                                <div class="card ">
-                                    <div class="card-header"><h3 style="text-align:center">Additional Information</h3></div>
-                                    <div class="card-body">
-
-                                        <div class="row fileupload-buttonbar">
-                                            <div class="col-lg-7">
-                                                <!-- The fileinput-button span is used to style the file input field as button -->
-                                                <span class="btn btn-default fileinput-button">
-                                                    <i class="glyphicon glyphicon-plus"></i>
-                                                    <span class="text-color-black">Add files...</span>
-                                                    <input type="file" name="file" multiple>
-                                                </span>
-                                                <button type="submit" class="btn btn-info start">
-                                                    <i class="glyphicon glyphicon-upload"></i>
-                                                    <span class="text-color-black">Start upload</span>
-                                                </button>
-                                                <button type="reset" class=" btn btn-warning cancel">
-                                                    <i class="glyphicon glyphicon-ban-circle"></i>
-                                                    <span class="text-color-black">Cancel upload</span>
-                                                </button>
-                                                <button type="button" class="btn btn-danger delete">
-                                                    <i class="glyphicon glyphicon-trash"></i>
-                                                    <span class="text-color-grey">Delete</span>
-                                                </button>
-                                                <input type="checkbox" class="toggle">
-                                                <!-- The loading indicator is shown during file processing -->
-                                                <span class="fileupload-loading"></span>
-                                            </div>
-                                            <!-- The global progress information -->
-                                            <div class="col-lg-5 fileupload-progress fade">
-                                                <!-- The global progress bar -->
-                                                <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                                                    <div class="progress-bar progress-bar-success" style="width:0%;"></div>
-                                                </div>
-                                                <!-- The extended global progress information -->
-                                                <div class="progress-extended">&nbsp;</div>
-                                            </div>
-                                        </div>
+                                <!-- row card 3: select services -->
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-8">
                                         <div class="card ">
-                                            <div class="card-header"><h3 class="panel-title">Upload Files</h3></div>
+                                            <div class="card-header">
+                                                Service selection
+                                            </div>
                                             <div class="card-body">
-                                                <h5>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage (if Browser support).</h5>
-                                                <h5>The Maximun file size to upload is <strong>5MB</strong>. For including files bigger than 5MB contact Bioinformatic Unit Responsible</h5>
-                                                <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
-
+                                                {% if service_data_information.nodes %}
+                                                    <div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %}>
+                                                        {% for category,structure in service_data_information.nodes|tree_info %}
+                                                            {% if structure.new_level %}
+                                                            <ul class="level-{{category.level}}" id="ul_{{forloop.counter}}">
+                                                                <li>
+                                                            {% else %}
+                                                                </li>
+                                                                <li>
+                                                            {% endif %}
+                                                                <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}">
+                                                                    <input type="checkbox" {% if category.pk in value or category.pk|stringformat:'s"==value|stringformat:"s' %}
+                                                                    checked="checked" {% endif %} class="level-{{category.level}}"
+                                                                    name="RequestedServices"
+                                                                    id="id_RequestedServices_{{forloop.counter}}"
+                                                                    value="{{ category.pk }}">
+                                                                    {{ category }}
+                                                                </label>
+                                                            {% for level in structure.closed_levels %}
+                                                                </li>
+                                                            </ul>
+                                                            {% endfor %}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                <h3>No services have been defined so far</h3>
+                                                {% endif %}
                                             </div>
                                         </div>
-                                        <!-- The table listing the files available for upload/download -->
-                                        <div class="form-control">
-                                            <label class="col-sm-3 control-label" for="description" >Service Notes</label>
-                                            <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
-                                        </div>  <!-- end from-group   -->
                                     </div>
                                 </div>
-                            </div> <!--  end of col-sm-12 -->
-                        </div> <!--  end of row -->
-                        <br>
-                        <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
-                    </form>
-
-                    {% upload_js %}
-                <!-- ######################################################### -->
-                    <script>
-                       $(document).ready(function () {
-                           $("#fileupload").submit(function (e) {
-                               //stop submitting the form to see the disabled button effect
-                               //e.preventDefault();
-                               //disable the submit button
-                               //var table_data = $('#spreadsheet').jexcel('getData')
-                               {% if service_data_information.samples_heading %}
-                                   var table_data1 = table1.getData()
-                                   var data_json = JSON.stringify(table_data1)
-                                   $("<input />").attr("type", "hidden")
-                                       .attr("name", "samples_requested")
-                                       .attr("value", data_json)
-                                       .appendTo("#fileupload");
-                               {% endif %}
-                               var table_data2 = table2.getData()
-                               var data_json = JSON.stringify(table_data2)
-                               $("<input />").attr("type", "hidden")
-                                   .attr("name", "only_recorded_samples")
-                                   .attr("value", data_json)
-                                   .appendTo("#fileupload");
-                               $("#btnSubmit").attr("disabled", true);
-                               return true;
-                           });
-                       });
-                    </script>
-
-
-                    <script>
-                        // Get the element with id="defaultOpen" and click on it
-                        document.getElementById("defaultOpen").click();
-                    </script>
+                                <!-- row card 4: additional info -->
+                                <div class="row pt-2 pb-2">
+                                    <div class="col-md-8">
+                                        <div class="card ">
+                                            <div class="card-header">
+                                                Additional Information
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="container-md">
+                                                    <div class="row sequencing_form-buttonbar">
+                                                        <div class="col-md-8">
+                                                            <!-- The fileinput-button span is used to style the file input field as button -->
+                                                            <span class="btn btn-default fileinput-button">
+                                                                <i class="glyphicon glyphicon-plus"></i>
+                                                                <span class="text-color-black">Add files...</span>
+                                                                <input type="file" name="file" multiple>
+                                                            </span>
+                                                            <button type="submit" class="btn btn-info start">
+                                                                <i class="glyphicon glyphicon-upload"></i>
+                                                                <span class="text-color-black">Start upload</span>
+                                                            </button>
+                                                            <button type="reset" class=" btn btn-warning cancel">
+                                                                <i class="glyphicon glyphicon-ban-circle"></i>
+                                                                <span class="text-color-black">Cancel upload</span>
+                                                            </button>
+                                                            <button type="button" class="btn btn-danger delete">
+                                                                <i class="glyphicon glyphicon-trash"></i>
+                                                                <span class="text-color-grey">Delete</span>
+                                                            </button>
+                                                            <input type="checkbox" class="toggle">
+                                                            <!-- The loading indicator is shown during file processing -->
+                                                            <span class="sequencing_form-loading"></span>
+                                                        </div>
+                                                        <!-- The global progress information -->
+                                                        <div class="col-md-8 sequencing_form-progress fade">
+                                                            <!-- The global progress bar -->
+                                                            <div class="progress progress-striped active" role="progressbar" aria-valuemin="0"
+                                                                aria-valuemax="100">
+                                                                <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+                                                            </div>
+                                                            <!-- The extended global progress information -->
+                                                            <div class="progress-extended">&nbsp;</div>
+                                                        </div>
+                                                    </div>
+                                               
+                                                    <div class="row pt-2 pb-2">
+                                                        <div class="col-md-8">
+                                                            <h5>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage
+                                                                (if Browser support).</h5>
+                                                            <h5>The Maximun file size to upload is <strong>5MB</strong>. For including files
+                                                                bigger than 5MB contact Bioinformatic Unit Responsible</h5>
+                                                            <table role="presentation" class="table table-striped">
+                                                                <tbody class="files"></tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <!-- The table listing the files available for upload/download -->
+                                                    <div class="row pt-2 pb-2 form-control">
+                                                        <label class="col-md-3 control-label" for="description">Service Notes</label>
+                                                        <div class="col-md-10"><textarea class="form-control" name="description" value=""
+                                                            id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row pt-2 pb-2 justify-content-right">
+                                    <div class="col-md-8">
+                                        <input class="btn btn-primary" type="submit" id="btnSubmit" value="Submit your Request">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div> <!--  end of col-sm-7 -->
-    </div> <!--  end of row -->
+        </div>
+        {% endif %}
+    </div>
+</section>
 
-{% endif %}
+{% upload_js %}
+<!-- <script>
+$(document).ready(function () {
+    $("#sequencing_form").submit(function (e) {
+        //stop submitting the form to see the disabled button effect
+        //e.preventDefault();
+        //disable the submit button
+        //var table_data = $('#spreadsheet').jexcel('getData')
+        {% if service_data_information.samples_heading %}
+        var table_data1 = table1.getData()
+        var data_json = JSON.stringify(table_data1)
+        $("<input />").attr("type", "hidden")
+            .attr("name", "samples_requested")
+            .attr("value", data_json)
+            .appendTo("#sequencing_form");
+        {% endif %}
+        var table_data2 = table2.getData()
+        var data_json = JSON.stringify(table_data2)
+        $("<input />").attr("type", "hidden")
+            .attr("name", "only_recorded_samples")
+            .attr("value", data_json)
+            .appendTo("#sequencing_form");
+        $("#btnSubmit").attr("disabled", true);
+        return true;
+    });
+});
+</script> -->
+<script>
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+
+    $(document).ready(function () {
+        // drag checkboxes in samples selection
+        function updateCheckboxSelection() {
+            checkboxes.each(function() {
+              var row = $(this).closest('tr');
+              var rowIndex = table.row(row).index();
+        
+              if (row.hasClass('dragging') || row.hasClass('selected')) {
+                this.checked = true;
+                table.row(rowIndex).select();
+              } else {
+                this.checked = false;
+                table.row(rowIndex).deselect();
+              }
+            });
+        }
+        
+        function checkboxes_drag(table) {
+            var checkboxes = table.column(0).nodes().to$();
+        
+            checkboxes.each(function() {
+                $(this).on('dragstart', function() {
+                $(this).closest('tr').addClass('dragging');
+                });
+            
+                $(this).on('dragend', function() {
+                $(this).closest('tr').removeClass('dragging');
+                updateCheckboxSelection();
+                });
+            });
+            
+            table.on('row-reorder', function(e, details) {
+                if (details.update) {
+                updateCheckboxSelection();
+                }
+            });
+        }
+
+        $('#sequenced-tables tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+     
+        // DataTable
+        var table_sequenced = $('#sequenced-tables').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+     
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+
+        checkboxes_drag(table_sequenced);
+        
+        $('#sequenced-tables tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+     
+        // DataTable
+        var table_recorded = $('#recorded-tables').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+     
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+        checkboxes_drag(table_recorded);
+        
+        // disable submit button if there are no samples to select
+        {% if not service_data_information.sample_only_recorded_heading and not service_data_information.samples_heading %}
+        $("#createservice").submit(function (e) {
+            //disable the submit button
+            $("input:submit").attr("disabled", true);
+            return true;
+        });
+        
+        {% endif %}
+        
+        // make checkbox auto check upwards in tree
+        $("input:checkbox").change(function () {
+            var ischecked = $(this).is(':checked');
+            if (ischecked) {
+                $(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked", true)
+            } else {
+                $(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked", false)
+            }
+        });
+    });
+</script>
+
 {% endblock %}
