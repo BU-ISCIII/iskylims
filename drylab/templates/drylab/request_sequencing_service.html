@@ -1,47 +1,10 @@
 {% extends 'drylab/base.html' %}
+{% include 'core/jexcel_functionality.html' %}
+{% include "core/multifile_upload_functionality.html" %}
 {% load mptt_tags %}
 {% block content %}
 {% load upload_tags %}
-{% include 'core/jexcel_functionality.html' %}
-{% include "core/multifile_upload_functionality.html" %}
-<style>
-    .scrolling-wrapper {
-        overflow-x: auto;
-        overflow-y: auto;
-        white-space: nowrap;
-        height: auto;
-    }
-    .jexcel > tbody > tr > td.readonly {
-        color:rgba(0,0,0,0.6) !important;
-    }
-    .btn-info {
-        background-color :#87cada  !important;
-    }
-    .btn-info:hover{
-        background-color :#67cada !important;
-    }
-    .btn-warning {
-        background-color :#ffdfb2 !important;
-    }
-    .btn-warning:hover{
-        background-color :#ffcfa2 !important;
-    }
-    .btn-danger {
-        background-color :#e57e5f  !important;
-    }
-    .btn-danger:hover{
-        background-color :#e55e3f !important;
-    }
-    span.text-color-white {
-        color:#ffffff !important;
-    }
-    span.text-color-black {
-        color:#000000 !important;
-    }
-    span.text-color-grey {
-        color:  #474747    !important;
-    }
- </style>
+
 
 {% if error_message %}
     <div class="row my-2">
@@ -54,8 +17,8 @@
                     {% endfor %}
                 </div>
             </div>
-        </div> <!--  end of col-sm-7 -->
-    </div> <!--  end of row -->
+        </div>
+    </div>
 {% endif %}
 {% if confirmation_result %}
     <div class="row my-2">
@@ -69,7 +32,6 @@
                     {% endfor %}
                     {% if confirmation_result.samples %}
                         <h5> The samples included in the services are:</h5>
-                        <br>
                         <p>
                             {% for sample in confirmation_result.samples %}
                                 {% if forloop.last %}
@@ -91,7 +53,7 @@
             <div class="card ">
                 <div class="card-header"><h3 style="text-align:center">Request Service form for Sequencing Data.</h3></div>
                 <div class="card-body">
-                    <form id="fileupload" method="post" action="/drylab/requestSequencingService"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well">
+                    <form id="fileupload" method="post" action="/drylab/request_sequencing_service"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well">
                     <!-- <form id="fileupload" method="post" action="/drylab/multipleFiles"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well"> -->
                         {% csrf_token %}
                         <input type="hidden" name="subAction" value="createservice"/>
@@ -130,13 +92,9 @@
                                             <div class="card-header"><h3 style="text-align:center">Internal Samples.</h3></div>
                                             <div class="card-body">
                                                 {% if service_data_information.samples_heading %}
-
-                                                    <br>
                                                     <h4 style="text-align:center"> Select the samples to be included in the service</h4>
-
                                                     <div  class="scrolling-wrapper">
                                                         <div id="spreadsheet1"></div>
-                                                        <br>
                                                         <script>
                                                             var data = [{% for values in service_data_information.samples_data %}
                                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -248,7 +206,6 @@
                                                 <div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %} >
                                             		{% include "bootstrap3/layout/field_errors_block.html" %}
                                             		{% for category,structure in service_data_information.nodes|tree_info %}
-
                                                         {% if structure.new_level %}<ul class="level-{{category.level}}" id="ul_{{forloop.counter}}"><li>{% else %}</li><li>{% endif %}
                                                             <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}" >
                                                                 <input type="checkbox" {% if category.pk in value or category.pk|stringformat:"s" == value|stringformat:"s" %} checked="checked"{% endif %} class="level-{{category.level}}" name="RequestedServices" id="id_RequestedServices_{{forloop.counter}}" value="{{ category.pk }}" >
@@ -331,12 +288,10 @@
                                             </div>
                                         </div>
                                         <!-- The table listing the files available for upload/download -->
-                                        <br>
                                         <div class="form-control">
                                             <label class="col-sm-3 control-label" for="description" >Service Notes</label>
                                             <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
                                         </div>  <!-- end from-group   -->
-                                        <br><br>
                                     </div>
                                 </div>
                             </div> <!--  end of col-sm-12 -->

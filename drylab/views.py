@@ -115,7 +115,7 @@ def request_sequencing_service(request):
             )
             return render(
                 request,
-                "drylab/requestSequencingService.html",
+                "drylab/request_sequencing_service.html",
                 {"service_data_information": service_data_information},
             )
 
@@ -128,7 +128,7 @@ def request_sequencing_service(request):
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
                 request,
-                "drylab/requestSequencingService.html",
+                "drylab/request_sequencing_service.html",
                 {
                     "service_data_information": service_data_information,
                     "error_message": error_message,
@@ -175,7 +175,7 @@ def request_sequencing_service(request):
         if email_result != "OK":
             return render(
                 request,
-                "drylab/requestSequencingService.html",
+                "drylab/request_sequencing_service.html",
                 {
                     "confirmation_result": confirmation_result,
                     "error_message": email_result,
@@ -183,14 +183,14 @@ def request_sequencing_service(request):
             )
         return render(
             request,
-            "drylab/requestSequencingService.html",
+            "drylab/request_sequencing_service.html",
             {"confirmation_result": confirmation_result},
         )
     else:
         service_data_information = drylab.utils.req_services.get_service_data(request)
         return render(
             request,
-            "drylab/requestSequencingService.html",
+            "drylab/request_sequencing_service.html",
             {"service_data_information": service_data_information},
         )
 
@@ -234,7 +234,7 @@ def counseling_request(request):
 
         return render(
             request,
-            "drylab/requestSequencingService.html",
+            "drylab/request_sequencing_service.html",
             {"confirmation_result": confirmation_result},
         )
 

@@ -70,7 +70,7 @@ urlpatterns = [
         name="peding_services",
     ),
     path(
-        "requestSequencingService",
+        "request_sequencing_service",
         drylab.views.request_sequencing_service,
         name="request_sequencing_service",
     ),
