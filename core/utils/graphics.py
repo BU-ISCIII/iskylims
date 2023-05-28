@@ -56,18 +56,20 @@ def preparation_3D_pie (heading, sub_title, theme, source_data) :
     data_source['data'] = data
     return data_source
 
-def preparation_bar_column (heading, sub_caption, x_axis_name, y_axis_name, theme, input_data, label_key=None, label_value=None) :
+def preparation_graphic_data (heading, sub_caption, x_axis_name, y_axis_name, theme, input_data, label_key=None, label_value=None) :
     data_source = {}
     data_source['chart'] = {
                 "caption": heading,
                 "subCaption": sub_caption,
                 "xAxisName": x_axis_name,
                 "yAxisName": y_axis_name,
-                #"theme": "fint",
+                "labelDisplay": "rotate",
+                "useEllipsesWhenOverflow": "0",
                 "theme": theme,
                 "numberPrefix": "",
                 "placevaluesInside": "1",
                 "rotatevalues": "1",
+                "showlegend": "1",
                 #Showing canvas bg to apply background color
                 "showCanvasBg": "1",
                 #Shwoing canvas base to apply base color
@@ -92,7 +94,7 @@ def preparation_bar_column (heading, sub_caption, x_axis_name, y_axis_name, them
             data.append(data_dict)
     # converting data when is a list of dictionnary
     else:
-        if label_key is not None:
+        if label_key is None:
             # process dictionnary when each item in list contains only
             # key / value  
             for dict_item in input_data:
@@ -109,10 +111,10 @@ def preparation_bar_column (heading, sub_caption, x_axis_name, y_axis_name, them
             # label_key and label_value are used to map correctly
             for dict_item in input_data:
                 data_dict = {}
-                values = data_dict[label_value]
+                values = dict_item[label_value]
                 if isinstance(values, float):
                     values = round(values,2)
-                data_dict["label"] = data_dict[label_key]
+                data_dict["label"] = dict_item[label_key]
                 data_dict["value"] = values
                 data.append(data_dict)
     data_source['data'] = data

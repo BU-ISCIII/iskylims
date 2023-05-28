@@ -378,8 +378,9 @@ class Projects(models.Model):
         return self.runprocess_id
 
     def get_user_name(self):
-        user_name = self.user_id.username
-        return "%s" % (user_name)
+        if self.user_id:
+            return  self.user_id.username
+        return "Not provided"
 
     def get_user_center_name(self):
         return "%s" % (self.user_id.pk)
@@ -757,7 +758,7 @@ class RawTopUnknowBarcodes(models.Model):
         db_table = "wetlab_raw_top_unknown_barcodes"
 
     def __str__(self):
-        return "%s" % (self.lane_number)
+        return "%s" % (self.sequence)
 
     def get_unknow_barcodes(self):
         return "%s;%s" % (self.count, self.sequence)

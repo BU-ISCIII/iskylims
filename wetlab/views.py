@@ -2030,7 +2030,6 @@ def stats_per_researcher(request):
         )
         if "ERROR" in researcher_statistics:
             error_message = researcher_statistics["ERROR"]
-            import pdb; pdb.set_trace()
             return render(
                 request,
                 "wetlab/stats_per_researcher.html",
@@ -2050,6 +2049,13 @@ def stats_per_time(request):
     if request.method == "POST":
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
+        per_time_statistics = wetlab.utils.statistics.get_per_time_statistics(start_date, end_date)
+        return render(
+                    request,
+                    "wetlab/stats_per_time.html",
+                    {"per_time_statistics": per_time_statistics},
+                )
+
         # check the right format of start and end date
         if start_date != "" and not wetlab.utils.common.check_valid_date_format(
             start_date
@@ -2064,6 +2070,7 @@ def stats_per_time(request):
         ########
         # searching for runs were match the state and start and end date
         ########
+        """
         if start_date != "" and end_date != "":
             stat_per_time = {}
             if wetlab.models.RunProcess.objects.filter(
@@ -2359,7 +2366,7 @@ def stats_per_time(request):
                 "wetlab/stats_per_time.html",
                 {"error_message": "Start date and End Date cannot be empty "},
             )
-
+    """
     return render(request, "wetlab/stats_per_time.html")
 
 
@@ -4878,8 +4885,8 @@ def display_sample_in_run(request, sample_run_id):
     if not sample_run_obj:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["No Sample was found"]},
+            "wetlab/display_sample.html",
+            {"error_message": "No Sample was found"},
         )
     sample_information = wetlab.utils.fetch_info.get_info_sample_in_run(sample_run_obj)
     return render(

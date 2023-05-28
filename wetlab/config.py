@@ -561,8 +561,9 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5 = [
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 
-RESEARCHER_SAMPLE_HEADING_STATISTICS = ["Samples","Project name","Run name","Platform"]
-
+HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE = ["Samples","Project name","Run name","Platform"]
+HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
+HEADING_STATISTICS_FOR_TIME_SAMPLE = ["Sample name", "Researcher","Project name", "Run name", "Barcode"]
 
 NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER = 5
 
@@ -721,29 +722,33 @@ ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS = [
 ]
 
 # ERROR TEXT FOR SEACHING #############################################
-ERROR_NO_MATCHES_FOR_RUN_SEARCH = [
-    "There is not any run that matches your input conditions"
-]
-ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = [
-    "There is not any project that mathes your input conditions"
-]
-ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = "There is not any Index Library Kit  that mathes your input conditions"
-ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
-    "There is not any User Lot Kit  that matches your input conditions"
-]
-ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = "There is not any match for your input conditions "
-ERROR_NO_USER_LOT_KIT_DEFINED = ["No User Lot Kit are defined"]
 ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YYYY)"
-ERROR_USER_NAME_TOO_SHORT = "User name must contains at least 5 characters"
-ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = [
-    "There is not any run that where using the sequencer"
-]
+
+
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
     "There are many user names that matches your request"
 ]
-ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = [
-    "Unsuccessful configuration settings for Samba connection"
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = "There is not any match for your input conditions "
+ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = "There is not any Index Library Kit  that mathes your input conditions"
+ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = [
+    "There is not any project that mathes your input conditions"
 ]
+ERROR_NO_MATCHES_FOR_RUN_SEARCH = [
+    "There is not any run that matches your input conditions"
+]
+ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = [
+    "There is not any run that where using the sequencer"
+]
+ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
+    "There is not any User Lot Kit  that matches your input conditions"
+]
+ERROR_NO_SAMPLES_SELECTED = ["They were not selected any Sample on your request"]
+
+ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = "There are not runs for the selected period of time"
+ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
+    "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
+]
+ERROR_NO_USER_LOT_KIT_DEFINED = ["No User Lot Kit are defined"]
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = [
     "Unable to save the Samba configuration file ",
     "check if folder wetlab has write permision for apache user",
@@ -752,15 +757,12 @@ ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = [
     "Unable to save the email configuration file ",
     "check if folder wetlab has write permision for apache user",
 ]
-
 ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = [
     "User does not have any sample to perform statistics"
 ]
-
-ERROR_NO_SAMPLES_SELECTED = ["They were not selected any Sample on your request"]
-
-ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
-    "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
+ERROR_USER_NAME_TOO_SHORT = "User name must contains at least 5 characters"
+ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = [
+    "Unsuccessful configuration settings for Samba connection"
 ]
 
 # ########################  Sequencer errors #####################################

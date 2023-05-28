@@ -1,6 +1,5 @@
 {% extends "core/base.html" %}
 {% block content %}
-{% load user_groups %}
 {% include "wetlab/menu.html" %}
 {% include "core/cdn_table_functionality.html" %}
 {% include "core/graphic_chart_functionality.html" %}
@@ -11,7 +10,7 @@
             <div class="row my-2">
                 <div class="col-sm-7 offset-3">
                     <div class="card border-danger mb-3">
-                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-header border-danger"><h3 class="text-center">Unable to process your request</h3> </div>
                         <div class="card-body">
                             <h4>{{error_messages}}</h4>
                         </div>
@@ -19,198 +18,376 @@
                 </div> 
             </div> 
         {% endif %}
-{% if  display_stats_per_time %}
-    <!--  Start Run information -->
-    <div class="row my-2">
-        <BR>
-        <div class="col-sm-6">
-            <div class="card ">
-                <div class="card-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4>
-                That have been found for the selected period from : {{ display_stats_per_time.dates }}
+        {% if  per_time_statistics %}
+        <div class="row my-2">
+            <div class="col" >
+                <h3 class="text-center">Statistics information from {{per_time_statistics.start_date}}  to {{per_time_statistics.end_date}}</h3>
+                <div class="col">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="true">Graphic</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="quality-tab" data-bs-toggle="tab" data-bs-target="#quality" type="button" role="tab" aria-controls="quality" aria-selected="false">Quality</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="runs-tab" data-bs-toggle="tab" data-bs-target="#runs" type="button" role="tab" aria-controls="runs" aria-selected="false">Runs</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="samples-tab" data-bs-toggle="tab" data-bs-target="#samples" type="button" role="tab" aria-controls="samples" aria-selected="false">Samples</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="barcode-tab" data-bs-toggle="tab" data-bs-target="#barcode" type="button" role="tab" aria-controls="barcode" aria-selected="false">Unknown barcodes</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md">
+                                        <div class="card text-center">
+                                            <div class="card-header"><h3>Graphic statistics </h3></div>
+                                            <div class="card-body">
+                                                <div class="row ">
+                                                    <div class="col-md-6">
+                                                        <div id="time_state_chart"> </div>
+                                                        {{ per_time_statistics.time_state_graphic|safe }}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h5 class="text-center">There are {{per_time_statistics.num_runs}} runs in this period</h5>
+                                                        <div id="time_run_weeks_chart"> </div>
+                                                        {{ per_time_statistics.time_run_weeks_graphic|safe }}
+                                                    </div>
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="time_researcher_chart"> </div>
+                                                            {{ per_time_statistics.time_researcher_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h5 class"text-center">There are {{per_time_statistics.num_projects}} projects in this period</h5>
+                                                            <div id="time_project_weeks_chart"> </div>
+                                                            {{ per_time_statistics.time_project_weeks_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div> <!-- end graphics tab-->
+                        <div class="tab-pane fade " id="quality" role="tabpanel" aria-labelledby="quality-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md">
+                                        <div class="card text-center">
+                                            <div class="card-header"><h3>Quality statistics </h3></div>
+                                            <div class="card-body">
+                                                <div class="row ">
+                                                    <div class="col-md-6">
+                                                        <div id="time_q_30_chart"> </div>
+                                                        {{ per_time_statistics.time_q_30_graphic|safe }}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div id="time_mean_chart"> </div>
+                                                        {{ per_time_statistics.time_mean_graphic|safe }}
+                                                    </div>
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="time_researcher_q_30_chart"> </div>
+                                                            {{ per_time_statistics.time_researcher_q_30_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="time_researcher_mean_chart"> </div>
+                                                            {{ per_time_statistics.time_researcher_mean_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div> <!-- end graphics tab-->
+                        <div class="tab-pane fade" id="runs" role="tabpanel" aria-labelledby="runs-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md">
+                                        <div class="card">
+                                            <div class="card-header text-center"><h3>Run data for this period</h3></div>
+                                            <div class="card-body">
+                                                <table class="table table-hover" id="run_table">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for column in per_time_statistics.run_table_heading %}
+                                                                <th>{{column}}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for pk, run, state, seq, date in per_time_statistics.run_data %}
+                                                            <tr>
+                                                                <td><a href="/wetlab/displayRun={{pk}}" class="text-decoration-none">{{run}}</a> </td>
+                                                                <td>{{state}}</td>
+                                                                <td>{{seq}}</td>
+                                                                <td>{{date}}</td>
+                                                            </tr>
+                                                        {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div> 
+                                    </div> 
+                                </div>
+                            </div>                     
+                        </div>  <!-- end runs tab-->
+                        <div class="tab-pane fade" id="samples" role="tabpanel" aria-labelledby="samples-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md">
+                                        <div class="card">
+                                            <div class="card-header text-center"><h3>Sample data for this period</h3></div>
+                                            <div class="card-body">
+                                                <table class="table table-hover" id="sample_table">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for column in per_time_statistics.sample_table_heading %}
+                                                                <th>{{column}}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for pk, sample, researcher, project, run, barcode in per_time_statistics.sample_data %}
+                                                            <tr>
+                                                                <td><a href="/wetlab/displaySampleInRun={{pk}}" class="text-decoration-none">{{sample}}</a> </td>
+                                                                <td>{{researcher}}</td>
+                                                                <td>{{project}}</td>
+                                                                <td>{{run}}</td>
+                                                                <td>{{barcode}}</td>
+                                                            </tr>
+                                                        {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div> 
+                                    </div> 
+                                </div>
+                            </div>                     
+                        </div>  <!-- end samples tab-->   
+                    </div> 
 
                 </div>
-            </div>
-            <div class="card ">
-                <div class="card-header"><h4>Runs graphics  </h4></div>
-                <div class="card-body">
-                    <!-- Run Column Chart will start here-->
-                    <div id="run_period_chart-1"> </div>
-                    <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time.run_period_graphic |safe }}
-                </div>
-            </div>
-        </div> <!--  end of col-sm-6 -->
+            </div> 
+        </div> 
+{% comment %} 
 
-
-        <BR>
-        <div class="col-sm-4 offset-1">
-            <div class="card ">
-                <div class="card-header">These are the Runs found according your query. To get all information of the run , click on it:
-                <button onclick="exportTableToExcel('runsFound')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+            <!--  Start Run information -->
+            <div class="row my-2">
                 <BR>
-                </div>
-                <div class="table-wrapper">
-                <table id="runsFound" class="table table-hover mb-0">
-                   <thead>
-                      <tr>
-                        <th>Run Name</th>
-                        <th>Date</th>
-                      </tr>
-                   </thead>
-                   <tbody>
+                <div class="col-sm-6">
+                    <div class="card ">
+                        <div class="card-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4>
+                        That have been found for the selected period from : {{ display_stats_per_time.dates }}
 
-                    {% for key, values in display_stats_per_time.run_names.items %}
-                     <tr>
-                        {% for value, data in values %}
-                       <td><a href="/wetlab/displayRun={{ key }}">{{ value }}</a> </td>
-                       <td> {{ data }} </td>
-                        {%endfor%}
-                     </tr>
-                    {%endfor%}
-                   </tbody>
-                 </table>
-                </div> <!--  end of table wrapper  -->
-          </div>
-        </div> <!--  end of col-sm-3 -->
-    </div> <!--// end row -->
-        <BR>
-        <!--  start the disk space utilization  -->
-    <div class="row my-2">
-        <div class="col-sm-12">
-            <div class="card ">
-                <div class="card-header"><h4>Disk space utilization per each Run  </h4></div>
-                <div class="card-body">
-                    <!-- Run Column Chart will start here-->
-                    <div id="disk_usage_chart-1"> </div>
-                    <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time.disk_space_period_graphic |safe }}
-                </div>
-            </div>
-        </div> <!--  end of col-sm-12 -->
-    </div> <!--// end row -->
-
-    <!--  End Run information -->
-
-    <!--  Start Project information -->
-    <div class="row my-2">
-        <BR>
-        <div class="col-sm-6">
-            <div class="card ">
-                <div class="card-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4>
-                    For the selected period from : {{ display_stats_per_time.dates }}
-
-                </div>
-            </div>
-            <div class="card ">
-                <div class="card-header"><h4>Projects graphics  </h4></div>
-                <div class="card-body">
-                    <!-- Run Column Chart will start here-->
-                    <div id="project_period_chart-1"> </div>
-                    <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time.project_period_graphic |safe }}
-                </div>
-            </div>
-        </div> <!--  end of col-sm-6 -->
+                        </div>
+                    </div>
+                    <div class="card ">
+                        <div class="card-header"><h4>Runs graphics  </h4></div>
+                        <div class="card-body">
+                            <!-- Run Column Chart will start here-->
+                            <div id="run_period_chart-1"> </div>
+                            <!-- dumping JavaScript code here -->
+                                {{ display_stats_per_time.run_period_graphic |safe }}
+                        </div>
+                    </div>
+                </div> <!--  end of col-sm-6 -->
 
 
-        <BR>
-        <div class="col-sm-4 offset-1"">
-            <div class="card ">
-                <div class="card-header">These are the Projects found according your query. To get all information of the Project , click on it:
-                <button onclick="exportTableToExcel('projectsFound')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                 <BR>
+                <div class="col-sm-4 offset-1">
+                    <div class="card ">
+                        <div class="card-header">These are the Runs found according your query. To get all information of the run , click on it:
+                        <button onclick="exportTableToExcel('runsFound')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                        <BR>
+                        </div>
+                        <div class="table-wrapper">
+                        <table id="runsFound" class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Run Name</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for key, values in display_stats_per_time.run_names.items %}
+                            <tr>
+                                {% for value, data in values %}
+                            <td><a href="/wetlab/displayRun={{ key }}">{{ value }}</a> </td>
+                            <td> {{ data }} </td>
+                                {%endfor%}
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                        </table>
+                        </div> <!--  end of table wrapper  -->
                 </div>
-                <div class="table-wrapper">
-                <table id="projectsFound" class="table table-hover">
-                   <thead>
-                      <tr>
-                        <th>Project Name</th>
-                        <th>Date</th>
-                      </tr>
-                   </thead>
-                   <tbody>
+                </div> <!--  end of col-sm-3 -->
+            </div> <!--// end row -->
+                <BR>
+                <!--  start the disk space utilization  -->
+            <div class="row my-2">
+                <div class="col-sm-12">
+                    <div class="card ">
+                        <div class="card-header"><h4>Disk space utilization per each Run  </h4></div>
+                        <div class="card-body">
+                            <!-- Run Column Chart will start here-->
+                            <div id="disk_usage_chart-1"> </div>
+                            <!-- dumping JavaScript code here -->
+                                {{ display_stats_per_time.disk_space_period_graphic |safe }}
+                        </div>
+                    </div>
+                </div> <!--  end of col-sm-12 -->
+            </div> <!--// end row -->
 
-                    {% for key, values in display_stats_per_time.project_names.items %}
-                     <tr>
-                        {% for value, data in values %}
-                       <td><a href="/wetlab/displayProject={{ key }}">{{ value }}</a> </td>
-                       <td> {{ data }} </td>
-                        {%endfor%}
-                     </tr>
-                    {%endfor%}
-                   </tbody>
-                 </table>
-                </div> <!--  end of table wrapper  -->
-          </div>
-        </div> <!--  end of col-sm-3 -->
-    </div> <!--// end row -->
+            <!--  End Run information -->
 
-    <!--  End Project information -->
+            <!--  Start Project information -->
+            <div class="row my-2">
+                <BR>
+                <div class="col-sm-6">
+                    <div class="card ">
+                        <div class="card-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4>
+                            For the selected period from : {{ display_stats_per_time.dates }}
 
-    <!--  Start Undetermined Barcode information -->
-    <div class="row my-2">
-        {% for unbar_chart ,lane_number, unbar_graph in display_stats_per_time.unbar_lane_chart %}
-      <div class="col-sm-6" >
-        <div class="card ">
-          <div class="card-header"><h3>Undetermined Barcode Statistics for Lane {{lane_number}}</h3></div>
-          <div class="card-body">
-            <div id="{{ unbar_chart }}"> </div>
-                {{ unbar_graph |safe }}
-            </div>  
+                        </div>
+                    </div>
+                    <div class="card ">
+                        <div class="card-header"><h4>Projects graphics  </h4></div>
+                        <div class="card-body">
+                            <!-- Run Column Chart will start here-->
+                            <div id="project_period_chart-1"> </div>
+                            <!-- dumping JavaScript code here -->
+                                {{ display_stats_per_time.project_period_graphic |safe }}
+                        </div>
+                    </div>
+                </div> <!--  end of col-sm-6 -->
+
+
+                <BR>
+                <div class="col-sm-4 offset-1">
+                    <div class="card ">
+                        <div class="card-header">These are the Projects found according your query. To get all information of the Project , click on it:
+                        <button onclick="exportTableToExcel('projectsFound')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                        <BR>
+                        </div>
+                        <div class="table-wrapper">
+                        <table id="projectsFound" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for key, values in display_stats_per_time.project_names.items %}
+                            <tr>
+                                {% for value, data in values %}
+                            <td><a href="/wetlab/displayProject={{ key }}">{{ value }}</a> </td>
+                            <td> {{ data }} </td>
+                                {%endfor%}
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                        </table>
+                        </div> <!--  end of table wrapper  -->
+                </div>
+                </div> <!--  end of col-sm-3 -->
+            </div> <!--// end row -->
+
+            <!--  End Project information -->
+
+            <!--  Start Undetermined Barcode information -->
+            <div class="row my-2">
+                {% for unbar_chart ,lane_number, unbar_graph in display_stats_per_time.unbar_lane_chart %}
+            <div class="col-sm-6" >
+                <div class="card ">
+                <div class="card-header"><h3>Undetermined Barcode Statistics for Lane {{lane_number}}</h3></div>
+                <div class="card-body">
+                    <div id="{{ unbar_chart }}"> </div>
+                        {{ unbar_graph |safe }}
+                    </div>  
+                    </div>
+                </div> <!--// end col-sm-6  -->
+                {% endfor %}
+
+            <div class="row my-2">
+            <div class="col-sm-6 offset-2" >
+                <div class="card ">
+                <div class="card-header"><h3>Unknow Barcode Statistics all Lanes</h3></div>
+                <div class="card-body">
+                        <!-- Unknow Barcode Pie Chart will start here-->
+                    <div id="chart-5"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time.unknow_pie3d |safe }}
+                </div>  
+                </div>
+                </div> <!--// end col-sm-6  -->
+            </div> <!--// end row -->
+            <!--  End Undetermined Barcode information -->
+         {% endcomment %}
+        {% else %}
+            <div class="container">
+                <div class="row my-2">
+                    <div class="col-sm-7 offset-3" >
+                        <div class="card ">
+                            <div class="card-header"><h3 class="text-center">Statistics for a time period</h3></div>
+                            <div class="card-body">
+                                <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod">
+                                    {% csrf_token %}
+                                    <div class="row g-2">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="start_date" name="startdate"required="required" placeholder="Filter run from start date" >
+                                                <label class="text-danger"for="start-date">From Start Date (DD-MM-YYYY)</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="end_date" name="enddate" required="required" placeholder="Filter run from end date" >
+                                                <label class="text-danger" for="start-date">End Date (DD-MM-YYYY)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                    <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
+                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
+                                </form>
+                            </div>  
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div> <!--// end col-sm-6  -->
-        {% endfor %}
 
-    <div class="row my-2">
-      <div class="col-sm-6 offset-2" >
-        <div class="card ">
-          <div class="card-header"><h3>Unknow Barcode Statistics all Lanes</h3></div>
-          <div class="card-body">
-                <!-- Unknow Barcode Pie Chart will start here-->
-            <div id="chart-5"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time.unknow_pie3d |safe }}
-         </div>  
-        </div>
-        </div> <!--// end col-sm-6  -->
-    </div> <!--// end row -->
-    <!--  End Undetermined Barcode information -->
-{% else %}
-    <!-- FORM for searching RUN  Information -->
-    <BR>
-    <div class="row my-2">
-      <div class="col-sm-7" >
-        <div class="card ">
-          <div class="card-header"><h3>Run Statatistics for a period of time</h3></div>
-          <div class="card-body">
-           <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod" class="form-horizontal">
-            {% csrf_token %}
-            <div class="form-control required" >
-                  <label class="col-sm-5 form-label" for="startdate" >From Start Date (DD-MM-YYYY) </label>
-                  <div class="col-sm-5"><input class="form-control" type="date" required = "required" name="startdate" value="" id="startdate"></div>
-                <br>
-            </div>  <!-- end from-group   -->
-            <div class="form-control required">
-                  <label class="col-sm-5 form-label" for="enddate" >End Date (DD-MM-YYYY) </label>
-                  <div class="col-sm-5"><input class="form-control" type="date" required = "required" name="enddate" value="" id="enddate"></div>
-                <br>
-            </div>  <!-- end from-group   -->
-                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
-                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-            </form>
-            </div>  
-            <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
-
-        </div>
-        </div> <!--// end col-sm-7  -->
-
-        
-
-    </div> <!--// end row -->
-
-    <!-- End of FORM for searching RUN information -->
-
-{% endif %}
-</div>
+        {% endif %}
+    </div>
 </section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#run_table').DataTable({
+            dom: "Bfltirp",
+            responsive: true,
+            buttons: ['excel', 'csv']
+        });
+    });
+
+    $(document).ready(function() {
+        $('#sample_table').DataTable({
+            dom: "Bfltirp",
+            responsive: true,
+            buttons: ['excel', 'csv']
+        });
+    });
+</script>
 {% endblock %}
