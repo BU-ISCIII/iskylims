@@ -1960,7 +1960,7 @@ def stats_experiment(request):
 def stats_per_sequencer(request):
     sequencer_names = wetlab.utils.fetch_info.get_sequencer_installed_names()
     if request.method == "POST":
-        sequencer = request.POST["sequencer"]
+        r_name = request.POST["researchername"]
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
 
@@ -1995,8 +1995,8 @@ def stats_per_sequencer(request):
             error_message = wetlab.config.ERROR_NO_MATCHES_FOR_SEQUENCER_STATS
             return render(
                 request,
-                "wetlab/StatsPerSequencer.html",
-                {"sequencer_names": sequencer_names, "error_message": error_message},
+                "wetlab/stats_per_researcher.html",
+                {"error_message": error_message},
             )
         sequencer_data = (
             wetlab.utils.fetch_info.get_stats_sequencer_data_from_selected_runs(
@@ -2006,22 +2006,18 @@ def stats_per_sequencer(request):
 
         return render(
             request,
-            "wetlab/StatsPerSequencer.html",
-            {"sequencer_data": sequencer_data},
+            "wetlab/stats_per_researcher.html",
+            {"researcher_statistics": researcher_statistics},
         )
-
     else:
-        return render(
-            request,
-            "wetlab/StatsPerSequencer.html",
-            {"sequencer_names": sequencer_names},
-        )
+        return render(request, "wetlab/stats_per_researcher.html")
 
 
 @login_required
-def stats_per_researcher(request):
+def stats_per_sequencer(request):
+    sequencer_names = get_sequencer_installed_names()
     if request.method == "POST":
-        r_name = request.POST["researchername"]
+        sequencer = request.POST["sequencer"]
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
 
@@ -2032,16 +2028,23 @@ def stats_per_researcher(request):
             error_message = researcher_statistics["ERROR"]
             return render(
                 request,
-                "wetlab/stats_per_researcher.html",
-                {"error_message": error_message},
+                "wetlab/stats_per_sequencer.html",
+                {
+                  "error_message": error_message,
+                  "sequencer_names": sequencer_names,
+                },
             )
         return render(
-            request,
-            "wetlab/stats_per_researcher.html",
-            {"researcher_statistics": researcher_statistics},
-        )
+                request,
+                "wetlab/stats_per_sequencer.html",
+                {"sequencer_statistics": sequencer_statistics},
+            )
     else:
-        return render(request, "wetlab/stats_per_researcher.html")
+        return render(
+            request,
+            "wetlab/stats_per_sequencer.html",
+            {"sequencer_names": sequencer_names},
+        )
 
 
 @login_required
@@ -2364,9 +2367,14 @@ def stats_per_time(request):
             return render(
                 request,
                 "wetlab/stats_per_time.html",
-                {"error_message": "Start date and End Date cannot be empty "},
+                {"error_message": error_message},
             )
-    """
+            
+        return render(
+            request,
+            "wetlab/stats_per_time.html",
+            {"per_time_statistics": per_time_statistics},
+        )
     return render(request, "wetlab/stats_per_time.html")
 
 

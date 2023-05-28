@@ -181,7 +181,12 @@ urlpatterns = [
     path(
         "StatsPerResearcher/", wetlab.views.stats_per_researcher, name="stats_per_researcher"
     ),
+<<<<<<< HEAD
     path("StatsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
+=======
+    path("statsLibrary/", views.stats_per_library, name="stats_per_library"),
+    path("statsPerSequencer/", views.stats_per_sequencer, name="stats_per_sequencer"),
+>>>>>>> Update sequencer statistics, and fixed small html misspelling
     path(
         "userCommercialKitInventory/",
         wetlab.views.user_commercial_kit_inventory,
