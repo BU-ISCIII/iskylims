@@ -49,29 +49,34 @@
                         <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
                             <div class="container">
                                 <div class="row mt-4">
-                                    <div class="col-sm-6" >
+                                    <div class="col-md" >
                                         <div class="card ">
                                             <div class="card-header"><h3 style="text-align:center">Add a new Protocol</h3> </div>
                                             <div class="card-body">
                                                 <form method="post" enctype="multipart/form-data" name="addNewProtocol" id="addNewProtocol" class="form-horizontal">
                                                     {% csrf_token %}
-                                                    <div class="form-control required">
-                                                        <input type="hidden" name="action" value="addNewProtocol"/>
-                                                        <label class="col-sm-5 form-label">Select Protocol Type</label>
-
-                                                        <div class="col">
-                                                            <select class="form-select"  required = "required" name="protocolType" id="protocolType">
-                                                                <option value="">Choose a value</option>
-                                                                {% for value in defined_protocol_types %}
-                                                                    <option value="{{value}}">{{value}}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>  
-                                                        <label class="col form-label mt-2">Define new Protocol name</label>
-                                                        <div class="col">
-                                                            <input class="form-control" required = "required" type="text"  name="newProtocolName" size="80">
+                                                    <input type="hidden" name="action" value="addNewProtocol"/>
+                                                    <div class="row g-2">
+                                                        <div class="col-md">
+                                                            <div class="form-floating mb-3">
+                                                                <select class="form-select" required = "required"  name="protocolType" id="protocolType" aria-label="Platform">
+                                                                    <option value="">Choose a value</option>
+                                                                    {% for value in defined_protocol_types %}
+                                                                        <option value="{{value}}">{{value}}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                                <label for="protocolType" class="text-danger">Select Protocol Type</label>
+                                                            </div>
                                                         </div>
-                                                        <label class="col form-label mt-2">Description</label>
+                                                        <div class="col-md">
+                                                            <div class="form-floating mb-3">
+                                                                <input class="form-control" required = "required" type="text"  name="newProtocolName" size="80" placeholder="New protocol name">
+                                                                <label class="text-danger">Define new Protocol name</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md">
+                                                        <label class="col form-label ms-3" for="description" >Description</label>
                                                         <div class="form-floating">
                                                             <textarea class="form-control" rows="4" cols="50" name="description" id="description" form="addNewProtocol"></textarea>
                                                             <label for="description">Describe the use for this protocol</label>
@@ -207,7 +212,7 @@
                                                                                                 <td>Parameters already defined</td>
                                                                                             {% else %}
                                                                                                 <td>{{ name }}</td>
-                                                                                                <td><input class="btn pull-center btn-default" type="submit" onclick="window.location.href = '/wetlab/defineAdditionalKits={{id}}';" value ="Define Additional Kits"/></td>
+                                                                                                <td><input class="btn pull-center btn-outline-primary" type="submit" onclick="window.location.href = '/wetlab/defineAdditionalKits={{id}}';" value ="Define Additional Kits"/></td>
                                                                                             {% endif %}
                                                                                         </tr>
                                                                                     {% endfor %}
