@@ -363,6 +363,12 @@
                                         </div> <!-- end r_param-->
                                     {% endif %}
                                     {% if display_one_run.unknow_bar_0 %}
+                                        {% load i18n %} 
+                                        {% if display_one_run.unknow_bar_2 %}
+                                            {% trans "3" as lane_col  %}
+                                        {% else %}
+                                            {% trans "6" as lane_col %}
+                                        {% endif %}
                                         <div class="tab-pane fade" id="barcode" role="tabpanel" aria-labelledby="barcode-tab">
                                             <div class="container">
                                                 <div class="row mt-4">
@@ -370,99 +376,102 @@
                                                         <div class="card">
                                                             <div class="card-header text-center"><h3>Top Unknow Barcodes in the Run</h3></div>
                                                             <div class="card-body">
-                                                                <div class="row align-items-start">
-                                                                    <div class="col">
+                                                                <div class="row align-items-start horizontal-scroll mb-3">
+                                                                    <div class="col-md-{{lane_col}}">
                                                                         <table class="table">
                                                                             <thead>
                                                                                 <tr>
-                                                                                    <th colspan="2">Lane 1 </th>
+                                                                                    <th colspan="2" class="text-center">Lane 1 </th>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <th>Count </th>
+                                                                                    <th>Sequence </th>
                                                                                 </tr>
                                                                             </thead>
-                                                                                <tr>
-                                                                            <th>Count </th>
-                                                                                <th>Sequence </th>
-                                                                            </tr>
-                                                                            {% for values in display_one_run.unknow_bar_0 %}
-                                                                                <tr>
-                                                                                    {% for value in values %}
-                                                                                        <td>{{value}}</td>
-                                                                                    {% endfor %}
-                                                                                </tr>
-                                                                            {% endfor %}
+                                                                            <tbody>
+                                                                                {% for values in display_one_run.unknow_bar_0 %}
+                                                                                    <tr>
+                                                                                        {% for value in values %}
+                                                                                            <td>{{value}}</td>
+                                                                                        {% endfor %}
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
                                                                         </table>
-                                                                    </div>
-                                                                    
+                                                                    </div>                                                                    
                                                                     {% if display_one_run.unknow_bar_1 %}
-                                                                        <div class="col">
+                                                                        <div class="col-md-{{lane_col}}">
                                                                             <table class="table">
                                                                                 <thead>
                                                                                     <tr>
                                                                                         <th colspan="2">Lane 2 </th>
                                                                                     </tr>
-                                                                                </thead>
-                                                                                <tr>
-                                                                                    <th>Count </th>
-                                                                                    <th>Sequence </th>
-                                                                                </tr>
-                                                                                {% for values in display_one_run.unknow_bar_1 %}
-                                                                                <tr>
-                                                                                    {% for value in values %}
-                                                                                            <td>{{value}}</td>
-                                                                                        {% endfor %}
+                                                                                    <tr>
+                                                                                        <th>Count </th>
+                                                                                        <th>Sequence </th>
                                                                                     </tr>
-                                                                                {% endfor %}
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {% for values in display_one_run.unknow_bar_1 %}
+                                                                                    <tr>
+                                                                                        {% for value in values %}
+                                                                                                <td>{{value}}</td>
+                                                                                            {% endfor %}
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                </tbody>
                                                                             </table>
                                                                         </div>
-                                                                
                                                                     {% endif%}
                                                                     {% if display_one_run.unknow_bar_2 %}
-                                                                        <div class="col">
+                                                                        <div class="col-md-{{lane_col}}">
                                                                             <table class="table">
                                                                                 <thead>
                                                                                     <tr>
-                                                                                    <th colspan="2">Lane 3 </th>
+                                                                                        <th colspan="2">Lane 3 </th>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                        <th>Count </th>
+                                                                                        <th>Sequence </th>
                                                                                     </tr>
                                                                                 </thead>
-                                                                                <tr>
-                                                                                    <th>Count </th>
-                                                                                    <th>Sequence </th>
-                                                                                </tr>
-            
-                                                                                {% for values in display_one_run.unknow_bar_2 %}
-                                                                                    <tr>
-                                                                                        {% for value in values %}
-                                                                                            <td>{{value}}</td>
-                                                                                        {% endfor %}
-                                                                                    </tr>
-                                                                                {% endfor %}
+                                                                                <tbody>
+                                                                                    {% for values in display_one_run.unknow_bar_2 %}
+                                                                                        <tr>
+                                                                                            {% for value in values %}
+                                                                                                <td>{{value}}</td>
+                                                                                            {% endfor %}
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                </tbody>
                                                                             </table>
                                                                         </div> 
-                                                                    
                                                                     {% endif%}
                                                                     {% if display_one_run.unknow_bar_3 %}
-                                                                        <div class="col">
+                                                                        <div class="col-md-{{lane_col}}">
                                                                             <table class="table">
                                                                                 <thead>
                                                                                     <tr>
                                                                                         <th colspan="2">Lane 4 </th>
                                                                                     </tr>
-                                                                                </thead>
-                                                                                <tr>
-                                                                                    <th>Count </th>
-                                                                                    <th>Sequence </th>
-                                                                                </tr>
-            
-                                                                                {% for values in display_one_run.unknow_bar_3 %}
                                                                                     <tr>
-                                                                                        {% for value in values %}
-                                                                                            <td>{{value}}</td>
-                                                                                        {% endfor %}
+                                                                                        <th>Count </th>
+                                                                                        <th>Sequence </th>
                                                                                     </tr>
-                                                                                {% endfor %}
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {% for values in display_one_run.unknow_bar_3 %}
+                                                                                        <tr>
+                                                                                            {% for value in values %}
+                                                                                                <td>{{value}}</td>
+                                                                                            {% endfor %}
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                </tbody>
                                                                             </table>
-                                                                        </div> <!--  end of sm 3 -->
+                                                                        </div> 
                                                                     {% endif%}
-
+                                                                
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -616,11 +625,11 @@
                                                             <div class="card-header text-center"><h3>Samples included in the Run</h3></div>
                                                             <div class="card-body">
                                                                 <table class="table table-hover" id="sample_table">
+                                                                    <thead>
+                                                                        <th>Sample Name</th>
+                                                                        <th>Project Name</th>
+                                                                    </thead>
                                                                     <tbody>
-                                                                        <thead>
-                                                                            <th>Sample Name</th>
-                                                                            <th>Project Name</th>
-                                                                        </thead>
                                                                         {% for s_id, s_name, p_name, r_name, date in display_one_run.sample_run_data %}
                                                                             <tr>
                                                                                 <td><a href="/wetlab/displaySampleInRun={{s_id}}" class="text-decoration-none">{{s_name}}</a></td>

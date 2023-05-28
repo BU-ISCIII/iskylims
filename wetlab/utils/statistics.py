@@ -1,13 +1,12 @@
 import statistics
 from django.contrib.auth.models import User
-from django.db.models import Avg, F
+from django.db.models import Avg, F, Count, Func, Value, CharField
+from django.db.models.functions import ExtractWeek, ExtractYear
 import core.fusioncharts.fusioncharts
 import core.models
 import wetlab.models
 import wetlab.utils.common
-# from wetlab.utils.fetch_info import *
-import core.utils.graphics # import (column_graphic_simple,
-                                   #               column_graphic_tupla)
+import core.utils.graphics 
 import wetlab.config
 
 
@@ -58,6 +57,118 @@ def get_min_mean_and_max_values(values_data, reference_data, number_to_split):
             ],
         )
     return reference_query_values
+
+def get_per_time_statistics(start_date, end_date):
+    """_summary_
+
+    Parameters
+    ----------
+    start_date : str
+        Date from starting the statistics
+    end_date : str
+        Date from the statistics ends
+    
+    Returns
+    -------
+    dict
+
+    """
+    per_time_statistics ={}
+    # validate date format
+    if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
+        per_time_statistics[
+            "ERROR"
+        ] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
+        return per_time_statistics
+    if end_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
+        per_time_statistics[
+            "ERROR"
+        ] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
+        return per_time_statistics
+    run_objs = wetlab.models.RunProcess.objects.filter(run_date__range=(start_date, end_date))
+    if len(run_objs) == 0:
+        per_time_statistics["ERROR"] = wetlab.config.ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD
+    project_objs = wetlab.models.Projects.objects.filter(run_process__in=run_objs)
+    sample_objs = wetlab.models.SamplesInProject.objects.filter(run_process_id__in=run_objs)
+    
+    # Graphic chart for run and states
+    run_states = list(run_objs.values(sum_state=F("state__run_state_name")).annotate(value=Count("run_name")))
+    g_data = core.utils.graphics.preparation_graphic_data("Run states", "", "", "", "ocean", run_states, "sum_state", "value")
+    per_time_statistics["time_state_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "pie3d", "time_state_graph", "600", "300", "time_state_chart", "json", g_data
+    ).render()
+    # Graphic chart for number of runs per weeks
+    run_per_date = run_objs.annotate(year=ExtractYear("run_date")).annotate(week=ExtractWeek("run_date")).values("year", "week").annotate(value=Count("run_name"))
+    format_run_per_date = core.utils.common.convert_week_number_to_date_format(run_per_date, "value", "%Y-%m-%d")
+    g_data = core.utils.graphics.preparation_graphic_data("Run per week", "", "Date", "Number of runs per week", "ocean", format_run_per_date)
+    per_time_statistics["time_run_weeks_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "column3d", "time_run_weeks_graph", "600", "350", "time_run_weeks_chart", "json", g_data
+    ).render()
+    # Graphic chart for projects
+    project_per_date = project_objs.annotate(year=ExtractYear("run_process__run_date")).annotate(week=ExtractWeek("run_process__run_date")).values("year", "week").annotate(value=Count("project_name"))
+    format_project_per_date = core.utils.common.convert_week_number_to_date_format(project_per_date, "value", "%Y-%m-%d")
+    g_data = core.utils.graphics.preparation_graphic_data("Projects per week", "", "Date", "Number of runs per week", "zune", format_project_per_date)
+    per_time_statistics["time_project_weeks_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "column3d", "time_project_weeks_graph", "600", "350", "time_project_weeks_chart", "json", g_data
+    ).render()
+    
+    # Graphic chart for samples per researcher
+    sample_per_researcher = list(sample_objs.values(Researcher=F("user_id__username")).annotate(value=Count("sample_name")))
+    g_data = core.utils.graphics.preparation_graphic_data("Samples per researcher", "", "", "", "flint", sample_per_researcher,"Researcher", "value")
+    per_time_statistics["time_researcher_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "pie3d", "time_researcher_graph", "600", "300", "time_researcher_chart", "json", g_data
+    ).render()
+
+    # Graphic chart for unknown barcodes
+    barcode_objs = wetlab.models.RawTopUnknowBarcodes.objects.filter(runprocess_id__in=run_objs)
+    
+    # chart graph for Q > 30 based on runs
+    # ##############################
+    researcher_q_30 = list(sample_objs.values(run_name=F("run_process_id__run_name")).annotate(q_30_value=Avg("quality_q30")).order_by("run_process_id__run_name"))
+    
+    g_data = core.utils.graphics.preparation_graphic_data("Percentage of samples with Q > 30", "", "Run name", "Percentage of Q>30", "ocean", researcher_q_30, "run_name", "q_30_value")
+    per_time_statistics["time_q_30_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "column3d", "time_q_30_graph", "550", "350", "time_q_30_chart", "json", g_data
+    ).render()
+    
+    # chart graph for mean based on runs
+    # ####################
+    researcher_mean = list(sample_objs.values(run_name=F("run_process_id__run_name")).annotate(mean_value=Avg("mean_quality")).order_by("run_process_id__run_name"))
+    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean of samples per run", "", "Run name", "Quality mean", "ocean", researcher_mean, "run_name", "mean_value")
+    per_time_statistics["time_mean_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "column3d", "time_mean_graph", "550", "350", "time_mean_chart", "json", g_data
+    ).render()
+    
+    # chart graph for Q > 30 based on researcher
+    # ##############################
+    researcher_q_30 = list(sample_objs.values(run_name=F("user_id__username")).annotate(q_30_value=Avg("quality_q30")).order_by("user_id__username"))
+    
+    g_data = core.utils.graphics.preparation_graphic_data("Percentage of samples with Q > 30", "", "Run name", "Percentage of Q>30", "zune", researcher_q_30, "run_name", "q_30_value")
+    per_time_statistics["time_researcher_q_30_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "column3d", "time_researcher_q_30_graph", "550", "350", "time_researcher_q_30_chart", "json", g_data
+    ).render()
+    
+    # chart graph for mean based on researcher
+    # ####################
+    researcher_mean = list(sample_objs.values(run_name=F("user_id__username")).annotate(mean_value=Avg("mean_quality")).order_by("user_id__username"))
+    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean of samples per run", "", "Run name", "Quality mean", "zune", researcher_mean, "run_name", "mean_value")
+    per_time_statistics["time_researcher_mean_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "column3d", "time_researcher_mean_graph", "550", "350", "time_researcher_mean_chart", "json", g_data
+    ).render()
+    
+    # Table information for run data
+    per_time_statistics["run_data"] = list(run_objs.values_list( "pk","run_name", "state__run_state_name", "used_sequencer__sequencer_name").annotate(formated_date=Func(F("run_date"),Value("%Y-%m-%d"),function="DATE_FORMAT", output_field=CharField())))
+    per_time_statistics["run_table_heading"] = wetlab.config.HEADING_STATISTICS_FOR_TIME_RUN
+    
+    # Table information for sample data
+    per_time_statistics["sample_data"] = list(sample_objs.values_list("pk", "sample_name", "user_id__username", "project_id__project_name", "run_process_id__run_name", "barcode_name"))
+    per_time_statistics["sample_table_heading"] = wetlab.config.HEADING_STATISTICS_FOR_TIME_SAMPLE
+    per_time_statistics["start_date"] = start_date
+    per_time_statistics["end_date"] = end_date
+    per_time_statistics["num_runs"] = len(run_objs)
+    per_time_statistics["num_projects"] = len(project_objs)
+    # import pdb; pdb.set_trace()
+    return per_time_statistics
 
 
 def get_researcher_statistics(researcher_name, start_date, end_date):
@@ -125,7 +236,7 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         return researcher_statistics
     # sample table
     researcher_statistics["samples"] = user_sample_objs.values_list("sample_name", "project_id__project_name",  "run_process_id__run_name", "run_process_id__used_sequencer__sequencer_name")
-    researcher_statistics["table_heading"]  = wetlab.config.RESEARCHER_SAMPLE_HEADING_STATISTICS
+    researcher_statistics["table_heading"]  = wetlab.config.HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE
     
     # pie graph percentage researcher vs others 
     per_data_user = {}
@@ -156,7 +267,7 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
     for run in runs:
         researcher_runs[run] = user_sample_objs.filter(run_process_id__run_name__exact=run).count()
 
-    g_data = core.utils.graphics.preparation_bar_column("Number of samples per run", "", "Run name", "Number of samples", "ocean", researcher_runs)
+    g_data = core.utils.graphics.preparation_graphic_data("Number of samples per run", "", "Run name", "Number of samples", "ocean", researcher_runs)
     researcher_statistics["research_run_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "research_run_graph", "550", "350", "research_run_chart", "json", g_data
     ).render()
@@ -167,7 +278,7 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
     projects = list(user_sample_objs.values_list("project_id__project_name", flat=True).distinct())
     for project in projects:
         researcher_projects[project] = user_sample_objs.filter(project_id__project_name__exact=project).count()
-    g_data = core.utils.graphics.preparation_bar_column("Number of samples per project", "", "Project name", "Number of samples", "ocean", researcher_projects)
+    g_data = core.utils.graphics.preparation_graphic_data("Number of samples per project", "", "Project name", "Number of samples", "ocean", researcher_projects)
     researcher_statistics["research_project_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "research_project_graph", "550", "350", "research_project_chart", "json", g_data
     ).render()
@@ -176,7 +287,7 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
     # ##############################
     researcher_q_30 = list(user_sample_objs.values(run_name=F("run_process_id__run_name")).annotate(q_30_value=Avg("quality_q30")).order_by("run_process_id__run_name"))
     
-    g_data = core.utils.graphics.preparation_bar_column("Percentage of samples with Q > 30", "", "Run name", "Percentage of Q>30", "ocean", researcher_q_30, "run_name", "q_30_value")
+    g_data = core.utils.graphics.preparation_graphic_data("Percentage of samples with Q > 30", "", "Run name", "Percentage of Q>30", "ocean", researcher_q_30, "run_name", "q_30_value")
     researcher_statistics["research_q_30_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "research_q_30_graph", "550", "350", "research_q_30_chart", "json", g_data
     ).render()
@@ -184,119 +295,11 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
     # chart graph for mean
     # ####################
     researcher_mean = list(user_sample_objs.values(run_name=F("run_process_id__run_name")).annotate(mean_value=Avg("mean_quality")).order_by("run_process_id__run_name"))
-    g_data = core.utils.graphics.preparation_bar_column("Qualiy mean of samples per run", "", "Run name", "Quality mean", "ocean", researcher_mean, "run_name", "mean_quality")
+    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean of samples per run", "", "Run name", "Quality mean", "ocean", researcher_mean, "run_name", "mean_value")
     researcher_statistics["research_mean_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "research_mean_graph", "550", "350", "research_mean_chart", "json", g_data
     ).render()
     # import pdb; pdb.set_trace()
     researcher_statistics["researcher_name"] = researcher_name
-    """
-        # collect number of saples for run and for projects
-        nun_sample_in_run = {}
-        num_sample_in_project = {}
-        for sequencer, sample_in_sequencer in researcher_statistics[
-            "researcher_sample_data"
-        ].items():
-            if len(sample_in_sequencer) == 0:
-                continue
-            for sample_values in sample_in_sequencer:
-                run_name = sample_values[2]
-                project_name = sample_values[1]
-                if run_name not in nun_sample_in_run:
-                    nun_sample_in_run[run_name] = 0
-                nun_sample_in_run[run_name] += 1
-                if project_name not in num_sample_in_project:
-                    num_sample_in_project[project_name] = 0
-                num_sample_in_project[project_name] += 1
-        
-        # Create run grapic
-        heading = "Graphics for number of samples in runs"
-        data_source = column_graphic_simple(
-            heading, "", "Runs", "Number of Samples", "ocean", nun_sample_in_run
-        )
-        researcher_statistics["run_graphic"] = FusionCharts(
-            "column3d", "run_graph", "500", "350", "run_chart", "json", data_source
-        ).render()
-        # Create projert grapic
-        heading = "Graphics for number of samples in projects"
-        data_source = column_graphic_simple(
-            heading, "", "Projects", "Number of Samples", "ocean", num_sample_in_project
-        )
-        researcher_statistics["project_graphic"] = FusionCharts(
-            "column3d",
-            "project_graph",
-            "500",
-            "350",
-            "project_chart",
-            "json",
-            data_source,
-        ).render()
 
-        # collect Q> 30  and mean data for each sequencer used
-        runs_index_sample = []
-        q30_sample_value = []
-        mean_sample_value = []
-        for sequencer, sample_in_sequencer in researcher_statistics[
-            "researcher_sample_data"
-        ].items():
-            if len(sample_in_sequencer) == 0:
-                continue
-            for sample_values in sample_in_sequencer:
-                runs_index_sample.append(sample_values[2])
-                q30_sample_value.append(float(sample_values[6]))
-                mean_sample_value.append(float(sample_values[7]))
-
-        q30_data_in_run = get_min_mean_and_max_values(
-            q30_sample_value,
-            runs_index_sample,
-            config.NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER,
-        )
-        mean_data_in_run = get_min_mean_and_max_values(
-            mean_sample_value,
-            runs_index_sample,
-            config.NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER,
-        )
-        # create the graphic for q30 quality
-        heading = "Graphics for Q > 30"
-        data_source = column_graphic_tupla(
-            heading,
-            "",
-            "Runs",
-            "Q > 30 value",
-            "ocean",
-            q30_data_in_run,
-            "Median values",
-        )
-        researcher_statistics["q30_graphic"] = FusionCharts(
-            "column3d", "q30_graph", "550", "350", "q30_chart", "json", data_source
-        ).render()
-        # create the graphic for mean quality
-        heading = "Graphics for Mean Quality"
-        data_source = column_graphic_tupla(
-            heading,
-            "",
-            "Runs",
-            "Mean value",
-            "ocean",
-            mean_data_in_run,
-            "Median values",
-        )
-        researcher_statistics["mean_graphic"] = FusionCharts(
-            "column3d", "mean_graph", "550", "350", "mean_chart", "json", data_source
-        ).render()
-        return researcher_statistics
-    else:
-        # check the setting for having user name in the description column in sample sheet
-        if get_configuration_value("DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME"):
-            researcher_statistics[
-                "ERROR"
-            ] = (
-                config.ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS
-            )
-        else:
-            researcher_statistics[
-                "ERROR"
-            ] = config.ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE
-        researcher_statistics["ERROR"].append(researcher_name)
-    """
     return researcher_statistics
