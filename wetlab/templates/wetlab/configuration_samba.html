@@ -40,81 +40,76 @@
                         <div class="row my-2">
                             <div class="col-md-6">
                                 <div class="card h-100">
-                                    <div class="card-title text-danger" style="text-align:center">Mandatory fields</div>
+                                    <div class="card-title text-danger" style="text-align:center"><h5>Mandatory fields</h5></div>
                                     <div class="card-body">
-                                        <div class="form-control required">
-                                            <label class="col form-label" for="user_id" >Samba UserId </label>
-                                            <div class="col mb-2">
-                                                <input class="form-control" type="text" required = "required" name="user_id" id="SAMBA_USER_ID" value = "{{samba_conf_data.user_id}}" >
-                                            </div>
-                                            <label class="col  form-label" for="user_password" >Samba User Password</label>
-                                            <div class="col mb-2">
-                                                <input class="form-control" type="password" required = "required" name="user_password" id="user_password" value = "{{samba_conf_data.user_password}}">
-                                            </div>
-                                            <label class="col  form-label" for="shared_folder_name" >Samba Folder name</label>
-                                            <div class="col mb-2">
-                                                <input class="form-control" type="text" required = "required" name="shared_folder_name" id="shared_folder_name" value = "{{samba_conf_data.shared_folder_name}}">
-                                            </div>
-                                            <label class="col  form-label" for="remote_server_name" >Samba Remote Server Name</label>
-                                            <div class="col mb-2">
-                                                <input class="form-control" type="text" required = "required" name="remote_server_name" id="remote_server_name" value = "{{samba_conf_data.remote_server_name}}">
-                                            </div>
-                                            <label class="col  form-label" for="port_server" >Samba Port Number</label>
-                                            <div class="col mb-2">
-                                                <input class="form-control" type="text" required = "required" name="port_server" id="port_server" value = "{{samba_conf_data.port_server}}">
-                                            </div>
-                                            <div class="form-check form-switch col mb-2">
-                                                <label class="form-check-label form-label" for="ntlm_used" >Samba NTLM used </label>
-                                                {% if samba_conf_data.ntlm_used == True %}
-                                                    <input class="form-check-input" type="checkbox" name="ntlm_used" id="ntlm_used" checked>
-                                                {% else %}
-                                                    <input class="form-check-input" type="checkbox" name="ntlm_used" id="ntlm_used" >
-                                                {% endif %}
-                                                </div>  <!-- end  ntlm -->
-                                            <div class="form-check form-switch col mb-2">
-                                                <label class="form-check-label  form-label" for="is_direct_tcp" >TCP direct connection</label>
-                                                {% if samba_conf_data.is_direct_tcp == True %}
-                                                    <input class="form-check-input" type="checkbox" name="is_direct_tcp" id="is_direct_tcp" checked>
-                                                {% else %}
-                                                    <input class="form-check-input" type="checkbox" name="is_direct_tcp" id="is_direct_tcp" >
-                                                {% endif %}
-                                            </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" required = "required" name="user_id" id="SAMBA_USER_ID" value = "{{samba_conf_data.user_id}}" placeholder="User id for samba">
+                                            <label  for="user_id" >Samba UserId </label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="password" required = "required" name="user_password" id="user_password" value = "{{samba_conf_data.user_password}}" placeholder="User password">
+                                            <label for="user_password" >Samba User Password</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" required = "required" name="shared_folder_name" id="shared_folder_name" value = "{{samba_conf_data.shared_folder_name}}" placeholder="shared folder"> 
+                                            <label for="shared_folder_name" >Samba Folder name</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" required = "required" name="remote_server_name" id="remote_server_name" value = "{{samba_conf_data.remote_server_name}}" placeholder="Remote server">
+                                            <label for="remote_server_name" >Samba Remote Server Name</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" required = "required" name="port_server" id="port_server" value = "{{samba_conf_data.port_server}}" placeholder="Port number">
+                                            <label for="port_server" >Samba Port Number</label>
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label form-label" for="ntlm_used" >Samba NTLM used </label>
+                                            {% if samba_conf_data.ntlm_used == True %}
+                                                <input class="form-check-input" type="checkbox" name="ntlm_used" id="ntlm_used" checked>
+                                            {% else %}
+                                                <input class="form-check-input" type="checkbox" name="ntlm_used" id="ntlm_used" >
+                                            {% endif %}
+                                            </div>  <!-- end  ntlm -->
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="is_direct_tcp" >TCP direct connection</label>
+                                            {% if samba_conf_data.is_direct_tcp == True %}
+                                                <input class="form-check-input" type="checkbox" name="is_direct_tcp" id="is_direct_tcp" checked>
+                                            {% else %}
+                                                <input class="form-check-input" type="checkbox" name="is_direct_tcp" id="is_direct_tcp" >
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card h-100">
-                                    <div class="card-title" style="text-align:center">Additional fields</div>
+                                    <div class="card-title" style="text-align:center"><h5>Additional fields</h5></div>
                                     <div class="card-body">
-                                        <div class="form-control">
-                                        <p class="my-4">Set only the values that apply in your configuration</p>
-                                            <label class="col-sm-5  form-label" for="ip_server" >Samba IP address </label>
-                                            <div class="col mb-4">
-                                                <input class="form-control" type="text" name="ip_server" id="ip_server" value = "{{samba_conf_data.ip_server}}">
-                                            </div>
-                                            <label class="col-sm-5  form-label" for="host_name">Samba Host Name</label>
-                                            <div class="col mb-4">
-                                                <input class="form-control" type="text" name="host_name" id="host_name" value = "{{samba_conf_data.host_name}}">
-                                            </div>
-                                            <label class="col-sm-5  form-label" for="samba_folder_name" >Samba Application Folder</label>
-                                            <div class="col mb-4">
-                                                <input class="form-control" type="text" name="samba_folder_name" id="samba_folder_name" value = "{{samba_conf_data.samba_folder_name}}">
-                                            </div>
-                                            <label class="col-sm-5  form-label" for="domain" >Samba Domain</label>
-                                            <div class="col mb-8">
-                                                <input class="form-control" type="text" name="domain " id="domain " value = "{{samba_conf_data.domain}}">
-                                            </div>
+                                        <p class="my-2 text-center">Set only the values that apply in your configuration</p>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" name="ip_server" id="ip_server" value = "{{samba_conf_data.ip_server}}" placeholder="Server IP">
+                                            <label for="ip_server" >Samba IP address </label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" name="host_name" id="host_name" value = "{{samba_conf_data.host_name}}" placeholder="Server host name">
+                                            <label for="host_name">Samba Host Name</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" name="samba_folder_name" id="samba_folder_name" value = "{{samba_conf_data.samba_folder_name}}" placeholder="application folder">
+                                            <label for="samba_folder_name" >Samba Application Folder</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control" type="text" name="domain " id="domain " value = "{{samba_conf_data.domain}}" placeholder="Domain">
+                                            <label for="domain" >Samba Domain</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
-                        <input class="btn btn-outline-secondary ms-3 mb-1" type="reset" value="Reset Fields">
-                        <input class="btn btn-outline-primary float-end me-2 mb-1" type="submit" value="Submit and check">
+                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                        <input class="btn btn-outline-secondary ms-3 my-3" type="reset" value="Reset Fields">
+                        <input class="btn btn-outline-primary float-end me-2 my-3" type="submit" value="Submit and check">
                     </form>
-                    
                 </div>  
             </div>
         </div> <!--// end col-sm-12  -->

@@ -61,14 +61,12 @@
                                                 <div class="card-body">
                                                     <form method="post" enctype="multipart/form-data" name="defineNewSpecie" id="defineNewSpecie" >
                                                         {% csrf_token %}
-                                                        <div class="form-control required">
-                                                            <input type="hidden" name="action" value="defineNewSpecie"/>
-                                                            <label class="col-md-5 form-label">Define new Specie</label>
-                                                            <div class="col">
-                                                                <input class="form-control" required="required" type="text"  name="specieName">
-                                                            </div>
+                                                        <input type="hidden" name="action" value="defineNewSpecie"/>
+                                                        <div class="form-floating mb-3">
+                                                            <input class="form-control" required="required" type="text"  name="specieName">
+                                                            <label class="text-danger">Define new Specie</label>
                                                         </div>
-                                                        <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                         <input class="btn btn-outline-primary float-end me-2 mt-1" type="submit" value="Submit" id="btnSubmit">
                                                     </form>
                                                 </div>
@@ -99,14 +97,6 @@
                                                 </div> 
                                             </div>
                                         </div> 
-                                        <script type="text/javascript">
-                                            $(document).ready(function() {
-                                                $('#s_table').DataTable({
-                                                    dom: 'frtip',
-                                                    responsive: true,
-                                                });
-                                            });
-                                        </script>
                                     </div>
                                 </div>    
                             </div> <!--  end of species -->
@@ -119,14 +109,12 @@
                                                 <div class="card-body">
                                                     <form method="post" enctype="multipart/form-data" name="defineNewState" id="defineNewState">
                                                         {% csrf_token %}
-                                                        <div class="form-control required">
-                                                            <input type="hidden" name="action" value="defineNewState"/>
-                                                            <label class="col-md-5 form-label">Define new State</label>
-                                                            <div class="col">
-                                                                <input class="form-control" required = "required" type="text"  name="stateName" size="70">
-                                                            </div>
+                                                        <input type="hidden" name="action" value="defineNewState"/>
+                                                        <div class="form-floating mb-3">
+                                                            <input class="form-control" required = "required" type="text"  name="stateName" size="70">
+                                                            <label class="text-danger">Define new State</label>
                                                         </div>
-                                                        <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                         <input class="btn btn-outline-primary float-end me-2" type="submit" value="Submit" id="btnSubmit">
                                                     </form> 
                                                 </div>
@@ -157,56 +145,38 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <script type="text/javascript">
-                                            $(document).ready(function() {
-                                                $('#state_table').DataTable({
-                                                    dom: 'frtip',
-                                                    responsive: true,
-                                                });
-                                            });
-                                        </script>
                                     </div> 
                                     <div class="row mt-2">
-                                        <div class="col-md-8">
+                                        <div class="col-md-6">
                                             <div class="card ">
                                                 <div class="card-header"><h3>Define new City where the Laboratory is located</h3></div>
                                                 <div class="card-body">
                                                     {% if initial_data.states_data %}
                                                         <form method="post" enctype="multipart/form-data" name="defineNewCity" id="defineNewCity" >
                                                             {% csrf_token %}
-                                                            <div class="form-control required">
-                                                                <input type="hidden" name="action" value="defineNewCity"/>
-                                                                <div class="form-control">
-                                                                    <label class="col-md-5 form-label">Define new City</label>
-                                                                    <div class="col">
-                                                                        <input class="form-control" required = "required" type="text"  name="cityName" size="70">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="form-control">
-                                                                    <label class="col-md-5 form-label">Select the State</label>
-                                                                    <div class="col">
-                                                                        <select class="form-control" required = "required" name="state" id="state">
-                                                                            <option value="">Select State</option>
-                                                                            {% for value, id in initial_data.states_data %}
-                                                                                <option value="{{id}}">{{value}}</option>
-                                                                            {% endfor %}
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="form-control">
-                                                                    <label class="col-md-5 form-label">Define latitude</label>
-                                                                    <div class="col">
-                                                                        <input class="form-control" required = "required" type="text"  name="latitude" size="70">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="form-control">
-                                                                    <label class="col-md-5 form-label">Define longitude</label>
-                                                                    <div class="col">
-                                                                        <input class="form-control" required = "required" type="text"  name="longitude" size="70">
-                                                                    </div>
-                                                                </div>
+                                                            <input type="hidden" name="action" value="defineNewCity"/>
+                                                            <div class="form-floating mb-3">
+                                                                <input class="form-control" required = "required" type="text"  name="cityName" size="70">
+                                                                <label class="text-danger">Define new City</label>
                                                             </div>
-                                                            <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                            <div class="form-floating mb-3">
+                                                                <select class="form-select"required = "required" name="state" id="state" aria-label="Floating state">
+                                                                    <option value="">Select State</option>
+                                                                    {% for value, id in initial_data.states_data %}
+                                                                        <option value="{{id}}">{{value}}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                                <label for="state">Select the State</label>
+                                                            </div>
+                                                            <div class="form-floating mb-3">
+                                                                <input class="form-control" required = "required" type="text"  name="latitude" size="70">
+                                                                <label class="text-danger">Define latitude</label>
+                                                            </div>
+                                                            <div class="form-floating mb-3">
+                                                                <input class="form-control" required = "required" type="text"  name="longitude" size="70">
+                                                                <label class="text-danger">Define longitude</label>
+                                                            </div>
+                                                            <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                             <input class="btn btn-outline-primary float-end me-2" type="submit" value="Submit" id="btnSubmit">
                                                         </form> 
                                                     {% else %}
@@ -215,7 +185,7 @@
                                                 </div>
                                             </div>
                                         </div> 
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <div class="card ">
                                                 <div class="card-header"><h3 style="text-align:center">Cities defined</h3></div>
                                                 <div class="card-body">
@@ -260,62 +230,73 @@
                                                 {% if initial_data.cities_data%}
                                                     <form method="post" enctype="multipart/form-data" name="defineNewLabRequest" id="defineNewLabRequest" >
                                                         {% csrf_token %}
-                                                        <h5>Fill the follwing form for the Laboratory, Hospital or any institution from which could receive samples</h5>
-                                                        <div class="form-control required">
-                                                            <input type="hidden" name="action" value="defineNewLabRequest"/>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Define new Laboratory/Organization</label>
-                                                                <div class="col">
-                                                                    <input class="form-control" required = "required" type="text"  name="labRequestName" size="80">
+                                                        <input type="hidden" name="action" value="defineNewLabRequest"/>
+                                                        <h5 class="text-center">Fill the form for the Laboratory, Hospital or any institution from which could receive samples</h5>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" required = "required" type="text"  name="labRequestName" id="labRequestName" size="80" placeholder="New laboratory">
+                                                                    <label class="text-danger" for="labRequestName">Define new Laboratory/Organization</label>
                                                                 </div>
                                                             </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Define Laboratory/organization coding name</label>
-                                                                <div class="col">
-                                                                    <input class="form-control" required = "required" type="text"  name="labRequesCoding" size="80">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Department Unit</label>
-                                                                <div class="col">
-                                                                    <input class="form-control" type="text"  name="department" size="80">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Contact Name</label>
-                                                                <div class="col">
-                                                                    <input class="form-control" type="text"  name="contact" size="80">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Contact Phone</label>
-                                                                <div class="col">
-                                                                    <input class="form-control" type="text"  name="phone" size="80">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Email Contact</label>
-                                                                <div class="col">
-                                                                    <input class="form-control" type="email"  name="email" size="80">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Define address</label>
-                                                                <textarea class="col" id="address" name="address" rows="6" cols="50"></textarea>
-                                                            </div>
-                                                            <div class="form-control">
-                                                                <label class="col-md-5 form-label">Select the City</label>
-                                                                <div class="col">
-                                                                    <select class="form-control" required = "required" name="city" id="city">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <select class="form-select" required = "required"  name="city" id="city" aria-label="Platform" placeholder="Select the city">
                                                                         <option value="">Select City</option>
                                                                         {% for value , id in initial_data.cities_data %}
                                                                             <option value="{{id}}">{{value}}</option>
                                                                         {% endfor %}
                                                                     </select>
+                                                                    <label class="text-danger" for="city">Select the city</label>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" required="required" type="text"  name="labRequesCoding" id="labRequesCoding" size="80" placeholder="Laboratory name">
+                                                                    <label class="text-danger" for="labRequesCoding">Define Laboratory/organization coding name</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="department" id="department" size="80" placeholder="Unit">
+                                                                    <label class="text-danger" for="department">Department Unit</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="contact" id="contact" size="80" placeholder="contact name">
+                                                                    <label class="text-danger" for="contact">Contact Name</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text"  name="phone" id="phone" size="80" placeholder="contact phone">
+                                                                    <label for="phone">Contact Phone</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="email" required="required" name="email" id="email" size="80" placeholder="contact email">
+                                                                    <label class="text-danger" for="email">Email Contact</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <label class="col form-label ms-3" for="address" >Mail address</label>
+                                                                <div class="form-floating mb-3">
+                                                                    <div class="form-floating mb-3">
+                                                                        <textarea class="form-control" name="address" value="" id="address" style="height:100px" maxlength="250"></textarea>
+                                                                        <label for="address">Write mail address of laboratory</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                         <input class="btn btn-outline-primary float-end me-2" type="submit" value="Submit" id="btnSubmit">
                                                     </form> <!--  end of from -->
                                                 {% else %}
@@ -362,13 +343,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <script type="text/javascript">
-                                    $(document).ready(function() {
-                                        $('#lab_table').DataTable({
-                                            responsive: true,
-                                        });
-                                    });
-                                </script>
                             </div> <!--  end of laboratory -->
 
                             <div class="tab-pane fade" id="molecule" role="tabpanel" aria-labelledby="molecule-tab">
@@ -380,14 +354,12 @@
                                                 <div class="card-body">
                                                     <form method="post" enctype="multipart/form-data" name="defineMoleculeType" id="defineMoleculeType" >
                                                         {% csrf_token %}
-                                                        <div class="form-control required">
-                                                            <input type="hidden" name="action" value="defineMoleculeType"/>
-                                                            <label class="col form-label">Define new Molecule type</label>
-                                                            <div class="col">
-                                                                <input class="form-control" required = "required" type="text"  name="moleculeName" size="80">
-                                                            </div>
+                                                        <input type="hidden" name="action" value="defineMoleculeType"/>
+                                                        <div class="form-floating mb-3">
+                                                            <input class="form-control" required = "required" type="text"  name="moleculeName" size="80" placeholder="new molecule type">
+                                                            <label class="text-danger" for="moleculeName">Define new Molecule type</label>
                                                         </div>
-                                                        <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                         <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
                                                     </form>
                                                 </div>
@@ -431,24 +403,21 @@
                                                 <div class="card-body">
                                                     <form method="post" enctype="multipart/form-data" name="defineProtocolType" id="defineProtocolType" >
                                                         {% csrf_token %}
-                                                        <div class="form-control required">
-                                                            <input type="hidden" name="action" value="defineProtocolType"/>
-                                                            <label class="col form-label">Define new Protocol type</label>
-                                                            <div class="col">
-                                                                <input class="form-control" required = "required" type="text"  name="protocolName" size="80">
-                                                            </div>
-                                                            <label class="col form-label">Select the Molecule type used for the protocol type</label>
-                                                            <div class="col">
-                                                                <select class="form-control" required = "required" name="moleculeType" id="moleculeType">
-                                                                    <option value="">Select an option</option>
-                                                                    <option value="None">None</option>
-                                                                    {% for value , id in initial_data.molecule_type_data %}
-                                                                        <option value="{{value}}">{{value}}</option>
-                                                                    {% endfor %}
-                                                                </select>
-                                                            </div> 
+                                                        <input type="hidden" name="action" value="defineProtocolType"/>
+                                                        <div class="form-floating mb-3">
+                                                            <input class="form-control" required = "required" type="text"  name="protocolName" size="80" placeholder="New procotol name">
+                                                            <label class="text-danger" for="protocolName">Define new Protocol type</label>
                                                         </div>
-                                                        <p class="ms-3">  Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                                                        <div class="form-floating mb-3">
+                                                            <select class="form-select"   name="moleculeType" id="moleculeType" aria-label="Platform">
+                                                                <option value="">Choose a value</option>
+                                                                {% for value , id in initial_data.molecule_type_data %}
+                                                                    <option value="{{value}}">{{value}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                            <label for="moleculeType">Select the Molecule type used for the protocol type</label>
+                                                        </div>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                         <input class="btn float-end btn-outline-primary me-2" type="submit" value="Submit" id="btnSubmit">
                                                     </form>
                                                 </div>
@@ -491,4 +460,26 @@
         {% endif %}
     </div>
 </section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#s_table').DataTable({
+            dom: 'frtip',
+            responsive: true,
+        });
+    });
+
+    $(document).ready(function() {
+        $('#state_table').DataTable({
+            dom: 'frtip',
+            responsive: true,
+        });
+    });
+
+    $(document).ready(function() {
+        $('#lab_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
+
 {% endblock %}
