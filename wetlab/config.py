@@ -564,7 +564,7 @@ HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE = ["Samples","Project name","Run name","Platform"]
 HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
 HEADING_STATISTICS_FOR_TIME_SAMPLE = ["Sample name", "Researcher","Project name", "Run name", "Barcode"]
-
+HEADING_STATISTICS_FOR_SEQUENCER_RUNS = ["Run name", "Run state", "Sequencer" , "Run date"]
 NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER = 5
 
 # ############## SUCCESSFUL_MESSAGES #######################################

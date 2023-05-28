@@ -303,3 +303,74 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
     researcher_statistics["researcher_name"] = researcher_name
 
     return researcher_statistics
+
+
+def get_sequencer_statistics(sequencer_name, start_date, end_date):
+    """_summary_
+
+    Parameters
+    ----------
+    sequencer_name : str
+        _description_
+    start_date : str
+        _description_
+    end_date : str, 
+        _description_, by default None
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+    sequencer_statistics = {}
+    if not core.models.SequencerInLab.objects.filter(sequencer_name__iexact=sequencer_name).exists():
+        sequencer_statistics["ERROR"] = wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+        return sequencer_statistics
+    # validate date format
+    if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
+        sequencer_statistics[
+            "ERROR"
+        ] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
+        return sequencer_statistics
+    if end_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
+        sequencer_statistics[
+            "ERROR"
+        ] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
+        return sequencer_statistics
+
+    if start_date != "" and end_date != "":
+        run_objs = wetlab.models.RunProcess.objects.filter(run_date__range=(start_date, end_date))
+    elif start_date != "":
+        run_objs = wetlab.models.RunProcess.objects.filter(run_date__gte=start_date)
+    elif end_date != "":
+        run_objs = wetlab.models.RunProcess.objects.filter(run_date__lte=end_date)
+    else:
+        run_objs = wetlab.models.RunProcess.objects.all()
+    all_run_objs = run_objs
+    other_run_objs = run_objs.exclude(used_sequencer__sequencer_name__iexact=sequencer_name)
+    run_objs = run_objs.filter(used_sequencer__sequencer_name__iexact=sequencer_name)
+
+    if len(run_objs) == 0:
+        sequencer_statistics["ERROR"] = wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+        return sequencer_statistics
+    
+    # Chart graphic for run states
+    run_states = list(run_objs.values(sum_state=F("state__run_state_name")).annotate(value=Count("run_name")))
+    g_data = core.utils.graphics.preparation_graphic_data("Run states handled by sequencer", "", "", "", "ocean", run_states, "sum_state", "value")
+    sequencer_statistics["sequencer_state_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "pie3d", "sequencer_state_graph", "600", "300", "sequencer_state_chart", "json", g_data
+    ).render()
+    
+    # Chart graphic for comparation of sequencers
+    sequencers_usage = list(all_run_objs.values(sequencer_name=F("used_sequencer__sequencer_name")).annotate(value=Count("run_name")))
+    g_data = core.utils.graphics.preparation_graphic_data("Sequencer utilization for the same period of time", "", "", "", "ocean", sequencers_usage, "sequencer_name", "value")
+    sequencer_statistics["sequencer_usage_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+        "pie3d", "sequencer_usage_graph", "600", "300", "sequencer_usage_chart", "json", g_data
+    ).render()
+
+    # run table
+    sequencer_statistics["run_table_data"] = list(run_objs.values_list("pk", "run_name", "state__run_state_name", "used_sequencer__sequencer_name").annotate(formated_date=Func(F("run_date"),Value("%Y-%m-%d"),function="DATE_FORMAT", output_field=CharField())))
+    sequencer_statistics["run_table_heading"]  = wetlab.config.HEADING_STATISTICS_FOR_SEQUENCER_RUNS
+    
+    sequencer_statistics["sequencer_name"] = sequencer_name
+    return sequencer_statistics
