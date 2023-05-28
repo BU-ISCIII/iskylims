@@ -126,7 +126,7 @@ def get_per_time_statistics(start_date, end_date):
     # ##############################
     researcher_q_30 = list(sample_objs.values(run_name=F("run_process_id__run_name")).annotate(q_30_value=Avg("quality_q30")).order_by("run_process_id__run_name"))
     
-    g_data = core.utils.graphics.preparation_graphic_data("Percentage of samples with Q > 30", "", "Run name", "Percentage of Q>30", "ocean", researcher_q_30, "run_name", "q_30_value")
+    g_data = core.utils.graphics.preparation_graphic_data("Quality Q > 30 for each run", "", "Run name", "Percentage of Q>30", "ocean", researcher_q_30, "run_name", "q_30_value")
     per_time_statistics["time_q_30_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "time_q_30_graph", "550", "350", "time_q_30_chart", "json", g_data
     ).render()
@@ -134,7 +134,7 @@ def get_per_time_statistics(start_date, end_date):
     # chart graph for mean based on runs
     # ####################
     researcher_mean = list(sample_objs.values(run_name=F("run_process_id__run_name")).annotate(mean_value=Avg("mean_quality")).order_by("run_process_id__run_name"))
-    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean of samples per run", "", "Run name", "Quality mean", "ocean", researcher_mean, "run_name", "mean_value")
+    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean for each run", "", "Run name", "Quality mean", "ocean", researcher_mean, "run_name", "mean_value")
     per_time_statistics["time_mean_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "time_mean_graph", "550", "350", "time_mean_chart", "json", g_data
     ).render()
@@ -143,7 +143,7 @@ def get_per_time_statistics(start_date, end_date):
     # ##############################
     researcher_q_30 = list(sample_objs.values(run_name=F("user_id__username")).annotate(q_30_value=Avg("quality_q30")).order_by("user_id__username"))
     
-    g_data = core.utils.graphics.preparation_graphic_data("Percentage of samples with Q > 30", "", "Run name", "Percentage of Q>30", "zune", researcher_q_30, "run_name", "q_30_value")
+    g_data = core.utils.graphics.preparation_graphic_data("Quality Q > 30 for reseacher", "", "Run name", "Percentage of Q>30", "zune", researcher_q_30, "run_name", "q_30_value")
     per_time_statistics["time_researcher_q_30_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "time_researcher_q_30_graph", "550", "350", "time_researcher_q_30_chart", "json", g_data
     ).render()
@@ -151,7 +151,7 @@ def get_per_time_statistics(start_date, end_date):
     # chart graph for mean based on researcher
     # ####################
     researcher_mean = list(sample_objs.values(run_name=F("user_id__username")).annotate(mean_value=Avg("mean_quality")).order_by("user_id__username"))
-    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean of samples per run", "", "Run name", "Quality mean", "zune", researcher_mean, "run_name", "mean_value")
+    g_data = core.utils.graphics.preparation_graphic_data("Qualiy mean for researcher", "", "Run name", "Quality mean", "zune", researcher_mean, "run_name", "mean_value")
     per_time_statistics["time_researcher_mean_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "time_researcher_mean_graph", "550", "350", "time_researcher_mean_chart", "json", g_data
     ).render()
