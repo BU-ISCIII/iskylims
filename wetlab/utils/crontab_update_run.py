@@ -116,6 +116,8 @@ def search_update_new_runs(request_reason):
                     "Unable to fetch RunParameter file for folder :" + new_run
                 )
                 wetlab.utils.common.logging_errors(error_message, True, False)
+                experiment_name = "Experiment name NOT FOUND"
+                logging_errors(error_message, True, False)
                 # we don't have experiment name when there is no run_parameters file.
                 # We used the run folder name instead.
                 run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(new_run)
