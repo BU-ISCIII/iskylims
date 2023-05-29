@@ -1,0 +1,140 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include 'core/jexcel_functionality.html' %}
+{% include "core/cdn_table_functionality.html" %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-6  offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3> Unable to modify sample project fields information</h3></div>
+                        <div class="card-body">
+                            <h5>{{error_message}}</h5>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+        {% if sample_project_field_saved %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col-md">
+                        <div class="card">
+                            <div class="card-header text-center"><h3>Sucessful store of Sample Project Fields for Sample Project {{sample_project_field_saved.sample_project_name}}</h3></div>
+                            <div class="card-body">
+                                <table class="table table-hover" id="mod_table">
+                                    <thead>
+                                        <tr>
+                                            {% for value in sample_project_field_saved.heading %}
+                                                <th>{{value}}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for  values in sample_project_field_saved.fields %}
+                                            <tr>
+                                                {% for value in values %}
+                                                    <td>
+                                                        {% if value == 'Yes' or value == True %}
+                                                            <i class="bi bi-check-lg"></i>
+                                                        {% elif value == 'No' or value == False %}
+
+                                                        {% else %}
+                                                            {{ value }}
+                                                        {% endif %}
+
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <input class="btn btn-outline-primary float-end  mt-2" type="button" value="Return to home" onclick="window.location.href = '/wetlab';">
+                            </div>
+                        </div>  
+                    </div>
+                </div> 
+            </div> 
+
+        {% elif sample_project_field %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col-md">
+                        <div class="card">
+                            <div class="card-header text-center"><h3>Modify sample project fields for {{sample_project_field.sample_project_name}}</h3></div>
+                            <div class="card-body">
+                                <form method="post" enctype="multipart/form-data" name="modifySampleProjectFields"  id="modifySampleProjectFields" class="form-horizontal well">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="modifySampleProjectFields"/>
+                                    <input type="hidden" name="sample_project_id" value="{{sample_project_field.sample_project_id}}"/>
+                                    <input type="hidden" name="parameter_names" value="{{sample_project_field.parameter_names}}"/>
+                                    <input type="hidden" name="parameter_ids" value="{{sample_project_field.parameter_ids}}"/>
+                                    <div class="horizontal-scroll">
+                                        <div id="spreadsheet1"></div>
+                                    </div>
+                                    <input class="btn btn-outline-secondary mt-2" type="button" value="Download Sample Project Fields" onclick="table1.download()">
+                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
+                               </form>
+                            </div>  
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    // define excel table
+    var data1 = [{% for values in sample_project_field.fields %} [{% for value in values %}'{{value}}',{% endfor %}], {% endfor %}];
+
+    var table1 = jexcel(document.getElementById('spreadsheet1'), {
+        data:data1,
+        columns: [
+            { type: 'text', title:'{{sample_project_field.heading.0}}', width:160 ,readOnly:true},
+            { type: 'text', title:'{{sample_project_field.heading.1}}', width:160 },
+            { type: 'numeric', title:'{{sample_project_field.heading.2}}', width:50, mask:' #.##,00' },
+            { type: 'checkbox', title:'{{sample_project_field.heading.3}}', width:50 },
+            { type: 'checkbox', title:'{{sample_project_field.heading.4}}', width:100 },
+            { type: 'dropdown' , title: '{{sample_project_field.heading.5}}', width:150 , source: ["String", "Date" , "Options List"] },
+            { type: 'text', title:'{{sample_project_field.heading.6}}', width:240, wordWrap:true },
+            { type: 'text', title:'{{sample_project_field.heading.7}}', width:400 , wordWrap:true },
+        ],
+        allowInsertColumn:false,
+        allowDeleteColumn:false,
+        allowRenameColumn:false,
+        csvFileName:'sample_project_fields',
+        minDimensions:[8,3],
+        tableOverflow: false,
+        tableWidth: "1100px",
+    });
+
+    // append table to form
+    $(document).ready(function () {
+        $("#modifySampleProjectFields").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            //e.preventDefault();
+            //disable the submit button
+            var table_data1 = table1.getData()
+            var data1_json = JSON.stringify(table_data1)
+            $("<input />").attr("type", "hidden")
+            .attr("name", "table_data1")
+            .attr("value", data1_json)
+            .appendTo("#modifySampleProjectFields");
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+    });
+
+    // cdn table
+    $(document).ready(function() {
+        $('#mod_table').DataTable({
+            responsive: true,
+        });
+    });
+    
+</script>
+{% endblock %}
