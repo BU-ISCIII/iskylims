@@ -110,19 +110,19 @@ def request_sequencing_service(request):
             response["Content-Disposition"] = "inline; filename=files.json"
             return response
         else:
-            service_data_information = drylab.utils.req_services.get_service_data(
+            service_data_info = drylab.utils.req_services.get_service_data(
                 request
             )
             return render(
                 request,
                 "drylab/request_sequencing_service.html",
-                {"service_data_information": service_data_information},
+                {"service_data_information": service_data_info},
             )
 
     if request.method == "POST" and request.POST["subAction"] == "createservice":
         # check that at some services have been requested
         if len(request.POST.getlist("RequestedServices")) == 0:
-            service_data_information = drylab.utils.req_services.get_service_data(
+            service_data_info = drylab.utils.req_services.get_service_data(
                 request
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
@@ -130,7 +130,7 @@ def request_sequencing_service(request):
                 request,
                 "drylab/request_sequencing_service.html",
                 {
-                    "service_data_information": service_data_information,
+                    "service_data_information": service_data_info,
                     "error_message": error_message,
                 },
             )
@@ -187,11 +187,13 @@ def request_sequencing_service(request):
             {"confirmation_result": confirmation_result},
         )
     else:
-        service_data_information = drylab.utils.req_services.get_service_data(request)
+        service_data_info = drylab.utils.req_services.get_service_data(
+            request
+        )
         return render(
             request,
             "drylab/request_sequencing_service.html",
-            {"service_data_information": service_data_information},
+            {"service_data_info": service_data_info},
         )
 
 
