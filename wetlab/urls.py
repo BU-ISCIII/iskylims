@@ -7,13 +7,8 @@ from django.urls import path
 import wetlab.views
 
 urlpatterns = [
-    path("", wetlab.views.index, name="index"),
-    path(
-        "AddBasespaceLibrary/",
-        wetlab.views.add_basespace_library,
-        name="add_basespace_library",
-    ),
-    path("addCommercialKit", wetlab.views.add_commercial_kit, name="add_commercial_kit"),
+    path("", views.index, name="index"),
+    path("addCommercialKit", views.add_commercial_kit, name="add_commercial_kit"),
     path(
         "addCollectionIndexKit",
         wetlab.views.add_collection_index_kit,
@@ -181,12 +176,7 @@ urlpatterns = [
     path(
         "StatsPerResearcher/", wetlab.views.stats_per_researcher, name="stats_per_researcher"
     ),
-<<<<<<< HEAD
     path("StatsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
-=======
-    path("statsLibrary/", views.stats_per_library, name="stats_per_library"),
-    path("statsPerSequencer/", views.stats_per_sequencer, name="stats_per_sequencer"),
->>>>>>> Update sequencer statistics, and fixed small html misspelling
     path(
         "userCommercialKitInventory/",
         wetlab.views.user_commercial_kit_inventory,
