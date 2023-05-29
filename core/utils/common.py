@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from core.core_config import *
 from core.models import *
 
-def convert_week_number_to_date_format(input_data, value_param=None, format=None):
+def week_number_to_date(input_data, value_param=None, format=None):
     """Convert year + number of week into a complete date format. If value_param
     is set the converted date is used as key and value_param as value. 
 

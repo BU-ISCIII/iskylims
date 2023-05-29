@@ -6,7 +6,8 @@ import core.fusioncharts.fusioncharts
 import core.models
 import wetlab.models
 import wetlab.utils.common
-import core.utils.graphics 
+import core.utils.graphics
+import core.utils.common
 import wetlab.config
 
 
@@ -99,14 +100,14 @@ def get_per_time_statistics(start_date, end_date):
     ).render()
     # Graphic chart for number of runs per weeks
     run_per_date = run_objs.annotate(year=ExtractYear("run_date")).annotate(week=ExtractWeek("run_date")).values("year", "week").annotate(value=Count("run_name"))
-    format_run_per_date = core.utils.common.convert_week_number_to_date_format(run_per_date, "value", "%Y-%m-%d")
+    format_run_per_date = core.utils.common.week_number_to_date(run_per_date, "value", "%Y-%m-%d")
     g_data = core.utils.graphics.preparation_graphic_data("Run per week", "", "Date", "Number of runs per week", "ocean", format_run_per_date)
     per_time_statistics["time_run_weeks_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "time_run_weeks_graph", "600", "350", "time_run_weeks_chart", "json", g_data
     ).render()
     # Graphic chart for projects
     project_per_date = project_objs.annotate(year=ExtractYear("run_process__run_date")).annotate(week=ExtractWeek("run_process__run_date")).values("year", "week").annotate(value=Count("project_name"))
-    format_project_per_date = core.utils.common.convert_week_number_to_date_format(project_per_date, "value", "%Y-%m-%d")
+    format_project_per_date = core.utils.common.week_number_to_date(project_per_date, "value", "%Y-%m-%d")
     g_data = core.utils.graphics.preparation_graphic_data("Projects per week", "", "Date", "Number of runs per week", "zune", format_project_per_date)
     per_time_statistics["time_project_weeks_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d", "time_project_weeks_graph", "600", "350", "time_project_weeks_chart", "json", g_data
