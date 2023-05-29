@@ -254,7 +254,7 @@ class RunProcess(models.Model):
 
     def set_run_error_code(self, error_code):
         if RunErrors.objects.filter(error_code__exact=error_code).exists():
-            self.run_error = RunErrors.objects.get(error_code__exact=error_code)
+            self.run_error = RunErrors.objects.filter(error_code__exact=error_code).last()
         else:
             self.run_error = RunErrors.objects.get(error_text__exact="Undefined")
         self.state_before_error = self.state

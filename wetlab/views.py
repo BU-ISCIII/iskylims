@@ -168,8 +168,8 @@ def configuration_test(request):
         if not wetlab.utils.test_conf.folder_test_exists(run_test_folder):
             return render(
                 request,
-                "wetlab/ConfigurationTest.html",
-                {"error": wetlab.config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
+                "wetlab/configuration_test.html",
+                {"error": config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
             )
         run_test_result = wetlab.utils.test_conf.execute_test_for_testing_run(run_test_name)
         run_test_result["run_test_name"] = run_test_name
@@ -209,7 +209,7 @@ def configuration_test(request):
                     delete_successful = {"run_name": request.POST["deleteRun"]}
                 return render(
                     request,
-                    "wetlab/ConfigurationTest.html",
+                    "wetlab/configuration_test.html",
                     {"delete_successful": delete_successful},
                 )
             return render(request, "wetlab/configuration_test.html")
@@ -1189,17 +1189,16 @@ def retry_error_run(request):
             ] = wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
             return render(
                 request,
-                "wetlab/successful_page.html",
-                {"detail_description": detail_description, "return_main_menu": True},
+                "wetlab/display_run.html",
+                {"successful_correction": SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY, "run_id": run_id},
             )
         else:
             return render(
                 request,
-                "wetlab/error_page.html",
-                {"content": ["Run does not exist "]},
+                "wetlab/display_run.html",
+                {"error_message": "Run does not exist "},
             )
     else:
-        # return redirect (request,'/')
         return render(request, "wetlab/index.html")
 
 
@@ -4696,7 +4695,7 @@ def modify_sample_project_fields(request, sample_project_id):
         )
         return render(
             request,
-            "wetlab/modifySampleProjectFields.html",
+            "wetlab/modify_sample_project_fields.html",
             {"sample_project_field_saved": sample_project_field_saved},
         )
 
@@ -4704,12 +4703,9 @@ def modify_sample_project_fields(request, sample_project_id):
         if not core.utils.samples.check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/modify_sample_project_fields.html",
                 {
-                    "content": [
-                        "The requested Sample project does not exist",
-                        "Create the sample project name before assigning custom sample project parameters.",
-                    ]
+                    "error_message": "The requested Sample project does not exist"
                 },
             )
         sample_project_field = core.utils.samples.get_parameters_sample_project(
@@ -4717,7 +4713,7 @@ def modify_sample_project_fields(request, sample_project_id):
         )
         return render(
             request,
-            "wetlab/modifySampleProjectFields.html",
+            "wetlab/modify_sample_project_fields.html",
             {"sample_project_field": sample_project_field},
         )
 
