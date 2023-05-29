@@ -630,7 +630,7 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
             )
             wetlab.utils.common.logging_errors(string_message, True, False)
             os.remove(local_file)
-            logger.debug("%s : End function for fetching remote file", run_dir)
+            logger.debug("%s : End function for fetching remote file with Exception", run_dir)
             raise Exception("File not found")
     logger.debug("%s : End function for fetching remote file", run_dir)
     return local_file
