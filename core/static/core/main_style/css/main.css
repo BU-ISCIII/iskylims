@@ -11,6 +11,7 @@
     --font-secondary: 'Poppins', sans-serif;
     --bs-primary: #6ec0f7;
     --bs-secondary: #dadada;
+    --dt-row-selected: #6ec0f7;
 }
 
 .font-secondary { font-family: var(--font-secondary) !important; }
@@ -51,6 +52,12 @@ a:focus, a:hover, a:active {
   text-decoration: none;
 }
 
+tfoot input {
+  width: 100%;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
 /*--------------------------------------------------------------
 # Layout
 --------------------------------------------------------------*/
@@ -69,6 +76,10 @@ a:focus, a:hover, a:active {
   position: relative;
   padding: 75px 0 20px 0;
   flex: 1;
+}
+
+.services ul {
+  list-style:none;
 }
 
 /*--------------------------------------------------------------
