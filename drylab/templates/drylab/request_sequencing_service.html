@@ -18,6 +18,33 @@
     table.dataTable tbody > tr.selected, table.dataTable tbody > tr > .selected {
         background-color: #6ec0f7;
       }
+      .btn-info {
+        background-color :#87cada  !important;
+    }
+    .btn-info:hover{
+        background-color :#67cada !important;
+    }
+    .btn-warning {
+        background-color :#ffdfb2 !important;
+    }
+    .btn-warning:hover{
+        background-color :#ffcfa2 !important;
+    }
+    .btn-danger {
+        background-color :#e57e5f  !important;
+    }
+    .btn-danger:hover{
+        background-color :#e55e3f !important;
+    }
+    span.text-color-white {
+        color:#ffffff !important;
+    }
+    span.text-color-black {
+        color:#000000 !important;
+    }
+    span.text-color-grey {
+        color:  #474747    !important;
+    }
 </style>
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
@@ -71,8 +98,8 @@
                 <div class="card ">
                     <div class="card-header">Service request form for massive sequencing experiments</div>
                     <div class="card-body">
-                        <form id="sequencing_form" method="post" action="/drylab/request_sequencing_service"
-                            name="sequencing_form" enctype="multipart/form-data" class="form-horizontal well">
+                        <form id="fileupload" method="post" action="/drylab/request_sequencing_service"
+                            name="fileupload" enctype="multipart/form-data" class="form-horizontal well">
                             {% csrf_token %}
                             <input type="hidden" name="subAction" value="createservice" />
                             <div class="container-md">
@@ -232,58 +259,52 @@
                                             </div>
                                             <div class="card-body">
                                                 <div class="container-md">
-                                                    <div class="row sequencing_form-buttonbar">
-                                                        <div class="col-md-8">
+                                                    <div class="row fileupload-buttonbar">
+                                                        <div class="col-md-6">
                                                             <!-- The fileinput-button span is used to style the file input field as button -->
-                                                            <span class="btn btn-default fileinput-button">
-                                                                <i class="glyphicon glyphicon-plus"></i>
+                                                            <span class="btn btn-outline-dark fileinput-button">
+                                                                <i class="bi bi-plus-circle"></i>
                                                                 <span class="text-color-black">Add files...</span>
                                                                 <input type="file" name="file" multiple>
                                                             </span>
                                                             <button type="submit" class="btn btn-info start">
-                                                                <i class="glyphicon glyphicon-upload"></i>
+                                                                <i class="bi bi-upload"></i>
                                                                 <span class="text-color-black">Start upload</span>
                                                             </button>
                                                             <button type="reset" class=" btn btn-warning cancel">
-                                                                <i class="glyphicon glyphicon-ban-circle"></i>
+                                                                <i class="bi bi-x-circle"></i>
                                                                 <span class="text-color-black">Cancel upload</span>
                                                             </button>
                                                             <button type="button" class="btn btn-danger delete">
-                                                                <i class="glyphicon glyphicon-trash"></i>
+                                                                <i class="bi bi-trash"></i>
                                                                 <span class="text-color-grey">Delete</span>
                                                             </button>
                                                             <input type="checkbox" class="toggle">
                                                             <!-- The loading indicator is shown during file processing -->
-                                                            <span class="sequencing_form-loading"></span>
+                                                            <span class="fileupload-loading"></span>
                                                         </div>
                                                         <!-- The global progress information -->
-                                                        <div class="col-md-8 sequencing_form-progress fade">
+                                                        <div class="col-md-5 fileupload-progress">
                                                             <!-- The global progress bar -->
-                                                            <div class="progress progress-striped active" role="progressbar" aria-valuemin="0"
-                                                                aria-valuemax="100">
-                                                                <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+                                                            <div class="progress">
+                                                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
                                                             </div>
                                                             <!-- The extended global progress information -->
                                                             <div class="progress-extended">&nbsp;</div>
                                                         </div>
                                                     </div>
-                                               
-                                                    <div class="row pt-2 pb-2">
-                                                        <div class="col-md-8">
-                                                            <h5>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage
-                                                                (if Browser support).</h5>
-                                                            <h5>The Maximun file size to upload is <strong>5MB</strong>. For including files
-                                                                bigger than 5MB contact Bioinformatic Unit Responsible</h5>
-                                                            <table role="presentation" class="table table-striped">
-                                                                <tbody class="files"></tbody>
-                                                            </table>
+                                                    <div class="card">
+                                                        <div class="card-header">Upload Files</div>
+                                                        <div class="card-body">
+                                                            <p>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage (if Browser support).</p>
+                                                            <p>The Maximun file size to upload is <strong>5MB</strong>. For including files bigger than 5MB contact Bioinformatic Unit Responsible</p>
+                                                            <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
                                                         </div>
                                                     </div>
                                                     <!-- The table listing the files available for upload/download -->
-                                                    <div class="row pt-2 pb-2 form-control">
-                                                        <label class="col-md-3 control-label" for="description">Service Notes</label>
-                                                        <div class="col-md-10"><textarea class="form-control" name="description" value=""
-                                                            id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
+                                                    <div class="form-group">
+                                                        <label class="col-md-2 control-label" for="description" >Service Notes</label>
+                                                        <div class="col-md-10"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -308,7 +329,7 @@
 {% upload_js %}
 <!-- <script>
 $(document).ready(function () {
-    $("#sequencing_form").submit(function (e) {
+    $("#fileupload").submit(function (e) {
         //stop submitting the form to see the disabled button effect
         //e.preventDefault();
         //disable the submit button
@@ -319,22 +340,20 @@ $(document).ready(function () {
         $("<input />").attr("type", "hidden")
             .attr("name", "samples_requested")
             .attr("value", data_json)
-            .appendTo("#sequencing_form");
+            .appendTo("#fileupload");
         {% endif %}
         var table_data2 = table2.getData()
         var data_json = JSON.stringify(table_data2)
         $("<input />").attr("type", "hidden")
             .attr("name", "only_recorded_samples")
             .attr("value", data_json)
-            .appendTo("#sequencing_form");
+            .appendTo("#fileupload");
         $("#btnSubmit").attr("disabled", true);
         return true;
     });
 });
 </script> -->
 <script>
-    // Get the element with id="defaultOpen" and click on it
-    //document.getElementById("defaultOpen").click();
     
     $(document).ready(function () {
         // Create search foot
