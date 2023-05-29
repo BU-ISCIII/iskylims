@@ -628,75 +628,6 @@ def create_nextseq_run(request):
 
 
 @login_required
-def add_basespace_library(request):
-    """
-    Description:
-        The function is called from web, having 2 main parts:
-            - User form with the information to add a new Basespace library
-            - Result information as response of user submit
-        Save a new basespace library name in database if it is not already defined.
-    Input:
-        request     # contains the request dictionary sent by django
-    Variables:
-        basespace_library_information ={} # returned dictionary with the information
-                                to include in the web page
-        basespace_library_objects # contains the object list of the basespace model
-        basespace_library = [] # It is a list containing the Basespces Library names
-        new_basespace_library_name # contain the new library name enter by user form
-        library     # it is the new LibraryKit object
-        l_kit       # is the iter variable for basespace_library_objects
-    Return:
-        Return the different information depending on the execution:
-        -- Error page in case the library already exists.
-        -- library_kit_information with :
-            -- ['libraries']
-            ---['new_basespace_library'] in case a new basespace library was added.
-    """
-
-    basespace_library_information = {}
-    basespace_library = []
-
-    basespace_library_objects = wetlab.models.LibraryKit.objects.all()
-    if len(basespace_library_objects) > 0:
-        for l_kit in basespace_library_objects:
-            basespace_library.append(l_kit.library_name)
-
-    if request.method == "POST" and request.POST["action"] == "addNewBasespaceLibrary":
-        new_basespace_library_name = request.POST["newBasespaceLibrary"]
-
-        # Check that library kit is not already defined in database
-        if wetlab.models.LibraryKit.objects.filter(
-            library_name__icontains=new_basespace_library_name
-        ).exists():
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "The Library Kit ",
-                        new_basespace_library_name,
-                        "is already defined on the system",
-                    ]
-                },
-            )
-
-        basespace_library_information[
-            "new_basespace_library"
-        ] = new_basespace_library_name
-        basespace_library.append(new_basespace_library_name)
-        # save the new library on database
-        b_library = wetlab.models.LibraryKit(libraryName=new_basespace_library_name)
-        b_library.save()
-
-    basespace_library_information["libraries"] = basespace_library
-    return render(
-        request,
-        "wetlab/AddBasespaceLibrary.html",
-        {"list_of_libraries": basespace_library_information},
-    )
-
-
-@login_required
 def add_collection_index_kit(request):
     # get the list of the already loaded index library to be displayed
     """
@@ -1972,6 +1903,7 @@ def stats_per_sequencer(request):
                     "wetlab/StatsPerSequencer.html",
                     {
                         "sequencer_names": sequencer_names,
+
                         "error_message": error_message,
                     },
                 )
@@ -2073,7 +2005,6 @@ def stats_per_time(request):
         ########
         # searching for runs were match the state and start and end date
         ########
-        """
         if start_date != "" and end_date != "":
             stat_per_time = {}
             if wetlab.models.RunProcess.objects.filter(
