@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-{% include "core/cdn_table_functionality.html"%}
+{% include "core/jexcel_functionality.html"%}
 {% include "core/multifile_upload_functionality.html" %}
 {% include "bootstrap3/layout/field_errors_block.html" %}
 {% include "bootstrap3/layout/help_text.html" %}
@@ -11,14 +11,6 @@
 
 {% include "drylab/menu.html" %}
 
-<style>
-    :root{
-        --dt-row-selected: #6ec0f7;
-    }
-    table.dataTable tbody > tr.selected, table.dataTable tbody > tr > .selected {
-        background-color: #6ec0f7;
-      }
-</style>
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
@@ -117,31 +109,13 @@
                                             <!-- div tab 1 -->
                                             <div class="tab-pane fade show active" id="nav-sequenced" role="tabpanel" aria-labelledby="nav-sequenced-tab">
                                             {% if service_data_info.samples_heading %}
-                                                <table id="sequenced-samples" class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            {% for value in service_data_info.samples_heading %}
-                                                            <th>{{value}}</th>
-                                                            {% endfor %}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for values in service_data_info.samples_data %}
-                                                        <tr>
-                                                            {% for value in values %}
-                                                            <td>{{value}}</td>
-                                                            {% endfor %}
-                                                        </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                    <tfoot>
-                                                        <tr>
-                                                            {% for value in service_data_info.samples_heading %}
-                                                            <th>{{value}}</th>
-                                                            {% endfor %}
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>      
+                                                <div class="container-md">
+                                                    <div class="row justify-content-center">
+                                                        <div class="col-md-auto">
+                                                            <div id="sequenced-samples"></div>
+                                                        </div>     
+                                                    </div>
+                                                </div>
                                             {% else %}
                                                 <h3>There are no samples to select</h3>
                                             {% endif %}
@@ -151,31 +125,7 @@
                                                 {% if service_data_info.samples_only_recorded_heading %}
                                                 <p class="text-primary">Contact with
                                                     Bioinformatic unit to provide the sample files</p>
-                                                <table id="recorded-samples" class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            {% for value in service_data_info.only_recorded_samples_heading %}
-                                                            <th>{{value}}</th>
-                                                            {% endfor %}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for values in service_data_info.only_recorded_samples_data %}
-                                                        <tr>
-                                                            {% for value in values %}
-                                                            <td>{{value}}</td>
-                                                            {% endfor %}
-                                                        </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                    <tfoot>
-                                                        <tr>
-                                                            {% for value in service_data_info.samples_heading %}
-                                                            <th>{{value}}</th>
-                                                            {% endfor %}
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
+                                                    <div id="recorded-samples"></div> 
                                                 {% else %}
                                                 <div class="pb-2 pt-2">
                                                     <h3>There are no samples recorded sequenced elsewhere</h3>
@@ -302,32 +252,10 @@
 {% upload_js %}
 <!-- <script>
 $(document).ready(function () {
-    $("#fileupload").submit(function (e) {
-        //stop submitting the form to see the disabled button effect
-        //e.preventDefault();
-        //disable the submit button
-        //var table_data = $('#spreadsheet').jexcel('getData')
-        {% if service_data_info.samples_heading %}
-        var table_data1 = table1.getData()
-        var data_json = JSON.stringify(table_data1)
-        $("<input />").attr("type", "hidden")
-            .attr("name", "samples_requested")
-            .attr("value", data_json)
-            .appendTo("#fileupload");
-        {% endif %}
-        var table_data2 = table2.getData()
-        var data_json = JSON.stringify(table_data2)
-        $("<input />").attr("type", "hidden")
-            .attr("name", "only_recorded_samples")
-            .attr("value", data_json)
-            .appendTo("#fileupload");
-        $("#btnSubmit").attr("disabled", true);
-        return true;
-    });
+    
 });
 </script> -->
-<script>
-    
+<script> 
     $(document).ready(function () {
         // Create search foot
         $('#sequenced-samples tfoot th').each(function () {
@@ -341,47 +269,60 @@ $(document).ready(function () {
         
         // DataTable
         {% if service_data_info.samples_heading %}
-        var table = $('#sequenced-samples').DataTable({
-            initComplete: function () {
-                // Apply the search
-                this.api()
-                    .columns()
-                    .every(function () {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
-                        });
-                    });
-            },
-            select: {
-                style: 'os', // Permitir selección múltiple
-                items: 'row',
-              },
-        });
+        var data_seq_samples = [{% for values in service_data_info.samples_data %} [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}];
+        var table1 = jspreadsheet(document.getElementById('sequenced-samples'), {
+            data: data_seq_samples,
+            columns: [
+            {% for value in service_data_info.samples_heading %}
+            {% if forloop.counter|divisibleby:2 %}
+            { type: 'hidden' },
+            {% elif forloop.counter == 3 %}
+            { type: 'text', title:'{{value}}', width:300 , readOnly:true },
+            {% else %}
+            { type: 'text', title:'{{value}}', width:200 , readOnly:true },
+            {% endif %}
+            {% endfor %}
+            { type: 'checkbox',  title:'Select Sample', width:100 },
+            ],
+            allowInsertColumn:false,
+            allowDeleteColumn:false,
+            allowRenameColumn:false,
+            allowInsertRow:false,
+            allowDeleteRow:false,
+            tableOverflow:false,
+            search:true,
+            pagination:20,
+            lazyloading:true,
+            csvFileName:'SamplesDefined.csv',
+        }); 
         {% endif %}
 
         {% if service_data_info.samples_only_recorded_heading %}
-        var table = $('#recorded-samples').DataTable({
-            initComplete: function () {
-                // Apply the search
-                this.api()
-                    .columns()
-                    .every(function () {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
-                        });
-                    });
-            },
-            select: {
-                style: 'os', // Permitir selección múltiple
-                items: 'row',
-              },
-        });
+        var data_record_samples = [{% for values in service_data_info.samples_only_recorded_data %} [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}];
+        var table2 = jspreadsheet(document.getElementById('sequenced-samples'), {
+            data: data_record_samples,
+            columns: [
+            {% for value in service_data_info.samples_only_recorded_heading %}
+            {% if forloop.counter|divisibleby:2 %}
+            { type: 'hidden' },
+            {% elif forloop.counter == 3 %}
+            { type: 'text', title:'{{value}}', width:300 , readOnly:true },
+            {% else %}
+            { type: 'text', title:'{{value}}', width:200 , readOnly:true },
+            {% endif %}
+            {% endfor %}
+            { type: 'checkbox',  title:'Select Sample', width:100 },
+            ],
+            allowInsertColumn:false,
+            allowDeleteColumn:false,
+            allowRenameColumn:false,
+            allowInsertRow:false,
+            allowDeleteRow:false,
+            tableOverflow:false,
+            search:true,
+            pagination:20,
+            csvFileName:'SamplesDefined.csv',
+        }); 
         {% endif %}
         
         // disable submit button if there are no samples to select
@@ -439,8 +380,28 @@ $(document).ready(function () {
 
         // Call the function to initialize the behavior
         updateParentCheckboxes();
+    });
 
-    });    
+    // Add samples to post request
+    $("#fileupload").submit(function (e) {
+        {% if service_data_info.samples_heading %}
+        var table_data1 = table1.getData()
+        var data_json = JSON.stringify(table_data1)
+        $("<input />").attr("type", "hidden")
+            .attr("name", "samples_requested")
+            .attr("value", data_json)
+            .appendTo("#fileupload");
+        {% endif %}
+        {% if service_data_info.samples_only_recorded_heading %}
+        var table_data2 = table2.getData()
+        var data_json = JSON.stringify(table_data2)
+        $("<input />").attr("type", "hidden")
+            .attr("name", "only_recorded_samples")
+            .attr("value", data_json)
+            .appendTo("#fileupload");
+        {% endif %}
+        $("#btnSubmit").attr("disabled", true);
+    });
 </script>
 
 {% endblock %}
