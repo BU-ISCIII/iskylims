@@ -1682,42 +1682,30 @@ def search_collection_index_library(request):
 def change_run_name(request, run_id):
     if wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
         run = wetlab.models.RunProcess.objects.get(pk=run_id)
-        if not request.user.is_authenticated:
-            return redirect("/accounts/login")
         # check if user is allow to make the change
-        groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
+        groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager").last()
         # check if user belongs to WetlabManager . If true allow to see the page
         if groups not in request.user.groups.all():
             return render(
                 request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
+                "wetlab/change_run_name.html",
+                {"error_message": "You do have the enough privileges to see this page "},
             )
         if request.method == "POST" and request.POST["action"] == "change_run_name":
             new_run_name = request.POST["runName"]
             if new_run_name == "":
                 return render(
                     request,
-                    "wetlab/error_page.html",
-                    {"content": ["Empty value is not allowed for the Run Name "]},
+                    "wetlab/change_run_name.html",
+                    {"error_message": "Empty value is not allowed for the Run Name "},
                 )
             if wetlab.models.RunProcess.objects.filter(
                 run_name__exact=new_run_name
             ).exists():
                 return render(
                     request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "The given Run Name is already in use",
-                            "Go back to the previous page and change the run name",
-                        ]
-                    },
+                    "wetlab/change_run_name.html",
+                    {"error_message": "The given Run Name is already in use"},
                 )
             changed_run_name = {}
             old_run_name = run.run_name
@@ -1728,7 +1716,7 @@ def change_run_name(request, run_id):
 
             return render(
                 request,
-                "wetlab/ChangeRunName.html",
+                "wetlab/change_run_name.html",
                 {"changed_run_name": changed_run_name},
             )
         else:
@@ -1736,14 +1724,14 @@ def change_run_name(request, run_id):
             form_change_run_name["run_name"] = run.run_name
             return render(
                 request,
-                "wetlab/ChangeRunName.html",
+                "wetlab/change_run_name.html",
                 {"form_change_run_name": form_change_run_name},
             )
     else:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["There is no Run for your query  "]},
+            "wetlab/change_run_name.html",
+            {"error_message": "There is no Run for your query"},
         )
 
 
@@ -2265,616 +2253,6 @@ def annual_report(request):
         return render(request, "wetlab/AnnualReport.html")
 
 
-@login_required
-def monthly_report(request):
-    # check user privileges
-    if request.user.is_authenticated:
-        try:
-            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
-            if groups not in request.user.groups.all():
-                return render(
-                    request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "You do have the enough privileges to see this page ",
-                            "Contact with your administrator .",
-                        ]
-                    },
-                )
-        except Exception:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
-    if request.method == "POST":
-        input_value = request.POST["month_year_selected"]
-        browser_used = request.META["HTTP_USER_AGENT"]
-        if "Firefox" in browser_used:
-            try:
-                datetime.strptime(input_value, "%m-%Y")
-                month_selected, year_selected = input_value.split("-")
-            except Exception:
-                return render(
-                    request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "Input field does not have the right format  ",
-                            "the right input format is MM-YYYY   the entry ",
-                            input_value,
-                            " is not allowed",
-                        ]
-                    },
-                )
-
-        else:
-            try:
-                datetime.strptime(input_value, "%Y-%m")
-                year_selected, month_selected = input_value.split("-")
-            except Exception:
-                return render(
-                    request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "Monthly Report input field does not have the right format  ",
-                            "the right input format is MM-YYYY  ",
-                            " the entry ",
-                            input_value,
-                            " is not allowed",
-                        ]
-                    },
-                )
-
-        # get the current year to compare with the input
-        present_year = datetime.now().year
-        #
-        if int(year_selected) > present_year:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Monthly Report cannot be done on the future  ",
-                        "the input year in the Form  ",
-                        year_selected,
-                        "is not allowed",
-                    ]
-                },
-            )
-
-        present_month = datetime.now().month
-        if (int(year_selected) == present_year) and (
-            int(month_selected) > present_month
-        ):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Monthly Report cannot be done on the future  ",
-                        "the input month in the Form  ",
-                        month_selected,
-                        "is not allowed",
-                    ]
-                },
-            )
-
-        completed_run_in_year_month = wetlab.models.RunProcess.objects.filter(
-            run_date__year=year_selected,
-            run_date__month=month_selected,
-            state__run_state_name__exact="Completed",
-        )
-        #
-        uncompleted_run_in_year_month = wetlab.models.RunProcess.objects.filter(
-            run_date__year=year_selected, run_date__month=month_selected
-        ).exclude(state__run_state_name__exact="Completed")
-        if (
-            len(completed_run_in_year_month) == 0
-            and len(uncompleted_run_in_year_month) == 0
-        ):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Montly Report cannot be generated because there is no runs performed the year ",
-                        year_selected,
-                    ]
-                },
-            )
-
-        monthly_report_information = {}
-        monthly_report_information["month_year"] = str(
-            month_selected + "  " + year_selected
-        )
-        number_of_runs = {}
-        number_of_runs["Completed Runs"] = 0
-        number_of_runs["Not Finish Runs"] = 0
-        if len(completed_run_in_year_month) > 0:
-            completed_run = []
-            for run in completed_run_in_year_month:
-                completed_run.append(run.get_run_name)
-            monthly_report_information["completed_run"] = completed_run
-            number_of_runs["Completed Runs"] = len(completed_run_in_year_month)
-        if len(uncompleted_run_in_year_month) > 0:
-            uncompleted_run = []
-            for run_uncompleted in uncompleted_run_in_year_month:
-                uncompleted_run.append(run_uncompleted.get_run_name)
-            monthly_report_information["uncompleted_run"] = uncompleted_run
-            number_of_runs["Not Finish Runs"] = len(uncompleted_run_in_year_month)
-        # prepare the pie graphic for the number of completed/ unfinished runs
-        heading = str(
-            "Graphics of the Runs performed on the "
-            + month_selected
-            + " - "
-            + year_selected
-        )
-        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
-            heading, "", "ocean", number_of_runs
-        )
-        graphic_completed_run = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
-        )
-        monthly_report_information[
-            "graphic_completed_run"
-        ] = graphic_completed_run.render()
-
-        # Get the information for investigator name and the projects done
-        # number_proyects_investigator contains a dict with 3 ranges 1, 2, more than 2
-        investigator_projects = wetlab.models.Projects.objects.filter(
-            project_run_date__year=year_selected, project_run_date__month=month_selected
-        ).order_by("user_id")
-        project_by_user = {}
-        (
-            investigator_1_project,
-            investigator_2_projects,
-            investigator_more_2_projects,
-        ) = ({}, {}, {})
-        #
-        for investigator in investigator_projects:
-            user_name = investigator.get_user_name()
-            if user_name in project_by_user:
-                project_by_user[user_name].append(investigator.get_project_name())
-            else:
-                project_by_user[user_name] = [investigator.get_project_name()]
-        for key, value in project_by_user.items():
-            if len(value) == 1:
-                investigator_1_project[key] = value
-            elif len(value) == 2:
-                investigator_2_projects[key] = value
-            else:
-                investigator_more_2_projects[key] = value
-        monthly_report_information["user_1_project"] = investigator_1_project
-        monthly_report_information["user_2_projects"] = investigator_2_projects
-        monthly_report_information[
-            "user_more_2_projects"
-        ] = investigator_more_2_projects
-
-        # Create the bar graphic for user projects
-        p_user_month = {}
-        p_user_month["1 project"] = len(investigator_1_project)
-        p_user_month["2 projects"] = len(investigator_2_projects)
-        p_user_month["more than 2"] = len(investigator_more_2_projects)
-
-        heading = "Projects done per investigator on " + str(
-            month_selected + " - " + year_selected
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "  ", "Projects ", "number of users", "ocean", p_user_month
-        )
-        p_user_monthly_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "bar_project_user_month",
-            "400",
-            "300",
-            "p_user_chart-1",
-            "json",
-            data_source,
-        )
-        monthly_report_information[
-            "p_user_monthly_graphic"
-        ] = p_user_monthly_graphic.render()
-
-        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
-            heading, "Percentage", "carbon", p_user_month
-        )
-        pie_p_user_monthly_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d",
-            "pie_project_user_month",
-            "400",
-            "300",
-            "p_user_chart-2",
-            "json",
-            data_source,
-        )
-        monthly_report_information[
-            "pie_p_user_monthly_graphic"
-        ] = pie_p_user_monthly_graphic.render()
-
-        # Collecting information from StatsRunSummary
-        run_found_bin_summary_month = wetlab.models.StatsRunSummary.objects.filter(
-            stats_summary_run_date__year=year_selected,
-            stats_summary_run_date__month=month_selected,
-            level__exact="Total",
-        )
-        q30_month, aligned_month, error_rate_month = {}, {}, {}
-        for run_bin_summary in run_found_bin_summary_month:
-            bin_summary_data = run_bin_summary.get_bin_run_summary().split(";")
-            run_name = run_bin_summary.runprocess_id.get_run_name()
-            aligned_month[run_name] = bin_summary_data[2]
-            error_rate_month[run_name] = bin_summary_data[3]
-            q30_month[run_name] = bin_summary_data[5]
-        monthly_report_information["aligned_data"] = aligned_month
-        monthly_report_information["error_rate_data"] = error_rate_month
-        monthly_report_information["q30_data"] = q30_month
-        # graphics for StatsRunSummary
-        heading = "Aligned % for the runs done on " + str(
-            month_selected + " - " + year_selected
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "Aligned  ", "Run names ", "Aligned (in %)", "ocean", aligned_month
-        )
-        aligned_month_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "aligned_year",
-            "600",
-            "300",
-            "aligned_chart-3",
-            "json",
-            data_source,
-        )
-        monthly_report_information["aligned_graphic"] = aligned_month_graphic.render()
-
-        heading = "Error Rate for the runs done on  " + str(
-            month_selected + " - " + year_selected
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading,
-            "Error rate ",
-            "Run names ",
-            "Error rate",
-            "carbon",
-            error_rate_month,
-        )
-        error_rate_month_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "error_rate_year",
-            "600",
-            "300",
-            "error_rate_chart-4",
-            "json",
-            data_source,
-        )
-        monthly_report_information[
-            "error_rate_graphic"
-        ] = error_rate_month_graphic.render()
-
-        heading = ">Q30 for the runs done on  " + str(
-            month_selected + " - " + year_selected
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_month
-        )
-        q30_month_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d", "q30_year", "600", "300", "q30_chart-2", "json", data_source
-        )
-
-        monthly_report_information["q30_graphic"] = q30_month_graphic.render()
-
-        return render(
-            request,
-            "wetlab/MonthlyReport.html",
-            {"display_monthly_report": monthly_report_information},
-        )
-    else:
-        return render(request, "wetlab/MonthlyReport.html")
-
-
-@login_required
-def quarter_report(request):
-    # check user privileges
-    if request.user.is_authenticated:
-        try:
-            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
-            if groups not in request.user.groups.all():
-                return render(
-                    request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "You do have the enough privileges to see this page ",
-                            "Contact with your administrator .",
-                        ]
-                    },
-                )
-        except Exception:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
-    if request.method == "POST":
-        year_selected = request.POST["yearselected"]
-        quarter_selected = int(request.POST["quarter"])
-        quarter_string = [
-            "",
-            "First Quarter (January -- March) ",
-            "Second Quarter (April -- June) ",
-            "Third Quarter (July -- September) ",
-            "Fourth Quarter (October -- Decemmber) ",
-        ]
-        days_in_end_quarter = ["0", "31", "30", "30", "31"]
-        start_quarter = str(quarter_selected * 3 - 2)
-        end_quarter = str(quarter_selected * 3)
-        start_date = str(year_selected + "-" + start_quarter + "-01")
-        end_date = str(
-            year_selected
-            + "-"
-            + end_quarter
-            + "-"
-            + days_in_end_quarter[quarter_selected]
-        )
-        # get the current year to compare with the input
-        present_year = datetime.now().year
-        if int(year_selected) > present_year:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Quarter Report cannot be done on the future  ",
-                        "the input year in the Form  ",
-                        year_selected,
-                        "is not allowed",
-                    ]
-                },
-            )
-
-        present_month = datetime.now().month
-        if (int(year_selected) == present_year) and (int(end_quarter) > present_month):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Quater Report cannot be done on the future  ",
-                        "the selected Quarter ",
-                        quarter_string[quarter_selected] + str(year_selected),
-                        "is not allowed",
-                    ]
-                },
-            )
-
-        #
-        completed_run_in_quarter = wetlab.models.RunProcess.objects.filter(
-            run_date__range=(start_date, end_date), state__run_state_name="Completed"
-        )
-        #
-        uncompleted_run_in_quarter = wetlab.models.RunProcess.objects.filter(
-            run_date__range=(start_date, end_date)
-        ).exclude(state__run_state_name="Completed")
-        if len(completed_run_in_quarter) == 0 and len(uncompleted_run_in_quarter) == 0:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Quater Report cannot be generated because there is no runs performed the Quarter ",
-                        quarter_string[quarter_selected] + str(year_selected),
-                    ]
-                },
-            )
-
-        quarter_report_information = {}
-        quarter_report_information["quarter_year"] = quarter_string[
-            quarter_selected
-        ] + str(year_selected)
-        number_of_runs = {}
-        number_of_runs["Completed Runs"] = 0
-        number_of_runs["Not Finish Runs"] = 0
-        if len(completed_run_in_quarter) > 0:
-            completed_run = []
-            for run in completed_run_in_quarter:
-                completed_run.append(run.get_run_name)
-            quarter_report_information["completed_run"] = completed_run
-            number_of_runs["Completed Runs"] = len(completed_run_in_quarter)
-        if len(uncompleted_run_in_quarter) > 0:
-            uncompleted_run = []
-            for run_uncompleted in uncompleted_run_in_quarter:
-                uncompleted_run.append(run_uncompleted.get_run_name)
-            quarter_report_information["uncompleted_run"] = uncompleted_run
-            number_of_runs["Not Finish Runs"] = len(uncompleted_run_in_quarter)
-        # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
-            "Number of Runs performed on the year", "", "ocean", number_of_runs
-        )
-        graphic_completed_run = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
-        )
-        quarter_report_information[
-            "graphic_completed_run"
-        ] = graphic_completed_run.render()
-
-        #
-        # Collecting information from StatsRunSummary
-        run_found_bin_summary_quarter = wetlab.models.StatsRunSummary.objects.filter(
-            stats_summary_run_date__range=(start_date, end_date), level__exact="Total"
-        )
-        q30_quarter, aligned_quarter, error_rate_quarter = {}, {}, {}
-        for run_bin_summary in run_found_bin_summary_quarter:
-            bin_summary_data = run_bin_summary.get_bin_run_summary().split(";")
-            run_name = run_bin_summary.runprocess_id.get_run_name()
-            aligned_quarter[run_name] = bin_summary_data[2]
-            error_rate_quarter[run_name] = bin_summary_data[3]
-            q30_quarter[run_name] = bin_summary_data[5]
-        quarter_report_information["aligned_data"] = aligned_quarter
-        quarter_report_information["error_rate_data"] = error_rate_quarter
-        quarter_report_information["q30_data"] = q30_quarter
-        # graphics for StatsRunSummary
-        heading = (
-            "Aligned % for the runs done on  "
-            + quarter_string[quarter_selected]
-            + str(year_selected)
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading,
-            "Aligned  ",
-            "Run names ",
-            "Aligned (in %)",
-            "ocean",
-            aligned_quarter,
-        )
-        aligned_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "aligned_year",
-            "600",
-            "300",
-            "aligned_chart-3",
-            "json",
-            data_source,
-        )
-        quarter_report_information["aligned_graphic"] = aligned_quarter_graphic.render()
-
-        heading = (
-            "Error Rate for the runs done on year "
-            + quarter_string[quarter_selected]
-            + str(year_selected)
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading,
-            "Error rate ",
-            "Run names ",
-            "Error rate",
-            "carbon",
-            error_rate_quarter,
-        )
-        error_rate_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "error_rate_year",
-            "600",
-            "300",
-            "error_rate_chart-4",
-            "json",
-            data_source,
-        )
-        quarter_report_information[
-            "error_rate_graphic"
-        ] = error_rate_quarter_graphic.render()
-
-        heading = (
-            ">Q30 for the runs done on year "
-            + quarter_string[quarter_selected]
-            + str(year_selected)
-        )
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_quarter
-        )
-        q30_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d", "q30_year", "600", "300", "q30_chart-2", "json", data_source
-        )
-        #
-        quarter_report_information["q30_graphic"] = q30_quarter_graphic.render()
-        #
-
-        # Get the information for investigator name and the projects done
-        # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
-        investigator_projects = wetlab.models.Projects.objects.filter(
-            project_run_date__range=(start_date, end_date)
-        ).order_by("user_id")
-        project_by_user = {}
-        (
-            investigator_5_project,
-            investigator_10_project,
-            investigator_more_10_project,
-        ) = ({}, {}, {})
-        #
-        for investigator in investigator_projects:
-            user_name = investigator.get_user_name()
-            if user_name in project_by_user:
-                project_by_user[user_name].append(investigator.get_project_name())
-            else:
-                project_by_user[user_name] = [investigator.get_project_name()]
-        for key, value in project_by_user.items():
-            if len(value) <= 5:
-                investigator_5_project[key] = value
-            elif len(value) <= 10:
-                investigator_10_project[key] = value
-            else:
-                investigator_more_10_project[key] = value
-        quarter_report_information["user_5_projects"] = investigator_5_project
-        quarter_report_information["user_10_projects"] = investigator_10_project
-        quarter_report_information[
-            "user_more_10_projects"
-        ] = investigator_more_10_project
-
-        # Create the bar graphic for user projects
-        p_user_quarter = {}
-        p_user_quarter["1 - 5"] = len(investigator_5_project)
-        p_user_quarter["6 - 10"] = len(investigator_10_project)
-        p_user_quarter["more than 10"] = len(investigator_more_10_project)
-        heading = "Projects done per investigator on year " + str(year_selected)
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "  ", "Projects ", "number of users", "ocean", p_user_quarter
-        )
-        p_user_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "bar_project_user_year",
-            "400",
-            "300",
-            "p_user_chart-1",
-            "json",
-            data_source,
-        )
-        quarter_report_information[
-            "p_user_year_graphic"
-        ] = p_user_quarter_graphic.render()
-
-        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
-            heading, "Percentage", "carbon", p_user_quarter
-        )
-        pie_p_user_quarter_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d",
-            "pie_project_user_year",
-            "400",
-            "300",
-            "p_user_chart-2",
-            "json",
-            data_source,
-        )
-        quarter_report_information[
-            "pie_p_user_year_graphic"
-        ] = pie_p_user_quarter_graphic.render()
-        #
-        return render(
-            request,
-            "wetlab/QuarterReport.html",
-            {"display_quarter_report": quarter_report_information},
-        )
-    else:
-        return render(request, "wetlab/QuarterReport.html")
-
-
 def get_size_dir(
     directory,
     conn,
@@ -3012,25 +2390,15 @@ def define_sample_projects(request):
         {"defined_samples_projects": defined_samples_projects},
     )
 
-
+@login_required
 def define_additional_kits(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/define_additional_kit.html",
+            {"error_message": "You do not have enough privileges to see this page "},
+        )
     additional_kits = wetlab.utils.additional_kits.define_table_for_additional_kits(
         protocol_id
     )
@@ -3041,13 +2409,13 @@ def define_additional_kits(request, protocol_id):
         if len(recorded_additional_kits) == 0:
             return render(
                 request,
-                "wetlab/defineAdditionalKits.html",
+                "wetlab/define_additional_kits.html",
                 {"additional_kits": additional_kits},
             )
 
         return render(
             request,
-            "wetlab/defineAdditionalKits.html",
+            "wetlab/define_additional_kits.html",
             {"recorded_additional_kits": recorded_additional_kits},
         )
 
@@ -3055,18 +2423,13 @@ def define_additional_kits(request, protocol_id):
         if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "The requested Protocol does not exist",
-                        "Create the protocol name before assigning additional kits for protocol.",
-                    ]
-                },
+                "wetlab/define_additional_kits.html",
+                {"error_message": "The requested Protocol does not exist"},
             )
 
         return render(
             request,
-            "wetlab/defineAdditionalKits.html",
+            "wetlab/define_additional_kits.html",
             {"additional_kits": additional_kits},
         )
 
@@ -3123,31 +2486,18 @@ def display_protocol(request, protocol_id):
 @login_required
 def define_protocol_parameters(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
-    if (
-        request.method == "POST"
-        and request.POST["action"] == "define_protocol_parameters"
-    ):
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/define_protocol_parameters.html",
+            {"error_message": "You do not have enough privileges to see this page "},
+        )
+    if (request.method == "POST" and request.POST["action"] == "define_protocol_parameters"):
         recorded_prot_parameters = core.utils.protocols.set_protocol_parameters(request)
 
         return render(
             request,
-            "wetlab/defineProtocolParameters.html",
+            "wetlab/define_protocol_parameters.html",
             {"recorded_prot_parameters": recorded_prot_parameters},
         )
 
@@ -3155,13 +2505,8 @@ def define_protocol_parameters(request, protocol_id):
         if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "The requested Protocol does not exist",
-                        "Create the protocol name before assigning custom protocol parameters.",
-                    ]
-                },
+                "wetlab/define_protocol_parameters.html",
+                {"error_message": "The requested Protocol does not exist"},
             )
 
         prot_parameters = core.utils.protocols.define_table_for_prot_parameters(
@@ -3169,7 +2514,7 @@ def define_protocol_parameters(request, protocol_id):
         )
         return render(
             request,
-            "wetlab/defineProtocolParameters.html",
+            "wetlab/define_protocol_parameters.html",
             {"prot_parameters": prot_parameters},
         )
 
@@ -3218,7 +2563,7 @@ def add_commercial_kit(request):
 def add_user_lot_commercial_kit(request):
     defined_kits = core.utils.commercial_kits.get_defined_commercial_kits()
     if request.method == "POST" and request.POST["action"] == "addUserLotKit":
-        if core.utils.commercial_kits.get_lot_user_commercial_kit_id(
+        if core.utils.commercial_kits.get_lot_user_commercial_kit_obj(
             request.POST["barCode"]
         ):
             return render(
@@ -4150,7 +3495,7 @@ def handling_molecules(request):
             return render(
                 request,
                 "wetlab/handling_molecules.html",
-                {"ERROR": "There was no valid sample selected "},
+                {"error_message": "There was no valid sample selected "},
             )
         molecule_protocol["samples"] = ",".join(samples)
 
@@ -4900,7 +4245,7 @@ def compare_samples(request):
 
 
 @login_required
-def user_commercial_kit_inventory(request):
+def kit_inventory(request):
     expired_kit = core.utils.commercial_kits.get_expired_lot_user_kit(request.user)
     valid_kit = core.utils.commercial_kits.get_valid_lot_user_kit(request.user)
     if request.method == "POST" and request.POST["action"] == "runOutUserLotKit":
