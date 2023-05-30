@@ -1659,7 +1659,6 @@ def define_pipeline_service(request):
         return redirect("/accounts/login")
 
     data_pipeline = drylab.utils.pipelines.get_data_form_pipeline()
-    import pdb; pdb.set_trace()
     if request.method == "POST" and request.POST["action"] == "define_pipeline":
         pipeline_data_form = drylab.utils.pipelines.analyze_input_pipelines(request)
         if drylab.utils.pipelines.pipeline_version_exists(
