@@ -92,7 +92,7 @@ def delete_stored_file(input_file):
 def get_adapters(file_lines):
     adapter1 = ""
     adapter2 = ""
-    ## For accepting characters like spanish characters.
+    # For accepting characters like spanish characters.
     for line in file_lines:
         if line == "":
             continue
@@ -206,7 +206,7 @@ def get_samples_in_sample_sheet(file_lines):
             samples_dict["heading"] = line.split(",")
             index_sample_name = samples_dict["heading"].index("Sample_Name")
             continue
-            ## found the index for projects
+            # found the index for projects
         if header_found:
             line_split = line.split(",")
             try:
@@ -343,16 +343,16 @@ def get_projects_in_run(in_file):
         found_header = re.search("^Sample_ID,Sample_Name", line)
         if found_header:
             header_found = 1
-            ## found the index for projects
+            # found the index for projects
             p_index = line.split(",").index("Sample_Project")
             description_index = line.split(",").index("Description")
             continue
         if header_found:
-            ### ignore the empty lines separated by commas
+            # ignore the empty lines separated by commas
             valid_line = re.search("^\w+", line)
             if not valid_line:
                 continue
-            ## store the project name and the user name (Description) inside projects dict
+            # store the project name and the user name (Description) inside projects dict
             projects[line.split(",")[p_index]] = line.split(",")[description_index]
     fh.close()
     return projects
@@ -370,7 +370,7 @@ def get_index_library_name(in_file):
         library_value
     """
     library_value = ""
-    ## For accepting characters like spanish characters.
+    # For accepting characters like spanish characters.
     import codecs
 
     fh = codecs.open(in_file, "r", "utf-8")
@@ -584,7 +584,7 @@ def store_user_input_file(user_input_file):
     filename, file_extension = os.path.splitext(user_input_file.name)
     fs = FileSystemStorage()
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    ## including the timestamp to the sample sheet file
+    # including the timestamp to the sample sheet file
     file_name = str(
         wetlab.config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
         + filename
@@ -594,7 +594,7 @@ def store_user_input_file(user_input_file):
     )
     filename = fs.save(file_name, user_input_file)
 
-    ### add the document directory to the input file
+    # add the document directory to the input file
     stored_path_file = os.path.join(settings.MEDIA_ROOT, file_name)
     return stored_path_file, file_name
 
