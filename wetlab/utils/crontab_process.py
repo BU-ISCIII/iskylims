@@ -2912,9 +2912,9 @@ def process_and_store_unknown_barcode_data(
                     unknow_barcode["sequence"] = barcode_line["sequence"]
                     top_number += 1
 
-                wetlab.models.RawTopUnknowBarcodes.objects.create_unknow_barcode(
-                    unknow_barcode
-                )
+                    wetlab.models.RawTopUnknowBarcodes.objects.create_unknow_barcode(
+                        unknow_barcode
+                    )
 
     logger.debug(
         "%s : End function process_and_store_unknown_barcode_data", experiment_name
