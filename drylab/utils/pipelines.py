@@ -19,8 +19,8 @@ def analyze_input_pipelines(request):
     pipeline_data["user_name"] = request.user
     pipeline_data["pipeline_name"] = request.POST["pipeline_name"]
     pipeline_data["pipeline_version"] = request.POST["pipeline_version"]
-    pipeline_data["url"] = request.POST["urlLocation"]
-    pipeline_data["description"] = request.POST["description"]
+    pipeline_data["url"] = request.POST["pipeline_url"]
+    pipeline_data["description"] = request.POST["pipeline_description"]
     pipeline_json_data = json.loads(request.POST["pipeline_data"])
     for row in pipeline_json_data:
         if row[0] == "":
