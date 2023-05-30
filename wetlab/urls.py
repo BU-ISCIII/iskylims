@@ -7,8 +7,8 @@ from django.urls import path
 import wetlab.views
 
 urlpatterns = [
-    path("", views.index, name="index"),
-    path("addCommercialKit", views.add_commercial_kit, name="add_commercial_kit"),
+    path("", wetlab.views.index, name="index"),
+    path("addCommercialKit", wetlab.views.add_commercial_kit, name="add_commercial_kit"),
     path(
         "addCollectionIndexKit",
         wetlab.views.add_collection_index_kit,
@@ -107,9 +107,9 @@ urlpatterns = [
         "skipCancelSituation", wetlab.views.skip_cancel_situation, name="skip_cancel_situation"
     ),
     path(
-        "handlingLibraryPreparations",
-        wetlab.views.handling_library_preparations,
-        name="handling_library_preparations",
+        "handlingLibraryPreparation",
+        wetlab.views.handling_library_preparation,
+        name="handling_library_preparation",
     ),
     path("handlingMolecules", wetlab.views.handling_molecules, name="handling_molecules"),
     path("initialSettings", wetlab.views.initial_settings, name="initial_settings"),
@@ -134,9 +134,9 @@ urlpatterns = [
     ),
     path("MonthlyReport/", wetlab.views.monthly_report, name="montly_report"),
     path(
-        "pendingSamplePreparations",
-        wetlab.views.pending_sample_preparations,
-        name="pending_sample_preparations",
+        "pendingSamplePreparation",
+        wetlab.views.pending_sample_preparation,
+        name="pending_sample_preparation",
     ),
     path("pendingToUpdate/", wetlab.views.pending_to_update, name="pending_to_update"),
     path("QuarterReport/", wetlab.views.quarter_report, name="quarter_report"),
@@ -170,19 +170,17 @@ urlpatterns = [
         wetlab.views.sequencer_configuration,
         name="sequencer_configuration",
     ),
-    path("StatsExperiment/", wetlab.views.stats_experiment, name="stats_experiment"),
-    path("StatsLibrary/", wetlab.views.stats_per_library, name="stats_per_library"),
-    path("StatsPerSequencer/", wetlab.views.stats_per_sequencer, name="stats_per_sequencer"),
+    path("statsPerSequencer/", wetlab.views.stats_per_sequencer, name="stats_per_sequencer"),
     path(
-        "StatsPerResearcher/", wetlab.views.stats_per_researcher, name="stats_per_researcher"
+        "statsPerResearcher/", wetlab.views.stats_per_researcher, name="stats_per_researcher"
     ),
-    path("StatsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
+    path("statsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
     path(
         "userCommercialKitInventory/",
         wetlab.views.user_commercial_kit_inventory,
         name="user_commercial_kit_inventory",
     ),
-    path("statsPerTime/", views.stats_per_time, name="stats_per_time"),
+    path("statsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
 
 ]
 # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -117,7 +117,7 @@ def search_update_new_runs(request_reason):
                 )
                 wetlab.utils.common.logging_errors(error_message, True, False)
                 experiment_name = "Experiment name NOT FOUND"
-                logging_errors(error_message, True, False)
+                wetlab.utils.common.logging_errors(error_message, True, False)
                 # we don't have experiment name when there is no run_parameters file.
                 # We used the run folder name instead.
                 run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(new_run)
@@ -460,7 +460,7 @@ def manage_run_in_recorded_state(conn, run_process_objs):
             if not l_sample_sheet_path:
                 maximun_time = (
                     wetlab.models.ConfigSetting.objects.filter(
-                        configurationName__exact="MAXIMUM_TIME_WAIT_SAMPLE_SHEET"
+                        configuration_name__exact="MAXIMUM_TIME_WAIT_SAMPLE_SHEET"
                     )
                     .last()
                     .get_configuration_value()
@@ -615,7 +615,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
         else:
             maximun_time = (
                 wetlab.models.ConfigSetting.objects.filter(
-                    configurationName__exact="MAXIMUM_TIME_WAIT_RUN_COMPLETION"
+                    configuration_name__exact="MAXIMUM_TIME_WAIT_RUN_COMPLETION"
                 )
                 .last()
                 .get_configuration_value()
@@ -782,7 +782,7 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
             ):
                 maximun_time = (
                     wetlab.models.ConfigSetting.objects.filter(
-                        configurationName__exact="MAXIMUM_TIME_WAIT_TO_RUN_BCL2FASTQ"
+                        configuration_name__exact="MAXIMUM_TIME_WAIT_TO_RUN_BCL2FASTQ"
                     )
                     .last()
                     .get_configuration_value()
@@ -1001,7 +1001,7 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
             continue
 
         run_process_obj.set_used_space(disk_utilization)
-        finish_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        finish_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         run_process_obj.set_run_finish_date(finish_date)
         # Update the run state to completed
         run_process_obj.set_run_state("Completed")

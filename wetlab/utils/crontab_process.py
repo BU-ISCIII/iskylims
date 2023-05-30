@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from interop import py_interop_run, py_interop_run_metrics, py_interop_summary
 
 # Local imports
+import core.models
 import wetlab.config
 import wetlab.models
 import wetlab.utils.common
@@ -590,7 +591,7 @@ def create_new_sequencer_lab_not_defined(sequencer_name, num_of_lanes, experimen
         seq_data[item] = None
     seq_data["sequencerNumberLanes"] = num_of_lanes
     seq_data["sequencerName"] = sequencer_name
-    new_sequencer_obj = wetlab.models.SequencerInLab.objects.create_sequencer_in_lab(seq_data)
+    new_sequencer_obj = core.models.SequencerInLab.objects.create_sequencer_in_lab(seq_data)
     logger.info("%s : Created the new sequencer in database", experiment_name)
     logger.debug(
         "%s : End function create_new_sequencer_lab_not_defined", experiment_name
@@ -800,10 +801,10 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
     """
     logger = logging.getLogger(__name__)
     logger.debug("Starting function get_sequencer_obj_or_create_if_no_exists")
-    if wetlab.models.SequencerInLab.objects.filter(
+    if core.models.SequencerInLab.objects.filter(
         sequencer_name__exact=running_parameters["instrument"]
     ).exists():
-        sequencer_obj = wetlab.models.SequencerInLab.objects.filter(
+        sequencer_obj = core.models.SequencerInLab.objects.filter(
             sequencer_name__exact=running_parameters["instrument"]
         ).last()
 
