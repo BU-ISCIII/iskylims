@@ -1,10 +1,13 @@
-from core.utils.common import get_friend_list
-from core.utils.samples import *
-from wetlab.models import *
-from wetlab.config import *
+# Generic imports
+import json
 
-from core.fusioncharts.fusioncharts import FusionCharts
-from .stats_graphs import *
+# Local imports
+import core.fusioncharts.fusioncharts
+import core.utils.common
+import core.utils.samples
+import wetlab.config
+import wetlab.models
+import wetlab.utils.stats_graphs
 
 
 def get_codeID_for_resequencing(sample_recorded):
@@ -30,18 +33,18 @@ def get_codeID_for_resequencing(sample_recorded):
     mol_lib_prep_available = {}
     lib_prep_available = ["New Library Preparation"]
     mol_lib_prep_available["New Extraction"] = [""]
-    sample_obj = get_sample_obj_from_id(sample_recorded["sample_id_for_action"])
-    molecule_objs = get_molecule_objs_from_sample(
+    sample_obj = core.utils.samples.get_sample_obj_from_id(sample_recorded["sample_id_for_action"])
+    molecule_objs = core.utils.samples.get_molecule_objs_from_sample(
         sample_recorded["sample_id_for_action"]
     )
 
     for molecule_obj in molecule_objs:
-        molecule_id = get_molecule_codeid_from_object(molecule_obj)
+        molecule_id = core.utils.samples.get_molecule_codeid_from_object(molecule_obj)
         mol_lib_prep_available[molecule_id] = ["New Library Preparation"]
-        if LibPrepare.objects.filter(
+        if wetlab.models.LibPrepare.objects.filter(
             molecule_id=molecule_obj, sample_id=sample_obj
         ).exists():
-            libs_prep_obj = LibPrepare.objects.filter(
+            libs_prep_obj = wetlab.models.LibPrepare.objects.filter(
                 molecule_id=molecule_obj, sample_id=sample_obj
             )
             for lib_prep_obj in libs_prep_obj:
@@ -76,7 +79,7 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
     """
     # options = json_data[-1]
     if "New Extraction" in reprocess_data:
-        sample_obj = update_sample_reused(reprocess_sample_id)
+        sample_obj = core.utils.samples.update_sample_reused(reprocess_sample_id)
         sample_obj.set_state("Defined")
         return True
 
@@ -85,15 +88,15 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
         if molecule_code_id == "":
             return "Invalid options"
         else:
-            sample_obj = get_sample_obj_from_id(reprocess_sample_id)
+            sample_obj = core.utils.samples.get_sample_obj_from_id(reprocess_sample_id)
             if "Library preparation" != sample_obj.get_sample_state():
-                molecule_obj = update_molecule_reused(
+                molecule_obj = core.utils.samples.update_molecule_reused(
                     reprocess_sample_id, molecule_code_id
                 )
                 if not molecule_obj:
                     return "Invalid options"
                 #
-                sample_obj = update_sample_reused(reprocess_sample_id)
+                sample_obj = core.utils.samples.update_sample_reused(reprocess_sample_id)
                 sample_obj.set_state("Library preparation")
 
             return True
@@ -101,17 +104,17 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
         molecule_code_id = reprocess_data[0]
         lib_prep_code_id = reprocess_data[1]
 
-        if not LibPrepare.objects.filter(
+        if not wetlab.models.LibPrepare.objects.filter(
             sample_id__pk__exact=reprocess_sample_id,
             lib_prep_code_id__exact=lib_prep_code_id,
         ).exists():
             return "Invalid options"
-        lib_prep_obj = LibPrepare.objects.get(
+        lib_prep_obj = wetlab.models.LibPrepare.objects.get(
             sample_id__pk__exact=reprocess_sample_id,
             lib_prep_code_id__exact=lib_prep_code_id,
         )
-        sample_obj = update_sample_reused(reprocess_sample_id)
-        molecule_obj = update_molecule_reused(reprocess_sample_id, molecule_code_id)
+        sample_obj = core.utils.samples.update_sample_reused(reprocess_sample_id)
+        molecule_obj = core.utils.samples.update_molecule_reused(reprocess_sample_id, molecule_code_id)
         lib_prep_obj.set_state("Reused pool")
         lib_prep_obj.set_increase_reuse()
         sample_obj.set_state("Pool preparation")
@@ -155,12 +158,12 @@ def get_comparation_sample_information(sample_objs):
     compared_data["table_data"] = []
     for sample_obj in sample_objs:
         run_obj = sample_obj.get_run_obj()
-        stats_fl_obj = StatsFlSummary.objects.filter(runprocess_id=run_obj).last()
+        stats_fl_obj = wetlab.models.StatsFlSummary.objects.filter(runprocess_id=run_obj).last()
         data = sample_obj.get_sample_information()
         data.insert(2, sample_obj.get_run_name())
         data.insert(3, stats_fl_obj.get_sample_number())
         compared_data["table_data"].append(data)
-    compared_data["table_heading"] = HEADING_COMPARATION_SAMPLE_INFORMATION
+    compared_data["table_heading"] = wetlab.config.HEADING_COMPARATION_SAMPLE_INFORMATION
     return compared_data
 
 
@@ -181,15 +184,15 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     samples_data = {}
     sample_objs = ""
     if wetlab_manager:
-        if SamplesInProject.objects.all().exists():
+        if wetlab.models.SamplesInProject.objects.all().exists():
             sample_objs = (
-                SamplesInProject.objects.all().order_by("generated_at").reverse()
+                wetlab.models.SamplesInProject.objects.all().order_by("generated_at").reverse()
             )
     else:
-        user_list_ids = get_friend_list(user)
-        if SamplesInProject.objects.filter(user_id_id__in=user_list_ids).exists():
+        user_list_ids = core.utils.common.get_friend_list(user)
+        if wetlab.models.SamplesInProject.objects.filter(user_id_id__in=user_list_ids).exists():
             sample_objs = (
-                SamplesInProject.objects.filter(user_id_id__in=user_list_ids)
+                wetlab.models.SamplesInProject.objects.filter(user_id_id__in=user_list_ids)
                 .order_by("generated_at")
                 .reverse()
             )
@@ -206,7 +209,7 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
             data.append(run_obj.get_run_finish_date())
             data.append(sample_obj.get_sample_id())
             samples_data["data"].append(data)
-        samples_data["heading"] = HEADING_COMPARATION_SAMPLE_LIST
+        samples_data["heading"] = wetlab.config.HEADING_COMPARATION_SAMPLE_LIST
     return samples_data
 
 
@@ -221,8 +224,8 @@ def get_sample_in_project_obj_from_id(sample_in_project_id):
         sample_in_project_obj.
     """
     sample_in_project_obj = ""
-    if SamplesInProject.objects.filter(pk__exact=sample_in_project_id).exists():
-        sample_in_project_obj = SamplesInProject.objects.get(
+    if wetlab.models.SamplesInProject.objects.filter(pk__exact=sample_in_project_id).exists():
+        sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
             pk__exact=sample_in_project_id
         )
 
@@ -240,10 +243,10 @@ def get_sample_in_project_obj_from_sample_name(sample_name_in_project):
         sample_in_project_obj.
     """
     sample_in_project_obj = ""
-    if SamplesInProject.objects.filter(
+    if wetlab.models.SamplesInProject.objects.filter(
         sample_name__exact=sample_name_in_project
     ).exists():
-        sample_in_project_obj = SamplesInProject.objects.filter(
+        sample_in_project_obj = wetlab.models.SamplesInProject.objects.filter(
             sample_name__exact=sample_name_in_project
         ).last()
 
@@ -267,14 +270,14 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
     """
     run_sample_list = []
 
-    if SamplesInProject.objects.all().exists():
-        run_sample_founds = SamplesInProject.objects.all()
+    if wetlab.models.SamplesInProject.objects.all().exists():
+        run_sample_founds = wetlab.models.SamplesInProject.objects.all()
     else:
         return run_sample_list
     if user_name != "":
-        if User.objects.filter(username__exact=user_name).exists():
-            user_name_obj = User.objects.filter(username__exact=user_name).last()
-            user_friend_list = get_friend_list(user_name_obj)
+        if wetlab.models.User.objects.filter(username__exact=user_name).exists():
+            user_name_obj = wetlab.models.User.objects.filter(username__exact=user_name).last()
+            user_friend_list = core.utils.common.get_friend_list(user_name_obj)
             if not run_sample_founds.filter(user_id__in=user_friend_list).exists():
                 return run_sample_list
             else:
@@ -336,10 +339,10 @@ def pending_samples_for_grafic(pending):
             "create_library_preparation"
         ]["length"]
 
-    data_source = graphic_3D_pie(
+    data_source = wetlab.utils.stats_graphs.graphic_3D_pie(
         "Number of Pending Samples", "", "", "", "fint", number_of_pending
     )
-    graphic_pending_samples = FusionCharts(
+    graphic_pending_samples = core.fusioncharts.fusioncharts.FusionCharts(
         "pie3d", "ex1", "430", "450", "chart-1", "json", data_source
     )
     return graphic_pending_samples
