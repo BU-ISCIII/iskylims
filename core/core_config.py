@@ -34,6 +34,7 @@ HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = [
     "Date sample extraction",
     "Sample CodeID",
     "Sample name",
+    "Select sample",
 ]
 
 MAPPING_SAMPLE_FORM_TO_DDBB = [

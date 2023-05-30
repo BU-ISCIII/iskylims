@@ -2,7 +2,7 @@
 {% block content %}
 {% include "wetlab/menu.html" %}
 {% include 'core/jexcel_functionality.html' %}
-
+{% include "core/cdn_table_functionality.html" %}
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
@@ -21,71 +21,77 @@
             </div> <!--  end of row -->
         {% endif %}
         {% if successfuly_batch_load %}
-            <div class="row my-2">
-                <div class="col-sm-7 offset-3">
-                    <div class="card ">
-                        <div class="card-header"><h3 style="text-align:center">Successful load the batch file</h3> </div>
-                        <div class="card-body">
-                            <h4>Your batch file was successfuly stored in iSkyLIMS database</h4>
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col">
+                        <div class="card ">
+                            <div class="card-header"><h3 style="text-align:center">Successful load the batch file</h3> </div>
+                            <div class="card-body">
+                                <h4>Your batch file was successfuly stored in iSkyLIMS database</h4>
+                            </div>
                         </div>
-                    </div>
-                </div> <!--  end of col-sm-7 -->
-            </div> <!--  end of row -->
+                    </div> 
+                </div>
+            </div>
         {% endif %}
         {% if sample_recorded %}
             {% if sample_recorded.defined_samples %}
-                <div class="row row-space-4 margin-b-4">
-                    <div class="col-sm-7 offset-1" >
-                        <div class="card ">
-                            <div class="card-header"><h3>The following Samples have been sucessfuly recorded</h3></div>
-                            <div class="card-body">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            {% for value in sample_recorded.recorded_sample_heading %}
-                                                <th> {{ value }}</th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for sample in  sample_recorded.defined_samples %}
+                <div class="container">
+                    <div class="row mt-4">
+                        <div class="col-md">
+                            <div class="card ">
+                                <div class="card-header"><h3>The following Samples have been sucessfuly recorded</h3></div>
+                                <div class="card-body">
+                                    <table class="table table-hover" id="cdn_table">
+                                        <thead>
                                             <tr>
-                                                {% for values in sample %}
-                                                    <td>{{ values }}</td>
+                                                {% for value in sample_recorded.recorded_sample_heading %}
+                                                    <th> {{ value }}</th>
                                                 {% endfor %}
                                             </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>  
-                        </div>
-                    </div> <!--// end col-sm-7  -->
-                </div> <!--// end row -->
+                                        </thead>
+                                        <tbody>
+                                            {% for sample in  sample_recorded.defined_samples %}
+                                                <tr>
+                                                    {% for values in sample %}
+                                                        <td>{{ values }}</td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>  
+                            </div>
+                        </div> 
+                    </div> 
+                </div>
             {% endif %}
             {% if sample_recorded.display_samples %}
-                <div class="row row-space-4 margin-b-4">
-                    <div class="col-sm-5 offset-3" >
-                        <div class="card ">
-                            <div class="card-header"><h3>The following Samples have been sucessfuly recorded</h3></div>
-                            <div class="card-body">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Sample name</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for name, id  in  sample_recorded.display_samples %}
+                <div class="container">
+                    <div class="row mt-4">
+                        <div class="col">
+                            <div class="card ">
+                                <div class="card-header"><h3>The following Samples have been sucessfuly recorded</h3></div>
+                                <div class="card-body">
+                                    <table class="table table-hover" id="cdn_table">
+                                        <thead>
                                             <tr>
-                                                <td><a href="/wetlab/displaySample={{id}}">{{ name }}</a></td>
+                                                <th>Sample name</th>
                                             </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>  
-                        </div>
-                    </div> <!--// end col-sm-7  -->
-                </div> <!--// end row -->
+                                        </thead>
+                                        <tbody>
+                                            {% for name, id  in  sample_recorded.display_samples %}
+                                                <tr>
+                                                    <td><a href="/wetlab/displaySample={{id}}" class="text-decoration-none">{{ name }}</a></td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>  
+                            </div>
+                        </div> 
+                    </div>
+                </div>
             {% endif %}
             {% if sample_recorded.invalid_samples %}
                 <div class="row my-2">
@@ -239,105 +245,95 @@
 
             {% elif sample_recorded.incomplete_samples %}
 
-            <div class="row row-space-4 margin-b-4">
-                <div  class="col-sm-12" >
-
-                    <div class="card " >
-                        <div class="card-header"><h3>The following samples were not completed filled. </h3></div>
-                        <div class="card-body" >
-                            <br>
-                            <p>Write down the missing information and then click on the Submit bottom</p>
-                            <br><br>
-
-                            <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" style="min-height: 500px;">
-                                {% csrf_token %}
-                                <div class="scrolling-wrapper">
-                                    <input type="hidden" name="action" value="recordsample"/>
-                                    {% if sample_recorded.pre_defined_samples_id %}
-                                        <input type="hidden" name="pending_pre_defined" value="{{sample_recorded.pending_pre_defined_samples_id}}"/>
-                                        <input type="hidden" name="pre_defined_id" value="{{sample_recorded.updated_pre_defined_samples_id}}"/>
-                                    {% endif %}
-                                    <div id="spreadsheet"></div>
-                                </div> <!--  end of scrolling  -->
-                                    <script>
-
-                                            var data = [{% for values in sample_recorded.incomplete_samples %}
-                                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                            ];
-
-                                        mySpreadsheet = $('#spreadsheet').jexcel({
-                                        data:data,
-                                        columns: [
-                                            { type: 'text', title:'{{sample_recorded.heading.0}}', width:150 },
-                                            { type: 'text', title:'{{sample_recorded.heading.1}}', width:150 },
-                                            { type: 'dropdown', title:'{{sample_recorded.heading.2}}', width:150 , source: [{% for value in sample_recorded.lab_requested %}"{{value}}",{% endfor %}] },
-                                            { type: 'dropdown', title:'{{sample_recorded.heading.3}}', width:120 , source:[{% for value in sample_recorded.sampleType %}"{{value}}",{% endfor %}]},
-                                            { type: 'dropdown', title:'{{sample_recorded.heading.4}}', width:120 , source : [{% for value in sample_recorded.species %}"{{value}}",{% endfor %}] },
-                                            { type: 'dropdown', title:'{{sample_recorded.heading.5}}', width:120 , source : [{% for value in sample_recorded.sample_project %}"{{value}}",{% endfor %}] },
-                                            { type: 'calendar' , title: '{{sample_recorded.heading.6}}', width:150 },
-                                            { type: 'text', title:'{{sample_recorded.heading.7}}', width:150 },
-                                            { type: 'checkbox', title:'{{sample_recorded.heading.8}}', width:100 },
-                                            ],
-                                            allowInsertColumn:false,
-                                            allowDeleteColumn:false,
-                                            allowRenameColumn:false,
-                                            csvFileName:'samples',
-                                            minDimensions:[{{sample_information.table_size}},3],
-                                        });
-                                    </script>
-                                <br><br><br><br><br><br><br><br><br><br><br>
-                                <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-                            </form>
-                            <script>
-                                $(document).ready(function () {
-                                    $("#sampledefinition").submit(function (e) {
-                                        //stop submitting the form to see the disabled button effect
-                                        // e.preventDefault();
-                                        //disable the submit button
-                                        var table_data = $('#spreadsheet').jexcel('getData')
-                                        var data_json = JSON.stringify(table_data)
-                                        $("<input />").attr("type", "hidden")
-                                        .attr("name", "table_data")
-                                        .attr("value", data_json)
-                                        .appendTo("#sampledefinition");
-                                        $("#btnSubmit").attr("disabled", true);
-                                        return true;
-                                    });
-                                });
-                            </script>
-
-                        </div>  
-                    </div>
-
-                </div> <!--// end col-sm-7  -->
-
-            </div> <!--// end row -->
-
-
-            {% elif sample_recorded.updated_pre_defined_samples_id %}
                 <div class="row row-space-4 margin-b-4">
                     <div  class="col-sm-12" >
 
                         <div class="card " >
-                            <div class="card-header"><h3>The following samples require additional information as requested by project.</h3></div>
+                            <div class="card-header"><h3>The following samples were not completed filled. </h3></div>
+                            <div class="card-body" >
+                                <br>
+                                <p>Write down the missing information and then click on the Submit bottom</p>
+                                <br><br>
 
-                                <div class="card-body" >
+                                <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" style="min-height: 500px;">
+                                    {% csrf_token %}
+                                    <div class="scrolling-wrapper">
+                                        <input type="hidden" name="action" value="recordsample"/>
+                                        {% if sample_recorded.pre_defined_samples_id %}
+                                            <input type="hidden" name="pending_pre_defined" value="{{sample_recorded.pending_pre_defined_samples_id}}"/>
+                                            <input type="hidden" name="pre_defined_id" value="{{sample_recorded.updated_pre_defined_samples_id}}"/>
+                                        {% endif %}
+                                        <div id="spreadsheet"></div>
+                                    </div> <!--  end of scrolling  -->
+                                        <script>
 
-                                    <br>
-                                    <br><br>
+                                                var data = [{% for values in sample_recorded.incomplete_samples %}
+                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                ];
 
-                                    <form method="post" enctype="multipart/form-data" name="sampleprojectdata"  id="sampleprojectdata" style="min-height: 500px;">
-                                        {% csrf_token %}
-                                        <div class="scrolling-wrapper">
+                                            mySpreadsheet = $('#spreadsheet').jexcel({
+                                            data:data,
+                                            columns: [
+                                                { type: 'text', title:'{{sample_recorded.heading.0}}', width:150 },
+                                                { type: 'text', title:'{{sample_recorded.heading.1}}', width:150 },
+                                                { type: 'dropdown', title:'{{sample_recorded.heading.2}}', width:150 , source: [{% for value in sample_recorded.lab_requested %}"{{value}}",{% endfor %}] },
+                                                { type: 'dropdown', title:'{{sample_recorded.heading.3}}', width:120 , source:[{% for value in sample_recorded.sampleType %}"{{value}}",{% endfor %}]},
+                                                { type: 'dropdown', title:'{{sample_recorded.heading.4}}', width:120 , source : [{% for value in sample_recorded.species %}"{{value}}",{% endfor %}] },
+                                                { type: 'dropdown', title:'{{sample_recorded.heading.5}}', width:120 , source : [{% for value in sample_recorded.sample_project %}"{{value}}",{% endfor %}] },
+                                                { type: 'calendar' , title: '{{sample_recorded.heading.6}}', width:150 },
+                                                { type: 'text', title:'{{sample_recorded.heading.7}}', width:150 },
+                                                { type: 'checkbox', title:'{{sample_recorded.heading.8}}', width:100 },
+                                                ],
+                                                allowInsertColumn:false,
+                                                allowDeleteColumn:false,
+                                                allowRenameColumn:false,
+                                                csvFileName:'samples',
+                                                minDimensions:[{{sample_information.table_size}},3],
+                                            });
+                                        </script>
+                                    <br><br><br><br><br><br><br><br><br><br><br>
+                                    <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                </form>
+                                <script>
+                                    $(document).ready(function () {
+                                        $("#sampledefinition").submit(function (e) {
+                                            //stop submitting the form to see the disabled button effect
+                                            // e.preventDefault();
+                                            //disable the submit button
+                                            var table_data = $('#spreadsheet').jexcel('getData')
+                                            var data_json = JSON.stringify(table_data)
+                                            $("<input />").attr("type", "hidden")
+                                            .attr("name", "table_data")
+                                            .attr("value", data_json)
+                                            .appendTo("#sampledefinition");
+                                            $("#btnSubmit").attr("disabled", true);
+                                            return true;
+                                        });
+                                    });
+                                </script>
+                            </div>  
+                        </div>
+                    </div> <!--// end col-sm-7  -->
+                </div> <!--// end row -->
 
+            {% elif sample_recorded.updated_pre_defined_samples_id %}
+                <div class="container">
+                    <div class="row mt-4">
+                        <div class="col">
+                            <div class="card " >
+                                <div class="card-header"><h3>The following samples require additional information as requested by project.</h3></div>
+                                    <div class="card-body" >
+                                        <form method="post" enctype="multipart/form-data" name="sampleprojectdata"  id="sampleprojectdata" style="min-height: 500px;">
+                                            {% csrf_token %}
                                             <input type="hidden" name="action" value="sampleprojectdata"/>
                                             <input type="hidden" name="pending_pre_defined" value="{{sample_recorded.pending_pre_defined_samples_id}}"/>
                                             <input type="hidden" name="pre_defined_id" value="{{sample_recorded.updated_pre_defined_samples_id}}"/>
                                             <input type="hidden" name="pre_defined_samples" value="{{sample_recorded.pre_defined_samples_name}}"/>
                                             <input type="hidden" name="pre_defined_heading" value="{{sample_recorded.pre_defined_fields_heading_list}}"/>
-                                            <div id="spreadsheet_pre_def"></div>
-
+                                            <div class="horizontal-scroll">
+                                                <div id="spreadsheet_pre_def" class="mb-3" style="min-height:200px;"></div>
+                                            </div>
                                             <script>
                                                 var data_pre_def = [{% for values in sample_recorded.pre_defined_sample_data %}
                                                         [{% for value in values %}'{{value}}',{% endfor %}],
@@ -366,38 +362,33 @@
                                                     minDimensions:[{{sample_recorded.pre_defined_fields_length}},{{sample_recorded.pre_defined_samples_length}}],
                                                 });
                                             </script>
-                                            <br><br><br><br><br><br><br><br><br><br><br>
-                                        </div> <!--  end of scrolling  -->
-                                        <br><br><br><br><br>
-                                        <input type="button" value="Download Spreadsheet" onclick="pre_def_table.download()"/>
-                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-                                    </form>
 
-                                    <script>
-                                        $(document).ready(function () {
-                                            $("#sampleprojectdata").submit(function (e) {
-                                                //stop submitting the form to see the disabled button effect
-                                                // e.preventDefault();
-                                                //disable the submit button
-                                                var table_data = pre_def_table.getData()
-                                                var data_json = JSON.stringify(table_data)
-                                                $("<input />").attr("type", "hidden")
-                                                .attr("name", "table_data")
-                                                .attr("value", data_json)
-                                                .appendTo("#sampleprojectdata");
-                                                $("#btnSubmit").attr("disabled", true);
-                                                return true;
+                                            <input type="button" class="btn btn-outline-secondary my-4" value="Download Spreadsheet" onclick="pre_def_table.download()"/>
+                                            <input class="btn float-end btn-outline-primary my-4" type="submit" value="Submit">
+                                        </form>
+                                        <script>
+                                            $(document).ready(function () {
+                                                $("#sampleprojectdata").submit(function (e) {
+                                                    //stop submitting the form to see the disabled button effect
+                                                    // e.preventDefault();
+                                                    //disable the submit button
+                                                    var table_data = pre_def_table.getData()
+                                                    var data_json = JSON.stringify(table_data)
+                                                    $("<input />").attr("type", "hidden")
+                                                    .attr("name", "table_data")
+                                                    .attr("value", data_json)
+                                                    .appendTo("#sampleprojectdata");
+                                                    $("#btnSubmit").attr("disabled", true);
+                                                    return true;
+                                                });
                                             });
-                                        });
-                                    </script>
-
-                                </div>  
-
+                                        </script>
+                                    </div>  
+                                </div>
+                            </div>
                         </div>
-
-                    </div> <!--// end col-sm-7  -->
-
-                </div> <!--// end row -->
+                    </div> 
+                </div>
             {% endif %}
 
         {% elif all_sucessful_reprocess %}
@@ -415,158 +406,167 @@
         {% else %}
 
             {% if sample_information.pre_defined_heading %}
-                <div class="row row-space-4 margin-b-4">
-                    <div  class="col-sm-7 offset-2" >
-                        <div class="card " >
-                            <div class="card-header"><h3>These samples require additional information </h3></div>
-                            <div class="card-body" >
-                                <form method="post" action="/wetlab/recordSamples" enctype="multipart/form-data" name="select_samples_pre_defined"  id="select_samples_pre_defined">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="select_samples_pre_defined"/>
-                                    <input type="hidden" name="samples_in_list" value="True"/>
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                {% for value in sample_information.pre_defined_heading %}
-                                                    <th> {{ value }}</th>
-                                                {% endfor %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for date, code,  name,  s_id in sample_information.pre_defined_samples %}
+                <div class="container">
+                    <div class="row mt-4">
+                        <div class="col">
+                            <div class="card " >
+                                <div class="card-header"><h3>These samples require additional information </h3></div>
+                                <div class="card-body" >
+                                    <form method="post" action="/wetlab/recordSamples" enctype="multipart/form-data" name="select_samples_pre_defined"  id="select_samples_pre_defined">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="select_samples_pre_defined"/>
+                                        <input type="hidden" name="samples_in_list" value="True"/>
+                                        <table class="table table-hover" id="cdn_table">
+                                            <thead>
                                                 <tr>
+                                                    {% for value in sample_information.pre_defined_heading %}
+                                                        <th> {{ value }}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for date, code,  name,  s_id in sample_information.pre_defined_samples %}
+                                                    <tr>
                                                         <td>{{date}}</td>
                                                         <td>{{code}}</td>
                                                         <td>{{name}}</td>
                                                         <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
-                                                </tr>
-                                            {% endfor %}
-
-                                        </tbody>
-                                    </table>
-                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-                                </form>
-                            </div>  
-                        </div>
-
-                    </div> <!--// end col-sm-7  -->
-
-                </div> <!--// end row -->
-
-            {% endif %}
-            <div class="row my-2">
-                <div class="col" >
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="samles-tab" data-bs-toggle="tab" data-bs-target="#samples" type="button" role="tab" aria-controls="samples" aria-selected="true">Record new samples</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch" type="button" role="tab" aria-controls="batch" aria-selected="false">Load batch new samples</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="myTabContent">
-                        <div class="tab-pane fade show active" id="samples" role="tabpanel" aria-labelledby="samples-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col">
-                                        <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Record new Samples</h3></div>
-                                            <div class="card-body" >
-                                                <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" style="min-height: 500px;">
-                                                    {% csrf_token %}
-                                                    <div class="horizontal-scroll">
-                                                        <input type="hidden" name="action" value="recordsample"/>
-                                                        <div id="spreadsheet" class="mb-4"></div>
-                                                    </div> <!--  end of scrolling  -->
-                                                    <script>
-                                                        {% if sample_information.data %}
-                                                            var data = [{% for values in sample_information.data %}
-                                                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                            ];
-                                                        {% else %}
-                                                            var data = [[]];
-                                                        {% endif %}
-                                                        var table1 = jexcel(document.getElementById('spreadsheet'), {
-                                                        data:data,
-                                                        columns: [
-                                                            { type: 'text', title:'{{sample_information.heading.0}}', width:130 },
-                                                            { type: 'text', title:'{{sample_information.heading.1}}', width:120 },
-                                                            { type: 'dropdown', title:'{{sample_information.heading.2}}', width:130 , source: [{% for value in sample_information.lab_requested %}"{{value}}",{% endfor %}] },
-                                                            { type: 'dropdown', title:'{{sample_information.heading.3}}', width:120 , source:[{% for value in sample_information.sampleType %}"{{value}}",{% endfor %}]},
-                                                            { type: 'dropdown', title:'{{sample_information.heading.4}}', width:120 , source : [{% for value in sample_information.species %}"{{value}}",{% endfor %}] },
-                                                            { type: 'dropdown', title:'{{sample_information.heading.5}}', width:120 , source : [{% for value in sample_information.sample_project %}"{{value}}",{% endfor %}] },
-                                                            { type: 'calendar' , title: '{{sample_information.heading.6}}', width:170 },
-                                                            { type: 'calendar' , title: '{{sample_information.heading.7}}', width:170 },
-                                                            { type: 'text', title:'{{sample_information.heading.8}}', width:120 },
-                                                            { type: 'checkbox', title:'{{sample_information.heading.9}}', width:110 },
-                                                            ],
-                                                            allowInsertColumn:false,
-                                                            allowDeleteColumn:false,
-                                                            allowRenameColumn:false,
-                                                            csvFileName:'record_samples',
-                                                            minDimensions:[{{sample_information.table_size}},10],
-
-                                                        });
-                                                    </script>
-                                                    <input type="button" class="btn btn-outline-secondary mt-2" value="Download Spreadsheet" onclick="table1.download()"/>
-                                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> 
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        <input class="btn float-end btn-outline-primary my-3" type="submit" value="Submit">
+                                    </form>
+                                </div>  
                             </div>
-                            <script>
-                                $(document).ready(function () {
-
-                                    $("#sampledefinition").submit(function (e) {
-                                        //stop submitting the form to see the disabled button effect
-                                        // e.preventDefault();
-                                        //disable the submit button
-                                        var table_data = table1.getData()
-                                        var data_json = JSON.stringify(table_data)
-                                        $("<input />").attr("type", "hidden")
-                                        .attr("name", "table_data")
-                                        .attr("value", data_json)
-                                        .appendTo("#sampledefinition");
-                                        $("#btnSubmit").attr("disabled", true);
-                                        return true;
-                                    });
-                                });
-                            </script>
-                        </div><!-- // end tab samples -->
-
-                        <div class="tab-pane fade" id="batch" role="tabpanel" aria-labelledby="batch-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col">
-                                        <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Load New Samples in batch</h3></div>
-                                            <div class="card-body">
-                                                <h5  style="text-align:center">Upload the excel file to define a batch of samples. </h5>
-                                                <form method="post" enctype="multipart/form-data" name="defineBatchSamples"  id="defineBatchSamples">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="action" value="defineBatchSamples"/>
-                                                    <div class="form-control required">
-                                                        <label class="col-sm-5  form-label" for="samplesExcel" ><td> Upload Samples file</td> </label>
-                                                        <div class="col-sm-5">
-                                                            <input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel" >
-                                                        </div>
-                                                        <p class="my-2"> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
-                                                        <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
-                                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-                                                    </div> 
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> 
-                            </div>
-                        </div><!-- // end of batch -->
+                        </div> 
                     </div> 
+                </div>
+            {% endif %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="samles-tab" data-bs-toggle="tab" data-bs-target="#samples" type="button" role="tab" aria-controls="samples" aria-selected="true">Record new samples</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch" type="button" role="tab" aria-controls="batch" aria-selected="false">Load batch new samples</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="samples" role="tabpanel" aria-labelledby="samples-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Record new Samples</h3></div>
+                                                <div class="card-body" >
+                                                    <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" style="min-height: 500px;">
+                                                        {% csrf_token %}
+                                                        <div class="horizontal-scroll">
+                                                            <input type="hidden" name="action" value="recordsample"/>
+                                                            <div id="spreadsheet" class="mb-4"></div>
+                                                        </div> 
+                                                        <script>
+                                                            {% if sample_information.data %}
+                                                                var data = [{% for values in sample_information.data %}
+                                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                                ];
+                                                            {% else %}
+                                                                var data = [[]];
+                                                            {% endif %}
+                                                            var table1 = jexcel(document.getElementById('spreadsheet'), {
+                                                            data:data,
+                                                            columns: [
+                                                                { type: 'text', title:'{{sample_information.heading.0}}', width:130 },
+                                                                { type: 'text', title:'{{sample_information.heading.1}}', width:120 },
+                                                                { type: 'dropdown', title:'{{sample_information.heading.2}}', width:130 , source: [{% for value in sample_information.lab_requested %}"{{value}}",{% endfor %}] },
+                                                                { type: 'dropdown', title:'{{sample_information.heading.3}}', width:120 , source:[{% for value in sample_information.sampleType %}"{{value}}",{% endfor %}]},
+                                                                { type: 'dropdown', title:'{{sample_information.heading.4}}', width:120 , source : [{% for value in sample_information.species %}"{{value}}",{% endfor %}] },
+                                                                { type: 'dropdown', title:'{{sample_information.heading.5}}', width:120 , source : [{% for value in sample_information.sample_project %}"{{value}}",{% endfor %}] },
+                                                                { type: 'calendar' , title: '{{sample_information.heading.6}}', width:170 },
+                                                                { type: 'calendar' , title: '{{sample_information.heading.7}}', width:170 },
+                                                                { type: 'text', title:'{{sample_information.heading.8}}', width:120 },
+                                                                { type: 'checkbox', title:'{{sample_information.heading.9}}', width:110 },
+                                                                ],
+                                                                allowInsertColumn:false,
+                                                                allowDeleteColumn:false,
+                                                                allowRenameColumn:false,
+                                                                csvFileName:'record_samples',
+                                                                minDimensions:[{{sample_information.table_size}},10],
+
+                                                            });
+                                                        </script>
+                                                        <input type="button" class="btn btn-outline-secondary mt-2" value="Download Spreadsheet" onclick="table1.download()"/>
+                                                        <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
+                                <script>
+                                    $(document).ready(function () {
+
+                                        $("#sampledefinition").submit(function (e) {
+                                            //stop submitting the form to see the disabled button effect
+                                            // e.preventDefault();
+                                            //disable the submit button
+                                            var table_data = table1.getData()
+                                            var data_json = JSON.stringify(table_data)
+                                            $("<input />").attr("type", "hidden")
+                                            .attr("name", "table_data")
+                                            .attr("value", data_json)
+                                            .appendTo("#sampledefinition");
+                                            $("#btnSubmit").attr("disabled", true);
+                                            return true;
+                                        });
+                                    });
+                                </script>
+                            </div><!-- // end tab samples -->
+
+                            <div class="tab-pane fade" id="batch" role="tabpanel" aria-labelledby="batch-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Load New Samples in batch</h3></div>
+                                                <div class="card-body">
+                                                    <h5  style="text-align:center">Upload the excel file to define a batch of samples. </h5>
+                                                    <form method="post" enctype="multipart/form-data" name="defineBatchSamples"  id="defineBatchSamples">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="defineBatchSamples"/>
+                                                        <div class="form-control required">
+                                                            <label class="col-sm-5  form-label" for="samplesExcel" ><td> Upload Samples file</td> </label>
+                                                            <div class="col-sm-5">
+                                                                <input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel" >
+                                                            </div>
+                                                            <p class="my-2"> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                                                            <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                                        </div> 
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div> 
-            </div> <!--// end row -->
+            </div> 
         {% endif %}
     </div>
 </section>
+<script>
+    
+    $(document).ready(function() {
+        $('#cdn_table').DataTable({
+            responsive: true,
+        });
+    });
+
+</script>
 {% endblock %}
