@@ -419,7 +419,7 @@ def store_confirmation_sample_sheet(fields):
         "reads": fields["reads"],
         "adapter": fields["adapter"],
     }
-  
+
     if fields["platform"] == "MiSeq":
         if fields["version"] == "4":
             template_file = os.path.join(
