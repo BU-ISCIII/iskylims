@@ -177,8 +177,8 @@ def get_list_sequencer_configuration():
     return sequencer_configuration
 
 def get_sequencer_obj_from_id(seq_id):
-    if SequencerInLab.objects.filter(pk=seq_id).exists():
-        return SequencerInLab.objects.get(pk=seq_id)
+    if core.models.SequencerInLab.objects.filter(pk=seq_id).exists():
+        return core.models.SequencerInLab.objects.get(pk=seq_id)
     return None
 
 def get_sequencer_inventory_data(format_date):
