@@ -59,7 +59,7 @@ def save_sequencing_service(request):
         new_service		# recorded instance of the form
     """
     service_data = {}
-    available_service_list = request.POST.getlist("RequestedServices")
+    available_service_list = request.POST.getlist("requested_services")
     available_service_objs = []
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj(av_service))
@@ -116,7 +116,7 @@ def save_counseling_infrastructure_service(request):
         new_service		# recorded instance of the form
     """
     service_data = {}
-    available_service_list = request.POST.getlist("RequestedServices")
+    available_service_list = request.POST.getlist("requested_services")
     available_service_objs = []
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj(av_service))
@@ -767,7 +767,7 @@ def get_service_data(request):
     return service_data
 
 
-def get_counseling_service_data():
+def get_counseling_service_data(request):
     """
     Description:
         The function get the information to display in the counseling service form
@@ -776,14 +776,17 @@ def get_counseling_service_data():
     Return:
         service_data_information
     """
-    service_data_information = {}
-    service_data_information["nodes"] = drylab.models.AvailableService.objects.filter(
+    service_data = {}
+    if drylab.utils.common.is_service_manager(request):
+        service_data["users"] = drylab.utils.common.get_defined_username_and_ids()
+
+    service_data["nodes"] = drylab.models.AvailableService.objects.filter(
         avail_service_description__exact="Bioinformatics consulting and training"
     ).get_descendants(include_self=True)
-    return service_data_information
+    return service_data
 
 
-def get_infrastructure_service_data():
+def get_infrastructure_service_data(request):
     """
     Description:
         The function get the information to display in the infrastructure service form
@@ -792,11 +795,13 @@ def get_infrastructure_service_data():
     Return:
         service_data_information
     """
-    service_data_information = {}
-    service_data_information["nodes"] = drylab.models.AvailableService.objects.filter(
+    service_data = {}
+    if drylab.utils.common.is_service_manager(request):
+        service_data["users"] = drylab.utils.common.get_defined_username_and_ids()
+    service_data["nodes"] = drylab.models.AvailableService.objects.filter(
         avail_service_description__exact="User support"
     ).get_descendants(include_self=True)
-    return service_data_information
+    return service_data
 
 
 def send_service_confirmation_email(email_data):

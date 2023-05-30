@@ -119,9 +119,9 @@ def request_sequencing_service(request):
                 {"service_data_information": service_data_info},
             )
 
-    if request.method == "POST" and request.POST["subAction"] == "createservice":
+    if request.method == "POST" and request.POST["sub_action"] == "create_service":
         # check that at some services have been requested
-        if len(request.POST.getlist("RequestedServices")) == 0:
+        if len(request.POST.getlist("requested_services")) == 0:
             service_data_info = drylab.utils.req_services.get_service_data(
                 request
             )
@@ -199,18 +199,18 @@ def request_sequencing_service(request):
 
 @login_required
 def counseling_request(request):
-    if request.method == "POST" and request.POST["action"] == "createService":
+    if request.method == "POST" and request.POST["sub_action"] == "create_service":
         # check that at some services have been requested
-        if len(request.POST.getlist("RequestedServices")) == 0:
-            service_data_information = (
-                drylab.utils.req_services.get_counseling_service_data()
+        if len(request.POST.getlist("requested_services")) == 0:
+            service_data_info = (
+                drylab.utils.req_services.get_counseling_service_data(request)
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
                 request,
-                "drylab/requestCounselingService.html",
+                "drylab/request_counseling_service.html",
                 {
-                    "service_data_information": service_data_information,
+                    "service_data_info": service_data_info,
                     "error_message": error_message,
                 },
             )
@@ -233,38 +233,37 @@ def counseling_request(request):
                 drylab.config.CONFIRMATION_TEXT_MESSAGE,
             )
         )
-
         return render(
             request,
-            "drylab/request_sequencing_service.html",
+            "drylab/request_counseling_service.html",
             {"confirmation_result": confirmation_result},
         )
 
     else:
-        service_data_information = (
-            drylab.utils.req_services.get_counseling_service_data()
+        service_data_info = (
+            drylab.utils.req_services.get_counseling_service_data(request)
         )
         return render(
             request,
-            "drylab/requestCounselingService.html",
-            {"service_data_information": service_data_information},
+            "drylab/request_counseling_service.html",
+            {"service_data_info": service_data_info},
         )
 
 
 @login_required
 def infrastructure_request(request):
-    if request.method == "POST" and request.POST["action"] == "createService":
+    if request.method == "POST" and request.POST["sub_action"] == "create_service":
         # check that at some services have been requested
-        if len(request.POST.getlist("RequestedServices")) == 0:
-            service_data_information = (
-                drylab.utils.req_services.get_infrastructure_service_data()
+        if len(request.POST.getlist("requested_services")) == 0:
+            service_data_info = (
+                drylab.utils.req_services.get_infrastructure_service_data(request)
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
                 request,
-                "drylab/requestInfrastructureService.html",
+                "drylab/request_infrastructure.html",
                 {
-                    "service_data_information": service_data_information,
+                    "service_data_info": service_data_info,
                     "error_message": error_message,
                 },
             )
@@ -290,17 +289,17 @@ def infrastructure_request(request):
 
         return render(
             request,
-            "drylab/requestInfrastructureService.html",
+            "drylab/request_infrastructure.html",
             {"confirmation_result": confirmation_result},
         )
     else:
-        service_data_information = (
-            drylab.utils.req_services.get_infrastructure_service_data()
+        service_data_info = (
+            drylab.utils.req_services.get_infrastructure_service_data(request)
         )
         return render(
             request,
-            "drylab/requestInfrastructureService.html",
-            {"service_data_information": service_data_information},
+            "drylab/request_infrastructure.html",
+            {"service_data_info": service_data_info},
         )
 
 
@@ -1668,7 +1667,7 @@ def define_pipeline_service(request):
             data_pipeline.update(pipeline_data_form)
             return render(
                 request,
-                "drylab/definePipelineService.html",
+                "drylab/define_pipeline.html",
                 {"data_pipeline": data_pipeline, "error_message": error_message},
             )
         # pipeline_data_form = analyze_input_pipelines(request)
@@ -1703,13 +1702,13 @@ def define_pipeline_service(request):
         # set_default_service_pipeline(new_pipeline)
         return render(
             request,
-            "drylab/definePipelineService.html",
+            "drylab/define_pipeline.html",
             {"defined_service_pipeline": defined_service_pipeline},
         )
 
     return render(
         request,
-        "drylab/definePipelineService.html",
+        "drylab/define_pipeline.html",
         {"data_pipeline": data_pipeline},
     )
 

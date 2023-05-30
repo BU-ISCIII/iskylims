@@ -19,12 +19,12 @@ urlpatterns = [
         name="add_samples_in_service",
     ),
     path(
-        "counselingRequest",
+        "counseling-request",
         drylab.views.counseling_request,
         name="counseling_service",
     ),
     path(
-        "configuration_email",
+        "configuration-email",
         drylab.views.configuration_email,
         name="configuration_email",
     ),
@@ -44,7 +44,7 @@ urlpatterns = [
         name="detail_pipeline",
     ),
     path(
-        "definePipelineService",
+        "define-pipeline",
         drylab.views.define_pipeline_service,
         name="define_pipeline_service",
     ),
@@ -54,7 +54,7 @@ urlpatterns = [
         name="display_service",
     ),
     path(
-        "infrastructureRequest",
+        "infrastructure-request",
         drylab.views.infrastructure_request,
         name="infrastructure_service",
     ),
@@ -70,7 +70,7 @@ urlpatterns = [
         name="peding_services",
     ),
     path(
-        "request_sequencing_service",
+        "sequencing-request",
         drylab.views.request_sequencing_service,
         name="request_sequencing_service",
     ),
