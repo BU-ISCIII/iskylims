@@ -67,8 +67,7 @@
                     <div class="card-body">
                         <div class="container-md">
                             <form method="post" enctype="multipart/form-data" name="define_pipeline"
-                                id="define_pipeline" class="form-horizontal well">
-                                {% csrf_token %}
+                                id="define_pipeline" action="/drylab/define-pipeline">
                                 <input type="hidden" name="action" value="define_pipeline" />
                                 <div class="row justify-content-center pb-2 pt-2">
                                     <div class="col-md-12">
@@ -118,26 +117,12 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
+        {% endif %}
         </div>
     </div>
 </section>
 <script>
     $(document).ready(function () {
-        $("#definePipeline").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            // e.preventDefault();
-            //disable the submit button
-            var table_data = $('#spreadsheet').jexcel('getData')
-            var data_json = JSON.stringify(table_data)
-            $("<input />").attr("type", "hidden")
-                .attr("name", "pipeline_data")
-                .attr("value", data_json)
-                .appendTo("#definePipeline");
-            $("#btnSubmit").attr("disabled", true);
-            return true;
-        });
-
 
         var data = [];
         mySpreadsheet = $('#spreadsheet').jspreadsheet({
@@ -146,21 +131,36 @@
                 {% for item in data_pipeline.heading %}
                 {% if forloop.last %}
                 { type: 'dropdown', title: '{{item}}', source: ['Boolean', 'String'], width: 200, },
-        {% else %}
-        { type: 'text', title: '{{item}}', width: 400 },
-        {% endif %}
-        {% endfor %}
+                {% else %}
+                { type: 'text', title: '{{item}}', width: 400 },
+                {% endif %}
+                {% endfor %}
                 ],
-        allowInsertColumn: false,
-        allowDeleteColumn: false,
-        allowRenameColumn: false,
-        allowInsertRow: true,
-        allowDeleteRow: true,
-        tableOverflow: true,
-        tableHeight: '200px',
-        minDimensions: [2, 3],
-        csvFileName: 'parametersPipeline',
+                allowInsertColumn: false,
+                allowDeleteColumn: false,
+                allowRenameColumn: false,
+                allowInsertRow: true,
+                allowDeleteRow: true,
+                tableOverflow: true,
+                tableHeight: '200px',
+                minDimensions: [2, 3],
+                csvFileName: 'parameters_pipeline',
         });
+
+        $("#define_pipeline").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            var table_data = $('#spreadsheet').jspreadsheet('getData')
+            var data_json = JSON.stringify(table_data)
+            $("<input />").attr("type", "hidden")
+                .attr("name", "pipeline_data")
+                .attr("value", data_json)
+                .appendTo("#define_pipeline");
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+
     });
 </script>
 {% endblock %}

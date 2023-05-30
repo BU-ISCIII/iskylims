@@ -96,7 +96,7 @@ class PipelinesManager(models.Manager):
             pipeline_in_use=True,
             pipeline_version=data["pipeline_version"],
             pipeline_file=os.path.join(
-                drylab.config.PIPELINE_FILE_DIRECTORY, data["filename"]
+                drylab.config.PIPELINE_FILE_DIRECTORY, data["file_name"]
             ),
             pipeline_url=data["url"],
             pipeline_description=data["description"],
