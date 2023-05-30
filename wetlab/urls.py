@@ -104,15 +104,17 @@ urlpatterns = [
         name="display_user_lot_kit",
     ),
     path(
-        "skipCancelSituation", wetlab.views.skip_cancel_situation, name="skip_cancel_situation"
-    ),
-    path(
         "handlingLibraryPreparation",
         wetlab.views.handling_library_preparation,
         name="handling_library_preparation",
     ),
     path("handlingMolecules", wetlab.views.handling_molecules, name="handling_molecules"),
     path("initialSettings", wetlab.views.initial_settings, name="initial_settings"),
+        path(
+        "kitInventory/",
+        wetlab.views.kit_inventory,
+        name="kit_inventory",
+    ),
     path(
         "lastRunBySequencer/", wetlab.views.last_run_by_sequencer, name="last_run_by_sequencer"
     ),
@@ -132,14 +134,12 @@ urlpatterns = [
         wetlab.views.modify_sample_project_fields,
         name="modify_sample_project_fields",
     ),
-    path("MonthlyReport/", wetlab.views.monthly_report, name="montly_report"),
     path(
         "pendingSamplePreparation",
         wetlab.views.pending_sample_preparation,
         name="pending_sample_preparation",
     ),
     path("pendingToUpdate/", wetlab.views.pending_to_update, name="pending_to_update"),
-    path("QuarterReport/", wetlab.views.quarter_report, name="quarter_report"),
     path("recordSamples", wetlab.views.record_samples, name="record_samples"),
     path(
         "repeatLibraryPreparation",
@@ -170,15 +170,12 @@ urlpatterns = [
         wetlab.views.sequencer_configuration,
         name="sequencer_configuration",
     ),
+        path(
+        "skipCancelSituation", wetlab.views.skip_cancel_situation, name="skip_cancel_situation"
+    ),
     path("statsPerSequencer/", wetlab.views.stats_per_sequencer, name="stats_per_sequencer"),
     path(
         "statsPerResearcher/", wetlab.views.stats_per_researcher, name="stats_per_researcher"
-    ),
-    path("statsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
-    path(
-        "userCommercialKitInventory/",
-        wetlab.views.user_commercial_kit_inventory,
-        name="user_commercial_kit_inventory",
     ),
     path("statsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
 

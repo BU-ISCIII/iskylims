@@ -1,0 +1,110 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{%include 'core/jexcel_functionality.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row mt-2 mb-4">
+                <div class="col-md-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger text-center"><h3>Invalid definition </h3le=> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div> 
+                    </div> 
+                </div> 
+            </div> 
+        {% endif %}
+        {% if recorded_prot_parameters %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-header"><h3>Sucessful store of Protocol Parameters on {{recorded_prot_parameters.protocol_name}}</h3></div>
+                            <div class="card-body">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th> Parameter name </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for  values in recorded_prot_parameters.parameters %}
+                                            <tr>
+                                                <td>{{ values }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>  
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-header"><h3>Define Protocol Parameter for {{prot_parameters.protocol_name}}</h3></div>
+                            <div class="card-body">
+                                <form method="post" enctype="multipart/form-data" name="defineProtocolParameters"  id="defineProtocolParameters" class="form-horizontal well">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="define_protocol_parameters"/>
+                                    <input type="hidden" name="protocol_id" value="{{prot_parameters.protocol_id}}"/>
+                                    <h4>Define the parameters used for protocol {{prot_parameters.protocol_name}}</h4>
+                                    <div id="spreadsheet1"></div>
+
+                                    <input type="button" value="Download_Protocol_Parameters" onclick="table1.download()"/>
+                                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                </form>
+                            </div>
+                            <script>
+                                var data1 = [[],
+                                ];
+
+                                var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                                    data:data1,
+                                    columns: [
+                                        { type: 'text', title:'{{prot_parameters.heading.0}}', width:120 },
+                                        { type: 'numeric', title:'{{prot_parameters.heading.1}}', width:50, mask:' #.##,00' },
+                                        { type: 'checkbox', title:'{{prot_parameters.heading.2}}', width:50 },
+                                        { type: 'dropdown' , title: '{{prot_parameters.heading.3}}', width:100 , source: ["string", "Date" , "Option List"] },
+                                        { type: 'text' , title: '{{prot_parameters.heading.4}}',  width:240, wordWrap:true},
+                                        { type: 'text' , title: '{{prot_parameters.heading.5}}', width:90 },
+                                        { type: 'text', title:'{{prot_parameters.heading.6}}', width:90 },
+                                        { type: 'text', title:'{{prot_parameters.heading.7}}', width:300 , wordWrap:true },
+                                    ],
+                                    allowInsertColumn:false,
+                                    allowDeleteColumn:false,
+                                    allowRenameColumn:false,
+                                    csvFileName:'protocol_parameters',
+                                    minDimensions:[6,3],
+                                });
+
+                                $(document).ready(function () {
+                                    $("#defineProtocolParameters").submit(function (e) {
+                                        //stop submitting the form to see the disabled button effect
+                                        //e.preventDefault();
+                                        //disable the submit button
+                                        var table_data1 = table1.getData()
+                                        var data1_json = JSON.stringify(table_data1)
+                                        $("<input />").attr("type", "hidden")
+                                        .attr("name", "table_data1")
+                                        .attr("value", data1_json)
+                                        .appendTo("#defineProtocolParameters");
+                                        $("#btnSubmit").attr("disabled", true);
+                                        return true;
+                                    });
+                                });
+                            </script>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
