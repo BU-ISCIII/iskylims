@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # coding: utf-8
+# Generic imports
+import codecs
 import os
 import re
 import time
-import codecs
 
 from django.conf import settings
-
 from django.core.files.storage import FileSystemStorage
 
-from wetlab import config
-from wetlab.models import *
+# Local imports
+import wetlab.config
+import wetlab.models
+
 
 def validate_userid_in_user_iem_file(file_read, user_id_list):
     """
@@ -46,7 +48,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
                 except:
                     users[
                         "ERROR"
-                    ] = config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+                    ] = wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
                     return users
             else:
                 try:
@@ -61,7 +63,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
     if len(invalid_names) > 0:
         invalid_names = list(set(invalid_names))
         invalid_names.insert(
-            0, "".join(config.ERROR_SAMPLE_SHEET_FOLLOWING_USER_ARE_NOT_DEFINED)
+            0, "".join(wetlab.config.ERROR_SAMPLE_SHEET_FOLLOWING_USER_ARE_NOT_DEFINED)
         )
         users["ERROR"] = invalid_names
         return users
@@ -240,7 +242,7 @@ def get_sample_sheet_data(file_read):
     """
     sample_sheet_data = {}
     # initialize data with empty values
-    for item in config.FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5:
+    for item in wetlab.config.FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5:
         sample_sheet_data[item.lower()] = ""
 
     file_lines = file_read.split("\n")
@@ -574,7 +576,7 @@ def store_user_input_file(user_input_file):
     """
     # create thd directory if not exists
     template_dir = os.path.join(
-        settings.MEDIA_ROOT, config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+        settings.MEDIA_ROOT, wetlab.config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
     )
     if not os.path.exists(template_dir):
         os.makedirs(template_dir)
@@ -584,7 +586,7 @@ def store_user_input_file(user_input_file):
     timestr = time.strftime("%Y%m%d-%H%M%S")
     ## including the timestamp to the sample sheet file
     file_name = str(
-        config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+        wetlab.config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
         + filename
         + "_"
         + timestr
@@ -648,7 +650,7 @@ def valid_user_iem_file(file_read):
     Return
         False if file cannot be read or do not have all information
     """
-    for section in config.SECTIONS_IN_IEM_SAMPLE_SHEET:
+    for section in wetlab.config.SECTIONS_IN_IEM_SAMPLE_SHEET:
         if section not in file_read:
             return False
 
