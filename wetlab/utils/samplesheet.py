@@ -11,7 +11,7 @@ from django.core.files.storage import FileSystemStorage
 
 # Local imports
 import wetlab.config
-import wetlab.models
+# import wetlab.models
 
 
 def validate_userid_in_user_iem_file(file_read, user_id_list):
