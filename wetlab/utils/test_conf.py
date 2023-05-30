@@ -1,3 +1,4 @@
+# Generic imports
 import grp
 import os
 import pwd
@@ -5,11 +6,12 @@ import shutil
 
 from django.conf import settings
 
-from wetlab.models import *
-from wetlab.utils.common import *
-from wetlab.utils.crontab_process import *
-from wetlab.utils.crontab_update_run import *
-from wetlab.config import *
+# Local imports
+import wetlab.config
+import wetlab.models
+import wetlab.utils.common
+import wetlab.utils.crontab_process
+import wetlab.utils.crontab_update_run
 
 
 def get_config_file(config_file):
@@ -70,7 +72,7 @@ def get_iSkyLIMS_settings():
 
 def check_access_database():
     try:
-        RunProcess.objects.all()
+        wetlab.models.RunProcess.objects.all()
         return "OK"
     except Exception:
         return "NOK"
@@ -78,7 +80,7 @@ def check_access_database():
 
 def check_samba_connection():
     try:
-        open_samba_connection()
+        wetlab.utils.common.open_samba_connection()
         return "OK"
     except Exception:
         return "NOK"
@@ -98,9 +100,9 @@ def folder_test_exists(folder_run_name):
         True if folder exists
     """
     result = False
-    conn = open_samba_connection()
-    run_data_root_folder = os.path.join("/", get_samba_application_shared_folder())
-    shared_folder = get_samba_shared_folder()
+    conn = wetlab.utils.common.open_samba_connection()
+    run_data_root_folder = os.path.join("/", wetlab.utils.crontab_process.get_samba_application_shared_folder())
+    shared_folder = wetlab.utils.crontab_process.get_samba_shared_folder()
     run_folder_list = conn.listPath(shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
@@ -139,43 +141,43 @@ def execute_test_for_testing_run(run_test_name):
         True if folder exists
     """
     run_result = {}
-    if RunProcess.objects.filter(run_name__exact=run_test_name).exists():
-        run_obj = RunProcess.objects.filter(run_name__exact=run_test_name).last()
+    if wetlab.models.RunProcess.objects.filter(run_name__exact=run_test_name).exists():
+        run_obj = wetlab.models.RunProcess.objects.filter(run_name__exact=run_test_name).last()
         run_obj.delete()
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     config_file = os.path.join(
-        settings.BASE_DIR, "wetlab", config.LOGGING_CONFIG_FILE
+        settings.BASE_DIR, "wetlab", wetlab.config.LOGGING_CONFIG_FILE
     )
-    logger = open_log(config_file)
+    logger = wetlab.utils.common.open_log(config_file)
     logger.info("----------------------------------")
     logger.info("###########---Start RUN Testing  -----############")
     logger.info("----------------------------------")
-    search_update_new_runs(run_test_name)
-    conn = open_samba_connection()
+    wetlab.utils.crontab_update_run.search_update_new_runs(run_test_name)
+    conn = wetlab.utils.common.open_samba_connection()
 
     # Execute 6 times to be sure it has completed all steps
     state_run_test = ["Sample Sent", "Processed Run", "Processed Bcl2fastq"]
     for state_run in state_run_test:
         run_result[state_run] = "NOK"
-    if not RunProcess.objects.filter(run_name__exact=run_test_name).exists():
-        run_result["ERROR"] = config.ERROR_NO_RUN_TEST_WAS_CREATED
+    if not wetlab.models.RunProcess.objects.filter(run_name__exact=run_test_name).exists():
+        run_result["ERROR"] = wetlab.config.ERROR_NO_RUN_TEST_WAS_CREATED
         return run_result
-    run_obj = RunProcess.objects.filter(run_name__exact=run_test_name).last()
+    run_obj = wetlab.models.RunProcess.objects.filter(run_name__exact=run_test_name).last()
     for step in range(6):
         state = run_obj.get_state()
         if state == "ERROR":
             run_result["ERROR"] = "error"
             return run_result
         elif state == "Sample Sent":
-            manage_run_in_sample_sent_processing_state(conn, [run_obj])
+            wetlab.utils.crontab_update_run.manage_run_in_sample_sent_processing_state(conn, [run_obj])
             if run_obj.get_state() == "ERROR":
                 run_result["ERROR"] = "Error when processing run in Sample Sent state"
                 break
             else:
                 run_result["Sample Sent"] = "OK"
         elif state == "Processing Run":
-            manage_run_in_sample_sent_processing_state(conn, [run_obj])
+            wetlab.utils.crontab_update_run.manage_run_in_sample_sent_processing_state(conn, [run_obj])
             if run_obj.get_state() == "ERROR":
                 run_result[
                     "ERROR"
@@ -184,14 +186,14 @@ def execute_test_for_testing_run(run_test_name):
             else:
                 run_result["Processing Run"] = "OK"
         elif state == "Processed Run":
-            manage_run_in_processed_run_state(conn, [run_obj])
+            wetlab.utils.crontab_update_run.manage_run_in_processed_run_state(conn, [run_obj])
             if run_obj.get_state() == "ERROR":
                 run_result["ERROR"] = "Error when processing run in Processed Run state"
                 break
             else:
                 run_result["Processed Run"] = "OK"
         elif state == "Processing Bcl2fastq":
-            manage_run_in_processing_bcl2fastq_state(conn, [run_obj])
+            wetlab.utils.crontab_update_run.manage_run_in_processing_bcl2fastq_state(conn, [run_obj])
             if run_obj.get_state() == "ERROR":
                 run_result[
                     "ERROR"
@@ -200,7 +202,7 @@ def execute_test_for_testing_run(run_test_name):
             else:
                 run_result["Processing Bcl2fastq"] = "OK"
         elif state == "Processed Bcl2fastq":
-            manage_run_in_processed_bcl2fastq_state(conn, [run_obj])
+            wetlab.utils.crontab_update_run.manage_run_in_processed_bcl2fastq_state(conn, [run_obj])
             if run_obj.get_state() == "ERROR":
                 run_result[
                     "ERROR"
