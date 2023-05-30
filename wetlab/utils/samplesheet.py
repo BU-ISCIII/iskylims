@@ -581,18 +581,18 @@ def store_user_input_file(user_input_file):
     if not os.path.exists(template_dir):
         os.makedirs(template_dir)
 
-    filename, file_extension = os.path.splitext(user_input_file.name)
+    file_name, file_extension = os.path.splitext(user_input_file.name)
     fs = FileSystemStorage()
     timestr = time.strftime("%Y%m%d-%H%M%S")
     # including the timestamp to the sample sheet file
     file_name = str(
         wetlab.config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
-        + filename
+        + file_name
         + "_"
         + timestr
         + file_extension
     )
-    filename = fs.save(file_name, user_input_file)
+    file_name = fs.save(file_name, user_input_file)
 
     # add the document directory to the input file
     stored_path_file = os.path.join(settings.MEDIA_ROOT, file_name)

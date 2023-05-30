@@ -1657,8 +1657,10 @@ def define_pipeline_service(request):
             )
     else:
         return redirect("/accounts/login")
+
     data_pipeline = drylab.utils.pipelines.get_data_form_pipeline()
-    if request.method == "POST" and request.POST["action"] == "definePipeline":
+    import pdb; pdb.set_trace()
+    if request.method == "POST" and request.POST["action"] == "define_pipeline":
         pipeline_data_form = drylab.utils.pipelines.analyze_input_pipelines(request)
         if drylab.utils.pipelines.pipeline_version_exists(
             request.POST["pipeline_name"], request.POST["pipeline_version"]
@@ -1670,7 +1672,7 @@ def define_pipeline_service(request):
                 "drylab/define_pipeline.html",
                 {"data_pipeline": data_pipeline, "error_message": error_message},
             )
-        # pipeline_data_form = analyze_input_pipelines(request)
+
         if request.FILES:
             fs = FileSystemStorage(
                 location=os.path.join(
@@ -1678,19 +1680,20 @@ def define_pipeline_service(request):
                     drylab.config.PIPELINE_FILE_DIRECTORY,
                 )
             )
-            pipeline_data_form["filename"] = fs.save(
+            pipeline_data_form["file_name"] = fs.save(
                 str(
                     pipeline_data_form["pipeline_name"]
                     + "_"
                     + pipeline_data_form["pipeline_version"]
                 ),
-                request.FILES["pipelinefile"],
+                request.FILES["pipeline_file"],
             )
         else:
-            pipeline_data_form["filename"] = ""
+            pipeline_data_form["file_name"] = ""
         new_pipeline = drylab.models.Pipelines.objects.create_pipeline(
             pipeline_data_form
         )
+        
         if "additional_parameters" in pipeline_data_form:
             drylab.utils.pipelines.store_parameters_pipeline(
                 new_pipeline, pipeline_data_form["additional_parameters"]
@@ -1699,7 +1702,6 @@ def define_pipeline_service(request):
             drylab.utils.pipelines.get_defined_pipeline_data_to_display(new_pipeline)
         )
 
-        # set_default_service_pipeline(new_pipeline)
         return render(
             request,
             "drylab/define_pipeline.html",
