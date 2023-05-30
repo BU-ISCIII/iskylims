@@ -1,0 +1,208 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+{% include "bootstrap3/layout/field_errors_block.html" %}
+{% include "bootstrap3/layout/help_text.html" %}
+
+{% load mptt_tags %}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header">ERROR</div>
+                    <div class="card-body">
+                        {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if confirmation_result %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">
+                        Your request is recorded
+                    </div>
+                    <div class="card-body">
+                        {% for values in confirmation_result.text %}
+                            <p>{{values}}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- div row big -->
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-12">
+                <div class="card ">
+                    <div class="card-header">Service request form for counseling</div>
+                    <div class="card-body">
+                        <form id="counseling_request" method="post" action="/drylab/counseling-request"
+                            name="counseling_request" enctype="multipart/form-data" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="sub_action" value="create_service" />
+                            <div class="container-md">
+                                {% if service_data_info.users %}
+                                <!-- row card 1: select user id -->
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-12">
+                                        <div class="form-control">
+                                            <div class="col-md-6">
+                                                <label class="col-md-6 control-label" for="user_id_label">Select the
+                                                    user requesting the service</label>
+                                                <div class="col-sm-6">
+                                                    <select class="form-control" name="user_id_request"
+                                                        id="user_id_request">
+                                                        <option value="">Choose a value</option>
+                                                        {% for value , id in service_data_info.users %}
+                                                        <option value="{{id}}">{{value}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- row card 3: select services -->
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-12">
+                                        <div class="card ">
+                                            <div class="card-header">
+                                                Service selection
+                                            </div>
+                                            <div class="card-body">
+                                                {% if service_data_info.nodes %}
+                                                    <div class="services{{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %}>
+                                                        {% for category,structure in service_data_info.nodes|tree_info %}
+                                                            {% if structure.new_level %}
+                                                            <ul class="level-{{category.level}}" id="ul_{{forloop.counter}}">
+                                                                <li>
+                                                            {% else %}
+                                                                </li>
+                                                                <li>
+                                                            {% endif %}
+                                                                <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}">
+                                                                    <input type="checkbox" class="level-{{category.level}}"
+                                                                    name="requested_services"
+                                                                    id="id_RequestedServices_{{forloop.counter}}"
+                                                                    value="{{ category.pk }}">
+                                                                    {{ category }}
+                                                                </label>
+                                                            {% for level in structure.closed_levels %}
+                                                                </li>
+                                                            </ul>
+                                                            {% endfor %}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                <h3>No services have been defined so far</h3>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- row card 4: additional info -->
+                                <div class="row pt-2 pb-2">
+                                    <div class="col-md-12">
+                                        <div class="card ">
+                                            <div class="card-header">
+                                                Additional Information
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group p-2">
+                                                    <label class="col-md-2 control-label" for="description" >Service Notes</label>
+                                                    <div class="col-md-12"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row pt-2 pb-2 justify-content-end">
+                                    <div class="col-md-auto">
+                                        <input class="btn btn-primary" type="submit" id="btnSubmit" value="Submit your Request">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>                        
+<script>
+    $(document).ready(function () {
+        // Function to update parent checkboxes based on the state of their children
+        function updateParentCheckboxes() {
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    var listItem = this.closest('li');
+                    updateParentCheckboxesRecursive(listItem);
+                });
+            });
+        }
+
+        // Function to update parent checkboxes recursively
+        function updateParentCheckboxesRecursive(listItem) {
+            var parentCheckbox = listItem.parentNode.previousElementSibling.querySelector('input[type="checkbox"]');
+            var childCheckboxes = listItem.querySelectorAll('input[type="checkbox"]');
+            var checkedChildCount = Array.from(childCheckboxes).filter(function(childCheckbox) {
+                return childCheckbox.checked;
+            }).length;
+            
+            // Update the parent checkbox
+            if (checkedChildCount > 0) {
+                parentCheckbox.checked = true;
+            } else {
+                parentCheckbox.checked = false;
+            }
+            
+            // Update the parent's parent checkbox recursively
+            var parentListItem = parentCheckbox.closest('li');
+            if (parentListItem) {
+                var siblingCheckboxes = parentListItem.querySelectorAll('input[type="checkbox"]');
+                var checkedSiblingCount = Array.from(siblingCheckboxes).filter(function(siblingCheckbox) {
+                    return siblingCheckbox.checked;
+                }).length;
+                
+                if (checkedSiblingCount === 0) {
+                    parentCheckbox.checked = false;
+                } else {
+                    parentCheckbox.checked = true;
+                }
+                
+                updateParentCheckboxesRecursive(parentListItem);
+            }
+        }
+
+        // Call the function to initialize the behavior
+        updateParentCheckboxes();
+
+        // Get the form element and the submit button
+        const form = document.querySelector('form');
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        // Function to disable the submit button
+        function disableSubmitButton() {
+        submitButton.disabled = true;
+        submitButton.innerText = 'Submitting...'; // Optional: Change the button text
+        }
+
+        // Event listener for form submission
+        form.addEventListener('submit', disableSubmitButton);
+    });
+</script>
+{% endblock %}

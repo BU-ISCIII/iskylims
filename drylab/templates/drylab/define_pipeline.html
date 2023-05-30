@@ -1,0 +1,158 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'core/jexcel_functionality.html' %}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if defined_service_pipeline %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">
+                        Successful service Pipeline recorded
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    {% for value in defined_service_pipeline.heading_pipeline %}
+                                    <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for value in defined_service_pipeline.pipeline_data %}
+                                    <td>{{value}}</td>
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                        <input type="button" value="Return Home" onclick="location.href ='/drylab' ;" />
+                        <input class="btn float-end" type="button" value="Create New Service Pipeline"
+                            onclick="location.href ='/drylab/define-pipeline' ;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        {% if error_message %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header">
+                        UNABLE TO RECORD YOUR REQUEST
+                    </div>
+                    <div class="card-body">
+                        {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">
+                        <h3>Define the pipeline for using on services.</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="container-md">
+                            <form method="post" enctype="multipart/form-data" name="define_pipeline" id="define_pipeline"
+                                class="form-horizontal well">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="define_pipeline" />
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="form-control required">
+                                        <div class="col-md-10">
+                                            <label class="col-md-4 control-label" for="pipeline_name">Pipeline Name </label>
+                                            <div class="col-md-8"><input class="form-control" type="text" required="required"
+                                                    name="pipeline_name" id="pipeline_name" size="120" maxlength="100"></div>
+                                            <label class="col-md-4  control-label" for="pipeline_version">Pipeline Version </label>
+                                            <div class="col-md-4"><input class="form-control" type="text" required="required"
+                                                    name="pipeline_version" id="pipeline_version" size="10" maxlength="8"></div>
+                                        </div>
+                                    </div>
+                                    <div class="form-control">
+                                        <div class="col-md-10">
+                                            <label class="col-md-4 control-label" for="urlLocation">Location Pipeline URL </label>
+                                            <div class="col-md-8"><input class="form-control" type="text" name="urlLocation"
+                                                    id="urlLocation" size="80" maxlength="80"></div>
+                                            <BR><br>
+                                            <label class="col-md-4 control-label" for="pipelinefile">Upload Pipeline script file
+                                            </label>
+                                            <div class="col-md-8"><input class="form-control" type="file" name="pipeline_file"
+                                                    size="80"></div>
+                                            <label class="col-md-4  control-label" for="description">Pipeline description </label>
+                                            <div class="col-md-8"><textarea class="form-control" name="description" value=""
+                                                    id="description" rows="8" cols="60" maxlength="450"></textarea></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                            <div id="spreadsheet"></div>
+                                            <input type="button" value="Return Home" onclick="location.href ='/drylab' ;" />
+                                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                                value="Submit">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        $("#definePipeline").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            var table_data = $('#spreadsheet').jexcel('getData')
+            var data_json = JSON.stringify(table_data)
+            $("<input />").attr("type", "hidden")
+                .attr("name", "pipeline_data")
+                .attr("value", data_json)
+                .appendTo("#definePipeline");
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+    
+
+        var data = [];
+        mySpreadsheet = $('#spreadsheet').jspreadsheet({
+            data: data,
+            columns: [
+                {% for item in data_pipeline.heading %}
+                {% if forloop.last %}
+                { type: 'dropdown', title: '{{item}}', source: ['Boolean', 'String'], width: 200, },
+                {% else %}
+                { type: 'text', title: '{{item}}', width: 400 },
+                {% endif %}
+                {% endfor %}
+                ],
+            allowInsertColumn: false,
+            allowDeleteColumn: false,
+            allowRenameColumn: false,
+            allowInsertRow: true,
+            allowDeleteRow: true,
+            tableOverflow: true,
+            tableHeight: '200px',
+            minDimensions: [2, 3],
+            csvFileName: 'parametersPipeline',
+        });
+    });
+</script>
+{% endblock %}

@@ -74,7 +74,7 @@
                         <form id="fileupload" method="post" action="/drylab/request_sequencing_service"
                             name="fileupload" enctype="multipart/form-data" class="form-horizontal well">
                             {% csrf_token %}
-                            <input type="hidden" name="subAction" value="createservice" />
+                            <input type="hidden" name="sub_action" value="create_service" />
                             <div class="container-md">
                                 {% if service_data_info.users %}
                                 <!-- row card 1: select user id -->
@@ -205,7 +205,7 @@
                                                             {% endif %}
                                                                 <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}">
                                                                     <input type="checkbox" class="level-{{category.level}}"
-                                                                    name="RequestedServices"
+                                                                    name="requested_services"
                                                                     id="id_RequestedServices_{{forloop.counter}}"
                                                                     value="{{ category.pk }}">
                                                                     {{ category }}
@@ -386,7 +386,7 @@ $(document).ready(function () {
         
         // disable submit button if there are no samples to select
         {% if not service_data_info.sample_only_recorded_heading and not service_data_info.samples_heading %}
-        $("#createservice").submit(function (e) {
+        $("#create_service").submit(function (e) {
             //disable the submit button
             $("input:submit").attr("disabled", true);
             return true;

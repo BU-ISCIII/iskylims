@@ -30,18 +30,17 @@
         {% endif %}
         {% if confirmation_result %}
         <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-12">
+            <div class="col-md-8">
                 <div class="card ">
                     <div class="card-header">
                         Your Service Request is recorded
                     </div>
                     <div class="card-body">
-                        <p>The services that you have recorded are:</p>
                         {% for values in confirmation_result.text %}
-                            <h5>{{values}}</h5>
+                            <p>{{values}}</p>
                         {% endfor %}
                         {% if confirmation_result.samples %}
-                        <h5> The samples included in the services are:</h5>
+                        <p> The samples included in the services are:</p>
                         <p>
                             {% for sample in confirmation_result.samples %}
                                 {% if forloop.last %}
@@ -63,10 +62,10 @@
                 <div class="card ">
                     <div class="card-header">Service request form for massive sequencing experiments</div>
                     <div class="card-body">
-                        <form id="fileupload" method="post" action="/drylab/request_sequencing_service"
+                        <form id="fileupload" method="post" action="/drylab/sequencing-request"
                             name="fileupload" enctype="multipart/form-data" class="form-horizontal well">
                             {% csrf_token %}
-                            <input type="hidden" name="subAction" value="createservice" />
+                            <input type="hidden" name="sub_action" value="create_service" />
                             <div class="container-md">
                                 {% if service_data_info.users %}
                                 <!-- row card 1: select user id -->
@@ -155,7 +154,7 @@
                                                             {% endif %}
                                                                 <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}">
                                                                     <input type="checkbox" class="level-{{category.level}}"
-                                                                    name="RequestedServices"
+                                                                    name="requested_services"
                                                                     id="id_RequestedServices_{{forloop.counter}}"
                                                                     value="{{ category.pk }}">
                                                                     {{ category }}
@@ -221,10 +220,10 @@
                                                         <div class="card-body">
                                                             <p>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage (if Browser support).</p>
                                                             <p>The Maximun file size to upload is <strong>5MB</strong>. For including files bigger than 5MB contact Bioinformatic Unit Responsible</p>
+                                                            <!-- The table listing the files available for upload/download -->
                                                             <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
                                                         </div>
                                                     </div>
-                                                    <!-- The table listing the files available for upload/download -->
                                                     <div class="form-group">
                                                         <label class="col-md-2 control-label" for="description" >Service Notes</label>
                                                         <div class="col-md-12"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="2000"></textarea></div>
@@ -234,8 +233,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row pt-2 pb-2 justify-content-right">
-                                    <div class="col-md-12">
+                                <div class="row pt-2 pb-2 justify-content-end">
+                                    <div class="col-md-auto">
                                         <input class="btn btn-primary" type="submit" id="btnSubmit" value="Submit your Request">
                                     </div>
                                 </div>
@@ -327,7 +326,7 @@ $(document).ready(function () {
         
         // disable submit button if there are no samples to select
         {% if not service_data_info.sample_only_recorded_heading and not service_data_info.samples_heading %}
-        $("#createservice").submit(function (e) {
+        $("#create_service").submit(function (e) {
             //disable the submit button
             $("input:submit").attr("disabled", true);
             return true;
@@ -402,6 +401,19 @@ $(document).ready(function () {
         {% endif %}
         $("#btnSubmit").attr("disabled", true);
     });
+    
+    // Get the form element and the submit button
+    const form = document.querySelector('form');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    // Function to disable the submit button
+    function disableSubmitButton() {
+    submitButton.disabled = true;
+    submitButton.innerText = 'Submitting...'; // Optional: Change the button text
+    }
+
+    // Event listener for form submission
+    form.addEventListener('submit', disableSubmitButton);
 </script>
 
 {% endblock %}
