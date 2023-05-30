@@ -1,8 +1,7 @@
-from core.models import SequencerInLab, SequencingConfiguration
-from core.utils.platforms import *
-from wetlab.config import (
-    ERROR_SEQUENCER_ALREADY_DEFINED,
-    ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED)
+# Local imports
+import core.models
+import core.utils.platforms
+import wetlab.config
 
 
 def configuration_sequencer_exists():
@@ -12,7 +11,7 @@ def configuration_sequencer_exists():
     Return:
         True if they are defined
     """
-    if SequencingConfiguration.objects.all().exists():
+    if core.models.SequencingConfiguration.objects.all().exists():
         return True
     return False
 
@@ -29,11 +28,11 @@ def define_new_sequencer(form_data):
         new_sequencer_name or error
     """
     seq_data = {}
-    if SequencerInLab.objects.filter(
+    if core.models.SequencerInLab.objects.filter(
         sequencer_name__iexact=form_data["sequencerName"]
     ).exists():
         error = {}
-        error["ERROR"] = ERROR_SEQUENCER_ALREADY_DEFINED
+        error["ERROR"] = wetlab.config.ERROR_SEQUENCER_ALREADY_DEFINED
         return error
     fields_in_sequencer = [
         "platformID",
@@ -47,7 +46,7 @@ def define_new_sequencer(form_data):
 
     for item in fields_in_sequencer:
         seq_data[item] = form_data[item]
-    new_sequencer_name = SequencerInLab.objects.create_sequencer_in_lab(
+    new_sequencer_name = core.models.SequencerInLab.objects.create_sequencer_in_lab(
         seq_data
     ).get_sequencer_name()
     return new_sequencer_name
@@ -67,13 +66,13 @@ def define_new_seq_configuration(form_data):
     seq_configuration_data = {}
     seq_configuration_data["platformID"] = form_data["platformID"]
     seq_configuration_data["configurationName"] = form_data["sequencerConfiguration"]
-    if SequencingConfiguration.objects.filter(
+    if core.models.SequencingConfiguration.objects.filter(
         configuration_name__iexact=seq_configuration_data["configurationName"]
     ).exists():
         error = {}
-        error["ERROR"] = ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED
+        error["ERROR"] = wetlab.config.ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED
         return error
-    new_seq_configuration = SequencingConfiguration.objects.create_new_configuration(
+    new_seq_configuration = core.models.SequencingConfiguration.objects.create_new_configuration(
         seq_configuration_data
     )
     new_configuration_data = [
@@ -99,7 +98,7 @@ def get_configuration_sequencers_data():
     if len(def_platforms) == 0:
         return sequencer_configuration
     for platform_name, platform_id in def_platforms.items():
-        seq_conf_objs = SequencingConfiguration.objects.filter(
+        seq_conf_objs = core.models.SequencingConfiguration.objects.filter(
             platform_id__exact=platform_id
         ).order_by("configuration_name")
         sequencer_configuration["configuration_platform"].append(platform_name)
@@ -122,8 +121,8 @@ def get_defined_sequencers():
         sequencer_names
     """
     sequencer_names = {}
-    if SequencerInLab.objects.all().exists():
-        sequencer_objs = SequencerInLab.objects.all().order_by("platform_id")
+    if core.models.SequencerInLab.objects.all().exists():
+        sequencer_objs = core.models.SequencerInLab.objects.all().order_by("platform_id")
         for sequencer_obj in sequencer_objs:
             seq_platform = sequencer_obj.get_sequencing_platform_name()
             if seq_platform not in sequencer_names:
@@ -140,8 +139,8 @@ def get_platform_name_of_defined_sequencers():
         platforms
     """
     platforms = {}
-    if SequencerInLab.objects.all().exists():
-        sequencer_objs = SequencerInLab.objects.all()
+    if core.models.SequencerInLab.objects.all().exists():
+        sequencer_objs = core.models.SequencerInLab.objects.all()
         for sequencer_obj in sequencer_objs:
             platform_name = sequencer_obj.get_sequencing_platform_name()
             if platform_name == "Not Defined":
@@ -165,9 +164,9 @@ def get_list_sequencer_configuration():
     sequencer_configuration[
         "platforms_used"
     ] = get_platform_name_of_defined_sequencers()
-    if SequencingConfiguration.objects.all().exists():
+    if core.models.SequencingConfiguration.objects.all().exists():
         sequencer_data = {}
-        seq_conf_objs = SequencingConfiguration.objects.all().order_by("platform_id")
+        seq_conf_objs = core.models.SequencingConfiguration.objects.all().order_by("platform_id")
         for seq_conf_obj in seq_conf_objs:
             platform_name = seq_conf_obj.get_platform_name()
             if platform_name not in sequencer_data:
@@ -188,8 +187,8 @@ def get_sequencer_inventory_data():
         sequencer_configuration
     """
     sequencer_data = {}
-    if SequencerInLab.objects.all().exists():
-        sequencer_objs = SequencerInLab.objects.all().order_by("platform_id")
+    if core.models.SequencerInLab.objects.all().exists():
+        sequencer_objs = core.models.SequencerInLab.objects.all().order_by("platform_id")
         for sequencer_obj in sequencer_objs:
             platform_name = sequencer_obj.get_sequencing_platform_name()
             if platform_name not in sequencer_data:
@@ -209,4 +208,4 @@ def get_platform_data():
     Return
         sequencer_configuration
     """
-    return get_defined_platforms_and_ids("NGS")
+    return core.utils.platforms.get_defined_platforms_and_ids("NGS")
