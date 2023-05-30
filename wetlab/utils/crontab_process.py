@@ -2911,7 +2911,6 @@ def process_and_store_unknown_barcode_data(
                     unknow_barcode["count"] = "{0:,}".format(int(barcode_line["count"]))
                     unknow_barcode["sequence"] = barcode_line["sequence"]
                     top_number += 1
-
                     wetlab.models.RawTopUnknowBarcodes.objects.create_unknow_barcode(
                         unknow_barcode
                     )

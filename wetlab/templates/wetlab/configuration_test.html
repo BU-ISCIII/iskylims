@@ -209,7 +209,10 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <input class="btn float-end btn-outline-primary my-3"  name = "btnSubmit" id = "btnSubmit" type="submit" value="Run Test">
+                                                <div hidden class="spinner-border text-success" role="status" id="spinner">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <input class="btn float-end btn-outline-primary my-3"  name = "btnSubmit" id = "submit_run" type="submit" value="Run Test">
                                             </form>
                                         </div>
                                     </div>
@@ -424,6 +427,17 @@
         $("#executeRunTest").submit(function (e) {
             $("#btnSubmit").attr("disabled", true);
             return true;
+        });
+    });
+
+    // spinner
+    $(document).ready(function() {
+        $("#submit_run").click(function() {
+          // disable button
+          $(this).prop("disabled", true);
+          // Show spinner
+          $("#spinner").prop("hidden", false);
+          $("#executeRunTest").submit();
         });
     });
 </script>
