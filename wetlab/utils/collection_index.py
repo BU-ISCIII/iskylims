@@ -4,7 +4,7 @@ import os
 import re
 import time
 
-from django.conf import settings
+#from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
 # Local imports
