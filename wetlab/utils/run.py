@@ -4,10 +4,11 @@ import os
 import string
 from datetime import datetime
 
-from Bio.Seq import Seq
+# from Bio.Seq import Seq
 from django.conf import settings
 
 # Local imports
+# import core.models import SequencingConfiguration
 import core.utils.commercial_kits
 import core.utils.protocols
 import core.utils.samples
