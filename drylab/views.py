@@ -426,6 +426,7 @@ def search_service(request):
 
     center_list_abbr = []
     center_availables = django_utils.models.Center.objects.all().order_by("center_abbr")
+
     for center in center_availables:
         center_list_abbr.append(center.center_abbr)
     services_search_list["centers"] = center_list_abbr
@@ -435,36 +436,37 @@ def search_service(request):
 
     if "wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
+
     if not drylab.utils.common.is_service_manager(request):
         services_search_list["username"] = request.user.username
 
     if request.method == "POST" and request.POST["action"] == "search_service":
-        service_number_request = request.POST["servicenumber"]
-        service_state = request.POST["servicestate"]
-        start_date = request.POST["startdate"]
-        end_date = request.POST["enddate"]
-        center = request.POST["center"]
+        service_id = request.POST["service_id"]
+        service_state = request.POST["service_state"]
+        start_date = request.POST["start_date"]
+        end_date = request.POST["end_date"]
+        center = request.POST["service_center"]
 
-        user_name = request.POST["username"]
-        handeld_user = request.POST["userhandled"]
+        service_user = request.POST["service_user"]
+        assigned_user = request.POST["bioinfo_user"]
         # Data related to samples,and run from wetlab application
-        sample_name = request.POST["sampleName"] if "sampleName" in request.POST else ""
+        sample_name = request.POST["sample_name"] if "sample_name" in request.POST else ""
         project_name = (
-            request.POST["projectName"] if "projectName" in request.POST else ""
+            request.POST["project_name"] if "project_name" in request.POST else ""
         )
-        run_name = request.POST["runName"] if "runName" in request.POST else ""
+        run_name = request.POST["run_name"] if "run_name" in request.POST else ""
         # check if all fields in form are empty
         if (
-            service_number_request == ""
+            service_id == ""
             and service_state == ""
             and start_date == ""
             and end_date == ""
             and center == ""
             and sample_name == ""
-            and user_name == ""
+            and service_user == ""
             and project_name == ""
             and run_name == ""
-            and handeld_user == ""
+            and assigned_user == ""
         ):
             return render(
                 request,
@@ -474,13 +476,13 @@ def search_service(request):
 
         # check the right format of start and end date
         if (
-            request.POST["startdate"] != ""
+            start_date
             and not drylab.utils.common.check_valid_date_format(
-                request.POST["startdate"]
+                start_date
             )
         ) or (
-            request.POST["enddate"] != ""
-            and not drylab.utils.common.check_valid_date_format(request.POST["enddate"])
+            end_date != ""
+            and not drylab.utils.common.check_valid_date_format(end_date)
         ):
             error_message = drylab.config.ERROR_INCORRECT_FORMAT_DATE
             return render(
@@ -489,21 +491,21 @@ def search_service(request):
                 {"services_search_list": services_search_list, "ERROR": error_message},
             )
 
-        if service_number_request != "":
+        if service_id != "":
             # check if the requested service in the form matches exactly with the existing service in DB
             if drylab.models.Service.objects.filter(
-                service_request_number__exact=service_number_request
+                service_request_number__exact=service_id
             ).exists():
                 services_found = drylab.models.Service.objects.get(
-                    service_request_number__exact=service_number_request
+                    service_request_number__exact=service_id
                 )
                 redirect_page = "/drylab/displayService=" + str(services_found.id)
                 return redirect(redirect_page)
             if drylab.models.Service.objects.filter(
-                service_request_number__icontains=service_number_request
+                service_request_number__icontains=service_id
             ).exists():
                 services_found = drylab.models.Service.objects.filter(
-                    service_request_number__icontains=service_number_request
+                    service_request_number__icontains=service_id
                 )
             else:
                 return render(
@@ -512,12 +514,12 @@ def search_service(request):
                     {
                         "content": [
                             "No matches have been found for the service number ",
-                            service_number_request,
+                            service_id,
                         ]
                     },
                 )
         else:
-            services_found = drylab.models.Service.objects.all()
+            services_found = drylab.models.Service.objects.prefetch_related("service_user_id", "service_state").all()
 
         if service_state != "":
             services_found = services_found.filter(
@@ -535,13 +537,13 @@ def search_service(request):
             services_found = services_found.filter(
                 service_request_number__icontains=center
             )
-        if user_name != "":
+        if service_user != "":
             services_found = services_found.filter(
-                service_user_id__username__iexact=user_name
+                service_user_id__username__iexact=service_user
             )
-        if handeld_user != "":
+        if assigned_user != "":
             if not drylab.models.Resolution.objects.filter(
-                resolution_asigned_user__username__icontains=user_name
+                resolution_asigned_user__username__icontains=service_user
             ).exists():
                 error_message = (
                     drylab.config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
@@ -556,7 +558,7 @@ def search_service(request):
                 )
             services_handled_by = []
             services_handled_by_objs = drylab.models.Resolution.objects.filter(
-                resolution_asigned_user__username__icontains=user_name
+                resolution_asigned_user__username__icontains=service_user
             )
             for services_handled_by_obj in services_handled_by_objs:
                 services_handled_by.append(services_handled_by_obj.get_service_name())
@@ -598,6 +600,7 @@ def search_service(request):
                 "drylab/search_service.html",
                 {"services_search_list": services_search_list, "ERROR": error_message},
             )
+        
         # If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1:
             redirect_page = "/drylab/displayService=" + str(
@@ -618,9 +621,6 @@ def search_service(request):
                     drylab.utils.req_services.get_projects_in_requested_samples(
                         service_item
                     )
-                )
-                data.append(
-                    drylab.utils.req_services.get_run_in_requested_samples(service_item)
                 )
                 s_list[service_id] = [data]
             display_multiple_services["s_list"] = s_list
