@@ -438,7 +438,7 @@ def search_service(request):
     if not drylab.utils.common.is_service_manager(request):
         services_search_list["username"] = request.user.username
 
-    if request.method == "POST" and request.POST["action"] == "searchservice":
+    if request.method == "POST" and request.POST["action"] == "search_service":
         service_number_request = request.POST["servicenumber"]
         service_state = request.POST["servicestate"]
         start_date = request.POST["startdate"]
@@ -468,7 +468,7 @@ def search_service(request):
         ):
             return render(
                 request,
-                "drylab/searchService.html",
+                "drylab/search_service.html",
                 {"services_search_list": services_search_list},
             )
 
@@ -485,7 +485,7 @@ def search_service(request):
             error_message = drylab.config.ERROR_INCORRECT_FORMAT_DATE
             return render(
                 request,
-                "drylab/searchService.html",
+                "drylab/search_service.html",
                 {"services_search_list": services_search_list, "ERROR": error_message},
             )
 
@@ -548,7 +548,7 @@ def search_service(request):
                 )
                 return render(
                     request,
-                    "drylab/searchService.html",
+                    "drylab/search_service.html",
                     {
                         "services_search_list": services_search_list,
                         "ERROR": error_message,
@@ -595,7 +595,7 @@ def search_service(request):
             error_message = drylab.config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render(
                 request,
-                "drylab/searchService.html",
+                "drylab/search_service.html",
                 {"services_search_list": services_search_list, "ERROR": error_message},
             )
         # If only 1 service mathes the user conditions, then get the user information
@@ -626,13 +626,13 @@ def search_service(request):
             display_multiple_services["s_list"] = s_list
             return render(
                 request,
-                "drylab/searchService.html",
+                "drylab/search_service.html",
                 {"display_multiple_services": display_multiple_services},
             )
 
     return render(
         request,
-        "drylab/searchService.html",
+        "drylab/search_service.html",
         {"services_search_list": services_search_list},
     )
 

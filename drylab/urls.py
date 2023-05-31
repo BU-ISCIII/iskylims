@@ -74,7 +74,7 @@ urlpatterns = [
         drylab.views.request_seq_service,
         name="request_seq_service",
     ),
-    path("searchService", drylab.views.search_service, name="search_service"),
+    path("search-service", drylab.views.search_service, name="search_service"),
     path(
         "serviceInWaitingInfo",
         drylab.views.service_in_waiting_info,
