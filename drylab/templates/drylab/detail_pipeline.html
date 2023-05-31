@@ -1,0 +1,179 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+{% include "core/cdn_table_functionality.html"%}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if detail_pipelines_data %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-sm-8">
+                <div class="card ">
+                    <div class="card-header">
+                        Pipelines defined
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    {% for value in detail_pipelines_data.pipeline_basic_heading %}
+                                    <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for value in detail_pipelines_data.pipeline_basic %}
+                                    {% if value == 'True' %}
+                                    <td>True</td>
+                                    {% elif value == 'False' %}
+                                    <td>False </td>
+                                    {% else %}
+                                    <td>{{value}}</td>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <button class="nav-link active" id="nav-additional-tab" data-bs-toggle="tab"
+                            data-bs-target="#nav-additional" type="button" role="tab" aria-controls="nav-additional"
+                            aria-selected="true">Additional
+                            data</button>
+                        <button class="nav-link" id="nav-parameters-tab" data-bs-toggle="tab"
+                            data-bs-target="#nav-parameters" type="button" role="tab" aria-controls="nav-parameters"
+                            aria-selected="false">Parameters</button>
+                        <button class="nav-link" id="nav-services-tab" data-bs-toggle="tab"
+                            data-bs-target="#nav-services" type="button" role="tab" aria-controls="nav-services"
+                            aria-selected="false">Services</button>
+                    </div>
+                </nav>
+                <div class="tab-content border-tab p-2" id="nav-tabContent">
+                    <!-- div tab 1 -->
+                    <div class="tab-pane fade show active" id="nav-additional" role="tabpanel"
+                        aria-labelledby="nav-additional-tab">
+                        <div class="container-md">
+                            <div class="row pb-2 pt-2 justify-content-center">
+                                <div class="col-md-12">
+                                    <table id="table_additional" class="table table-bordered table-hover">
+                                        <thead class="d-none">
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for param, value in detail_pipelines_data.pipeline_additional_data %}
+                                            <tr>
+                                                <td>{{param}}</td>
+                                                <td>{{value}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- div tab 2 -->
+                    <div class="tab-pane fade show" id="nav-parameters" role="tabpanel"
+                        aria-labelledby="nav-parameters-tab">
+                        <div class="container-md">
+                            <div class="row pb-2 pt-2 justify-content-center">
+                                <div class="col-md-12">
+                                    {% if detail_pipelines_data.parameter_heading %}
+                                    <table id="table_parameters" class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                {% for value in detail_pipelines_data.parameter_heading %}
+                                                <th>{{value}}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for name , value in detail_pipelines_data.parameters %}
+                                            <tr>
+                                                <td>{{name}}</td>
+                                                <td>{{value}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% else %}
+                                    <h5 style="text-align:center">There is no additional parameters defined for
+                                        this pipeline</h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- div tab 3 -->
+                    <div class="tab-pane fade show" id="nav-services" role="tabpanel"
+                        aria-labelledby="nav-services-tab">
+                        <div class="container-md">
+                            <div class="row pb-2 pt-2 justify-content-center">
+                                <div class="col-md-12">
+                                    {% if detail_pipelines_data.services_using_pipeline_heading %}
+                                    <table id="table_services" class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                {% for value in detail_pipelines_data.services_using_pipeline_heading %}
+                                                <th>{{value}}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for id, name, time ,user, state in detail_pipelines_data.services_using_pipeline %}
+                                            <tr>
+                                                <td><a href="/drylab/display_service={{id}}">{{name}}</a>
+                                                </td>
+                                                <td>{{time}}</td>
+                                                <td>{{user}}</td>
+                                                <td>{{state}}</td>
+
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% else %}
+                                    <h5 style="text-align:center">There is no Services which use this
+                                        pipeline
+                                    </h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else%}
+            <div class="row pb-2 pt-2 justify-content-center">
+                <div class="col-sm-8">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header">
+                            <h3 style="text-align:center">The requested Pipeline Services does not exists</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5 style="text-align:center">Check the User Guide to define new Pipelines</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<script>
+
+</script>
+{% endblock %}
