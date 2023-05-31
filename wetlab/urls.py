@@ -20,12 +20,7 @@ urlpatterns = [
         name="add_user_lot_commercial_kit",
     ),
     path("AnnualReport/", wetlab.views.annual_report, name="annual_report"),
-    path(
-        "change_project_libKit=<int:project_id>",
-        wetlab.views.change_project_libKit,
-        name="change_project_libKit",
-    ),
-    path("ChangeRunName=<int:run_id>", wetlab.views.change_run_name, name="change_run_name"),
+    path("changeRunName=<int:run_id>", wetlab.views.change_run_name, name="change_run_name"),
     path("compareSamples", wetlab.views.compare_samples, name="compare_samples"),
     path("createNewRun/", wetlab.views.create_new_run, name="create_new_run"),
     path("createNextSeqRun/", wetlab.views.create_nextseq_run, name="create_nextseq_run"),
@@ -180,7 +175,6 @@ urlpatterns = [
     path("statsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
 
 ]
-# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
