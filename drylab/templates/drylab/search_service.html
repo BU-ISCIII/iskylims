@@ -71,9 +71,9 @@
             <div class="card ">
                 <div class="card-header"><strong>Searching Services</strong></div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data" name="searchservice" id="searchservice" class="form-horizontal well">
+                    <form method="post" enctype="multipart/form-data" name="search_service" id="search_service" class="form-horizontal well">
                         {% csrf_token %}
-                        <input type="hidden" name="action" value="searchservice"/>
+                        <input type="hidden" name="action" value="search_service"/>
                         <div class="form-control">
                             <label class="col-sm-5  control-label" for="servicenumber" >Search by service number </label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="servicenumber" id="servicenumber" size="100" maxlength="100"></div>
