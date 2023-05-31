@@ -1681,7 +1681,11 @@ def search_collection_index_library(request):
 @login_required
 def change_run_name(request, run_id):
     if wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
-        run = wetlab.models.RunProcess.objects.get(pk=run_id)
+        run_obj = wetlab.models.RunProcess.objects.get(pk=run_id)
+        run_data = {}
+        run_data["run_name"] = run_obj.get_run_name()
+        run_data["run_id"] = run_id
+        
         # check if user is allow to make the change
         groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager").last()
         # check if user belongs to WetlabManager . If true allow to see the page
@@ -1693,45 +1697,42 @@ def change_run_name(request, run_id):
             )
         if request.method == "POST" and request.POST["action"] == "change_run_name":
             new_run_name = request.POST["runName"]
-            if new_run_name == "":
-                return render(
-                    request,
-                    "wetlab/change_run_name.html",
-                    {"error_message": "Empty value is not allowed for the Run Name "},
-                )
             if wetlab.models.RunProcess.objects.filter(
-                run_name__exact=new_run_name
+                run_name__iexact=new_run_name
             ).exists():
                 return render(
                     request,
                     "wetlab/change_run_name.html",
-                    {"error_message": "The given Run Name is already in use"},
+                    {
+                        "error_message": "The given Run Name is already in use",
+                        "run_data" : run_data
+                    },
                 )
-            changed_run_name = {}
-            old_run_name = run.run_name
-            run.run_name = new_run_name
-            run.save()
-            changed_run_name["new_run_name"] = [[new_run_name, run_id]]
-            changed_run_name["old_run_name"] = old_run_name
+            changed_name = {}
+            run_obj.update_run_name(new_run_name)
+            changed_name["new_name"] = new_run_name
+            changed_name["run_id"] = run_id
+            changed_name["old_name"] = run_data["run_name"]
 
             return render(
                 request,
                 "wetlab/change_run_name.html",
-                {"changed_run_name": changed_run_name},
+                {"changed_name": changed_name},
             )
         else:
-            form_change_run_name = {}
-            form_change_run_name["run_name"] = run.run_name
             return render(
                 request,
                 "wetlab/change_run_name.html",
-                {"form_change_run_name": form_change_run_name},
+                {"run_data": run_data},
             )
     else:
         return render(
             request,
             "wetlab/change_run_name.html",
-            {"error_message": "There is no Run for your query"},
+            {
+                "error_message": "There is no Run for your query",
+                "run_data": run_data,
+            },
         )
 
 
