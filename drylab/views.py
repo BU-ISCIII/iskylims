@@ -1749,7 +1749,7 @@ def detail_pipeline(request, pipeline_id):
     detail_pipelines_data = drylab.utils.pipelines.get_detail_pipeline_data(pipeline_id)
     return render(
         request,
-        "drylab/detailPipeline.html",
+        "drylab/detail_pipeline.html",
         {"detail_pipelines_data": detail_pipelines_data},
     )
 

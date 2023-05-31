@@ -39,7 +39,7 @@ urlpatterns = [
         name="deleteSamplesInService",
     ),
     path(
-        "detailPipeline=<int:pipeline_id>",
+        "detail-pipeline=<int:pipeline_id>",
         drylab.views.detail_pipeline,
         name="detail_pipeline",
     ),

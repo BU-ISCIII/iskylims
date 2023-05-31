@@ -58,6 +58,13 @@ tfoot input {
   box-sizing: border-box;
 }
 
+.border-tab{
+  border-style: none solid solid;
+  border-color: #dee2e6;
+  border-width: 1px;
+  border-radius: 0.25rem;
+}
+
 /*--------------------------------------------------------------
 # Layout
 --------------------------------------------------------------*/
