@@ -45,7 +45,7 @@ urlpatterns = [
     ),
     path(
         "define-pipeline",
-        drylab.views.define_pipeline_service,
+        drylab.views.define_pipeline,
         name="define_pipeline_service",
     ),
     path(
@@ -59,7 +59,7 @@ urlpatterns = [
         name="infrastructure_service",
     ),
     path(
-        "managePipelines",
+        "manage-pipelines",
         drylab.views.manage_pipelines,
         name="manage_pipelines",
     ),
@@ -71,8 +71,8 @@ urlpatterns = [
     ),
     path(
         "sequencing-request",
-        drylab.views.request_sequencing_service,
-        name="request_sequencing_service",
+        drylab.views.request_seq_service,
+        name="request_seq_service",
     ),
     path("searchService", drylab.views.search_service, name="search_service"),
     path(

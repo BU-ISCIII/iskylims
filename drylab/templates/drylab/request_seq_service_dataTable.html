@@ -71,7 +71,7 @@
                 <div class="card ">
                     <div class="card-header">Service request form for massive sequencing experiments</div>
                     <div class="card-body">
-                        <form id="fileupload" method="post" action="/drylab/request_sequencing_service"
+                        <form id="fileupload" method="post" action="/drylab/sequencing-request"
                             name="fileupload" enctype="multipart/form-data" class="form-horizontal well">
                             {% csrf_token %}
                             <input type="hidden" name="sub_action" value="create_service" />

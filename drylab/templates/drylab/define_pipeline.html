@@ -142,10 +142,10 @@
                 {% for item in data_pipeline.heading %}
                 {% if forloop.last %}
                 { type: 'dropdown', title: '{{item}}', source: ['Boolean', 'String'], width: 200, },
-        {% else %}
-        { type: 'text', title: '{{item}}', width: 400 },
-        {% endif %}
-        {% endfor %}
+                {% else %}
+                { type: 'text', title: '{{item}}', width: 400 },
+                {% endif %}
+                {% endfor %}
                 ],
         allowInsertColumn: false,
         allowDeleteColumn: false,

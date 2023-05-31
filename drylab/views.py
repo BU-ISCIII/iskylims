@@ -100,7 +100,7 @@ def configuration_email(request):
 
 
 @login_required
-def request_sequencing_service(request):
+def request_seq_service(request):
     if request.POST and request.FILES:
         if "file" in request.FILES:
             data = drylab.utils.multi_files.get_and_save_service_file(request)
@@ -115,7 +115,7 @@ def request_sequencing_service(request):
             )
             return render(
                 request,
-                "drylab/request_sequencing_service.html",
+                "drylab/request_seq_service.html",
                 {"service_data_information": service_data_info},
             )
 
@@ -128,7 +128,7 @@ def request_sequencing_service(request):
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
                 request,
-                "drylab/request_sequencing_service.html",
+                "drylab/request_seq_service.html",
                 {
                     "service_data_information": service_data_info,
                     "error_message": error_message,
@@ -175,7 +175,7 @@ def request_sequencing_service(request):
         if email_result != "OK":
             return render(
                 request,
-                "drylab/request_sequencing_service.html",
+                "drylab/request_seq_service.html",
                 {
                     "confirmation_result": confirmation_result,
                     "error_message": email_result,
@@ -183,7 +183,7 @@ def request_sequencing_service(request):
             )
         return render(
             request,
-            "drylab/request_sequencing_service.html",
+            "drylab/request_seq_service.html",
             {"confirmation_result": confirmation_result},
         )
     else:
@@ -192,7 +192,7 @@ def request_sequencing_service(request):
         )
         return render(
             request,
-            "drylab/request_sequencing_service.html",
+            "drylab/request_seq_service.html",
             {"service_data_info": service_data_info},
         )
 
@@ -1647,7 +1647,7 @@ def configuration_test(request):
 
 
 @login_required
-def define_pipeline_service(request):
+def define_pipeline(request):
     if request.user.is_authenticated:
         if not drylab.utils.common.is_service_manager(request):
             return render(
@@ -1729,7 +1729,7 @@ def manage_pipelines(request):
     pipelines_data = drylab.utils.pipelines.get_pipelines_for_manage()
     return render(
         request,
-        "drylab/managePipelines.html",
+        "drylab/manage_pipelines.html",
         {"pipelines_data": pipelines_data},
     )
 
