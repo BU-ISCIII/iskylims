@@ -223,6 +223,11 @@ class RunProcess(models.Model):
         self.save()
         return True
 
+    def update_run_name(self, run_name):
+        self.run_name = run_name
+        self.save()
+        return self
+
     def update_sample_sheet(self, full_path, file_name):
         self.sample_sheet.save(file_name, open(full_path, "r"), save=True)
         return self
