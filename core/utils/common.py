@@ -161,7 +161,7 @@ def send_test_email(form_data):
     settings.EMAIL_PORT = form_data["EMAIL_PORT"]
     settings.EMAIL_HOST_USER = form_data["USER_EMAIL"]
     settings.EMAIL_HOST_PASSWORD = form_data["USER_PASSWORD"]
-    settings.EMAIL_USE_TLS = True if form_data["USE_TLS"] == "True" else False
+    settings.EMAIL_USE_TLS = True if "USE_TLS" in form_data == "True" else False
 
     from_user = form_data["EMAIL_ISKYLIMS"]
     to_users = [form_data["test_email"]]
