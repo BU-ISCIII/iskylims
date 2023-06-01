@@ -342,7 +342,7 @@ def get_pending_services_info():
         "Number of Pending Services", "", "", "", "fint", services_number
     )
     graphic_pending_services = core.fusioncharts.fusioncharts.FusionCharts(
-        "pie3d", "ex1", "740", "600", "chart-1", "json", data_source
+        "pie3d", "ex1", "535", "435", "chart-1", "json", data_source
     )
     pending_services_graphics["all_state"] = graphic_pending_services.render()
 
@@ -355,7 +355,7 @@ def get_pending_services_info():
         pending_services_per_unit,
     )
     graphic_unit_pending_services = core.fusioncharts.fusioncharts.FusionCharts(
-        "multilevelpie", "ex2", "740", "600", "chart-2", "json", data_source
+        "multilevelpie", "ex2", "535", "435", "chart-2", "json", data_source
     )
     pending_services_graphics[
         "graphic_pending_unit_services"
