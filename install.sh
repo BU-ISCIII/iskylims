@@ -115,26 +115,26 @@ root_check(){
 
 update_settings_and_urls(){
     # save SECRET KEY at home user directory
-    grep ^SECRET $INSTALL_PATH/iSkyLIMS/settings.py > ~/.secret
+    grep ^SECRET $INSTALL_PATH/iskylims/settings.py > ~/.secret
 
     # Copying config files and script. TODO CHANGE iSkyLIMS to app name
-    cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
-    cp conf/urls.py $INSTALL_PATH/iSkyLIMS
+    cp conf/template_settings.py $INSTALL_PATH/iskylims/settings.py
+    cp conf/urls.py $INSTALL_PATH/iskylims
     
     # replacing dummy variables with real values
-    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iskylims/settings.py
 
-    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py    
+    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py    
 }
 
 #================================================================
@@ -336,15 +336,22 @@ if [ $upgrade == true ]; then
 
         # Delete git and no copy files stuff
         if [ $ren_app == true ] ; then
-            echo "Changing app dir names in $INSTALL_PATH..."
-            rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
-                $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
-                $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
-            mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
-            mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
-            mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
-            mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
-            echo "Done changing app dir names in $INSTALL_PATH..."
+            if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
+                echo "Changing app dir names in $INSTALL_PATH..."
+                rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
+                    $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
+                    $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
+                mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
+                mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
+                mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
+                mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
+                echo "Done changing app dir names in $INSTALL_PATH..."
+            fi
+            if [ -d "iSkyLIMS" ]; then
+                mv iSkyLIMS/ iskylims/
+                sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/iskylims/wsgi.py
+                sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/manage.py
+            fi
         fi
 
         # update installation by sinchronize folders
@@ -693,7 +700,7 @@ if [ $install == true ]; then
         source virtualenv/bin/activate
 
         echo "Creating iskylims project"
-        django-admin startproject iSkyLIMS .
+        django-admin startproject iskylims .
         
         # update the settings.py and the main urls
         update_settings_and_urls
