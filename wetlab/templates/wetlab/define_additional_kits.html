@@ -50,7 +50,7 @@
                         <div class="card " >
                             <div class="card-header"><h3>Define Additional Kits for {{additional_kits.protocol_name}}</h3></div>
                             <div class="card-body">
-                                <form method="post" enctype="multipart/form-data" name="defineAdditionalKits"  id="defineAdditionalKits" class="form-horizontal well">
+                                <form method="post" enctype="multipart/form-data" name="defineAdditionalKits"  id="defineAdditionalKits">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="defineAdditionalKits"/>
                                     <input type="hidden" name="protocol_id" value="{{additional_kits.protocol_id}}"/>
@@ -95,10 +95,10 @@
             var table_data1 = table1.getData()
             var data1_json = JSON.stringify(table_data1)
             $("<input />").attr("type", "hidden")
-            .attr("name", "kits_data")
-            .attr("value", data1_json)
-            .appendTo("#defineAdditionalKits");
-            $("#btnSubmit").attr("disabled", true);
+                .attr("name", "kits_data")
+                .attr("value", data1_json)
+                .appendTo("#defineAdditionalKits");
+                $("#btnSubmit").attr("disabled", true);
             return true;
         });
     });

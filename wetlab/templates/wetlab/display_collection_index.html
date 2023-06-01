@@ -1,147 +1,106 @@
 {% extends "core/base.html" %}
-{% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
-{% include 'registration/login_inline.html' %}
 {% include "core/cdn_table_functionality.html" %}
-
-
-
-
- <section class="iskylims">
-    {% if error_message %}
-        <div class="row my-2">
-            <div class="col-sm-7 offset-3">
-                <div class="card border-danger mb-3">
-                    <div class="card-header text-align-center text-danger"><h3 class="text-center">Not Found</h3> </div>
-                    <div class="card-body">
-                        <h4 class="text-align-center ">{{error_message}}</h4>
-                    </div>
-                </div>
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row mt-2 mb-4">
+                <div class="col-md-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger text-center"><h3>Not found </h3le=> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div> 
+                    </div> 
+                </div> 
             </div> 
-        </div> 
-    {% endif %}
-    {% if display_one_collection_index %}
-        <div class="row my-2">
-            <div class="col-sm-7">
-                <div class="card ">
-                    {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_collection_index.general_information %}
-
-                    <div class="card-header"><h3> {{ lib_name }}</h3></div>
-                    <div class="card-body">
-                    <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        <tr>
-                        <td>Library Version </td>
-                        <td>{{ version }} </td>
-                        </tr>
-                        <tr>
-                        <td>Plate Extension </td>
-                        <td>{{ plate }} </td>
-                        </tr>
-                        <tr>
-                        <td>Adapter 1 </td>
-                        <td>{{ adapter1 }} </td>
-                        </tr>
-                        <tr>
-                        <td>Adapter 2 </td>
-                        <td>{{ adapter2 }} </td>
-                        </tr>
-                        <tr>
-                        <td>Index Library File </td>
-                        <td><a href ="/documents/{{ index_file }}" download > Download Index File <i class="bi bi-file-earmark-arrow-down"></i></a></td>
-                        </tr>
-                        {%endfor%}
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-            </div> <!--  end of col-sm-7 -->
-        </div> <!--  end of row -->
-
-
-
-        <div class="row my-2">
-            <div class="col" >
-                <div class="col">
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="i7_index-tab" data-bs-toggle="tab" data-bs-target="#i7_index" type="button" role="tab" aria-controls="i7_index" aria-selected="true">I7  Index</button>
-                        </li>
-                        {% if display_one_collection_index.I5_indexes %}
+        {% endif %}
+        {% if display_one_collection_index %}
+            <div class="row my-2">
+                <div class="col" >
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link " id="i5_index-tab" data-bs-toggle="tab" data-bs-target="#i5_index" type="button" role="tab" aria-controls="i5_index" aria-selected="false">I5 Index</button>
+                                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Basic</button>
                             </li>
-                        {% endif %}
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="layout-tab" data-bs-toggle="tab" data-bs-target="#layout" type="button" role="tab" aria-controls="layout" aria-selected="false">Default layout </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="myTabContent">
-                        <div class="tab-pane fade show active" id="i7_index" role="tabpanel" aria-labelledby="i7_index-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col-md-8 offset-2">
-                                        <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Index defined for I7 </h3></div>
-                                            <div class="card-body">
-                                                <table class="table table-hover" id="i7_index_table">
-                                                    <thead>
-                                                    <tr>
-                                                        <th>Index Name</th>
-                                                        <th>Index Sequence</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for index_name, index_sequence in  display_one_collection_index.I7_indexes %}
-                                                            <tr>
-                                                                <td>{{index_name}} </td>
-                                                                <td>{{ index_sequence }} </td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                </table>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="i7_index-tab" data-bs-toggle="tab" data-bs-target="#i7_index" type="button" role="tab" aria-controls="i7_index" aria-selected="true">I7  Index</button>
+                            </li>
+                            {% if display_one_collection_index.I5_indexes %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link " id="i5_index-tab" data-bs-toggle="tab" data-bs-target="#i5_index" type="button" role="tab" aria-controls="i5_index" aria-selected="false">I5 Index</button>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="layout-tab" data-bs-toggle="tab" data-bs-target="#layout" type="button" role="tab" aria-controls="layout" aria-selected="false">Default layout </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                                <div class="container">
+                                    <div class="row mt-4 ">
+                                        <div class="col-md-8 align-self-center">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>General data for index kit </h3></div>
+                                                <div class="card-body">
+                                                    {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_collection_index.general_information %}
+                                                        <h3> {{ lib_name }}</h3>
+                                                        <table class="table table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Parameter</th>
+                                                                    <th>Value</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>Library Version </td>
+                                                                    <td>{{ version }} </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Plate Extension </td>
+                                                                    <td>{{ plate }} </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Adapter 1 </td>
+                                                                    <td>{{ adapter1 }} </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Adapter 2 </td>
+                                                                    <td>{{ adapter2 }} </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Index Library File </td>
+                                                                    <td><a href ="/documents/{{ index_file }}" download class="text-decoration-none"> Download Index File <i class="bi bi-file-earmark-arrow-down"></i></a></td>
+                                                                </tr>
+                                                            
+                                                            </tbody>
+                                                        </table>
+                                                    {%endfor%}
+                                                </div>
                                             </div>
-                                            {% if display_one_collection_index.I7_indexes|length > 7 %}
-                                                <script type="text/javascript">
-                                                    $(document).ready(function() {
-                                                        $('#i7_index_table').DataTable({
-                                                            dom: 'Bfrtip',
-                                                            responsive: true,
-                                                            buttons: ['copy' , "excel"]
-                                                        });
-                                                    });
-                                                </script>
-                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div> <!-- end tab i7_index-->
-                        {% if display_one_collection_index.I5_indexes %}
-                            <div class="tab-pane fade" id="i5_index" role="tabpanel" aria-labelledby="i5_index-tab">
+                            <div class="tab-pane fade" id="i7_index" role="tabpanel" aria-labelledby="i7_index-tab">
                                 <div class="container">
                                     <div class="row mt-4">
                                         <div class="col-md-8 offset-2">
                                             <div class="card">
-                                                <div class="card-header"><h3 style="text-align:center">Index defined for I5 </h3></div>
+                                                <div class="card-header"><h3 style="text-align:center">Index defined for I7 </h3></div>
                                                 <div class="card-body">
-                                                    <table class="table table-hover" id="i5_index_table">
+                                                    <table class="table table-hover" id="i7_index_table">
                                                         <thead>
-                                                            <tr>
+                                                        <tr>
                                                             <th>Index Name</th>
                                                             <th>Index Sequence</th>
-                                                            </tr>
+                                                        </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {% for index_name, index_sequence in  display_one_collection_index.I5_indexes %}
+                                                            {% for index_name, index_sequence in  display_one_collection_index.I7_indexes %}
                                                                 <tr>
                                                                     <td>{{index_name}} </td>
                                                                     <td>{{ index_sequence }} </td>
@@ -150,10 +109,10 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if display_one_collection_index.I5_indexes|length > 7 %}
+                                                {% if display_one_collection_index.I7_indexes|length > 7 %}
                                                     <script type="text/javascript">
                                                         $(document).ready(function() {
-                                                            $('#i5_index_table').DataTable({
+                                                            $('#i7_index_table').DataTable({
                                                                 dom: 'Bfrtip',
                                                                 responsive: true,
                                                                 buttons: ['copy' , "excel"]
@@ -165,55 +124,96 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div> <!-- end tab i5_index-->
-                        {% endif %}
-                        <div class="tab-pane fade" id="layout" role="tabpanel" aria-labelledby="layout-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col">
-                                        <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Default layout for {{ display_one_collection_index.general_information.0.0 }}  </h3></div>
-                                            <div class="card-body">
-                                                <table class="table table-hover" id="layout_table">
-                                                    <thead>
-                                                        <tr>
-                                                        <th>Well</th>
-                                                        <th>Index 7</th>
-                                                        <th>Index 7 Sequence</th>
-                                                        <th>Index 5</th>
-                                                        <th>Index 5 Sequence</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for well_row in  display_one_collection_index.default_layout %}
-                                                            <tr>
-                                                                {% for value in well_row %}
-                                                                    <td>{{value}} </td>
+                            </div> <!-- end tab i7_index-->
+                            {% if display_one_collection_index.I5_indexes %}
+                                <div class="tab-pane fade" id="i5_index" role="tabpanel" aria-labelledby="i5_index-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md-8 offset-2">
+                                                <div class="card">
+                                                    <div class="card-header"><h3 style="text-align:center">Index defined for I5 </h3></div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="i5_index_table">
+                                                            <thead>
+                                                                <tr>
+                                                                <th>Index Name</th>
+                                                                <th>Index Sequence</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for index_name, index_sequence in  display_one_collection_index.I5_indexes %}
+                                                                    <tr>
+                                                                        <td>{{index_name}} </td>
+                                                                        <td>{{ index_sequence }} </td>
+                                                                    </tr>
                                                                 {% endfor %}
-                                                            </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                </table>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    {% if display_one_collection_index.I5_indexes|length > 7 %}
+                                                        <script type="text/javascript">
+                                                            $(document).ready(function() {
+                                                                $('#i5_index_table').DataTable({
+                                                                    dom: 'Bfrtip',
+                                                                    responsive: true,
+                                                                    buttons: ['copy' , "excel"]
+                                                                });
+                                                            });
+                                                        </script>
+                                                    {% endif %}
+                                                </div>
                                             </div>
-                                            <script type="text/javascript">
-                                                $(document).ready(function() {
-                                                    $('#layout_table').DataTable({
-                                                        dom: 'Bfrtip',
-                                                        responsive: true,
-                                                        buttons: ['copy' , "excel"]
+                                        </div>
+                                    </div>
+                                </div> <!-- end tab i5_index-->
+                            {% endif %}
+                            <div class="tab-pane fade" id="layout" role="tabpanel" aria-labelledby="layout-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header"><h3 style="text-align:center">Default layout for {{ display_one_collection_index.general_information.0.0 }}  </h3></div>
+                                                <div class="card-body">
+                                                    <table class="table table-hover" id="layout_table">
+                                                        <thead>
+                                                            <tr>
+                                                            <th>Well</th>
+                                                            <th>Index 7</th>
+                                                            <th>Index 7 Sequence</th>
+                                                            <th>Index 5</th>
+                                                            <th>Index 5 Sequence</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for well_row in  display_one_collection_index.default_layout %}
+                                                                <tr>
+                                                                    {% for value in well_row %}
+                                                                        <td>{{value}} </td>
+                                                                    {% endfor %}
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <script type="text/javascript">
+                                                    $(document).ready(function() {
+                                                        $('#layout_table').DataTable({
+                                                            dom: 'Bfrtip',
+                                                            responsive: true,
+                                                            buttons: ['copy' , "excel"]
+                                                        });
                                                     });
-                                                });
-                                            </script>
+                                                </script>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div> <!-- end tab layout-->
+                            </div> <!-- end tab layout-->
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    {% else %}
-    {% endif %}
+        {% endif %}
+    </div>
 </section>
 {% endblock %}

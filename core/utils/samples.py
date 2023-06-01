@@ -153,10 +153,11 @@ def add_molecule_protocol_parameters(form_data):
         for p_index in range(fixed_heading_length, parameters_length):
             molecule_parameter_value[
                 "moleculeParameter_id"
-            ] = ProtocolParameters.objects.get(
+            ] = ProtocolParameters.objects.filter(
                 protocol_id=protocol_used_obj,
                 parameter_name__exact=parameter_heading[p_index - fixed_heading_length],
-            )
+                parameter_used__exact=True,
+            ).last()
             molecule_parameter_value["molecule_id"] = molecule_obj
             molecule_parameter_value["parameterValue"] = molecule_json_data[row_index][
                 p_index

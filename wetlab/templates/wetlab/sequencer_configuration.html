@@ -61,13 +61,13 @@
                                 <button class="nav-link " id="kits-tab" data-bs-toggle="tab" data-bs-target="#kits" type="button" role="tab" aria-controls="kits" aria-selected="false">Defined kits used on sequencers </button>
                             </li>
                         </ul>
-                        <div class="tab-content" id="myTabContent">
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="new_seq" role="tabpanel" aria-labelledby="new_seq-tab">
                                 <div class="container">
                                     <div class="row mt-4">
                                         <div class="col-md">
                                             <div class="card">
-                                                <div class="card-header"><h3 style="text-align:center">Define new Sequencer </h3></div>
+                                                <div class="card-header text-center"><h3>Define new Sequencer </h3style=></div>
                                                 <div class="card-body">
                                                     <form method="post" enctype="multipart/form-data" name="addNewSequencer" id="addNewSequencer">
                                                         {% csrf_token %}
@@ -142,7 +142,7 @@
                                     <div class="row mt-4">
                                         <div class="col-md">
                                             <div class="card">
-                                                <div class="card-header"><h3 style="text-align:center">Sequencer defined list</h3></div>
+                                                <div class="card-header text-center"><h3>Sequencer defined list</h3style=></div>
                                                 <div class="card-body">
                                                     {% if sequencer_info.sequencer_names %}
                                                         <table class="table table-hover">

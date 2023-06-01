@@ -2316,31 +2316,21 @@ def display_protocol(request, protocol_id):
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
-            "wetlab/error_page.html",
-            {
-                "content": [
-                    "You do not have enough privileges to see this page ",
-                    "Contact with your administrator .",
-                ]
-            },
+            "wetlab/display_protocol.html",
+            {"error_message": "You do not have enough privileges to see this page "},
         )
     if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
         return render(
             request,
-            "wetlab/error_page.html",
-            {
-                "content": [
-                    "The protocol that you are trying to get ",
-                    "DOES NOT exists .",
-                ]
-            },
+            "wetlab/display_protocol.html",
+            {"error_message": "The protocol that you are trying to get DOES NOT exist."},
         )
     protocol_data = core.utils.protocols.get_all_protocol_info(protocol_id)
     kit_data = wetlab.utils.additional_kits.get_all_additional_kit_info(protocol_id)
 
     return render(
         request,
-        "wetlab/displayProtocol.html",
+        "wetlab/display_protocol.html",
         {"protocol_data": protocol_data, "kit_data": kit_data},
     )
 
@@ -2788,19 +2778,14 @@ def define_sample_projects_fields(request, sample_project_id):
 
 
 @login_required
-def modify_additional_kits(request, protocol_id):
+def modify_additional_kit(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not wetlab.utils.common.is_wetlab_manager(request):
             return render(
                 request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
+                "wetlab/modify_additional_kit.html",
+                {"error_message": "You do not have enough privileges to see this page "},
             )
     else:
         # redirect to login webpage
@@ -2814,7 +2799,7 @@ def modify_additional_kits(request, protocol_id):
         )
         return render(
             request,
-            "wetlab/modifyAdditionalKits.html",
+            "wetlab/modify_additional_kit.html",
             {"additional_kits_data_saved": additional_kits_data_saved},
         )
     else:
@@ -2864,25 +2849,20 @@ def modify_protocol_fields(request, protocol_id):
         )
         return render(
             request,
-            "wetlab/modifyProtocolFields.html",
+            "wetlab/modify_protocol_fields.html",
             {"protocol_field_saved": protocol_field_saved},
         )
     else:
         if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "The requested Protocol does not exist",
-                        "Create the protocol name before assigning custom parameters.",
-                    ]
-                },
+                "wetlab/modify_protocol_fields.html",
+                {"error_message": "The requested Protocol does not exist"},
             )
         protocol_field = core.utils.protocols.get_protocol_fields(protocol_id)
         return render(
             request,
-            "wetlab/modifyProtocolFields.html",
+            "wetlab/modify_protocol_fields.html",
             {"protocol_field": protocol_field},
         )
 
@@ -3157,7 +3137,7 @@ def handling_library_preparation(request):
                 request,
                 "wetlab/handling_library_preparation.html",
                 {
-                    "ERROR": error_message,
+                    "error_message": error_message,
                     "lib_prep_protocol_parameters": lib_prep_protocol_parameters,
                 },
             )
@@ -3182,7 +3162,7 @@ def handling_library_preparation(request):
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
-                {"ERROR": data["ERROR"], "samples_in_lib_prep": samples_in_lib_prep},
+                {"error_message": data["ERROR"], "samples_in_lib_prep": samples_in_lib_prep},
             )
         user_in_description = wetlab.utils.common.get_configuration_value(
             "DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME"
@@ -3202,7 +3182,7 @@ def handling_library_preparation(request):
                     request,
                     "wetlab/handling_library_preparation.html",
                     {
-                        "ERROR": user_id_in_s_sheet["ERROR"],
+                        "error_message": user_id_in_s_sheet["ERROR"],
                         "samples_in_lib_prep": samples_in_lib_prep,
                     },
                 )
@@ -3220,7 +3200,7 @@ def handling_library_preparation(request):
                 request,
                 "wetlab/handling_library_preparation.html",
                 {
-                    "ERROR": valid_data["ERROR"],
+                    "error_message": valid_data["ERROR"],
                     "samples_in_lib_prep": samples_in_lib_prep,
                 },
             )
@@ -3263,7 +3243,7 @@ def handling_library_preparation(request):
                 request,
                 "wetlab/handling_library_preparation.html",
                 {
-                    "ERROR": valid_data["ERROR"],
+                    "error_message": valid_data["ERROR"],
                     "samples_in_lib_prep": samples_in_lib_prep,
                 },
             )
@@ -3318,7 +3298,7 @@ def handling_library_preparation(request):
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
-                {"ERROR": error_message, "additional_kits": additional_kits},
+                {"error_message": error_message, "additional_kits": additional_kits},
             )
 
         return render(
@@ -3428,7 +3408,7 @@ def handling_molecules(request):
         )
         return render(
             request,
-            "wetlab/handlingMolecules.html",
+            "wetlab/handling_molecules.html",
             {
                 "molecule_recorded": molecule_recorded,
                 "show_molecule_parameters": show_molecule_parameters,
