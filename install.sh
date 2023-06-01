@@ -453,18 +453,21 @@ if [ $upgrade == true ]; then
 
         else
             echo "checking for database changes"
-            ./manage.py makemigrations
-        fi
+            if ./manage.py makemigrations | grep -q "No changes"; then
+                echo "No migration is required"
+            else
+                read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
+                echo    # (optional) move to a new line
+                if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                    echo "Exiting without running migrate command."
+                    exit 1
+                fi
+                echo "Running migrate..."
+                ./manage.py migrate
+                echo "Done migrate command."
+            fi
+        fi     
         
-        read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
-        echo    # (optional) move to a new line
-        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-            echo "Exiting without running migrate command."
-            exit 1
-        fi
-        echo "Running migrate..."
-        ./manage.py migrate
-        echo "Done migrate command."
         echo "Running collect statics..."
         ./manage.py collectstatic
         echo "Done collect statics"
