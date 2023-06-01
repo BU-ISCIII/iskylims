@@ -68,7 +68,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "iSkyLIMS.urls"
+ROOT_URLCONF = "iskylims.urls"
 
 TEMPLATES = [
     {
@@ -87,7 +87,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "iSkyLIMS.wsgi.application"
+WSGI_APPLICATION = "iskylims.wsgi.application"
 
 
 # Database
