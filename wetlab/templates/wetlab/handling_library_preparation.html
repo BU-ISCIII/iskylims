@@ -5,26 +5,19 @@
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
-
-        {% if ERROR %}
+        {% if error_message %}
             <div class="row my-2">
                 <div class="col-sm-10">
                     <div class="card border-danger mb-3">
                         <div class="card-header"><h3>Unable to record your request.</h3></div>
                         <div class="card-body">
-                            {% for value in ERROR %}
-                                <p>{{value}}</p>
-                            {% endfor %}
+                            <h4>{{value}}</h4>
                         </div>
                     </div>
-
-                </div> <!--  end of col-sm-10 -->
-            </div> <!--  end of row -->
-
+                </div> 
+            </div> 
         {% endif %}
-
         {% if lib_prep_protocol_parameters %}
-
             <div class="row my-2">
                 <div class="col-sm-12">
                     <div class="card ">
@@ -40,7 +33,7 @@
                                     <input type="hidden" name= "protocol_id" value="{{lib_prep_protocol_parameters.protocol_id}}"/>
                                     <input type="hidden" name= "heading_in_excel" value="{{lib_prep_protocol_parameters.heading_in_excel}}"/>
                                     <div id="spreadsheet"></div>
-                                    <br>
+                                    
                                 </div> <!--  end of scrolling  -->
                                 <script>
                                     var data = [{% for values in lib_prep_protocol_parameters.data %}
@@ -75,7 +68,7 @@
                                 </script>
 
                                 <div class="col-sm-12">
-                                    <br>
+                                    
                                 <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                 <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                                 </div> <!--  end of scrolling  -->
@@ -101,16 +94,10 @@
                         </div>
 
                     </div> <!--  end of col-sm-12 -->
-                </div> <!--  end of row -->
+                </div>
 
 
         {% elif display_lib_prep %}
-            <style>
-                .scrolling-wrapper {
-                    overflow-x: scroll;
-                    white-space: nowrap;
-                }
-            </style>
             <div class="row my-2">
                 <div class="col-sm-12">
                     <div class="card ">
@@ -126,7 +113,7 @@
                             <p></p>
 
                             <div id="spreadsheet"></div>
-                            <br><br><br><br>
+                            
 
                             <script>
                                 var data = [{% for values in display_lib_prep.data %}
@@ -178,7 +165,7 @@
                     </div>
 
                 </div> <!--  end of col-sm-12 -->
-            </div> <!--  end of row -->
+            </div>
 
         {% elif display_sample_sheet %}
             <style>
@@ -255,7 +242,7 @@
                                     </div>
                             </div>  <!-- end class-sm-8   -->
                             <div class="col-sm-12" >
-                                <br><br><br>
+                                
                                 <form method="post" enctype="multipart/form-data" name="storeIndexSample"  id="storeIndexSample" class="form-horizontal well">
                                     <h5>Sample Information</h5>
 
@@ -268,7 +255,7 @@
                                         <input type="hidden" name="iem_version" value="{{display_sample_sheet.iem_version}}">
 
                                         <div id="spreadsheet"></div>
-                                        <br><br><br>
+                                        
 
                                         <script>
                                             var data = [{% for values in display_sample_sheet.sample_data %}
@@ -329,7 +316,7 @@
                         </div>
                     </div>
                 </div> <!--  end of col-sm-11 -->
-            </div> <!--  end of row -->
+            </div>
 
 
 
@@ -356,15 +343,15 @@
 
                                 </tbody>
                             </table>
-                            <br><br>
+                            
                             <p>Click on the bottom below to continue with adding Library Preparation information </p>
-                            <br><br>
+                            
                             <input type="button" value="Return Library Preparation" onclick="location.href ='/wetlab/handlingLibraryPreparations' ;"/>
                         </div>
                     </div>
 
                 </div> <!--  end of col-sm-10 -->
-            </div> <!--  end of row -->
+            </div>
 
         {% elif additional_kits %}
             <div class="row my-2">
@@ -381,7 +368,7 @@
                                     <input type="hidden" name="libPrepCodeIds" value="{{additional_kits.lib_prep_code_ids}}">
                                     <input type="hidden" name="headings" value="{{additional_kits.full_heading}}">
                                     <div id="spreadsheet"></div>
-                                    <br>
+                                    
                                 </div> <!--  end of scrolling  -->
                                 <script>
                                     var data = [{% for values in additional_kits.data %}
@@ -409,7 +396,7 @@
                                     });
                                 </script>
                                 <div class="col-sm-12">
-                                    <br>
+                                    
                                     <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                     <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
                                 </div> <!--  end of scrolling  -->
@@ -434,7 +421,7 @@
                         </div>
                     </div>
                 </div> <!--  end of col-sm-11 -->
-            </div> <!--  end of row -->
+            </div>
 
         {% elif stored_additional_kits %}
             <div class="row my-2">
@@ -458,14 +445,14 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
-                            <br><br>
+                            
                             <p>Click on the bottom below to continue with adding Library Preparation information </p>
-                            <br><br>
+                            
                             <input type="button" value="Return Library Preparation" onclick="location.href ='/wetlab/handlingLibraryPreparations' ;"/>
                         </div>
                     </div>
                 </div> <!--  end of col-sm-11 -->
-            </div> <!--  end of row -->
+            </div>
 
         {% elif stored_index %}
             <div class="row my-2">
@@ -474,13 +461,13 @@
                         <div class="card-header"><h3>The Sample Index information is stored now on iSkyLIMS.</h3></div>
                         <div class="card-body">
                             <h5 style="text-align:center">Wetlab manger can start now, to create a pool with these samples</h5>
-                            <br><br><br>
+                            
 
                         </div>
                     </div>
 
                 </div> <!--  end of col-sm-10 -->
-            </div> <!--  end of row -->
+            </div>
         {% else %}
             {% if samples_in_lib_prep.no_samples %}
                 <div class="row my-2">
@@ -493,337 +480,355 @@
                         </div>
 
                     </div> <!--  end of col-sm-6 -->
-                </div> <!--  end of row -->
+                </div>
             {% else %}
                 <div class="row my-2">
-                    <div class="col-sm-12">
-                        <h3>Library Preparation</h3>
-                        <div class="tab">
-                            <button class="tablinks" onclick="summaryBin(event, 'assigningProtocol')" id="defaultOpen">Available Samples </button>
-                            <button class="tablinks" onclick="summaryBin(event, 'defined')">Pending Protocol Parameters</button>
-                            <button class="tablinks" onclick="summaryBin(event, 'pendingKits')">Pending additional kits</button>
-                            <button class="tablinks" onclick="summaryBin(event, 'pendingIndex')">Index assignment</button>
-
-                            <div id="assigningProtocol" class="tabcontent">
-                                <div class="col-sm-11" >
-                                    <div class="card ">
-                                        <div class="card-header"><h3>Assign Library protocol to the samples.</h3></div>
-                                        <div class="card-body">
-                                            {% if  samples_in_lib_prep.avail_samples.samplesID %}
-                                                <form method="post" enctype="multipart/form-data" name="assignProtocol"  id="assignProtocol" class="form-horizontal well">
-                                                    {% csrf_token %}
-                                                    <div class="form-control required">
-                                                        <input type="hidden" name="action" value="assignProtocol"/>
-                                                        <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.avail_samples.samplesID}}">
-                                                        <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.avail_samples.samplesNames}}">
-                                                        <input type="hidden" name="moleculesID" value="{{samples_in_lib_prep.avail_samples.moleculesID}}">
-                                                        <div id="spreadsheet"></div>
-                                                        <br><br><br><br>
-
-                                                        <script>
-                                                            var data = [{% for values in samples_in_lib_prep.avail_samples.data %}
-                                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                            ];
-                                                            mySpreadsheet = $('#spreadsheet').jexcel({
-                                                                data:data,
-                                                                columns: [
-                                                                    { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.0}}', width:280 , readOnly:true },
-                                                                    { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.1}}', width:280 , readOnly:true },
-                                                                    { type: 'dropdown', title:'{{samples_in_lib_prep.avail_samples.heading.2}}', width:200 , source :[ {% for value in samples_in_lib_prep.avail_samples.lib_prep_protocols %} '{{value}}', {% endfor %}]},
-                                                                ],
-                                                                allowInsertColumn:false,
-                                                                allowDeleteColumn:false,
-                                                                allowRenameColumn:false,
-                                                                allowInsertRow:false,
-                                                                allowDeleteRow:false,
-                                                                tableOverflow:true,
-                                                                tableHeight:'300px',
-                                                                search:true,
-                                                                pagination:20,
-                                                                csvFileName:'library_preparation_samples',
-
-                                                            });
-                                                        </script>
-                                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                        <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
-                                                    </div> <!--  end of scrolling  -->
-                                                    </form>
-                                                    <script>
-                                                        $(document).ready(function () {
-                                                            $("#assignProtocol").submit(function (e) {
-                                                                var table_data = $('#spreadsheet').jexcel('getData')
-                                                                var data_json = JSON.stringify(table_data)
-                                                                $("<input />").attr("type", "hidden")
-                                                                .attr("name", "protocol_data")
-                                                                .attr("value", data_json)
-                                                                .appendTo("#assignProtocol");
-                                                                $("#btnSubmit").attr("disabled", true);
-                                                                return true;
-                                                            });
-                                                        });
-                                                    </script>
-                                                {% else %}
-                                                    <h5>There is no Samples which are pending to assigned them to a library preparation protocol </h5>
-                                                {% endif %}
-                                            {% if samples_in_lib_prep.avail_samples.heading %}
-                                                <script>
-                                                    // Get the element with id="defaultOpen" and click on it
-                                                    document.getElementById("defaultOpen").click();
-                                                </script>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div> <!--  end of col-sm-11 -->
-                            </div> <!--  end of tab assigningProtocol -->
-
-
-                            <div id="defined" class="tabcontent">
-                                <div class="col-sm-11" >
-                                    <div class="card ">
-                                        <div class="card-header"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
-                                        <div class="card-body">
-                                            {% if samples_in_lib_prep.lib_prep_defined %}
-                                                {% for key, values in samples_in_lib_prep.lib_prep_defined.items %}
-                                                    <h4>Library Preparation defined for using protocol {{key}}</h4>
-                                                    <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="action" value="addProtocolParameter"/>
-                                                        <div class="form-control">
-                                                            <table class="table table-hover">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Sample Name</th>
-                                                                        <th>Library PreparationID</th>
-                                                                        <th>Select Library preparation</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {% for sample, code,  lib_id  in values  %}
-                                                                        <tr>
-                                                                            <td>{{sample}}</td>
-                                                                            <td>{{code}}</td>
-                                                                            <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
-                                                                        </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
-                                                        </div> <!--  end of from group -->
-                                                        <br><br>
-                                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                        <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
-                                                    </form>
-                                                    <br><br>
-                                                {% endfor %}
-                                            {% else %}
-                                                <h5>There is no Samples which are pending to add additional kits information </h5>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div> <!--  end of col-sm-11  -->
-                            </div> <!--  end of tab pending -->
-
-
-                            <div id="pendingKits" class="tabcontent">
-                                <div class="col-sm-11" >
-                                    <div class="card ">
-                                        <div class="card-header"><h3>Select the Library Preparation to include additional kits Information</h3></div>
-                                        <div class="card-body">
-                                            {% if samples_in_lib_prep.lib_prep_updated_param %}
-                                                {% for key, values in samples_in_lib_prep.lib_prep_updated_param.items %}
-                                                    <h4>Library Preparation defined for using protocol {{key}}</h4>
-                                                    <form method="post" enctype="multipart/form-data" name="assignAdditionalKits"  id="assignAdditionalKits" class="form-horizontal well">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="action" value="assignAdditionalKits"/>
-                                                        <div class="form-control">
-                                                            <table class="table table-hover">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Sample Name</th>
-                                                                        <th>Library PreparationID</th>
-                                                                        <th>Select Library preparation</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {% for sample, code,  lib_id  in values  %}
-                                                                        <tr>
-                                                                            <td>{{sample}}</td>
-                                                                            <td>{{code}}</td>
-                                                                            <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
-                                                                        </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
-                                                        </div> <!--  end of from group -->
-                                                        <br><br>
-                                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                        <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
-                                                    </form>
-                                                    <br><br>
-                                                {% endfor %}
-                                            {% else %}
-                                                <h5>There is no Samples which are pending to add additional kits information </h5>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div> <!--  end of col-sm-11  -->
-                            </div> <!--  end of tab pending -->
-
-
-                            <div id="pendingIndex" class="tabcontent">
-
-                                <style>
-                                    #select-div select {
-                                        display:none;}
-                                    {% for platform in samples_in_lib_prep.configuration_platform %}
-                                        #select-div.{{platform|cut:" "}} #{{platform|cut:" "}}y {
-                                            display:block;}
-                                    {% endfor %}
-
-                                </style>
-                                <div class="col-sm-11" >
-                                    <div class="card ">
-                                        <div class="card-header"><h3>Upload the sample sheet file</h3></div>
-                                        <div class="card-body">
-                                            {% if samples_in_lib_prep.display_sample_sheet %}
-                                                <p>Import the Sample Sheet file, generated by Illumina Experiment Manager (IEM), with your samples </p>
-                                                <br>
-                                                <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="importsamplesheet"  id="importsamplesheet" class="form-horizontal well">
-                                                    {% csrf_token %}
-                                                    <div class="form-control required">
-                                                        <input type="hidden" name="action" value="importsamplesheet"/>
-                                                        <label class="col-sm-6 form-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
-                                                        <div class="col-sm-6"><input class="form-control" type="file" required = "required" accept ="text/csv" id="uploadfile"  name="uploadfile" size="80"><br>
-                                                            <p id="error1" style="display:none; color:#FF0000;">
-                                                                Invalid File Extension. It Must Be "csv".
-                                                            </p>
-                                                            <p id="error2" style="display:none; color:#FF0000;">
-                                                                Maximum File Size Limit is 1MB.
-                                                            </p>
-                                                        </div>
-
-                                                            <br><br>
-
-                                                        <br>
-                                                        {% if upload_file.index_adapter or upload_file.instrument %}
-                                                            <div class="col-sm-12">
-                                                                <h5 style="text-align:center">Add the missing information in Sample Sheet</h5>
-                                                            </div>
-                                                        {% endif %}
-                                                        {% if upload_file.index_adapter %}
-                                                            <label class="col-sm-6 form-label" for="index_adapter" >Select Index adapters</label>
-                                                            <div class="col-sm-4">
-                                                                <select class="form-control" name="index_adapter" id="index_adapter">
-                                                                    <option value="">Choose a value</option>
-                                                                    {% for value in  upload_file.index_adapter %}
-                                                                        <option value="{{value}}">{{value}}</option>
-                                                                    {% endfor %}
-                                                            </select>
-                                                            <br><br>
-                                                            </div>  <!-- end select input -->
-
-                                                        {% endif %}
-                                                        <br><br>
-                                                        <label class="col-sm-6 form-label" for="instrument" >Select Sequencer Platform</label>
-                                                        <div class="col-sm-4">
-                                                            {% for platform in samples_in_lib_prep.configuration_platform %}
-                                                                {% if forloop.first %}
-                                                                    <input id="radio-{{platform|cut:' '}}" type="radio" name="platform" value="{{platform}}"  checked="yes"/>{{platform}} Platform <br>
+                    <div class="col" >
+                        <h3 class="text-center">Library preparation</h3>
+                        <div class="col">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="sample-tab" data-bs-toggle="tab" data-bs-target="#sample" type="button" role="tab" aria-controls="sample" aria-selected="true">Available samples</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link " id="protocol-tab" data-bs-toggle="tab" data-bs-target="#protocol" type="button" role="tab" aria-controls="protocol" aria-selected="false">Pending protocol parameters</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link " id="add_kit-tab" data-bs-toggle="tab" data-bs-target="#add_kit" type="button" role="tab" aria-controls="add_kit" aria-selected="false">Pending addtional kits</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link " id="index-tab" data-bs-toggle="tab" data-bs-target="#index" type="button" role="tab" aria-controls="index" aria-selected="false">Index assigment </button>
+                                </li>
+                            </ul>
+                            <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                <div class="tab-pane fade show active" id="sample" role="tabpanel" aria-labelledby="sample-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Assign Library protocol to the samples</h3></div>
+                                                    <div class="card-body">
+                                                        <div class="container">
+                                                            <div class="row horizontal-scroll">
+                                                                {% if  samples_in_lib_prep.avail_samples.samplesID %}
+                                                                    <form method="post" enctype="multipart/form-data" name="assignProtocol"  id="assignProtocol" class="form-horizontal well">
+                                                                        {% csrf_token %}
+                                                                        <div class="form-control required">
+                                                                            <input type="hidden" name="action" value="assignProtocol"/>
+                                                                            <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.avail_samples.samplesID}}">
+                                                                            <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.avail_samples.samplesNames}}">
+                                                                            <input type="hidden" name="moleculesID" value="{{samples_in_lib_prep.avail_samples.moleculesID}}">
+                                                                            <div  class="col-md-12" style="min-height:300px;" id="assignProtocol_spreadsheet"></div>
+                                                                            <script>
+                                                                                var data = [{% for values in samples_in_lib_prep.avail_samples.data %}
+                                                                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                                                ];
+                                                                                mySpreadsheet = $('#assignProtocol_spreadsheet').jexcel({
+                                                                                    data:data,
+                                                                                    columns: [
+                                                                                        { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.0}}', width:280 , readOnly:true },
+                                                                                        { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.1}}', width:320 , readOnly:true },
+                                                                                        { type: 'dropdown', title:'{{samples_in_lib_prep.avail_samples.heading.2}}', width:350 , source :[ {% for value in samples_in_lib_prep.avail_samples.lib_prep_protocols %} '{{value}}', {% endfor %}]},
+                                                                                    ],
+                                                                                    allowInsertColumn:false,
+                                                                                    allowDeleteColumn:false,
+                                                                                    allowRenameColumn:false,
+                                                                                    allowInsertRow:false,
+                                                                                    allowDeleteRow:false,
+                                                                                    tableOverflow:true,
+                                                                                    tableHeight:'300px',
+                                                                                    search:true,
+                                                                                    pagination:20,
+                                                                                    csvFileName:'library_preparation_samples',
+                    
+                                                                                });
+                                                                            </script>
+                                                                            <div class="col-md">
+                                                                                <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                                <input class="btn float-end btn-outline-primary" type="submit" id = "assignProtocolSubmit" value="Submit">
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
                                                                 {% else %}
-                                                                    <input id="radio-{{platform|cut:' '}}" type="radio" name="platform" value="{{platform}}"/>{{platform}} Platform <br>
+                                                                    <h5>There is no Samples which are pending to assigned them to a library preparation protocol </h5>
                                                                 {% endif %}
-                                                            {% endfor %}
-                                                            <!-- <input id="radio-miseq" type="radio" name="category" value="1" checked="yes" />Miseq Platform <br>
-                                                            <input id="radio-nextseq" type="radio" name="category" value="2" />NextSeq Platform -->
-                                                            <br><br>
-                                                        </div>
-                                                        <label class="col-sm-6 form-label" for="instrument" >Select Configuration</label>
-                                                        <div class="col-sm-4">
-
-                                                                {% for plat , conf_opt in samples_in_lib_prep.configuration_platform_option %}
-                                                                    {% if forloop.first %}
-                                                                        <div id="select-div"  class="{{plat|cut:' '}}">
-                                                                    {% endif %}
-                                                                    <select name="{{plat}}"  id="{{plat|cut:' '}}y">
-                                                                        <option value=""> Choose one</option>
-                                                                        {% for option in conf_opt %}
-                                                                            <option value ="{{option}}">{{option}}</option>
-                                                                        {% endfor %}
-                                                                    </select>
-                                                                {% endfor %}
-                                                                <br><br>
-                                                            </div>  <!-- end select input -->
-                                                        </div>
-
-                                                        <br><br>
-                                                        <div class="col-sm-11">
-                                                            <br>
-                                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmitFile">
-                                                        </div>
-                                                        <br><br><br>
-                                                    </div> <!-- End ofform-control required -->
-                                                </form>
-
-                                                <script>
-                                                    //$('input[type="submit"]').prop("disabled", true);
-                                                    $('#btnSubmitFile').prop('disabled',true);
-                                                    var a=0;
-                                                    //binds to onchange event of your input field
-                                                    $('#uploadfile').bind('change', function() {
-                                                        if ($('#btnSubmitFile').attr('disabled',false)){
-                                                            $('#btnSubmitFile').attr('disabled',true);
-                                                        }
-                                                        var ext = $('#uploadfile').val().split('.').pop().toLowerCase();
-                                                        if ($.inArray(ext, ['csv']) == -1){
-                                                            $('#error1').slideDown("slow");
-                                                            $('#error2').slideUp("slow");
-                                                            a=0;
-                                                        }
-                                                        else{
-                                                            var filesize = (this.files[0].size);
-                                                            if (filesize > 1000000){
-                                                                $('#error2').slideDown("slow");
-                                                                a=0;
-                                                            }
-                                                            else{
-                                                                a=1;
-                                                                $('#error2').slideUp("slow");
-                                                            }
-                                                            $('#error1').slideUp("slow");
-                                                            if (a==1){
-                                                                $('#btnSubmitFile').attr('disabled',false);
-                                                            }
-                                                        }
-                                                    });
-                                                </script>
-                                                <!-- Code for dynamic Select option -->
-                                                <script type="text/javascript">
-                                                    {% for platform in samples_in_lib_prep.configuration_platform %}
-                                                        var {{platform|cut:" "}}Button = document.getElementById('radio-{{platform|cut:" "}}');
-                                                    {% endfor %}
-
-                                                    {% for platform in samples_in_lib_prep.configuration_platform %}
-                                                        {{platform|cut:" "}}Button.onclick = function () {
-                                                            document.getElementById('select-div').className = '{{platform|cut:" "}}';
-                                                        }
-                                                    {% endfor %}
-
-
-                                                </script>
-                                            {% else %}
-                                                <h5>There is no Samples which are pending to add Index information </h5>
-                                            {% endif %}
+                                                            </div>
+                                                        </div>       
+                                                    </div>
+                                                </div>
+                                             </div>
                                         </div>
                                     </div>
-                                </div> <!--  end of col-sm-11  -->
-                            </div> <!--  end of tab pending -->
+                                </div> <!--  end of tab assigningProtocol -->
+                                <div class="tab-pane fade" id="protocol" role="tabpanel" aria-labelledby="protocol-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Select the Library Preparation to add Protocol Parameter Information</h3e=></div>
+                                                    <div class="card-body">
+                                                        <div class="container">
+                                                            {% if samples_in_lib_prep.lib_prep_defined %}
+                                                                {% for key, values in samples_in_lib_prep.lib_prep_defined.items %}
+                                                                    <h4>Library Preparation defined for using protocol {{key}}</h4>
+                                                                    <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="action" value="addProtocolParameter"/>
+                                                                        <div class="form-control">
+                                                                            <table class="table table-hover">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th>Sample Name</th>
+                                                                                        <th>Library PreparationID</th>
+                                                                                        <th>Select Library preparation</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {% for sample, code,  lib_id  in values  %}
+                                                                                        <tr>
+                                                                                            <td>{{sample}}</td>
+                                                                                            <td>{{code}}</td>
+                                                                                            <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div> <!--  end of from group -->
+                                                                        
+                                                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                        <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                                                    </form>
+                                                                    
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                <h5>There is no Samples which are pending to add additional kits information </h5>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="add_kit" role="tabpanel" aria-labelledby="add_kit-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Select the Library Preparation to include additional kits Information</h3e=></div>
+                                                    <div class="card-body">
+                                                        <div class="container">
+                                                            {% if samples_in_lib_prep.lib_prep_updated_param %}
+                                                                {% for key, values in samples_in_lib_prep.lib_prep_updated_param.items %}
+                                                                    <h4>Library Preparation defined for using protocol {{key}}</h4>
+                                                                    <form method="post" enctype="multipart/form-data" name="assignAdditionalKits"  id="assignAdditionalKits" class="form-horizontal well">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="action" value="assignAdditionalKits"/>
+                                                                        <div class="form-control">
+                                                                            <table class="table table-hover">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th>Sample Name</th>
+                                                                                        <th>Library PreparationID</th>
+                                                                                        <th>Select Library preparation</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {% for sample, code,  lib_id  in values  %}
+                                                                                        <tr>
+                                                                                            <td>{{sample}}</td>
+                                                                                            <td>{{code}}</td>
+                                                                                            <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div> 
+
+                                                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                        <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                                                    </form>
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                <h5>There is no Samples which are pending to add additional kits information </h5>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="index" role="tabpanel" aria-labelledby="index-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Upload the sample sheet file</h3e=></div>
+                                                    <div class="card-body">
+                                                        <div class="container">
+                                                            <style>
+                                                                #select-div select {
+                                                                    display:none;}
+                                                                {% for platform in samples_in_lib_prep.configuration_platform %}
+                                                                    #select-div.{{platform|cut:" "}} #{{platform|cut:" "}}y {
+                                                                        display:block;}
+                                                                {% endfor %}
+                            
+                                                            </style>
+                                                            {% if samples_in_lib_prep.display_sample_sheet %}
+                                                                <p>Import the Sample Sheet file, generated by Illumina Experiment Manager (IEM), with your samples </p>
+                                                                
+                                                                <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="importsamplesheet"  id="importsamplesheet" class="form-horizontal well">
+                                                                    {% csrf_token %}
+                                                                    <div class="form-control required">
+                                                                        <input type="hidden" name="action" value="importsamplesheet"/>
+                                                                        <label class="col-sm-6 form-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
+                                                                        <div class="col-sm-6"><input class="form-control" type="file" required = "required" accept ="text/csv" id="uploadfile"  name="uploadfile" size="80">
+                                                                            <p id="error1" style="display:none; color:#FF0000;">
+                                                                                Invalid File Extension. It Must Be "csv".
+                                                                            </p>
+                                                                            <p id="error2" style="display:none; color:#FF0000;">
+                                                                                Maximum File Size Limit is 1MB.
+                                                                            </p>
+                                                                        </div>
+                                                                        {% if upload_file.index_adapter or upload_file.instrument %}
+                                                                            <div class="col-sm-12">
+                                                                                <h5 style="text-align:center">Add the missing information in Sample Sheet</h5>
+                                                                            </div>
+                                                                        {% endif %}
+                                                                        {% if upload_file.index_adapter %}
+                                                                            <label class="col-sm-6 form-label" for="index_adapter" >Select Index adapters</label>
+                                                                            <div class="col-sm-4">
+                                                                                <select class="form-control" name="index_adapter" id="index_adapter">
+                                                                                    <option value="">Choose a value</option>
+                                                                                    {% for value in  upload_file.index_adapter %}
+                                                                                        <option value="{{value}}">{{value}}</option>
+                                                                                    {% endfor %}
+                                                                            </select>
+                                                                            
+                                                                            </div>  <!-- end select input -->
+
+                                                                        {% endif %}
+                                                                        
+                                                                        <label class="col-sm-6 form-label" for="instrument" >Select Sequencer Platform</label>
+                                                                        <div class="col-sm-4">
+                                                                            {% for platform in samples_in_lib_prep.configuration_platform %}
+                                                                                {% if forloop.first %}
+                                                                                    <input id="radio-{{platform|cut:' '}}" type="radio" name="platform" value="{{platform}}"  checked="yes"/>{{platform}} Platform 
+                                                                                {% else %}
+                                                                                    <input id="radio-{{platform|cut:' '}}" type="radio" name="platform" value="{{platform}}"/>{{platform}} Platform 
+                                                                                {% endif %}
+                                                                            {% endfor %}
+                                                                            <!-- <input id="radio-miseq" type="radio" name="category" value="1" checked="yes" />Miseq Platform 
+                                                                            <input id="radio-nextseq" type="radio" name="category" value="2" />NextSeq Platform -->
+                                                                            
+                                                                        </div>
+                                                                        <label class="col-sm-6 form-label" for="instrument" >Select Configuration</label>
+                                                                        <div class="col-sm-4">
+
+                                                                                {% for plat , conf_opt in samples_in_lib_prep.configuration_platform_option %}
+                                                                                    {% if forloop.first %}
+                                                                                        <div id="select-div"  class="{{plat|cut:' '}}">
+                                                                                    {% endif %}
+                                                                                    <select name="{{plat}}"  id="{{plat|cut:' '}}y">
+                                                                                        <option value=""> Choose one</option>
+                                                                                        {% for option in conf_opt %}
+                                                                                            <option value ="{{option}}">{{option}}</option>
+                                                                                        {% endfor %}
+                                                                                    </select>
+                                                                                {% endfor %}
+                                                                                
+                                                                            </div>  <!-- end select input -->
+                                                                        </div>
+
+                                                                        
+                                                                        <div class="col-sm-11">
+                                                                            
+                                                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmitFile">
+                                                                        </div>
+                                                                        
+                                                                    </div> <!-- End ofform-control required -->
+                                                                </form>
+                                                                <script>
+                                                                    //$('input[type="submit"]').prop("disabled", true);
+                                                                    $('#btnSubmitFile').prop('disabled',true);
+                                                                    var a=0;
+                                                                    //binds to onchange event of your input field
+                                                                    $('#uploadfile').bind('change', function() {
+                                                                        if ($('#btnSubmitFile').attr('disabled',false)){
+                                                                            $('#btnSubmitFile').attr('disabled',true);
+                                                                        }
+                                                                        var ext = $('#uploadfile').val().split('.').pop().toLowerCase();
+                                                                        if ($.inArray(ext, ['csv']) == -1){
+                                                                            $('#error1').slideDown("slow");
+                                                                            $('#error2').slideUp("slow");
+                                                                            a=0;
+                                                                        }
+                                                                        else{
+                                                                            var filesize = (this.files[0].size);
+                                                                            if (filesize > 1000000){
+                                                                                $('#error2').slideDown("slow");
+                                                                                a=0;
+                                                                            }
+                                                                            else{
+                                                                                a=1;
+                                                                                $('#error2').slideUp("slow");
+                                                                            }
+                                                                            $('#error1').slideUp("slow");
+                                                                            if (a==1){
+                                                                                $('#btnSubmitFile').attr('disabled',false);
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                </script>
+                                                                <!-- Code for dynamic Select option -->
+                                                                <script type="text/javascript">
+                                                                    {% for platform in samples_in_lib_prep.configuration_platform %}
+                                                                        var {{platform|cut:" "}}Button = document.getElementById('radio-{{platform|cut:" "}}');
+                                                                    {% endfor %}
+
+                                                                    {% for platform in samples_in_lib_prep.configuration_platform %}
+                                                                        {{platform|cut:" "}}Button.onclick = function () {
+                                                                            document.getElementById('select-div').className = '{{platform|cut:" "}}';
+                                                                        }
+                                                                    {% endfor %}
 
 
-                        </div> <!--  end of tab -->
-                    </div> <!--  end of col-sm-10 -->
-                </div> <!--  end of row -->
+                                                                </script>
+                                                            {% else %}
+                                                                <h5>There is no Samples which are pending to add Index information </h5>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
         {% endif %}
     </div>
 </section>
+<script>
+    // send assgnProtocol form 
+    $(document).ready(function () {
+        $("#assignProtocol").submit(function (e) {
+            var table_data = $('#assignProtocol_spreadsheet').jexcel('getData')
+            var data_json = JSON.stringify(table_data)
+                $("<input />").attr("type", "hidden")
+                .attr("name", "protocol_data")
+                .attr("value", data_json)
+                .appendTo("#assignProtocol");
+                $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+        });
 
+    
+</script>
 {% endblock %}

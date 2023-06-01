@@ -228,9 +228,9 @@
                         <div class="row my-2">
                             <div class="col-sm-10 offset-1">
                                 <div class="card border-danger mb-3">
-                                    <div class="card-header"><h3>Not Available User Lot Kits.</h3></div>
+                                    <div class="card-header"><h3>Not available user Lot Kits.</h3></div>
                                     <div class="card-body">
-                                        <p>There is not User Lot Kit defined on your name.</p>
+                                        <p>There is not user Lot Kit defined on your name.</p>
                                         <p class="mb-3">Click on the bottom below to define your Lot Kit first. Then return again to assign the molecule parameter</p>
                                         <button type="button" class="btn btn-outline-primary float-end" onclick="location.href = '/wetlab/addUserLotCommercialKit';">Define new User Lot Commercial Kit</button>
                                     </div>
@@ -256,7 +256,7 @@
                                         {% if show_molecule_parameters.pending_id %}
                                             <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
                                         {% endif %}
-                                        <div class="row horizontal-scroll my-3">
+                                        <div class="row horizontal-scroll my-3"style="min-height:200px;">
                                             <div id="spreadsheet"></div>
                                         </div> 
                                         <script>
@@ -355,7 +355,7 @@
                 </div>
 
             </div> <!--  end of col-sm-12 -->
-        </div> <!--  end of row -->
+        </div>
         {% if show_molecule_parameters %}
                 <div class="row my-2">
                 <div class="col-sm-12">
@@ -436,7 +436,7 @@
                     </div>
 
                 </div> <!--  end of col-sm-12 -->
-                </div> <!--  end of row -->
+                </div>
         {%endif %}
 
         {% elif molecule_use %}
@@ -466,7 +466,7 @@
                     </div>
                 </div>
             </div> <!--  end of col-sm-12 -->
-            </div> <!--  end of row -->
+            </div>
 
         {% else %}
             <div class="row my-2">
@@ -482,7 +482,7 @@
                             <button class="nav-link" id="mol_use-tab" data-bs-toggle="tab" data-bs-target="#mol_use" type="button" role="tab" aria-controls="mol_use" aria-selected="false">Molecules use specification</button>
                         </li>
                     </ul>
-                    <div class="tab-content" id="myTabContent">
+                    <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="n_samples" role="tabpanel" aria-labelledby="n_samples-tab">
                             <div class="container">
                                 <div class="row mt-4">
@@ -609,67 +609,69 @@
                                 <div class="row mt-4">
                                     <div class="col">
                                         <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Select in these samples the use that will be given of them</h3></div>
+                                            <div class="card-header"><h3 style="text-align:center">Select the use that will be given for the sample</h3></div>
                                             <div class="card-body">
-                                                {% if molecule_use_defined %}
-                                                    {% if request_molecule_use.heading %}
-                                                        <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="requestMoleculeUse"  id="requestMoleculeUse" class="form-horizontal well">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="action" value="requestMoleculeUse"/>
-                                                            <input type="hidden" name="molecule_in_list" value="False"/>
-                                                            <input type="hidden" name="molecule_ids" value="{{request_molecule_use.molecule_ids}}"/>
-                                                            <input type="hidden" name="molecule_code_ids" value="{{request_molecule_use.molecule_code_ids}}"/>
-                                                                <div id="spreadsheet2" class="mb-4"></div>
-                                                                <script>
-                                                                    var data2 = [{% for values in request_molecule_use.data %}
-                                                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                                    ];
+                                                <div class="container">
+                                                    {% if molecule_use_defined %}
+                                                        {% if request_molecule_use.heading %}
+                                                            <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="requestMoleculeUse"  id="requestMoleculeUse" class="form-horizontal well">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="action" value="requestMoleculeUse"/>
+                                                                <input type="hidden" name="molecule_in_list" value="False"/>
+                                                                <input type="hidden" name="molecule_ids" value="{{request_molecule_use.molecule_ids}}"/>
+                                                                <input type="hidden" name="molecule_code_ids" value="{{request_molecule_use.molecule_code_ids}}"/>
+                                                                    <div id="spreadsheet2" class="mb-4 col-md-12"></div>
+                                                                    <script>
+                                                                        var data2 = [{% for values in request_molecule_use.data %}
+                                                                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                                        ];
 
-                                                                    var table2  = jexcel(document.getElementById('spreadsheet2'), {
-                                                                        data:data2,
-                                                                        columns: [
-                                                                                { type: 'text', title:'{{request_molecule_use.heading.0}}', width:220 , readOnly:true },
-                                                                                { type: 'text', title:'{{request_molecule_use.heading.1}}', width:280 , readOnly:true },
-                                                                                { type: 'dropdown', title:'{{request_molecule_use.heading.2}}', width:220 , source:[{% for value in request_molecule_use.types %}'{{value}}',{% endfor %} ]},
-                                                                    ],
-                                                                        allowInsertColumn:false,
-                                                                        allowDeleteColumn:false,
-                                                                        allowRenameColumn:false,
-                                                                        allowInsertRow:false,
-                                                                        allowDeleteRow:false,
-                                                                        tableOverflow:true,
-                                                                        search:true,
-                                                                        pagination:20,
-                                                                        csvFileName:'molecule_use',
+                                                                        var table2  = jexcel(document.getElementById('spreadsheet2'), {
+                                                                            data:data2,
+                                                                            columns: [
+                                                                                    { type: 'text', title:'{{request_molecule_use.heading.0}}', width:350 , readOnly:true },
+                                                                                    { type: 'text', title:'{{request_molecule_use.heading.1}}', width:480 , readOnly:true },
+                                                                                    { type: 'dropdown', title:'{{request_molecule_use.heading.2}}', width:300 , source:[{% for value in request_molecule_use.types %}'{{value}}',{% endfor %} ]},
+                                                                        ],
+                                                                            allowInsertColumn:false,
+                                                                            allowDeleteColumn:false,
+                                                                            allowRenameColumn:false,
+                                                                            allowInsertRow:false,
+                                                                            allowDeleteRow:false,
+                                                                            tableOverflow:true,
+                                                                            search:true,
+                                                                            pagination:20,
+                                                                            csvFileName:'molecule_use',
+                                                                        });
+                                                                    </script>
+                                                                    <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                    <input class="btn float-end btn-outline-primary" id="btnSubmit" type="submit" value="Submit">
+                                                                </div>
+                                                            </form>
+                                                            <script>
+                                                                $(document).ready(function () {
+                                                                    $("#requestMoleculeUse").submit(function (e) {
+                                                                        //stop submitting the form to see the disabled button effect
+                                                                        // e.preventDefault();
+                                                                        //disable the submit button
+                                                                        var table_data2 = table2.getData()
+                                                                        var data_json = JSON.stringify(table_data2)
+                                                                        $("<input />").attr("type", "hidden")
+                                                                            .attr("name", "molecule_used_for")
+                                                                            .attr("value", data_json)
+                                                                            .appendTo("#requestMoleculeUse");
+                                                                        $("#btnSubmit").attr("disabled", true);
+                                                                        return true;
                                                                     });
-                                                                </script>
-                                                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                                <input class="btn float-end btn-outline-primary" id="btnSubmit" type="submit" value="Submit">
-                                                            </div>
-                                                        </form>
-                                                        <script>
-                                                            $(document).ready(function () {
-                                                                $("#requestMoleculeUse").submit(function (e) {
-                                                                    //stop submitting the form to see the disabled button effect
-                                                                    // e.preventDefault();
-                                                                    //disable the submit button
-                                                                    var table_data2 = table2.getData()
-                                                                    var data_json = JSON.stringify(table_data2)
-                                                                    $("<input />").attr("type", "hidden")
-                                                                        .attr("name", "molecule_used_for")
-                                                                        .attr("value", data_json)
-                                                                        .appendTo("#requestMoleculeUse");
-                                                                    $("#btnSubmit").attr("disabled", true);
-                                                                    return true;
                                                                 });
-                                                            });
-                                                        </script>
+                                                            </script>
+                                                        {% else %}
+                                                            <h4>All Molecule extraction have already assigned to an use</h4>
+                                                        {% endif %}
                                                     {% else %}
-                                                        <h4>All Molecule extraction have already assigned to an use</h4>
+                                                        <h4>Not molecule uses have been defined yet</h4>
                                                     {% endif %}
-                                                {% else %}
-                                                    <h4>Not molecule uses have been defined yet</h4>
-                                                {% endif %}
+                                                </div>
                                             </div> 
                                         </div>  
                                     </div>

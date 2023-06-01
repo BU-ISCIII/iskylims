@@ -56,7 +56,7 @@ urlpatterns = [
         name="define_sample_projects_fields",
     ),
     path(
-        "DisplayCollectionIndex=<int:collection_index_id>/",
+        "displayCollectionIndex=<int:collection_index_id>/",
         wetlab.views.display_collection_index,
         name="display_collection_index",
     ),
@@ -115,9 +115,9 @@ urlpatterns = [
     ),
     path("incompletedRuns", wetlab.views.incompleted_runs, name="incompleted_runs"),
     path(
-        "modifyAdditionalKits=<int:protocol_id>",
-        wetlab.views.modify_additional_kits,
-        name="modify_additional_kits",
+        "modifyAdditionalKit=<int:protocol_id>",
+        wetlab.views.modify_additional_kit,
+        name="modify_additional_kit",
     ),
     path(
         "modifyProtocolFields=<int:protocol_id>/",
