@@ -65,7 +65,7 @@ urlpatterns = [
     ),
     path("openSessions", drylab.views.open_sessions, name="open_sessions"),
     path(
-        "pendingServices",
+        "pending-services",
         drylab.views.pending_services,
         name="peding_services",
     ),

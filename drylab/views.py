@@ -656,7 +656,7 @@ def pending_services(request):
     )
     return render(
         request,
-        "drylab/pendingServices.html",
+        "drylab/pending_services.html",
         {
             "pending_services": pending_services_details,
             "user_pending_services": user_pending_services,
