@@ -2729,7 +2729,7 @@ def process_and_store_raw_demux_project_data(
                 new_project_obj = wetlab.models.Projects.objects.filter(
                     project_name__exact=project
                 ).last()
-            new_project_obj.runProcess.add(run_process_obj)
+            new_project_obj.run_process.add(run_process_obj)
             string_message = (
                 experiment_name
                 + " : Created  project name "
