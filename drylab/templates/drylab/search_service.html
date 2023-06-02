@@ -52,7 +52,7 @@
                                 {% for key, values in display_multiple_services.s_list.items %}
                                 <tr>
                                     {% for serviceID, status, dates ,center, projects  in values %}
-                                    <td><a href="/drylab/displayService={{ key }}">{{ serviceID }}</a> </td>
+                                    <td><a href="/drylab/display-service={{ key }}">{{ serviceID }}</a> </td>
                                     <td> {{ status }} </td>
                                     {% for date in dates %}
                                     <td>{{date}}</td>

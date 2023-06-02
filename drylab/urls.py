@@ -49,7 +49,7 @@ urlpatterns = [
         name="define_pipeline_service",
     ),
     path(
-        "displayService=<int:service_id>/",
+        "display-service=<int:service_id>/",
         drylab.views.display_service,
         name="display_service",
     ),
