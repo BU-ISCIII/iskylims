@@ -600,7 +600,7 @@ def search_service(request):
                 "drylab/search_service.html",
                 {"services_search_list": services_search_list, "ERROR": error_message},
             )
-        
+
         # If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1:
             redirect_page = "/drylab/displayService=" + str(
