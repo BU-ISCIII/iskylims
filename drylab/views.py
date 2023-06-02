@@ -345,8 +345,6 @@ def add_samples_in_service(request):
             "drylab/addSamplesInService.html",
             {"service_data_information": service_data_information},
         )
-    return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
-
 
 @login_required
 def delete_samples_in_service(request):
@@ -371,7 +369,7 @@ def delete_samples_in_service(request):
                 {"content": ["The service that you are trying to get does not exist "]},
             )
         if "sampleId" not in request.POST:
-            return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
+            return redirect("/drylab/display-service=" + str(request.POST["service_id"]))
         deleted_samples = drylab.utils.req_services.delete_samples_in_service(
             request.POST.getlist("sampleId")
         )
@@ -386,7 +384,7 @@ def delete_samples_in_service(request):
             "drylab/deleteSamplesInService.html",
             {"deleted_samples": deleted_samples, "service_data": service_data},
         )
-    return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
+    return redirect("/drylab/display-service=" + str(request.POST["service_id"]))
 
 
 @login_required
@@ -401,7 +399,7 @@ def display_service(request, service_id):
         )
         return render(
             request,
-            "drylab/displayService.html",
+            "drylab/display_service.html",
             {"display_service": display_service_details},
         )
     else:
@@ -499,7 +497,7 @@ def search_service(request):
                 services_found = drylab.models.Service.objects.get(
                     service_request_number__exact=service_id
                 )
-                redirect_page = "/drylab/displayService=" + str(services_found.id)
+                redirect_page = "/drylab/display-service=" + str(services_found.id)
                 return redirect(redirect_page)
             if drylab.models.Service.objects.filter(
                 service_request_number__icontains=service_id
@@ -603,7 +601,7 @@ def search_service(request):
 
         # If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1:
-            redirect_page = "/drylab/displayService=" + str(
+            redirect_page = "/drylab/display-service=" + str(
                 services_found[0].get_service_id()
             )
             return redirect(redirect_page)
