@@ -3851,21 +3851,12 @@ def set_molecule_values(request):
 @login_required
 def create_pool(request):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/create_pool.html",
+            {"error_messge": "You do not have enough privileges to see this page "},
+        )
     # collect the information for collecting
     display_list = wetlab.utils.pool.get_lib_prep_to_select_in_pool()
 

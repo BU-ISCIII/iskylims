@@ -557,10 +557,10 @@ def get_all_library_information(sample_id):
             lib_prep_data = []
             lib_prep_data.append(library_item.get_info_for_display())
             protocol_used_obj = library_item.get_protocol_obj()
-            if wetlab.models.ProtocolParameters.objects.filter(
+            if core.models.ProtocolParameters.objects.filter(
                 protocol_id=protocol_used_obj
             ).exists():
-                parameter_names = wetlab.models.ProtocolParameters.objects.filter(
+                parameter_names = core.models.ProtocolParameters.objects.filter(
                     protocol_id=protocol_used_obj
                 ).order_by("parameter_order")
                 lib_prep_param_heading = ["Lib Preparation CodeID"]
