@@ -3095,6 +3095,16 @@ def handling_library_preparation(request):
     # add protocol parameters for the user selected library preparation on defined state
     if request.method == "POST" and request.POST["action"] == "addProtocolParameter":
         lib_prep_ids = request.POST.getlist("libpreparation")
+        if len(lib_prep_ids) == 0 :
+            error_message = "No selected library preparation was chosen"
+            return render(
+                request,
+                "wetlab/handling_library_preparation.html",
+                {
+                    "samples_in_lib_prep": samples_in_lib_prep,
+                    "error_message" : error_message,
+                },
+            )
         library_preparation_objs = []
         for lib_prep_id in lib_prep_ids:
             library_preparation_objs.append(
@@ -4290,7 +4300,6 @@ def sequencer_details(request, seq_id):
         seq_data = {}
         end_date = request.POST["seqEnd"]
         start_date = request.POST["seqStart"]
-        import pdb; pdb.set_trace()
         if end_date == "" or end_date == "None":
             end_date = None
         else:

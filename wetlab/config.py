@@ -630,7 +630,7 @@ ERROR_SAMPLE_SHEET_INSTRUMENT_TYPE_NOT_INCLUDED = [
 ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED = [
     "Sample Sheet does not have Instrument type neither Index Adapters"
 ]
-ERROR_SAMPLE_SHEET_USERS_ARE_NOT_DEFINED = ["Users in sample sheet are not defined"]
+# ERROR_SAMPLE_SHEET_USERS_ARE_NOT_DEFINED = ["Users in sample sheet are not defined"]
 ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED = ["User in sample sheet is not defined"]
 ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = [
     "Sample sheet does not have Description column "
@@ -638,8 +638,8 @@ ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = [
 ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES = [
     "Sample sheet does not have the rigth format on the Description column"
 ]
-ERROR_SAMPLE_SHEET_FOLLOWING_USER_ARE_NOT_DEFINED = [
-    "Sample sheet have the following userid names which are not defined in the system"
+ERROR_SAMPLE_SHEET_USER_ARE_NOT_DEFINED = [
+    "Sample sheet has users which are not defined"
 ]
 ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = [
     "The Sample Sheet that you are uploaded does not longer exists",
