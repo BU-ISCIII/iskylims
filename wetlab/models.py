@@ -1151,7 +1151,7 @@ class LibPreparationUserSampleSheetManager(models.Manager):
                 collection_index_kit_id = None
         file_name = os.path.basename(user_sample_sheet_data["file_name"])
         configuration = core.models.SequencingConfiguration.objects.filter(
-            platform_id__platformName__exact=user_sample_sheet_data["platform"],
+            platform_id__platform_name__exact=user_sample_sheet_data["platform"],
             configuration_name__exact=user_sample_sheet_data["configuration"],
         ).last()
         new_lib_prep_user_sample_sheet = self.create(
@@ -1162,8 +1162,8 @@ class LibPreparationUserSampleSheetManager(models.Manager):
             application=user_sample_sheet_data["application"],
             instrument=user_sample_sheet_data["instrument type"],
             assay=user_sample_sheet_data["assay"],
-            adapter1=user_sample_sheet_data["adapter1"],
-            adapter2=user_sample_sheet_data["adapter2"],
+            adapter_1=user_sample_sheet_data["adapter1"],
+            adapter_2=user_sample_sheet_data["adapter2"],
             sequencing_configuration=configuration,
             iem_version=user_sample_sheet_data["iem_version"],
         )
@@ -1400,7 +1400,7 @@ class LibPrepareManager(models.Manager):
             user_sample_id=lib_prep_data["user_sampleID"],
             unique_id=lib_prep_data["uniqueID"],
             prefix_protocol=lib_prep_data["prefixProtocol"],
-            samplename_in_samplesheet=lib_prep_data["sampleNameInSampleSheet"],
+            samplename_in_samplesheet=lib_prep_data["samplename_in_samplesheet"],
         )
         return new_lib_prep
 

@@ -63,7 +63,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
     if len(invalid_names) > 0:
         invalid_names = list(set(invalid_names))
         invalid_names.insert(
-            0, "".join(wetlab.config.ERROR_SAMPLE_SHEET_FOLLOWING_USER_ARE_NOT_DEFINED)
+            0, "".join(wetlab.config.ERROR_SAMPLE_SHEET_USER_ARE_NOT_DEFINED)
         )
         users["ERROR"] = invalid_names
         return users
@@ -111,6 +111,31 @@ def get_adapters(file_lines):
 
     return adapter1, adapter2
 
+
+def get_heading(file_lines):
+    """read the input variable and extract the heading row
+
+    Parameters
+    ----------
+    file_lines : list
+        List of lines from sample sheet
+        
+    Return
+    ------
+    heading : list
+        contain the values from heading row of file 
+    """
+    
+     # For accepting characters like spanish characters.
+    heading = []
+    for line in file_lines:
+        if line == "":
+            continue
+        found_header=re.search("^Sample_ID,Sample_Name",line)
+        if found_header:
+            heading = line.split(',')
+            break
+    return heading
 
 def get_index_adapter(file_lines):
     """
@@ -282,7 +307,8 @@ def get_sample_sheet_data(file_read):
     sample_sheet_data["proyects"] = get_projects_in_sample_sheet(file_lines)
     # update sample sheet data
     sample_sheet_data.update(get_samples_in_sample_sheet(file_lines))
-
+    # include heading
+    sample_sheet_data["heading"] = get_heading(file_lines)
     return sample_sheet_data
 
 

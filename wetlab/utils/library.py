@@ -77,10 +77,11 @@ def analyze_and_store_input_param_values(form_data):
         library_prep_obj = get_lib_prep_obj_from_id(right_id)
         for p_index in range(fixed_heading_length, parameters_length):
             lib_parameter_value = {}
-            lib_parameter_value["parameter_id"] = wetlab.models.ProtocolParameters.objects.get(
+            lib_parameter_value["parameter_id"] = core.models.ProtocolParameters.objects.filter(
                 protocol_id__exact=form_data["protocol_id"],
                 parameter_name__exact=headings[p_index],
-            )
+                parameter_used=True,
+            ).last()
             lib_parameter_value["library_id"] = library_prep_obj
             lib_parameter_value["parameterValue"] = json_data[row_index][p_index]
             wetlab.models.LibParameterValue.objects.create_library_parameter_value(
@@ -140,11 +141,11 @@ def create_library_preparation_instance(samples_data, user):
             protocol_separation = wetlab.utils.common.get_configuration_value(
                 "PROTOCOL_SEPARATION_IN_SAMPLE_SHEET"
             )
-            lib_prep_data["sampleNameInSampleSheet"] = str(
+            lib_prep_data["samplename_in_samplesheet"] = str(
                 values[2] + protocol_separation + key
             )
         else:
-            lib_prep_data["sampleNameInSampleSheet"] = key
+            lib_prep_data["samplename_in_samplesheet"] = key
         lib_prep_data["registerUser"] = user
         lib_prep_data["user_sampleID"] = core.utils.samples.get_sample_obj_from_id(
             lib_prep_data["sample_id"]
@@ -429,12 +430,12 @@ def validate_sample_sheet_data(input_data):
 
     for sample in input_data["samples"]:
         if not wetlab.models.LibPrepare.objects.filter(
-            sampleNameInSampleSheet__exact=sample
+            samplename_in_samplesheet__exact=sample
         ).exists():
             not_defined_samples.append(sample)
             continue
         if not wetlab.models.LibPrepare.objects.filter(
-            sampleNameInSampleSheet__exact=sample,
+            samplename_in_samplesheet__exact=sample,
             lib_prep_state__lib_prep_state__exact="Updated additional kits",
         ).exists():
             invalid_state_samples.append(sample)
@@ -455,7 +456,7 @@ def validate_sample_sheet_data(input_data):
     if len(invalid_state_samples) > 0:
         error_state = wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
         error_state.insert(1, " , ".join(error_state))
-        error["ERROR"] = error_state
+        error["ERROR"] =  ". ".join(error_state)
     if len(not_defined_samples) > 0 and len(invalid_state_samples) > 0:
         error["ERROR"] = error_not_defined + error_state
     if "ERROR" in error:
@@ -782,11 +783,11 @@ def store_confirmation_library_preparation_index(form_data):
         lib_prep_data = {}
         sample_name = json_data[row_index][sample_name_index]
         if wetlab.models.LibPrepare.objects.filter(
-            sampleNameInSampleSheet__exact=sample_name,
+            samplename_in_samplesheet__exact=sample_name,
             lib_prep_state__lib_prep_state__exact="Updated additional kits",
         ).exists():
             lib_prep_obj = wetlab.models.LibPrepare.objects.filter(
-                sampleNameInSampleSheet__exact=sample_name,
+                samplename_in_samplesheet__exact=sample_name,
                 lib_prep_state__lib_prep_state__exact="Updated additional kits",
             ).last()
 
