@@ -1205,7 +1205,7 @@ class LibUserSampleSheet(models.Model):
 
     def get_adapters(self):
         adapters = []
-        adapters.append(self.adapter1)
+        adapters.append(self.adapter_1)
         adapters.append(self.adapter_2)
         return adapters
 
@@ -1236,7 +1236,7 @@ class LibUserSampleSheet(models.Model):
         s_s_data.append(collection_index)
         s_s_data.append(self.application)
         s_s_data.append(self.instrument)
-        s_s_data.append(self.adapter1)
+        s_s_data.append(self.adapter_1)
         s_s_data.append(self.adapter_2)
         s_s_data.append(self.assay)
         s_s_data.append(self.reads.split(",")[0])
