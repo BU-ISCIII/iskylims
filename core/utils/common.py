@@ -6,39 +6,7 @@ from django.core.mail import send_mail
 
 from core.core_config import *
 from core.models import *
-
-def week_number_to_date(input_data, value_param=None, format=None):
-    """Convert year + number of week into a complete date format. If value_param
-    is set the converted date is used as key and value_param as value. 
-
-    Parameters
-    ----------
-    input_data : dict
-        List of dictionnaries, with keys "year" and "week" used to map, and
-        optional the value_param to create a dictionnary.
-    value_param: str, optional
-        key in the dictionnary where the value is located.
-    format : str, optional
-        output of the date, in string or as datetime object if format is None,
-        by default None
-    Return:
-        List of Dictionnaries if value_param is set
-        List if value_param is Nome
-    """
-    output_date = []
-    for record in input_data:
-        week = "{year}-W{week}-1".format(year=record['year'], week=record['week'])
-        timestamp = datetime.datetime.strptime(week, "%Y-W%W-%w")
-        if format is not None:
-            timestamp = datetime.datetime.strftime(timestamp, format)
-        if value_param is not None:
-            date_value = {}
-            date_value[timestamp] = record[value_param]
-            output_date.append(date_value)
-        else:
-            output_date.append(timestamp)
-    return output_date
-            
+ 
 
 
 def get_installed_apps():
@@ -309,3 +277,42 @@ def save_inital_sample_setting_value(apps_name, data):
         setting_defined["settings"] = "City"
         setting_defined["value"] = data["city"]["cityName"]
     return setting_defined
+
+
+def week_month_number_to_date(input_data, type_number, value_param=None, format=None):
+    """Convert year + number of week or year + number of month into a complete date format.
+    If value_param is set the converted date is used as key and value_param as value. 
+
+    Parameters
+    ----------
+    input_data : QuerySet list
+        List of dictionnaries, with keys "year" and "week" used to map, and
+        optional the value_param to create a dictionnary.
+    type_number : string
+        Type of number recived, number of week or number of month
+    value_param: str, optional
+        key in the dictionnary where the value is located.
+    format : str, optional
+        output of the date, in string or as datetime object if format is None,
+        by default None
+    Return:
+        List of Dictionnaries if value_param is set
+        List if value_param is Nome
+    """
+    output_date = []
+    for record in input_data:
+        if type_number == "week":
+            week = "{year}-W{week}-1".format(year=record['year'], week=record['week'])
+            timestamp = datetime.datetime.strptime(week, "%Y-W%W-%w")
+        else:
+            month = "{year}-M{month}-1".format(year=record['year'], month=record['month'])
+            timestamp = datetime.datetime.strptime(month, "%Y-M%m-%M")
+        if format is not None:
+            timestamp = datetime.datetime.strftime(timestamp, format)
+        if value_param is not None:
+            date_value = {}
+            date_value[timestamp] = record[value_param]
+            output_date.append(date_value)
+        else:
+            output_date.append(timestamp)
+    return output_date
