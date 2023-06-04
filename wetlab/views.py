@@ -4068,7 +4068,7 @@ def compare_samples(request):
             return render(
                 request,
                 "wetlab/compareSamples.html",
-                {"ERROR": error_message, "samples_data": samples_data},
+                {"error_message": error_message, "samples_data": samples_data},
             )
         compared_data = wetlab.utils.sample.get_comparation_sample_information(
             selected_sample_objs

@@ -1,132 +1,155 @@
-{% extends 'core/base.html' %}
-{% load static %}
+{% extends "core/base.html" %}
 {% block content %}
-{% csrf_token %}
-
-{%include 'core/jexcel_functionality.html' %}
-
-<style>
-    .scrolling-wrapper-sm-11 {
-        overflow-x: auto;
-        overflow-y: auto;
-        white-space: nowrap;
-        height: 400px;
-    }
- </style>
- {% if ERROR %}
-     <div class="row my-2">
-         <div class="col-sm-7 offset-3">
-             <div class="card border-danger mb-3">
-                 <div class="card-header"><h3 style="text-align:center">No Samples</h3> </div>
-                 <div class="card-body">
-                     {% for values in ERROR %}
-                         <h4>{{values}}</h4>
-                     {% endfor %}
-                 </div>
-             </div>
-         </div> <!--  end of col-sm-7 -->
-     </div>
- {% endif %}
-{% if compared_data %}
-    <div class="row my-2">
-        <div class="col-sm-12">
-           <div class="card ">
-                <div class="card-header"><h3 style="text-align:center">Samples Comparations</h3></div>
-                <div class="card-body">
-                    <div class="card-body scrolling-wrapper-sm-11">
-
-                        <button onclick="exportTableToExcel('compareSamples')" class="btn float-end">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                        <table id=compareSamples class="table table-hover">
-                            <thead>
-                                <tr>
-                                    {% for value in compared_data.table_heading %}
-                                        <th>{{value}}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for values in compared_data.table_data %}
-                                    <tr>
-                                        {% for value in values %}
-                                            <td>{{value}}</td>
-                                        {% endfor %}
-                                    </tr>
-                                {%endfor%}
-                            </tbody>
-                        </table>
-                    </div> <!--// end col-sm-11  -->
-                </div> <!--// end panel body -->
-           </div>
-       </div> <!--// end col-sm-12  -->
-   </div>
-{% else %}
-     <div class="row my-2">
-         <div class="col-sm-12">
-            <div class="card ">
-                <div class="card-header"><h3 style="text-align:center">Available Samples for {{samples_data.user}} </h3></div>
-                <div class="card-body">
-                    {% if samples_data.heading %}
-                        <h5 style="text-align:center">Select the samples to be included in the sample comparation.</h5>
-                            <form method="post" enctype="multipart/form-data" name="compareSamples"  id="compareSamples" class="form-horizontal well">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="compareSamples"/>
-                                <div id="spreadsheet"></div>
-                                <script>
-                                    var data = [{% for values in samples_data.data %}
-                                       [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                       ];
-                                    mySpreadsheet = $('#spreadsheet').jexcel({
-                                        data:data,
-                                        columns: [
-                                            {% for item in  samples_data.heading %}
-                                                {% if forloop.last %}
-                                                    { type: 'hidden' },
-                                                {% else %}
-                                                { type: 'text', title:'{{item}}', width:240 },
-                                                {% endif %}
-                                            {% endfor %}
-                                            { type: 'checkbox',  title:'Select Sample', width:100 },
-                                        ],
-                                        allowInsertColumn:false,
-                                        allowDeleteColumn:false,
-                                        allowRenameColumn:false,
-                                        allowInsertRow:false,
-                                        allowDeleteRow:false,
-                                        tableOverflow:false,
-                                        search:true,
-                                        pagination:20,
-                                        csvFileName:'compare_samples',
-                                    });
-                                </script>
-                                <br>
-                                <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
-                            </form>
-                            <script>
-                                $(document).ready(function () {
-                                    $("#compareSamples").submit(function (e) {
-                                        //stop submitting the form to see the disabled button effect
-                                        // e.preventDefault();
-                                        //disable the submit button
-                                        var table_data = $('#spreadsheet').jexcel('getData')
-                                        var data_json = JSON.stringify(table_data)
-                                        $("<input />").attr("type", "hidden")
-                                          .attr("name", "table_data")
-                                          .attr("value", data_json)
-                                          .appendTo("#compareSamples");
-                                        $("#btnSubmit").attr("disabled", true);
-                                        return true;
-                                    });
-                                });
-                            </script>
-                    {% else %}
-                        <h3 style="text-align:center">There are no Samples belong to {{sample_data.user}} </h3>
-                    {% endif %}
-                </div> <!--// end panel body -->
+{% include "wetlab/menu.html" %}
+{% include "core/jexcel_functionality.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{valuerror_messagees}}</h4>
+                        </div>
+                    </div>
+                </div> 
             </div>
-        </div> <!--// end col-sm-12  -->
+        {% endif %}
+        {% if compared_data %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="card">
+                        <div class="card-header text-center"><h3>Sample comparations</h3></div>
+                        <div class="card-body">
+                            <div class="container">                     
+                                <div class="row horizontal-scroll">
+                                    <table id="compare_table" class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                {% for value in compared_data.table_heading %}
+                                                    <th>{{value}}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for values in compared_data.table_data %}
+                                                <tr>
+                                                    {% for value in values %}
+                                                        <td>{{value}}</td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {%endfor%}
+                                        </tbody>
+                                    </table>
+                                </div> 
+                            </div> 
+                        </div>
+                    </div>
+                </div> 
+            </div>
+        {% else %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="card">
+                        <div class="card-header text-center"><h3>Available Samples for {{samples_data.user}}</h3></div>
+                        <div class="card-body">
+                            <div class="container">
+                                {% if samples_data.heading %}
+                                    <h5 class="text-center">Select the samples to be included in the sample comparation.</h5>
+                                    <form method="post" enctype="multipart/form-data" name="compareSamples"  id="compareSamples">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="compareSamples"/>
+                                        <div id="spreadsheet"></div>
+                                        
+                                        <div class="row align-items-end">
+                                            <div class="col-md-3">
+                                                <div class="form-floating">
+                                                    <select  class="form-select" aria-label="sort number" id='column_number'>
+                                                        {% for value in samples_data.heading %}
+                                                            {% if not forloop.last %}
+                                                                <option value='{{ forloop.counter0 }}'>{{value}}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </select>
+                                                    <label for="column_number">Sort columns by:</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">                                                
+                                                <input type='button' class="btn btn-outline-secondary" value='Sort column' onclick="mySpreadsheet.orderBy(document.getElementById('column_number').value)">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                                            </div>
+                                        </div>
+                                    </form>
+                                    
+                                {% else %}
+                                    <h3 style="text-align:center">There are no samples belong to {{sample_data.user}} </h3>
+                                {% endif %}
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
+            </div>
+        {% endif %}
     </div>
-
-
-
-{% endif %}
+</section>
+<script>
+    {% if samples_data.heading%}
+        // collect data and create jexcel instance
+        var data = [{% for values in samples_data.data %}
+        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+        ];
+        mySpreadsheet = $('#spreadsheet').jexcel({
+            data:data,
+            columns: [
+                {% for item in  samples_data.heading %}
+                    {% if forloop.last %}
+                        { type: 'hidden' },
+                    {% else %}
+                    { type: 'text', title:'{{item}}', width:240 },
+                    {% endif %}
+                {% endfor %}
+                { type: 'checkbox',  title:'Select Sample', width:140 },
+            ],
+            allowInsertColumn:false,
+            allowDeleteColumn:false,
+            allowRenameColumn:false,
+            allowInsertRow:false,
+            allowDeleteRow:false,
+            tableOverflow:false,
+            search:true,
+            pagination:20,
+            csvFileName:'compare_samples',
+        });
+        // attach excel table to form
+        $(document).ready(function () {
+            $("#compareSamples").submit(function (e) {
+                //stop submitting the form to see the disabled button effect
+                // e.preventDefault();
+                //disable the submit button
+                var table_data = $('#spreadsheet').jexcel('getData')
+                var data_json = JSON.stringify(table_data)
+                $("<input />").attr("type", "hidden")
+                .attr("name", "table_data")
+                .attr("value", data_json)
+                .appendTo("#compareSamples");
+                $("#btnSubmit").attr("disabled", true);
+                return true;
+            });
+        });
+    {% else %}
+        // cdn table 
+        $(document).ready(function() {
+            $('#compare_table').DataTable({
+                dom: "Bfltirp",
+                responsive: true,
+                buttons: ['excel', 'csv']
+            });
+        });
+    {% endif %}
+</script>
 {% endblock %}
