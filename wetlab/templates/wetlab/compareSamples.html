@@ -1,10 +1,10 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
 
 {%include 'core/jexcel_functionality.html' %}
-{%include 'core/customized_javascript.html' %}
+
 <style>
     .scrolling-wrapper-sm-11 {
         overflow-x: auto;

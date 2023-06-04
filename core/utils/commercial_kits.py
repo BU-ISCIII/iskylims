@@ -351,7 +351,7 @@ def get_lot_reagent_commercial_kits(platform):
         user_platform_kit_list = list(
             [(k, v) for k, v in user_platform_kit_dict.items()]
         )
-        commercial_list = ",".join(commercial_kit_names)
+    commercial_list = ",".join(commercial_kit_names)
     return user_platform_kit_list, commercial_list
 
 

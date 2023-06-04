@@ -184,7 +184,7 @@
                                                             {% csrf_token %}
                                                             <input type="hidden" name="action" value="createPool"/>
                                                             <input type="hidden" name="platform" value="{{key}}"/>
-                                                            <div class="row align-self-center">
+                                                            <div class="row">
                                                                 <div class="col-md-6">
                                                                     <div class="form-floating mb-3">
                                                                         <input type="text" class="form-control" name="poolName" id="poolName" required="required" placeholder="Define pool name">
@@ -233,9 +233,9 @@
                     </div>
                 {% else %}
                     <div class="card">
-                        <div class="card-header text-center"><h3>There is not samples available to be included inside a Pool</h3></div>
+                        <div class="card-header text-center"><h3>There are not samples available to be included inside a Pool</h3></div>
                             <div class="card-body">
-                                <h5>There is not any sample that contains the library preparation date to be included in a Pool</h5>
+                                <h5>There are not any samples that contains the library preparation date to be included in a Pool</h5>
                             </div>
                         </div>
                     </div>

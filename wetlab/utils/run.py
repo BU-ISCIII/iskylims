@@ -2,7 +2,7 @@
 import json
 import os
 import string
-from datetime import datetime
+import datetime
 
 # from Bio.Seq import Seq
 from django.conf import settings
@@ -86,10 +86,10 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
 
     # update Reagents kits
     new_run_obj = wetlab.models.RunProcess(
-        runName=form_data["experimentName"],
-        sampleSheet="",
+        run_name=form_data["experimentName"],
+        sample_sheet="",
         state=wetlab.models.RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
-        centerRequestedBy=center_requested_by,
+        center_requested_by=center_requested_by,
     )
     new_run_obj.save()
     for reagent_kit_obj in reagent_kit_objs:
@@ -280,9 +280,9 @@ def create_new_projects_added_to_run(project_list, run_obj, user_obj):
         error_message.append(", ".join(duplicated_projects))
         error = {"ERROR": error_message}
         return error
-    # join project wirh run
+    # join project with run
     for project_obj in projects_objs:
-        project_obj.runProcess.add(run_obj)
+        project_obj.run_process.add(run_obj)
 
     return projects_objs
 
@@ -848,7 +848,7 @@ def get_run_obj_from_id(run_id):
     Description:
         The function return the runprocess object for the run_id
     Input:
-        run_id     # runProcess id
+        run_id     # run_process id
     Return:
         run_obj
     """
@@ -932,10 +932,11 @@ def fetch_reagent_kits_used_in_run(form_data):
         user_reagents_kit_objs
     """
     user_reagents_kit_objs = []
-    commercial_kit_names = form_data["commercialKits"].split(",")
-    for kit_name in commercial_kit_names:
-        if form_data[kit_name] == "":
-            continue
-        user_reagents_kit_objs.append(core.utils.commercial_kits.update_usage_user_lot_kit(form_data[kit_name]))
+    if form_data["commercialKits"] != "":
+        commercial_kit_names = form_data["commercialKits"].split(",")
+        for kit_name in commercial_kit_names:
+            if form_data[kit_name] == "":
+                continue
+            user_reagents_kit_objs.append(core.utils.commercial_kits.update_usage_user_lot_kit(form_data[kit_name]))
 
     return user_reagents_kit_objs
