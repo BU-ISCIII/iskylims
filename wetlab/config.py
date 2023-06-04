@@ -742,7 +742,7 @@ ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = [
 ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
     "There is not any User Lot Kit  that matches your input conditions"
 ]
-ERROR_NO_SAMPLES_SELECTED = ["They were not selected any Sample on your request"]
+ERROR_NO_SAMPLES_SELECTED = "They were not selected any Sample on your request"
 
 ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = "There are not runs for the selected period of time"
 ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
@@ -871,10 +871,10 @@ EMPTY_FIELDS_IN_SEQUENCER = [
 
 # ####### Sample comparation #########################
 HEADING_COMPARATION_SAMPLE_LIST = [
-    "Sample Nane",
-    "Project",
     "Run Name",
-    "Completed",
+    "User name",
+    "Sample Nane",
+    "Finish date",
     "Select Sample",
 ]
 HEADING_COMPARATION_SAMPLE_INFORMATION = [

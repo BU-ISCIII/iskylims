@@ -1,6 +1,9 @@
 # Generic imports
 import json
 
+# django imports
+from django.db.models import F, Func, Value, CharField
+
 # Local imports
 import core.fusioncharts.fusioncharts
 import core.utils.common
@@ -33,7 +36,9 @@ def get_codeID_for_resequencing(sample_recorded):
     mol_lib_prep_available = {}
     lib_prep_available = ["New Library Preparation"]
     mol_lib_prep_available["New Extraction"] = [""]
-    sample_obj = core.utils.samples.get_sample_obj_from_id(sample_recorded["sample_id_for_action"])
+    sample_obj = core.utils.samples.get_sample_obj_from_id(
+        sample_recorded["sample_id_for_action"]
+    )
     molecule_objs = core.utils.samples.get_molecule_objs_from_sample(
         sample_recorded["sample_id_for_action"]
     )
@@ -96,7 +101,9 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
                 if not molecule_obj:
                     return "Invalid options"
                 #
-                sample_obj = core.utils.samples.update_sample_reused(reprocess_sample_id)
+                sample_obj = core.utils.samples.update_sample_reused(
+                    reprocess_sample_id
+                )
                 sample_obj.set_state("Library preparation")
 
             return True
@@ -114,7 +121,9 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
             lib_prep_code_id__exact=lib_prep_code_id,
         )
         sample_obj = core.utils.samples.update_sample_reused(reprocess_sample_id)
-        molecule_obj = core.utils.samples.update_molecule_reused(reprocess_sample_id, molecule_code_id)
+        molecule_obj = core.utils.samples.update_molecule_reused(
+            reprocess_sample_id, molecule_code_id
+        )
         lib_prep_obj.set_state("Reused pool")
         lib_prep_obj.set_increase_reuse()
         sample_obj.set_state("Pool preparation")
@@ -158,12 +167,16 @@ def get_comparation_sample_information(sample_objs):
     compared_data["table_data"] = []
     for sample_obj in sample_objs:
         run_obj = sample_obj.get_run_obj()
-        stats_fl_obj = wetlab.models.StatsFlSummary.objects.filter(runprocess_id=run_obj).last()
+        stats_fl_obj = wetlab.models.StatsFlSummary.objects.filter(
+            runprocess_id=run_obj
+        ).last()
         data = sample_obj.get_sample_information()
         data.insert(2, sample_obj.get_run_name())
         data.insert(3, stats_fl_obj.get_sample_number())
         compared_data["table_data"].append(data)
-    compared_data["table_heading"] = wetlab.config.HEADING_COMPARATION_SAMPLE_INFORMATION
+    compared_data[
+        "table_heading"
+    ] = wetlab.config.HEADING_COMPARATION_SAMPLE_INFORMATION
     return compared_data
 
 
@@ -186,29 +199,38 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     if wetlab_manager:
         if wetlab.models.SamplesInProject.objects.all().exists():
             sample_objs = (
-                wetlab.models.SamplesInProject.objects.all().order_by("generated_at").reverse()
+                wetlab.models.SamplesInProject.objects.all()
+                .order_by("generated_at")
+                .reverse()
             )
     else:
         user_list_ids = core.utils.common.get_friend_list(user)
-        if wetlab.models.SamplesInProject.objects.filter(user_id_id__in=user_list_ids).exists():
+        if wetlab.models.SamplesInProject.objects.filter(
+            user_id_id__in=user_list_ids
+        ).exists():
             sample_objs = (
-                wetlab.models.SamplesInProject.objects.filter(user_id_id__in=user_list_ids)
+                wetlab.models.SamplesInProject.objects.filter(
+                    user_id_id__in=user_list_ids
+                )
                 .order_by("generated_at")
                 .reverse()
             )
     if sample_objs != "":
-        samples_data["data"] = []
-        for sample_obj in sample_objs:
-            run_obj = sample_obj.get_run_obj()
-            if run_obj.get_state() != "Completed":
-                continue
-            data = []
-            data.append(sample_obj.get_sample_name())
-            data.append(sample_obj.get_project_name())
-            data.append(sample_obj.get_run_name())
-            data.append(run_obj.get_run_finish_date())
-            data.append(sample_obj.get_sample_id())
-            samples_data["data"].append(data)
+
+        samples_data["data"] = list(
+            sample_objs.values_list(
+                "run_process_id__run_name", "user_id__username", "sample_name"
+            )
+            .annotate(
+                formated_date=Func(
+                    F("run_process_id__run_finish_date"),
+                    Value("%Y-%m-%d"),
+                    function="DATE_FORMAT",
+                    output_field=CharField(),
+                )
+            )
+            .annotate(id=F("pk"))
+        )
         samples_data["heading"] = wetlab.config.HEADING_COMPARATION_SAMPLE_LIST
     return samples_data
 
@@ -224,7 +246,9 @@ def get_sample_in_project_obj_from_id(sample_in_project_id):
         sample_in_project_obj.
     """
     sample_in_project_obj = ""
-    if wetlab.models.SamplesInProject.objects.filter(pk__exact=sample_in_project_id).exists():
+    if wetlab.models.SamplesInProject.objects.filter(
+        pk__exact=sample_in_project_id
+    ).exists():
         sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
             pk__exact=sample_in_project_id
         )
@@ -276,7 +300,9 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
         return run_sample_list
     if user_name != "":
         if wetlab.models.User.objects.filter(username__exact=user_name).exists():
-            user_name_obj = wetlab.models.User.objects.filter(username__exact=user_name).last()
+            user_name_obj = wetlab.models.User.objects.filter(
+                username__exact=user_name
+            ).last()
             user_friend_list = core.utils.common.get_friend_list(user_name_obj)
             if not run_sample_founds.filter(user_id__in=user_friend_list).exists():
                 return run_sample_list
