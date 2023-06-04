@@ -2,7 +2,6 @@
 *.xml
 *.bin
 *.gz
-*.csv
 *_BAK
 migrations/
 tmp/
