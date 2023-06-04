@@ -746,9 +746,9 @@ def get_sample_project_information(sample_project_obj, sample_obj):
             if SampleProjectsFieldsValue.objects.filter(
                 sample_id=sample_obj, sample_project_field_id=s_p_field
             ).exists():
-                field_value = SampleProjectsFieldsValue.objects.get(
+                field_value = SampleProjectsFieldsValue.objects.filter(
                     sample_id=sample_obj, sample_project_field_id=s_p_field
-                ).get_field_value()
+                ).last().get_field_value()
                 if s_p_field.get_field_type() == "Date":
                     field_value = field_value.replace(" 00:00:00", "")
             else:

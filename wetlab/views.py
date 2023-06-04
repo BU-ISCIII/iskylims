@@ -3912,7 +3912,7 @@ def create_new_run(request):
                 "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
-                    "ERROR": error_message,
+                    "error_message": error_message,
                 },
             )
         compatibility = wetlab.utils.run.check_valid_data_for_creation_run(
@@ -3924,7 +3924,7 @@ def create_new_run(request):
                 "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
-                    "ERROR": compatibility["ERROR"],
+                    "error_message": compatibility["ERROR"],
                 },
             )
         # compatible_index = check_index_compatible(lib_prep_ids)
@@ -3977,7 +3977,7 @@ def create_new_run(request):
                 "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
-                    "ERROR": error_message,
+                    "error_message": error_message,
                 },
             )
         run_data = wetlab.utils.run.collect_data_and_update_library_preparation_samples_for_run(
@@ -3994,7 +3994,7 @@ def create_new_run(request):
                 "wetlab/create_new_run.html",
                 {
                     "display_pools_for_run": display_pools_for_run,
-                    "ERROR": projects_objs["ERROR"],
+                    "error_message": projects_objs["ERROR"],
                 },
             )
 

@@ -463,7 +463,9 @@
                                                                             <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.avail_samples.samplesID}}">
                                                                             <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.avail_samples.samplesNames}}">
                                                                             <input type="hidden" name="moleculesID" value="{{samples_in_lib_prep.avail_samples.moleculesID}}">
-                                                                            <div  class="col-md-12" style="min-height:300px;" id="assignProtocol_spreadsheet"></div>
+                                                                            <div class="horizontal-scroll">
+                                                                                <div  style="min-height:300px;" id="assignProtocol_spreadsheet"></div>
+                                                                            </div>
                                                                             <script>
                                                                                 var data = [{% for values in samples_in_lib_prep.avail_samples.data %}
                                                                                     [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -480,7 +482,7 @@
                                                                                     allowRenameColumn:false,
                                                                                     allowInsertRow:false,
                                                                                     allowDeleteRow:false,
-                                                                                    tableOverflow:true,
+                                                                                    tableOverflow:false,
                                                                                     tableHeight:'300px',
                                                                                     search:true,
                                                                                     pagination:20,

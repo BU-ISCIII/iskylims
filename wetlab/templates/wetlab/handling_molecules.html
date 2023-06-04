@@ -620,7 +620,9 @@
                                                                 <input type="hidden" name="molecule_in_list" value="False"/>
                                                                 <input type="hidden" name="molecule_ids" value="{{request_molecule_use.molecule_ids}}"/>
                                                                 <input type="hidden" name="molecule_code_ids" value="{{request_molecule_use.molecule_code_ids}}"/>
-                                                                    <div id="spreadsheet2" class="mb-4 col-md-12"></div>
+                                                                    <div class="horizontal-scroll">
+                                                                        <div id="spreadsheet2" class="mb-4 col-md-12"></div>
+                                                                    </div>
                                                                     <script>
                                                                         var data2 = [{% for values in request_molecule_use.data %}
                                                                             [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
