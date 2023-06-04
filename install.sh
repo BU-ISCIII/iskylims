@@ -686,6 +686,7 @@ if [ $install == true ]; then
         mkdir -p $INSTALL_PATH/documents/wetlab/tmp
         mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
         mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
+        mkdir -p $INSTALL_PATH/documents/wetlab/templates
         chown $user:apache $INSTALL_PATH/documents
         chmod 775 $INSTALL_PATH/documents
         chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
@@ -694,9 +695,14 @@ if [ $install == true ]; then
         chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
         chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
         chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
+        chown $user:apache $INSTALL_PATH/documents/wetlab/templates
+        chmod 775 $INSTALL_PATH/documents/wetlab/templates
         mkdir -p $INSTALL_PATH/documents/drylab
         chown $user:apache $INSTALL_PATH/documents/drylab
         chmod 775 $INSTALL_PATH/documents/drylab
+
+        # Copy illumina sample sheet templates
+        cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
 
         # Starting iSkyLIMS
         echo "activate the virtualenv"

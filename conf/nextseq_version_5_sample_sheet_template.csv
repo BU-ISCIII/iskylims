@@ -1,0 +1,22 @@
+[Header]
+IEMFileVersion,5
+Investigator Name,$investigator
+Experiment Name,$exp_name
+Date,$date 
+Workflow,GenerateFASTQ
+Application,$application
+Instrument Type,$instrument
+Assay,$assay 
+Index Adapters,"$collection_index"
+Description,
+Chemistry,Amplicon
+
+[Reads]
+$reads
+$reads
+
+[Settings]
+Adapter,$adapter
+
+[Data]
+
