@@ -31,6 +31,7 @@ import wetlab.utils.common
 import wetlab.utils.fetch_info
 import wetlab.utils.library
 import wetlab.utils.pool
+import wetlab.utils.reports
 import wetlab.utils.run
 import wetlab.utils.sample
 import wetlab.utils.samplesheet
@@ -1881,238 +1882,28 @@ def get_list_of_libraries_values(
 @login_required
 def annual_report(request):
     # check user privileges
-    if request.user.is_authenticated:
-        try:
-            groups = django.contrib.auth.models.Group.objects.get(name="WetlabManager")
-            if groups not in request.user.groups.all():
-                return render(
-                    request,
-                    "wetlab/error_page.html",
-                    {
-                        "content": [
-                            "You do have the enough privileges to see this page ",
-                            "Contact with your administrator .",
-                        ]
-                    },
-                )
-        except Exception:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
-    if request.method == "POST":
-        year_selected = int(request.POST["yearselected"])
-        # get the current year to compare with the input
-        present_year = datetime.now().year
-        if year_selected > present_year:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Annual Report cannot be done on the future  ",
-                        "the input year in the Form  ",
-                        year_selected,
-                        "is not allowed",
-                    ]
-                },
-            )
-
-        completed_run_in_year = wetlab.models.RunProcess.objects.filter(
-            run_date__year=year_selected, state__run_state_name__exact="Completed"
-        )
-        #
-        uncompleted_run_in_year = wetlab.models.RunProcess.objects.filter(
-            run_date__year=year_selected
-        ).exclude(state__run_state_name__exact="Completed")
-        if len(completed_run_in_year) == 0 and len(uncompleted_run_in_year) == 0:
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "Annual Report cannot be generated because there is no runs performed the year ",
-                        year_selected,
-                    ]
-                },
-            )
-
-        annual_report_information = {}
-        annual_report_information["year"] = year_selected
-        number_of_runs = {}
-        number_of_runs["Completed Runs"] = 0
-        number_of_runs["Not Finish Runs"] = 0
-        if len(completed_run_in_year) > 0:
-            completed_run = []
-            for run in completed_run_in_year:
-                completed_run.append(run.get_run_name)
-            annual_report_information["completed_run"] = completed_run
-            number_of_runs["Completed Runs"] = len(completed_run_in_year)
-        if len(uncompleted_run_in_year) > 0:
-            uncompleted_run = []
-            for run_uncompleted in uncompleted_run_in_year:
-                uncompleted_run.append(run_uncompleted.get_run_name)
-            annual_report_information["uncompleted_run"] = uncompleted_run
-            number_of_runs["Not Finish Runs"] = len(uncompleted_run_in_year)
-        # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
-            "Number of Runs performed on the year", "", "ocean", number_of_runs
-        )
-        graphic_completed_run = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d", "ex1", "400", "300", "chart-1", "json", data_source
-        )
-        annual_report_information[
-            "graphic_completed_run"
-        ] = graphic_completed_run.render()
-
-        #
-        # Collecting information from StatsRunSummary
-        run_found_bin_summary_year = wetlab.models.StatsRunSummary.objects.filter(
-            stats_summary_run_date__year=year_selected, level__exact="Total"
-        )
-        q30_year, aligned_year, error_rate_year = {}, {}, {}
-        for run_bin_summary in run_found_bin_summary_year:
-            bin_summary_data = run_bin_summary.get_bin_run_summary().split(";")
-            run_name = run_bin_summary.runprocess_id.get_run_name()
-            aligned_year[run_name] = bin_summary_data[2]
-            error_rate_year[run_name] = bin_summary_data[3]
-            q30_year[run_name] = bin_summary_data[5]
-        annual_report_information["aligned_data"] = aligned_year
-        annual_report_information["error_rate_data"] = error_rate_year
-        annual_report_information["q30_data"] = q30_year
-        # graphics for StatsRunSummary
-        heading = "Aligned % for the runs done on year " + str(year_selected)
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "Aligned  ", "Run names ", "Aligned (in %)", "ocean", aligned_year
-        )
-        aligned_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "aligned_year",
-            "600",
-            "300",
-            "aligned_chart-3",
-            "json",
-            data_source,
-        )
-        annual_report_information["aligned_graphic"] = aligned_year_graphic.render()
-
-        heading = "Error Rate for the runs done on year " + str(year_selected)
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading,
-            "Error rate ",
-            "Run names ",
-            "Error rate",
-            "carbon",
-            error_rate_year,
-        )
-        error_rate_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "error_rate_year",
-            "600",
-            "300",
-            "error_rate_chart-4",
-            "json",
-            data_source,
-        )
-        annual_report_information[
-            "error_rate_graphic"
-        ] = error_rate_year_graphic.render()
-
-        heading = ">Q30 for the runs done on year " + str(year_selected)
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "Q30  ", "Run names ", ">Q 30 (in %)", "fint", q30_year
-        )
-        q30_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d", "q30_year", "600", "300", "q30_chart-2", "json", data_source
-        )
-        #
-        annual_report_information["q30_graphic"] = q30_year_graphic.render()
-        #
-
-        # Get the information for investigator name and the projects done
-        # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
-        investigator_projects = wetlab.models.Projects.objects.filter(
-            project_run_date__year=year_selected
-        ).order_by("user_id")
-        project_by_user = {}
-        (
-            investigator_5_project,
-            investigator_10_project,
-            investigator_more_10_project,
-        ) = ({}, {}, {})
-        #
-        for investigator in investigator_projects:
-            user_name = investigator.get_user_name()
-            if user_name in project_by_user:
-                project_by_user[user_name].append(investigator.get_project_name())
-            else:
-                project_by_user[user_name] = [investigator.get_project_name()]
-        for key, value in project_by_user.items():
-            if len(value) <= 5:
-                investigator_5_project[key] = value
-            elif len(value) <= 10:
-                investigator_10_project[key] = value
-            else:
-                investigator_more_10_project[key] = value
-        annual_report_information["user_5_projects"] = investigator_5_project
-        annual_report_information["user_10_projects"] = investigator_10_project
-        annual_report_information[
-            "user_more_10_projects"
-        ] = investigator_more_10_project
-
-        # Create the bar graphic for user projects
-        p_user_year = {}
-        p_user_year["1 - 5"] = len(investigator_5_project)
-        p_user_year["6 - 10"] = len(investigator_10_project)
-        p_user_year["more than 10"] = len(investigator_more_10_project)
-        heading = "Projects done per investigator on year " + str(year_selected)
-        data_source = wetlab.utils.stats_graphs.column_graphic_for_year_report(
-            heading, "  ", "Projects ", "number of users", "ocean", p_user_year
-        )
-        p_user_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "bar_project_user_year",
-            "400",
-            "300",
-            "p_user_chart-1",
-            "json",
-            data_source,
-        )
-        annual_report_information["p_user_year_graphic"] = p_user_year_graphic.render()
-
-        data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
-            heading, "Percentage", "carbon", p_user_year
-        )
-        pie_p_user_year_graphic = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d",
-            "pie_project_user_year",
-            "400",
-            "300",
-            "p_user_chart-2",
-            "json",
-            data_source,
-        )
-        annual_report_information[
-            "pie_p_user_year_graphic"
-        ] = pie_p_user_year_graphic.render()
-        #
+    groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager").last()
+    if groups not in request.user.groups.all():
         return render(
             request,
-            "wetlab/AnnualReport.html",
-            {"display_annual_report": annual_report_information},
+            "wetlab/annual_report.html",
+            {"error_message" : "You do have the enough privileges to see this page "},
+        )
+    if request.method == "POST" and request.POST["action"] == "annualreport":
+        annual_rep_data = wetlab.utils.reports.get_annual_report(request.POST["yearselected"])
+        if "ERROR" in annual_rep_data:
+            return render(
+                request,
+                "wetlab/annual_report.html",
+                {"error_message" : present_year["ERROR"]}
+            )
+        return render(
+            request,
+            "wetlab/annual_report.html",
+            {"annual_rep_data": annual_rep_data},
         )
     else:
-        return render(request, "wetlab/AnnualReport.html")
+        return render(request, "wetlab/annual_report.html")
 
 
 def get_size_dir(
@@ -4067,7 +3858,7 @@ def compare_samples(request):
             error_message = wetlab.config.ERROR_NO_SAMPLES_SELECTED
             return render(
                 request,
-                "wetlab/compareSamples.html",
+                "wetlab/compare_samples.html",
                 {"error_message": error_message, "samples_data": samples_data},
             )
         compared_data = wetlab.utils.sample.get_comparation_sample_information(
@@ -4076,13 +3867,13 @@ def compare_samples(request):
 
         return render(
             request,
-            "wetlab/compareSamples.html",
+            "wetlab/compare_samples.html",
             {"compared_data": compared_data},
         )
     else:
         return render(
             request,
-            "wetlab/compareSamples.html",
+            "wetlab/compare_samples.html",
             {"samples_data": samples_data},
         )
 

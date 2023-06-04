@@ -19,7 +19,7 @@ urlpatterns = [
         wetlab.views.add_user_lot_commercial_kit,
         name="add_user_lot_commercial_kit",
     ),
-    path("AnnualReport/", wetlab.views.annual_report, name="annual_report"),
+    path("annualReport/", wetlab.views.annual_report, name="annual_report"),
     path("changeRunName=<int:run_id>", wetlab.views.change_run_name, name="change_run_name"),
     path("compareSamples", wetlab.views.compare_samples, name="compare_samples"),
     path("createNewRun/", wetlab.views.create_new_run, name="create_new_run"),
