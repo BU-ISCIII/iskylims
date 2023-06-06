@@ -110,9 +110,7 @@ def request_seq_service(request):
             response["Content-Disposition"] = "inline; filename=files.json"
             return response
         else:
-            service_data_info = drylab.utils.req_services.get_service_data(
-                request
-            )
+            service_data_info = drylab.utils.req_services.get_service_data(request)
             return render(
                 request,
                 "drylab/request_seq_service.html",
@@ -122,9 +120,7 @@ def request_seq_service(request):
     if request.method == "POST" and request.POST["sub_action"] == "create_service":
         # check that at some services have been requested
         if len(request.POST.getlist("requested_services")) == 0:
-            service_data_info = drylab.utils.req_services.get_service_data(
-                request
-            )
+            service_data_info = drylab.utils.req_services.get_service_data(request)
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
                 request,
@@ -145,10 +141,7 @@ def request_seq_service(request):
             )
         # Send mail to user and drylab notification email
         email_data = {}
-        if (
-            "user_id_request" in request.POST
-            and request.POST["user_id_request"] != ""
-        ):
+        if "user_id_request" in request.POST and request.POST["user_id_request"] != "":
             user_obj = django.contrib.auth.models.User.objects.filter(
                 pk__exact=request.POST["user_id_request"]
             ).last()
@@ -187,9 +180,7 @@ def request_seq_service(request):
             {"confirmation_result": confirmation_result},
         )
     else:
-        service_data_info = drylab.utils.req_services.get_service_data(
-            request
-        )
+        service_data_info = drylab.utils.req_services.get_service_data(request)
         return render(
             request,
             "drylab/request_seq_service.html",
@@ -202,8 +193,8 @@ def counseling_request(request):
     if request.method == "POST" and request.POST["sub_action"] == "create_service":
         # check that at some services have been requested
         if len(request.POST.getlist("requested_services")) == 0:
-            service_data_info = (
-                drylab.utils.req_services.get_counseling_service_data(request)
+            service_data_info = drylab.utils.req_services.get_counseling_service_data(
+                request
             )
             error_message = drylab.config.ERROR_NO_SERVICES_ARE_SELECTED
             return render(
@@ -240,8 +231,8 @@ def counseling_request(request):
         )
 
     else:
-        service_data_info = (
-            drylab.utils.req_services.get_counseling_service_data(request)
+        service_data_info = drylab.utils.req_services.get_counseling_service_data(
+            request
         )
         return render(
             request,
@@ -293,8 +284,8 @@ def infrastructure_request(request):
             {"confirmation_result": confirmation_result},
         )
     else:
-        service_data_info = (
-            drylab.utils.req_services.get_infrastructure_service_data(request)
+        service_data_info = drylab.utils.req_services.get_infrastructure_service_data(
+            request
         )
         return render(
             request,
@@ -346,6 +337,7 @@ def add_samples_in_service(request):
             {"service_data_information": service_data_information},
         )
 
+
 @login_required
 def delete_samples_in_service(request):
     if request.user.is_authenticated:
@@ -369,7 +361,9 @@ def delete_samples_in_service(request):
                 {"content": ["The service that you are trying to get does not exist "]},
             )
         if "sampleId" not in request.POST:
-            return redirect("/drylab/display-service=" + str(request.POST["service_id"]))
+            return redirect(
+                "/drylab/display-service=" + str(request.POST["service_id"])
+            )
         deleted_samples = drylab.utils.req_services.delete_samples_in_service(
             request.POST.getlist("sampleId")
         )
@@ -448,7 +442,9 @@ def search_service(request):
         service_user = request.POST["service_user"]
         assigned_user = request.POST["bioinfo_user"]
         # Data related to samples,and run from wetlab application
-        sample_name = request.POST["sample_name"] if "sample_name" in request.POST else ""
+        sample_name = (
+            request.POST["sample_name"] if "sample_name" in request.POST else ""
+        )
         project_name = (
             request.POST["project_name"] if "project_name" in request.POST else ""
         )
@@ -474,13 +470,9 @@ def search_service(request):
 
         # check the right format of start and end date
         if (
-            start_date
-            and not drylab.utils.common.check_valid_date_format(
-                start_date
-            )
+            start_date and not drylab.utils.common.check_valid_date_format(start_date)
         ) or (
-            end_date != ""
-            and not drylab.utils.common.check_valid_date_format(end_date)
+            end_date != "" and not drylab.utils.common.check_valid_date_format(end_date)
         ):
             error_message = drylab.config.ERROR_INCORRECT_FORMAT_DATE
             return render(
@@ -517,7 +509,9 @@ def search_service(request):
                     },
                 )
         else:
-            services_found = drylab.models.Service.objects.prefetch_related("service_user_id", "service_state").all()
+            services_found = drylab.models.Service.objects.prefetch_related(
+                "service_user_id", "service_state"
+            ).all()
 
         if service_state != "":
             services_found = services_found.filter(
@@ -663,7 +657,7 @@ def pending_services(request):
 
 
 @login_required
-def service_in_waiting_info(request):
+def add_on_hold(request):
     if request.user.is_authenticated:
         try:
             groups = django.contrib.auth.models.Group.objects.get(
@@ -694,17 +688,17 @@ def service_in_waiting_info(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if request.method == "POST" and request.POST["action"] == "serviceInWaitingInfo":
+    if request.method == "POST" and request.POST["action"] == "service_on_hold":
         service_name = drylab.utils.req_services.set_service_waiting(
             request.POST["service_id"]
         )
         if service_name is not None:
             return render(
                 request,
-                "drylab/serviceInWaitingInfo.html",
+                "drylab/service_on_hold.html",
                 {"service_name": service_name},
             )
-    return render(request, "drylab/serviceInWaitingInfo.html", {"ERROR": "ERROR"})
+    return render(request, "drylab/service_on_hold.html", {"ERROR": "ERROR"})
 
 
 @login_required
@@ -756,20 +750,17 @@ def add_resolution(request):
 
         return render(
             request,
-            "drylab/addResolution.html",
+            "drylab/add_resolution.html",
             {"created_resolution": created_resolution},
         )
 
-    if (
-        request.method == "POST"
-        and request.POST["action"] == "formToaddResolutionService"
-    ):
+    if request.method == "POST" and request.POST["action"] == "add_resolution":
         resolution_form_data = (
             drylab.utils.resolutions.prepare_form_data_add_resolution(request.POST)
         )
         return render(
             request,
-            "drylab/addResolution.html",
+            "drylab/add_resolution.html",
             {"resolution_form_data": resolution_form_data},
         )
     else:
@@ -840,7 +831,7 @@ def add_in_progress(request):
         in_progress_resolution["resolution_number"] = resolution_number
         return render(
             request,
-            "drylab/addInProgress.html",
+            "drylab/add_in_progress.html",
             {"in_progress_resolution": in_progress_resolution},
         )
 
@@ -1690,7 +1681,7 @@ def define_pipeline(request):
         new_pipeline = drylab.models.Pipelines.objects.create_pipeline(
             pipeline_data_form
         )
-        
+
         if "additional_parameters" in pipeline_data_form:
             drylab.utils.pipelines.store_parameters_pipeline(
                 new_pipeline, pipeline_data_form["additional_parameters"]

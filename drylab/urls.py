@@ -8,9 +8,9 @@ import drylab.views
 
 urlpatterns = [
     path("", drylab.views.index, name="index"),
-    path("addResolution", drylab.views.add_resolution, name="add_resolution"),
+    path("add-resolution", drylab.views.add_resolution, name="add_resolution"),
     path(
-        "addInProgress", drylab.views.add_in_progress, name="add_in_progress"
+        "add-in-progress", drylab.views.add_in_progress, name="add_in_progress"
     ),
     path("add-delivery", drylab.views.add_delivery, name="add_delivery"),
     path(
@@ -76,9 +76,9 @@ urlpatterns = [
     ),
     path("search-service", drylab.views.search_service, name="search_service"),
     path(
-        "serviceInWaitingInfo",
-        drylab.views.service_in_waiting_info,
-        name="service_in_waiting_info",
+        "service-on-hold",
+        drylab.views.add_on_hold,
+        name="service_on_hold",
     ),
     path("statsByUser", drylab.views.stats_by_user, name="stats_by_user"),
     path(
