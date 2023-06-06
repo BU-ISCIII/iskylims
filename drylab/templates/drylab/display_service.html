@@ -1,599 +1,587 @@
-{% extends 'drylab/base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
-{% block content %}
 {% load mptt_tags %}
 {% load l10n %}
-<style>
-    .scrolling-wrapper {
-        overflow-x: auto;
-        overflow-y: auto;
-        white-space: nowrap;
-        height: 400px;
-</style>
-{% if display_service %}
-<h1>
-    <div class="color-heading">Service Information for the service {{ display_service.service_name}}</div>
-</h1>
-<div class="row my-2">
-    <div class="col-sm-6"> <!-- general information from service -->
-        <div class="card ">
-            <div class="card-header">
-                <h3>Service requested information</h3>
-            </div>
-            <div class="card-body">
-                <table class="table table-hover">
-                    <tbody>
-                        {% if display_service.resolution_folder %}
-                        <tr>
-                            <td>Folder Name </td>
-                            <td>{{ display_service.resolution_folder }} </td>
-                        </tr>
-                        {% endif %}
-                        <tr>
-                            <td>Service Requested by: </td>
-                            <td> {{ display_service.user_name }} </td>
-                        </tr>
-                        <tr>
-                            <td>Service is in State: </td>
-                            <td> {{ display_service.state }} </td>
-                        </tr>
-                        <tr>
-                            <td>File uploaded for the service: </td>
-                            <td>
-                                {% if display_service.file %}
-                                {% for file_path, f_name in display_service.file %}
-                                <a href="{{ file_path }}" download> {{f_name}} <span
-                                        class="glyphicon glyphicon-download-alt"></span></a><br>
-                                {% endfor %}
-                                {% else %}
-                                No file uploaded
-                                {% endif %}
-                            </td>
-                        </tr>
 
-                        {% for text, value in display_service.service_dates %}
-                        <tr>
-                            <td>{{ text }}</td>
-                            <td>{{ value }}</td>
-                        </tr>
-                        {% endfor%}
-                    </tbody>
-                </table>
-            </div> <!--// end panel body -->
-        </div>
-        <br>
-        <div class="card ">
-            <div class="card-header">
-                <h3>Calculation dates</h3>
-            </div>
-            <div class="card-body">
-                {% if display_service.calculation_dates %}
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Time period</th>
-                            <th>Number of days</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for date, value in display_service.calculation_dates %}
-                        <tr>
-                            <td>{{date}} </td>
-                            <td>{{value}} days</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <h5> We don't have estimation dates for this service</h5>
-                {% endif %}
-            </div> <!--// end panel body -->
-        </div>
-    </div> <!--// end col-sm-6    -->
-    {% if display_service.service_manager %}
-    <div class="col-sm-6 "> <!-- Actions  allowed-->
-        <div class="card ">
-            <div class="card-header">
-                <h3>Allowed actions on {{ display_service.service_name}}</h3>
-            </div>
-            <div class="card-body">
-                <h5>Click on the following buttons to update the service</h5>
-                {% if display_service.allowed_waiting_info %}
-                <div class="row my-2">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Put service on hold</h3>
-                        </div>
-                        <div class="card-body">
-                            <form class="" action="/drylab/serviceInWaitingInfo" method="post">
-                                {% csrf_token %}
-                                <p>Click on the bottom below to indicate that service requires input information from
-                                    user </p>
-                                <input type="hidden" name="action" value="serviceInWaitingInfo">
-                                <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                                <div class="col-sm-4 ">
-                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit2"
-                                        value="Waiting information">
-                                </div>
-                            </form>
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end row -->
-                {% endif %}
-                {% if display_service.add_resolution_action %}
-                <div class="row my-2">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Select the services to add new resolution </h3>
-                        </div>
-                        <div class="card-body">
-                            <form class="" action="/drylab/addResolution" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="formToaddResolutionService">
-                                <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                                {% if display_service.multiple_services %}
-                                    <p>Select the Service/Services for which you want to do the new resolution OR select
-                                        None or all to handle all in the new resolution</p>
-                                    <input type="hidden" name="children_services_id"
-                                        value="{% for id, name in display_service.children_services %}{{id}},{% endfor %}">
-                                    <div class="form-control">
-                                        <label class="col-sm-5 control-label" for="childrenServices">Select services</label>
-                                        <div class="col-sm-10">
-                                            <select class="custom-select" name="childrenServices" id="childrenServices"
-                                                multiple>
-                                                {% for id, name in display_service.children_services %}
-                                                <option value="{{id}}">{{name}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                {% else %}
-                                <p>Add resolution for service: </p>
-                                <h5>{{display_service.children_services.0.1}}</h5>
-                                {% endif %}
-                                <div class="col-sm-4 "> <!-- col-sm-4  resolution button  -->
-                                    <br><br>
-                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                        value="Add Resolution">
-                                </div> <!--// end col-sm-4   resolution button  -->
-                            </form>
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end row -->
-                {% endif%}
-                {% if display_service.resolution_progress %}
-                <div class="row my-2">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Resolution to update the state to "In Progress"</h3>
-                        </div>
-                        <div class="card-body">
-                            {% for res_id , res_name, services in display_service.resolution_progress %}
-                            <form class="" action="/drylab/addInProgress" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="add_in_progress">
-                                <input type="hidden" name="resolution_id" value="{{res_id}}">
-                                <div class="col-sm-8 "> <!-- col-sm-4  In progress button  -->
-                                    <h5>{{res_name}}</h5>
-                                    {% if services.0 != '' %}
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Resolution handle services</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for service in services %}
-                                            <tr>
-                                                <td>{{service}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                    {% endif %}
-                                </div> <!--// end col-sm-8 -->
-                                <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
-                                    <br>
-                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                        value="In Progress">
-                                </div> <!--// end col-sm-4   resolution button  -->
-                            </form>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end row -->
-                {% endif%}
-                {% if display_service.resolution_delivery %}
-                <div class="row my-2">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Delivery resolutions</h3>
-                        </div>
-                        <div class="card-body">
-                            {% for res_id , res_name, services in display_service.resolution_delivery %}
-                            <form class="" action="/drylab/add-delivery" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="deliveryResolutionService">
-                                <input type="hidden" name="resolution_id" value="{{res_id}}">
-                                <div class="col-sm-8 "> <!-- col-sm-4  In progress button  -->
-                                    <h5>{{res_name}}</h5>
-                                    {% if services.0 != '' %}
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Resolution handle services</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for service in services %}
-                                            <tr>
-                                                <td>{{service}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                    {% endif %}
-                                </div> <!--// end col-sm-8 -->
-                                <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
-                                    <br>
-                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                        value="Delivery">
-                                </div> <!--// end col-sm-4   resolution button  -->
-                            </form>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end row -->
-                {% endif%}
-                {% if display_service.resolution_delivered %}
-                <div class="row my-2">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Resolution already delivered</h3>
-                        </div>
-                        <div class="card-body">
-                            <form class="" action="/drylab/addResolution" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="formToaddResolutionService">
-                                <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                                <div class="col-sm-8 "> <!-- col-sm-8  Re Open resolutions  -->
-                                    {% if display_service.all_requested_services %}
-                                    <input type="hidden" name="children_services_id"
-                                        value="{% for id, name in display_service.all_requested_services %}{{id}},{% endfor %}">
-                                    <div class="form-control">
-                                        <label class="col-sm-8 control-label" for="childrenServices">Select
-                                            services</label>
-                                        <div class="col-sm-8">
-                                            <select class="custom-select" name="childrenServices" id="childrenServices"
-                                                multiple>
-                                                {% for id, name in display_service.all_requested_services %}
-                                                <option value="{{id}}">{{name}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div> <!-- end from-group   -->
-                                    {% endif %}
-                                </div> <!--// end col-sm-8 -->
-                                <div class="col-sm-3 offset-1"> <!-- col-sm-3  progress button  -->
-                                    <br>
-                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                        value="Reopen Resolution">
-                                </div> <!--// end col-sm-4   resolution button  -->
-                            </form>
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end row -->
-                {% endif%}
-            </div> <!--// end panel body -->
-        </div>
-    </div> <!--// end col-sm-6  Actions  allowed  -->
-    {% endif %}
-</div> <!--// end row -->
+{% block content %}
 
-<div class="row my-2">
-    <div class="col-sm-12">
-        <div class="tab">
-            <button class="tablinks" onclick="summaryBin(event, 'request_services')" id="defaultOpen">Requested
-                Services</button>
-            <button class="tablinks" onclick="summaryBin(event, 'r_samples')">Samples in Service</button>
-            <button class="tablinks" onclick="summaryBin(event, 'pipelines')">Pipelines</button>
-            <button class="tablinks" onclick="summaryBin(event, 'resolutions')">Resolutions</button>
-            <button class="tablinks" onclick="summaryBin(event, 'deliveries')">Deliveries</button>
-        </div> <!--  end tabs -->
-        <div class="col-sm-12"> <!-- Resolution and Delivery Information from service -->
-            <div id="request_services" class="tabcontent">
-                <div class="col-sm-6">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Requested Services</h3>
-                        </div>
-                        <div class="card-body">
-                            <ul class="root">
-                                {% recursetree display_service.nodes %}
-                                <li>
-                                    {{ node }}
-                                    {% if not node.is_leaf_node %}
-                                    <ul class="children">
-                                        {{ children }}
-                                    </ul>
-                                    <BR>
-                                    {% endif %}
-                                </li>
-                                {% endrecursetree %}
-                            </ul>
-                        </div> <!--// end panel body -->
+{% include "core/cdn_table_functionality.html"%}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if display_service %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-12">
+                <div class="card ">
+                    <div class="card-header">
+                        Service information
                     </div>
-                </div> <!--// end col-sm-6 -->
-                <div class="col-sm-12"> <!-- Notes in the Requested services -->
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Notes included in the service request</h3>
-                        </div>
-                        <div class="card-body">
-                            {{display_service.service_notes}}
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end col-sm-12  notes  -->
-            </div><!-- // end of tab request_services -->
-            <div id="r_samples" class="tabcontent">
-                <div class="col-sm-8"> <!-- Samples Requested services -->
-                    <div class="card ">
-                        {% if display_service.service_manager %}
-                        <form class="" action="/drylab/deleteSamplesInService" method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="deleteSamplesInService">
-                            <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                            {% endif %}
-                            <div class="card-header">
-                                <h3>Sequencing Samples requested in service</h3>
+                    <div class="card-body">
+                        <div class="row justify-content-center pb-2 pt-2">
+                            <div class="col-md-6">
+                                <table id="service_info" class="table table-hover">
+                                    <tbody>
+                                        {% if display_service.resolution_folder %}
+                                        <tr>
+                                            <td>Folder name </td>
+                                            <td>{{ display_service.resolution_folder }} </td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <td>User: </td>
+                                            <td> {{ display_service.user_name }} </td>
+                                        </tr>
+                                        <tr>
+                                            <td>State: </td>
+                                            <td> {{ display_service.state }} </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Files: </td>
+                                            <td>
+                                                {% if display_service.file %}
+                                                {% for file_path, f_name in display_service.file %}
+                                                <a href="{{ file_path }}" download> {{f_name}} <span
+                                                        class="bi bi-download"></span></a><br>
+                                                {% endfor %}
+                                                {% else %}
+                                                No uploaded files
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+
+                                        {% for text, value in display_service.service_dates %}
+                                        <tr>
+                                            <td>{{ text }}</td>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                        {% endfor%}
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="card-body">
-                                {% if display_service.samples_sequenced|length > 0 %}
-                                <br>
-                                <h5>Number of Sequenced samples in Service: {{display_service.samples_sequenced|length}}
-                                </h5>
-                                <div class="scrolling-wrapper">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Sample Name</th>
-                                                <th>Project Name</th>
-                                                <th>Run Name</th>
-                                                {% if display_service.service_manager %}
-                                                <th>Select to delete</th>
-                                                {% endif %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for key, sample, project, run, s_id in display_service.samples_sequenced %}
-                                            <tr>
-                                                <td>
-                                                    {% if key == 'None' %}
-                                                    {{sample}}
-                                                    {% else %}
-                                                    <a href="/wetlab/displaySampleInRun={{ key }}" target="_blank"
-                                                        rel="noopener noreferrer">{{sample}}</a>
-                                                    {% endif %}
-                                                </td>
-                                                <td>{{project}}</td>
-                                                <td>{{run}}</td>
-                                                {% if display_service.service_manager %}
-                                                <td><input type="checkbox" name="sampleId" value="{{s_id}}"></td>
-                                                {% endif %}
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div> <!--  end of scrolling wrapper -->
-                                {% else %}
-                                <h5 style="text-align:center"> There is not sequencing samples assigned to this service
-                                </h5>
-                                {% endif %}
-                            </div> <!--// end panel body -->
-                            {% if display_service.only_recorded_samples %}
-                            <div class="card-header">
-                                <h3>External Samples requested in service</h3>
-                            </div>
-                            <div class="card-body">
-                                <h5>Number of only recorded samples in Service:
-                                    {{display_service.only_recorded_samples|length}}</h5>
-                                <div class="scrolling-wrapper">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Sample Name</th>
-                                                <th>Sample Project Name</th>
-                                                {% if display_service.service_manager %}
-                                                <th>Select to delete</th>
-                                                {% endif %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for sample, project, s_id in display_service.only_recorded_samples %}
-                                            <tr>
-                                                <td>{{sample}}</td>
-                                                <td>{{project}}</td>
-                                                {% if display_service.service_manager %}
-                                                <td><input type="checkbox" name="sampleId" value="{{s_id}}"></td>
-                                                {% endif %}
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div> <!--  end of scrolling wrapper -->
-                            </div> <!--// end panel body -->
-                            {% endif %}
                             {% if display_service.service_manager %}
-                            <input class="btn pull-left btn-danger" type="submit" id="btnSubmit" value="Delete Samples">
-                            {% endif %}
-                        </form>
+                            <div class="col-md-6 ">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        Actions on {{ display_service.service_name}}</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="container-md">
+                                            {% if display_service.add_resolution_action %}
+                                            <div class="row pt-2 pb-2">
+                                                <div class="col-md-4">
+                                                    <form class="" action="/drylab/add-resolution" method="post">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="add_resolution">
+                                                        <input type="hidden" name="service_id"
+                                                            value="{{display_service.service_id}}">
+                                                        <div class="row pt-2 pb-2">
+                                                            <div class="col-md-12">
+                                                                {% if display_service.multiple_services %}
+                                                                <p>Select the analysis you want to include OR select
+                                                                    None to include all of them in the resolution</p>
+                                                                <input type="hidden" name="children_services_id"
+                                                                    value="{% for id, name in display_service.children_services %}{{id}},{% endfor %}">
 
-                        {% if display_service.service_manager %}
-                        <form id="addSamplesInService" class="" action="/drylab/addSamplesInService" method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="addSamplesInService">
-                            <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                value="Add new Samples">
-                        </form>
-                        <script>
-                            $(document).ready(function () {
-                                $("#addSamplesInService").one('submit', function () {
-                                    //stop submitting the form to see the disabled button effect
-                                    $(this).find('input[type="submit"]').attr('disabled', 'disabled');
-                                    return true;
-                                });
-                            });
-                        </script>
-                        {% endif %}
-                    </div>
-                </div> <!--// end col-sm-8   -->
-            </div> <!-- // end of tab request_services -->
-
-            <div id="pipelines" class="tabcontent">
-                <div class="col-sm-6">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Pipelines used in this service </h3>
-                        </div>
-                        <div class="card-body">
-                            {% if display_service.pipelines_heading %}
-                            {% for pipe, values in display_service.pipelines_data.items %}
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        {% for column in display_service.pipelines_heading %}
-                                        <th>{{column}}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for id, name, version, res_num in values %}
-                                    <tr>
-
-                                        <td><a href="/drylab/detail-pipeline={{id}}">{{name}}</a></td>
-                                        <td>{{version}}</td>
-                                        <td>{{res_num}}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            <br><br>
-                            {% endfor %}
-                            {% else %}
-                            <h5 style="text-align:center"> There are no pipelines used for the requested service</h5>
-                            {% endif %}
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end col-sm062  Projects Requested services  -->
-            </div><!-- // end of tab pipelines -->
-
-            <div id="resolutions" class="tabcontent">
-                <div class="col-sm-8"> <!-- Resolution information from service -->
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Resolution requested information</h3>
-                        </div>
-                        <div class="card-body">
-                            {% if display_service.resolutions %}
-                            {% for resolution_number, resolution_information in display_service.resolutions %}
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th colspan="2">Resolution Information for : {{resolution_number}}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for values in resolution_information %}
-                                    <tr>
-                                        {% if forloop.first %}
-                                        {% if values.1.0 != 'None' %}
-                                        <td>{{values.0}}</td>
-                                        <td>
-                                            {% for item in values.1 %}
-                                            {{item}}<br>
-                                            {% endfor %}
-                                        </td>
+                                                                <select class="form-select" name="children_services"
+                                                                    multiple aria-label="multiple select example">
+                                                                    {% for id, name in display_service.children_services %}
+                                                                    <option value="{{id}}">{{name}}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                                {% else %}
+                                                                <p>Add resolution for service: </p>
+                                                                <p>{{display_service.children_services.0.1}}</p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="row pb-2 pt-2">
+                                                            <div class="col-md-auto ">
+                                                                <input class="btn btn-outline-primary" type="submit"
+                                                                    id="btn_add_resolution" value="Add Resolution">
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            {% endif%}
+                                            {% if display_service.allowed_on_hold %}
+                                            <div class="row pt-2 pb-2">
+                                                <div class="col-md-4">
+                                                    <form class="" action="/drylab/service-on-hold" method="post">
+                                                        {% csrf_token %}
+                                                        <p>Click on the bottom below to set the service on hold while
+                                                            waiting
+                                                            for user to answer </p>
+                                                        <input type="hidden" name="action" value="service_on_hold">
+                                                        <input type="hidden" name="service_id"
+                                                            value="{{display_service.service_id}}">
+                                                        <input class="btn btn-outline-primary" type="submit"
+                                                            id="btn_submit_onhold" value="Waiting information">
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
                                         {% endif %}
-                                        {% elif forloop.last %}
-                                        <td>{{values.0}}</td>
-                                        <td><a href="{{values.1}}" download> Download file<span
-                                                    class="glyphicon glyphicon-download-alt"></span></a></td>
+                                        {% if display_service.resolution_progress %}
+                                        <div class="row pt-2 pb-2">
+                                            <div class="col-md-4">
+                                                {% for res_id , res_name, services in display_service.resolution_progress %}
+                                                <form class="" action="/drylab/add-in-progress" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="add_in_progress">
+                                                    <input type="hidden" name="resolution_id" value="{{res_id}}">
+                                                    <div class="row pt-2 pb-2">
+                                                        <div class="col-md-12">
+                                                            <p>{{res_name}}</p>
+                                                            {% if services.0 != '' %}
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Resolution analysis</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for service in services %}
+                                                                    <tr>
+                                                                        <td>{{service}}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                    <div class="row pb-2 pt-2">
+                                                        <div class="col-md-auto">
+                                                            <input class="btn btn-outline-primary" type="submit"
+                                                                id="btn_in_progress" value="In Progress">
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif%}
+                                        {% if display_service.resolution_delivery %}
+                                        <div class="row pb-2 pt-2">
+                                            <div class="col-md-4">
+                                                {% for res_id , res_name, services in display_service.resolution_delivery %}
+                                                <form class="" action="/drylab/add-delivery" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action"
+                                                        value="deliveryResolutionService">
+                                                    <input type="hidden" name="resolution_id" value="{{res_id}}">
+                                                    <div class="row pb-2 pt-2">
+                                                        <div class="col-md-12 ">
+                                                            <p>{{res_name}}</p>
+                                                            {% if services.0 != '' %}
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Resolution analysis</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for service in services %}
+                                                                    <tr>
+                                                                        <td>{{service}}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="row pb-2 pt-2">
+                                                        <div class="col-md-auto">
+                                                            <input class="btn btn-outline-primary" type="submit"
+                                                                id="btn_add_delivery" value="Add delivery">
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif%}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="row pb-2 pt-2">
+                            <div class="col-md-6">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        Time statistics
+                                    </div>
+                                    <div class="card-body">
+                                        {% if display_service.calculation_dates %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Time period</th>
+                                                    <th>Number of days</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for date, value in display_service.calculation_dates %}
+                                                <tr>
+                                                    <td>{{date}} </td>
+                                                    <td>{{value}} days</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
                                         {% else %}
-                                        <td>{{values.0}}</td>
-                                        <td>{{values.1}} </td>
+                                        <h5> We don't have estimation dates for this service</h5>
                                         {% endif %}
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            {% endfor %}
-                            <BR><BR>
-                            {% else %}
-                            <h5 style="text-align:center"> There are no resolutions assigned yet for the requested
-                                service</h5>
-                            {% endif %}
-                        </div> <!--// end panel body -->
-                    </div>
-                </div> <!--// end col-sm-8  Resolution information from service  -->
-            </div><!-- // end of tab resolutions -->
-            <div id="deliveries" class="tabcontent">
-                <div class="col-sm-6"> <!-- Resolution information from service -->
-                    <div class="card ">
-                        <div class="card-header">
-                            <h3>Delivery information</h3>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            {% if display_service.delivery %}
-                            {% for delivery in display_service.delivery %}
-                            {% for resolution_number, delivery_date, notes in delivery %}
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th colspan="2">Delivery information for Resolution {{ resolution_number }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Delivery Date: </td>
-                                        <td> {{ delivery_date }} </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Notes: </td>
-                                        <td>{{ notes }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            {% endfor %}
-                            <BR><BR>
-                            {% endfor %}
-                            {% else %}
-                            <h5 style="text-align:center"> There are no deliveries done yet for the requested service
-                            </h5>
-                            {% endif %}
-                        </div> <!--// end panel body -->
+                    
                     </div>
-                </div> <!--// end col-sm-6  Deliveries information from service  -->
-            </div><!-- // end of tab deliveries -->
-        </div> <!--// end sm 12 -->
-    </div> <!--// end sm 12 -->
-</div> <!--// end row -->
-<script>
-    // Get the element with id="defaultOpen" and click on it
-    document.getElementById("defaultOpen").click();
-</script>
-{% endif %}
-{% endblock %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
 
-jexcel(document.getElementById('spreadsheet2'), {
-data:data2,
-columns: [
-{ type:'text', width:300, title:'Cover' },
-{ type:'text', width:300, title:'Title' },
-],
-updateTable: function (instance, cell, col, row, val, id) {
-if (col == 0) {
-cell.innerHTML = '<a href="' + val + '>' + val + '</a>';
+
+
+
+
+<!--             <div class="row my-2">
+                <div class="col-sm-12">
+                    <div class="tab">
+                        <button class="tablinks" onclick="summaryBin(event, 'request_services')"
+                            id="defaultOpen">Requested
+                            Services</button>
+                        <button class="tablinks" onclick="summaryBin(event, 'r_samples')">Samples in
+                            Service</button>
+                        <button class="tablinks" onclick="summaryBin(event, 'pipelines')">Pipelines</button>
+                        <button class="tablinks" onclick="summaryBin(event, 'resolutions')">Resolutions</button>
+                        <button class="tablinks" onclick="summaryBin(event, 'deliveries')">Deliveries</button>
+                    </div>
+                    <div class="col-sm-12">
+                        <div id="request_services" class="tabcontent">
+                            <div class="col-sm-6">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h3>Requested Services</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="root">
+                                            {% recursetree display_service.nodes %}
+                                            <li>
+                                                {{ node }}
+                                                {% if not node.is_leaf_node %}
+                                                <ul class="children">
+                                                    {{ children }}
+                                                </ul>
+                                                <BR>
+                                                {% endif %}
+                                            </li>
+                                            {% endrecursetree %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h3>Notes included in the service request</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        {{display_service.service_notes}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="r_samples" class="tabcontent">
+                            <div class="col-sm-8">
+                                <div class="card ">
+                                    {% if display_service.service_manager %}
+                                    <form class="" action="/drylab/deleteSamplesInService" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="deleteSamplesInService">
+                                        <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                                        {% endif %}
+                                        <div class="card-header">
+                                            <h3>Sequencing Samples requested in service</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if display_service.samples_sequenced|length > 0 %}
+                                            <br>
+                                            <h5>Number of Sequenced samples in Service:
+                                                {{display_service.samples_sequenced|length}}
+                                            </h5>
+                                            <div class="scrolling-wrapper">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Sample Name</th>
+                                                            <th>Project Name</th>
+                                                            <th>Run Name</th>
+                                                            {% if display_service.service_manager %}
+                                                            <th>Select to delete</th>
+                                                            {% endif %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for key, sample, project, run, s_id in display_service.samples_sequenced %}
+                                                        <tr>
+                                                            <td>
+                                                                {% if key == 'None' %}
+                                                                {{sample}}
+                                                                {% else %}
+                                                                <a href="/wetlab/displaySampleInRun={{ key }}"
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer">{{sample}}</a>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{project}}</td>
+                                                            <td>{{run}}</td>
+                                                            {% if display_service.service_manager %}
+                                                            <td><input type="checkbox" name="sampleId" value="{{s_id}}">
+                                                            </td>
+                                                            {% endif %}
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {% else %}
+                                            <h5 style="text-align:center"> There is not sequencing
+                                                samples
+                                                assigned to this service
+                                            </h5>
+                                            {% endif %}
+                                        </div>
+                                        {% if display_service.only_recorded_samples %}
+                                        <div class="card-header">
+                                            <h3>External Samples requested in service</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5>Number of only recorded samples in Service:
+                                                {{display_service.only_recorded_samples|length}}
+                                            </h5>
+                                            <div class="scrolling-wrapper">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Sample Name</th>
+                                                            <th>Sample Project Name</th>
+                                                            {% if display_service.service_manager %}
+                                                            <th>Select to delete</th>
+                                                            {% endif %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for sample, project, s_id in display_service.only_recorded_samples %}
+                                                        <tr>
+                                                            <td>{{sample}}</td>
+                                                            <td>{{project}}</td>
+                                                            {% if display_service.service_manager %}
+                                                            <td><input type="checkbox" name="sampleId" value="{{s_id}}">
+                                                            </td>
+                                                            {% endif %}
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if display_service.service_manager %}
+                                        <input class="btn pull-left btn-danger" type="submit" id="btnSubmit"
+                                            value="Delete Samples">
+                                        {% endif %}
+                                    </form>
+
+                                    {% if display_service.service_manager %}
+                                    <form id="addSamplesInService" class="" action="/drylab/addSamplesInService"
+                                        method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="addSamplesInService">
+                                        <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                                        <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                            value="Add new Samples">
+                                    </form>
+                                    <script>
+                                        $(document).ready(function () {
+                                            $("#addSamplesInService").one('submit', function () {
+                                                //stop submitting the form to see the disabled button effect
+                                                $(this).find('input[type="submit"]').attr('disabled', 'disabled');
+                                                return true;
+                                            });
+                                        });
+                                    </script>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="pipelines" class="tabcontent">
+                            <div class="col-sm-6">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h3>Pipelines used in this service </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if display_service.pipelines_heading %}
+                                        {% for pipe, values in display_service.pipelines_data.items %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    {% for column in display_service.pipelines_heading %}
+                                                    <th>{{column}}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for id, name, version, res_num in values %}
+                                                <tr>
+
+                                                    <td><a href="/drylab/detail-pipeline={{id}}">{{name}}</a>
+                                                    </td>
+                                                    <td>{{version}}</td>
+                                                    <td>{{res_num}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        <br><br>
+                                        {% endfor %}
+                                        {% else %}
+                                        <h5 style="text-align:center"> There are no pipelines used
+                                            for the
+                                            requested service</h5>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="resolutions" class="tabcontent">
+                            <div class="col-sm-8">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h3>Resolution requested information</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if display_service.resolutions %}
+                                        {% for resolution_number, resolution_information in display_service.resolutions %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="2">Resolution Information for :
+                                                        {{resolution_number}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for values in resolution_information %}
+                                                <tr>
+                                                    {% if forloop.first %}
+                                                    {% if values.1.0 != 'None' %}
+                                                    <td>{{values.0}}</td>
+                                                    <td>
+                                                        {% for item in values.1 %}
+                                                        {{item}}<br>
+                                                        {% endfor %}
+                                                    </td>
+                                                    {% endif %}
+                                                    {% elif forloop.last %}
+                                                    <td>{{values.0}}</td>
+                                                    <td><a href="{{values.1}}" download> Download
+                                                            file<span
+                                                                class="glyphicon glyphicon-download-alt"></span></a>
+                                                    </td>
+                                                    {% else %}
+                                                    <td>{{values.0}}</td>
+                                                    <td>{{values.1}} </td>
+                                                    {% endif %}
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        {% endfor %}
+                                        <BR><BR>
+                                        {% else %}
+                                        <h5 style="text-align:center"> There are no resolutions
+                                            assigned yet
+                                            for the requested
+                                            service</h5>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="deliveries" class="tabcontent">
+                            <div class="col-sm-6">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h3>Delivery information</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if display_service.delivery %}
+                                        {% for delivery in display_service.delivery %}
+                                        {% for resolution_number, delivery_date, notes in delivery %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="2">Delivery information for
+                                                        Resolution {{
+                                                        resolution_number }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Delivery Date: </td>
+                                                    <td> {{ delivery_date }} </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Notes: </td>
+                                                    <td>{{ notes }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        {% endfor %}
+                                        <BR><BR>
+                                        {% endfor %}
+                                        {% else %}
+                                        <h5 style="text-align:center"> There are no deliveries done
+                                            yet for
+                                            the requested service
+                                        </h5>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>-->
+
+
+
+<script>
+    jspreadsheet(document.getElementById('spreadsheet2'), {
+        data: data2,
+        columns: [
+            { type: 'text', width: 300, title: 'Cover' },
+            { type: 'text', width: 300, title: 'Title' },
+        ],
+        updateTable: function (instance, cell, col, row, val, id) {
+            if (col == 0) {
+                cell.innerHTML = '<a href="' + val + '>' + val + '</a>';
+            }
         }
-    }
-});
+    });
+</script>
+
+{% endblock %}
