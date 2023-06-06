@@ -134,7 +134,8 @@ update_settings_and_urls(){
     sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iskylims/settings.py
     sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iskylims/settings.py
     sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py    
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py    
 }
 
 #================================================================
@@ -328,14 +329,35 @@ if [ $upgrade == true ]; then
         echo "activate the virtualenv"
         source virtualenv/bin/activate
         echo "Installing required python packages"
+        python3 -m pip install --upgrade pip
         python3 -m pip install -r conf/requirements.txt
         cd -
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
-
+        
         # Delete git and no copy files stuff
         if [ $ren_app == true ] ; then
+            # remove all previous migrations and make a fake initial
+            # delete existing migrations file
+            rm $INSTALL_PATH/iSkyLIMS_django_utils/migrations/0*.py
+            rm $INSTALL_PATH/iSkyLIMS_django_utils/migrations/__pycache__/*.pyc
+            rm $INSTALL_PATH/iSkyLIMS_core/migrations/0*.py
+            rm $INSTALL_PATH/iSkyLIMS_core/migrations/__pycache__/*.pyc
+            rm $INSTALL_PATH/iSkyLIMS_wetlab/migrations/0*.py
+            rm $INSTALL_PATH/iSkyLIMS_wetlab/migrations/__pycache__/*.pyc
+            rm $INSTALL_PATH/iSkyLIMS_drylab/migrations/0*.py
+            rm $INSTALL_PATH/iSkyLIMS_drylab/migrations/__pycache__/*.pyc
+
+            cd $INSTALL_PATH
+            echo "activate the virtualenv"
+            source virtualenv/bin/activate
+
+            echo "Create a fake initial"
+            ./manage.py makemigrations django_utils iSkyLIMS_core \
+                iSkyLIMS_wetlab iSkyLIMS_drylab
+            ./manage.py migrate --fake-initial
+
             if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
                 echo "Changing app dir names in $INSTALL_PATH..."
                 rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
@@ -370,20 +392,6 @@ if [ $upgrade == true ]; then
         
         ### RENAME APP  in database and migration files ####
         if [ $ren_app == true ] ; then
-            # make migrations backup in home
-            # sed old app name to new app name to all migration scripts in migration folders. Always the app name and core in all
-            echo "Modifying names in migration files..."
-            sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
-            # sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
-            # sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
-            sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
-            sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
-            sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
-            sed -i 's/iSkyLIMS_wetlab/wetlab/g' wetlab/migrations/*.py
-            sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
-            sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
-            sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
-            echo "Done modifying names in migration files..."
 
             echo "Modifying database names and constraints..."
             mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
@@ -408,7 +416,7 @@ if [ $upgrade == true ]; then
                                 ' TO ', TABLE_SCHEMA, '.', REPLACE(TABLE_NAME, 'iSkyLIMS_', ''), ';') \
                                 AS query FROM information_schema.tables WHERE TABLE_SCHEMA = \"$DB_NAME\" AND TABLE_NAME LIKE 'iSkyLIMS_%';"
             mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
-                | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+                | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
 
             query_rename_unique_indexes="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
                                  ' RENAME INDEX ', rcu.CONSTRAINT_NAME, \
@@ -420,7 +428,7 @@ if [ $upgrade == true ]; then
                                  GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, \
                                  rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME;"
             mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_unique_indexes"  \
-                | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+                | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
             
             query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
                     ' DROP FOREIGN KEY ' , rcu.CONSTRAINT_NAME, ';', \
@@ -436,20 +444,27 @@ if [ $upgrade == true ]; then
                     LEFT JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
                     WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
                     GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
-            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+            mysql -u $DB_USER -p'$DB_PASS' -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
 
             echo "Done modifying database names and constraints..."        
-            # rm -rf ./*/migrations/__pycache__
-            # rm -rf ./*/migrations/__init__.py
-            
+
             # copy modified migration files
             echo "Copying custom migration files from conf."
-            ./manage.py makemigrations --empty -n migration_v2_3_1 core drylab wetlab django_utils
             cp conf/0002_core_migration_v2.3.1.py core/migrations/0002_migration_v2_3_1.py
             cp conf/0002_drylab_migration_v2.3.1.py drylab/migrations/0002_migration_v2_3_1.py
             cp conf/0002_wetlab_migration_v2.3.1.py wetlab/migrations/0002_migration_v2_3_1.py
             # cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
             cp conf/0002_django_utils_migration_v2.3.1.py django_utils/migrations/0002_migration_v2_3_1.py
+
+            read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                echo "Exiting without running migrate command."
+                exit 1
+            fi
+            echo "Running migrate..."
+            ./manage.py migrate
+            echo "Done migrate command."
 
         else
             echo "checking for database changes"
