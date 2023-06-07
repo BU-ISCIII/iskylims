@@ -377,6 +377,7 @@ if [ $upgrade == true ]; then
         fi
 
         # update installation by sinchronize folders
+        cd -
         echo "Copying files to installation folder"
         rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \
