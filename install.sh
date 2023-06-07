@@ -340,14 +340,10 @@ if [ $upgrade == true ]; then
         if [ $ren_app == true ] ; then
             # remove all previous migrations and make a fake initial
             # delete existing migrations file
-            rm $INSTALL_PATH/django_utils/migrations/0*.py
-            rm $INSTALL_PATH/django_utils/migrations/__pycache__/*.pyc
-            rm $INSTALL_PATH/iSkyLIMS_core/migrations/0*.py
-            rm $INSTALL_PATH/iSkyLIMS_core/migrations/__pycache__/*.pyc
-            rm $INSTALL_PATH/iSkyLIMS_wetlab/migrations/0*.py
-            rm $INSTALL_PATH/iSkyLIMS_wetlab/migrations/__pycache__/*.pyc
-            rm $INSTALL_PATH/iSkyLIMS_drylab/migrations/0*.py
-            rm $INSTALL_PATH/iSkyLIMS_drylab/migrations/__pycache__/*.pyc
+            rm -rf $INSTALL_PATH/django_utils/migrations/*
+            rm -rf $INSTALL_PATH/iSkyLIMS_core/migrations/*
+            rm -rf $INSTALL_PATH/iSkyLIMS_wetlab/migrations/*
+            rm -rf $INSTALL_PATH/iSkyLIMS_drylab/migrations/*
 
             cd $INSTALL_PATH
             echo "activate the virtualenv"
