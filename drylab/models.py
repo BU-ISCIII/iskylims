@@ -258,7 +258,7 @@ class Service(models.Model):
     service_center = models.CharField(
         _("Sequencing center"), max_length=50, blank=False, null=True
     )
-    service_request_number = models.CharField(max_length=80, null=True)
+    service_request_number = models.CharField(max_length=80, verbose_name="Service ID", null=True)
     service_request_int = models.CharField(max_length=80, null=True)
     service_run_specs = models.CharField(
         _("Run specifications"), max_length=10, blank=True, null=True

@@ -57,8 +57,8 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
 
 
 class ProfileUserSerializer(serializers.ModelSerializer):
-    profileClassificationArea = serializers.StringRelatedField()
-    profileCenter = serializers.StringRelatedField()
+    profile_classification_area = serializers.StringRelatedField()
+    profile_center = serializers.StringRelatedField()
 
     class Meta:
         model = Profile
@@ -122,7 +122,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "resolution_date",
             "resolution_estimated_date",
             "resolution_service_id",
-            "resolution_on_queued_date",
+            "resolution_queued_date",
             "resolution_in_progress_date",
             "resolution_delivery_date",
             "resolution_notes",
@@ -150,7 +150,6 @@ class ServiceListSerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-    service_file_ext = serializers.StringRelatedField(many=False)
     service_user_id = UserIDSerializer(many=False)
     service_available_service = serializers.StringRelatedField(many=True)
     resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
@@ -166,7 +165,6 @@ class ServiceSerializer(serializers.ModelSerializer):
             "service_delivered_date",
             "service_center",
             "service_available_service",
-            "service_file_ext",
             "service_notes",
             "resolutions",
             "samples",
