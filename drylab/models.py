@@ -224,7 +224,7 @@ class ServiceManager(models.Manager):
             service_request_number=data["service_request_number"],
             service_request_int=data["service_request_int"],
             service_state=service_state_obj,
-            serviceStatus="Recorded",
+            service_status="Recorded",
             service_notes=data["service_notes"],
         )
         return new_service
@@ -264,7 +264,7 @@ class Service(models.Model):
         _("Run specifications"), max_length=10, blank=True, null=True
     )
     # Not changed in refactorization because it will be deprecated from next release
-    serviceStatus = models.CharField(
+    service_status = models.CharField(
         _("Service status"), max_length=15, choices=STATUS_CHOICES
     )
     service_notes = models.TextField(

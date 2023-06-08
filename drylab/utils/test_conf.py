@@ -96,7 +96,7 @@ def create_service_test(service_requested):
             service_user_id=user_name,
             servicePlatform=service_platform,
             serviceFileExt=service_file_ext,
-            serviceStatus="recorded",
+            service_state="recorded",
         )
         new_test_service.save()
 
