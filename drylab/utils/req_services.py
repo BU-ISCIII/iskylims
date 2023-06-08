@@ -15,6 +15,7 @@ import drylab.models
 import drylab.utils.common
 import drylab.utils.graphics
 import drylab.utils.multi_files
+import drylab.api.serializers
 
 # API from Wetlab #
 try:
@@ -646,7 +647,7 @@ def get_display_service_info(service_id, service_manager):
 
             # Allow that service could set on hold if state is other than delivery
             if service_obj.get_state(to_display=False).lower() != "delivered":
-                display_service_details["allowed_waiting_info"] = "allowed"
+                display_service_details["allowed_on_hold"] = "allowed"
 
     # Display resolutions and deliveries
     if drylab.models.Resolution.objects.filter(
@@ -706,7 +707,7 @@ def get_display_service_info(service_id, service_manager):
             display_service_details[
                 "pipelines_heading"
             ] = drylab.config.HEADING_PIPELINES_USED_IN_RESOLUTIONS
-
+    import pdb; pdb.set_trace()
     return display_service_details
 
 
