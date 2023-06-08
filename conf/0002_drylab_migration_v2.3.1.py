@@ -343,6 +343,11 @@ class Migration(migrations.Migration):
             new_name="service_user_id",
         ),
         migrations.RenameField(
+            model_name="service",
+            old_name="serviceStatus",
+            new_name="service_status",
+        ),
+        migrations.RenameField(
             model_name="uploadservicefile",
             old_name="uploadFile",
             new_name="upload_file",
