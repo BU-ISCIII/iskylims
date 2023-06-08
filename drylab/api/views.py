@@ -125,12 +125,12 @@ def service_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     if "state" in request.GET:
         state = request.GET["state"].strip()
-        if not Service.objects.filter(serviceStatus__exact=state).exists():
+        if not Service.objects.filter(service_state__exact=state).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     service_objs = Service.objects.all()
     if "state" in request.GET:
-        service_objs = service_objs.filter(serviceStatus__iexact=state).order_by(
+        service_objs = service_objs.filter(service_state__iexact=state).order_by(
             "service_request_number"
         )
     if "date_from" in request.GET and "date_until" in request.GET:
@@ -283,11 +283,11 @@ def update_state(request):
                 data_resolution = {
                     "resolution_number": resolution,
                     "resolution_state": state_obj.pk,
-                    "resolutionOnInProgressDate": datetime.today().strftime("%Y-%m-%d"),
+                    "resolution_inprogress_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 data_service = {
                     "service_request_number": service_obj.service_request_number,
-                    "serviceStatus": "in_progress",
+                    "service_state": "in_progress",
                 }
                 # Send email in progress
                 send_resolution_in_progress_email(email_data)
@@ -296,11 +296,11 @@ def update_state(request):
                 data_resolution = {
                     "resolution_number": resolution,
                     "resolution_state": state_obj.pk,
-                    "resolutionDeliveryDate": datetime.today().strftime("%Y-%m-%d"),
+                    "resolution_delivery_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 data_service = {
                     "service_request_number": service_obj.service_request_number,
-                    "serviceStatus": "delivered",
+                    "service_state": "delivered",
                     "service_delivered_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 # Send email

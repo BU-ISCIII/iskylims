@@ -1,14 +1,11 @@
+from collections import OrderedDict
+
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from django_utils.models import Profile
-from drylab.models import (
-    Delivery,
-    Pipelines,
-    RequestedSamplesInServices,
-    Resolution,
-    Service,
-)
+from drylab.models import (Delivery, Pipelines, RequestedSamplesInServices,
+                           Resolution, Service)
 
 
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):
@@ -39,12 +36,12 @@ class UpdateResolutionStateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.resolution_number = validated_data["resolution_number"]
         instance.resolution_state = validated_data["resolution_state"]
-        if "resolutionOnInProgressDate" in validated_data:
+        if "resolution_inprogress_date" in validated_data:
             instance.resolution_in_progress_date = validated_data[
-                "resolutionOnInProgressDate"
+                "resolution_inprogress_date"
             ]
-        if "resolutionDeliveryDate" in validated_data:
-            instance.resolution_delivery_date = validated_data["resolutionDeliveryDate"]
+        if "resolution_delivery_date" in validated_data:
+            instance.resolution_delivery_date = validated_data["resolution_delivery_date"]
         instance.save()
         return instance
 
@@ -154,6 +151,23 @@ class ServiceSerializer(serializers.ModelSerializer):
     service_available_service = serializers.StringRelatedField(many=True)
     resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
     samples = RequestedSamplesInServicesSerializer(many=True)
+    sample_name = serializers.CharField(source="sample_id.sampleName")
+
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(ServiceSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
 
     class Meta:
         model = Service

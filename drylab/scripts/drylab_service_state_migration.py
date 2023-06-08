@@ -7,7 +7,7 @@ from drylab.models import Service, ServiceState
     version 2.3.1  as a primary key in SampleState table, given in this way
     more flexibility for adding more states in the future.
 
-    Script reads the existing service state value reorded in field serviceStatus
+    Script reads the existing service state value reorded in field service_state
     and create the relation to the same state in SampleState table.
 """
 

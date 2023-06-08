@@ -374,7 +374,6 @@ if [ $upgrade == true ]; then
         fi
 
         # update installation by sinchronize folders
-        
         echo "Copying files to installation folder"
         rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \
@@ -517,6 +516,10 @@ if [ $upgrade == true ]; then
         fi
 
         cd -
+
+        # Rename install path to lower
+        install_path_lower=$(echo "$INSTALL_PATH" | tr '[:upper:]' '[:lower:]')
+        mv $INSTALL_PATH $install_path_lower
 
         # Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)

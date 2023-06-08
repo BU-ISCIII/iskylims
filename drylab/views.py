@@ -30,9 +30,9 @@ import drylab.utils.test_conf
 @login_required
 def index(request):
     service_list = {}
-    if drylab.models.Service.objects.filter(serviceStatus__exact="recorded").exists():
+    if drylab.models.Service.objects.filter(service_state__exact="recorded").exists():
         r_service_objs = drylab.models.Service.objects.filter(
-            serviceStatus__exact="recorded"
+            service_state__exact="recorded"
         ).order_by("service_created_date")
         service_list["recorded"] = []
         for r_service_obj in r_service_objs:
@@ -42,13 +42,13 @@ def index(request):
 
     if (
         drylab.models.Service.objects.all()
-        .exclude(serviceStatus__exact="delivered")
+        .exclude(service_state__exact="delivered")
         .exclude(service_approved_date=None)
         .exists()
     ):
         ongoing_services_objs = (
             drylab.models.Service.objects.all()
-            .exclude(serviceStatus__exact="delivered")
+            .exclude(service_state__exact="delivered")
             .exclude(service_approved_date=None)
             .order_by("service_approved_date")
         )
@@ -1035,8 +1035,8 @@ def stats_by_user(request):
             stats_info["service_by_user"].append(service_item.get_stats_information())
 
         # perform calculation time media delivery for user
-        if service_objs.filter(serviceStatus__exact="delivered").exists():
-            delivery_services = service_objs.filter(serviceStatus__exact="delivered")
+        if service_objs.filter(service_state__exact="delivered").exists():
+            delivery_services = service_objs.filter(service_state__exact="delivered")
             delivery_time_in_days = []
             for service_item in delivery_services:
                 delivery_time_in_days.append(int(service_item.get_time_to_delivery()))
@@ -1048,16 +1048,16 @@ def stats_by_user(request):
         number_of_services = {}
 
         number_of_services["RECORDED"] = service_objs.filter(
-            serviceStatus__exact="recorded"
+            service_state__exact="recorded"
         ).count()
         number_of_services["QUEUED"] = service_objs.filter(
-            serviceStatus__exact="queued"
+            service_state__exact="queued"
         ).count()
         number_of_services["IN PROGRESS"] = service_objs.filter(
-            serviceStatus__exact="in_progress"
+            service_state__exact="in_progress"
         ).count()
         number_of_services["DELIVERED"] = service_objs.filter(
-            serviceStatus__exact="delivered"
+            service_state__exact="delivered"
         ).count()
 
         data_source = drylab.utils.graphics.graphic_3D_pie(
