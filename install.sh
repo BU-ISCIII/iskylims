@@ -383,6 +383,9 @@ if [ $upgrade == true ]; then
         # update the settings.py and the main urls
         echo "Update settings and url file."
         update_settings_and_urls
+        # update illumina template files.# Copy illumina sample sheet templates
+        cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
+
         cd $INSTALL_PATH
         echo "activate the virtualenv"
         source virtualenv/bin/activate
