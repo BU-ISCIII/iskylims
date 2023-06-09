@@ -525,8 +525,8 @@ class UploadServiceFile(models.Model):
 
 class ResolutionManager(models.Manager):
     def create_resolution(self, resolution_data):
-        resolution_asigned_user = User.objects.get(
-            pk__exact=resolution_data["resolution_asigned_user"]
+        resolution_assigned_user = User.objects.get(
+            pk__exact=resolution_data["resolution_assigned_user"]
         )
         resolution_service_id = Service.objects.get(
             pk__exact=resolution_data["service_id"]
@@ -534,7 +534,7 @@ class ResolutionManager(models.Manager):
         state = ResolutionStates.objects.get(state_value__exact="Queued")
         new_resolution = self.create(
             resolution_service_id=resolution_service_id,
-            resolution_asigned_user=resolution_asigned_user,
+            resolution_assigned_user=resolution_assigned_user,
             resolution_number=resolution_data["resolution_number"],
             resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
             resolution_queued_date=date.today(),
@@ -549,7 +549,7 @@ class Resolution(models.Model):
     resolution_service_id = models.ForeignKey(
         Service, on_delete=models.CASCADE, related_name="resolutions"
     )
-    resolution_asigned_user = models.ForeignKey(
+    resolution_assigned_user = models.ForeignKey(
         User, related_name="groups+", on_delete=models.CASCADE, null=True, blank=True
     )
     resolution_state = models.ForeignKey(
@@ -637,8 +637,8 @@ class Resolution(models.Model):
         else:
             resolution_info.append("Not assigned")
         resolution_info.append(self.resolution_full_number)
-        if self.resolution_asigned_user is not None:
-            resolution_info.append(self.resolution_asigned_user.username)
+        if self.resolution_assigned_user is not None:
+            resolution_info.append(self.resolution_assigned_user.username)
         else:
             resolution_info.append("Not assigned")
         if self.resolution_estimated_date is not None:
@@ -677,10 +677,10 @@ class Resolution(models.Model):
         data.append(self.resolution_service_id.get_identifier())
         data.append(self.resolution_number)
         data.append(self.resolution_full_number)
-        if self.resolution_asigned_user is None:
+        if self.resolution_assigned_user is None:
             data.append("Not assigned yet")
         else:
-            data.append(self.resolution_asigned_user.username)
+            data.append(self.resolution_assigned_user.username)
         data.append(on_queued_date)
         data.append(on_estimated_date)
         return data
@@ -725,8 +725,8 @@ class Resolution(models.Model):
             return None
 
     def get_asigned_user(self):
-        if self.resolution_asigned_user is not None:
-            return self.resolution_asigned_user.username
+        if self.resolution_assigned_user is not None:
+            return self.resolution_assigned_user.username
         return None
 
     def get_service_owner_email(self):

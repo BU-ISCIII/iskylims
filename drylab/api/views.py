@@ -125,12 +125,12 @@ def service_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     if "state" in request.GET:
         state = request.GET["state"].strip()
-        if not Service.objects.filter(service_state__exact=state).exists():
+        if not Service.objects.filter(service_state__state_value__exact=state).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     service_objs = Service.objects.all()
     if "state" in request.GET:
-        service_objs = service_objs.filter(service_state__iexact=state).order_by(
+        service_objs = service_objs.filter(service_state__state_value__iexact=state).order_by(
             "service_request_number"
         )
     if "date_from" in request.GET and "date_until" in request.GET:

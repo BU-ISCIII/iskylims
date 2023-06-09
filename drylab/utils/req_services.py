@@ -1,6 +1,5 @@
 # Generic imports
 import json
-import os
 
 import django.conf
 import django.contrib.auth.models
@@ -10,12 +9,12 @@ import django.core.mail
 import core.fusioncharts.fusioncharts
 import core.utils.samples
 import django_utils.models
+import drylab.api.serializers
 import drylab.config
 import drylab.models
 import drylab.utils.common
 import drylab.utils.graphics
 import drylab.utils.multi_files
-import drylab.api.serializers
 
 # API from Wetlab #
 try:
@@ -363,7 +362,6 @@ def get_pending_services_info():
     ] = graphic_unit_pending_services.render()
 
     pending_services_details["graphics"] = pending_services_graphics
-
     return pending_services_details
 
 
@@ -459,256 +457,6 @@ def get_run_in_requested_samples(service_obj):
             run_list.append(req_sample_obj.get_run_name())
         run_unique_list = list(set(run_list))
     return run_unique_list
-
-
-def get_display_service_info(service_id, service_manager):
-    """The function get the  service information, which includes the requested services
-        resolutions, deliveries, samples and the allowed actions on the service
-
-    Parameters
-    ----------
-    service_id
-        service identifier. ex. SRVCNM230
-    service_manager
-        wether the logged user is a service manager or not. boolean. True, False
-
-    Returns
-    -------
-    display_services_details.
-        dictionary including service, resolution, delivery and allowed actions.
-    """
-    display_service_details = {}
-
-    service_obj = drylab.utils.common.get_service_obj(service_id)
-
-    # Get service general info
-    display_service_details["service_name"] = service_obj.get_identifier()
-    display_service_details["service_id"] = service_id
-    display_service_details["user_name"] = service_obj.get_user_name()
-    display_service_details["state"] = service_obj.get_state(to_display=True)
-    display_service_details["service_notes"] = service_obj.get_notes()
-    display_service_details["service_dates"] = zip(
-        drylab.config.HEADING_SERVICE_DATES,
-        service_obj.get_dates(),
-    )
-
-    # Get folder name if there is already a resolution
-    if drylab.models.Resolution.objects.filter(
-        resolution_service_id=service_obj
-    ).exists():
-        last_resolution = drylab.models.Resolution.objects.filter(
-            resolution_service_id=service_obj
-        ).last()
-        display_service_details[
-            "resolution_folder"
-        ] = last_resolution.get_resolution_full_number()
-
-    # get the list of samples sequenced
-    if drylab.models.RequestedSamplesInServices.objects.filter(
-        samples_in_service=service_obj, only_recorded_sample__exact=False
-    ).exists():
-        samples_in_service = drylab.models.RequestedSamplesInServices.objects.filter(
-            samples_in_service=service_obj, only_recorded_sample__exact=False
-        )
-        display_service_details["samples_sequenced"] = []
-        for sample in samples_in_service:
-            display_service_details["samples_sequenced"].append(
-                [
-                    sample.get_sample_id(),
-                    sample.get_sample_name(),
-                    sample.get_project_name(),
-                    sample.get_run_name(),
-                    sample.get_requested_sample_id(),
-                ]
-            )
-
-    # get list of samples only recorded
-    if drylab.models.RequestedSamplesInServices.objects.filter(
-        samples_in_service=service_obj, only_recorded_sample__exact=True
-    ).exists():
-        samples_in_service = drylab.models.RequestedSamplesInServices.objects.filter(
-            samples_in_service=service_obj, only_recorded_sample__exact=True
-        )
-        display_service_details["only_recorded_samples"] = []
-        for sample in samples_in_service:
-            display_service_details["only_recorded_samples"].append(
-                [sample.get_sample_name(), "--", sample.get_requested_sample_id()]
-            )
-
-    # get user input files
-    user_input_files = drylab.utils.multi_files.get_uploaded_files(service_obj)
-    if user_input_files:
-        display_service_details["file"] = []
-        for input_file in user_input_files:
-            display_service_details["file"].append(
-                [
-                    os.path.join(django.conf.settings.MEDIA_URL, input_file[0]),
-                    input_file[1],
-                ]
-            )
-
-    # service dates
-    created_date = service_obj.get_creation_date(format=False)
-    delivery_date = service_obj.get_delivery_date(format=False)
-    dates = []
-    if drylab.models.Resolution.objects.filter(
-        resolution_service_id=service_obj
-    ).exists():
-        resolution_obj = drylab.models.Resolution.objects.filter(
-            resolution_service_id=service_obj
-        ).first()
-        in_progress_date = resolution_obj.get_in_progress_date(format=False)
-        if in_progress_date is not None:
-            time_in_queue = (in_progress_date - created_date).days
-            dates.append(["Time in Queue", time_in_queue])
-            if delivery_date is not None:
-                execution_time = (delivery_date - in_progress_date).days
-                dates.append(["Execution time", execution_time])
-
-    display_service_details["calculation_dates"] = dates
-
-    # get analysis requested
-    display_service_details["nodes"] = service_obj.service_available_service.all()
-    display_service_details["children_services"] = get_children_services(
-        display_service_details["nodes"]
-    )
-
-    # adding actions fields
-    if service_manager:
-        display_service_details["service_manager"] = True
-        if (
-            service_obj.get_state() != "rejected"
-            or service_obj.get_state() != "archived"
-        ):
-            # Add resolution action
-            display_service_details["add_resolution_action"] = service_id
-            if len(display_service_details["children_services"]) > 1:
-                display_service_details["multiple_services"] = True
-
-            display_service_details["add_resolution"] = True
-
-            if drylab.models.Resolution.objects.filter(
-                resolution_service_id=service_obj
-            ).exists():
-                # get information from the defined Resolutions
-                resolution_objs = drylab.models.Resolution.objects.filter(
-                    resolution_service_id=service_obj
-                )
-                display_service_details["resolution_progress"] = []
-                display_service_details["resolution_delivery"] = []
-                available_services_ids = []
-                for resolution_obj in resolution_objs:
-                    if resolution_obj.get_state() == "queued":
-                        req_available_services = resolution_obj.get_available_services()
-                        if req_available_services != ["None"]:
-                            req_available_service_ids = (
-                                resolution_obj.get_available_services_ids()
-                            )
-                            for req_available_service in req_available_service_ids:
-                                available_services_ids.append(req_available_service)
-                            display_service_details["resolution_progress"].append(
-                                [
-                                    resolution_obj.get_id(),
-                                    resolution_obj.get_resolution_number(),
-                                    req_available_services,
-                                ]
-                            )
-                        else:
-                            display_service_details["resolution_progress"].append(
-                                [
-                                    resolution_obj.get_id(),
-                                    resolution_obj.get_resolution_number(),
-                                    [""],
-                                ]
-                            )
-                    elif resolution_obj.get_state() == "in_progress":
-                        req_available_services = resolution_obj.get_available_services()
-                        if req_available_services != ["None"]:
-                            req_available_service_ids = (
-                                resolution_obj.get_available_services_ids()
-                            )
-                            for req_available_service in req_available_service_ids:
-                                available_services_ids.append(req_available_service)
-                            display_service_details["resolution_delivery"].append(
-                                [
-                                    resolution_obj.get_id(),
-                                    resolution_obj.get_resolution_number(),
-                                    req_available_services,
-                                ]
-                            )
-                        else:
-                            display_service_details["resolution_delivery"].append(
-                                [
-                                    resolution_obj.get_id(),
-                                    resolution_obj.get_resolution_number(),
-                                    [""],
-                                ]
-                            )
-
-            # Allow that service could set on hold if state is other than delivery
-            if service_obj.get_state(to_display=False).lower() != "delivered":
-                display_service_details["allowed_on_hold"] = "allowed"
-
-    # Display resolutions and deliveries
-    if drylab.models.Resolution.objects.filter(
-        resolution_service_id=service_obj
-    ).exists():
-        resolution_heading = drylab.config.HEADING_FOR_RESOLUTION_INFORMATION
-        resolution_objs = drylab.models.Resolution.objects.filter(
-            resolution_service_id=service_obj
-        ).order_by("resolution_state")
-
-        # Resolution info
-        resolution_info = []
-        for resolution_obj in resolution_objs:
-            resolution_info.append(
-                [
-                    resolution_obj.get_resolution_number(),
-                    list(
-                        zip(
-                            resolution_heading,
-                            resolution_obj.get_information(),
-                        )
-                    ),
-                ]
-            )
-        display_service_details["resolutions"] = resolution_info
-
-        # delivery info
-        delivery_info = []
-        for resolution_obj in resolution_objs:
-            if drylab.models.Delivery.objects.filter(
-                delivery_resolution_id=resolution_obj
-            ).exists():
-                delivery = drylab.models.Delivery.objects.filter(
-                    delivery_resolution_id=resolution_obj
-                ).last()
-                delivery_info.append([delivery.get_delivery_information()])
-                display_service_details["delivery"] = delivery_info
-
-        display_service_details["pipelines_data"] = {}
-        for resolution_obj in resolution_objs:
-            pipelines_objs = resolution_obj.resolution_pipelines.all()
-            if pipelines_objs:
-                for pipelines_obj in pipelines_objs:
-                    pipeline_name = pipelines_obj.get_pipeline_name()
-                    if pipeline_name not in display_service_details["pipelines_data"]:
-                        display_service_details["pipelines_data"][pipeline_name] = []
-                    display_service_details["pipelines_data"][pipeline_name].append(
-                        [
-                            pipelines_obj.get_pipeline_id(),
-                            pipeline_name,
-                            pipelines_obj.get_pipeline_version(),
-                            resolution_obj.get_resolution_number(),
-                        ]
-                    )
-        # pipelines info
-        if len(display_service_details["pipelines_data"]) > 0:
-            display_service_details[
-                "pipelines_heading"
-            ] = drylab.config.HEADING_PIPELINES_USED_IN_RESOLUTIONS
-    import pdb; pdb.set_trace()
-    return display_service_details
 
 
 def get_service_data(request):

@@ -19,6 +19,7 @@ class ServiceAdmin(admin.ModelAdmin):
         "service_center",
         "service_user_id",
         "service_state",
+        "service_status",
         "service_created_date",
         "service_delivered_date",
     )
@@ -50,7 +51,7 @@ class ResolutionAdmin(admin.ModelAdmin):
         "resolution_date",
         "resolution_estimated_date",
         "resolution_full_number",
-        "resolution_asigned_user",
+        "resolution_assigned_user",
     )
     list_filter = ["resolution_date"]
     search_fields = [

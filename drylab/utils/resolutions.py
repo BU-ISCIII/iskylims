@@ -139,8 +139,8 @@ def get_add_resolution_data_form(form_data):
         form_data["resolutionEstimatedDate"], "%Y-%m-%d"
     ).date()
     resolution_data_form["acronymName"] = form_data["acronymName"]
-    resolution_data_form["resolution_asigned_user"] = form_data[
-        "resolution_asigned_user"
+    resolution_data_form["resolution_assigned_user"] = form_data[
+        "resolution_assigned_user"
     ]
     resolution_data_form["serviceAccepted"] = form_data["serviceAccepted"]
     resolution_data_form["resolutionNotes"] = form_data["resolutionNotes"]
