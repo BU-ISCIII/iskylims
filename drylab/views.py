@@ -8,6 +8,7 @@ import django.contrib.auth.models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
@@ -30,9 +31,11 @@ import drylab.utils.test_conf
 @login_required
 def index(request):
     service_list = {}
-    if drylab.models.Service.objects.filter(service_state__exact="recorded").exists():
+    if drylab.models.Service.objects.filter(
+        service_state__state_value__exact="recorded"
+    ).exists():
         r_service_objs = drylab.models.Service.objects.filter(
-            service_state__exact="recorded"
+            service_state__state_value__exact="recorded"
         ).order_by("service_created_date")
         service_list["recorded"] = []
         for r_service_obj in r_service_objs:
@@ -42,13 +45,13 @@ def index(request):
 
     if (
         drylab.models.Service.objects.all()
-        .exclude(service_state__exact="delivered")
+        .exclude(service_state__state_value__exact="delivered")
         .exclude(service_approved_date=None)
         .exists()
     ):
         ongoing_services_objs = (
             drylab.models.Service.objects.all()
-            .exclude(service_state__exact="delivered")
+            .exclude(service_state__state_value__exact="delivered")
             .exclude(service_approved_date=None)
             .order_by("service_approved_date")
         )
@@ -386,15 +389,46 @@ def display_service(request, service_id):
     if not request.user.is_authenticated:
         # redirect to login webpage
         return redirect("/accounts/login")
+
     if drylab.models.Service.objects.filter(pk=service_id).exists():
         service_manager = drylab.utils.common.is_service_manager(request)
-        display_service_details = drylab.utils.req_services.get_display_service_info(
-            service_id, service_manager
+
+        display_service_details = {}
+        service_obj = (
+            drylab.models.Service.objects.prefetch_related(
+                Prefetch(
+                    "resolutions",
+                    queryset=drylab.models.Resolution.objects.all(),
+                    to_attr="filtered_resolutions",
+                )
+            )
+            .filter(pk=service_id)
+            .last()
         )
+
+        display_service_details = drylab.api.serializers.ServiceSerializer(
+            service_obj, context={"output_label": True}
+        ).data
+
+        user_input_files = drylab.utils.multi_files.get_uploaded_files(service_obj)
+        service_files = {}
+        if user_input_files:
+            for input_file in user_input_files:
+                service_files[input_file[1]] = (
+                    os.path.join(settings.MEDIA_URL, input_file[0]),
+                    input_file[1],
+                )
+
+        available_services = service_obj.service_available_service.all()
         return render(
             request,
             "drylab/display_service.html",
-            {"display_service": display_service_details},
+            {
+                "display_service": display_service_details,
+                "service_manager": service_manager,
+                "service_files": service_files,
+                "available_services": available_services,
+            },
         )
     else:
         return render(
@@ -873,7 +907,7 @@ def add_delivery(request):
         return redirect("/accounts/login")
     if (
         request.method == "POST"
-        and request.POST["action"] == "deliveryResolutionService"
+        and request.POST["action"] == "add_delivery"
     ):
         delivery_data = drylab.utils.deliveries.prepare_delivery_form(
             request.POST["resolution_id"]
@@ -1035,8 +1069,10 @@ def stats_by_user(request):
             stats_info["service_by_user"].append(service_item.get_stats_information())
 
         # perform calculation time media delivery for user
-        if service_objs.filter(service_state__exact="delivered").exists():
-            delivery_services = service_objs.filter(service_state__exact="delivered")
+        if service_objs.filter(service_state__state_value__exact="delivered").exists():
+            delivery_services = service_objs.filter(
+                service_state__state_value__exact="delivered"
+            )
             delivery_time_in_days = []
             for service_item in delivery_services:
                 delivery_time_in_days.append(int(service_item.get_time_to_delivery()))
@@ -1048,16 +1084,16 @@ def stats_by_user(request):
         number_of_services = {}
 
         number_of_services["RECORDED"] = service_objs.filter(
-            service_state__exact="recorded"
+            service_state__state_value__exact="recorded"
         ).count()
         number_of_services["QUEUED"] = service_objs.filter(
-            service_state__exact="queued"
+            service_state__state_value__exact="queued"
         ).count()
         number_of_services["IN PROGRESS"] = service_objs.filter(
-            service_state__exact="in_progress"
+            service_state__state_value__exact="in_progress"
         ).count()
         number_of_services["DELIVERED"] = service_objs.filter(
-            service_state__exact="delivered"
+            service_state__state_value__exact="delivered"
         ).count()
 
         data_source = drylab.utils.graphics.graphic_3D_pie(

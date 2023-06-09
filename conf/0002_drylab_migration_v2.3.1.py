@@ -200,7 +200,7 @@ class Migration(migrations.Migration):
         migrations.RenameField(
             model_name="resolution",
             old_name="resolutionAsignedUser",
-            new_name="resolution_asigned_user",
+            new_name="resolution_assigned_user",
         ),
         migrations.RenameField(
             model_name="resolution",

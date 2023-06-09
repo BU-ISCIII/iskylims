@@ -91,12 +91,15 @@ def create_service_test(service_requested):
         if "NOK" in service_results[i]:
             return service_results, "NOK"
     try:
+        service_state_obj = drylab.models.ServiceState.objects.filter(
+                state_value__iexact="recorded"
+            ).last()
         new_test_service = drylab.models.Service(
             service_request_number=service_requested,
             service_user_id=user_name,
             servicePlatform=service_platform,
             serviceFileExt=service_file_ext,
-            service_state="recorded",
+            service_state=service_state_obj
         )
         new_test_service.save()
 

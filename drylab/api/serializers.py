@@ -57,6 +57,22 @@ class ProfileUserSerializer(serializers.ModelSerializer):
     profile_classification_area = serializers.StringRelatedField()
     profile_center = serializers.StringRelatedField()
 
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(ProfileUserSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
+
     class Meta:
         model = Profile
         fields = ["profile_classification_area", "profile_center"]
@@ -64,6 +80,22 @@ class ProfileUserSerializer(serializers.ModelSerializer):
 
 class UserIDSerializer(serializers.ModelSerializer):
     profile = ProfileUserSerializer(many=False)
+
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(UserIDSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
 
     class Meta:
         model = User
@@ -81,6 +113,23 @@ class CustomAvailableServiceField(serializers.RelatedField):
 
 
 class PipelinesSerializer(serializers.ModelSerializer):
+
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(PipelinesSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
+
     class Meta:
         model = Pipelines
         fields = ["pipeline_name", "pipeline_version"]
@@ -89,6 +138,22 @@ class PipelinesSerializer(serializers.ModelSerializer):
 class DeliverySerializer(serializers.ModelSerializer):
     delivery_resolution_id = serializers.StringRelatedField(many=False)
     pipelines_in_delivery = PipelinesSerializer(many=True)
+
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(DeliverySerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
 
     class Meta:
         model = Delivery
@@ -109,6 +174,23 @@ class ResolutionSerializer(serializers.ModelSerializer):
     available_services = CustomAvailableServiceField(many=True, read_only=True)
     resolution_service_id = serializers.StringRelatedField(many=False)
     delivery = DeliverySerializer(many=True)
+    resolution_assigned_user = serializers.StringRelatedField(many=False)
+
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(ResolutionSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
 
     class Meta:
         model = Resolution
@@ -116,6 +198,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "resolution_number",
             "resolution_full_number",
             "resolution_state",
+            "resolution_assigned_user",
             "resolution_date",
             "resolution_estimated_date",
             "resolution_service_id",
@@ -130,6 +213,23 @@ class ResolutionSerializer(serializers.ModelSerializer):
 
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
+
+    def to_representation(self, instance):
+        output_label = self.context["output_label"]
+        data = super(RequestedSamplesInServicesSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            if output_label:
+                # output both label and value
+                label_value = {}
+                label_value["label"] = self.fields[key].label
+                label_value["value"] = data[key]
+                data_update[key] = label_value
+            else:
+                # normal key output using field name
+                data_update[key] = data[key]
+        return data_update
+
     class Meta:
         model = RequestedSamplesInServices
         fields = ["run_name", "project_name", "sample_name", "sample_path"]
@@ -149,9 +249,9 @@ class ServiceListSerializer(serializers.ModelSerializer):
 class ServiceSerializer(serializers.ModelSerializer):
     service_user_id = UserIDSerializer(many=False)
     service_available_service = serializers.StringRelatedField(many=True)
+    service_state = serializers.StringRelatedField(many=False)
     resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
     samples = RequestedSamplesInServicesSerializer(many=True)
-    sample_name = serializers.CharField(source="sample_id.sampleName")
 
     def to_representation(self, instance):
         output_label = self.context["output_label"]
@@ -177,6 +277,8 @@ class ServiceSerializer(serializers.ModelSerializer):
             "service_user_id",
             "service_created_date",
             "service_delivered_date",
+            "service_approved_date",
+            "service_rejected_date",
             "service_center",
             "service_available_service",
             "service_notes",

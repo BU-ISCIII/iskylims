@@ -30,7 +30,7 @@ def run():
             ).last()
     for s_obj in Service.objects.all():
         try:
-            s_obj.update_state(s_state_obj[s_obj.serviceStatus.lower()])
+            s_obj.update_state(s_state_obj[s_obj.service_status.lower()])
         except AttributeError:
             print(
                 "Service ", s_obj, " contains a state that was not defined in database"
