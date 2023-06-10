@@ -370,10 +370,11 @@ if [ $upgrade == true ]; then
                 sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/iskylims/wsgi.py
                 sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/manage.py
             fi
+            cd -
         fi
 
         # update installation by sinchronize folders
-        cd -
+        
         echo "Copying files to installation folder"
         rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \

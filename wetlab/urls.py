@@ -134,7 +134,6 @@ urlpatterns = [
         wetlab.views.pending_sample_preparation,
         name="pending_sample_preparation",
     ),
-    path("pendingToUpdate/", wetlab.views.pending_to_update, name="pending_to_update"),
     path("recordSamples", wetlab.views.record_samples, name="record_samples"),
     path(
         "repeatLibraryPreparation",

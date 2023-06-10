@@ -45,7 +45,7 @@
                                             <div class="card">
                                                 <div class="card-header text-center"><h3>General data for index kit </h3></div>
                                                 <div class="card-body">
-                                                    {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_collection_index.general_information %}
+                                                    {% for lib_name, version, plate, adapter1, adapter2, index_file, file_path in  display_one_collection_index.general_information %}
                                                         <h3> {{ lib_name }}</h3>
                                                         <table class="table table-hover">
                                                             <thead>
@@ -73,7 +73,7 @@
                                                                 </tr>
                                                                 <tr>
                                                                     <td>Index Library File </td>
-                                                                    <td><a href ="/documents/{{ index_file }}" download class="text-decoration-none"> Download Index File <i class="bi bi-file-earmark-arrow-down"></i></a></td>
+                                                                    <td><a href ="/documents/{{ file_path }}" download class="text-decoration-none"> {{index_file}} <i class="bi bi-file-earmark-arrow-down"></i></a></td>
                                                                 </tr>
                                                             
                                                             </tbody>
@@ -109,17 +109,6 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if display_one_collection_index.I7_indexes|length > 7 %}
-                                                    <script type="text/javascript">
-                                                        $(document).ready(function() {
-                                                            $('#i7_index_table').DataTable({
-                                                                dom: 'Bfrtip',
-                                                                responsive: true,
-                                                                buttons: ['copy' , "excel"]
-                                                            });
-                                                        });
-                                                    </script>
-                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -150,17 +139,6 @@
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                    {% if display_one_collection_index.I5_indexes|length > 7 %}
-                                                        <script type="text/javascript">
-                                                            $(document).ready(function() {
-                                                                $('#i5_index_table').DataTable({
-                                                                    dom: 'Bfrtip',
-                                                                    responsive: true,
-                                                                    buttons: ['copy' , "excel"]
-                                                                });
-                                                            });
-                                                        </script>
-                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -195,15 +173,6 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                <script type="text/javascript">
-                                                    $(document).ready(function() {
-                                                        $('#layout_table').DataTable({
-                                                            dom: 'Bfrtip',
-                                                            responsive: true,
-                                                            buttons: ['copy' , "excel"]
-                                                        });
-                                                    });
-                                                </script>
                                             </div>
                                         </div>
                                     </div>
@@ -216,4 +185,32 @@
         {% endif %}
     </div>
 </section>
+<script type="text/javascript">
+    // layout table
+    $(document).ready(function() {
+        $('#layout_table').DataTable({
+            dom: 'Bfrtip',
+            responsive: true,
+            buttons: ['copy' , "excel"]
+        });
+    });
+
+    // I7 table
+    $(document).ready(function() {
+        $('#i7_index_table').DataTable({
+            dom: 'Bfrtip',
+            responsive: true,
+            buttons: ['copy' , "excel"]
+        });
+    });
+
+    // I5 table
+    $(document).ready(function() {
+        $('#i5_index_table').DataTable({
+            dom: 'Bfrtip',
+            responsive: true,
+            buttons: ['copy' , "excel"]
+        });
+    });
+</script>
 {% endblock %}

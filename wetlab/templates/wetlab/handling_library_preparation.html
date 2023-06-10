@@ -571,7 +571,7 @@
                                                                     <form method="post" enctype="multipart/form-data" name="assignAdditionalKits"  id="assignAdditionalKits" class="form-horizontal well">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" name="action" value="assignAdditionalKits"/>
-                                                                        <div class="form-control">
+                                                                        <div class="form-control my-3">
                                                                             <table class="table table-hover">
                                                                                 <thead>
                                                                                     <tr>
@@ -592,7 +592,7 @@
                                                                             </table>
                                                                         </div> 
 
-                                                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                        <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                                                         <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
                                                                     </form>
                                                                 {% endfor %}

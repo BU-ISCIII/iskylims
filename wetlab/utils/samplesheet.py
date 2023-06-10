@@ -129,6 +129,7 @@ def get_heading(file_lines):
      # For accepting characters like spanish characters.
     heading = []
     for line in file_lines:
+        line = line.strip()
         if line == "":
             continue
         found_header=re.search("^Sample_ID,Sample_Name",line)

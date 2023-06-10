@@ -345,30 +345,3 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
 
     return run_sample_list
 
-
-def pending_samples_for_grafic(pending):
-    """
-    Description:
-        The function create the graphic for pending samples.
-    Input:
-        pending     # dictionary with the pending sample information
-    Functions:
-        graphic_3D_pie # located at wetlab/utils/stats_graphics.py
-    Return:
-        graphic_pending_samples.
-    """
-    number_of_pending = {}
-    number_of_pending["DEFINED"] = pending["defined"]["length"]
-    number_of_pending["EXTRACTED MOLECULE"] = pending["extract_molecule"]["length"]
-    if "create_library_preparation" in pending:
-        number_of_pending["LIBRARY PREPARATION"] = pending[
-            "create_library_preparation"
-        ]["length"]
-
-    data_source = wetlab.utils.stats_graphs.graphic_3D_pie(
-        "Number of Pending Samples", "", "", "", "fint", number_of_pending
-    )
-    graphic_pending_samples = core.fusioncharts.fusioncharts.FusionCharts(
-        "pie3d", "ex1", "430", "450", "chart-1", "json", data_source
-    )
-    return graphic_pending_samples

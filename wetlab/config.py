@@ -200,6 +200,8 @@ HEADING_FOR_MODIFYING_ADDITIONAL_KITS = [
     "Description",
 ]
 
+HEADING_FOR_PENDING_PROCESS_SAMPLES = ["Sample name" , "Laboratory", "Sample type" , "Sample project" , "User name"]
+
 # CONFIGURATION FOR SAMPLE SHEET CONVERSION #
 # FILE TO BASESPACE FORMAT     #
 # column names when sample sheet has only one index
@@ -709,7 +711,7 @@ ERROR_RUN_NAME_ALREADY_DEFINED = [
     "Write other Run Name on the field bellow",
 ]
 
-ERROR_RUN_NAME_CREATED_ALREADY = ["Run name ", "was already created"]
+ERROR_RUN_NAME_CREATED_ALREADY = " Run already created"
 
 ERROR_DIFFERENT_ADAPTERS_USED_IN_POOL = [
     "Different Adapters ",
