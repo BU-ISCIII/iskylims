@@ -184,7 +184,9 @@ class RunProcess(models.Model):
         return "%s" % (self.run_name)
 
     def get_disk_space_utilization(self):
-        image_size_str = "0" if self.use_space_fasta_mb == "" else self.use_space_fasta_mb
+        image_size_str = (
+            "0" if self.use_space_fasta_mb == "" else self.use_space_fasta_mb
+        )
         data_size_str = (
             "0" if self.use_space_fasta_mb == "" else self.use_space_fasta_mb
         )
@@ -259,7 +261,9 @@ class RunProcess(models.Model):
 
     def set_run_error_code(self, error_code):
         if RunErrors.objects.filter(error_code__exact=error_code).exists():
-            self.run_error = RunErrors.objects.filter(error_code__exact=error_code).last()
+            self.run_error = RunErrors.objects.filter(
+                error_code__exact=error_code
+            ).last()
         else:
             self.run_error = RunErrors.objects.get(error_text__exact="Undefined")
         self.state_before_error = self.state
@@ -384,7 +388,7 @@ class Projects(models.Model):
 
     def get_user_name(self):
         if self.user_id:
-            return  self.user_id.username
+            return self.user_id.username
         return "Not provided"
 
     def get_user_center_name(self):
@@ -1102,6 +1106,12 @@ class CollectionIndexKit(models.Model):
         collection_info.append(self.adapter_1)
         collection_info.append(adapter2)
         collection_info.append(self.collection_index_file)
+        collection_info.append(
+            os.path.join(
+                wetlab.config.COLLECTION_INDEX_KITS_DIRECTORY,
+                str(self.collection_index_file),
+            )
+        )
         return collection_info
 
 
@@ -1145,7 +1155,9 @@ class LibPreparationUserSampleSheetManager(models.Manager):
         else:
             try:
                 collection_index_kit_id = CollectionIndexKit.objects.filter(
-                    collection_index_name__exact=user_sample_sheet_data["index_adapters"]
+                    collection_index_name__exact=user_sample_sheet_data[
+                        "index_adapters"
+                    ]
                 ).last()
             except Exception:
                 collection_index_kit_id = None
@@ -1385,7 +1397,9 @@ class LibPrepareManager(models.Manager):
         register_user_obj = User.objects.get(
             username__exact=lib_prep_data["registerUser"]
         )
-        sample_obj = core.models.Samples.objects.get(pk__exact=lib_prep_data["sample_id"])
+        sample_obj = core.models.Samples.objects.get(
+            pk__exact=lib_prep_data["sample_id"]
+        )
         molecule_obj = core.models.MoleculePreparation.objects.get(
             pk__exact=lib_prep_data["molecule_id"]
         )
@@ -1407,7 +1421,9 @@ class LibPrepareManager(models.Manager):
 
 class LibPrepare(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    molecule_id = models.ForeignKey(core.models.MoleculePreparation, on_delete=models.CASCADE)
+    molecule_id = models.ForeignKey(
+        core.models.MoleculePreparation, on_delete=models.CASCADE
+    )
     sample_id = models.ForeignKey(
         core.models.Samples, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -1419,7 +1435,10 @@ class LibPrepare(models.Model):
     )
 
     user_lot_kit_id = models.ForeignKey(
-        core.models.UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
+        core.models.UserLotCommercialKits,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
 
     user_sample_sheet = models.ForeignKey(
@@ -1709,7 +1728,9 @@ class LibParameterValueManager(models.Manager):
 
 
 class LibParameterValue(models.Model):
-    parameter_id = models.ForeignKey(core.models.ProtocolParameters, on_delete=models.CASCADE)
+    parameter_id = models.ForeignKey(
+        core.models.ProtocolParameters, on_delete=models.CASCADE
+    )
     library_id = models.ForeignKey(LibPrepare, on_delete=models.CASCADE)
     parameter_value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
@@ -1743,7 +1764,9 @@ class AdditionaKitsLibPrepareManager(models.Manager):
 class AdditionaKitsLibPrepare(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
     protocol_id = models.ForeignKey(core.models.Protocols, on_delete=models.CASCADE)
-    commercial_kit_id = models.ForeignKey(core.models.CommercialKits, on_delete=models.CASCADE)
+    commercial_kit_id = models.ForeignKey(
+        core.models.CommercialKits, on_delete=models.CASCADE
+    )
     kit_name = models.CharField(max_length=255)
     description = models.CharField(max_length=400, null=True, blank=True)
     kit_order = models.IntegerField()
@@ -1820,7 +1843,10 @@ class AdditionalUserLotKit(models.Model):
         AdditionaKitsLibPrepare, on_delete=models.CASCADE
     )
     user_lot_kit_id = models.ForeignKey(
-        core.models.UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
+        core.models.UserLotCommercialKits,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
@@ -1846,9 +1872,7 @@ class AdditionalUserLotKit(models.Model):
 
 
 class SambaConnectionData(models.Model):
-    samba_folder_name = models.CharField(
-        max_length=80, null=True, blank=True
-    )
+    samba_folder_name = models.CharField(max_length=80, null=True, blank=True)
     domain = models.CharField(max_length=80, null=True, blank=True)
     host_name = models.CharField(max_length=80, null=True, blank=True)
     ip_server = models.CharField(max_length=20, null=True, blank=True)
@@ -1894,7 +1918,8 @@ class SambaConnectionData(models.Model):
 class ConfigSettingManager(models.Manager):
     def create_config_setting(self, configuration_name, configuration_value):
         new_config_settings = self.create(
-            configuration_name=configuration_name, configurationValue=configuration_value
+            configuration_name=configuration_name,
+            configurationValue=configuration_value,
         )
         return new_config_settings
 

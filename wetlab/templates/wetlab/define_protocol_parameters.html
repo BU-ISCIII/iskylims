@@ -38,6 +38,7 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
+                                <input class="btn pull-center btn-outline-primary" type="submit" onclick="window.location.href = '/wetlab/';" value ="Return home"/>
                             </div>  
                         </div>
                     </div>
@@ -57,7 +58,7 @@
                                     <h4>Define the parameters used for protocol {{prot_parameters.protocol_name}}</h4>
                                     <div id="spreadsheet1"></div>
 
-                                    <input type="button" value="Download_Protocol_Parameters" onclick="table1.download()"/>
+                                    <input type="button" class="btn btn-outline-secondary" value="Download_Protocol_Parameters" onclick="table1.download()"/>
                                     <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
                                 </form>
                             </div>

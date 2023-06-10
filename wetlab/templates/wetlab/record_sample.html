@@ -331,8 +331,8 @@
                                             <input type="hidden" name="pre_defined_id" value="{{sample_recorded.updated_pre_defined_samples_id}}"/>
                                             <input type="hidden" name="pre_defined_samples" value="{{sample_recorded.pre_defined_samples_name}}"/>
                                             <input type="hidden" name="pre_defined_heading" value="{{sample_recorded.pre_defined_fields_heading_list}}"/>
-                                            <div class="horizontal-scroll">
-                                                <div id="spreadsheet_pre_def" class="mb-3" style="min-height:200px;"></div>
+                                            <div class="horizontal-scroll" >
+                                                <div id="spreadsheet_pre_def" class="mb-3" style="min-height:400px;"></div>
                                             </div>
                                             <script>
                                                 var data_pre_def = [{% for values in sample_recorded.pre_defined_sample_data %}

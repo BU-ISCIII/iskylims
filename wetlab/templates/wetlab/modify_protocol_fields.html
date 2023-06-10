@@ -74,54 +74,9 @@
                                 <div class="scrolling-wrapper">
                                     <div id="spreadsheet1"></div>
                                 </div> <!--  end of scrolling  -->
-                                <br>
-                                <input type="button" value="Download_Protocol_Parameters" onclick="table1.download()"/>
-
-
-                            <script>
-                                var data1 = [{% for values in protocol_field.fields %} [{% for value in values %}'{{value}}',{% endfor %}], {% endfor %}
-                                ];
-
-                                var table1 = jexcel(document.getElementById('spreadsheet1'), {
-                                    data:data1,
-                                    columns: [
-                                        { type: 'text', title:'{{protocol_field.heading.0}}', width:160 ,readOnly:true},
-                                        { type: 'text', title:'{{protocol_field.heading.1}}', width:160 },
-                                        { type: 'numeric', title:'{{protocol_field.heading.2}}', width:50, mask:' #.##' },
-                                        { type: 'checkbox', title:'{{protocol_field.heading.3}}', width:50 },
-                                        { type: 'dropdown' , title: '{{protocol_field.heading.4}}', width:140 , source: ["string", "Date" , "Option List"] },
-                                        { type: 'text', title:'{{protocol_field.heading.5}}', width:250, wordWrap:true },
-                                        { type: 'text', title:'{{protocol_field.heading.6}}', width:350 , wordWrap:true },
-                                        { type: 'hidden'}
-                                    ],
-                                    allowInsertColumn:false,
-                                    allowDeleteColumn:false,
-                                    allowRenameColumn:false,
-                                    csvFileName:'protocol_fields',
-                                    minDimensions:[7,1],
-                                    tableOverflow: false,
-                                    tableWidth: "900px",
-                                });
-                            </script>
-                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                <input type="button" class="btn btn-outline.secondary my-3" value="Download_Protocol_Parameters" onclick="table1.download()"/>
+                                <input class="btn float-end btn-outline-primary my-3" type="submit" value="Submit">
                             </form>
-                            <script>
-                                $(document).ready(function () {
-                                    $("#modifyProtocolFields").submit(function (e) {
-                                        //stop submitting the form to see the disabled button effect
-                                        //e.preventDefault();
-                                        //disable the submit button
-                                        var table_data1 = table1.getData()
-                                        var data1_json = JSON.stringify(table_data1)
-                                        $("<input />").attr("type", "hidden")
-                                        .attr("name", "table_data1")
-                                        .attr("value", data1_json)
-                                        .appendTo("#modifyProtocolFields");
-                                        $("#btnSubmit").attr("disabled", true);
-                                        return true;
-                                    });
-                                });
-                            </script>
                         </div>  
                     </div>
                 </div>
@@ -129,4 +84,47 @@
         {% endif %}
     </div>
 </section>
+<script>
+    var data1 = [{% for values in protocol_field.fields %} [{% for value in values %}'{{value}}',{% endfor %}], {% endfor %}
+    ];
+
+    var table1 = jexcel(document.getElementById('spreadsheet1'), {
+        data:data1,
+        columns: [
+            { type: 'text', title:'{{protocol_field.heading.0}}', width:160 ,readOnly:true},
+            { type: 'text', title:'{{protocol_field.heading.1}}', width:160 },
+            { type: 'numeric', title:'{{protocol_field.heading.2}}', width:50, mask:' #.##' },
+            { type: 'checkbox', title:'{{protocol_field.heading.3}}', width:50 },
+            { type: 'dropdown' , title: '{{protocol_field.heading.4}}', width:140 , source: ["string", "Date" , "Option List"] },
+            { type: 'text', title:'{{protocol_field.heading.5}}', width:250, wordWrap:true },
+            { type: 'text', title:'{{protocol_field.heading.6}}', width:350 , wordWrap:true },
+            { type: 'hidden'}
+        ],
+        allowInsertColumn:false,
+        allowDeleteColumn:false,
+        allowRenameColumn:false,
+        csvFileName:'protocol_fields',
+        minDimensions:[7,1],
+        tableOverflow: false,
+        tableWidth: "900px",
+    });
+
+    // Send formulary 
+    $(document).ready(function () {
+        $("#modifyProtocolFields").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            //e.preventDefault();
+            //disable the submit button
+            var table_data1 = table1.getData()
+            var data1_json = JSON.stringify(table_data1)
+            $("<input />").attr("type", "hidden")
+            .attr("name", "table_data1")
+            .attr("value", data1_json)
+            .appendTo("#modifyProtocolFields");
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+    });
+
+</script>
 {% endblock %}

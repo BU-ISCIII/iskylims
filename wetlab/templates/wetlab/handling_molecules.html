@@ -256,8 +256,8 @@
                                         {% if show_molecule_parameters.pending_id %}
                                             <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
                                         {% endif %}
-                                        <div class="row horizontal-scroll my-3"style="min-height:200px;">
-                                            <div id="spreadsheet"></div>
+                                        <div class="row horizontal-scroll my-3">
+                                            <div id="spreadsheet" style="min-height:400px;"></div>
                                         </div> 
                                         <script>
                                             var data = [{% for values in show_molecule_parameters.data %}

@@ -1,11 +1,11 @@
 # Generic imports
-import datetime
 import json
 import logging
 import os
 import re
 import statistics
 import time
+from collections import OrderedDict
 
 import django.contrib.auth.models
 from django.conf import settings
@@ -1895,7 +1895,7 @@ def annual_report(request):
             return render(
                 request,
                 "wetlab/annual_report.html",
-                {"error_message" : present_year["ERROR"]}
+                {"error_message" : annual_rep_data["ERROR"]}
             )
         return render(
             request,
@@ -2094,10 +2094,10 @@ def display_sample_project(request, sample_project_id):
     )
     if "ERROR" in samples_project_data:
         error_message = samples_project_data["ERROR"]
-        return render(request, "wetlab/error_page.html", {"content": error_message})
+        return render(request, "wetlab/display_sample_project.html", {"error_message": error_message})
     return render(
         request,
-        "wetlab/displaySampleProject.html",
+        "wetlab/display_sample_project.html",
         {"samples_project_data": samples_project_data},
     )
 
@@ -2237,21 +2237,6 @@ def add_user_lot_commercial_kit(request):
             {"defined_kits": defined_kits},
         )
 
-
-@login_required
-def pending_to_update(request):
-    pending = {}
-    # get the samples in defined state
-
-    pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
-    pending[
-        "extract_molecule"
-    ] = core.utils.samples.get_samples_in_extracted_molecule_state(request.user)
-    pending["graphic_pending_samples"] = wetlab.utils.sample.pending_samples_for_grafic(
-        pending
-    ).render()
-
-    return render(request, "wetlab/pending_to_update.html", {"pending": pending})
 
 
 @login_required
@@ -2789,8 +2774,8 @@ def display_sample(request, sample_id):
     if len(sample_information) == 0:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["No Sample was found"]},
+            "wetlab/display_sample.html",
+            {"error_message": "Sample was not found"},
         )
     else:
         return render(
@@ -3054,21 +3039,6 @@ def handling_library_preparation(request):
             "wetlab/handling_library_preparation.html",
             {"stored_index": stored_index},
         )
-
-        # NOT WORKING. get_library_preparation_heading_for_samples does not exits.
-        """
-        if request.method == "POST" and request.POST["action"] == "libpreparationdefined":
-        lib_prep_defined = request.POST.getlist("libpreparation")
-        lib_protocols = get_protocol_from_library_id(lib_prep_defined[0])
-        stored_lib_prep = get_library_preparation_heading_for_samples(
-            lib_prep_defined, lib_protocols
-        )
-        return render(
-            request,
-            "wetlab/handling_library_preparation.html",
-            {"stored_lib_prep": stored_lib_prep},
-        )
-        """
 
     if request.method == "POST" and request.POST["action"] == "assignAdditionalKits":
         lib_prep_ids = request.POST.getlist("libpreparation")
@@ -3678,21 +3648,17 @@ def create_pool(request):
 
 @login_required
 def create_new_run(request):
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/error_page.html",
+            {
+                "content": [
+                    "You do not have enough privileges to see this page ",
+                    "Contact with your administrator .",
+                ]
+            },
+        )
 
     if request.method == "POST" and request.POST["action"] == "createNewRun":
         display_pools_for_run = wetlab.utils.run.display_available_pools()
@@ -3760,8 +3726,7 @@ def create_new_run(request):
         run_obj = wetlab.utils.run.get_run_obj_from_id(request.POST["run_process_id"])
         if run_obj.get_state() != "Pre-Recorded":
             exp_name = run_obj.get_run_name()
-            error_message = wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY.copy()
-            error_message.insert(1, exp_name)
+            error_message = str(exp_name +  wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY)
             display_pools_for_run = wetlab.utils.run.display_available_pools()
             return render(
                 request,
@@ -3821,25 +3786,28 @@ def create_new_run(request):
 
 @login_required
 def pending_sample_preparation(request):
+    user_is_wetlab_manager = wetlab.utils.common.is_wetlab_manager(request)
+    if user_is_wetlab_manager:
+        req_user = ""
+    else:
+        req_user = request.user.username
     pending = {}
+    pending["state"] = OrderedDict()
+    state_numbers = {}
     # get the samples in defined state
-    pending["defined"] = core.utils.samples.get_samples_in_defined_state("")
-    pending[
-        "extract_molecule"
-    ] = core.utils.samples.get_samples_in_extracted_molecule_state("")
-    pending[
-        "create_library_preparation"
-    ] = wetlab.utils.library.get_samples_in_lib_prep_state()
-    # pending['lib_prep_protocols'] = get_protocol_lib()
-    # get the library preparation in defined state
-    pending[
-        "add_lib_prep_parameters"
-    ] = wetlab.utils.library.get_lib_prep_to_add_parameters()
-    pending["graphic_pending_samples"] = wetlab.utils.sample.pending_samples_for_grafic(
-        pending
-    ).render()
+    pending_state = ["Pre-defined", "Defined", "Molecule extraction" , "Library preparation", "Pool preparation" , "Sequencing"]
+    for p_state in pending_state:
+        sample_objs = core.utils.samples.get_sample_objs_in_state(req_user, p_state)
+        state_numbers[p_state] = len(sample_objs)
+        if len(sample_objs) == 0:
+            continue
+        pending["state"][p_state] = list(sample_objs.values_list("pk", "sample_name","lab_request__lab_name_coding", "sample_type__sample_type", "sample_project__sample_project_name", "sample_user__username"))
+      
+    if len(pending["state"]) > 0:
+        pending["pending_graphic"] = core.utils.samples.create_graphic_pending_samples( state_numbers, "Number of Pending Samples", 460, 460, "fint").render()
+        pending["sample_heading"] = wetlab.config.HEADING_FOR_PENDING_PROCESS_SAMPLES
     return render(
-        request, "wetlab/pending_sample_preparation.html", {"pending": pending}
+        request, "wetlab/pending_sample_preparation.html", {"pending": pending }
     )
 
 

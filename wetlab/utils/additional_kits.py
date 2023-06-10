@@ -164,10 +164,10 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
     protocol_obj = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_ids[0]).get_protocol_obj()
     additional_kits["kit_heading"] = []
     if wetlab.models.AdditionaKitsLibPrepare.objects.filter(
-        protocol_id=protocol_obj, kitUsed=True
+        protocol_id=protocol_obj, kit_used=True
     ).exists():
         additional_kits_objs = wetlab.models.AdditionaKitsLibPrepare.objects.filter(
-            protocol_id=protocol_obj, kitUsed=True
+            protocol_id=protocol_obj, kit_used=True
         ).order_by("kit_order")
 
         for additional_kit_obj in additional_kits_objs:
@@ -184,23 +184,23 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
                 for user_lot_kit_obj in user_lot_kit_objs:
                     user_lot.append(user_lot_kit_obj.get_lot_number())
             additional_kits["kit_heading"].append([kit_name, user_lot])
-    additional_kits["fix_heading"] = wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS
-    data_length = len(wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS) + len(
-        additional_kits_objs
-    )
+        additional_kits["fix_heading"] = wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS
+        data_length = len(wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS) + len(
+            additional_kits_objs
+        )
 
-    for lib_prep_id in lib_prep_ids:
-        lib_prep_obj = wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id)
-        lib_prep_code_ids.append(lib_prep_obj.get_lib_prep_code())
-        row_data = [""] * data_length
-        row_data[0] = lib_prep_obj.get_sample_name()
-        row_data[1] = lib_prep_obj.get_lib_prep_code()
-        additional_kits["data"].append(row_data)
-    additional_kits["lib_prep_ids"] = ",".join(lib_prep_ids)
-    additional_kits["lib_prep_code_ids"] = ",".join(lib_prep_code_ids)
-    additional_kits["full_heading"] = ",".join(
-        wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS + kit_name_list
-    )
+        for lib_prep_id in lib_prep_ids:
+            lib_prep_obj = wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id)
+            lib_prep_code_ids.append(lib_prep_obj.get_lib_prep_code())
+            row_data = [""] * data_length
+            row_data[0] = lib_prep_obj.get_sample_name()
+            row_data[1] = lib_prep_obj.get_lib_prep_code()
+            additional_kits["data"].append(row_data)
+        additional_kits["lib_prep_ids"] = ",".join(lib_prep_ids)
+        additional_kits["lib_prep_code_ids"] = ",".join(lib_prep_code_ids)
+        additional_kits["full_heading"] = ",".join(
+            wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS + kit_name_list
+        )
 
     return additional_kits
 
