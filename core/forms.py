@@ -1,3 +1,4 @@
+# Generic imports
 from crispy_forms import bootstrap, layout
 from crispy_forms.helper import FormHelper
 from django import forms

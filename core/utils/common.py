@@ -1,13 +1,14 @@
+# Generic imports
 import smtplib
 import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 
-from core.core_config import *
-from core.models import *
+# local imports
+import core.core_config
+import core.models
  
-
 
 def get_installed_apps():
     return settings.APPS_NAMES
@@ -36,29 +37,29 @@ def get_inital_sample_settings_values(apps_name):
         initial_data
     """
     initial_data = {}
-    if Species.objects.filter(apps_name__exact=apps_name).exists():
-        species_objs = Species.objects.filter(apps_name__exact=apps_name)
+    if core.models.Species.objects.filter(apps_name__exact=apps_name).exists():
+        species_objs = core.models.Species.objects.filter(apps_name__exact=apps_name)
         initial_data["species_data"] = []
         for species_obj in species_objs:
             initial_data["species_data"].append(
                 [species_obj.get_name(), species_obj.get_id()]
             )
-    if LabRequest.objects.filter(apps_name__exact=apps_name).exists():
-        lab_request_objs = LabRequest.objects.filter(apps_name__exact=apps_name)
+    if core.models.LabRequest.objects.filter(apps_name__exact=apps_name).exists():
+        lab_request_objs = core.models.LabRequest.objects.filter(apps_name__exact=apps_name)
         initial_data["lab_request_data"] = []
         for lab_request_obj in lab_request_objs:
             data = lab_request_obj.get_all_data()
             data.append(lab_request_obj.get_id())
             initial_data["lab_request_data"].append(data)
-    if MoleculeType.objects.filter(apps_name__exact=apps_name).exists():
+    if core.models.MoleculeType.objects.filter(apps_name__exact=apps_name).exists():
         initial_data["molecule_type_data"] = []
-        molecule_type_objs = MoleculeType.objects.filter(apps_name__exact=apps_name)
+        molecule_type_objs = core.models.MoleculeType.objects.filter(apps_name__exact=apps_name)
         for molecule_type_obj in molecule_type_objs:
             initial_data["molecule_type_data"].append(
                 [molecule_type_obj.get_name(), molecule_type_obj.get_id()]
             )
-    if ProtocolType.objects.filter(apps_name__exact=apps_name).exists():
-        protocol_type_objs = ProtocolType.objects.filter(
+    if core.models.ProtocolType.objects.filter(apps_name__exact=apps_name).exists():
+        protocol_type_objs = core.models.ProtocolType.objects.filter(
             apps_name__exact=apps_name
         ).order_by("molecule")
         initial_data["protocol_type_data"] = []
@@ -70,8 +71,8 @@ def get_inital_sample_settings_values(apps_name):
                     protocol_type_obj.get_molecule_type(),
                 ]
             )
-    if StateInCountry.objects.filter(apps_name__exact=apps_name).exists():
-        state_objs = StateInCountry.objects.filter(apps_name__exact=apps_name).order_by(
+    if core.models.StateInCountry.objects.filter(apps_name__exact=apps_name).exists():
+        state_objs = core.models.StateInCountry.objects.filter(apps_name__exact=apps_name).order_by(
             "state_name"
         )
         initial_data["states_data"] = []
@@ -79,8 +80,8 @@ def get_inital_sample_settings_values(apps_name):
             initial_data["states_data"].append(
                 [state_obj.get_state_name(), state_obj.get_state_id()]
             )
-    if City.objects.filter(apps_name__exact=apps_name).exists():
-        city_objs = City.objects.filter(apps_name__exact=apps_name).order_by("city_name")
+    if core.models.City.objects.filter(apps_name__exact=apps_name).exists():
+        city_objs = core.models.City.objects.filter(apps_name__exact=apps_name).order_by("city_name")
         initial_data["cities_data"] = []
         for city_obj in city_objs:
             initial_data["cities_data"].append(
@@ -165,17 +166,17 @@ def save_inital_sample_setting_value(apps_name, data):
         species_data = {}
         species_data["apps_name"] = apps_name
         species_data["name"] = data["species"]
-        if Species.objects.filter(
+        if core.models.Species.objects.filter(
             species_name__iexact=species_data["name"],
             apps_name__exact=species_data["apps_name"],
         ).exists():
             setting_defined["ERROR"] = [
-                ERROR_SPECIES_ALREADY_DEFINED,
+                core.core_config.ERROR_SPECIES_ALREADY_DEFINED,
                 species_data["name"],
             ]
             return setting_defined
 
-        Species.objects.create_new_specie(species_data)
+        core.models.Species.objects.create_new_specie(species_data)
         setting_defined["settings"] = "Species"
         setting_defined["value"] = species_data["name"]
 
@@ -190,32 +191,32 @@ def save_inital_sample_setting_value(apps_name, data):
         lab_request_data["labEmail"] = data["lab_request"]["email"]
         lab_request_data["address"] = data["lab_request"]["address"]
         lab_request_data["city"] = data["lab_request"]["city"]
-        if LabRequest.objects.filter(
+        if core.models.LabRequest.objects.filter(
             lab_name_coding__iexact=lab_request_data["labNameCoding"],
             apps_name__exact=lab_request_data["apps_name"],
         ).exists():
             setting_defined["ERROR"] = [
-                ERROR_LABORATORY_REQUEST_ALREADY_DEFINED,
+                core.core_config.ERROR_LABORATORY_REQUEST_ALREADY_DEFINED,
                 lab_request_data["labNameCoding"],
             ]
             return setting_defined
-        LabRequest.objects.create_lab_request(lab_request_data)
+        core.models.LabRequest.objects.create_lab_request(lab_request_data)
         setting_defined["settings"] = "Lab Request"
         setting_defined["value"] = lab_request_data["labName"]
     if "molecule_type" in data:
         molecule_type_data = {}
         molecule_type_data["apps_name"] = apps_name
         molecule_type_data["moleculeType"] = data["molecule_type"]
-        if MoleculeType.objects.filter(
+        if core.models.MoleculeType.objects.filter(
             molecule_type__iexact=molecule_type_data["moleculeType"],
             apps_name__exact=molecule_type_data["apps_name"],
         ).exists():
             setting_defined["ERROR"] = [
-                ERROR_MOLECULE_TYPE_ALREADY_DEFINED,
+                core.core_config.ERROR_MOLECULE_TYPE_ALREADY_DEFINED,
                 molecule_type_data["moleculeType"],
             ]
             return setting_defined
-        MoleculeType.objects.create_molecule_type(
+        core.models.MoleculeType.objects.create_molecule_type(
             molecule_type_data
         )
         setting_defined["settings"] = "Molecule Type"
@@ -229,17 +230,17 @@ def save_inital_sample_setting_value(apps_name, data):
             protocol_type_data["molecule"] = None
         else:
             protocol_type_data["molecule"] = data["protocol_type"][1]
-        if ProtocolType.objects.filter(
+        if core.models.ProtocolType.objects.filter(
             protocol_type__iexact=protocol_type_data["protocol_type"],
             molecule__molecule_type__iexact=protocol_type_data["molecule"],
             apps_name__exact=protocol_type_data["apps_name"],
         ).exists():
             setting_defined["ERROR"] = [
-                ERROR_PROTOCOL_TYPE_ALREADY_DEFINED,
+                core.core_config.ERROR_PROTOCOL_TYPE_ALREADY_DEFINED,
                 protocol_type_data["protocol_type"],
             ]
             return setting_defined
-        ProtocolType.objects.create_protocol_type(
+        core.models.ProtocolType.objects.create_protocol_type(
             protocol_type_data
         )
         setting_defined["settings"] = "Protocol Type"
@@ -247,24 +248,24 @@ def save_inital_sample_setting_value(apps_name, data):
 
     if "state" in data:
         state_data = {}
-        if StateInCountry.objects.filter(
+        if core.models.StateInCountry.objects.filter(
             state_name__iexact=data["state"], apps_name__exact=apps_name
         ).exists():
-            setting_defined["ERROR"] = [ERROR_STATE_ALREADY_DEFINED, data["state"]]
+            setting_defined["ERROR"] = [core.core_config.ERROR_STATE_ALREADY_DEFINED, data["state"]]
             return setting_defined
         state_data["apps_name"] = apps_name
         state_data["state"] = data["state"]
-        StateInCountry.objects.create_new_state(state_data)
+        core.models.StateInCountry.objects.create_new_state(state_data)
         setting_defined["settings"] = "State"
         setting_defined["value"] = data["state"]
 
     if "city" in data:
         city_data = {}
-        if City.objects.filter(
+        if core.models.City.objects.filter(
             city_name__iexact=data["city"]["cityName"], apps_name__exact=apps_name
         ).exists():
             setting_defined["ERROR"] = [
-                ERROR_CITY_ALREADY_DEFINED,
+                core.core_config.ERROR_CITY_ALREADY_DEFINED,
                 data["city"]["cityName"],
             ]
             return setting_defined
@@ -273,8 +274,8 @@ def save_inital_sample_setting_value(apps_name, data):
         city_data["cityName"] = data["city"]["cityName"]
         city_data["latitude"] = data["city"]["latitude"]
         city_data["longitude"] = data["city"]["longitude"]
-        City.objects.create_new_city(city_data)
-        setting_defined["settings"] = "City"
+        core.models.City.objects.create_new_city(city_data)
+        setting_defined["settings"] = "core.models.City"
         setting_defined["value"] = data["city"]["cityName"]
     return setting_defined
 

@@ -1,8 +1,9 @@
+# Generic imports
 import json
 
-from core.core_config import *
-from core.models import *
-
+# Local imports
+import core.models
+import core.core_config
 
 def add_project_to_patient(project_obj, patient_obj):
     """
@@ -27,7 +28,7 @@ def check_if_project_exists(project_id, app_name):
     Return:
         True/False.
     """
-    if PatientProjects.objects.filter(
+    if core.models.PatientProjects.objects.filter(
         pk__exact=project_id, apps_name__exact=app_name
     ).exists():
         return True
@@ -46,15 +47,15 @@ def create_patient_project(form_data, app_name):
     Return:
         project_data.
     """
-    if PatientProjects.objects.filter(
+    if core.models.PatientProjects.objects.filter(
         project_name__iexact=form_data["projectName"], apps_name__exact=app_name
     ).exists():
         return "ERROR"
     project_data = {}
-    for item in FORM_PROJECT_CREATION:
+    for item in core.core_config.FORM_PROJECT_CREATION:
         project_data[item] = form_data[item]
     project_data["apps_name"] = app_name
-    new_patient_core = PatientProjects.objects.create_project(project_data)
+    new_patient_core = core.models.PatientProjects.objects.create_project(project_data)
     project_data["project_id"] = new_patient_core.get_project_id()
     project_data["project_name"] = new_patient_core.get_project_name()
     return project_data
@@ -69,12 +70,12 @@ def get_all_project_info(proyect_id):
     """
     project_data = {}
     project_data["fields"] = []
-    project_obj = PatientProjects.objects.get(pk__exact=proyect_id)
+    project_obj = core.models.PatientProjects.objects.get(pk__exact=proyect_id)
 
-    if PatientProjectsFields.objects.filter(patient_projects_id=project_obj).exists():
-        project_data["field_heading"] = HEADING_FOR_DEFINING_PROJECT_FIELDS
+    if core.models.PatientProjectsFields.objects.filter(patient_projects_id=project_obj).exists():
+        project_data["field_heading"] = core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
         project_data["project_name"] = project_obj.get_project_name()
-        project_fields = PatientProjectsFields.objects.filter(
+        project_fields = core.models.PatientProjectsFields.objects.filter(
             patient_projects_id=project_obj
         ).order_by("project_field_order")
         for field in project_fields:
@@ -96,11 +97,11 @@ def get_available_projects_for_patient(patient_obj, app_name):
         project_list.
     """
     if (
-        PatientProjects.objects.filter(apps_name__exact=app_name)
+        core.models.PatientProjects.objects.filter(apps_name__exact=app_name)
         .exclude(id__in=patient_obj.patient_projects.values_list("id", flat=True))
         .exists()
     ):
-        available_projects = PatientProjects.objects.filter(
+        available_projects = core.models.PatientProjects.objects.filter(
             apps_name__exact=app_name
         ).exclude(id__in=patient_obj.patient_projects.values_list("id", flat=True))
         return available_projects
@@ -118,11 +119,11 @@ def get_defined_patient_projects(app_name):
         patient_projects.
     """
     patient_projects = []
-    if PatientProjects.objects.filter(apps_name__exact=app_name).exists():
-        pat_projects = PatientProjects.objects.filter(apps_name__exact=app_name)
+    if core.models.PatientProjects.objects.filter(apps_name__exact=app_name).exists():
+        pat_projects = core.models.PatientProjects.objects.filter(apps_name__exact=app_name)
         for pat_project in pat_projects:
             data = pat_project.get_patient_project_data()
-            if PatientProjectsFields.objects.filter(
+            if core.models.PatientProjectsFields.objects.filter(
                 patient_projects_id=pat_project
             ).exists():
                 data.append(True)
@@ -142,10 +143,10 @@ def get_project_id(project_name, app_name):
     Return:
         project_id
     """
-    if PatientProjects.objects.filter(
+    if core.models.PatientProjects.objects.filter(
         project_name__exact=project_name, apps_name__exact=app_name
     ):
-        project_id = PatientProjects.objects.get(
+        project_id = core.models.PatientProjects.objects.get(
             project_name__exact=project_name, apps_name__exact=app_name
         ).get_project_id()
         return project_id
@@ -163,8 +164,8 @@ def get_project_obj_from_id(project_id):
     Return:
         project_obj
     """
-    if PatientProjects.objects.filter(pk__exact=project_id).exists():
-        project_obj = PatientProjects.objects.get(pk__exact=project_id)
+    if core.models.PatientProjects.objects.filter(pk__exact=project_id).exists():
+        project_obj = core.models.PatientProjects.objects.get(pk__exact=project_id)
         return project_obj
     else:
         return None
@@ -180,10 +181,10 @@ def get_project_fields(project_id):
     """
     project_fields = []
 
-    if PatientProjectsFields.objects.filter(
+    if core.models.PatientProjectsFields.objects.filter(
         patient_projects_id__pk=project_id
     ).exists():
-        p_fields_obj = PatientProjectsFields.objects.filter(
+        p_fields_obj = core.models.PatientProjectsFields.objects.filter(
             patient_projects_id__pk=project_id
         ).order_by("project_field_order")
         for p_field in p_fields_obj:
@@ -201,10 +202,10 @@ def get_project_field_ids(project_id):
     """
     project_field_ids = []
 
-    if PatientProjectsFields.objects.filter(
+    if core.models.PatientProjectsFields.objects.filter(
         patient_projects_id__pk=project_id
     ).exists():
-        p_fields_obj = PatientProjectsFields.objects.filter(
+        p_fields_obj = core.models.PatientProjectsFields.objects.filter(
             patient_projects_id__pk=project_id
         ).order_by("project_field_order")
         for p_field in p_fields_obj:
@@ -222,14 +223,14 @@ def get_project_field_values(project_id, patient_obj):
     """
     project_field_values = []
 
-    p_fields_obj = PatientProjectsFields.objects.filter(
+    p_fields_obj = core.models.PatientProjectsFields.objects.filter(
         patient_projects_id__pk=project_id
     ).order_by("project_field_order")
     for p_field in p_fields_obj:
-        if PatientProjectFieldValue.objects.filter(
+        if core.models.PatientProjectFieldValue.objects.filter(
             patient_core_id=patient_obj, project_field_id=p_field
         ).exists():
-            field_value = PatientProjectFieldValue.objects.get(
+            field_value = core.models.PatientProjectFieldValue.objects.get(
                 patient_core_id=patient_obj, project_field_id=p_field
             ).get_field_value()
         else:
@@ -248,10 +249,10 @@ def get_project_obj(project_name, app_name):
     Return:
         project_obj
     """
-    if PatientProjects.objects.filter(
+    if core.models.PatientProjects.objects.filter(
         project_name__exact=project_name, apps_name__exact=app_name
     ):
-        project_obj = PatientProjects.objects.get(
+        project_obj = core.models.PatientProjects.objects.get(
             project_name__exact=project_name, apps_name__exact=app_name
         )
         return project_obj
@@ -270,19 +271,19 @@ def define_table_for_project_fields(project_id):
         project_fields
     """
     project_fields = {}
-    project = PatientProjects.objects.get(pk__exact=project_id)
+    project = core.models.PatientProjects.objects.get(pk__exact=project_id)
 
     project_fields["project_name"] = project.get_project_name()
     project_fields["project_id"] = project_id
-    project_fields["heading"] = HEADING_FOR_DEFINING_PROJECT_FIELDS
+    project_fields["heading"] = core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
     return project_fields
 
 
 def set_project_fields(data_form):
     project_id = data_form["project_id"]
     json_data = json.loads(data_form["table_data1"])
-    fields = HEADING_FOR_DEFINING_PROJECT_FIELDS
-    project_id_obj = PatientProjects.objects.get(pk__exact=project_id)
+    fields = core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
+    project_id_obj = core.models.PatientProjects.objects.get(pk__exact=project_id)
     saved_fields = []
     stored_fields = {}
     for row_data in json_data:
@@ -293,7 +294,7 @@ def set_project_fields(data_form):
         project_fields["project_id"] = project_id_obj
         for i in range(len(fields)):
             project_fields[fields[i]] = row_data[i]
-        new_p_field_obj = PatientProjectsFields.objects.create_project_fields(
+        new_p_field_obj = core.models.PatientProjectsFields.objects.create_project_fields(
             project_fields
         )
         saved_fields.append(

@@ -1,7 +1,9 @@
+# Generic imports
 import json
 
+# Local imports
 from core.core_config import *
-from core.models import *
+import core.models
 
 
 def create_new_protocol(new_protocol, protocol_type, description, apps_name):
@@ -14,10 +16,10 @@ def create_new_protocol(new_protocol, protocol_type, description, apps_name):
     Return:
         ID of the new created object.
     """
-    protocol_type_obj = ProtocolType.objects.get(
+    protocol_type_obj = core.models.ProtocolType.objects.get(
         protocol_type__exact=protocol_type, apps_name__exact=apps_name
     )
-    new_protocol_object = Protocols(
+    new_protocol_object = core.models.Protocols(
         type=protocol_type_obj, name=new_protocol, description=description
     )
     new_protocol_object.save()
@@ -34,14 +36,14 @@ def check_if_protocol_exists(protocol, app_name):
         True/False.
     """
     if type(protocol) is int:
-        if Protocols.objects.filter(
+        if core.models.Protocols.objects.filter(
             pk__exact=protocol, type__apps_name__exact=app_name
         ).exists():
             return True
         else:
             return False
     else:
-        if Protocols.objects.filter(
+        if core.models.Protocols.objects.filter(
             name__exact=protocol, type__apps_name__exact=app_name
         ).exists():
             return True
@@ -60,7 +62,7 @@ def define_table_for_prot_parameters(protocol_id):
         prot_parameters
     """
     prot_parameters = {}
-    protocol_obj = Protocols.objects.get(pk__exact=protocol_id)
+    protocol_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
 
     prot_parameters["protocol_name"] = protocol_obj.get_name()
     prot_parameters["protocol_id"] = protocol_id
@@ -80,20 +82,20 @@ def display_available_protocols(app_name):
 
     molecule_protocol_list = []
     if (
-        ProtocolType.objects.filter(apps_name__exact=app_name)
+        core.models.ProtocolType.objects.filter(apps_name__exact=app_name)
         .exclude(molecule=None)
         .exists()
     ):
         protocol_types = (
-            ProtocolType.objects.filter(apps_name__exact=app_name)
+            core.models.ProtocolType.objects.filter(apps_name__exact=app_name)
             .exclude(molecule=None)
             .order_by("molecule")
         )
         for protocol_type in protocol_types:
             molecule_type = protocol_type.get_molecule_type()
             prot_type_str = protocol_type.get_name()
-            if Protocols.objects.filter(type=protocol_type).exists():
-                protocols = Protocols.objects.filter(type=protocol_type).order_by(
+            if core.models.Protocols.objects.filter(type=protocol_type).exists():
+                protocols = core.models.Protocols.objects.filter(type=protocol_type).order_by(
                     "type"
                 )
                 for protocol in protocols:
@@ -102,24 +104,24 @@ def display_available_protocols(app_name):
                     data_prot.append(prot_type_str)
                     data_prot.append(protocol.get_name())
                     data_prot.append(protocol.pk)
-                    if ProtocolParameters.objects.filter(protocol_id=protocol).exists():
+                    if core.models.ProtocolParameters.objects.filter(protocol_id=protocol).exists():
                         data_prot.append(True)
                     else:
                         data_prot.append(False)
                     molecule_protocol_list.append(data_prot)
     other_protocol_list = []
     if (
-        ProtocolType.objects.filter(molecule=None, apps_name__exact=app_name)
+        core.models.ProtocolType.objects.filter(molecule=None, apps_name__exact=app_name)
         .exclude(protocol_type__icontains="additional")
         .exists()
     ):
-        protocol_types = ProtocolType.objects.filter(
+        protocol_types = core.models.ProtocolType.objects.filter(
             molecule=None, apps_name__exact=app_name
         ).exclude(protocol_type__icontains="additional")
         for protocol_type in protocol_types:
             prot_type_str = protocol_type.get_name()
-            if Protocols.objects.filter(type=protocol_type).exists():
-                protocols = Protocols.objects.filter(type=protocol_type).order_by(
+            if core.models.Protocols.objects.filter(type=protocol_type).exists():
+                protocols = core.models.Protocols.objects.filter(type=protocol_type).order_by(
                     "type"
                 )
                 for protocol in protocols:
@@ -127,7 +129,7 @@ def display_available_protocols(app_name):
                     data_prot.append(prot_type_str)
                     data_prot.append(protocol.get_name())
                     data_prot.append(protocol.pk)
-                    if ProtocolParameters.objects.filter(protocol_id=protocol).exists():
+                    if core.models.ProtocolParameters.objects.filter(protocol_id=protocol).exists():
                         data_prot.append(True)
                     else:
                         data_prot.append(False)
@@ -144,8 +146,8 @@ def display_protocol_list():
         protocol_list
     """
     protocol_list = []
-    if Protocols.objects.all().exists():
-        protocols_objs = Protocols.objects.all().order_by("type").order_by("name")
+    if core.models.Protocols.objects.all().exists():
+        protocols_objs = core.models.Protocols.objects.all().order_by("type").order_by("name")
         for protocol_obj in protocols_objs:
             protocol_list.append(
                 [protocol_obj.get_protocol_id(), protocol_obj.get_name()]
@@ -170,20 +172,20 @@ def get_defined_protocols(app_name, exclude_non_molecule):
     defined_protocols = []
     if exclude_non_molecule:
         if (
-            Protocols.objects.filter(type__apps_name__exact=app_name)
+            core.models.Protocols.objects.filter(type__apps_name__exact=app_name)
             .exclude(type__molecule=None)
             .exists()
         ):
             protocols_obj = (
-                Protocols.objects.filter(type__apps_name__exact=app_name)
+                core.models.Protocols.objects.filter(type__apps_name__exact=app_name)
                 .exclude(type__molecule=None)
                 .order_by("type")
             )
             for protocol_obj in protocols_obj:
                 defined_protocols.append(protocol_obj.get_name())
     else:
-        if Protocols.objects.filter(type__apps_name__exact=app_name).exists():
-            protocols_obj = Protocols.objects.filter(
+        if core.models.Protocols.objects.filter(type__apps_name__exact=app_name).exists():
+            protocols_obj = core.models.Protocols.objects.filter(
                 type__apps_name__exact=app_name
             ).order_by("type")
             for protocol_obj in protocols_obj:
@@ -199,8 +201,8 @@ def display_protocol_types(app_name):
         protocol_types_list.
     """
     protocol_types_list = []
-    if ProtocolType.objects.filter(apps_name__exact=app_name).exists():
-        protocol_types = ProtocolType.objects.filter(
+    if core.models.ProtocolType.objects.filter(apps_name__exact=app_name).exists():
+        protocol_types = core.models.ProtocolType.objects.filter(
             apps_name__exact=app_name
         ).order_by("molecule")
         for protocol_type in protocol_types:
@@ -217,12 +219,12 @@ def get_all_protocol_info(protocol_id):
     """
     protocol_data = {}
     protocol_data["parameters"] = []
-    protocol_obj = Protocols.objects.get(pk__exact=protocol_id)
+    protocol_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
 
-    if ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
+    if core.models.ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
         protocol_data["parameter_heading"] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
         protocol_data["protocol_name"] = protocol_obj.get_name()
-        protocol_parameters = ProtocolParameters.objects.filter(
+        protocol_parameters = core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj
         ).order_by("parameter_order")
         for parameter in protocol_parameters:
@@ -232,15 +234,15 @@ def get_all_protocol_info(protocol_id):
 
 
 def get_protocol_obj_from_name(protocol_name):
-    if Protocols.objects.filter(name__exact=protocol_name).exists():
-        return Protocols.objects.get(name__exact=protocol_name)
+    if core.models.Protocols.objects.filter(name__exact=protocol_name).exists():
+        return core.models.Protocols.objects.get(name__exact=protocol_name)
     else:
         return None
 
 
 def get_protocol_obj_from_id(protocol_id):
-    if Protocols.objects.filter(pk__exact=protocol_id).exists():
-        return Protocols.objects.get(pk__exact=protocol_id)
+    if core.models.Protocols.objects.filter(pk__exact=protocol_id).exists():
+        return core.models.Protocols.objects.get(pk__exact=protocol_id)
     else:
         return None
 
@@ -255,9 +257,9 @@ def get_protocol_fields(protocol_id):
         info_protocol
     """
     parameters_protocol = {}
-    protocol_obj = Protocols.objects.get(pk__exact=protocol_id)
-    if ProtocolParameters.objects.filter(protocol_id__exact=protocol_obj).exists():
-        protocol_parameter_objs = ProtocolParameters.objects.filter(
+    protocol_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
+    if core.models.ProtocolParameters.objects.filter(protocol_id__exact=protocol_obj).exists():
+        protocol_parameter_objs = core.models.ProtocolParameters.objects.filter(
             protocol_id__exact=protocol_obj
         ).order_by("parameter_order")
         parameter_list = []
@@ -283,8 +285,8 @@ def get_protocol_parameters(protocol_obj):
         protocol_parameter_list.
     """
     protocol_parameter_list = []
-    if ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
-        protocol_parameters = ProtocolParameters.objects.filter(
+    if core.models.ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
+        protocol_parameters = core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj, parameter_used=True
         ).order_by("parameter_order")
         for protocol_parameter in protocol_parameters:
@@ -300,8 +302,8 @@ def get_protocol_parameters_and_type(protocol_obj):
         protocol_parameter_type_list.
     """
     protocol_parameter_type_list = []
-    if ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
-        protocol_parameters = ProtocolParameters.objects.filter(
+    if core.models.ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
+        protocol_parameters = core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj, parameter_used=True
         ).order_by("parameter_order")
         for protocol_parameter in protocol_parameters:
@@ -324,8 +326,8 @@ def get_protocol_parameter_obj_from_id(protocol_parameter_id):
     Return:
         protocol_parameter_obj
     """
-    if ProtocolParameters.objects.filter(pk__exact=protocol_parameter_id).exists():
-        return ProtocolParameters.objects.get(pk__exact=protocol_parameter_id)
+    if core.models.ProtocolParameters.objects.filter(pk__exact=protocol_parameter_id).exists():
+        return core.models.ProtocolParameters.objects.get(pk__exact=protocol_parameter_id)
     return None
 
 
@@ -373,7 +375,7 @@ def modify_fields_in_protocol(form_data):
             p_fields["Max Value"] = ""
             p_fields["Min Value"] = ""
             saved_fields["fields"].append(
-                ProtocolParameters.objects.create_protocol_parameter(
+                core.models.ProtocolParameters.objects.create_protocol_parameter(
                     p_fields
                 ).get_all_parameter_info()
             )
@@ -397,7 +399,7 @@ def set_protocol_parameters(request):
     protocol_id = request.POST["protocol_id"]
     json_data = json.loads(request.POST["table_data1"])
     parameters = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
-    protocol_id_obj = Protocols.objects.get(pk__exact=protocol_id)
+    protocol_id_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
 
     saved_parameters = []
     stored_parameters = {}
@@ -423,7 +425,7 @@ def set_protocol_parameters(request):
             prot_parameters["Option Values"] = ""
 
         saved_parameters.append(
-            ProtocolParameters.objects.create_protocol_parameter(
+            core.models.ProtocolParameters.objects.create_protocol_parameter(
                 prot_parameters
             ).get_parameter_name()
         )

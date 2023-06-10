@@ -1,3 +1,4 @@
+# Generic imports
 import datetime
 
 from django.contrib.auth.models import User
@@ -1082,15 +1083,15 @@ class SamplesProjectsTableOptions(models.Model):
 class SamplesManager(models.Manager):
     def create_sample(self, sample_data):
         if sample_data["labRequest"] != "":
-            sample_data["labRequest"] = LabRequest.objects.get(
+            sample_data["labRequest"] = LabRequest.objects.filter(
                 lab_name_coding__exact=sample_data["labRequest"]
-            )
+            ).last()
         else:
             sample_data["labRequest"] = None
         if sample_data["species"] != "":
-            sample_data["species"] = Species.objects.get(
+            sample_data["species"] = Species.objects.filter(
                 species_name__exact=sample_data["species"]
-            )
+            ).last()
         else:
             sample_data["species"] = None
         if "sampleEntryDate" in sample_data:

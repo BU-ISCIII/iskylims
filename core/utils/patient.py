@@ -1,4 +1,5 @@
-from core.models import *
+# Local imports
+import core.models
 
 def get_patient_core_obj_from_id (p_id):
     '''
@@ -10,7 +11,7 @@ def get_patient_core_obj_from_id (p_id):
         patient_obj
     '''
     try:
-        patient_obj = PatientCore.objects.get(pk__exact = p_id)
+        patient_obj = core.models.PatientCore.objects.get(pk__exact = p_id)
     except:
         patient_obj = None
     return patient_obj
