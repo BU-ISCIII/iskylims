@@ -309,6 +309,8 @@ ERROR_PROTOCOL_TYPE_ALREADY_DEFINED = ["Protocol Type is already defined"]
 ERROR_STATE_ALREADY_DEFINED = ["State is already defined"]
 ERROR_CITY_ALREADY_DEFINED = ["City is already defined"]
 
+ERROR_SAMPLE_NOT_FOUND = "Sample was not found"
+
 # ######################  Batch file ###############################################
 ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE = [
     "The uploaded sample batch file does not have any sample",

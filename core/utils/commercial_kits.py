@@ -1,27 +1,27 @@
-from core.core_config import *
-from core.models import *
-from core.utils.protocols import get_protocol_obj_from_name
+import core.core_config
+import core.models
+import core.utils.protocols
 
 
 def get_commercial_kit_id(kit_name):
-    if CommercialKits.objects.filter(name__iexact=kit_name).exists():
-        return CommercialKits.objects.get(name__iexact=kit_name)
+    if core.models.CommercialKits.objects.filter(name__iexact=kit_name).exists():
+        return core.models.CommercialKits.objects.get(name__iexact=kit_name)
     else:
         return None
 
 
 def get_defined_commercial_kits():
     commercial_kit_list = []
-    if CommercialKits.objects.exists():
-        kits = CommercialKits.objects.all().order_by("name")
+    if core.models.CommercialKits.objects.exists():
+        kits = core.models.CommercialKits.objects.all().order_by("name")
         for kit in kits:
             commercial_kit_list.append(kit.get_name())
     return commercial_kit_list
 
 
 def get_lot_user_commercial_kit_obj(lot_number):
-    if UserLotCommercialKits.objects.filter(chip_lot__iexact=lot_number).exists():
-        return UserLotCommercialKits.objects.filter(chip_lot__iexact=lot_number).last()
+    if core.models.UserLotCommercialKits.objects.filter(chip_lot__iexact=lot_number).exists():
+        return core.models.UserLotCommercialKits.objects.filter(chip_lot__iexact=lot_number).last()
     else:
         return None
 
@@ -35,8 +35,8 @@ def get_user_lot_commercial_kit_obj_from_id(kit_id):
     Return:
         commercial kit obj
     """
-    if UserLotCommercialKits.objects.filter(pk__exact=kit_id).exists():
-        return UserLotCommercialKits.objects.get(pk__exact=kit_id)
+    if core.models.UserLotCommercialKits.objects.filter(pk__exact=kit_id).exists():
+        return core.models.UserLotCommercialKits.objects.get(pk__exact=kit_id)
     return None
 
 
@@ -49,8 +49,8 @@ def get_commercial_kit_obj_from_name(kit_name):
     Return:
         commercial kit obj
     """
-    if CommercialKits.objects.filter(name__exact=kit_name).exists():
-        return CommercialKits.objects.get(name__exact=kit_name)
+    if core.models.CommercialKits.objects.filter(name__exact=kit_name).exists():
+        return core.models.CommercialKits.objects.get(name__exact=kit_name)
     return None
 
 
@@ -68,8 +68,8 @@ def get_data_for_commercial_kits(platform):
     data_commercial_kits = {}
     data_commercial_kits["protocol"] = {}
     data_commercial_kits["protocol"]["data"] = {}
-    if CommercialKits.objects.all().exclude(protocol_kits=None).exists():
-        kits = CommercialKits.objects.all().exclude(protocol_kits=None).order_by("name")
+    if core.models.CommercialKits.objects.all().exclude(protocol_kits=None).exists():
+        kits = core.models.CommercialKits.objects.all().exclude(protocol_kits=None).order_by("name")
         for kit in kits:
             data_kits = []
             commercial_kit_name = kit.get_name()
@@ -89,12 +89,12 @@ def get_data_for_commercial_kits(platform):
             data_commercial_kits["protocol"]["data"][commercial_kit_name] = [data_kits]
         data_commercial_kits["protocol"][
             "headings"
-        ] = HEADING_FOR_COMMERCIAL_PROTOCOL_KIT_BASIC_DATA
+        ] = core.core_config.HEADING_FOR_COMMERCIAL_PROTOCOL_KIT_BASIC_DATA
     # get the platform CommercialKits if platorm is not empty
     if platform != "":
-        if CommercialKits.objects.all().exclude(platform_kits=None).exists():
+        if core.models.CommercialKits.objects.all().exclude(platform_kits=None).exists():
             kits = (
-                CommercialKits.objects.all()
+                core.models.CommercialKits.objects.all()
                 .exclude(platform_kits=None)
                 .order_by("name")
             )
@@ -111,7 +111,7 @@ def get_data_for_commercial_kits(platform):
                 ]
             data_commercial_kits["platform"][
                 "headings"
-            ] = HEADING_FOR_COMMERCIAL_PLATFORM_KIT_BASIC_DATA
+            ] = core.core_config.HEADING_FOR_COMMERCIAL_PLATFORM_KIT_BASIC_DATA
 
     return data_commercial_kits
 
@@ -120,10 +120,10 @@ def get_commercial_kit_basic_data(kit_obj):
     kit_data = {}
     if kit_obj.platform_kit_obj():
         kit_data["data"] = kit_obj.get_commercial_platform_basic_data()
-        kit_data["heading"] = HEADING_FOR_NEW_SAVED_COMMERCIAL_PLATFORM_KIT
+        kit_data["heading"] = core.core_config.HEADING_FOR_NEW_SAVED_COMMERCIAL_PLATFORM_KIT
     else:
         kit_data["data"] = kit_obj.get_commercial_protocol_basic_data()
-        kit_data["heading"] = HEADING_FOR_NEW_SAVED_COMMERCIAL_PROTOCOL_KIT
+        kit_data["heading"] = core.core_config.HEADING_FOR_NEW_SAVED_COMMERCIAL_PROTOCOL_KIT
         kit_data["protocol_kit"] = True
     return kit_data
 
@@ -142,7 +142,7 @@ def display_user_lot_kit_information_from_query_list(user_kits_objs):
     """
     user_lot = {}
     user_lot["kit_data"] = []
-    user_lot["heading"] = HEADING_FOR_USER_LOT_SEARCH_RESULTS
+    user_lot["heading"] = core.core_config.HEADING_FOR_USER_LOT_SEARCH_RESULTS
 
     for user_kit_obj in user_kits_objs:
         data = user_kit_obj.get_basic_data()
@@ -175,8 +175,8 @@ def get_expired_lot_user_kit(register_user_obj=None):
         user_expired_kits
     """
     user_expired_kits = {}
-    if UserLotCommercialKits.objects.filter(run_out=True).exists():
-        user_kits = UserLotCommercialKits.objects.filter(run_out=True).order_by(
+    if core.models.UserLotCommercialKits.objects.filter(run_out=True).exists():
+        user_kits = core.models.UserLotCommercialKits.objects.filter(run_out=True).order_by(
             "based_commercial"
         )
 
@@ -196,7 +196,7 @@ def get_expired_lot_user_kit(register_user_obj=None):
             if c_kit not in user_expired_kits["data"]:
                 user_expired_kits["data"][c_kit] = []
             user_expired_kits["data"][c_kit].append(data_kit)
-    user_expired_kits["headings"] = HEADING_FOR_SOLDOUT_USER_LOT_INVENTORY
+    user_expired_kits["headings"] = core.core_config.HEADING_FOR_SOLDOUT_USER_LOT_INVENTORY
     return user_expired_kits
 
 
@@ -214,8 +214,8 @@ def get_valid_lot_user_kit(register_user_obj=None):
         valid_kits
     """
     valid_kits = {}
-    if UserLotCommercialKits.objects.filter(run_out=False).exists():
-        user_kits = UserLotCommercialKits.objects.filter(run_out=False).order_by(
+    if core.models.UserLotCommercialKits.objects.filter(run_out=False).exists():
+        user_kits = core.models.UserLotCommercialKits.objects.filter(run_out=False).order_by(
             "based_commercial"
         )
 
@@ -236,14 +236,14 @@ def get_valid_lot_user_kit(register_user_obj=None):
             if c_kit not in valid_kits["data"]:
                 valid_kits["data"][c_kit] = []
             valid_kits["data"][c_kit].append(data_kit)
-        valid_kits["headings"] = HEADING_FOR_USER_LOT_INVENTORY
+        valid_kits["headings"] = core.core_config.HEADING_FOR_USER_LOT_INVENTORY
     return valid_kits
 
 
 def get_lot_user_commercial_kit_basic_data(kit_obj):
     lot_kit_data = {}
     lot_kit_data["data"] = kit_obj.get_basic_data()
-    lot_kit_data["heading"] = HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    lot_kit_data["heading"] = core.core_config.HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
     return lot_kit_data
 
 
@@ -261,12 +261,12 @@ def get_lot_commercial_kits(protocol_obj):
     """
     user_kit_list = []
 
-    if CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
-        commercial_kits = CommercialKits.objects.filter(protocol_kits=protocol_obj)
-        if UserLotCommercialKits.objects.filter(
+    if core.models.CommercialKits.objects.filter(protocol_kits=protocol_obj).exists():
+        commercial_kits = core.models.CommercialKits.objects.filter(protocol_kits=protocol_obj)
+        if core.models.UserLotCommercialKits.objects.filter(
             based_commercial__in=commercial_kits, run_out=False
         ).exists():
-            user_kits = UserLotCommercialKits.objects.filter(
+            user_kits = core.models.UserLotCommercialKits.objects.filter(
                 based_commercial__in=commercial_kits, run_out=False
             ).order_by("expiration_date")
             for user_kit in user_kits:
@@ -286,14 +286,14 @@ def get_lot_reagent_from_comercial_kit(configuration_name):
     """
     user_commercial_list = []
     user_conf_kit_list = []
-    if CommercialKits.objects.filter(name__exact=configuration_name).exists():
-        commercial_obj = CommercialKits.objects.filter(
+    if core.models.CommercialKits.objects.filter(name__exact=configuration_name).exists():
+        commercial_obj = core.models.CommercialKits.objects.filter(
             name__exact=configuration_name
         ).last()
-        if UserLotCommercialKits.objects.filter(
+        if core.models.UserLotCommercialKits.objects.filter(
             based_commercial=commercial_obj, run_out=False
         ).exists():
-            user_kits = UserLotCommercialKits.objects.filter(
+            user_kits = core.models.UserLotCommercialKits.objects.filter(
                 based_commercial=commercial_obj, run_out=False
             ).order_by("expiration_date")
             for user_kit in user_kits:
@@ -319,18 +319,18 @@ def get_lot_reagent_commercial_kits(platform):
     user_platform_kit_dict = {}
     user_platform_kit_list = []
     commercial_kit_names = []
-    seq_conf_objs = SequencingConfiguration.objects.filter(
+    seq_conf_objs = core.models.SequencingConfiguration.objects.filter(
         platform_id__platform_name__exact=platform
     )
     for seq_conf_obj in seq_conf_objs:
         seq_conf_names.append(seq_conf_obj.get_configuration_name())
 
     if (
-        CommercialKits.objects.filter(platform_kits__platform_name__exact=platform)
+        core.models.CommercialKits.objects.filter(platform_kits__platform_name__exact=platform)
         .exclude(name__in=seq_conf_names)
         .exists()
     ):
-        commercial_objs = CommercialKits.objects.filter(
+        commercial_objs = core.models.CommercialKits.objects.filter(
             platform_kits__platform_name__exact=platform
         ).exclude(name__in=seq_conf_names)
 
@@ -338,10 +338,10 @@ def get_lot_reagent_commercial_kits(platform):
             commercial_name = commercial_obj.get_name()
             commercial_kit_names.append(commercial_name)
             user_platform_kit_dict[commercial_name] = []
-            if UserLotCommercialKits.objects.filter(
+            if core.models.UserLotCommercialKits.objects.filter(
                 based_commercial=commercial_obj, run_out=False
             ).exists():
-                user_kits = UserLotCommercialKits.objects.filter(
+                user_kits = core.models.UserLotCommercialKits.objects.filter(
                     based_commercial=commercial_obj, run_out=False
                 ).order_by("expiration_date")
                 for user_kit in user_kits:
@@ -367,11 +367,11 @@ def get_molecule_lot_kit_in_sample(sample_id):
     """
     extraction_kits = {}
     extraction_kits["molecule_user_kits"] = {}
-    if MoleculePreparation.objects.filter(sample__pk__exact=sample_id).exists():
+    if core.models.MoleculePreparation.objects.filter(sample__pk__exact=sample_id).exists():
         extraction_kits[
             "molecule_heading_lot_kits"
-        ] = HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA
-        molecule_objs = MoleculePreparation.objects.filter(
+        ] = core.core_config.HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA
+        molecule_objs = core.models.MoleculePreparation.objects.filter(
             sample__pk__exact=sample_id
         ).order_by("protocol_used")
         for molecule_obj in molecule_objs:
@@ -398,13 +398,13 @@ def get_user_lot_kit_data_to_display(user_lot_kit_obj):
     """
     display_data = {}
     display_data["lot_kit_data"] = user_lot_kit_obj.get_basic_data()
-    display_data["lot_kit_heading"] = HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    display_data["lot_kit_heading"] = core.core_config.HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
     commercial_obj = user_lot_kit_obj.get_commercial_obj()
     commercial_data = commercial_obj.get_commercial_protocol_basic_data()
     commercial_data.append(commercial_obj.get_platform_name())
     commercial_data.append(commercial_obj.get_cat_number())
     display_data["commercial_data"] = [commercial_data]
-    display_data["commercial_heading"] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+    display_data["commercial_heading"] = core.core_config.HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
 
     return display_data
 
@@ -419,10 +419,10 @@ def store_commercial_kit(kit_data):
     if "platform" in kit_data:
         commercial_kit_values["platform"] = kit_data["platform"]
 
-    new_kit = CommercialKits.objects.create_commercial_kit(commercial_kit_values)
+    new_kit = core.models.CommercialKits.objects.create_commercial_kit(commercial_kit_values)
     if "platform" not in kit_data:
         for protocol in kit_data.getlist("protocol"):
-            new_kit.protocol_kits.add(get_protocol_obj_from_name(protocol))
+            new_kit.protocol_kits.add(core.utils.protocols.get_protocol_obj_from_name(protocol))
     return new_kit
 
 
@@ -434,7 +434,7 @@ def store_lot_user_commercial_kit(kit_data, user_name):
     lot_kit_values["chipLot"] = kit_data["barCode"]
     lot_kit_values["expirationDate"] = kit_data["expirationDate"]
 
-    new_kit = UserLotCommercialKits.objects.create_user_lot_commercial_kit(
+    new_kit = core.models.UserLotCommercialKits.objects.create_user_lot_commercial_kit(
         lot_kit_values
     )
     return new_kit
@@ -469,8 +469,8 @@ def update_usage_user_lot_kit(lot_id):
         user_lot_obj
     """
     user_lot_obj = ""
-    if UserLotCommercialKits.objects.filter(pk__exact=lot_id).exists():
-        user_lot_obj = UserLotCommercialKits.objects.filter(pk__exact=lot_id).last()
+    if core.models.UserLotCommercialKits.objects.filter(pk__exact=lot_id).exists():
+        user_lot_obj = core.models.UserLotCommercialKits.objects.filter(pk__exact=lot_id).last()
         user_lot_obj.set_increase_use()
     return user_lot_obj
 
@@ -485,8 +485,8 @@ def search_user_lot_kit_from_user_form(form_data):
         user_kits_objs
     """
     user_kits_objs = "No defined"
-    if UserLotCommercialKits.objects.all().exists():
-        user_kits_objs = UserLotCommercialKits.objects.all()
+    if core.models.UserLotCommercialKits.objects.all().exists():
+        user_kits_objs = core.models.UserLotCommercialKits.objects.all()
         if "exclude_runout" in form_data:
             user_kits_objs = user_kits_objs.filter(run_out=True)
         if form_data["lotNumber"] != "":

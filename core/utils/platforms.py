@@ -1,4 +1,5 @@
-from core.models import *
+# Local imports
+import core.models
 
 
 def get_defined_platforms_and_ids(sequencing_technology):
@@ -11,10 +12,10 @@ def get_defined_platforms_and_ids(sequencing_technology):
         platform_list with a tuple list
     """
     platform_list = []
-    if SequencingPlatform.objects.filter(
+    if core.models.SequencingPlatform.objects.filter(
         sequencing_technology__exact=sequencing_technology
     ).exists():
-        platform_objs = SequencingPlatform.objects.filter(
+        platform_objs = core.models.SequencingPlatform.objects.filter(
             sequencing_technology__exact=sequencing_technology
         ).order_by("platform_name")
         for platform_obj in platform_objs:
