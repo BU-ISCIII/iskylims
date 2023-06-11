@@ -1,17 +1,23 @@
+# Generic imports
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import render
 
-from .forms import *
-from .models import *
+# Local imports
+import django_utils.forms
+
 
 @login_required
 def user_edit(request):
     if request.method == "POST":
-        form1 = UserCreationForm(data=request.POST, instance=request.user)
-        form2 = ProfileCreationForm(data=request.POST, instance=request.user.profile)
+        form1 = django_utils.forms.UserCreationForm(
+            data=request.POST, instance=request.user
+        )
+        form2 = django_utils.forms.ProfileCreationForm(
+            data=request.POST, instance=request.user.profile
+        )
         if form1.is_valid() and form2.is_valid():
             email_address = form1.cleaned_data["email"]
 
@@ -102,8 +108,8 @@ def user_edit(request):
 
     else:
         username_list = []
-        form1 = UserCreationForm(instance=request.user)
-        form2 = ProfileCreationForm(instance=request.user.profile)
+        form1 = django_utils.forms.UserCreationForm(instance=request.user)
+        form2 = django_utils.forms.ProfileCreationForm(instance=request.user.profile)
 
         # get the list of users that are sharing
         sharing_users = []
@@ -151,8 +157,8 @@ def user_edit(request):
 @transaction.atomic
 def user_creation(request):
     if request.method == "POST":
-        form1 = UserCreationForm(request.POST)
-        form2 = ProfileCreationForm(request.POST)
+        form1 = django_utils.forms.UserCreationForm(request.POST)
+        form2 = django_utils.forms.ProfileCreationForm(request.POST)
         if form1.is_valid() and form2.is_valid():
             email_address = form1.cleaned_data["email"]
             domain = email_address.split("@")[1]
@@ -196,8 +202,8 @@ def user_creation(request):
                 {"content": [form1.errors, form2.errors]},
             )
     else:
-        form1 = UserCreationForm()
-        form2 = ProfileCreationForm()
+        form1 = django_utils.forms.UserCreationForm()
+        form2 = django_utils.forms.ProfileCreationForm()
 
     return render(
         request, "registration/user_creation.html", {"form1": form1, "form2": form2}

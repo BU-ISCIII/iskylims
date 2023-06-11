@@ -1,3 +1,4 @@
+# Generic imports
 from crispy_forms import bootstrap, layout
 from crispy_forms.helper import FormHelper
 from django import forms
@@ -5,12 +6,13 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from .models import *
+# Local imports
+import django_utils.models
 
 
 class ProfileCreationForm(forms.ModelForm):
     class Meta:
-        model = Profile
+        model = django_utils.models.Profile
         fields = [
             "profile_position",
             "profile_center",
@@ -42,7 +44,7 @@ class ProfileCreationForm(forms.ModelForm):
                         layout.Field("profile_extension"),
                         css_class="col-md-6",
                     ),
-                    css_class="row"
+                    css_class="row",
                 )
             )
         )
@@ -98,7 +100,7 @@ class UserCreationForm(UserCreationForm):
                         layout.Field("password2"),
                         css_class="col-md-6",
                     ),
-                    css_class="row"
+                    css_class="row",
                 ),
             ),
         )
