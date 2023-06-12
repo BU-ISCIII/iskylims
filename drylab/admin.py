@@ -56,7 +56,7 @@ class ResolutionAdmin(admin.ModelAdmin):
     list_filter = ["resolution_date"]
     search_fields = [
         "resolution_number__icontains",
-        "resolution_asigned_user__username__icontains",
+        "resolution_assigned_user__username__icontains",
     ]
 
 

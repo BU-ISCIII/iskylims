@@ -379,11 +379,11 @@ def get_user_pending_services_info(user_name):
     user_pending_services_details = {}
     res_in_queued, res_in_progress = [], []
     if drylab.models.Resolution.objects.filter(
-        resolution_asigned_user__username__exact=user_name,
+        resolution_assigned_user__username__exact=user_name,
         resolution_state__state_value__exact="queued",
     ).exists():
         resolution_recorded_objs = drylab.models.Resolution.objects.filter(
-            resolution_asigned_user__username__exact=user_name,
+            resolution_assigned_user__username__exact=user_name,
             resolution_state__state_value__exact="queued",
         ).order_by("-resolution_service_id")
         for resolution_recorded_obj in resolution_recorded_objs:
@@ -395,11 +395,11 @@ def get_user_pending_services_info(user_name):
             "heading_in_queued"
         ] = drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
     if drylab.models.Resolution.objects.filter(
-        resolution_asigned_user__username__exact=user_name,
+        resolution_assigned_user__username__exact=user_name,
         resolution_state__state_value__exact="in_progress",
     ).exists():
         resolution_recorded_objs = drylab.models.Resolution.objects.filter(
-            resolution_asigned_user__username__exact=user_name,
+            resolution_assigned_user__username__exact=user_name,
             resolution_state__state_value__exact="in_progress",
         ).order_by("-resolution_service_id")
         for resolution_recorded_obj in resolution_recorded_objs:

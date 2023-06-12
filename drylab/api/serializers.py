@@ -132,7 +132,7 @@ class PipelinesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pipelines
-        fields = ["pipeline_name", "pipeline_version"]
+        fields = ["pk", "pipeline_name", "pipeline_version"]
 
 
 class DeliverySerializer(serializers.ModelSerializer):
@@ -232,7 +232,7 @@ class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RequestedSamplesInServices
-        fields = ["run_name", "project_name", "sample_name", "sample_path"]
+        fields = ["run_name", "project_name", "sample_name", "sample_key", "pk", "sample_path"]
 
 
 class ServiceListSerializer(serializers.ModelSerializer):
