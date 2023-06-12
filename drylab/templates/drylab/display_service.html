@@ -71,6 +71,12 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                <h3>Requested Services</h3>
+                                {% for analysis,structure in available_services|tree_info %}
+                                    {% if structure.new_level %}<ul><li>{% else %}</li><li>{% endif %}
+                                        {{ analysis.avail_service_description }}
+                                    {% for level in structure.closed_levels %}</li></ul>{% endfor %}
+                                {% endfor %}
                             </div>
                             {% if service_manager %}
                             <div class="col-md-6 ">
@@ -110,6 +116,14 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="card ">
+                                    <div class="card-header">
+                                        Notes
+                                    </div>
+                                    <div class="card-body">
+                                        {{ display_service.service_notes.value }}
                                     </div>
                                 </div>
                             </div>
@@ -226,8 +240,280 @@
             </div>
             {% endif %}
         </div>
+        <div class="row my-2">
+            <div class="col-sm-12">
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <button class="nav-link active" id="nav-samples-tab" data-bs-toggle="tab" data-bs-target="#nav-samples"
+                            type="button" role="tab" aria-controls="nav-samples" aria-selected="true">Samples</button>
+                        <button class="nav-link" id="nav-resolutions-tab" data-bs-toggle="tab"
+                            data-bs-target="#nav-resolutions" type="button" role="tab" aria-controls="nav-resolutions"
+                            aria-selected="false">Resolutions</button>
+                    </div>
+                </nav>
+                <div class="tab-content bg-white border-tab p-2" id="nav_tab_content">
+                    <div class="tab-pane fade show active" id="nav-samples" role="tabpanel"
+                        aria-labelledby="nav-samples-tab">  
+                        <div class="row pb-2 pt-2">
+                            <div class="col-md-12">
+                                {% if display_service.samples_sequenced|length > 0 %}
+                                <form class="" action="/drylab/delete-samples-service" method="post">
+                                    {% csrf_token %}
+                                    {% if service_manager %}
+                                    <input type="hidden" name="action" value="delete_samples_service">
+                                    <input type="hidden" name="service_id"
+                                        value="{{ display_service.service_request_number.value }}">
+                                    {% endif %}
+                                    <p>Number of samples in service:
+                                        {{display_service.samples_sequenced|length}}
+                                    </p>
+                                    <table id="table_samples" class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ display_service.samples.value.0.sample_name.label }}</th>
+                                                <th>{{ display_service.samples.value.0.project_name.label }}</th>
+                                                <th>{{ display_service.samples.value.0.run_name.label }}</th>
+                                                {% if service_manager %}
+                                                <th>Select to delete</th>
+                                                {% endif %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for sample in display_service.samples.value %}
+                                            <tr>
+                                                <td>
+                                                    {% if sample.sample_key.value == 'None' %}
+                                                    {{ sample.sample_name.value }}
+                                                    {% else %}
+                                                    <a href="/wetlab/displaySampleInRun={{ sample.sample_key }}"
+                                                        target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ sample.project_name.value }}</td>
+                                                <td>{{ sample.run_name.value }}</td>
+                                                {% if service_manager %}
+                                                <td>
+                                                    <input type="checkbox" name="sample_id"
+                                                        value="{{ sample.pk.value }}">
+                                                </td>
+                                                {% endif %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>{{ display_service.samples.value.0.sample_name.label }}</th>
+                                                <th>{{ display_service.samples.value.0.project_name.label }}</th>
+                                                <th>{{ display_service.samples.value.0.run_name.label }}</th>
+                                                {% if service_manager %}
+                                                <th>Select to delete</th>
+                                                {% endif %}
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    {% if service_manager %}
+                                    <input class="btn pull-left btn-danger" type="submit" id="btnSubmit"
+                                    value="Delete samples">
+                                    <form id="add_samples_service" class="" action="/drylab/add-samples-service" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="add_samples_service">
+                                        <input type="hidden" name="service_id"
+                                            value="{{ display_service.service_request_number.value }}">
+                                        <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                            value="Add samples">
+                                    </form>
+                                    {% endif %}
+                                </form>           
+                                {% else %}
+                                <h5> There are no samples assigned to this service </h5>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-resolutions" role="tabpanel"
+                        aria-labelledby="nav-resolutions-tab">
+                        {% if display_service.resolutions %}        
+                        <table id="table_resolutions" class="table table-hover"  style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_number.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_state.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_assigned_user.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_date.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_in_progress_date.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_delivery_date.label }}</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_number.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_state.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_assigned_user.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_date.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_in_progress_date.label }}</th>
+                                    <th>{{ display_service.resolutions.value.0.resolution_delivery_date.label }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        {% else %}
+                        <h5 style="text-align:center"> There are no resolutions for this service</h5>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+{{ display_service.resolutions.value|json_script:"resolutions" }}
+<script>
+    
+    function format(d) {
+        return (
+            '<table class="table" cellpadding="6" cellspacing="0">' +
+            '<tr>' +
+            '<td>Service id</td>' +
+            '<td>' +
+            d.resolution_service_id +
+            '</td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>Folder name</td>' +
+            '<td>' +
+            d.resolution_full_number +
+            '</td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>Pipelines</td>' +
+            '<td>' +
+            d.resolution_pipelines+
+            '</td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>Analysis:</td>' +
+            '<td>' +
+            d.available_services +
+            '</td>'+
+            '</tr>' +
+            '<tr>' +
+            '<td>Delivery:</td>' +
+            '<td>' +
+            d.delivery +
+            '</td>'+
+            '</tr>' +
+            '</table>'
+        );
+    }
+    
 
+    $(document).ready(function () {
+        function item_to_string (item) {
+            let str = '';
+            if (typeof item === "object"){
+                for (const [p, val] of Object.entries(item)) {
+                    str += `${p}: ${val}; `;
+                }
+            }else{
+                str = item;
+            }
+            return str;
+        }
+        
+        const resolution_data = JSON.parse(document.getElementById('resolutions').textContent);
+        
+        const resolution_data_values = resolution_data.map(dict => {
+            const newdict = {};
+            Object.entries(dict).forEach(([key, item]) => {
+                if (Array.isArray(item.value)) {
+                    newdict[key] = item.value.map(subitem => item_to_string(subitem)).join("<br>");
+                }else{
+                    newdict[key] = item.value;
+                }
+             });
+        return newdict;
+        });
+        
+        console.log(resolution_data_values)
+        $('#table_samples tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
 
+        // DataTable
+        var table = $('#table_samples').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+
+        $("#add_samples_service").one('submit', function () {
+            //stop submitting the form to see the disabled button effect
+            $(this).find('input[type="submit"]').attr('disabled', 'disabled');
+            return true;
+        });
+
+        $('#table_resolutions tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        var table = $('#table_resolutions').DataTable({
+            data: resolution_data_values,
+            columns:[
+                {
+                    className: 'dt-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '',
+                },
+                { data: 'resolution_number' },
+                { data: 'resolution_state' },
+                { data: 'resolution_assigned_user' },
+                { data: 'resolution_date' },
+                { data: 'resolution_in_progress_date' },
+                { data: 'resolution_delivery_date' },
+            ],
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+
+        // Add event listener for opening and closing details
+        $('#table_resolutions tbody').on('click', 'td.dt-control', function () {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+            if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                // Open this row
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
+    });
+    
+</script>
 {% endblock %}

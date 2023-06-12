@@ -298,7 +298,7 @@ def infrastructure_request(request):
 
 
 @login_required
-def add_samples_in_service(request):
+def add_samples_service_in_service(request):
     if request.user.is_authenticated:
         if not drylab.utils.common.is_service_manager(request):
             return render(
@@ -328,7 +328,7 @@ def add_samples_in_service(request):
         samples_added["service_id"] = request.POST["service_id"]
         return render(
             request,
-            "drylab/addSamplesInService.html",
+            "drylab/add_samples_service.html",
             {"samples_added": samples_added},
         )
     else:
@@ -336,13 +336,13 @@ def add_samples_in_service(request):
         service_data_information["service_id"] = request.POST["service_id"]
         return render(
             request,
-            "drylab/addSamplesInService.html",
+            "drylab/add_samples_service.html",
             {"service_data_information": service_data_information},
         )
 
 
 @login_required
-def delete_samples_in_service(request):
+def delete_samples_service(request):
     if request.user.is_authenticated:
         if not drylab.utils.common.is_service_manager(request):
             return render(
@@ -354,7 +354,7 @@ def delete_samples_in_service(request):
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    if request.method == "POST" and request.POST["action"] == "deleteSamplesInService":
+    if request.method == "POST" and request.POST["action"] == "delete_samples_service":
         if not drylab.models.Service.objects.filter(
             pk__exact=request.POST["service_id"]
         ).exists():
@@ -363,12 +363,12 @@ def delete_samples_in_service(request):
                 "drylab/error_page.html",
                 {"content": ["The service that you are trying to get does not exist "]},
             )
-        if "sampleId" not in request.POST:
+        if "sample_id" not in request.POST:
             return redirect(
                 "/drylab/display-service=" + str(request.POST["service_id"])
             )
         deleted_samples = drylab.utils.req_services.delete_samples_in_service(
-            request.POST.getlist("sampleId")
+            request.POST.getlist("sample_id")
         )
         service_data = {
             "service_id": request.POST["service_id"],
@@ -378,7 +378,7 @@ def delete_samples_in_service(request):
         }
         return render(
             request,
-            "drylab/deleteSamplesInService.html",
+            "drylab/delete_samples_service.html",
             {"deleted_samples": deleted_samples, "service_data": service_data},
         )
     return redirect("/drylab/display-service=" + str(request.POST["service_id"]))
@@ -569,7 +569,7 @@ def search_service(request):
             )
         if assigned_user != "":
             if not drylab.models.Resolution.objects.filter(
-                resolution_asigned_user__username__icontains=service_user
+                resolution_assigned_user__username__icontains=service_user
             ).exists():
                 error_message = (
                     drylab.config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
@@ -584,7 +584,7 @@ def search_service(request):
                 )
             services_handled_by = []
             services_handled_by_objs = drylab.models.Resolution.objects.filter(
-                resolution_asigned_user__username__icontains=service_user
+                resolution_assigned_user__username__icontains=service_user
             )
             for services_handled_by_obj in services_handled_by_objs:
                 services_handled_by.append(services_handled_by_obj.get_service_name())
@@ -754,7 +754,7 @@ def add_resolution(request):
             {"content": drylab.config.ERROR_SERVICE_ID_NOT_FOUND},
         )
 
-    if request.method == "POST" and request.POST["action"] == "addResolutionService":
+    if request.method == "POST" and request.POST["action"] == "add_resolution":
         resolution_data_form = drylab.utils.resolutions.get_add_resolution_data_form(
             request.POST
         )

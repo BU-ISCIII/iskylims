@@ -14,9 +14,9 @@ urlpatterns = [
     ),
     path("add-delivery", drylab.views.add_delivery, name="add_delivery"),
     path(
-        "addSamplesInService",
-        drylab.views.add_samples_in_service,
-        name="add_samples_in_service",
+        "add-samples-service",
+        drylab.views.add_samples_service_in_service,
+        name="add_samples_service_in_service",
     ),
     path(
         "counseling-request",
@@ -34,9 +34,9 @@ urlpatterns = [
         name="configuration_test",
     ),
     path(
-        "deleteSamplesInService",
-        drylab.views.delete_samples_in_service,
-        name="deleteSamplesInService",
+        "delete-samples-service",
+        drylab.views.delete_samples_service,
+        name="delete_samples_service",
     ),
     path(
         "detail-pipeline=<int:pipeline_id>",

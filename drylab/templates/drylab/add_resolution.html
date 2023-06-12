@@ -1,4 +1,4 @@
-{% extends 'drylab/base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
 
 {% block content %}
@@ -24,13 +24,13 @@
 				<div class="card ">
 					<div class="card-header"><h3 style="text-align:center">Add Resolution Form for Service {{resolution_form_data.service_number}}</h3></div>
 		            <div class="card-body">
-						<form method="post" enctype="multipart/form-data" name="addResolutionService" id="addResolutionService" class="form-horizontal well">
+						<form method="post" enctype="multipart/form-data" name="add_resolution" id="add_resolution" class="form-horizontal well">
 		                    {% csrf_token %}
 							{% if resolution_form_data.selected_avail_services_data %}
 								<h5 style="text-align:center"> The Resolution information in the form are only for the services : {% for id, name in resolution_form_data.selected_avail_services_data %} {{name}},  {% endfor %}</h5>
 								<input type="hidden" name="selectedServices" value="{% for id, name in resolution_form_data.selected_children_services %}{{id}},{% endfor %}">
 							{% endif %}
-							<input type="hidden" name="action" value="addResolutionService"/>
+							<input type="hidden" name="action" value="add_resolution"/>
 							<input type="hidden" name="service_id" value="{{resolution_form_data.service_id}}"/>
 							{% if resolution_form_data.selected_avail_services_data %}
 								<input type="hidden" name="select_available_services" value="{% for id, name in resolution_form_data.selected_avail_services_data %}{{id}},{% endfor %}"/>
@@ -119,7 +119,7 @@
 		                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
 						<script>
 	                        $(document).ready(function () {
-	                            $("#addResolutionService").submit(function (e) {
+	                            $("#add_resolution").submit(function (e) {
 	                                //stop submitting the form to see the disabled button effect
 	                                //e.preventDefault();
 	                                //disable the submit button
@@ -128,7 +128,7 @@
 	                                $("<input />").attr("type", "hidden")
 	                                  .attr("name", "pipeline_data")
 	                                  .attr("value", data_json)
-	                                  .appendTo("#addResolutionService");
+	                                  .appendTo("#add_resolution");
 	                                $("#btnSubmit").attr("disabled", true);
 	                                return true;
 	                            });
@@ -141,8 +141,6 @@
 	<script>
 	    $(document).ready(function () {
 	        $("form").submit(function (e) {
-	            //stop submitting the form to see the disabled button effect
-	            // e.preventDefault();
 	            //disable the submit button
 	            $("input:submit").attr("disabled", true);
 	            return true;
