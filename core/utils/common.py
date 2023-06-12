@@ -15,6 +15,18 @@ def get_installed_apps():
 
 
 def get_friend_list(user_name):
+    """Function get the user names that are in their friend list
+
+    Parameters
+    ----------
+    user_name : user object
+        instance of the user
+
+    Returns
+    -------
+    List
+        The list contains user objects that are in the friend list
+    """    
     friend_list = []
     user_groups = user_name.groups.values_list("name", flat=True)
     if len(user_groups) > 0:

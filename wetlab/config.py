@@ -586,10 +586,7 @@ SUCCESSFUL_REUSE_LIB_PREP = [
 
 # ######### ERROR MESSAGES  #########################
 
-ERROR_USER_NOT_WETLAB_MANAGER = [
-    "You do not have enough privileges to see this page ",
-    "Contact with your administrator .",
-]
+ERROR_USER_NOT_WETLAB_MANAGER = "You do not have enough privileges to see this page "
 ERROR_INVALID_FILE_FORMAT = [
     "Invalid file format for the selected file",
     "Select the valid file and submit it again",
