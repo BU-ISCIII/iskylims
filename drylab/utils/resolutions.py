@@ -64,14 +64,14 @@ def check_allow_service_update(resolution_obj, new_state):
         return False
 
 
-def get_assign_resolution_full_number(service_id, acronymName):
+def get_assign_resolution_full_number(service_id, acronym):
     """
     Description:
         The function get the resolution full number if resolution already exists.
         Build the resolution  full number if it is the first resolution for the service
     Input:
         service_id # contains the service id
-        acronymName # acronym name given to the service
+        acronym # acronym name given to the service
     Functions:
         get_service_obj_from_id   # located at this file
     Return:
@@ -90,7 +90,7 @@ def get_assign_resolution_full_number(service_id, acronymName):
         resolution_full_number = ""
         resolution_full_number += service_obj.get_identifier() + "_"
         resolution_full_number += str(date.today()).replace("-", "") + "_"
-        resolution_full_number += acronymName + "_"
+        resolution_full_number += acronym + "_"
         resolution_full_number += service_obj.get_user_name() + "_S"
     return resolution_full_number
 
@@ -107,7 +107,7 @@ def create_resolution_number(service_id):
     Return:
         resolution_number
     """
-    service_obj = drylab.utils.common.get_service_obj(service_id)
+    service_obj = drylab.utils.common.get_service_obj(service_id, input="id")
     service_request_number = service_obj.get_identifier()
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
@@ -135,15 +135,15 @@ def get_add_resolution_data_form(form_data):
     resolution_data_form = {}
 
     resolution_data_form["service_id"] = form_data["service_id"]
-    resolution_data_form["resolutionEstimatedDate"] = datetime.strptime(
-        form_data["resolutionEstimatedDate"], "%Y-%m-%d"
+    resolution_data_form["resolution_estimated_date"] = datetime.strptime(
+        form_data["resolution_estimated_date"], "%Y-%m-%d"
     ).date()
-    resolution_data_form["acronymName"] = form_data["acronymName"]
+    resolution_data_form["acronym"] = form_data["acronym"]
     resolution_data_form["resolution_assigned_user"] = form_data[
         "resolution_assigned_user"
     ]
-    resolution_data_form["serviceAccepted"] = form_data["serviceAccepted"]
-    resolution_data_form["resolutionNotes"] = form_data["resolutionNotes"]
+    resolution_data_form["service_accepted"] = form_data["service_accepted"]
+    resolution_data_form["resolution_notes"] = form_data["resolution_notes"]
 
     if "pipeline_data" in form_data:
         resolution_data_form["pipeline_ids"] = []
@@ -160,7 +160,7 @@ def get_add_resolution_data_form(form_data):
     return resolution_data_form
 
 
-def check_if_resolution_exists(resolution_id):
+def check_if_resolution_exists(resolution_id, input="pk"):
     """
     Description:
         The function check if the resolution id exists
@@ -169,8 +169,12 @@ def check_if_resolution_exists(resolution_id):
     Return:
         True or False
     """
-    if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
-        return True
+    if input == "pk":
+        if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
+            return True
+    elif input == "id":
+        if drylab.models.Resolution.objects.filter(resolution_number__exact=resolution_id).exists():
+            return True
     return False
 
 
@@ -191,7 +195,7 @@ def create_new_resolution(resolution_data_form):
         new_resolution
     """
     service_obj = drylab.utils.common.get_service_obj(
-        resolution_data_form["service_id"]
+        resolution_data_form["service_id"], input="id"
     )
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
@@ -205,7 +209,7 @@ def create_new_resolution(resolution_data_form):
         resolution_data_form[
             "resolution_full_number"
         ] = get_assign_resolution_full_number(
-            resolution_data_form["service_id"], resolution_data_form["acronymName"]
+            resolution_data_form["service_id"], resolution_data_form["acronym"]
         )
     resolution_data_form["resolution_number"] = create_resolution_number(
         resolution_data_form["service_id"]
@@ -239,7 +243,7 @@ def create_new_resolution(resolution_data_form):
         store_resolution_additional_parameter(
             resolution_data_form["additional_parameters"], new_resolution
         )
-    if resolution_data_form["serviceAccepted"] == "Accepted":
+    if resolution_data_form["service_accepted"] == "Accepted":
         if "select_available_services" in resolution_data_form:
             if len(resolution_data_form["select_available_services"]) == len(
                 service_obj.get_child_services()
@@ -270,7 +274,7 @@ def create_new_resolution(resolution_data_form):
     return new_resolution
 
 
-def get_resolution_obj_from_id(resolution_id):
+def get_resolution_obj(resolution_id, input="pk"):
     """
     Description:
         The function get the resolution obj from its id
@@ -280,10 +284,16 @@ def get_resolution_obj_from_id(resolution_id):
         resolution_obj
     """
     resolution_obj = None
-    if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
-        resolution_obj = drylab.models.Resolution.objects.filter(
-            pk__exact=resolution_id
-        ).last()
+    if input == "pk":
+        if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
+            resolution_obj = drylab.models.Resolution.objects.filter(
+                pk__exact=resolution_id
+            ).last()
+    elif input == "id":
+        if drylab.models.Resolution.objects.filter(resolution_number__exact=resolution_id).exists():
+            resolution_obj = drylab.models.Resolution.objects.filter(
+                resolution_number__exact=resolution_id
+            ).last()
     return resolution_obj
 
 
@@ -303,7 +313,7 @@ def prepare_form_data_add_resolution(form_data):
         list_of_ch_services = form_data.getlist("childrenServices")
     else:
         list_of_ch_services = False
-    service_obj = drylab.utils.common.get_service_obj(form_data["service_id"])
+    service_obj = drylab.utils.common.get_service_obj(form_data["service_id"], input="id")
     resolution_form_data["service_number"] = service_obj.get_identifier()
     all_tree_services = service_obj.service_available_service.all()
     all_children_services = drylab.utils.req_services.get_children_services(

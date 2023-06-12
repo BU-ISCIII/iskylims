@@ -88,9 +88,9 @@
                                         <div class="container-md">
                                             <div class="row pt-2 pb-2">
                                                 <div class="col-md-12">
-                                                    <form class="" action="/drylab/add-resolution" method="post">
+                                                    <form enctype="multipart/form-data" action="/drylab/add-resolution" method="post" name="add_resolution_form" id="add_resolution_form">
                                                         {% csrf_token %}
-                                                        <input type="hidden" name="action" value="add_resolution">
+                                                        <input type="hidden" name="action" value="add_resolution_form">
                                                         <input type="hidden" name="service_id"
                                                             value="{{ display_service.service_request_number.value }}">
                                                         <div class="row pt-2 pb-2">

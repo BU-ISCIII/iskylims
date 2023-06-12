@@ -529,16 +529,16 @@ class ResolutionManager(models.Manager):
             pk__exact=resolution_data["resolution_assigned_user"]
         )
         resolution_service_id = Service.objects.get(
-            pk__exact=resolution_data["service_id"]
+            service_request_number__exact=resolution_data["service_id"]
         )
         state = ResolutionStates.objects.get(state_value__exact="Queued")
         new_resolution = self.create(
             resolution_service_id=resolution_service_id,
             resolution_assigned_user=resolution_assigned_user,
             resolution_number=resolution_data["resolution_number"],
-            resolution_estimated_date=resolution_data["resolutionEstimatedDate"],
+            resolution_estimated_date=resolution_data["resolution_estimated_date"],
             resolution_queued_date=date.today(),
-            resolution_notes=resolution_data["resolutionNotes"],
+            resolution_notes=resolution_data["resolution_notes"],
             resolution_full_number=resolution_data["resolution_full_number"],
             resolution_state=state,
         )
@@ -560,7 +560,7 @@ class Resolution(models.Model):
 
     available_services = models.ManyToManyField(AvailableService, blank=True)
     resolution_number = models.CharField(
-        _("Resolutions name"), max_length=255, null=True
+        _("Resolution name"), max_length=255, null=True
     )
     resolution_estimated_date = models.DateField(
         _(" Estimated resolution date"), null=True, blank=False
