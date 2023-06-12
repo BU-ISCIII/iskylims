@@ -5,10 +5,10 @@
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
         {% if error_message %}
-            <div class="row my-2">
-                <div class="col-sm-6 offset-3">
-                    <div class="card border-danger mb-3">
-                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+            <div class="row my-2 justify-content-center">
+                <div class="col-sm-8">
+                    <div class="card border-danger my-3">
+                        <div class="card-header text-center border-danger"><h3>Unable to process your request</h3=> </div>
                         <div class="card-body">
                             <h4>{{error_message}}</h4>
                         </div>
@@ -42,7 +42,7 @@
                     </div>
                 </div> <!--// end of sm-8 -->
             </div> <!--// end row -->
-        {% else %}
+        {% elif sequencer_info %}
             <div class="row my-2">
                 <div class="col" >
                     <h3 class="text-center">Form to add Sequencer information</h3>

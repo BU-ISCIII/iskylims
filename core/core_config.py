@@ -226,19 +226,13 @@ HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = [
     "Expiration Date",
 ]
 
-HEADING_FOR_USER_LOT_INVENTORY = [
-     "Kit used for",
-    "Lot Number",
-    "Expiration date",
-    "Number of use",
-    "Run Out",
-]
-
-HEADING_FOR_SOLDOUT_USER_LOT_INVENTORY = [
+HEADING_FOR_USER_LOT_KIT_INVENTORY = [
     "Kit used for",
     "Lot number",
-    "Expiration date",
+    "Recorded by",
     "Number of use",
+    "Used last date",
+    "Expiration date",
 ]
 
 HEADING_FOR_USER_LOT_SEARCH_RESULTS = [

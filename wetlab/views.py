@@ -3848,8 +3848,12 @@ def compare_samples(request):
 
 @login_required
 def kit_inventory(request):
-    expired_kit = core.utils.commercial_kits.get_expired_lot_user_kit(request.user)
-    valid_kit = core.utils.commercial_kits.get_valid_lot_user_kit(request.user)
+    if wetlab.utils.common.is_wetlab_manager(request):
+        req_user = None
+    else:
+        req_user = request.user 
+    expired_kit = core.utils.commercial_kits.get_user_lot_kit_data(req_user, expired=True)
+    valid_kit = core.utils.commercial_kits.get_user_lot_kit_data(request.user)
     if request.method == "POST" and request.POST["action"] == "runOutUserLotKit":
         selected_user_kits = request.POST.getlist("userKit")
         if len(selected_user_kits) == 0:
@@ -3973,8 +3977,8 @@ def display_user_lot_kit(request, user_kit_id):
     if user_kit_obj is None:
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": ["Invalid User Lot Commercial Kit"]},
+            "wetlab/displayUserLotKit.html",
+            {"error_message": ["Invalid User Lot Commercial Kit"]},
         )
     user_lot_kit_data = core.utils.commercial_kits.get_user_lot_kit_data_to_display(
         user_kit_obj
@@ -3988,15 +3992,11 @@ def display_user_lot_kit(request, user_kit_id):
 
 @login_required
 def sequencer_configuration(request):
-    if not request.user.is_authenticated:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
-            "wetlab/error_page.html",
-            {"content": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
+            "wetlab/sequencer_configuration.html",
+            {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
         )
     sequencer_info = wetlab.utils.sequencers.get_list_sequencer_configuration()
     sequencer_info["platforms"] = wetlab.utils.sequencers.get_platform_data()

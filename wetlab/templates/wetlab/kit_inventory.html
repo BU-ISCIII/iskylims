@@ -39,7 +39,7 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="a_kit-tab" data-bs-toggle="tab" data-bs-target="#a_kit" type="button" role="tab" aria-controls="a_kit" aria-selected="true">Available kits</button>
                             </li>
-                            {% if expired_kit %}
+                            {% if expired_kit.heading %}
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link " id="exp_kit-tab" data-bs-toggle="tab" data-bs-target="#exp_kit" type="button" role="tab" aria-controls="exp_kit" aria-selected="false">Expired/Sold out kits</button>
                                 </li>
@@ -53,29 +53,30 @@
                                             <div class="card">
                                                 <div class="card-header text-center"><h3>Available lot kits </h3></div>
                                                 <div class="card-body">
-                                                    {% if valid_kit %}
+                                                    {% if valid_kit.heading %}
                                                         <form method="post" enctype="multipart/form-data" name="runOutUserLotKit"  id="runOutUserLotKit" class="form-horizontal well">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="action" value="runOutUserLotKit"/>
                                                             <table class="table table-hover" id="avail_table">
                                                                 <thead>
                                                                     <tr>
-                                                                        {% for value in valid_kit.headings %}
+                                                                        {% for value in valid_kit.heading %}
                                                                             <th>{{value}}</th>
                                                                         {% endfor %}
+                                                                        <th>Set to ran out</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {% for key , values in valid_kit.data.items %}
-                                                                        {%for name, exp_date, n_uses, id in values %}
-                                                                            <tr>
-                                                                                <td>{{ key}}</td>
-                                                                                <td>{{ name }}</td>
-                                                                                <td>{{ exp_date }}</td>
-                                                                                <td>{{ n_uses }}</td>
-                                                                                <td><input type="checkbox" name="userKit" value="{{id}}"></td>
-                                                                            </tr>
-                                                                        {% endfor %}
+                                                                    {%for pk, name, lot, user, n_uses, last_date, exp_date in valid_kit.data %}
+                                                                        <tr>
+                                                                            <td>{{ name }}</td>
+                                                                            <td>{{ lot }}</td>
+                                                                            <td>{{ user }}</td>
+                                                                            <td>{{ n_uses }}</td>
+                                                                            <td>{{last_date|cut:"None"}}</td>
+                                                                            <td>{{exp_date|cut:"None"}}</td>
+                                                                            <td><input type="checkbox" name="userKit" value="{{pk}}"></td>
+                                                                        </tr>
                                                                     {% endfor %}
                                                                 </tbody>
                                                             </table>
@@ -90,7 +91,7 @@
                                     </div>
                                 </div>
                             </div> <!-- end a_kit -->
-                            {% if expired_kit %}
+                            {% if expired_kit.heading %}
                                 <div class="tab-pane fade" id="exp_kit" role="tabpanel" aria-labelledby="exp_kit-tab">
                                     <div class="container">
                                         <div class="row mt-4">
@@ -101,21 +102,21 @@
                                                         <table class="table table-hover" id="exp_table">
                                                             <thead>
                                                                 <tr>
-                                                                    {% for value in expired_kit.headings %}
+                                                                    {% for value in expired_kit.heading %}
                                                                         <th>{{value}}</th>
                                                                     {% endfor %}
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% for key , values in expired_kit.data.items %}
-                                                                    {%for name, exp_date, n_uses in values %}
-                                                                        <tr>
-                                                                            <td>{{ key}}</td>
-                                                                            <td>{{ name }}</td>
-                                                                            <td>{{ exp_date }}</td>
-                                                                            <td>{{ n_uses }}</td>
-                                                                        </tr>
-                                                                    {% endfor %}
+                                                                {%for pk, name, lot, user, n_uses, last_date, exp_date in expired_kit.data %}
+                                                                    <tr>
+                                                                        <td>{{ name }}</td>
+                                                                        <td>{{ lot }}</td>
+                                                                        <td>{{ user }}</td>
+                                                                        <td>{{ n_uses }}</td>
+                                                                        <td>{{last_date|cut:"None"}}</td>
+                                                                        <td>{{exp_date|cut:"None"}}</td>
+                                                                    </tr>
                                                                 {% endfor %}
                                                             </tbody>
                                                         </table>
