@@ -26,11 +26,11 @@
         {% endif %}
 		<div class="row justify-content-center pb-2 pt-2">
 			<div class="col-md-8">
-				{% if in_progress_resolution %}
+				{% if on_hold_resolution %}
 				<div class="card ">
 					<div class="card-header"><h4 style="text-align:center">Resolution has been updated</h4></div>
 					<div class="card-body">
-						<p>Resolution {{in_progress_resolution.resolution_number}} is now in progress </p>
+						<p>Resolution {{on_hold_resolution.resolution_number}} is now on hold </p>
 						<input class="btn pull-left btn-outline-secondary" type="button" value="Go home" onclick="location.href ='/drylab' ;"/>
 						<input class="btn float-end btn-outline-primary" type="button" value="Return to pending services" onclick="location.href ='/drylab/pending-services' ;"/>
 					</div>

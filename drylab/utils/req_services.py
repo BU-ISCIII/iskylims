@@ -600,22 +600,6 @@ def send_service_confirmation_email(email_data):
     return "OK"
 
 
-def set_service_waiting(service_id):
-    """
-    Description:
-        Function set the service to waiting info for user
-    Input:
-        service_id
-    Output:
-        Return service_name or None if no service_id is defined
-    """
-    service_obj = drylab.utils.common.get_service_obj(service_id)
-    if service_obj is not None:
-        service_obj.update_state("waiting_information")
-        return service_obj.get_identifier()
-    return None
-
-
 def save_service_samples(form_data, new_service):
     """
     Description:

@@ -76,9 +76,9 @@ urlpatterns = [
     ),
     path("search-service", drylab.views.search_service, name="search_service"),
     path(
-        "service-on-hold",
+        "add-on-hold",
         drylab.views.add_on_hold,
-        name="service_on_hold",
+        name="add_on_hold",
     ),
     path("statsByUser", drylab.views.stats_by_user, name="stats_by_user"),
     path(

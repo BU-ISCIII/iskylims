@@ -700,9 +700,9 @@ def add_on_hold(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "drylab/error_page.html",
+                    "drylab/add_on_hold.html",
                     {
-                        "content": [
+                        "ERROR": [
                             "You do have the enough privileges to see this page ",
                             "Contact with your administrator .",
                         ]
@@ -711,9 +711,9 @@ def add_on_hold(request):
         except Exception:
             return render(
                 request,
-                "drylab/error_page.html",
+                "drylab/add_on_hold.html",
                 {
-                    "content": [
+                    "ERROR": [
                         "You do have the enough privileges to see this page ",
                         "Contact with your administrator .",
                     ]
@@ -722,17 +722,35 @@ def add_on_hold(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if request.method == "POST" and request.POST["action"] == "service_on_hold":
-        service_name = drylab.utils.req_services.set_service_waiting(
-            request.POST["service_id"]
+
+    if request.method == "POST" and request.POST["action"] == "add_on_hold":
+        resolution_obj = drylab.utils.resolutions.get_resolution_obj(request.POST["resolution_id"], input="id")
+        if resolution_obj is not None:
+            resolution_obj.update_state("on_hold")
+            resolution_number = resolution_obj.get_identifier()
+
+        service_obj = resolution_obj.get_service_obj()
+        # update the service status and in_porgress date
+        if drylab.utils.resolutions.check_allow_service_update(
+            resolution_obj, "on_hold"
+        ):
+            service_obj = service_obj.update_state("on_hold")
+
+        email_data = {}
+        email_data["user_email"] = service_obj.get_user_email()
+        email_data["user_name"] = service_obj.get_user_name()
+        email_data["resolution_number"] = resolution_number
+        drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
+        on_hold_resolution = {}
+        on_hold_resolution["resolution_number"] = resolution_number
+
+        return render(
+            request,
+            "drylab/add_on_hold.html",
+            {"on_hold_resolution": on_hold_resolution},
         )
-        if service_name is not None:
-            return render(
-                request,
-                "drylab/service_on_hold.html",
-                {"service_name": service_name},
-            )
-    return render(request, "drylab/service_on_hold.html", {"ERROR": "ERROR"})
+    else:
+        return render(request, "drylab/add_on_hold.html", {"ERROR": ["There's been an unexpected error."]})
 
 
 @login_required
@@ -816,9 +834,9 @@ def add_in_progress(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "drylab/error_page.html",
+                    "drylab/add_in_progress.html",
                     {
-                        "content": [
+                        "ERROR": [
                             "You do have the enough privileges to see this page ",
                             "Contact with your administrator .",
                         ]
@@ -827,9 +845,9 @@ def add_in_progress(request):
         except Exception:
             return render(
                 request,
-                "drylab/error_page.html",
+                "drylab/add_in_progress.html",
                 {
-                    "content": [
+                    "ERROR": [
                         "You do have the enough privileges to see this page ",
                         "Contact with your administrator .",
                     ]
@@ -857,6 +875,7 @@ def add_in_progress(request):
         ):
             # update the service status and in_porgress date
             service_obj = service_obj.update_state("in_progress")
+
         email_data = {}
         email_data["user_email"] = service_obj.get_user_email()
         email_data["user_name"] = service_obj.get_user_name()
@@ -871,7 +890,7 @@ def add_in_progress(request):
         )
 
     error_message = drylab.config.ERROR_RESOLUTION_DOES_NOT_EXISTS
-    return render(request, "drylab/error_page.html", {"content": error_message})
+    return render(request, "drylab/add_in_progress.html", {"ERROR": error_message})
 
 
 @login_required
@@ -920,7 +939,7 @@ def add_delivery(request):
             {"delivery_data": delivery_data},
         )
 
-    if request.method == "POST" and request.POST["action"] == "addDeliveryResolution":
+    if request.method == "POST" and request.POST["action"] == "add_delivery_resolution":
         if (
             request.POST["startdate"] != ""
             and not drylab.utils.common.check_valid_date_format(

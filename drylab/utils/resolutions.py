@@ -50,7 +50,9 @@ def check_allow_service_update(resolution_obj, new_state):
         if new_state == "in_progress":
             resolution_objs = drylab.models.Resolution.objects.filter(
                 resolution_service_id=service_obj
-            ).exclude(resolution_state__state_value__in=["delivered", "rejected", "cancelled"])
+            ).exclude(
+                resolution_state__state_value__in=["delivered", "rejected", "cancelled"]
+            )
         else:
             resolution_objs = drylab.models.Resolution.objects.filter(
                 resolution_service_id=service_obj
@@ -77,12 +79,14 @@ def get_assign_resolution_full_number(service_id, acronym):
     Return:
         resolution_full_number
     """
-    service_obj = drylab.utils.common.get_service_obj(service_id)
+    service_obj = drylab.utils.common.get_service_obj(service_id, input="id")
     if drylab.models.Resolution.objects.filter(
-        resolution_service_id=service_id
+        resolution_service_id__service_request_number__exact=service_id
     ).exists():
         resolution_full_number = (
-            drylab.models.Resolution.objects.filter(resolution_service_id=service_obj)
+            drylab.models.Resolution.objects.filter(
+                resolution_service_id__service_request_number__exact=service_obj
+            )
             .last()
             .get_resolution_number()
         )
@@ -173,7 +177,9 @@ def check_if_resolution_exists(resolution_id, input="pk"):
         if drylab.models.Resolution.objects.filter(pk__exact=resolution_id).exists():
             return True
     elif input == "id":
-        if drylab.models.Resolution.objects.filter(resolution_number__exact=resolution_id).exists():
+        if drylab.models.Resolution.objects.filter(
+            resolution_number__exact=resolution_id
+        ).exists():
             return True
     return False
 
@@ -290,7 +296,9 @@ def get_resolution_obj(resolution_id, input="pk"):
                 pk__exact=resolution_id
             ).last()
     elif input == "id":
-        if drylab.models.Resolution.objects.filter(resolution_number__exact=resolution_id).exists():
+        if drylab.models.Resolution.objects.filter(
+            resolution_number__exact=resolution_id
+        ).exists():
             resolution_obj = drylab.models.Resolution.objects.filter(
                 resolution_number__exact=resolution_id
             ).last()
@@ -313,7 +321,9 @@ def prepare_form_data_add_resolution(form_data):
         list_of_ch_services = form_data.getlist("childrenServices")
     else:
         list_of_ch_services = False
-    service_obj = drylab.utils.common.get_service_obj(form_data["service_id"], input="id")
+    service_obj = drylab.utils.common.get_service_obj(
+        form_data["service_id"], input="id"
+    )
     resolution_form_data["service_number"] = service_obj.get_identifier()
     all_tree_services = service_obj.service_available_service.all()
     all_children_services = drylab.utils.req_services.get_children_services(
@@ -478,6 +488,54 @@ def send_resolution_in_progress_email(email_data):
                 st, "RESOLUTION_NUMBER", email_data["resolution_number"]
             ),
             drylab.config.BODY_RESOLUTION_IN_PROGRESS,
+        )
+    )
+    body_preparation = list(
+        map(
+            lambda st: str.replace(st, "USER_NAME", email_data["user_name"]),
+            body_preparation,
+        )
+    )
+    body_message = "\n".join(body_preparation)
+    notification_user = (
+        drylab.models.ConfigSetting.objects.filter(
+            configuration_name__exact="EMAIL_FOR_NOTIFICATIONS"
+        )
+        .last()
+        .get_configuration_value()
+    )
+    from_user = notification_user
+    to_users = [email_data["user_email"], notification_user]
+    try:
+        django.core.mail.send_mail(subject, body_message, from_user, to_users)
+    except SMTPException:
+        pass
+    return
+
+
+def send_resolution_on_hold_email(email_data):
+    """
+    Description:
+        The function send the service email for resolution in progress to user.
+        Functions uses the send_email django core function to send the email
+    Input:
+        email_data      # Contains the information to include in the email
+    Constant:
+        SUBJECT_RESOLUTION_QUEUED
+        BODY_RESOLUTION_ON_HOLD
+        USER_EMAIL
+    Return:
+        None
+    """
+    subject_tmp = drylab.config.SUBJECT_RESOLUTION_ON_HOLD.copy()
+    subject_tmp.insert(1, email_data["resolution_number"])
+    subject = " ".join(subject_tmp)
+    body_preparation = list(
+        map(
+            lambda st: str.replace(
+                st, "RESOLUTION_NUMBER", email_data["resolution_number"]
+            ),
+            drylab.config.BODY_RESOLUTION_ON_HOLD,
         )
     )
     body_preparation = list(
