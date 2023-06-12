@@ -215,7 +215,7 @@ BODY_SERVICE_RECORDED = [
 
 SUBJECT_RESOLUTION_QUEUED = ["Resolution ", " has been updated"]
 BODY_RESOLUTION_ACCEPTED = [
-    "Dear  USER_NAME",
+    "Dear USER_NAME",
     "A new resolution has been added for your service:  SERVICE_NUMBER.",
     "Your service has been STATUS",
     "and your delivery estimated date is DATE",
@@ -224,7 +224,7 @@ BODY_RESOLUTION_ACCEPTED = [
     "BU-ISCIII",
 ]
 BODY_RESOLUTION_REJECTED = [
-    "Dear  USER_NAME",
+    "Dear USER_NAME",
     "A new resolution has been added for your service:  SERVICE_NUMBER.",
     "Your service has been STATUS",
     "because it does not fullfil our requirements or is not in our services portfolio.",
@@ -234,15 +234,23 @@ BODY_RESOLUTION_REJECTED = [
 ]
 SUBJECT_RESOLUTION_IN_PROGRESS = ["Service ", " has been updated"]
 BODY_RESOLUTION_IN_PROGRESS = [
-    "Dear  USER_NAME",
+    "Dear USER_NAME",
     "Your service with resolution id:  RESOLUTION_NUMBER is now in progress.",
+    "Kind regards",
+    "BU-ISCIII",
+]
+
+SUBJECT_RESOLUTION_ON_HOLD = ["Service ", " has been updated"]
+BODY_RESOLUTION_ON_HOLD = [
+    "Dear USER_NAME",
+    "Your service with resolution id:  RESOLUTION_NUMBER is now on hold, waiting for you to answer our inquires.",
     "Kind regards",
     "BU-ISCIII",
 ]
 
 SUBJECT_RESOLUTION_DELIVERED = ["Service ", " has been updated"]
 BODY_RESOLUTION_DELIVERED = [
-    "Dear  USER_NAME",
+    "Dear USER_NAME",
     "Your service with resolution id:  RESOLUTION_NUMBER is finished.",
     "A mail with instructions for downloading the results will be shortly sent to you.",
     "Kind regards",

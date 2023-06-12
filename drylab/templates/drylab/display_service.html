@@ -195,9 +195,9 @@
                                     <div class="row">
                                         {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "in_progress" %}
                                         <div class="col-md-3">
-                                            <form class="" action="/drylab/service-on-hold" method="post">
+                                            <form class="" action="/drylab/add-on-hold" method="post">
                                                 {% csrf_token %}
-                                                <input type="hidden" name="action" value="service_on_hold">
+                                                <input type="hidden" name="action" value="add_on_hold">
                                                 <input type="hidden" name="resolution_id"
                                                     value="{{ resolution.resolution_number.value}}">
                                                 <input class="btn btn-outline-primary" type="submit"

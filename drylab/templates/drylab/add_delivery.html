@@ -1,69 +1,95 @@
-{% extends 'drylab/base.html' %}
+{% extends 'core/base.html' %}
 
 {% block content %}
 
+{% include 'core/jexcel_functionality.html' %}
 
-{% if delivery_recorded %}
-	{% if delivery_recorded_pending_resolution %}
-		<div class="row row-space-4 margin-b-4">
-			<div class="col-sm-10 offset-1" >
-				<div class="panel panel-warning">
-					<div class="card-header"><h3 style="text-align:center">Pending Resolution on this request service</h3></div>
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+	<div class="container-md">
+		{% include 'registration/login_inline.html' %}
+		{% if ERROR %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3> Result of your request</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for message in ERROR %}
+                        <p>{{message}}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+		{% if delivery_recorded %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-8" >
+				<div class="card ">
+					<div class="card-header"><h4 style="text-align:center">Resolution has been delivered</h4></div>
 					<div class="card-body">
-						<h5>The requested service has another resolution {{delivery_recorded.pending_resolution}} that requires your attention.</h5>
-						<br><br>
+						<p>Resolution  has been successfully delivered: {{delivery_recorded.resolution_number}}</p>
+						<input class="btn pull-left btn-outline-secondary" type="button" value="Go home" onclick="location.href ='/drylab' ;"/>
+						<input class="btn float-end btn-outline-primary" type="button" value="Return to pending services" onclick="location.href ='/drylab/pending-services' ;"/>
 					</div>
 				</div>
-			</div> <!--  end of col-sm-10 -->
-		</div> <!--  end of row -->
-	{% endif %}
-	<div class="row row-space-4 margin-b-4">
-		<div class="col-sm-10 offset-1" >
-			<div class="card ">
-				<div class="card-header"><h3 style="text-align:center">Resolution has been delivered</h3></div>
-                <div class="card-body">
-					<h5>The resolution  has been successfully recorded with Resolution Number {{delivery_recorded.resolution_number}}</h5>
-					<br><br>
-					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-					<input class="btn float-end btn-outline-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pending-services' ;"/>
-				</div>
-            </div>
-        </div> <!--  end of col-sm-10 -->
-    </div> <!--  end of row -->
-
-{% else %}
-	<div class="row row-space-4 margin-b-1">
-		<div class="col-sm-12 ">
-			<div class="card ">
-				<div class="card-header"><h3 style="text-align:center">Add Delivery for Resolution {{delivery_data.resolution_number}}</h3></div>
-				<div class="card-body">
-					<h5 style="text-align:center">Resolution services </h5>
-					<form method="post" enctype="multipart/form-data" name="addDeliveryResolution" id="addDeliveryResolution" class="form-horizontal well">
-						{% csrf_token %}
-						<input type="hidden" name="action" value="addDeliveryResolution"/>
-						<input type="hidden" name="resolution_id" value="{{delivery_data.resolution_id}}"/>
-						<div class="form-control">
-							<label class="col-sm-5 control-label" for="startdate" >Date that job was sent for execution (DD-MM-YYYY)</label>
-							<div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
-							<br><br>
-							<label class="col-sm-5 control-label" for="enddate" >Execution ending date (DD-MM-YYYY)</label>
-							<div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
-							<br><br>
-							<div class="form-control">
-				                  <label class="col-sm-5  control-label" for="time" >CPU hours used for execution</label>
-				                    <div class="col-sm-5"><input class="form-control" type="text" name="time" id="time" size="100" maxlength="100"></div>
-				             </div>  <!-- end from-group   -->
-							 <div class="form-control">
- 				                  <label class="col-sm-5  control-label" for="pspace" >Space disk used in the execution in (GB)</label>
- 				                    <div class="col-sm-5"><input class="form-control" type="text" name="pspace" id="pspace" size="100" maxlength="100"></div>
- 				             </div>  <!-- end from-group   -->
-							 <div class="form-control">
- 				                  <label class="col-sm-5  control-label" for="tspace" >Temporal space disk used during execution in (GB)</label>
- 				                    <div class="col-sm-5"><input class="form-control" type="text" name="tspace" id="tspace" size="100" maxlength="100"></div>
- 				             </div>  <!-- end from-group   -->
-							{% if delivery_data.pipelines_data %}
-								<div class="col-sm-12">
-								 	<table class="table table-hover">
+			</div>
+		</div>
+		{% else %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-8">
+				<div class="card ">
+					<div class="card-header"><h4 style="text-align:center">Add delivery for resolution {{delivery_data.resolution_number}}</h4></div>
+					<div class="card-body">
+						<form method="post" enctype="multipart/form-data" action="/drylab/add-delivery" name="add_delivery_resolution" id="add_delivery_resolution" class="form-horizontal well">
+							{% csrf_token %}
+							<input type="hidden" name="action" value="add_delivery_resolution"/>
+							<input type="hidden" name="resolution_id" value="{{delivery_data.resolution_id}}"/>
+							<div class="row justify-content-center pb-2 pt-2">
+								<div class="col-md-12">
+									<div class="form-floating mb-3">
+										<input type="date" class="form-control" id="startdate"
+											name="startdate" placeholder="Start execution date (DD-MM-YYYY)">
+										<label for="startdate">Start execution date (DD-MM-YYYY)</label>
+									</div>
+									<div class="form-floating mb-3">
+										<input type="date" class="form-control" id="enddate"
+											name="enddate" placeholder="End execution date (DD-MM-YYYY)">
+										<label for="enddate">End execution date (DD-MM-YYYY)</label>
+									</div>
+									<div class="form-floating mb-3">
+										<input type="text" class="form-control" id="time"
+											name="time" placeholder="CPU hours">
+										<label for="time">CPU hours</label>
+									</div>
+									<div class="form-floating mb-3">
+										<input type="text" class="form-control" id="pspace"
+											name="pspace" placeholder="Final disk space">
+										<label for="pspace">Final disk space</label>
+									</div>
+									<div class="form-floating mb-3">
+										<input type="text" class="form-control" id="tspace"
+											name="tspace" placeholder="Final disk space">
+										<label for="tspace">Temp disk space</label>
+									</div>
+									<div class="form-floating mb-3">
+										<input type="text" class="form-control" id="tspace"
+											name="tspace" placeholder="Final disk space">
+										<label for="tspace">Temp disk space</label>
+									</div>
+									<div class="form-floating mb-3">
+										<textarea class="form-control" id="delivery_notes"
+											name="delivery_notes" style="height: 100px"
+											placeholder="Leave a description here"></textarea>
+										<label for="delivery_notes">Delivery description</label>
+									</div>
+								</div>
+								{% if delivery_data.pipelines_data %}
+								<div class="col-md-12">
+									<table class="table table-hover">
 										<thead>
 											{% for value in delivery_data.pipelines_data.heading_pipelines %}
 												<th>{{value}}</th>
@@ -75,9 +101,9 @@
 													{% for value in values %}
 														{% if not forloop.last %}
 															{% if value == True %}
-																<td><span class="glyphicon glyphicon glyphicon-ok" style="color:green"></span></td>
+																<td><span class="bi bi-ok" style="color:green"></span></td>
 															{% elif value == False %}
-																<td><span class="glyphicon glyphicon-remove-sign" style="color:red"></span><</td>
+																<td><span class="bi bi-remove-sign" style="color:red"></span><</td>
 															{% else %}
 																<td>{{value}}</td>
 															{% endif %}
@@ -87,35 +113,24 @@
 											{% endfor %}
 										</tbody>
 									</table>
-								</div>  <!-- end of col-sm-12   -->
-
-							{% endif %}
-						</div>  <!-- end from-group   -->
-
-						<div class="form-control required ">
-							<label class="col-sm-5 control-label" for="delivery_notes" >Notes</label>
-							<div class="col-sm-7">
-								<textarea class="form-control" required name="delivery_notes" value="" id="delivery_notes" rows="8" cols="60" maxlength="800"></textarea>
+								</div>
+								{% endif %}
 							</div>
-							<br><br>
-						</div>  <!-- end from-group   -->
-						<br>
-
-	                    <input class="btn btn-outline-primary" type="reset" value="Reset Fields">
-	                    <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-					</form>
-	                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
-				</div>  
+							<input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+							<input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+						</form>
+						<p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+					</div>  
+				</div>
 			</div>
-		</div><!-- // end of col-sm-8 -->
-	</div><!-- // end of row -->
+		</div>
+	</div>
+</section>
 {% endif %}
 
 <script>
     $(document).ready(function () {
         $("form").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            // e.preventDefault();
             //disable the submit button
             $("input:submit").attr("disabled", true);
             return true;
