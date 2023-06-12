@@ -456,6 +456,11 @@ class Migration(migrations.Migration):
                 verbose_name="Service status",
             ),
         ),
+        migrations.AlterField(
+            model_name='resolution',
+            name='resolution_number',
+            field=models.CharField(max_length=255, null=True, verbose_name='Resolution name'),
+        ),
         migrations.AlterModelTable(
             name="availableservice",
             table="drylab_available_service",

@@ -12,18 +12,24 @@ import drylab.config
 import drylab.models
 
 
-def get_service_obj(service_id):
+def get_service_obj(service_id,input="pk"):
     """
     Description:
         The function get the  service obj  from the id
     Input:
         service_id  # id of the  service
+        inpuf       # either pk or id. p.e SRVCNM123
     Return:
         service_obj
     """
     service_obj = None
-    if drylab.models.Service.objects.filter(pk__exact=service_id).exists():
-        service_obj = drylab.models.Service.objects.filter(pk__exact=service_id).last()
+    if input == "pk":
+        if drylab.models.Service.objects.filter(pk__exact=service_id).exists():
+            service_obj = drylab.models.Service.objects.filter(pk__exact=service_id).last()
+    elif input == "id":
+        if drylab.models.Service.objects.filter(service_request_number__exact=service_id).exists():
+            service_obj = drylab.models.Service.objects.filter(service_request_number__exact=service_id).last()
+
     return service_obj
 
 

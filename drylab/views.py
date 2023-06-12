@@ -741,17 +741,18 @@ def add_resolution(request):
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
+                "django_utils/error_page.html",
                 {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
             )
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
+
     if request.method != "POST" or "service_id" not in request.POST:
         return render(
             request,
-            "drylab/error_page.html",
-            {"content": drylab.config.ERROR_SERVICE_ID_NOT_FOUND},
+            "drylab/add_resolution.html",
+            {"ERROR": drylab.config.ERROR_SERVICE_ID_NOT_FOUND},
         )
 
     if request.method == "POST" and request.POST["action"] == "add_resolution":
@@ -771,8 +772,8 @@ def add_resolution(request):
         email_data["user_email"] = request.user.email
         email_data["user_name"] = request.user.username
         email_data["service_number"] = new_resolution.get_identifier()
-        email_data["status"] = resolution_data_form["serviceAccepted"]
-        email_data["date"] = resolution_data_form["resolutionEstimatedDate"]
+        email_data["status"] = resolution_data_form["service_accepted"]
+        email_data["date"] = resolution_data_form["resolution_estimated_date"]
         # include the email for the user who requested the service
         email_data["service_owner_email"] = new_resolution.get_service_owner_email()
         drylab.utils.resolutions.send_resolution_creation_email(email_data)
@@ -788,7 +789,7 @@ def add_resolution(request):
             {"created_resolution": created_resolution},
         )
 
-    if request.method == "POST" and request.POST["action"] == "add_resolution":
+    if request.method == "POST" and request.POST["action"] == "add_resolution_form":
         resolution_form_data = (
             drylab.utils.resolutions.prepare_form_data_add_resolution(request.POST)
         )
@@ -800,8 +801,8 @@ def add_resolution(request):
     else:
         return render(
             request,
-            "drylab/error_page.html",
-            {"content": drylab.config.ERROR_SERVICE_ID_NOT_FOUND},
+            "drylab/add_resolution.html",
+            {"error": drylab.config.ERROR_SERVICE_ID_NOT_FOUND},
         )
 
 
@@ -840,12 +841,12 @@ def add_in_progress(request):
 
     if request.method == "POST" and request.POST["action"] == "add_in_progress":
         resolution_id = request.POST["resolution_id"]
-        if not drylab.utils.resolutions.check_if_resolution_exists(resolution_id):
+        if not drylab.utils.resolutions.check_if_resolution_exists(resolution_id, input="id"):
             error_message = drylab.config.ERROR_RESOLUTION_DOES_NOT_EXISTS
             return render(request, "drylab/error_page.html", {"content": error_message})
 
-        resolution_obj = drylab.utils.resolutions.get_resolution_obj_from_id(
-            resolution_id
+        resolution_obj = drylab.utils.resolutions.get_resolution_obj(
+            resolution_id, input="id"
         )
         resolution_obj.update_to_in_progress()
         resolution_number = resolution_obj.get_resolution_number()
