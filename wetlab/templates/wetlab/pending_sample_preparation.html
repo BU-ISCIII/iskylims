@@ -10,9 +10,9 @@
             <div class="col" >
                 <h3 class="text-center">Pending sample preparation</h3>
                 <div class="col">
-                    {% if pending %}
+                    {% if pending_data %}
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            {% for state, values in pending.state.items %}
+                            {% for state, values in pending_data.state.items %}
                                 {% if forloop.first %}
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link active" id="{{state|cut:" "}}-tab" data-bs-toggle="tab" data-bs-target="#{{state|cut:" "}}" type="button" role="tab" aria-controls="{{state|cut:" "}}" aria-selected="true">{{state}}</button>
@@ -23,12 +23,14 @@
                                     </li>
                                 {% endif %}
                             {% endfor %}
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="false">Graphic</button>
-                            </li>
+                            {% if pending_data.pending_sample_graphic %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="false">Graphic</button>
+                                </li>
+                            {% endif %}
                         </ul>
                         <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
-                            {% for state, samples in pending.state.items %}
+                            {% for state, samples in pending_data.state.items %}
                                 {% if forloop.first %}
                                     <div class="tab-pane fade show active" id="{{state|cut:' '}}" role="tabpanel" aria-labelledby="{{state|cut:' '}}-tab">
                                 {% else %}
@@ -43,7 +45,7 @@
                                                             <table class="table table-hover" id="{{state|cut:' '}}_table">
                                                                 <thead>
                                                                     <tr>
-                                                                        {% for value in pending.sample_heading %}
+                                                                        {% for value in pending_data.sample_heading %}
                                                                             <th> {{ value }}</th>
                                                                         {% endfor %}
                                                                     </tr>
@@ -67,23 +69,41 @@
                                         </div>
                                     </div>
                             {% endfor %}
-                            <div class="tab-pane fade" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
-                                <div class="container">
-                                    <div class="row mt-4">
-                                        <div class="col-md" >
-                                            <div class="card ">
-                                                <div class="card-header"><h3>Sample state graphic</h3></div>
-                                                <div class="card-body">
-                                                    {% if pending.pending_graphic %}
-                                                        <div id="chart-1"> </div>
-                                                        {{ pending.pending_graphic |safe }}
+                            {% if pending_data.pending_sample_graphic %}
+                                <div class="tab-pane fade" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md" >
+                                                <div class="card">
+                                                    {% if pending_data.pending_users_graphic %}
+                                                        <div class="row g-2">
+                                                    {% else %}
+                                                        <div class="justify-content-center">
                                                     {% endif %}
-                                                </div>  
+                                                            <div class="col-md-6">
+                                                                <div class="card-header"><h3>Sample state</h3></div>
+                                                                <div class="card-body">
+                                                                    <div id="chart-1"> </div>
+                                                                    {{ pending_data.pending_sample_graphic |safe }}
+                                                                </div>  
+                                                            </div>
+                                                            {% if pending_data.pending_users_graphic %}
+                                                                <div class="col-md-6">
+                                                                    <div class="card-header"><h3>Users with pending sample</h3></div>
+                                                                    <div class="card-body">
+                                                                        <div id="chart-2"> </div>
+                                                                        {{ pending_data.pending_users_graphic |safe }}
+                                                                    </div>  
+                                                                </div>
+                                                            {% endif %}
+
+                                                        </div> 
+                                                </div> 
                                             </div>
                                         </div> 
-                                    </div> 
-                                </div>
-                            </div>
+                                    </div>
+                                </div> 
+                            {% endif %}
                         </div>
                     {% else%}
                         <div class="col-md" >
@@ -100,7 +120,7 @@
     </div>
 </section>
 <script type="text/javascript">
-    {% for key , value in pending.state.items %}
+    {% for key , value in pending_data.state.items %}
         $(document).ready(function() {
             $('#{{key|cut:" "}}_table').DataTable({
                 responsive: true,

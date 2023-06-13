@@ -5,7 +5,6 @@ import os
 import re
 import statistics
 import time
-from collections import OrderedDict
 
 import django.contrib.auth.models
 from django.conf import settings
@@ -128,16 +127,20 @@ def configuration_test(request):
             return redirect("/wetlab")
     if request.method == "POST" and request.POST["action"] == "basicTest":
         test_results = {}
-        config_file = os.path.join(
-            settings.BASE_DIR, "wetlab", "config.py"
+        config_file = os.path.join(settings.BASE_DIR, "wetlab", "config.py")
+        test_results[
+            "iSkyLIMS_settings"
+        ] = wetlab.utils.test_conf.get_iSkyLIMS_settings()
+        test_results["config_file"] = wetlab.utils.test_conf.get_config_file(
+            config_file
         )
-        test_results["iSkyLIMS_settings"] = wetlab.utils.test_conf.get_iSkyLIMS_settings()
-        test_results["config_file"] = wetlab.utils.test_conf.get_config_file(config_file)
         test_results["attr_files"] = wetlab.utils.test_conf.get_files_attribute(
             os.path.join(settings.MEDIA_ROOT, "wetlab")
         )
         test_results["database_access"] = wetlab.utils.test_conf.check_access_database()
-        test_results["samba_connection"] = wetlab.utils.test_conf.check_samba_connection()
+        test_results[
+            "samba_connection"
+        ] = wetlab.utils.test_conf.check_samba_connection()
 
         test_results["basic_checks_ok"] = "OK"
         for result in test_results:
@@ -172,7 +175,9 @@ def configuration_test(request):
                 "wetlab/configuration_test.html",
                 {"error": wetlab.config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
             )
-        run_test_result = wetlab.utils.test_conf.execute_test_for_testing_run(run_test_name)
+        run_test_result = wetlab.utils.test_conf.execute_test_for_testing_run(
+            run_test_name
+        )
         run_test_result["run_test_name"] = run_test_name
         if "ERROR" in run_test_result:
             log_trace = []
@@ -710,7 +715,7 @@ def add_collection_index_kit(request):
                 "wetlab/add_collection_index_kit.html",
                 {
                     "list_of_collection_index": collection_index_information,
-                    "error_message": file_name + " does not have the right format"
+                    "error_message": file_name + " does not have the right format",
                 },
             )
 
@@ -725,14 +730,14 @@ def add_collection_index_kit(request):
                 "wetlab/add_collection_index_kit.html",
                 {
                     "list_of_collection_index": collection_index_information,
-                    "error_message":  file_name + " does not contain kit  name"
+                    "error_message": file_name + " does not contain kit  name",
                 },
             )
 
         # check if library name is already defined on database
         if wetlab.utils.collection_index.check_collection_index_exists(collection_name):
             # removing the uploaded file
-            os.remove(os.path.join(settings.MEDIA_ROOT,saved_file))
+            os.remove(os.path.join(settings.MEDIA_ROOT, saved_file))
             return render(
                 request,
                 "wetlab/add_collection_index_kit.html",
@@ -817,7 +822,9 @@ def search_run(request):
 
     """
     # check user privileges
-    groups = django.contrib.auth.models.Group.objects.filter(name=wetlab.config.WETLAB_MANAGER).last()
+    groups = django.contrib.auth.models.Group.objects.filter(
+        name=wetlab.config.WETLAB_MANAGER
+    ).last()
     if groups not in request.user.groups.all():
         allowed_all_runs = False
     else:
@@ -1191,7 +1198,10 @@ def retry_error_run(request):
             return render(
                 request,
                 "wetlab/display_run.html",
-                {"successful_correction": wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY, "run_id": run_id},
+                {
+                    "successful_correction": wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY,
+                    "run_id": run_id,
+                },
             )
         else:
             return render(
@@ -1287,7 +1297,9 @@ def display_run(request, run_id):
                 return render(
                     request,
                     "wetlab/display_run.html",
-                    {"error_message": "You do have the enough privileges to see this page "}
+                    {
+                        "error_message": "You do have the enough privileges to see this page "
+                    },
                 )
         else:
             return render(
@@ -1308,7 +1320,7 @@ def display_run(request, run_id):
         return render(
             request,
             "wetlab/display_run.html",
-            {"error_message": "No matches have been found for the run"}
+            {"error_message": "No matches have been found for the run"},
         )
 
 
@@ -1346,7 +1358,9 @@ def last_run_by_sequencer(request):
 
     last_runs = wetlab.utils.fetch_info.get_last_runs_by_sequencer()
     if len(last_runs) == 0:
-        return render(request, "wetlab/last_run_by_sequencer.html", {"no_runs": "no_runs"})
+        return render(
+            request, "wetlab/last_run_by_sequencer.html", {"no_runs": "no_runs"}
+        )
     if len(last_runs) > 1:
         return render(
             request, "wetlab/last_run_by_sequencer.html", {"last_runs": last_runs}
@@ -1436,7 +1450,9 @@ def display_project(request, project_id):
                 return render(
                     request,
                     "wetlab/display_project.html",
-                    {"error_message": "You do have the enough privileges to see this page "},
+                    {
+                        "error_message": "You do have the enough privileges to see this page "
+                    },
                 )
         # Display the proyect information
         display_project_data = wetlab.utils.fetch_info.get_information_project(
@@ -1474,8 +1490,7 @@ def display_collection_index(request, collection_index_id):
                 request,
                 "wetlab/display_collection_index.html",
                 {
-                    "error_message":
-                        "There are recorded information for the collection index for your request"
+                    "error_message": "There are recorded information for the collection index for your request"
                 },
             )
     else:
@@ -1686,15 +1701,19 @@ def change_run_name(request, run_id):
         run_data = {}
         run_data["run_name"] = run_obj.get_run_name()
         run_data["run_id"] = run_id
-        
+
         # check if user is allow to make the change
-        groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager").last()
+        groups = django.contrib.auth.models.Group.objects.filter(
+            name="WetlabManager"
+        ).last()
         # check if user belongs to WetlabManager . If true allow to see the page
         if groups not in request.user.groups.all():
             return render(
                 request,
                 "wetlab/change_run_name.html",
-                {"error_message": "You do have the enough privileges to see this page "},
+                {
+                    "error_message": "You do have the enough privileges to see this page "
+                },
             )
         if request.method == "POST" and request.POST["action"] == "change_run_name":
             new_run_name = request.POST["runName"]
@@ -1706,7 +1725,7 @@ def change_run_name(request, run_id):
                     "wetlab/change_run_name.html",
                     {
                         "error_message": "The given Run Name is already in use",
-                        "run_data" : run_data
+                        "run_data": run_data,
                     },
                 )
             changed_name = {}
@@ -1744,8 +1763,10 @@ def stats_per_researcher(request):
         r_name = request.POST["researchername"]
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
-        
-        researcher_statistics = wetlab.utils.statistics.get_researcher_statistics(r_name, start_date, end_date)
+
+        researcher_statistics = wetlab.utils.statistics.get_researcher_statistics(
+            r_name, start_date, end_date
+        )
         if "ERROR" in researcher_statistics:
             error_message = researcher_statistics["ERROR"]
             return render(
@@ -1780,15 +1801,15 @@ def stats_per_sequencer(request):
                 request,
                 "wetlab/stats_per_sequencer.html",
                 {
-                  "error_message": error_message,
-                  "sequencer_names": sequencer_names,
+                    "error_message": error_message,
+                    "sequencer_names": sequencer_names,
                 },
             )
         return render(
-                request,
-                "wetlab/stats_per_sequencer.html",
-                {"sequencer_statistics": sequencer_statistics},
-            )
+            request,
+            "wetlab/stats_per_sequencer.html",
+            {"sequencer_statistics": sequencer_statistics},
+        )
     else:
         return render(
             request,
@@ -1802,12 +1823,14 @@ def stats_per_time(request):
     if request.method == "POST":
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
-        per_time_statistics = wetlab.utils.statistics.get_per_time_statistics(start_date, end_date)
+        per_time_statistics = wetlab.utils.statistics.get_per_time_statistics(
+            start_date, end_date
+        )
         return render(
-                    request,
-                    "wetlab/stats_per_time.html",
-                    {"per_time_statistics": per_time_statistics},
-                )
+            request,
+            "wetlab/stats_per_time.html",
+            {"per_time_statistics": per_time_statistics},
+        )
     return render(request, "wetlab/stats_per_time.html")
 
 
@@ -1882,20 +1905,24 @@ def get_list_of_libraries_values(
 @login_required
 def annual_report(request):
     # check user privileges
-    groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager").last()
+    groups = django.contrib.auth.models.Group.objects.filter(
+        name="WetlabManager"
+    ).last()
     if groups not in request.user.groups.all():
         return render(
             request,
             "wetlab/annual_report.html",
-            {"error_message" : "You do have the enough privileges to see this page "},
+            {"error_message": "You do have the enough privileges to see this page "},
         )
     if request.method == "POST" and request.POST["action"] == "annualreport":
-        annual_rep_data = wetlab.utils.reports.get_annual_report(request.POST["yearselected"])
+        annual_rep_data = wetlab.utils.reports.get_annual_report(
+            request.POST["yearselected"]
+        )
         if "ERROR" in annual_rep_data:
             return render(
                 request,
                 "wetlab/annual_report.html",
-                {"error_message" : annual_rep_data["ERROR"]}
+                {"error_message": annual_rep_data["ERROR"]},
             )
         return render(
             request,
@@ -1957,7 +1984,7 @@ def create_protocol(request):
             return render(
                 request,
                 "wetlab/create_protocol.html",
-                {"ERROR": "Protocol Name " + new_protocol + "Already exists."}
+                {"ERROR": "Protocol Name " + new_protocol + "Already exists."},
             )
         new_protocol_id = core.utils.protocols.create_new_protocol(
             new_protocol, protocol_type, description, __package__
@@ -2043,6 +2070,7 @@ def define_sample_projects(request):
         {"defined_samples_projects": defined_samples_projects},
     )
 
+
 @login_required
 def define_additional_kits(request, protocol_id):
     # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
@@ -2094,7 +2122,11 @@ def display_sample_project(request, sample_project_id):
     )
     if "ERROR" in samples_project_data:
         error_message = samples_project_data["ERROR"]
-        return render(request, "wetlab/display_sample_project.html", {"error_message": error_message})
+        return render(
+            request,
+            "wetlab/display_sample_project.html",
+            {"error_message": error_message},
+        )
     return render(
         request,
         "wetlab/display_sample_project.html",
@@ -2114,7 +2146,9 @@ def display_protocol(request, protocol_id):
         return render(
             request,
             "wetlab/display_protocol.html",
-            {"error_message": "The protocol that you are trying to get DOES NOT exist."},
+            {
+                "error_message": "The protocol that you are trying to get DOES NOT exist."
+            },
         )
     protocol_data = core.utils.protocols.get_all_protocol_info(protocol_id)
     kit_data = wetlab.utils.additional_kits.get_all_additional_kit_info(protocol_id)
@@ -2135,7 +2169,10 @@ def define_protocol_parameters(request, protocol_id):
             "wetlab/define_protocol_parameters.html",
             {"error_message": "You do not have enough privileges to see this page "},
         )
-    if (request.method == "POST" and request.POST["action"] == "define_protocol_parameters"):
+    if (
+        request.method == "POST"
+        and request.POST["action"] == "define_protocol_parameters"
+    ):
         recorded_prot_parameters = core.utils.protocols.set_protocol_parameters(request)
 
         return render(
@@ -2180,7 +2217,9 @@ def add_commercial_kit(request):
                     "defined_protocols": defined_protocols,
                     "defined_platforms": defined_platforms,
                     "commercial_kits_data": commercial_kits_data,
-                    "error_message": "Commercial kit " + request.POST["kitName"] + " is already defined"
+                    "error_message": "Commercial kit "
+                    + request.POST["kitName"]
+                    + " is already defined",
                 },
             )
         new_kit = core.utils.commercial_kits.store_commercial_kit(request.POST)
@@ -2214,7 +2253,9 @@ def add_user_lot_commercial_kit(request):
                 "wetlab/add_user_lot_commercial_kit.html",
                 {
                     "defined_kits": defined_kits,
-                    "error_message": "Lot barcode " +request.POST["barCode"] + " is already defined"
+                    "error_message": "Lot barcode "
+                    + request.POST["barCode"]
+                    + " is already defined",
                 },
             )
         new_lot_kit = core.utils.commercial_kits.store_lot_user_commercial_kit(
@@ -2236,7 +2277,6 @@ def add_user_lot_commercial_kit(request):
             "wetlab/add_user_lot_commercial_kit.html",
             {"defined_kits": defined_kits},
         )
-
 
 
 @login_required
@@ -2538,8 +2578,7 @@ def define_sample_projects_fields(request, sample_project_id):
                 request,
                 "wetlab/define_sample_project_fields.html",
                 {
-                    "error_message": 
-                        "The requested Sample project does not exist",
+                    "error_message": "The requested Sample project does not exist",
                 },
             )
 
@@ -2561,7 +2600,9 @@ def modify_additional_kit(request, protocol_id):
             return render(
                 request,
                 "wetlab/modify_additional_kit.html",
-                {"error_message": "You do not have enough privileges to see this page "},
+                {
+                    "error_message": "You do not have enough privileges to see this page "
+                },
             )
     else:
         # redirect to login webpage
@@ -2681,9 +2722,7 @@ def modify_sample_project_fields(request, sample_project_id):
             return render(
                 request,
                 "wetlab/modify_sample_project_fields.html",
-                {
-                    "error_message": "The requested Sample project does not exist"
-                },
+                {"error_message": "The requested Sample project does not exist"},
             )
         sample_project_field = core.utils.samples.get_parameters_sample_project(
             sample_project_id
@@ -2871,14 +2910,14 @@ def handling_library_preparation(request):
     # add protocol parameters for the user selected library preparation on defined state
     if request.method == "POST" and request.POST["action"] == "addProtocolParameter":
         lib_prep_ids = request.POST.getlist("libpreparation")
-        if len(lib_prep_ids) == 0 :
+        if len(lib_prep_ids) == 0:
             error_message = "No selected library preparation was chosen"
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
                 {
                     "samples_in_lib_prep": samples_in_lib_prep,
-                    "error_message" : error_message,
+                    "error_message": error_message,
                 },
             )
         library_preparation_objs = []
@@ -2948,7 +2987,10 @@ def handling_library_preparation(request):
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
-                {"error_message": data["ERROR"], "samples_in_lib_prep": samples_in_lib_prep},
+                {
+                    "error_message": data["ERROR"],
+                    "samples_in_lib_prep": samples_in_lib_prep,
+                },
             )
         user_in_description = wetlab.utils.common.get_configuration_value(
             "DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME"
@@ -3218,12 +3260,20 @@ def handling_molecules(request):
         sample_availables, molecules_availables, pending_to_use = "", "", ""
         if wetlab.utils.common.is_wetlab_manager(request):
             samples_list = core.utils.samples.get_sample_objs_in_state("Defined")
-            samples_pending_use = core.utils.samples.get_sample_objs_in_state("Pending for use")
+            samples_pending_use = core.utils.samples.get_sample_objs_in_state(
+                "Pending for use"
+            )
             molecule_list = core.utils.samples.get_molecule_objs_in_state("Defined")
         else:
-            samples_list = core.utils.samples.get_sample_objs_in_state("Defined", request.user, True)
-            samples_pending_use = core.utils.samples.get_sample_objs_in_state("Pending for use", request.user, True)
-            molecule_list = core.utils.samples.get_molecule_objs_in_state("Defined", request.user, True)
+            samples_list = core.utils.samples.get_sample_objs_in_state(
+                "Defined", request.user, True
+            )
+            samples_pending_use = core.utils.samples.get_sample_objs_in_state(
+                "Pending for use", request.user, True
+            )
+            molecule_list = core.utils.samples.get_molecule_objs_in_state(
+                "Defined", request.user, True
+            )
         if samples_list:
             sample_availables = core.utils.samples.create_table_to_select_molecules(
                 samples_list
@@ -3478,7 +3528,9 @@ def search_sample(request):
             )
 
     else:
-        return render(request, "wetlab/search_sample.html", {"search_data": search_data})
+        return render(
+            request, "wetlab/search_sample.html", {"search_data": search_data}
+        )
 
 
 @login_required
@@ -3720,7 +3772,7 @@ def create_new_run(request):
         run_obj = wetlab.utils.run.get_run_obj_from_id(request.POST["run_process_id"])
         if run_obj.get_state() != "Pre-Recorded":
             exp_name = run_obj.get_run_name()
-            error_message = str(exp_name +  wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY)
+            error_message = str(exp_name + wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY)
             display_pools_for_run = wetlab.utils.run.display_available_pools()
             return render(
                 request,
@@ -3787,23 +3839,41 @@ def pending_sample_preparation(request):
     else:
         req_user = request.user
         friend_list = True
-    pending = {}
-    pending["state"] = OrderedDict()
-    state_numbers = {}
-    # get the samples in defined state
-    pending_state = ["Pre-defined", "Defined", "Molecule extraction" , "Library preparation", "Pool preparation" , "Sequencing"]
-    for p_state in pending_state:
-        sample_objs = core.utils.samples.get_sample_objs_in_state(p_state,req_user, friend_list)
-        state_numbers[p_state] = len(sample_objs)
-        if len(sample_objs) == 0:
-            continue
-        pending["state"][p_state] = list(sample_objs.values_list("pk", "sample_name","lab_request__lab_name_coding", "sample_type__sample_type", "sample_project__sample_project_name", "sample_user__username"))
-      
-    if len(pending["state"]) > 0:
-        pending["pending_graphic"] = core.utils.samples.create_graphic_pending_samples( state_numbers, "Number of Pending Samples", 460, 460, "fint").render()
-        pending["sample_heading"] = wetlab.config.HEADING_FOR_PENDING_PROCESS_SAMPLES
+    pending_data = core.utils.samples.pending_sample_summary(req_user, friend_list)
+
+    if len(pending_data["state"]) > 0:
+        pending_data[
+            "sample_heading"
+        ] = wetlab.config.HEADING_FOR_PENDING_PROCESS_SAMPLES
+        pending_data[
+            "pending_sample_graphic"
+        ] = wetlab.utils.statistics.get_pending_graphic_data(
+            pending_data["state_number"],
+            "Pending samples",
+            "flint",
+            "ex1",
+            "500",
+            "500",
+            "chart-1",
+        )
+        # if wetlab manager create graphic for users on pending samples
+        if user_is_wetlab_manager:
+            pending_data[
+                "pending_users_graphic"
+            ] = wetlab.utils.statistics.get_pending_graphic_data(
+                pending_data["users"],
+                "Users with pending samples",
+                "flint",
+                "ex2",
+                "500",
+                "500",
+                "chart-2",
+            )
+
     return render(
-        request, "wetlab/pending_sample_preparation.html", {"pending": pending }
+        request,
+        "wetlab/pending_sample_preparation.html",
+        {"pending_data": pending_data},
     )
 
 
@@ -3847,8 +3917,10 @@ def kit_inventory(request):
     if wetlab.utils.common.is_wetlab_manager(request):
         req_user = None
     else:
-        req_user = request.user 
-    expired_kit = core.utils.commercial_kits.get_user_lot_kit_data(req_user, expired=True)
+        req_user = request.user
+    expired_kit = core.utils.commercial_kits.get_user_lot_kit_data(
+        req_user, expired=True
+    )
     valid_kit = core.utils.commercial_kits.get_user_lot_kit_data(request.user)
     if request.method == "POST" and request.POST["action"] == "runOutUserLotKit":
         selected_user_kits = request.POST.getlist("userKit")
@@ -4041,8 +4113,12 @@ def sequencer_configuration(request):
 def sequencer_details(request, seq_id):
     seq_obj = wetlab.utils.sequencers.get_sequencer_obj_from_id(seq_id)
     if seq_obj is None:
-        return render(request, "wetlab/sequencer_inventory.html", {"error_message": "Sequencer not found"})
-    if request.method == "POST" and  request.POST["action"] == "updateSequencer":
+        return render(
+            request,
+            "wetlab/sequencer_inventory.html",
+            {"error_message": "Sequencer not found"},
+        )
+    if request.method == "POST" and request.POST["action"] == "updateSequencer":
         seq_data = {}
         end_date = request.POST["seqEnd"]
         start_date = request.POST["seqStart"]
@@ -4050,12 +4126,20 @@ def sequencer_details(request, seq_id):
             end_date = None
         else:
             if not wetlab.utils.common.check_valid_date_format(end_date):
-                return render(request, "wetlab/sequencer_inventory.html", {"error_message": "Format date is incorrect"})
+                return render(
+                    request,
+                    "wetlab/sequencer_inventory.html",
+                    {"error_message": "Format date is incorrect"},
+                )
         if start_date == "" or start_date == "None":
             start_date = None
         else:
             if not wetlab.utils.common.check_valid_date_format(start_date):
-                return render(request, "wetlab/sequencer_inventory.html", {"error_message": "Format date is incorrect"})
+                return render(
+                    request,
+                    "wetlab/sequencer_inventory.html",
+                    {"error_message": "Format date is incorrect"},
+                )
 
         seq_data["serial"] = request.POST["seqSerial"]
         seq_data["state"] = request.POST["seqState"]
@@ -4064,19 +4148,19 @@ def sequencer_details(request, seq_id):
         seq_data["description"] = request.POST["description"]
         seq_data["end_date"] = end_date
         seq_data["start_date"] = start_date
-        
+
         seq_obj.update_sequencer_data(seq_data)
-        
+
         return render(
             request,
             "wetlab/sequencer_inventory.html",
             {"updated_sequencer": request.POST["seq_name"]},
         )
-        
+
     return render(
         request,
         "wetlab/sequencer_inventory.html",
-        {"sequencer_detail_data": seq_obj.get_all_sequencer_data("%Y-%m-%d")}
+        {"sequencer_detail_data": seq_obj.get_all_sequencer_data("%Y-%m-%d")},
     )
 
 
