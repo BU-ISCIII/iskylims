@@ -2,9 +2,10 @@
 import datetime
 import json
 import re
+from collections import OrderedDict
 
 from django.contrib.auth.models import User
-from django.db.models import F, Func, Value, CharField
+from django.db.models import F, Func, Count, Value, CharField
 
 # Local imports
 import core.core_config
@@ -13,14 +14,15 @@ import core.utils.common
 import core.utils.commercial_kits
 import core.utils.protocols
 
+
 def add_molecule_protocol_parameters(form_data):
     """The function stores in database the molecule parameters.
         Return the list of the molecules updated
-    
+
     Parameters:
     -----------
         request
-   
+
     Return:
     ------
         molecule_updated_list.
@@ -66,14 +68,15 @@ def add_molecule_protocol_parameters(form_data):
                 p_index
             ]
             core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
-                    molecule_parameter_value
-                )
+                molecule_parameter_value
+            )
 
         # Update sample state
         sample_obj = molecule_obj.get_sample_obj()
         sample_obj.set_state("Pending for use")
 
     return molecule_updated_list
+
 
 def analyze_input_samples(request, app_name):
     """
@@ -161,7 +164,9 @@ def analyze_input_samples(request, app_name):
             sample_data["patient"] = patient_obj
             sample_data["user"] = reg_user
             sample_data["sample_id"] = str(reg_user + "_" + sample_name)
-            if not core.models.Samples.objects.exclude(unique_sample_id__isnull=True).exists():
+            if not core.models.Samples.objects.exclude(
+                unique_sample_id__isnull=True
+            ).exists():
                 sample_data["new_unique_value"] = "AAA-0001"
             else:
                 last_unique_value = (
@@ -212,7 +217,9 @@ def analyze_input_samples(request, app_name):
             ).get_sample_id()
             if "sample_id_for_action" not in sample_recorded:
                 # get the first no valid sample to ask user for new action on the sample
-                sample_recorded["sample_data_for_action"] = core.models.Samples.objects.get(
+                sample_recorded[
+                    "sample_data_for_action"
+                ] = core.models.Samples.objects.get(
                     sample_name__exact=sample_name
                 ).get_sample_definition_information()
                 sample_recorded["sample_id_for_action"] = sample_id
@@ -247,7 +254,9 @@ def analyze_input_samples(request, app_name):
     if len(invalid_samples) > 0:
         sample_recorded["invalid_samples"] = invalid_samples
         sample_recorded["invalid_samples_id"] = ",".join(invalid_samples_id)
-        sample_recorded["invalid_heading"] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+        sample_recorded[
+            "invalid_heading"
+        ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     if len(incomplete_samples) > 0:
         sample_recorded["incomplete_samples"] = incomplete_samples
     if len(pre_defined_samples) > 0:
@@ -256,7 +265,9 @@ def analyze_input_samples(request, app_name):
 
     if sample_recorded["all_samples_defined"]:
         sample_recorded["samples_to_continue"] = ",".join(samples_continue)
-    sample_recorded["recorded_sample_heading"] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+    sample_recorded[
+        "recorded_sample_heading"
+    ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     sample_recorded["valid_samples_ids"] = samples_continue
     return sample_recorded
 
@@ -294,8 +305,8 @@ def analyze_input_sample_project_fields(form_data):
             field_value["sampleProjectFieldValue"] = field_value_json_data[i][j + 1]
 
             core.models.SampleProjectsFieldsValue.objects.create_project_field_value(
-                    field_value
-                )
+                field_value
+            )
 
         sample_to_display.append([field_value_json_data[i][0], right_id])
         if sample_obj.is_only_recorded():
@@ -429,37 +440,13 @@ def check_patient_code_exists(p_code_id):
         False is user is not define or patient_obj is patient exists
     """
     if core.models.PatientCore.objects.filter(patient_code__iexact=p_code_id).exists():
-        patient_obj = core.models.PatientCore.objects.filter(patient_code__iexact=p_code_id).last()
+        patient_obj = core.models.PatientCore.objects.filter(
+            patient_code__iexact=p_code_id
+        ).last()
     else:
         return False
 
     return patient_obj
-
-
-def create_graphic_pending_samples(value_in_state , heading, width, heigth, theme ):
-    """The function create the graphic for pending samples.
-    
-    Paramters:
-    ----------
-    value_in_state : dictionnary
-        contains the state as key and the value is the number of sample in the state
-
-    Returns:
-    --------
-        graphic_pending_samples.
-    """
-    number_of_pending = {}
-    for state, num in value_in_state.items():
-        if num > 0:
-            number_of_pending[state] = num
-
-    data_source = core.utils.graphics.preparation_3D_pie(
-        heading, "", theme, number_of_pending
-    )
-    graphic_pending_samples = core.fusioncharts.fusioncharts.FusionCharts(
-        "pie3d", "ex1", width, heigth, "chart-1", "json", data_source
-    )
-    return graphic_pending_samples
 
 
 def create_new_sample_project(form_data, app_name):
@@ -488,7 +475,9 @@ def create_new_sample_project(form_data, app_name):
     for i in range(len(form_fields)):
         s_project_data[db_fields[i]] = form_data[form_fields[i]]
     s_project_data["apps_name"] = app_name
-    new_sample_project = core.models.SampleProjects.objects.create_sample_project(s_project_data)
+    new_sample_project = core.models.SampleProjects.objects.create_sample_project(
+        s_project_data
+    )
 
     new_sample_project_id = new_sample_project.get_id()
 
@@ -506,15 +495,22 @@ def create_table_molecule_pending_use(sample_list, app_name):
         use_type
     """
     use_type = {}
-    use_type["data"] = list(core.models.MoleculePreparation.objects.filter(
+    use_type["data"] = list(
+        core.models.MoleculePreparation.objects.filter(
             molecule_used_for=None, sample__in=sample_list
-        ).values_list("sample__sample_name", "molecule_code_id", "pk"))
-    if len(use_type["data"]) > 0 :
-        if core.models.MoleculeUsedFor.objects.filter(apps_name__exact=app_name).exists():
-            use_type["types"] = list(core.models.MoleculeUsedFor.objects.filter(apps_name__exact=app_name).values_list("used_for", flat=True))
+        ).values_list("sample__sample_name", "molecule_code_id", "pk")
+    )
+    if len(use_type["data"]) > 0:
+        if core.models.MoleculeUsedFor.objects.filter(
+            apps_name__exact=app_name
+        ).exists():
+            use_type["types"] = list(
+                core.models.MoleculeUsedFor.objects.filter(
+                    apps_name__exact=app_name
+                ).values_list("used_for", flat=True)
+            )
 
         use_type["heading"] = core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE
-    import pdb; pdb.set_trace()
     return use_type
 
 
@@ -523,11 +519,11 @@ def create_table_to_select_molecules(samples_list):
     Description:
         The function return a dictionary with the information to display to user to
         select the molecules.
-    
+
     Parameters:
     -----------
         samples_list  : sample list object to get the information
-        
+
     Return:
     -------
         sample_information.
@@ -540,30 +536,44 @@ def create_table_to_select_molecules(samples_list):
             sample.get_info_in_defined_state()
         )
         sample_code_id.append(sample.get_sample_code())
-    sample_information["sample_heading"] = core.core_config.HEADING_FOR_DEFINED_SAMPLES_STATE
+    sample_information[
+        "sample_heading"
+    ] = core.core_config.HEADING_FOR_DEFINED_SAMPLES_STATE
     sample_information["sample_code_ids"] = ",".join(sample_code_id)
 
     return sample_information
 
 
 def create_table_pending_molecules(molecule_list):
-    """ The function prepare molecule information to display.
-    
+    """The function prepare molecule information to display.
+
     Parameters:
     -----------
         _owner_molecules:  list of molecules belongs to user
-    
+
     Return:
     -------
         molecule_data
     """
     molecule_data = {}
-    molecule_data["data"] = list(molecule_list.values_list("sample__sample_name","molecule_code_id", "protocol_used__name", "pk").annotate(extrac_date=Func(F("molecule_extraction_date"),Value("%Y-%m-%d"),function="DATE_FORMAT",output_field=CharField())))
-    if len (molecule_data["data"]) > 0:    
-        molecule_data["molecule_heading"] = core.core_config.HEADING_FOR_PENDING_MOLECULES
+    molecule_data["data"] = list(
+        molecule_list.values_list(
+            "sample__sample_name", "molecule_code_id", "protocol_used__name", "pk"
+        ).annotate(
+            extrac_date=Func(
+                F("molecule_extraction_date"),
+                Value("%Y-%m-%d"),
+                function="DATE_FORMAT",
+                output_field=CharField(),
+            )
+        )
+    )
+    if len(molecule_data["data"]) > 0:
+        molecule_data[
+            "molecule_heading"
+        ] = core.core_config.HEADING_FOR_PENDING_MOLECULES
 
     return molecule_data
-
 
 
 def define_table_for_sample_project_fields(sample_project_id):
@@ -577,7 +587,9 @@ def define_table_for_sample_project_fields(sample_project_id):
         sample_project_data
     """
     sample_project_data = {}
-    sample_project_obj = core.models.SampleProjects.objects.get(pk__exact=sample_project_id)
+    sample_project_obj = core.models.SampleProjects.objects.get(
+        pk__exact=sample_project_id
+    )
 
     sample_project_data[
         "sample_project_name"
@@ -596,8 +608,8 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
     Input:
         molecule_ids
     Functions:
-        get_protocol_parameters_and_type  
-        get_lot_commercial_kits 
+        get_protocol_parameters_and_type
+        get_lot_commercial_kits
     Return:
         laboratories.
     """
@@ -610,9 +622,13 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
     selected_protocol = ""
     parameter_list = []
     for molecule in molecule_ids:
-        if not core.models.MoleculePreparation.objects.filter(pk__exact=int(molecule)).exists():
+        if not core.models.MoleculePreparation.objects.filter(
+            pk__exact=int(molecule)
+        ).exists():
             continue
-        molecule_obj = core.models.MoleculePreparation.objects.get(pk__exact=int(molecule))
+        molecule_obj = core.models.MoleculePreparation.objects.get(
+            pk__exact=int(molecule)
+        )
         protocol_used = molecule_obj.get_protocol()
         protocol_used_obj = molecule_obj.get_protocol_obj()
 
@@ -628,7 +644,8 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
                 for parameter in protocol_parameters:
                     parameter_list.append(parameter.get_parameter_name())
                 length_heading = len(
-                    core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list
+                    core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
+                    + parameter_list
                 )
                 molecule_recorded[
                     "fix_heading"
@@ -636,8 +653,12 @@ def display_molecule_protocol_parameters(molecule_ids, user_obj):
                 molecule_recorded["param_heading"] = parameter_list
                 molecule_recorded[
                     "protocol_parameters_heading_type"
-                ] = core.utils.protocols.get_protocol_parameters_and_type(protocol_used_obj)
-                molecule_recorded["lot_kit"] = core.utils.commercial_kits.get_lot_commercial_kits(
+                ] = core.utils.protocols.get_protocol_parameters_and_type(
+                    protocol_used_obj
+                )
+                molecule_recorded[
+                    "lot_kit"
+                ] = core.utils.commercial_kits.get_lot_commercial_kits(
                     protocol_used_obj
                 )
 
@@ -671,7 +692,9 @@ def display_molecule_use(app_name):
     molecule_use_data = {}
     molecule_use_data["defined_molecule_use"] = []
     if core.models.MoleculeUsedFor.objects.filter(apps_name__exact=app_name).exists():
-        molecule_uses = core.models.MoleculeUsedFor.objects.filter(apps_name__exact=app_name)
+        molecule_uses = core.models.MoleculeUsedFor.objects.filter(
+            apps_name__exact=app_name
+        )
         for molecule in molecule_uses:
             massive = molecule.get_massive()
             if massive == "True":
@@ -698,11 +721,15 @@ def display_sample_types(app_name):
     defined_sample_types = []
 
     if core.models.SampleType.objects.filter(apps_name__exact=app_name).exists():
-        s_types = core.models.SampleType.objects.filter(apps_name__exact=app_name).order_by("sample_type")
+        s_types = core.models.SampleType.objects.filter(
+            apps_name__exact=app_name
+        ).order_by("sample_type")
         for s_type in s_types:
             defined_sample_types.append([s_type.get_sample_type_id, s_type.get_name])
         sample_types["defined_sample_types"] = defined_sample_types
-    sample_types["optional_values"] = core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES
+    sample_types[
+        "optional_values"
+    ] = core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES
     return sample_types
 
 
@@ -713,16 +740,25 @@ def get_all_sample_information(sample_id, join_values=False):
         return {"Error": core.core_config.ERROR_SAMPLE_NOT_FOUND}
     sample_information["sample_id"] = sample_id
     sample_information["sample_name"] = sample_obj.get_sample_name()
-    
+
     sample_information["sample_definition"] = sample_obj.get_info_for_display()
-    sample_information["sample_definition_heading"] = core.core_config.HEADING_FOR_SAMPLE_DEFINITION
+    sample_information[
+        "sample_definition_heading"
+    ] = core.core_config.HEADING_FOR_SAMPLE_DEFINITION
     if join_values:
-        sample_information["sample_definition_join_value"] = list(zip(sample_information["sample_definition_heading"],sample_information["sample_definition"]  ))
+        sample_information["sample_definition_join_value"] = list(
+            zip(
+                sample_information["sample_definition_heading"],
+                sample_information["sample_definition"],
+            )
+        )
     # get the sample project information fields
     sample_project_obj = sample_obj.get_sample_project_obj()
     if sample_project_obj is not None:
         sample_information.update(
-            get_sample_project_information(sample_project_obj, sample_obj, join_values=True)
+            get_sample_project_information(
+                sample_project_obj, sample_obj, join_values=True
+            )
         )
 
     # check if molecule information exists for the sample
@@ -813,11 +849,16 @@ def get_info_to_display_sample_project(sample_project_id):
     """
     info_s_project = {}
     if core.models.SampleProjects.objects.filter(pk__exact=sample_project_id).exists():
-        sample_project_obj = core.models.SampleProjects.objects.get(pk__exact=sample_project_id)
+        sample_project_obj = core.models.SampleProjects.objects.get(
+            pk__exact=sample_project_id
+        )
         # collect data from project
         info_s_project["sample_project_id"] = sample_project_id
         info_s_project["main_data"] = list(
-            zip(core.core_config.SAMPLE_PROJECT_MAIN_DATA, sample_project_obj.get_full_info_to_display())
+            zip(
+                core.core_config.SAMPLE_PROJECT_MAIN_DATA,
+                sample_project_obj.get_full_info_to_display(),
+            )
         )
 
         if core.models.SampleProjectsFields.objects.filter(
@@ -868,7 +909,9 @@ def get_only_recorded_samples_and_dates():
     """
     samples_data = []
     if core.models.Samples.objects.filter(only_recorded=True).exists():
-        sample_objs = core.models.Samples.objects.filter(only_recorded=True).order_by("generated_at")
+        sample_objs = core.models.Samples.objects.filter(only_recorded=True).order_by(
+            "generated_at"
+        )
         for sample_obj in sample_objs:
             data = [sample_obj.get_sample_name()]
             data.append(sample_obj.get_sample_project())
@@ -892,7 +935,9 @@ def get_parameters_sample_project(sample_project_id):
     """
     parameters_s_project = {}
     if core.models.SampleProjects.objects.filter(pk__exact=sample_project_id).exists():
-        sample_project_obj = core.models.SampleProjects.objects.get(pk__exact=sample_project_id)
+        sample_project_obj = core.models.SampleProjects.objects.get(
+            pk__exact=sample_project_id
+        )
         if core.models.SampleProjectsFields.objects.filter(
             sample_projects_id=sample_project_obj
         ).exists():
@@ -911,7 +956,9 @@ def get_parameters_sample_project(sample_project_id):
                 parameter_data.insert(1, "")
                 s_project_fields_list.append(parameter_data)
             parameters_s_project["fields"] = s_project_fields_list
-        parameters_s_project["heading"] = core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+        parameters_s_project[
+            "heading"
+        ] = core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
         parameters_s_project["sample_project_id"] = sample_project_id
         parameters_s_project[
             "sample_project_name"
@@ -934,12 +981,16 @@ def get_info_for_reprocess_samples(sample_ids, sample_in_action):
                 pk__exact=sample_id
             ).get_sample_definition_information()
         invalid_samples.append(
-            core.models.Samples.objects.get(pk__exact=sample_id).get_sample_definition_information()
+            core.models.Samples.objects.get(
+                pk__exact=sample_id
+            ).get_sample_definition_information()
         )
 
     sample_recorded["invalid_samples"] = invalid_samples
     # sample_recorded['invalid_samples_id'] = ','.join(sample_ids)
-    sample_recorded["invalid_heading"] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+    sample_recorded[
+        "invalid_heading"
+    ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
 
     return sample_recorded
 
@@ -953,7 +1004,9 @@ def get_info_for_defined_sample_projects(app_name):
     """
     info_s_projects = []
     if core.models.SampleProjects.objects.filter(apps_name__exact=app_name).exists():
-        s_projects = core.models.SampleProjects.objects.filter(apps_name__exact=app_name)
+        s_projects = core.models.SampleProjects.objects.filter(
+            apps_name__exact=app_name
+        )
         for s_project in s_projects:
             s_project_data = s_project.get_info_to_display()
             if core.models.SampleProjectsFields.objects.filter(
@@ -977,7 +1030,9 @@ def get_defined_sample_projects(app_name):
     """
     sample_projects = []
     if core.models.SampleProjects.objects.filter(apps_name__exact=app_name).exists():
-        s_projects = core.models.SampleProjects.objects.filter(apps_name__exact=app_name)
+        s_projects = core.models.SampleProjects.objects.filter(
+            apps_name__exact=app_name
+        )
         for s_project in s_projects:
             sample_projects.append(s_project.get_sample_project_name())
     return sample_projects
@@ -1006,7 +1061,9 @@ def get_molecule_obj_from_id(molecule_id):
         molecules_obj.
     """
     if core.models.MoleculePreparation.objects.filter(pk__exact=molecule_id).exists():
-        molecules_obj = core.models.MoleculePreparation.objects.get(pk__exact=molecule_id)
+        molecules_obj = core.models.MoleculePreparation.objects.get(
+            pk__exact=molecule_id
+        )
         return molecules_obj
     else:
         return ""
@@ -1023,7 +1080,9 @@ def get_molecule_objs_from_sample(sample_obj):
         molecules_obj.
     """
     if core.models.MoleculePreparation.objects.filter(sample=sample_obj).exists():
-        molecules_obj = core.models.MoleculePreparation.objects.filter(sample=sample_obj)
+        molecules_obj = core.models.MoleculePreparation.objects.filter(
+            sample=sample_obj
+        )
         return molecules_obj
     else:
         return ""
@@ -1031,9 +1090,9 @@ def get_molecule_objs_from_sample(sample_obj):
 
 def get_molecule_objs_in_state(m_state, user=None, friend_list=None):
     """The function returns a list of instance molecules which match the conditions
-        molecule instances are filter by the user and the user friend list. 
+        molecule instances are filter by the user and the user friend list.
         If no user is set then no filter is done
-    
+
     Parameters
     ----------
     m_state : string
@@ -1049,18 +1108,24 @@ def get_molecule_objs_in_state(m_state, user=None, friend_list=None):
         contains the objects that were matched on the condition. Empty list if
         not match
     """
-    if user :
+    if user:
         if friend_list:
-            user_list =  core.utils.common.get_friend_list(user)
+            user_list = core.utils.common.get_friend_list(user)
         else:
             user_list = [user]
         return core.models.MoleculePreparation.objects.filter(
-                    state__molecule_state_name__exact=m_state,
-                    molecule_user__in=user_list,
-                )
+            state__molecule_state_name__exact=m_state,
+            molecule_user__in=user_list,
+        )
     else:
-        return core.models.MoleculePreparation.objects.filter(state__molecule_state_name__exact=m_state).order_by("molecule_user").order_by("generated_at")
-    
+        return (
+            core.models.MoleculePreparation.objects.filter(
+                state__molecule_state_name__exact=m_state
+            )
+            .order_by("molecule_user")
+            .order_by("generated_at")
+        )
+
 
 def get_modules_type():
     """
@@ -1133,17 +1198,23 @@ def get_sample_objs_in_state(s_state, user=None, friend_list=None):
         contains the objects that were matched on the condition. Empty list if
         not match
     """
-    if user :
+    if user:
         if friend_list:
-            user_list =  core.utils.common.get_friend_list(user)
+            user_list = core.utils.common.get_friend_list(user)
         else:
             user_list = [user]
         return core.models.Samples.objects.filter(
-                sample_state__sample_state_name__exact=s_state,
-                sample_user__in=user_list,
-            )
+            sample_state__sample_state_name__exact=s_state,
+            sample_user__in=user_list,
+        )
     else:
-        return core.models.Samples.objects.filter(sample_state__sample_state_name__exact=s_state).order_by("sample_user").order_by("sample_entry_date")
+        return (
+            core.models.Samples.objects.filter(
+                sample_state__sample_state_name__exact=s_state
+            )
+            .order_by("sample_user")
+            .order_by("sample_entry_date")
+        )
 
 
 def get_sample_obj_from_sample_name(sample_name):
@@ -1154,13 +1225,13 @@ def get_sample_obj_from_sample_name(sample_name):
 
 
 def get_sample_obj_from_id(sample_id):
-    """ The function will return the class object from id number of the class.
-    
+    """The function will return the class object from id number of the class.
+
     Parameters
     ----------
     sample_id : string
         id value to get the sample obj
-    
+
     Returns:
     --------
     sample_obj : Sample instance or None if not match
@@ -1192,16 +1263,26 @@ def get_sample_project_information(sample_project_obj, sample_obj, join_values=F
             if core.models.SampleProjectsFieldsValue.objects.filter(
                 sample_id=sample_obj, sample_project_field_id=s_p_field
             ).exists():
-                field_value = core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_id=sample_obj, sample_project_field_id=s_p_field
-                ).last().get_field_value()
+                field_value = (
+                    core.models.SampleProjectsFieldsValue.objects.filter(
+                        sample_id=sample_obj, sample_project_field_id=s_p_field
+                    )
+                    .last()
+                    .get_field_value()
+                )
                 if s_p_field.get_field_type() == "Date":
                     field_value = field_value.replace(" 00:00:00", "")
             else:
                 field_value = core.core_config.VALUE_NOT_PROVIDED
             s_project_info["sample_project_field_value"].append(field_value)
     if join_values:
-        s_project_info["sample_project_join_value"] = [list (x) for x in zip( s_project_info["sample_project_field_heading"], s_project_info["sample_project_field_value"])]
+        s_project_info["sample_project_join_value"] = [
+            list(x)
+            for x in zip(
+                s_project_info["sample_project_field_heading"],
+                s_project_info["sample_project_field_value"],
+            )
+        ]
     return s_project_info
 
 
@@ -1302,7 +1383,9 @@ def get_sample_project_field_obj_from_id(sample_project_field_id):
         sample_project_field_obj.
     """
     sample_project_field_obj = False
-    if core.models.SampleProjectsFields.objects.filter(pk__exact=sample_project_field_id).exists():
+    if core.models.SampleProjectsFields.objects.filter(
+        pk__exact=sample_project_field_id
+    ).exists():
         sample_project_field_obj = core.models.SampleProjectsFields.objects.get(
             pk__exact=sample_project_field_id
         )
@@ -1324,7 +1407,9 @@ def get_table_record_molecule(samples, apps_name):
         molecule_information #
     """
     molecule_information = {}
-    molecule_information["headings"] = core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
+    molecule_information[
+        "headings"
+    ] = core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
     sample_code_ids = []
     valid_samples = []
     for sample in samples:
@@ -1353,7 +1438,9 @@ def get_table_record_molecule(samples, apps_name):
         molecule_information["protocol_list"],
     ) = get_molecule_protocols(apps_name)
     molecule_information["number_of_samples"] = len(valid_samples)
-    molecule_information["table_length"] = len(core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
+    molecule_information["table_length"] = len(
+        core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
+    )
     molecule_information["protocol_type"] = list(
         molecule_information["protocols_dict"].keys()
     )
@@ -1391,7 +1478,9 @@ def get_type_of_sample_information(sample_type_id):
                     [core.core_config.HEADING_FOR_RECORD_SAMPLES[i], "Mandatory"]
                 )
     else:
-        sample_type_data["ERROR"] = core.core_config.ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS
+        sample_type_data[
+            "ERROR"
+        ] = core.core_config.ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS
     return sample_type_data
 
 
@@ -1445,7 +1534,9 @@ def modify_fields_in_sample_project(form_data):
     parameter_ids = form_data["parameter_ids"].split(",")
     parameter_names = form_data["parameter_names"].split(",")
     json_data = json.loads(form_data["table_data1"])
-    sample_project_obj = core.models.SampleProjects.objects.get(pk__exact=sample_project_id)
+    sample_project_obj = core.models.SampleProjects.objects.get(
+        pk__exact=sample_project_id
+    )
     fields = core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
     saved_fields = {}
     saved_fields["fields"] = []
@@ -1475,7 +1566,9 @@ def modify_fields_in_sample_project(form_data):
             s_p_fields["Field name"] = row_data[1]
             s_p_fields["sample_project_id"] = sample_project_obj
             sample_project_field_obj = (
-                core.models.SampleProjectsFields.objects.create_sample_project_fields(s_p_fields)
+                core.models.SampleProjectsFields.objects.create_sample_project_fields(
+                    s_p_fields
+                )
             )
             saved_fields["fields"].append(
                 sample_project_field_obj.get_sample_project_fields_name()
@@ -1507,7 +1600,9 @@ def modify_fields_in_sample_project(form_data):
                     continue
                 data = {"s_proj_obj": sample_project_field_obj}
                 data["opt_value"] = value
-                core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
+                core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(
+                    data
+                )
     return saved_fields
 
 
@@ -1557,7 +1652,9 @@ def record_molecule_use(from_data, app_name):
     if core.models.MoleculeUsedFor.objects.filter(
         used_for__exact=from_data["moleculeUseName"]
     ).exists():
-        molecule_use_information["ERROR"] = core.core_config.ERROR_MOLECULE_USE_FOR_EXISTS
+        molecule_use_information[
+            "ERROR"
+        ] = core.core_config.ERROR_MOLECULE_USE_FOR_EXISTS
         return molecule_use_information
     molecule_use_data = {}
     molecule_use_data["usedFor"] = from_data["moleculeUseName"]
@@ -1566,9 +1663,7 @@ def record_molecule_use(from_data, app_name):
         molecule_use_data["massiveUse"] = True
     else:
         molecule_use_data["massiveUse"] = False
-    core.models.MoleculeUsedFor.objects.create_molecule_use_for(
-        molecule_use_data
-    )
+    core.models.MoleculeUsedFor.objects.create_molecule_use_for(molecule_use_data)
     molecule_use_information["new_defined_molecule_use"] = from_data["moleculeUseName"]
     return molecule_use_information
 
@@ -1653,7 +1748,9 @@ def record_molecules(form_data, user, app_name):
         # molecule_data['usedForMassiveSequencing'] = massive
         # molecule_data['numberOfReused'] = str(number_code - 1)
 
-        new_molecule = core.models.MoleculePreparation.objects.create_molecule(molecule_data)
+        new_molecule = core.models.MoleculePreparation.objects.create_molecule(
+            molecule_data
+        )
 
         molecule_list.append([molecule_code_id, protocol_used])
         # Update Sample state to "Extracted molecule"
@@ -1662,7 +1759,9 @@ def record_molecules(form_data, user, app_name):
         molecules_ids.append(new_molecule.get_molecule_id())
         molecules_code_ids.append(molecule_code_id)
     if len(molecules_ids) > 0:
-        molecules_recorded["heading"] = core.core_config.HEADING_CONFIRM_MOLECULE_RECORDED
+        molecules_recorded[
+            "heading"
+        ] = core.core_config.HEADING_CONFIRM_MOLECULE_RECORDED
         molecules_recorded["molecule_list"] = molecule_list
         molecules_recorded["molecule_ids"] = ",".join(molecules_ids)
         molecules_recorded["molecule_code_ids"] = ",".join(molecules_code_ids)
@@ -1674,6 +1773,58 @@ def record_molecules(form_data, user, app_name):
         )
 
     return molecules_recorded
+
+
+def pending_sample_summary(req_user=None, friend_list=None):
+    """_summary_
+
+    Parameters
+    ----------
+    req_user : _type_, optional
+        _description_, by default None
+    friend_list : _type_, optional
+        _description_, by default None
+    """
+
+    pending_data = {}
+    pending_data["state"] = OrderedDict()
+    pending_data["state_number"] = {}
+    pending_state = [
+        "Pre-defined",
+        "Defined",
+        "Molecule extraction",
+        "Library preparation",
+        "Pool preparation",
+        "Sequencing",
+    ]
+    for p_state in pending_state:
+        sample_objs = get_sample_objs_in_state(p_state, req_user, friend_list)
+        if len(sample_objs) == 0:
+            continue
+        pending_data["state_number"][p_state] = len(sample_objs)
+        pending_data["state"][p_state] = list(
+            sample_objs.values_list(
+                "pk",
+                "sample_name",
+                "lab_request__lab_name_coding",
+                "sample_type__sample_type",
+                "sample_project__sample_project_name",
+                "sample_user__username",
+            )
+        )
+
+    if req_user is None:
+        pending_data["users"] = {}
+        pend_users = list(
+            core.models.Samples.objects.filter(
+                sample_state__sample_state_name__in=pending_state
+            )
+            .values(User=F("sample_user__username"))
+            .annotate(value=Count("sample_name"))
+        )
+        for pend_user in pend_users:
+            pending_data["users"][pend_user["User"]] = pend_user["value"]
+    return pending_data
 
 
 def prepare_sample_project_input_table(pre_defined_samples_id):
@@ -1705,7 +1856,9 @@ def prepare_sample_project_input_table(pre_defined_samples_id):
         if selected_sample_project == "":
             selected_sample_project = s_project_obj.get_sample_project_name()
             s_project_fields = (
-                core.models.SampleProjectsFields.objects.filter(sample_projects_id=s_project_obj)
+                core.models.SampleProjectsFields.objects.filter(
+                    sample_projects_id=s_project_obj
+                )
                 .exclude(sample_project_field_used=None)
                 .order_by("sample_project_field_order")
             )
@@ -1765,9 +1918,14 @@ def save_type_of_sample(form_data, app_name):
         return save_s_type
     # select the optional fields and get the indexes
     for field in core.core_config.HEADING_FOR_RECORD_SAMPLES:
-        if field not in form_data and field in core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES:
-            optional_index_field_list.append(str(core.core_config.HEADING_FOR_RECORD_SAMPLES.index(field)))
-    # add only recorded as always optional 
+        if (
+            field not in form_data
+            and field in core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES
+        ):
+            optional_index_field_list.append(
+                str(core.core_config.HEADING_FOR_RECORD_SAMPLES.index(field))
+            )
+    # add only recorded as always optional
     optional_index_field_list.append("9")
     data = {}
     data["sampleType"] = form_data["sampleTypeName"]
@@ -1790,8 +1948,10 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date):
         return sample_list
     if user_name != "":
         if User.objects.filter(username__exact=user_name).exists():
-            user_name_obj = core.models.User.objects.filter(username__exact=user_name).last()
-            user_friend_list =  core.utils.common.get_friend_list(user_name_obj)
+            user_name_obj = core.models.User.objects.filter(
+                username__exact=user_name
+            ).last()
+            user_friend_list = core.utils.common.get_friend_list(user_name_obj)
             if not sample_founds.filter(sample_user__in=user_friend_list).exists():
                 return sample_list
             else:
@@ -1851,7 +2011,9 @@ def set_molecule_use(form_data, app_name):
     molecule_update["data"] = []
 
     for row_index in range(len(molecule_json_data)):
-        import pdb; pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
         if molecule_json_data[row_index][3] != "":
             mol_id = molecule_json_data[row_index][2]
             molecule_obj = get_molecule_obj_from_id(mol_id)
@@ -1873,7 +2035,9 @@ def set_sample_project_fields(data_form):
     json_data = json.loads(data_form["table_data1"])
     fields = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
 
-    sample_project_obj = core.models.SampleProjects.objects.get(pk__exact=sample_project_id)
+    sample_project_obj = core.models.SampleProjects.objects.get(
+        pk__exact=sample_project_id
+    )
 
     saved_fields = []
     stored_fields = {}
@@ -1893,19 +2057,19 @@ def set_sample_project_fields(data_form):
                 sample_projects_id=sample_project_obj,
                 classification_name__iexact=classification_name,
             ).exists():
-                classification_obj = core.models.SampleProjectFieldClassification.objects.filter(
-                    sample_projects_id=sample_project_obj,
-                    classification_name__iexact=classification_name,
-                ).last()
+                classification_obj = (
+                    core.models.SampleProjectFieldClassification.objects.filter(
+                        sample_projects_id=sample_project_obj,
+                        classification_name__iexact=classification_name,
+                    ).last()
+                )
             else:
                 c_data = {
                     "sample_project_id": sample_project_obj,
                     "classification_name": classification_name,
                 }
-                classification_obj = (
-                    core.models.SampleProjectFieldClassification.objects.create_sample_project_field_classification(
-                        c_data
-                    )
+                classification_obj = core.models.SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                    c_data
                 )
             s_p_fields["SampleProjectFieldClassificationID"] = classification_obj
         else:

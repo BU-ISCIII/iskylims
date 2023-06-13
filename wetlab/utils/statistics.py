@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import Avg, F, Count, Func, Value, CharField
 from django.db.models.functions import ExtractWeek, ExtractYear
 
-#Local imports
+# Local imports
 import core.fusioncharts.fusioncharts
 import core.models
 import wetlab.models
@@ -70,7 +70,7 @@ def get_per_time_statistics(start_date, end_date):
         .annotate(value=Count("run_name"))
     )
     format_run_per_date = core.utils.common.week_month_number_to_date(
-        run_per_date, "week","value", "%Y-%m-%d"
+        run_per_date, "week", "value", "%Y-%m-%d"
     )
     g_data = core.utils.graphics.preparation_graphic_data(
         "Run per week",
@@ -536,10 +536,21 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         "json",
         g_data,
     ).render()
-    # import pdb; pdb.set_trace()
     researcher_statistics["researcher_name"] = researcher_name
 
     return researcher_statistics
+
+
+def get_pending_graphic_data(
+    pend_data, heading, theme, ex_value, width, heigth, chart_value
+):
+
+    g_data = core.utils.graphics.preparation_graphic_data(
+        heading, "", "", "", theme, pend_data
+    )
+    return core.fusioncharts.fusioncharts.FusionCharts(
+        "pie3d", ex_value, width, heigth, chart_value, "json", g_data
+    ).render()
 
 
 def get_sequencer_statistics(sequencer_name, start_date, end_date):
