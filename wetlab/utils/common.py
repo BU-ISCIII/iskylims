@@ -195,7 +195,7 @@ def get_attributes_remote_file(conn, run_dir, remote_file):
     logger.debug("Starting function for getting remote attributes")
     try:
         file_attributes = conn.getAttributes(
-            config.SAMBA_SHARED_FOLDER_NAME, remote_file
+            wetlab.config.SAMBA_SHARED_FOLDER_NAME, remote_file
         )
         logger.info("Got attributes from %s", remote_file)
     except Exception:
