@@ -3215,30 +3215,27 @@ def handling_molecules(request):
         )
 
     else:
-        sample_availables, user_molecules, request_molecule_use = "", "", ""
+        sample_availables, molecules_availables, pending_to_use = "", "", ""
         if wetlab.utils.common.is_wetlab_manager(request):
             samples_list = core.utils.samples.get_sample_objs_in_state("Defined")
+            samples_pending_use = core.utils.samples.get_sample_objs_in_state("Pending for use")
+            molecule_list = core.utils.samples.get_molecule_objs_in_state("Defined")
         else:
             samples_list = core.utils.samples.get_sample_objs_in_state("Defined", request.user, True)
+            samples_pending_use = core.utils.samples.get_sample_objs_in_state("Pending for use", request.user, True)
+            molecule_list = core.utils.samples.get_molecule_objs_in_state("Defined", request.user, True)
         if samples_list:
             sample_availables = core.utils.samples.create_table_to_select_molecules(
                 samples_list
             )
-
-        user_owner_molecules = core.utils.samples.get_molecule_in_state(
-            "Defined", request.user
-        )
-        if len(user_owner_molecules) > 0:
-            user_molecules = core.utils.samples.create_table_user_molecules(
-                user_owner_molecules
+        if molecule_list:
+            molecules_availables = core.utils.samples.create_table_pending_molecules(
+                molecule_list
             )
-
-        samples_pending_use = core.utils.samples.get_sample_objs_in_state("Pending for use")
         if samples_pending_use:
-            request_molecule_use = core.utils.samples.create_table_pending_use(
+            pending_to_use = core.utils.samples.create_table_molecule_pending_use(
                 samples_pending_use, __package__
             )
-        # check if there are defined the type
         molecule_use_defined = core.utils.samples.check_if_molecule_use_defined(
             __package__
         )
@@ -3248,9 +3245,9 @@ def handling_molecules(request):
             "wetlab/handling_molecules.html",
             {
                 "sample_availables": sample_availables,
-                "user_molecules": user_molecules,
+                "molecules_availables": molecules_availables,
                 "molecule_use_defined": molecule_use_defined,
-                "request_molecule_use": request_molecule_use,
+                "pending_to_use": pending_to_use,
             },
         )
 
@@ -3785,16 +3782,18 @@ def create_new_run(request):
 def pending_sample_preparation(request):
     user_is_wetlab_manager = wetlab.utils.common.is_wetlab_manager(request)
     if user_is_wetlab_manager:
-        req_user = ""
+        req_user = None
+        friend_list = False
     else:
-        req_user = request.user.username
+        req_user = request.user
+        friend_list = True
     pending = {}
     pending["state"] = OrderedDict()
     state_numbers = {}
     # get the samples in defined state
     pending_state = ["Pre-defined", "Defined", "Molecule extraction" , "Library preparation", "Pool preparation" , "Sequencing"]
     for p_state in pending_state:
-        sample_objs = core.utils.samples.get_sample_objs_in_state(req_user, p_state)
+        sample_objs = core.utils.samples.get_sample_objs_in_state(p_state,req_user, friend_list)
         state_numbers[p_state] = len(sample_objs)
         if len(sample_objs) == 0:
             continue
