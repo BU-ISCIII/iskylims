@@ -12,6 +12,22 @@
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
+        {% if ERROR %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3> Result of your request</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for message in ERROR %}
+                        <p>{{message}}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         {% if display_service %}
         <div class="row justify-content-center pb-2 pt-2">
             <div class="col-md-12">
@@ -60,8 +76,8 @@
                                             <td>Files: </td>
                                             <td>
                                                 {% if service_files %}
-                                                {% for f_path, f_name in service_files %}
-                                                <a href="{{ f_path }}" download> {{f_name}} <span
+                                                {% for name, path in service_files.items %}
+                                                <a href="{{ path }}" download> {{ name }} <span
                                                         class="bi bi-download"></span></a>
                                                 {% endfor %}
                                                 {% else %}
