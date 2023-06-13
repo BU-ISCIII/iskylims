@@ -81,7 +81,7 @@ HEADING_FOR_EXTRACTED_MOLECULES_STATE = [
     "Select sample",
 ]
 
-HEADING_FOR_USER_PENDING_MOLECULES = [
+HEADING_FOR_PENDING_MOLECULES = [
     "Sample",
     "Molecule Code ID",
     "Molecule Extraction Date",

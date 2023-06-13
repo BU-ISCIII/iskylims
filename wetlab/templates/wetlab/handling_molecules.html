@@ -239,7 +239,7 @@
                         </div> 
                     {% endif %}
                     <div class="row my-2">
-                        <div class="col-sm-12">
+                        <div class="col-md">
                             <div class="card ">
                                 <div class="card-header"><h3>Update the following molecules with quality parameters.</h3></div>
                                 <div class="card-body">
@@ -443,7 +443,7 @@
             <div class="row my-2">
                 <div class="col-sm-12">
                     <div class="card ">
-                        <div class="card-header"><h3>Molecule uses updated.</h3></div>
+                        <div class="card-header text-center"><h3>Molecules are updated with their use.</h3></div>
                         <div class="card-body">
                         <table class="table table-hover">
                             <thead>
@@ -454,11 +454,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                    {% for values in molecule_use.data %}
+                                    {% for sample, mol_id, pk, use in molecule_use.data %}
                                         <tr>
-                                            {% for value in values %}
-                                                <td>{{ value }} </td>
-                                            {% endfor %}
+                                            <td>{{sample}}</td>
+                                            <td>{{mol_id}}</td>
+                                            <td>{{use}}</td>
                                         </tr>
                                     {%endfor%}
                                 </tbody>
@@ -488,7 +488,7 @@
                                 <div class="row mt-4">
                                     <div class="col-md">
                                         <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Select the molecules to add Extraction information</h3></div>
+                                            <div class="card-header text-center"><h3>Select the molecules to add Extraction information</h3></div>
                                             <div class="card-body">
                                                 {% if sample_availables.sample_heading %}
                                                     <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedMolecules"  id="selectedMolecules" class="form-horizontal well">
@@ -523,7 +523,7 @@
                                         <div class="card">
                                             <div class="card-header"><h3 style="text-align:center">Select the Samples to add Molecule information</h3></div>
                                             <div class="card-body">
-                                                {% if user_molecules %}
+                                                {% if molecules_availables %}
                                                     <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedOwnerMolecules"  id="selectedOwnerMolecules">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="action" value="selectedOwnerMolecules"/>
@@ -531,19 +531,19 @@
                                                         <table id="cdn_table" class="table table-striped table-bordered ">
                                                             <thead>
                                                                 <tr>
-                                                                    {% for value in user_molecules.molecule_heading %}
+                                                                    {% for value in molecules_availables.molecule_heading %}
                                                                         <th> {{ value }}</th>
                                                                     {% endfor %}
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% for s_name , code, date, protocol,  m_id  in user_molecules.data  %}
+                                                                {% for s_name , code, protocol,  m_id, date  in molecules_availables.data  %}
                                                                     <tr>
                                                                         <td>{{s_name}}</td>
                                                                         <td>{{code}}</td>
                                                                         <td>{{date}}</td>
                                                                         <td>{{protocol}}</td>
-                                                                        <td><input type="checkbox" name="molecules" value="{{m_id}}"></td>
+                                                                        <td class="text-center"><input  type="checkbox" name="molecules" value="{{m_id}}"></td>
                                                                     </tr>
                                                                 {% endfor %}
                                                             </tbody>
@@ -552,7 +552,7 @@
                                                         <input class="btn float-end btn-outline-primary my-3" type="submit" value="Submit">
                                                     </form>
                                                 {% else %}
-                                                    <h4> Your pending  molecule list is empty </h4>
+                                                    <h4> Pending  molecule list is empty </h4>
                                                 {% endif %}
                                             </div>  
                                         </div>  
@@ -569,19 +569,16 @@
                                             <div class="card-body">
                                                 <div class="container">
                                                     {% if molecule_use_defined %}
-                                                        {% if request_molecule_use.heading %}
+                                                        {% if pending_to_use.heading %}
                                                             <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="requestMoleculeUse"  id="requestMoleculeUse">
                                                                 {% csrf_token %}
                                                                 <input type="hidden" name="action" value="requestMoleculeUse"/>
-                                                                <input type="hidden" name="molecule_in_list" value="False"/>
-                                                                <input type="hidden" name="molecule_ids" value="{{request_molecule_use.molecule_ids}}"/>
-                                                                <input type="hidden" name="molecule_code_ids" value="{{request_molecule_use.molecule_code_ids}}"/>
-                                                                    <div class="horizontal-scroll">
+                                                                
+                                                                <div class="horizontal-scroll">
                                                                         <div id="spreadsheet2" class="mb-4 col-md"></div>
-                                                                    </div>
-                                                                    <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                                    <input class="btn float-end btn-outline-primary" id="btnSubmit" type="submit" value="Submit">
                                                                 </div>
+                                                                <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                <input class="btn float-end btn-outline-primary" id="btnSubmit" type="submit" value="Submit">
                                                             </form>
                                                         {% else %}
                                                             <h4>Ther are not Molecule extraction to assign to an use</h4>
@@ -655,15 +652,16 @@
     });
 
     // excel for selecting the molecule use
-    var data2 = [{% for values in request_molecule_use.data %}
+    var data2 = [{% for values in pending_to_use.data %}
         [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
     ];
     var table2  = jexcel(document.getElementById('spreadsheet2'), {
         data:data2,
         columns: [
-                { type: 'text', title:'{{request_molecule_use.heading.0}}', width:350 , readOnly:true },
-                { type: 'text', title:'{{request_molecule_use.heading.1}}', width:480 , readOnly:true },
-                { type: 'dropdown', title:'{{request_molecule_use.heading.2}}', width:300 , source:[{% for value in request_molecule_use.types %}'{{value}}',{% endfor %} ]},
+                { type: 'text', title:'{{pending_to_use.heading.0}}', width:350 , readOnly:true },
+                { type: 'text', title:'{{pending_to_use.heading.1}}', width:480 , readOnly:true },
+                { type: 'hidden'},
+                { type: 'dropdown', title:'{{pending_to_use.heading.2}}', width:200 , source:[{% for value in pending_to_use.types %}'{{value}}',{% endfor %} ]},
     ],
         allowInsertColumn:false,
         allowDeleteColumn:false,

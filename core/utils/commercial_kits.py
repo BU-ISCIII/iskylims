@@ -1,6 +1,6 @@
 # Generic imports
 from django.db.models import F, Func, Value, CharField
-from django.db.models.functions import Coalesce
+
 # Local imports
 import core.core_config
 import core.models
