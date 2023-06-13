@@ -117,7 +117,7 @@ def request_seq_service(request):
             return render(
                 request,
                 "drylab/request_seq_service.html",
-                {"service_data_information": service_data_info},
+                {"service_data_info": service_data_info},
             )
 
     if request.method == "POST" and request.POST["sub_action"] == "create_service":
@@ -129,7 +129,7 @@ def request_seq_service(request):
                 request,
                 "drylab/request_seq_service.html",
                 {
-                    "service_data_information": service_data_info,
+                    "service_data_info": service_data_info,
                     "error_message": error_message,
                 },
             )
@@ -298,46 +298,45 @@ def infrastructure_request(request):
 
 
 @login_required
-def add_samples_service_in_service(request):
+def add_samples_service(request):
     if request.user.is_authenticated:
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
-                {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
+                "drylab/add_samples_service.html",
+                {"ERROR": [drylab.config.ERROR_USER_NOT_ALLOWED]},
             )
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
 
-    if request.method == "POST" and request.POST["action"] == "addeSamplesInService":
+    if request.method == "POST" and request.POST["action"] == "add_samples_service":
         if not drylab.models.Service.objects.filter(
-            pk__exact=request.POST["service_id"]
+            service_request_number__exact=request.POST["service_id"]
         ).exists():
             return render(
                 request,
-                "drylab/error_page.html",
-                {"content": ["The service that you are trying to get does not exist "]},
+                "drylab/add_samples_service.html",
+                {"ERROR": ["The service that you are trying to get does not exist "]},
             )
-        service_obj = drylab.utils.common.get_service_obj(request.POST["service_id"])
+        service_obj = drylab.utils.common.get_service_obj(request.POST["service_id"], input="id")
         samples_added = {}
         samples_added["samples"] = drylab.utils.req_services.save_service_samples(
             request.POST, service_obj
         )
         samples_added["service_name"] = service_obj.get_identifier()
-        samples_added["service_id"] = request.POST["service_id"]
         return render(
             request,
             "drylab/add_samples_service.html",
             {"samples_added": samples_added},
         )
     else:
-        service_data_information = drylab.utils.req_services.get_service_data(request)
-        service_data_information["service_id"] = request.POST["service_id"]
+        service_data_info = drylab.utils.req_services.get_service_data(request)
+        service_data_info["service_id"] = request.POST["service_id"]
         return render(
             request,
             "drylab/add_samples_service.html",
-            {"service_data_information": service_data_information},
+            {"service_data_info": service_data_info},
         )
 
 
@@ -419,7 +418,7 @@ def display_service(request, service_id):
                 )
 
         available_services = service_obj.service_available_service.all()
-        import pdb; pdb.set_trace()
+
         return render(
             request,
             "drylab/display_service.html",

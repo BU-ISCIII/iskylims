@@ -60,7 +60,7 @@
         <div class="row justify-content-center pb-2 pt-2">
             <div class="col-md-12">
                 <div class="card ">
-                    <div class="card-header">Service request form for massive sequencing experiments</div>
+                    <div class="card-header">Service request for massive sequencing experiments</div>
                     <div class="card-body">
                         <form id="fileupload" method="post" action="/drylab/sequencing-request"
                             name="fileupload" enctype="multipart/form-data" class="form-horizontal well">
@@ -121,10 +121,16 @@
                                             </div>
                                             <!-- div tab 2 -->
                                             <div class="tab-pane fade show" id="nav-recorded" role="tabpanel" aria-labelledby="nav-recorded-tab" >
-                                                {% if service_data_info.samples_only_recorded_heading %}
+                                                {% if service_data_info.sample_only_recorded_heading %}
                                                 <p class="text-primary">Contact with
                                                     Bioinformatic unit to provide the sample files</p>
-                                                    <div id="recorded-samples"></div> 
+                                                <div class="container-md">
+                                                    <div class="row justify-content-center">
+                                                        <div class="col-md-auto">
+                                                            <div id="recorded-samples"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 {% else %}
                                                 <div class="pb-2 pt-2">
                                                     <h3>There are no samples recorded sequenced elsewhere</h3>
@@ -296,12 +302,12 @@ $(document).ready(function () {
         }); 
         {% endif %}
 
-        {% if service_data_info.samples_only_recorded_heading %}
-        var data_record_samples = [{% for values in service_data_info.samples_only_recorded_data %} [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}];
-        var table2 = jspreadsheet(document.getElementById('sequenced-samples'), {
+        {% if service_data_info.sample_only_recorded_heading %}
+        var data_record_samples = [{% for values in service_data_info.sample_only_recorded %} [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}];
+        var table2 = jspreadsheet(document.getElementById('recorded-samples'), {
             data: data_record_samples,
             columns: [
-            {% for value in service_data_info.samples_only_recorded_heading %}
+            {% for value in service_data_info.sample_only_recorded_heading %}
             {% if forloop.counter|divisibleby:2 %}
             { type: 'hidden' },
             {% elif forloop.counter == 3 %}

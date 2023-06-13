@@ -136,7 +136,7 @@
                                 </div>
                                 <div class="card ">
                                     <div class="card-header">
-                                        Notes
+                                        {{ display_service.service_notes.label }}
                                     </div>
                                     <div class="card-body">
                                         {{ display_service.service_notes.value }}
@@ -262,15 +262,15 @@
             <div class="col-sm-12">
                 <nav>
                     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                        <button class="nav-link active" id="nav-samples-tab" data-bs-toggle="tab" data-bs-target="#nav-samples"
-                            type="button" role="tab" aria-controls="nav-samples" aria-selected="true">Samples</button>
-                        <button class="nav-link" id="nav-resolutions-tab" data-bs-toggle="tab"
+                        <button class="nav-link active" id="nav-resolutions-tab" data-bs-toggle="tab"
                             data-bs-target="#nav-resolutions" type="button" role="tab" aria-controls="nav-resolutions"
-                            aria-selected="false">Resolutions</button>
+                            aria-selected="true">Resolutions</button>
+                        <button class="nav-link" id="nav-samples-tab" data-bs-toggle="tab" data-bs-target="#nav-samples"
+                            type="button" role="tab" aria-controls="nav-samples" aria-selected="false">Samples</button>
                     </div>
                 </nav>
                 <div class="tab-content bg-white border-tab p-2" id="nav_tab_content">
-                    <div class="tab-pane fade show active" id="nav-samples" role="tabpanel"
+                    <div class="tab-pane fade" id="nav-samples" role="tabpanel"
                         aria-labelledby="nav-samples-tab">  
                         <div class="row pb-2 pt-2">
                             <div class="col-md-12">
@@ -332,23 +332,39 @@
                                     {% if service_manager %}
                                     <input class="btn pull-left btn-danger" type="submit" id="btnSubmit"
                                     value="Delete samples">
-                                    <form id="add_samples_service" class="" action="/drylab/add-samples-service" method="post">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="add_samples_service">
-                                        <input type="hidden" name="service_id"
-                                            value="{{ display_service.service_request_number.value }}">
-                                        <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                            value="Add samples">
-                                    </form>
                                     {% endif %}
-                                </form>           
+                                </form>
+                                {% if service_manager %}
+                                <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="add_samples_form">
+                                    <input type="hidden" name="service_id"
+                                        value="{{ display_service.service_request_number.value }}">
+                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                        value="Add samples">
+                                </form>
+                                {% endif %}
                                 {% else %}
                                 <h5> There are no samples assigned to this service </h5>
+                                {% if service_manager %}
+                                <div class="row pb-2 pt-2">
+                                    <div class="col-md-8">
+                                        <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="add_samples_form">
+                                            <input type="hidden" name="service_id"
+                                                value="{{ display_service.service_request_number.value }}">
+                                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                                value="Add samples">
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="nav-resolutions" role="tabpanel"
+                    <div class="tab-pane fade show active" id="nav-resolutions" role="tabpanel"
                         aria-labelledby="nav-resolutions-tab">
                         {% if display_service.resolutions %}        
                         <table id="table_resolutions" class="table table-hover"  style="width:100%">

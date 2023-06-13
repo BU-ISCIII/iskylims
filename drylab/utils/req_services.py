@@ -523,7 +523,7 @@ def get_counseling_service_data(request):
     Input:
         request_user      # user instance who request the service
     Return:
-        service_data_information
+        service_data_info
     """
     service_data = {}
     if drylab.utils.common.is_service_manager(request):
@@ -542,7 +542,7 @@ def get_infrastructure_service_data(request):
     Input:
         request_user      # user instance who request the service
     Return:
-        service_data_information
+        service_data_info
     """
     service_data = {}
     if drylab.utils.common.is_service_manager(request):
