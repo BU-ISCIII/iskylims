@@ -12,105 +12,6 @@ import core.utils.common
 import core.utils.commercial_kits
 import core.utils.protocols
 
-
-def create_table_to_select_molecules(samples_list):
-    """
-    Description:
-        The function return a dictionary with the information to display to user to
-        select the molecules.
-    Input:
-        samples_list  : sample list object to get the information
-    Variables:
-
-    Return:
-        sample_information.
-    """
-    sample_information = {}
-    sample_information["sample_information"] = []
-    sample_code_id = []
-    for sample in samples_list:
-        sample_information["sample_information"].append(
-            sample.get_info_in_defined_state()
-        )
-        sample_code_id.append(sample.get_sample_code())
-    sample_information["sample_heading"] = core.core_config.HEADING_FOR_DEFINED_SAMPLES_STATE
-    sample_information["sample_code_ids"] = ",".join(sample_code_id)
-
-    return sample_information
-
-
-def display_molecule_protocol_parameters(molecule_ids, user_obj):
-    """
-    Description:
-        The function return the quality parameters defined for the
-        selected protocol.
-
-    Input:
-        molecule_ids
-    Functions:
-        get_protocol_parameters_and_type  
-        get_lot_commercial_kits 
-    Return:
-        laboratories.
-    """
-
-    molecule_recorded = {}
-    showed_molecule = []
-    molecule_recorded["data"] = []
-    pending_molecule = []
-    molecule_code_ids = []
-    selected_protocol = ""
-    parameter_list = []
-    for molecule in molecule_ids:
-        if not core.models.MoleculePreparation.objects.filter(pk__exact=int(molecule)).exists():
-            continue
-        molecule_obj = core.models.MoleculePreparation.objects.get(pk__exact=int(molecule))
-        protocol_used = molecule_obj.get_protocol()
-        protocol_used_obj = molecule_obj.get_protocol_obj()
-
-        if selected_protocol == "":
-            if core.models.ProtocolParameters.objects.filter(
-                protocol_id__exact=protocol_used_obj
-            ).exists():
-                selected_protocol = protocol_used
-                protocol_parameters = core.models.ProtocolParameters.objects.filter(
-                    protocol_id__exact=protocol_used_obj, parameter_used=True
-                ).order_by("parameter_order")
-
-                for parameter in protocol_parameters:
-                    parameter_list.append(parameter.get_parameter_name())
-                length_heading = len(
-                    core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list
-                )
-                molecule_recorded[
-                    "fix_heading"
-                ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-                molecule_recorded["param_heading"] = parameter_list
-                molecule_recorded[
-                    "protocol_parameters_heading_type"
-                ] = core.utils.protocols.get_protocol_parameters_and_type(protocol_used_obj)
-                molecule_recorded["lot_kit"] = core.utils.commercial_kits.get_lot_commercial_kits(
-                    protocol_used_obj
-                )
-
-        if protocol_used == selected_protocol:
-            showed_molecule.append(molecule)
-            data = [""] * length_heading
-            data[0] = molecule_obj.get_molecule_code_id()
-            # data[1] = protocol_used
-            molecule_recorded["data"].append(data)
-            molecule_code_ids.append(molecule_obj.get_molecule_code_id())
-        else:
-            pending_molecule.append(molecule_obj.get_molecule_id())
-
-    molecule_recorded["molecule_id"] = ",".join(showed_molecule)
-    molecule_recorded["molecule_code_ids"] = ",".join(molecule_code_ids)
-    molecule_recorded["pending_id"] = ",".join(pending_molecule)
-    molecule_recorded["heading_in_excel"] = "::".join(parameter_list)
-
-    return molecule_recorded
-
-
 def add_molecule_protocol_parameters(form_data):
     """
     Description:
@@ -172,7 +73,6 @@ def add_molecule_protocol_parameters(form_data):
         sample_obj.set_state("Pending for use")
 
     return molecule_updated_list
-
 
 def analyze_input_samples(request, app_name):
     """
@@ -645,6 +545,105 @@ def create_table_user_molecules(user_owner_molecules):
     return molecule_data
 
 
+def create_table_to_select_molecules(samples_list):
+    """
+    Description:
+        The function return a dictionary with the information to display to user to
+        select the molecules.
+    Input:
+        samples_list  : sample list object to get the information
+    Variables:
+
+    Return:
+        sample_information.
+    """
+    sample_information = {}
+    sample_information["sample_information"] = []
+    sample_code_id = []
+    for sample in samples_list:
+        sample_information["sample_information"].append(
+            sample.get_info_in_defined_state()
+        )
+        sample_code_id.append(sample.get_sample_code())
+    sample_information["sample_heading"] = core.core_config.HEADING_FOR_DEFINED_SAMPLES_STATE
+    sample_information["sample_code_ids"] = ",".join(sample_code_id)
+
+    return sample_information
+
+
+def display_molecule_protocol_parameters(molecule_ids, user_obj):
+    """
+    Description:
+        The function return the quality parameters defined for the
+        selected protocol.
+
+    Input:
+        molecule_ids
+    Functions:
+        get_protocol_parameters_and_type  
+        get_lot_commercial_kits 
+    Return:
+        laboratories.
+    """
+
+    molecule_recorded = {}
+    showed_molecule = []
+    molecule_recorded["data"] = []
+    pending_molecule = []
+    molecule_code_ids = []
+    selected_protocol = ""
+    parameter_list = []
+    for molecule in molecule_ids:
+        if not core.models.MoleculePreparation.objects.filter(pk__exact=int(molecule)).exists():
+            continue
+        molecule_obj = core.models.MoleculePreparation.objects.get(pk__exact=int(molecule))
+        protocol_used = molecule_obj.get_protocol()
+        protocol_used_obj = molecule_obj.get_protocol_obj()
+
+        if selected_protocol == "":
+            if core.models.ProtocolParameters.objects.filter(
+                protocol_id__exact=protocol_used_obj
+            ).exists():
+                selected_protocol = protocol_used
+                protocol_parameters = core.models.ProtocolParameters.objects.filter(
+                    protocol_id__exact=protocol_used_obj, parameter_used=True
+                ).order_by("parameter_order")
+
+                for parameter in protocol_parameters:
+                    parameter_list.append(parameter.get_parameter_name())
+                length_heading = len(
+                    core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list
+                )
+                molecule_recorded[
+                    "fix_heading"
+                ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
+                molecule_recorded["param_heading"] = parameter_list
+                molecule_recorded[
+                    "protocol_parameters_heading_type"
+                ] = core.utils.protocols.get_protocol_parameters_and_type(protocol_used_obj)
+                molecule_recorded["lot_kit"] = core.utils.commercial_kits.get_lot_commercial_kits(
+                    protocol_used_obj
+                )
+
+        if protocol_used == selected_protocol:
+            showed_molecule.append(molecule)
+            data = [""] * length_heading
+            data[0] = molecule_obj.get_molecule_code_id()
+            # data[1] = protocol_used
+            molecule_recorded["data"].append(data)
+            molecule_code_ids.append(molecule_obj.get_molecule_code_id())
+        else:
+            pending_molecule.append(molecule_obj.get_molecule_id())
+
+    molecule_recorded["molecule_id"] = ",".join(showed_molecule)
+    molecule_recorded["molecule_code_ids"] = ",".join(molecule_code_ids)
+    molecule_recorded["pending_id"] = ",".join(pending_molecule)
+    molecule_recorded["heading_in_excel"] = "::".join(parameter_list)
+
+    return molecule_recorded
+
+
+
 def define_table_for_sample_project_fields(sample_project_id):
     """
     Description:
@@ -884,24 +883,6 @@ def get_defined_samples(register_user):
     return defined_samples
 
 
-def get_lab_requested():
-    """
-    Description:
-        The function will return the Sample origin places defined in database.
-    Variables:
-        lab_requested_places # list containing the place names
-    Return:
-        lab_requested_places.
-    """
-    lab_requested_places = []
-    if core.models.LabRequest.objects.filter().exists():
-        lab_requesteds = core.models.LabRequest.objects.all()
-
-        for lab_requested in lab_requesteds:
-            lab_requested_places.append(lab_requested.get_lab_request_code())
-    return lab_requested_places
-
-
 def get_info_to_display_sample_project(sample_project_id):
     """
     Description:
@@ -936,6 +917,24 @@ def get_info_to_display_sample_project(sample_project_id):
         return info_s_project
 
     return info_s_project
+
+
+def get_lab_requested():
+    """
+    Description:
+        The function will return the Sample origin places defined in database.
+    Variables:
+        lab_requested_places # list containing the place names
+    Return:
+        lab_requested_places.
+    """
+    lab_requested_places = []
+    if core.models.LabRequest.objects.filter().exists():
+        lab_requesteds = core.models.LabRequest.objects.all()
+
+        for lab_requested in lab_requesteds:
+            lab_requested_places.append(lab_requested.get_lab_request_code())
+    return lab_requested_places
 
 
 def get_only_recorded_samples_and_dates():
@@ -1089,7 +1088,7 @@ def get_molecule_objs_from_sample(sample_obj):
         return ""
 
 
-def get_molecule_in_state(state, user):
+def get_molecule_in_state(state, user=None, ):
     """
     Description:
         The function will return a list with moelcules which are in the state defined
@@ -1132,49 +1131,38 @@ def get_molecule_in_state(state, user):
 
 
 # state get samples per user
-def get_sample_objs_in_state(user, s_state):
+def get_sample_objs_in_state(s_state, user=None, friend_list=None):
     """Return a list of sample objects that are in the indicate state.
     Sample are filter by the user and the user friend list. If no user
     is set then no filter is done
 
     Parameters
     ----------
-    user : string
-        user name to get their own defined samples. Empty for all in the state
     s_state : string
-        state name to se the filter
+        state name to get the samples
+    user : user object, optional
+        instance of user to filter for their samples, by default None
+    friend_list : Bool
+        Boolean value to allow for getting samples inside the user friend list
 
     Returns
     -------
     sample_objs : list of Samples instances
-        contains the objects that were matched on the condition
-    """    
-
-    sample_objs = []
-    if user != "":
-        user_friend_list =  core.utils.common.get_friend_list(user)
-
-        if core.models.Samples.objects.filter(
-            sample_state__sample_state_name__exact=s_state,
-            sample_user__in=user_friend_list,
-        ).exists():
-            sample_objs = core.models.Samples.objects.filter(
+        contains the objects that were matched on the condition. Empty list if
+        not match
+    """
+    import pdb; pdb.set_trace()
+    if user :
+        if friend_list:
+            user_list =  core.utils.common.get_friend_list(user)
+        else:
+            user_list = [user]
+        return core.models.Samples.objects.filter(
                 sample_state__sample_state_name__exact=s_state,
-                sample_user__in=user_friend_list,
+                sample_user__in=user_list,
             )
     else:
-        if core.models.Samples.objects.filter(
-            sample_state__sample_state_name__exact=s_state
-        ).exists():
-            sample_objs = (
-                core.models.Samples.objects.filter(sample_state__sample_state_name__exact=s_state)
-                .order_by("sample_user")
-                .order_by("sample_entry_date")
-            )
-    return sample_objs    
-
-
-
+        return core.models.Samples.objects.filter(sample_state__sample_state_name__exact=s_state).order_by("sample_user").order_by("sample_entry_date")
 
 
 def get_sample_obj_from_sample_name(sample_name):
@@ -1237,20 +1225,6 @@ def get_sample_states():
         for state in states:
             sample_states.append(state.get_sample_state())
     return sample_states
-
-
-def get_samples_in_state(state):
-    """
-    Description:
-        The function returns a object list with the samples in the requested state.
-    Return:
-        sample_objs. False if no samples found in the requested state.
-    """
-    if core.models.Samples.objects.filter(sample_state__sample_state_name__exact=state).exists():
-        sample_objs = core.models.Samples.objects.filter(sample_state__sample_state_name__exact=state)
-        return sample_objs
-    else:
-        return False
 
 
 def get_selected_recorded_samples(form_data):
@@ -1425,7 +1399,7 @@ def prepare_sample_input_table(app_name):
     s_information = build_record_sample_form(app_name)
     s_information["heading"] = core.core_config.HEADING_FOR_RECORD_SAMPLES
     s_information["table_size"] = len(core.core_config.HEADING_FOR_RECORD_SAMPLES)
-    sample_objs = get_samples_in_state("Pre-defined")
+    sample_objs = get_sample_objs_in_state("Pre-defined")
     if sample_objs:
         s_information["pre_defined_samples"] = []
         s_information[

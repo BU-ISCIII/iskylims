@@ -476,7 +476,7 @@
                             <button class="nav-link active" id="n_samples-tab" data-bs-toggle="tab" data-bs-target="#n_samples" type="button" role="tab" aria-controls="n_samples" aria-selected="true">New Samples</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="molecule-tab" data-bs-toggle="tab" data-bs-target="#molecule" type="button" role="tab" aria-controls="molecule" aria-selected="false">My pending molecules</button>
+                            <button class="nav-link" id="molecule-tab" data-bs-toggle="tab" data-bs-target="#molecule" type="button" role="tab" aria-controls="molecule" aria-selected="false">Pending molecules</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="mol_use-tab" data-bs-toggle="tab" data-bs-target="#mol_use" type="button" role="tab" aria-controls="mol_use" aria-selected="false">Molecules use specification</button>
@@ -489,6 +489,39 @@
                                     <div class="col-md">
                                         <div class="card">
                                             <div class="card-header"><h3 style="text-align:center">Select the molecules to add Extraction information</h3></div>
+                                            <div class="card-body">
+                                                {% if sample_availables.sample_heading %}
+                                                    <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedMolecules"  id="selectedMolecules" class="form-horizontal well">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="selectedMolecules"/>
+                                                        <input type="hidden" name="samples_in_list" value="True"/>
+                                                            <div class="col-md my-3 horizontal-scroll">
+                                                                
+                                                                <div id="spreadsheet1" ></div>
+                                                            
+                                                        </div>
+                                                        <div class="col">
+                                                            <input class="btn btn-outline-secondary" type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                                        </div>
+                                                    </form>
+                                            
+                                                {% else %}
+                                                        <h4>There is no samples to add Molecule Extraction information</h4>
+                                                    
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
+                            </div>
+                        </div> <!-- // end of tab n_samples -->
+                        <div class="tab-pane fade" id="molecule" role="tabpanel" aria-labelledby="molecule-tab">
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col">
+                                        <div class="card">
+                                            <div class="card-header"><h3 style="text-align:center">Select the Samples to add Molecule information</h3></div>
                                             <div class="card-body">
                                                 {% if user_molecules %}
                                                     <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedOwnerMolecules"  id="selectedOwnerMolecules">
@@ -521,83 +554,6 @@
                                                 {% else %}
                                                     <h4> Your pending  molecule list is empty </h4>
                                                 {% endif %}
-                                            </div>
-                                        </div>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div> <!-- // end of tab n_samples -->
-                        <div class="tab-pane fade" id="molecule" role="tabpanel" aria-labelledby="molecule-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col">
-                                        <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Select the Samples to add Molecule information</h3></div>
-                                            <div class="card-body">
-                                                {% if sample_availables.sample_heading %}
-                                                    <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedMolecules"  id="selectedMolecules" class="form-horizontal well">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="action" value="selectedMolecules"/>
-                                                        <input type="hidden" name="samples_in_list" value="True"/>
-                                                            <div class="col-md-12 my-3 horizontal-scroll">
-                                                                
-                                                                <div id="spreadsheet1" ></div>
-                                                            <script>
-                                                                var data1 = [{% for values in sample_availables.sample_information %}
-                                                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                                ];
-                                                                var table1 = jexcel(document.getElementById('spreadsheet1'), {
-                                                                    data:data1,
-                                                                    columns: [{% for values in sample_availables.sample_heading  %}
-                                                                        {% if forloop.last %}
-                                                                            { type: 'hidden' },
-                                                                            { type: 'checkbox',  title:'{{values}}', width:150 },
-                                                                        {% else %}
-                                                                            { type: 'text', title:'{{values}}', width:300 , readOnly:true },
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                    ],
-
-                                                                    allowInsertColumn:false,
-                                                                    allowDeleteColumn:false,
-                                                                    allowRenameColumn:false,
-                                                                    allowInsertRow:false,
-                                                                    allowDeleteRow:false,
-                                                                    tableOverflow:false,
-                                                                    search:true,
-                                                                    pagination:20,
-                                                                    csvFileName:'SamplesDefined.csv',
-
-                                                                });
-                                                            </script>
-                                                            <script>
-                                                                $(document).ready(function () {
-                                                                    $("#selectedMolecules").submit(function (e) {
-                                                                        //stop submitting the form to see the disabled button effect
-                                                                        // e.preventDefault();
-                                                                        //disable the submit button
-                                                                        var table_data = table1.getData()
-                                                                        var data_json = JSON.stringify(table_data)
-                                                                        $("<input />").attr("type", "hidden")
-                                                                        .attr("name", "selected_samples")
-                                                                        .attr("value", data_json)
-                                                                        .appendTo("#selectedMolecules");
-                                                                        $("#btnSubmit").attr("disabled", true);
-                                                                        return true;
-                                                                    });
-                                                                });
-                                                            </script>
-                                                        </div>
-                                                        <div class="col">
-                                                            <input class="btn btn-outline-secondary" type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                            <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
-                                                        </div>
-                                                    </form>
-                                            
-                                                {% else %}
-                                                        <h4>There is no samples to add Molecule Extraction information</h4>
-                                                    
-                                                {% endif %}
                                             </div>  
                                         </div>  
                                     </div>
@@ -609,66 +565,26 @@
                                 <div class="row mt-4">
                                     <div class="col">
                                         <div class="card">
-                                            <div class="card-header"><h3 style="text-align:center">Select the use that will be given for the sample</h3></div>
+                                            <div class="card-header text-center"><h3>Select the use that will be given for the sample</h3></div>
                                             <div class="card-body">
                                                 <div class="container">
                                                     {% if molecule_use_defined %}
                                                         {% if request_molecule_use.heading %}
-                                                            <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="requestMoleculeUse"  id="requestMoleculeUse" class="form-horizontal well">
+                                                            <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="requestMoleculeUse"  id="requestMoleculeUse">
                                                                 {% csrf_token %}
                                                                 <input type="hidden" name="action" value="requestMoleculeUse"/>
                                                                 <input type="hidden" name="molecule_in_list" value="False"/>
                                                                 <input type="hidden" name="molecule_ids" value="{{request_molecule_use.molecule_ids}}"/>
                                                                 <input type="hidden" name="molecule_code_ids" value="{{request_molecule_use.molecule_code_ids}}"/>
                                                                     <div class="horizontal-scroll">
-                                                                        <div id="spreadsheet2" class="mb-4 col-md-12"></div>
+                                                                        <div id="spreadsheet2" class="mb-4 col-md"></div>
                                                                     </div>
-                                                                    <script>
-                                                                        var data2 = [{% for values in request_molecule_use.data %}
-                                                                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                                                        ];
-
-                                                                        var table2  = jexcel(document.getElementById('spreadsheet2'), {
-                                                                            data:data2,
-                                                                            columns: [
-                                                                                    { type: 'text', title:'{{request_molecule_use.heading.0}}', width:350 , readOnly:true },
-                                                                                    { type: 'text', title:'{{request_molecule_use.heading.1}}', width:480 , readOnly:true },
-                                                                                    { type: 'dropdown', title:'{{request_molecule_use.heading.2}}', width:300 , source:[{% for value in request_molecule_use.types %}'{{value}}',{% endfor %} ]},
-                                                                        ],
-                                                                            allowInsertColumn:false,
-                                                                            allowDeleteColumn:false,
-                                                                            allowRenameColumn:false,
-                                                                            allowInsertRow:false,
-                                                                            allowDeleteRow:false,
-                                                                            tableOverflow:true,
-                                                                            search:true,
-                                                                            pagination:20,
-                                                                            csvFileName:'molecule_use',
-                                                                        });
-                                                                    </script>
-                                                                    <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                    <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                                                     <input class="btn float-end btn-outline-primary" id="btnSubmit" type="submit" value="Submit">
                                                                 </div>
                                                             </form>
-                                                            <script>
-                                                                $(document).ready(function () {
-                                                                    $("#requestMoleculeUse").submit(function (e) {
-                                                                        //stop submitting the form to see the disabled button effect
-                                                                        // e.preventDefault();
-                                                                        //disable the submit button
-                                                                        var table_data2 = table2.getData()
-                                                                        var data_json = JSON.stringify(table_data2)
-                                                                        $("<input />").attr("type", "hidden")
-                                                                            .attr("name", "molecule_used_for")
-                                                                            .attr("value", data_json)
-                                                                            .appendTo("#requestMoleculeUse");
-                                                                        $("#btnSubmit").attr("disabled", true);
-                                                                        return true;
-                                                                    });
-                                                                });
-                                                            </script>
                                                         {% else %}
-                                                            <h4>All Molecule extraction have already assigned to an use</h4>
+                                                            <h4>Ther are not Molecule extraction to assign to an use</h4>
                                                         {% endif %}
                                                     {% else %}
                                                         <h4>Not molecule uses have been defined yet</h4>
@@ -690,6 +606,90 @@
     $(document).ready(function() {
         $('#cdn_table').DataTable({
             responsive: true,
+        });
+    });
+</script>
+<script>
+    // excel table for new samples
+    var data1 = [{% for values in sample_availables.sample_information %}
+        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+    ];
+    var table1 = jexcel(document.getElementById('spreadsheet1'), {
+        data:data1,
+        columns: [{% for values in sample_availables.sample_heading  %}
+            {% if forloop.last %}
+                { type: 'hidden' },
+                { type: 'checkbox',  title:'{{values}}', width:150 },
+            {% else %}
+                { type: 'text', title:'{{values}}', width:300 , readOnly:true },
+            {% endif %}
+        {% endfor %}
+        ],
+
+        allowInsertColumn:false,
+        allowDeleteColumn:false,
+        allowRenameColumn:false,
+        allowInsertRow:false,
+        allowDeleteRow:false,
+        tableOverflow:false,
+        search:true,
+        pagination:20,
+        csvFileName:'SamplesDefined.csv',
+
+    });
+    // send form for new samples
+    $(document).ready(function () {
+        $("#selectedMolecules").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            var table_data = table1.getData()
+            var data_json = JSON.stringify(table_data)
+            $("<input />").attr("type", "hidden")
+            .attr("name", "selected_samples")
+            .attr("value", data_json)
+            .appendTo("#selectedMolecules");
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+    });
+
+    // excel for selecting the molecule use
+    var data2 = [{% for values in request_molecule_use.data %}
+        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+    ];
+    var table2  = jexcel(document.getElementById('spreadsheet2'), {
+        data:data2,
+        columns: [
+                { type: 'text', title:'{{request_molecule_use.heading.0}}', width:350 , readOnly:true },
+                { type: 'text', title:'{{request_molecule_use.heading.1}}', width:480 , readOnly:true },
+                { type: 'dropdown', title:'{{request_molecule_use.heading.2}}', width:300 , source:[{% for value in request_molecule_use.types %}'{{value}}',{% endfor %} ]},
+    ],
+        allowInsertColumn:false,
+        allowDeleteColumn:false,
+        allowRenameColumn:false,
+        allowInsertRow:false,
+        allowDeleteRow:false,
+        tableOverflow:true,
+        search:true,
+        pagination:20,
+        csvFileName:'molecule_use',
+    });
+
+    // send form for molecule in use
+    $(document).ready(function () {
+        $("#requestMoleculeUse").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            var table_data2 = table2.getData()
+            var data_json = JSON.stringify(table_data2)
+            $("<input />").attr("type", "hidden")
+                .attr("name", "molecule_used_for")
+                .attr("value", data_json)
+                .appendTo("#requestMoleculeUse");
+            $("#btnSubmit").attr("disabled", true);
+            return true;
         });
     });
 </script>

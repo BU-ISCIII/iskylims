@@ -3086,12 +3086,6 @@ def handling_library_preparation(request):
 
 
 def handling_molecules(request):
-    """
-    Functions:
-        get_samples_in_state
-        create_table_to_select_molecules
-        display_molecule_protocol_parameters
-    """
 
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
@@ -3222,7 +3216,10 @@ def handling_molecules(request):
 
     else:
         sample_availables, user_molecules, request_molecule_use = "", "", ""
-        samples_list = core.utils.samples.get_samples_in_state("Defined")
+        if wetlab.utils.common.is_wetlab_manager(request):
+            samples_list = core.utils.samples.get_sample_objs_in_state("Defined")
+        else:
+            samples_list = core.utils.samples.get_sample_objs_in_state("Defined", request.user, True)
         if samples_list:
             sample_availables = core.utils.samples.create_table_to_select_molecules(
                 samples_list
@@ -3236,7 +3233,7 @@ def handling_molecules(request):
                 user_owner_molecules
             )
 
-        samples_pending_use = core.utils.samples.get_samples_in_state("Pending for use")
+        samples_pending_use = core.utils.samples.get_sample_objs_in_state("Pending for use")
         if samples_pending_use:
             request_molecule_use = core.utils.samples.create_table_pending_use(
                 samples_pending_use, __package__
