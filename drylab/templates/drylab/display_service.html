@@ -144,6 +144,7 @@
                         <div class="container-md">
                             <div class="row justify-content-center pb-2 pt-2">
                                 {% for resolution in display_service.resolutions.value %}
+                                {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "in_progress" or resolution.resolution_state.value == "on_hold" %}
                                 <div class="col-md-12 pb-2 pt-2">
                                     <h5>{{ resolution.resolution_number.label}}: {{ resolution.resolution_number.value}}
                                     </h5>
@@ -231,6 +232,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
+                                {% endif %}
                                 {% endfor %}
                             </div>
                             {% endif %}
@@ -366,7 +368,81 @@
         </div>
     </div>
 </section>
+
+<!-- Import data into script tag using django templates. This is then loaded into javascript -->
 {{ display_service.resolutions.value|json_script:"resolutions" }}
+<!-- Data structure example -->
+<!-- [
+    {
+        "resolution_number": {
+            "label": "Resolution name",
+            "value": "SRVIIER327.1"
+        },
+        "resolution_full_number": {
+            "label": "Acronym Name",
+            "value": "SRVIIER327_20230612_dafdfsfas_bmartinezd_S"
+        },
+        "resolution_state": {
+            "label": "Resolution state",
+            "value": "delivered"
+        },
+        "available_services": {
+            "label": "Available services",
+            "value": [
+                {
+                    "avail_service_description": "Data download",
+                    "service_id": null
+                },
+                {
+                    "avail_service_description": "Sequence quality analysis",
+                    "service_id": null
+                },
+            ]
+        },
+        "delivery": {
+            "label": "Delivery",
+            "value": [
+                {
+                    "delivery_resolution_id": {
+                        "label": "Delivery resolution id",
+                        "value": "SRVIIER327.1"
+                    },
+                    "pipelines_in_delivery": {
+                        "label": "Pipelines in delivery",
+                        "value": []
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "resolution_number": {
+            "label": "Resolution name",
+            "value": "SRVIIER327.2"
+        },
+        "resolution_full_number": {
+            "label": "Acronym Name",
+            "value": "SRVIIER327_20230612_dafdfsfas_bmartinezd_S"
+        },
+        "resolution_state": {
+            "label": "Resolution state",
+            "value": "queued"
+        },
+        "available_services": {
+            "label": "Available services",
+            "value": [
+                {
+                    "avail_service_description": "Data download",
+                    "service_id": null
+                },
+            ]
+        },
+        "delivery": {
+            "label": "Delivery",
+            "value": []
+        }
+    }
+] -->
 <script>
     
     function format(d) {
@@ -408,11 +484,15 @@
     
 
     $(document).ready(function () {
+
+        // Create string from array or dict like
+        // for dicts -> key: value<br>
+        // for arrays  value<br>value...
         function item_to_string (item) {
             let str = '';
             if (typeof item === "object"){
                 for (const [p, val] of Object.entries(item)) {
-                    str += `${p}: ${val}; `;
+                    str += `${p}: ${val}<br>`;
                 }
             }else{
                 str = item;
@@ -420,21 +500,34 @@
             return str;
         }
         
-        const resolution_data = JSON.parse(document.getElementById('resolutions').textContent);
-        
-        const resolution_data_values = resolution_data.map(dict => {
+        // Convert nested dicts to simple dicts.
+        // Inside structures are converted to strings.
+        function create_simple_dict (dict){
             const newdict = {};
             Object.entries(dict).forEach(([key, item]) => {
                 if (Array.isArray(item.value)) {
-                    newdict[key] = item.value.map(subitem => item_to_string(subitem)).join("<br>");
+                        newdict[key] = item.value.map((subitem) => {
+                        return item_to_string(subitem);
+                    }).join("");
                 }else{
                     newdict[key] = item.value;
                 }
              });
+             return newdict;
+        }
+        // Load data from html tag imported with django templates.
+        const resolution_data = JSON.parse(document.getElementById('resolutions').textContent);
+        // Iterate over the list of dicts and convert to simple dict.
+        const resolution_data_values = resolution_data.map(dict => {
+            if ((typeof dict["delivery"]["value"] !== undefined) && (dict["delivery"]["value"] !== null) && (dict["delivery"]["value"].length > 0)){
+                delivery_dict = create_simple_dict(dict["delivery"]["value"][0])
+                dict["delivery"]["value"] = [delivery_dict]
+            }
+            newdict = create_simple_dict(dict);
         return newdict;
         });
         
-        console.log(resolution_data_values)
+        // table samples foot search
         $('#table_samples tfoot th').each(function () {
             var title = $(this).text();
             $(this).html('<input type="text" placeholder="Search ' + title + '" />');
@@ -514,6 +607,5 @@
             }
         });
     });
-    
 </script>
 {% endblock %}
