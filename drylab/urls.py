@@ -15,7 +15,7 @@ urlpatterns = [
     path("add-delivery", drylab.views.add_delivery, name="add_delivery"),
     path(
         "add-samples-service",
-        drylab.views.add_samples_service_in_service,
+        drylab.views.add_samples_service,
         name="add_samples_service_in_service",
     ),
     path(
