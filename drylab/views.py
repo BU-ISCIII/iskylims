@@ -414,12 +414,12 @@ def display_service(request, service_id):
         service_files = {}
         if user_input_files:
             for input_file in user_input_files:
-                service_files[input_file[1]] = (
-                    os.path.join(settings.MEDIA_URL, input_file[0]),
-                    input_file[1],
+                service_files[input_file[1]] = os.path.join(
+                    settings.MEDIA_URL, input_file[0]
                 )
 
         available_services = service_obj.service_available_service.all()
+        import pdb; pdb.set_trace()
         return render(
             request,
             "drylab/display_service.html",
@@ -433,9 +433,9 @@ def display_service(request, service_id):
     else:
         return render(
             request,
-            "drylab/error_page.html",
+            "drylab/display_service.html",
             {
-                "content": [
+                "ERROR": [
                     "The service that you are trying to get does not exist ",
                     "Contact with your administrator .",
                 ]
@@ -724,7 +724,9 @@ def add_on_hold(request):
         return redirect("/accounts/login")
 
     if request.method == "POST" and request.POST["action"] == "add_on_hold":
-        resolution_obj = drylab.utils.resolutions.get_resolution_obj(request.POST["resolution_id"], input="id")
+        resolution_obj = drylab.utils.resolutions.get_resolution_obj(
+            request.POST["resolution_id"], input="id"
+        )
         if resolution_obj is not None:
             resolution_obj.update_state("on_hold")
             resolution_number = resolution_obj.get_identifier()
@@ -750,7 +752,11 @@ def add_on_hold(request):
             {"on_hold_resolution": on_hold_resolution},
         )
     else:
-        return render(request, "drylab/add_on_hold.html", {"ERROR": ["There's been an unexpected error."]})
+        return render(
+            request,
+            "drylab/add_on_hold.html",
+            {"ERROR": ["There's been an unexpected error."]},
+        )
 
 
 @login_required
@@ -859,7 +865,9 @@ def add_in_progress(request):
 
     if request.method == "POST" and request.POST["action"] == "add_in_progress":
         resolution_id = request.POST["resolution_id"]
-        if not drylab.utils.resolutions.check_if_resolution_exists(resolution_id, input="id"):
+        if not drylab.utils.resolutions.check_if_resolution_exists(
+            resolution_id, input="id"
+        ):
             error_message = drylab.config.ERROR_RESOLUTION_DOES_NOT_EXISTS
             return render(request, "drylab/error_page.html", {"content": error_message})
 
@@ -925,10 +933,7 @@ def add_delivery(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if (
-        request.method == "POST"
-        and request.POST["action"] == "add_delivery"
-    ):
+    if request.method == "POST" and request.POST["action"] == "add_delivery":
         delivery_data = drylab.utils.deliveries.prepare_delivery_form(
             request.POST["resolution_id"]
         )
