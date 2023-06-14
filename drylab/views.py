@@ -324,7 +324,7 @@ def add_samples_service(request):
         samples_added["samples"] = drylab.utils.req_services.save_service_samples(
             request.POST, service_obj
         )
-        samples_added["service_name"] = service_obj.get_identifier()
+        samples_added["service_id"] = service_obj.get_service_id()
         return render(
             request,
             "drylab/add_samples_service.html",

@@ -43,8 +43,8 @@
                             {% endfor %}
                         </p>
                         {% endif %}
-                        <input type="button" value="Return to service"
-                            onclick="location.href ='/drylab/display_service={{samples_added.service_id}}' ;" />
+                        <input type="button" class="btn btn-outline-secondary" value="Return to service"
+                            onclick="location.href ='/drylab/display-service={{ samples_added.service_id }}' ;" />
                     </div>
                 </div>
             </div>
@@ -55,59 +55,67 @@
                 <div class="card ">
                     <div class="card-header">Add samples to service</div>
                     <div class="card-body">
-                        <div class="row justify-content-center pb-2 pt-2">
-                            <div class="col-md-12">
-                                <nav>
-                                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                        <button class="nav-link active" id="nav-sequenced-tab" data-bs-toggle="tab"
-                                            data-bs-target="#nav-sequenced" type="button" role="tab"
-                                            aria-controls="nav-sequenced" aria-selected="true">Select samples sequenced
-                                            in-house</button>
-                                        <button class="nav-link" id="nav-recorded-tab" data-bs-toggle="tab"
-                                            data-bs-target="#nav-recorded" type="button" role="tab"
-                                            aria-controls="nav-recorded" aria-selected="false">Select samples recorded
-                                            but sequenced elsewhere</button>
-                                    </div>
-                                </nav>
-                                <div class="tab-content border-tab p-2" id="nav-tabContent">
-                                    <!-- div tab 1 -->
-                                    <div class="tab-pane fade show active" id="nav-sequenced" role="tabpanel"
-                                        aria-labelledby="nav-sequenced-tab">
-                                        {% if service_data_info.samples_heading %}
-                                        <div class="container-md">
-                                            <div class="row justify-content-center">
-                                                <div class="col-md-auto">
-                                                    <div id="sequenced-samples"></div>
+                        <form id="add_samples_service" method="post" action="/drylab/add-samples-service" name="add_samples_service"
+                            enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="add_samples_service" />
+                            <input type="hidden" name="service_id" value="{{ service_data_info.service_id }}" />
+                            <div class="row justify-content-center pb-2 pt-2">
+                                <div class="col-md-12">
+                                    <nav>
+                                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                            <button class="nav-link active" id="nav-sequenced-tab" data-bs-toggle="tab"
+                                                data-bs-target="#nav-sequenced" type="button" role="tab"
+                                                aria-controls="nav-sequenced" aria-selected="true">Select samples
+                                                sequenced
+                                                in-house</button>
+                                            <button class="nav-link" id="nav-recorded-tab" data-bs-toggle="tab"
+                                                data-bs-target="#nav-recorded" type="button" role="tab"
+                                                aria-controls="nav-recorded" aria-selected="false">Select samples
+                                                recorded
+                                                but sequenced elsewhere</button>
+                                        </div>
+                                    </nav>
+                                    <div class="tab-content border-tab p-2" id="nav-tabContent">
+                                        <!-- div tab 1 -->
+                                        <div class="tab-pane fade show active" id="nav-sequenced" role="tabpanel"
+                                            aria-labelledby="nav-sequenced-tab">
+                                            {% if service_data_info.samples_heading %}
+                                            <div class="container-md">
+                                                <div class="row justify-content-center">
+                                                    <div class="col-md-auto">
+                                                        <div id="sequenced-samples"></div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {% else %}
+                                            <h3>There are no samples to select</h3>
+                                            {% endif %}
                                         </div>
-                                        {% else %}
-                                        <h3>There are no samples to select</h3>
-                                        {% endif %}
-                                    </div>
-                                    <!-- div tab 2 -->
-                                    <div class="tab-pane fade show" id="nav-recorded" role="tabpanel"
-                                        aria-labelledby="nav-recorded-tab">
-                                        {% if service_data_info.sample_only_recorded_heading %}
-                                        <p class="text-primary">Contact with
-                                            Bioinformatic unit to provide the sample files</p>
-                                        <div class="container-md">
-                                            <div class="row justify-content-center">
-                                                <div class="col-md-auto">
-                                                    <div id="recorded-samples"></div>
+                                        <!-- div tab 2 -->
+                                        <div class="tab-pane fade show" id="nav-recorded" role="tabpanel"
+                                            aria-labelledby="nav-recorded-tab">
+                                            {% if service_data_info.sample_only_recorded_heading %}
+                                            <p class="text-primary">Contact with
+                                                Bioinformatic unit to provide the sample files</p>
+                                            <div class="container-md">
+                                                <div class="row justify-content-center">
+                                                    <div class="col-md-auto">
+                                                        <div id="recorded-samples"></div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {% else %}
+                                            <div class="pb-2 pt-2">
+                                                <h3>There are no samples recorded sequenced elsewhere</h3>
+                                            </div>
+                                            {% endif %}
                                         </div>
-                                        {% else %}
-                                        <div class="pb-2 pt-2">
-                                            <h3>There are no samples recorded sequenced elsewhere</h3>
-                                        </div>
-                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit" value="Submit">
+                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                value="Submit">
                         </form>
                     </div>
                 </div>
@@ -119,16 +127,6 @@
 </section>
 <script>
     $(document).ready(function () {
-        // Create search foot
-        $('#sequenced-samples tfoot th').each(function () {
-            var title = $(this).text();
-            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-        });
-        $('#recorded-samples tfoot th').each(function () {
-            var title = $(this).text();
-            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-        });
-
         // DataTable
         {% if service_data_info.samples_heading %}
         var data_seq_samples = [{% for values in service_data_info.samples_data %}[{% for value in values %}'{{value}}', {% endfor %}], {% endfor %}];
@@ -184,7 +182,7 @@
             search: true,
             pagination: 20,
             csvFileName: 'SamplesDefined.csv',
-        });
+            });
         {% endif %}
 
         $("#add_samples_service").submit(function (e) {
