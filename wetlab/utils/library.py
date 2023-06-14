@@ -33,7 +33,7 @@ def check_empty_fields(data):
     return False
 
 
-def analyze_and_store_input_param_values(form_data):
+def analyze_and_store_prot_lib_param_values(form_data):
     """
     Description:
         The function get the user input  for the library preparation parameters and store them
@@ -46,39 +46,26 @@ def analyze_and_store_input_param_values(form_data):
     Return:
         ERROR message if some of the data are missing, or a list of recorded library prepartion obj
     """
-    if "lib_prep_in_list" in form_data:
-        lib_prep_ids = form_data.getlist("lib_prep_ids")
-        if len("lib_prep_in_list") == 0:
-            lib_prep_ids = list(form_data["lib_prep_ids"])
-    else:
-        lib_prep_ids = form_data["lib_prep_ids"].split(",")
-    lib_prep_code_ids = form_data["lib_prep_code_ids"].split(",")
-    headings = form_data["heading_in_excel"].split(",")
+    stored_params = {}
     json_data = json.loads(form_data["protocol_data"])
-    fixed_heading_length = len(wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
-    parameters_length = len(headings)
-
     if check_empty_fields(json_data):
         stored_params = {}
         stored_params["ERROR"] = wetlab.config.ERROR_EMPTY_VALUES
         return stored_params
-
-    stored_params = []
-    protocol_id_obj = (
-        wetlab.models.LibPrepare.objects.filter(pk__exact=lib_prep_ids[0]).last().get_protocol_obj()
-    )
-    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(protocol_id=protocol_id_obj).exists():
+    prot_obj = core.utils.protocols.get_protocol_obj_from_id(form_data["protocol_id"])
+    parameters = core.utils.protocols.get_protocol_parameters(prot_obj)
+    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(protocol_id=prot_obj).exists():
         additional_kits = True
     else:
         additional_kits = False
+    headings = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS + ["lib_id"] + parameters
+    stored_params["data"] = []
     for row_index in range(len(json_data)):
-        right_id = lib_prep_ids[lib_prep_code_ids.index(json_data[row_index][1])]
-
-        library_prep_obj = get_lib_prep_obj_from_id(right_id)
-        for p_index in range(fixed_heading_length, parameters_length):
+        library_prep_obj = get_lib_prep_obj_from_id(json_data[row_index][2])
+        for p_index in range(len(wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS) +1, len(json_data[row_index])):
             lib_parameter_value = {}
             lib_parameter_value["parameter_id"] = core.models.ProtocolParameters.objects.filter(
-                protocol_id__exact=form_data["protocol_id"],
+                protocol_id=prot_obj,
                 parameter_name__exact=headings[p_index],
                 parameter_used=True,
             ).last()
@@ -87,24 +74,15 @@ def analyze_and_store_input_param_values(form_data):
             wetlab.models.LibParameterValue.objects.create_library_parameter_value(
                     lib_parameter_value
             )
-
-        """
-        ### Moving index library data to a dedicated form
-        kit_index = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS.index('Lot Regents Kit used')
-        library_prep_obj.set_reagent_user_kit(json_data[row_index] [kit_index])
-        """
-        stored_params.append(
+            
+            if additional_kits:
+                library_prep_obj.set_state("Updated parameters")
+            else:
+                library_prep_obj.set_state("Updated additional kits")
+        stored_params["data"].append(
             [library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()]
         )
-        if additional_kits:
-            library_prep_obj.set_state("Updated parameters")
-        else:
-            library_prep_obj.set_state("Updated additional kits")
-
-        # sample_obj = library_prep_obj.get_sample_obj ()
-        # Update the sample state to "Create Pool"
-        # sample_obj.set_state('Pool Preparation')
-
+    import pdb; pdb.set_trace()
     return stored_params
 
 
@@ -191,7 +169,7 @@ def extract_protocol_library_preparation_form(form_data):
     return extraction_data
 
 
-def get_protocol_parameters_for_library_preparation(library_preparation_objs):
+def get_protocol_parameters_for_library_preparation(protocol_libs):
     """
     Description:
         The function get the protocols parameters for the list of library preparation.
@@ -207,12 +185,20 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
     Return:
         lib_prep_same_prot_parameters
     """
-    protocol_considered = ""
-    lib_prep_same_prot_parameters = {}
-    lib_prep_same_prot_parameters["data"] = []
-    samples_names = []
-    lib_prep_ids = []
-    lib_prep_code_ids = []
+  
+    
+    protocol_lib_prep_data = []
+    for prot_name, lib_prep in protocol_libs.items():
+        prot_obj = core.utils.protocols.get_protocol_obj_from_name(prot_name)
+        prot_lib_data = {"protocol_name": prot_obj.get_name()}
+        prot_lib_data["protocol_id"] = prot_obj.get_protocol_id()
+        prot_lib_data["lib_prep_data"] = list(wetlab.models.LibPrepare.objects.filter(pk__in=lib_prep).values_list("sample_id__sample_name", "lib_prep_code_id", "pk")) 
+        prot_lib_data["param_heading_type"] = core.utils.protocols.get_protocol_parameters_and_type(prot_obj)
+        prot_lib_data["fix_heading"] = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+        protocol_lib_prep_data.append(prot_lib_data)
+        
+    import pdb; pdb.set_trace()
+    """
     for library_preparation_obj in library_preparation_objs:
         lib_prep_protocol = library_preparation_obj.get_protocol_used()
         if protocol_considered == "":
@@ -241,36 +227,38 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
             sample_name = library_preparation_obj.get_sample_name()
             data[0] = sample_name
             data[1] = library_preparation_obj.get_lib_prep_code()
+            data[2] = "4"
+
+
+
             samples_names.append(sample_name)
             lib_prep_ids.append(library_preparation_obj.get_lib_prep_id())
             lib_prep_code_ids.append(library_preparation_obj.get_lib_prep_code())
             lib_prep_same_prot_parameters["data"].append(data)
-    lib_prep_same_prot_parameters["samples_names"] = ",".join(samples_names)
-    lib_prep_same_prot_parameters["lib_prep_ids"] = ",".join(lib_prep_ids)
-    lib_prep_same_prot_parameters["lib_prep_code_ids"] = ",".join(lib_prep_code_ids)
+    #lib_prep_same_prot_parameters["samples_names"] = ",".join(samples_names)
+    #lib_prep_same_prot_parameters["lib_prep_ids"] = ",".join(lib_prep_ids)
+    #lib_prep_same_prot_parameters["lib_prep_code_ids"] = ",".join(lib_prep_code_ids)
     lib_prep_same_prot_parameters["heading_in_excel"] = ",".join(
         wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS + parameters_heading
     )
-
-    return lib_prep_same_prot_parameters
-
-
-def get_samples_for_library_preparation():
     """
-    Description:
-        The function checks if there are samples that are in library preparation state.
-        samples are split according to the library preparation state in:
-        - Not defined.
-        - Defined. (only Protocol was defined)
-        - Updated parameters
-        - Updated additional Index
-    Constant:
-        HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
-    Functions:
-        configuration_sequencer_exists     # located at wetlab.utils.sequencers
-        get_configuration_sequencers       # located at wetlab.utils.sequencers
-    Return:
-        samples_in_lib_prep
+    return protocol_lib_prep_data
+
+
+def get_samples_for_library_preparation(user=None, friend_list=False):
+    """_summary_
+
+    Parameters
+    ----------
+    user : User instance, optional
+        user instance to filter the samples only to the user, by default None
+    friend_list : bool, optional
+        Allow to extend the search for friend list, by default False
+
+    Returns
+    -------
+    _type_
+        _description_
     """
     samples_in_lib_prep = {}
     samples_in_lib_prep["avail_samples"] = {}
@@ -280,6 +268,22 @@ def get_samples_for_library_preparation():
     molecules_id = []
     samples_names = []
 
+    s_in_lib_prep = core.utils.samples.get_sample_objs_in_state("Library preparation", user, friend_list)
+    
+    s_lib_prep_defined = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Defined")
+    s_lib_prep_upd_param = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Update parameters")
+    s_lib_prep_upd_kit = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Update additional Kits")
+    
+    if s_lib_prep_defined:
+        samples_in_lib_prep["lib_prep_defined"] = list(s_lib_prep_defined.values_list("sample_id__sample_name", "lib_prep_code_id", "protocol_id__name", "pk"))
+        
+    if not s_in_lib_prep:
+        samples_in_lib_prep["heading"] = wetlab.config.HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
+        
+    
+    """
+                                                                   
+    wetlab.models.LibPrepare.objects.filter().values_list("sample_id__sample_name", )
     if core.models.Samples.objects.filter(
         sample_state__sample_state_name__exact="Library preparation"
     ).exists():
@@ -376,6 +380,7 @@ def get_samples_for_library_preparation():
 
     else:
         samples_in_lib_prep["no_samples"] = "No samples"
+    """
     return samples_in_lib_prep
 
 
@@ -953,6 +958,23 @@ def get_lib_prep_obj_from_id(library_preparation_id):
         return library_preparation_obj
     else:
         return "None"
+
+
+def separate_lib_prep_on_protocols(lib_prep_ids):
+    """_summary_
+
+    Parameters
+    ----------
+    lib_prep_ids : _type_
+        _description_
+    """
+    protocols = {}
+    lib_prep_protocols = wetlab.models.LibPrepare.objects.filter(pk__in=lib_prep_ids).values("protocol_id__name", "pk")
+    for lib_prep_protocol in lib_prep_protocols:
+        if lib_prep_protocol["protocol_id__name"] not in protocols:
+            protocols[lib_prep_protocol["protocol_id__name"]] = []
+        protocols[lib_prep_protocol["protocol_id__name"]].append(lib_prep_protocol["pk"])
+    return protocols
 
 
 def update_batch_lib_prep_sample_state(lib_prep_ids, sample_state):
