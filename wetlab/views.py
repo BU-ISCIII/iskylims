@@ -2879,7 +2879,10 @@ def handling_library_preparation(request):
         validate_sample_sheet_data
     """
     # get the information for returning the uploaded file in case errors in the sample sheet
-    samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation()
+    if wetlab.utils.common.is_wetlab_manager(request):
+        samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation()
+    else:
+        samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation(request.user, True)
 
     if request.method == "POST" and request.POST["action"] == "assignProtocol":
         samples_in_lib_prep_protocol = (
@@ -2920,16 +2923,17 @@ def handling_library_preparation(request):
                     "error_message": error_message,
                 },
             )
+        # separate samples based on different protocols
+        lib_prep_sep_protocol = wetlab.utils.library.separate_lib_prep_on_protocols(lib_prep_ids)
+        """
         library_preparation_objs = []
         for lib_prep_id in lib_prep_ids:
             library_preparation_objs.append(
                 wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id)
             )
-        lib_prep_protocol_parameters = (
-            wetlab.utils.library.get_protocol_parameters_for_library_preparation(
-                library_preparation_objs
-            )
-        )
+        """
+        lib_prep_protocol_parameters = wetlab.utils.library.get_protocol_parameters_for_library_preparation(lib_prep_sep_protocol)
+        import pdb; pdb.set_trace()
         return render(
             request,
             "wetlab/handling_library_preparation.html",
@@ -2938,12 +2942,15 @@ def handling_library_preparation(request):
 
     # store the parameter library preparation protocol
     if request.method == "POST" and request.POST["action"] == "recordProtocolParamters":
-        stored_params = wetlab.utils.library.analyze_and_store_input_param_values(
+        import pdb
+        stored_params = wetlab.utils.library.analyze_and_store_prot_lib_param_values(
             request.POST
         )
         if "ERROR" in stored_params:
             error_message = stored_params["ERROR"]
+            # TO DO in previoous form add lib_prep_ids 
             lib_prep_ids = request.POST["lib_prep_ids"].split(",")
+            
             library_preparation_objs = []
             for lib_prep_id in lib_prep_ids:
                 library_preparation_objs.append(
@@ -2958,6 +2965,7 @@ def handling_library_preparation(request):
             lib_prep_protocol_parameters["data"] = json.loads(
                 request.POST["protocol_data"]
             )
+            pdb.set_trace()
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
@@ -2966,6 +2974,7 @@ def handling_library_preparation(request):
                     "lib_prep_protocol_parameters": lib_prep_protocol_parameters,
                 },
             )
+        pdb.set_trace()
         return render(
             request,
             "wetlab/handling_library_preparation.html",
@@ -3120,6 +3129,7 @@ def handling_library_preparation(request):
             {"stored_additional_kits": stored_additional_kits},
         )
     else:
+        import pdb; pdb.set_trace()
         return render(
             request,
             "wetlab/handling_library_preparation.html",

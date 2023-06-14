@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% block content %}
 {%include 'core/jexcel_functionality.html' %}
+{% include "core/cdn_table_functionality.html" %}
 {% include "wetlab/menu.html" %}
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
@@ -26,59 +27,82 @@
                         <div class="card">
                             <div class="card-header text-center"><h3>Update the following samples with library protocol parameters </h3></div>
                             <div class="card-body">
-                                <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
-                                    {% csrf_token %}
-                                    <div class="horizontal-scroll mb-3" style="min-height:300px;">
-                                        <input type="hidden" name="action" value="recordProtocolParamters"/>
-                                        <input type="hidden" name= "lib_prep_ids" value="{{lib_prep_protocol_parameters.lib_prep_ids}}"/>
-                                        <input type="hidden" name= "lib_prep_code_ids" value="{{lib_prep_protocol_parameters.lib_prep_code_ids}}"/>
-                                        <input type="hidden" name= "protocol_id" value="{{lib_prep_protocol_parameters.protocol_id}}"/>
-                                        <input type="hidden" name= "heading_in_excel" value="{{lib_prep_protocol_parameters.heading_in_excel}}"/>
-                                        <div id="spreadsheet"></div>
-                                        
+                                <div class="col">
+                                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                        {% for prot in lib_prep_protocol_parameters %}
+                                            {% if forloop.first %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link active" id="{{prot.protocol_id}}-tab" data-bs-toggle="tab" data-bs-target="#{{prot.protocol_id}}" type="button" role="tab" aria-controls="{{prot.protocol_id}}" aria-selected="true">{{prot.protocol_name}}</button>
+                                                </li>
+                                            {% else %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link" id="{{prot.protocol_id}}-tab" data-bs-toggle="tab" data-bs-target="#{{prot.protocol_id}}" type="button" role="tab" aria-controls="{{prot.protocol_id}}" aria-selected="true">{{prot.protocol_name}}</button>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                    <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                        {% for prot in lib_prep_protocol_parameters %}
+                                            {% if forloop.first %}
+                                                <div class="tab-pane fade show active" id="{{prot.protocol_id}}" role="tabpanel" aria-labelledby="{{prot.protocol_id}}-tab">
+                                            {% else %}
+                                                <div class="tab-pane fade" id="{{prot.protocol_id}}" role="tabpanel" aria-labelledby="{{prot.protocol_id}}-tab">
+                                            {% endif %}
+
+                                                    <form method="post" enctype="multipart/form-data" name="recordProtocolParamters_{{forloop.counter0}}"  id="recordProtocolParamters_{{forloop.counter0}}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="recordProtocolParamters"/>
+                                                        <input type="hidden" name= "protocol_id" value="{{prot.protocol_id}}"/>
+                                                        <div class="horizontal-scroll mb-3" style="min-height:300px;">
+                                                            
+                                                            <div id="spreadsheet_{{forloop.counter0}}"></div>
+                                                            
+                                                        </div>
+                                                        <script>
+                                                            var data = [{% for values in prot.lib_prep_data %}
+                                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                            ];
+                                                            mySpreadsheet = $('#spreadsheet_{{forloop.counter0}}').jexcel({
+                                                                data:data,
+                                                                columns: [
+                                                                        {% for value in prot.fix_heading %}
+                                                                            { type: 'text', title:'{{value}}', width:220 , readOnly:true },
+                                                                        {% endfor %}
+                                                                            { type: 'hidden'}, 
+                                                                        {% for name, type, options in prot.param_heading_type %}
+                                                                            {% if type == 'Date' %}
+                                                                                { type: 'calendar', title:'{{name}}', width:150 },
+                                                                            {% elif type == 'Option List'%}
+                                                                                { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                                                            {% else %}
+                                                                                { type: 'text', title:'{{name}}', width:150 },
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                ],
+                                                                allowInsertColumn:false,
+                                                                allowDeleteColumn:false,
+                                                                allowRenameColumn:false,
+                                                                allowInsertRow:false,
+                                                                allowDeleteRow:false,
+                                                                tableOverflow:false,
+                                                                tableHeight:'500px',
+                                                            });
+                                                        </script>
+                                                        <div class="col">
+                                                            <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                            <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
+                                                        </div> 
+                                                    </form>
+                                                </div>
+                                            
+                                        {% endfor %}
                                     </div>
-                                    <script>
-                                        var data = [{% for values in lib_prep_protocol_parameters.data %}
-                                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                        ];
-                                        mySpreadsheet = $('#spreadsheet').jexcel({
-                                            data:data,
-                                            columns: [
-                                                    {% for value in lib_prep_protocol_parameters.fix_heading %}
-                                                        { type: 'text', title:'{{value}}', width:220 , readOnly:true },
-                                                    {% endfor %}
-                                                    {% for name, type, options in lib_prep_protocol_parameters.protocol_parameters_heading_type %}
-                                                        {% if type == 'Date' %}
-                                                            { type: 'calendar', title:'{{name}}', width:150 },
-                                                        {% elif type == 'Option List'%}
-                                                            { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
-                                                        {% else %}
-                                                            { type: 'text', title:'{{name}}', width:150 },
-                                                        {% endif %}
-                                                    {% endfor %}
-                                            ],
-                                            allowInsertColumn:false,
-                                            allowDeleteColumn:false,
-                                            allowRenameColumn:false,
-                                            allowInsertRow:false,
-                                            allowDeleteRow:false,
-                                            tableOverflow:false,
-                                            tableHeight:'500px',
-                                            csvFileName:'library_preparation_parameters',
-
-                                        });
-                                    </script>
-                                    <div class="col">
-                                        <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                        <input class="btn float-end btn-outline-primary" type="submit" id = "btnSubmit" value="Submit">
-                                    </div> 
-                                </form>
-                            </div>
+                                </div>
+                            </div> 
                         </div>
-                    </div> 
-                </div>
-            </div>
-
+                    </div>
+                </div> 
+            </div> 
         {% elif display_lib_prep %}
             <div class="container">
                 <div class="row mt-4">
@@ -282,7 +306,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for s_name, lib_code in stored_params  %}
+                                            {% for s_name, lib_code in stored_params.data  %}
                                                 <tr>
                                                     <td>{{s_name}}</td>
                                                     <td>{{lib_code}}</td>
@@ -516,37 +540,34 @@
                                                     <div class="card-body">
                                                         <div class="container">
                                                             {% if samples_in_lib_prep.lib_prep_defined %}
-                                                                {% for key, values in samples_in_lib_prep.lib_prep_defined.items %}
-                                                                    <h4>Library Preparation defined for using protocol {{key}}</h4>
-                                                                    <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
-                                                                        {% csrf_token %}
-                                                                        <input type="hidden" name="action" value="addProtocolParameter"/>
-                                                                        <div class="form-control mb-3">
-                                                                            <table class="table table-hover">
-                                                                                <thead>
+                                                                <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="action" value="addProtocolParameter"/>
+                                                                    <div class="form-control mb-3">
+                                                                        <table class="table table-hover" id="add_param_table">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>Sample name</th>
+                                                                                    <th>Library preparationID</th>
+                                                                                    <th>Library protocol</th>
+                                                                                    <th>Select sample</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for sample, code, protocol , lib_id  in  samples_in_lib_prep.lib_prep_defined  %}
                                                                                     <tr>
-                                                                                        <th>Sample Name</th>
-                                                                                        <th>Library PreparationID</th>
-                                                                                        <th>Select Library preparation</th>
+                                                                                        <td>{{sample}}</td>
+                                                                                        <td>{{code}}</td>
+                                                                                        <td>{{protocol}}</td>
+                                                                                        <td class="text-center"><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
                                                                                     </tr>
-                                                                                </thead>
-                                                                                <tbody>
-                                                                                    {% for sample, code,  lib_id  in values  %}
-                                                                                        <tr>
-                                                                                            <td>{{sample}}</td>
-                                                                                            <td>{{code}}</td>
-                                                                                            <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
-                                                                                        </tr>
-                                                                                    {% endfor %}
-                                                                                </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                        
-                                                                        <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                                        <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
-                                                                    </form>
-                                                                    
-                                                                {% endfor %}
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                    <input type="button" class="btn btn-outline-secondary" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                    <input class="btn float-end btn-outline-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                                                </form>
                                                             {% else %}
                                                                 <h5>There is no Samples which are pending to add additional kits information </h5>
                                                             {% endif %}
@@ -759,6 +780,14 @@
     </div>
 </section>
 <script>
+    // cdn tables
+    $(document).ready(function() {
+        $('#add_param_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
+<script>
     // send assgnProtocol form 
     $(document).ready(function () {
         $("#assignProtocol").submit(function (e) {
@@ -789,19 +818,23 @@
         });
     });    
      // send recordProtocolParamters form 
-    $(document).ready(function () {
-        $("#recordProtocolParamters").submit(function (e) {
-            //disable the submit button
-            var table_data = $('#spreadsheet').jexcel('getData')
-            var data_json = JSON.stringify(table_data)
-            $("<input />").attr("type", "hidden")
-            .attr("name", "protocol_data")
-            .attr("value", data_json)
-            .appendTo("#recordProtocolParamters");
-            $("#btnSubmit").attr("disabled", true);
-            return true;
-        });
-    });
+    {% if lib_prep_protocol_parameters %}
+        {% for prot in lib_prep_protocol_parameters %}
+            $(document).ready(function () {
+                $("#recordProtocolParamters_{{forloop.counter0}}").submit(function (e) {
+                    //disable the submit button
+                    var table_data = $('#spreadsheet_{{forloop.counter0}}').jexcel('getData')
+                    var data_json = JSON.stringify(table_data)
+                    $("<input />").attr("type", "hidden")
+                    .attr("name", "protocol_data")
+                    .attr("value", data_json)
+                    .appendTo("#recordProtocolParamters_{{forloop.counter0}}");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        {% endfor %}
+    {% endif %}
     // send confirmation sample sheet
     $(document).ready(function () {
         $("#storeIndexSample").submit(function (e) {
