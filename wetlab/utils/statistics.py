@@ -295,7 +295,6 @@ def get_per_time_statistics(start_date, end_date):
     per_time_statistics["end_date"] = end_date
     per_time_statistics["num_runs"] = len(run_objs)
     per_time_statistics["num_projects"] = len(project_objs)
-    # import pdb; pdb.set_trace()
     return per_time_statistics
 
 
