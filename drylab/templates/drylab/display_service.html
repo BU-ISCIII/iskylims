@@ -274,7 +274,7 @@
                         aria-labelledby="nav-samples-tab">  
                         <div class="row pb-2 pt-2">
                             <div class="col-md-12">
-                                {% if display_service.samples_sequenced|length > 0 %}
+                                {% if display_service.samples %}
                                 <form class="" action="/drylab/delete-samples-service" method="post">
                                     {% csrf_token %}
                                     {% if service_manager %}
@@ -303,8 +303,8 @@
                                                     {% if sample.sample_key.value == 'None' %}
                                                     {{ sample.sample_name.value }}
                                                     {% else %}
-                                                    <a href="/wetlab/displaySampleInRun={{ sample.sample_key }}"
-                                                        target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                    <a href="/wetlab/displaySampleInRun={{ sample.sample_key.value }}"
+                                                        target="_blank" rel="noopener noreferrer">{{sample.sample_name.value}}</a>
                                                     {% endif %}
                                                 </td>
                                                 <td>{{ sample.project_name.value }}</td>
