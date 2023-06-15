@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Generic imports
+import json
 import os
 import statistics
 from datetime import date, datetime
@@ -319,7 +320,9 @@ def add_samples_service(request):
                 "drylab/add_samples_service.html",
                 {"ERROR": ["The service that you are trying to get does not exist "]},
             )
-        service_obj = drylab.utils.common.get_service_obj(request.POST["service_id"], input="id")
+        service_obj = drylab.utils.common.get_service_obj(
+            request.POST["service_id"], input="id"
+        )
         samples_added = {}
         samples_added["samples"] = drylab.utils.req_services.save_service_samples(
             request.POST, service_obj
@@ -346,8 +349,8 @@ def delete_samples_service(request):
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
-                {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
+                "drylab/delete_samples_service.html",
+                {"ERROR": [drylab.config.ERROR_USER_NOT_ALLOWED]},
             )
     else:
         # redirect to login webpage
@@ -355,32 +358,55 @@ def delete_samples_service(request):
 
     if request.method == "POST" and request.POST["action"] == "delete_samples_service":
         if not drylab.models.Service.objects.filter(
-            pk__exact=request.POST["service_id"]
+            service_request_number__exact=request.POST["service_id"]
         ).exists():
             return render(
                 request,
-                "drylab/error_page.html",
-                {"content": ["The service that you are trying to get does not exist "]},
+                "drylab/delete_samples_service.html",
+                {"ERROR": ["The service that you are trying to get does not exist "]},
             )
-        if "sample_id" not in request.POST:
+
+        if "samples_delete" not in request.POST:
             return redirect(
-                "/drylab/display-service=" + str(request.POST["service_id"])
+                "/drylab/display-service="
+                + str(
+                    drylab.utils.common.get_service_obj(
+                        request.POST["service_id"], input="id"
+                    ).get_service_id()
+                )
             )
+
+        samples_id = []
+        samples_id = [
+            sample[0]
+            for sample in json.loads(request.POST["samples_delete"])
+            if sample[4]
+        ]
+
         deleted_samples = drylab.utils.req_services.delete_samples_in_service(
-            request.POST.getlist("sample_id")
+            samples_id
         )
         service_data = {
-            "service_id": request.POST["service_id"],
-            "service_name": drylab.utils.common.get_service_obj(
-                request.POST["service_id"]
-            ).get_identifier(),
+            "service_id": drylab.utils.common.get_service_obj(
+                request.POST["service_id"], input="id"
+            ).get_service_id(),
+            "service_name": request.POST["service_id"],
         }
+
         return render(
             request,
             "drylab/delete_samples_service.html",
             {"deleted_samples": deleted_samples, "service_data": service_data},
         )
-    return redirect("/drylab/display-service=" + str(request.POST["service_id"]))
+    else:
+        return redirect(
+            "/drylab/display-service="
+            + str(
+                drylab.utils.common.get_service_obj(
+                    request.POST["service_id"], input="id"
+                ).get_service_id()
+            )
+        )
 
 
 @login_required
