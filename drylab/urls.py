@@ -81,13 +81,13 @@ urlpatterns = [
     ),
     path("statsByUser", drylab.views.stats_by_user, name="stats_by_user"),
     path(
-        "statsByServicesRequest",
+        "stats-services-time",
         drylab.views.stats_by_services_request,
         name="stats_by_services_request",
     ),
     path("userLogin", drylab.views.user_login, name="user_login"),
     path(
-        "uploadServiceFileDelete=<int:file_id>",
+        "upload-file-delete=<int:file_id>",
         drylab.views.upload_service_file_delete,
         name="upload_service_file_delete",
     ),
