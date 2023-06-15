@@ -6,6 +6,7 @@
 {% block content %}
 
 {% include "core/cdn_table_functionality.html"%}
+{% include 'core/jexcel_functionality.html' %}
 
 {% include "drylab/menu.html" %}
 
@@ -272,10 +273,10 @@
                 <div class="tab-content bg-white border-tab p-2" id="nav_tab_content">
                     <div class="tab-pane fade" id="nav-samples" role="tabpanel"
                         aria-labelledby="nav-samples-tab">  
-                        <div class="row pb-2 pt-2">
-                            <div class="col-md-12">
+                        <div class="row justify-content-center pb-2 pt-2">
+                            <div class="col-md-auto">
                                 {% if display_service.samples %}
-                                <form class="" action="/drylab/delete-samples-service" method="post">
+                                <form id="delete_samples_service_form" name="delete_sample_services_form" action="/drylab/delete-samples-service" method="post">
                                     {% csrf_token %}
                                     {% if service_manager %}
                                     <input type="hidden" name="action" value="delete_samples_service">
@@ -283,72 +284,19 @@
                                         value="{{ display_service.service_request_number.value }}">
                                     {% endif %}
                                     <p>Number of samples in service:
-                                        {{display_service.samples_sequenced|length}}
+                                        {{display_service.samples.value|length}}
                                     </p>
-                                    <table id="table_samples" class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>{{ display_service.samples.value.0.sample_name.label }}</th>
-                                                <th>{{ display_service.samples.value.0.project_name.label }}</th>
-                                                <th>{{ display_service.samples.value.0.run_name.label }}</th>
-                                                {% if service_manager %}
-                                                <th>Select to delete</th>
-                                                {% endif %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for sample in display_service.samples.value %}
-                                            <tr>
-                                                <td>
-                                                    {% if sample.sample_key.value == 'None' %}
-                                                    {{ sample.sample_name.value }}
-                                                    {% else %}
-                                                    <a href="/wetlab/displaySampleInRun={{ sample.sample_key.value }}"
-                                                        target="_blank" rel="noopener noreferrer">{{sample.sample_name.value}}</a>
-                                                    {% endif %}
-                                                </td>
-                                                <td>{{ sample.project_name.value }}</td>
-                                                <td>{{ sample.run_name.value }}</td>
-                                                {% if service_manager %}
-                                                <td>
-                                                    <input type="checkbox" name="sample_id"
-                                                        value="{{ sample.pk.value }}">
-                                                </td>
-                                                {% endif %}
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th>{{ display_service.samples.value.0.sample_name.label }}</th>
-                                                <th>{{ display_service.samples.value.0.project_name.label }}</th>
-                                                <th>{{ display_service.samples.value.0.run_name.label }}</th>
-                                                {% if service_manager %}
-                                                <th>Select to delete</th>
-                                                {% endif %}
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                                    <div id="service_samples" name="service_samples"></div>
+                                    <div class="row justify-content-between pb-2 pt-2">
+                                        <div class="col-md-auto">
+                                        {% if service_manager %}
+                                            <input class="btn pull-left btn-danger" type="submit" id="btnSubmit"
+                                                value="Delete samples">
+                                        {% endif %}
+                                        </div>
+                                    </form>
                                     {% if service_manager %}
-                                    <input class="btn pull-left btn-danger" type="submit" id="btnSubmit"
-                                    value="Delete samples">
-                                    {% endif %}
-                                </form>
-                                {% if service_manager %}
-                                <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="add_samples_form">
-                                    <input type="hidden" name="service_id"
-                                        value="{{ display_service.service_request_number.value }}">
-                                    <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                        value="Add samples">
-                                </form>
-                                {% endif %}
-                                {% else %}
-                                <h5> There are no samples assigned to this service </h5>
-                                {% if service_manager %}
-                                <div class="row pb-2 pt-2">
-                                    <div class="col-md-8">
+                                    <div class="col-md-auto">
                                         <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="add_samples_form">
@@ -358,9 +306,23 @@
                                                 value="Add samples">
                                         </form>
                                     </div>
-                                </div>
-                                {% endif %}
-                                {% endif %}
+                                    {% endif %}
+                                    {% else %}
+                                    <h5> There are no samples assigned to this service </h5>
+                                    {% if service_manager %}
+                                    <div class="col-md-auto">
+                                        <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="add_samples_form">
+                                            <input type="hidden" name="service_id"
+                                                value="{{ display_service.service_request_number.value }}">
+                                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
+                                                value="Add samples">
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>        
                             </div>
                         </div>
                     </div>
@@ -514,8 +476,49 @@
         );
     }
     
+    
 
     $(document).ready(function () {
+
+        {% if display_service.samples %}
+            var service_samples = [{% for sample in display_service.samples.value %}['{{ sample.pk.value }}', {% if sample.sample_key.value == 'None' %} '{{ sample.sample_name.value }}' {% else %}'<a href="/wetlab/displaySampleInRun={{ sample.sample_key.value }}" target="_blank" rel="noopener noreferrer">{{sample.sample_name.value}}</a>'{% endif %}, '{{ sample.project_name.value }}', '{{ sample.run_name.value }}' ],{% endfor %}];
+            console.log(service_samples)
+            var table1 = jspreadsheet(document.getElementById('service_samples'), {
+                data: service_samples,
+                columns: [
+                        { type: 'hidden', title: '{{ display_service.samples.value.0.pk.label }}', width: 200, readOnly: true },
+                        {% if sample.sample_key.value == 'None' %}
+                        { type: 'text', title: '{{ display_service.samples.value.0.sample_name.label }}', width: 200, readOnly: true },
+                        {% else %}
+                        { type: 'html', title: '{{ display_service.samples.value.0.sample_name.label }}', width: 200, readOnly: true },
+                        {% endif %}
+                        { type: 'text', title: '{{ display_service.samples.value.0.project_name.label }}', width: 200, readOnly: true },
+                        { type: 'text', title: '{{ display_service.samples.value.0.run_name.label }}', width: 200, readOnly: true },
+                        { type: 'checkbox', title: 'Select Sample', width: 100 },
+                    ],
+                allowInsertColumn: false,
+                allowDeleteColumn: false,
+                allowRenameColumn: false,
+                allowInsertRow: false,
+                allowDeleteRow: false,
+                tableOverflow: false,
+                search: true,
+                pagination: 20,
+                lazyloading: true,
+                csvFileName: 'SamplesDefined.csv',
+            });
+
+            $("#delete_samples_service_form").submit(function (e) {
+                var table_data1 = table1.getData()
+                var data_json = JSON.stringify(table_data1)
+                $("<input />").attr("type", "hidden")
+                    .attr("name", "samples_delete")
+                    .attr("value", data_json)
+                    .appendTo("#delete_samples_service_form");
+                $("#btnSubmit").attr("disabled", true);
+                return true;
+            });
+        {% endif %}
 
         // Create string from array or dict like
         // for dicts -> key: value<br>
