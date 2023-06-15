@@ -498,7 +498,9 @@
                                                                                     data:data,
                                                                                     columns: [
                                                                                         { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.0}}', width:280 , readOnly:true },
+                                                                                        { type: 'hidden'},
                                                                                         { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.1}}', width:320 , readOnly:true },
+                                                                                        { type: 'hidden'},
                                                                                         { type: 'dropdown', title:'{{samples_in_lib_prep.avail_samples.heading.2}}', width:350 , source :[ {% for value in samples_in_lib_prep.avail_samples.lib_prep_protocols %} '{{value}}', {% endfor %}]},
                                                                                     ],
                                                                                     allowInsertColumn:false,

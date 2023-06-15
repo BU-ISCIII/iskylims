@@ -2925,15 +2925,8 @@ def handling_library_preparation(request):
             )
         # separate samples based on different protocols
         lib_prep_sep_protocol = wetlab.utils.library.separate_lib_prep_on_protocols(lib_prep_ids)
-        """
-        library_preparation_objs = []
-        for lib_prep_id in lib_prep_ids:
-            library_preparation_objs.append(
-                wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id)
-            )
-        """
+
         lib_prep_protocol_parameters = wetlab.utils.library.get_protocol_parameters_for_library_preparation(lib_prep_sep_protocol)
-        import pdb; pdb.set_trace()
         return render(
             request,
             "wetlab/handling_library_preparation.html",
@@ -2942,7 +2935,6 @@ def handling_library_preparation(request):
 
     # store the parameter library preparation protocol
     if request.method == "POST" and request.POST["action"] == "recordProtocolParamters":
-        import pdb
         stored_params = wetlab.utils.library.analyze_and_store_prot_lib_param_values(
             request.POST
         )
@@ -2965,7 +2957,6 @@ def handling_library_preparation(request):
             lib_prep_protocol_parameters["data"] = json.loads(
                 request.POST["protocol_data"]
             )
-            pdb.set_trace()
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
@@ -2974,7 +2965,6 @@ def handling_library_preparation(request):
                     "lib_prep_protocol_parameters": lib_prep_protocol_parameters,
                 },
             )
-        pdb.set_trace()
         return render(
             request,
             "wetlab/handling_library_preparation.html",
@@ -3129,7 +3119,6 @@ def handling_library_preparation(request):
             {"stored_additional_kits": stored_additional_kits},
         )
     else:
-        import pdb; pdb.set_trace()
         return render(
             request,
             "wetlab/handling_library_preparation.html",
