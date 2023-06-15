@@ -1574,30 +1574,6 @@ def stats_by_services_request(request):
 
 
 @login_required
-def open_sessions(request):
-    if not request.user.is_authenticated:
-        return redirect("/accounts/login")
-    if request.user.username != "admin":
-        return redirect("")
-
-    user_connected = {}
-    if drylab.utils.common.get_current_users().exists():
-        user_list_connected = drylab.utils.common.get_current_users()
-        user_data = []
-        for user in user_list_connected:
-            user_data.append(
-                [user.username, user.first_name, user.last_name, user.email]
-            )
-
-        user_connected["user_data"] = user_data
-
-        user_connected["number_of_users"] = user_list_connected.count()
-    return render(
-        request, "drylab/openSessions.html", {"user_connected": user_connected}
-    )
-
-
-@login_required
 def user_login(request):
     if not request.user.is_authenticated:
         return redirect("/accounts/login")

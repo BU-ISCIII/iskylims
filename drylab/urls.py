@@ -63,7 +63,6 @@ urlpatterns = [
         drylab.views.manage_pipelines,
         name="manage_pipelines",
     ),
-    path("openSessions", drylab.views.open_sessions, name="open_sessions"),
     path(
         "pending-services",
         drylab.views.pending_services,
