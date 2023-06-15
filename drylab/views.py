@@ -1251,16 +1251,16 @@ def stats_by_services_request(request):
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
-    if request.method == "POST" and request.POST["action"] == "serviceStatistics":
+    if request.method == "POST" and request.POST["action"] == "service_statistics":
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
         if start_date != "" and not drylab.utils.common.check_valid_date_format(
             start_date
         ):
-            return render(request, "drylab/statsByServicesRequest.html")
+            return render(request, "drylab/stats_services_time.html")
         if end_date != "":
             if not drylab.utils.common.check_valid_date_format(end_date):
-                return render(request, "drylab/statsByServicesRequest.html")
+                return render(request, "drylab/stats_services_time.html")
         else:
             end_date = date.today().strftime("%Y-%m-%d")
         start_date_format = datetime.strptime(start_date, "%Y-%m-%d")
@@ -1550,7 +1550,7 @@ def stats_by_services_request(request):
 
             return render(
                 request,
-                "drylab/statsByServicesRequest.html",
+                "drylab/stats_services_time.html",
                 {"services_stats_info": services_stats_info},
             )
 
@@ -1570,7 +1570,7 @@ def stats_by_services_request(request):
             )
     else:
         # form = ByServicesRequest()
-        return render(request, "drylab/statsByServicesRequest.html")
+        return render(request, "drylab/stats_services_time.html")
 
 
 @login_required
