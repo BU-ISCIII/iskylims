@@ -82,7 +82,6 @@ def analyze_and_store_prot_lib_param_values(form_data):
         stored_params["data"].append(
             [library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()]
         )
-    import pdb; pdb.set_trace()
     return stored_params
 
 
@@ -100,72 +99,68 @@ def create_library_preparation_instance(samples_data, user):
     Functions:
         get_library_code_and_unique_id  # located at this file
     Return:
-        library_preparation_objs
+        lib_prep_for_params
     """
-    library_preparation_objs = []
+    lib_prep_for_params = {}
     prot_in_samples = wetlab.utils.common.get_configuration_value(
         "SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX"
     )
-
-    for key, values in samples_data.items():
-        lib_prep_data = {}
-        lib_prep_data["sample_id"] = values[0]
-        lib_prep_data["molecule_id"] = values[1]
-        lib_prep_data["protocol_obj"] = core.models.Protocols.objects.filter(
-            type__protocol_type__exact="Library Preparation", name__exact=values[2]
-        ).last()
-        lib_prep_data["prefixProtocol"] = values[2]
-        if prot_in_samples == "TRUE":
+    if prot_in_samples == "TRUE":
             protocol_separation = wetlab.utils.common.get_configuration_value(
                 "PROTOCOL_SEPARATION_IN_SAMPLE_SHEET"
             )
+
+    for key, values in samples_data.items():
+        s_name = core.utils.samples.get_sample_obj_from_id(key).get_sample_name()
+        lib_prep_data = {}
+        lib_prep_data["sample_id"] = key
+        lib_prep_data["molecule_id"] = values["mol_id"]
+        lib_prep_data["protocol_obj"] = core.models.Protocols.objects.filter(
+            type__protocol_type__exact="Library Preparation", name__exact=values["prot_name"]
+        ).last()
+        lib_prep_data["prefixProtocol"] = values["prot_name"]
+        if prot_in_samples == "TRUE":
             lib_prep_data["samplename_in_samplesheet"] = str(
-                values[2] + protocol_separation + key
+                values["protocol_name"] + protocol_separation + s_name
             )
         else:
-            lib_prep_data["samplename_in_samplesheet"] = key
+            lib_prep_data["samplename_in_samplesheet"] = s_name
         lib_prep_data["registerUser"] = user
-        lib_prep_data["user_sampleID"] = core.utils.samples.get_sample_obj_from_id(
-            lib_prep_data["sample_id"]
-        ).get_sample_code()
+        lib_prep_data["user_sampleID"] = core.utils.samples.get_sample_obj_from_id(key).get_sample_code()
         (
             lib_prep_data["lib_prep_code_id"],
             lib_prep_data["uniqueID"],
         ) = get_library_code_and_unique_id(
             lib_prep_data["sample_id"], lib_prep_data["molecule_id"]
         )
-        library_preparation_objs.append(
-            wetlab.models.LibPrepare.objects.create_lib_preparation(lib_prep_data)
-        )
+        lib_prep_obj = wetlab.models.LibPrepare.objects.create_lib_preparation(lib_prep_data)
+        if values["prot_name"] not in lib_prep_for_params :
+            lib_prep_for_params[values["prot_name"]]= []
+        # create the structure data to get later the list of parameters
+        lib_prep_for_params[values["prot_name"]].append(key)
+        lib_prep_for_params[values["prot_name"]].append(lib_prep_obj.get_id())
 
-    return library_preparation_objs
+    return lib_prep_for_params
 
 
 def extract_protocol_library_preparation_form(form_data):
-    """
-    Description:
-        The function get the user input to assign sample to library preparation
-        protocols.
+    """The function get the user input to assign sample to library preparation
+        protocols. Get the lines that contains library protocol and return
+        dictionnary with sample and protocol name
     Input:
         form_data :     User input form
     Return:
         extraction_data
     """
-    samples_ids = form_data["samplesID"].split(",")
-    samples_names = form_data["samplesNames"].split(",")
-    molecules_ids = form_data["moleculesID"].split(",")
     json_data = json.loads(form_data["protocol_data"])
     extraction_data = {}
 
     for row_index in range(len(json_data)):
-        if json_data[row_index][2] == "":
+        if json_data[row_index][4] == "":
             continue
-        right_index = samples_names.index(json_data[row_index][0])
-        extraction_data[json_data[row_index][0]] = [
-            samples_ids[right_index],
-            molecules_ids[right_index],
-            json_data[row_index][2],
-        ]
+        extraction_data[json_data[row_index][1]] = {}
+        extraction_data[json_data[row_index][1]]["mol_id"] = json_data[row_index][3]
+        extraction_data[json_data[row_index][1]]["prot_name"] = json_data[row_index][4]
     return extraction_data
 
 
@@ -176,11 +171,6 @@ def get_protocol_parameters_for_library_preparation(protocol_libs):
         In case that library preparations do not have the same protocol, only the
         ones that matches with the protocol of the first library preparation are
         considered
-    Functions:
-        get_protocol_parameters_and_type
-        get_protocol_parameters
-    Constant:
-        HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
 
     Return:
         lib_prep_same_prot_parameters
@@ -197,51 +187,6 @@ def get_protocol_parameters_for_library_preparation(protocol_libs):
         prot_lib_data["fix_heading"] = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
         protocol_lib_prep_data.append(prot_lib_data)
         
-    import pdb; pdb.set_trace()
-    """
-    for library_preparation_obj in library_preparation_objs:
-        lib_prep_protocol = library_preparation_obj.get_protocol_used()
-        if protocol_considered == "":
-            protocol_considered = lib_prep_protocol
-            # get protocol parameters
-            parameters_heading = core.utils.protocols.get_protocol_parameters(
-                library_preparation_obj.get_protocol_obj()
-            )
-            lib_prep_same_prot_parameters[
-                "protocol_parameters_heading_type"
-            ] = core.utils.protocols.get_protocol_parameters_and_type(
-                library_preparation_obj.get_protocol_obj()
-            )
-            lib_prep_same_prot_parameters["protocol_used"] = protocol_considered
-            lib_prep_same_prot_parameters[
-                "protocol_id"
-            ] = library_preparation_obj.get_protocol_id()
-            lib_prep_same_prot_parameters[
-                "fix_heading"
-            ] = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
-        if protocol_considered == lib_prep_protocol:
-            data = [""] * (
-                len(lib_prep_same_prot_parameters["protocol_parameters_heading_type"])
-                + len(wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS)
-            )
-            sample_name = library_preparation_obj.get_sample_name()
-            data[0] = sample_name
-            data[1] = library_preparation_obj.get_lib_prep_code()
-            data[2] = "4"
-
-
-
-            samples_names.append(sample_name)
-            lib_prep_ids.append(library_preparation_obj.get_lib_prep_id())
-            lib_prep_code_ids.append(library_preparation_obj.get_lib_prep_code())
-            lib_prep_same_prot_parameters["data"].append(data)
-    #lib_prep_same_prot_parameters["samples_names"] = ",".join(samples_names)
-    #lib_prep_same_prot_parameters["lib_prep_ids"] = ",".join(lib_prep_ids)
-    #lib_prep_same_prot_parameters["lib_prep_code_ids"] = ",".join(lib_prep_code_ids)
-    lib_prep_same_prot_parameters["heading_in_excel"] = ",".join(
-        wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS + parameters_heading
-    )
-    """
     return protocol_lib_prep_data
 
 
@@ -286,9 +231,8 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
         s_not_def_ids = list(set(s_in_lib_prep_ids).symmetric_difference(set(def_lib)))
         # s_not_def = wetlab.models.LibPrepare.objects.filter(pk__in=s_not_def_ids)
         samples_in_lib_prep["avail_samples"] = {}
-        import pdb; pdb.set_trace()
         molecules_obj = core.models.MoleculePreparation.objects.filter(sample__pk__in=s_not_def_ids)
-        samples_in_lib_prep["avail_samples"]["data"] = list(molecules_obj.values_list("sample__sample_name", "molecule_code_id"))
+        samples_in_lib_prep["avail_samples"]["data"] = list(molecules_obj.values_list("sample__sample_name", "sample_id__pk", "molecule_code_id", "pk"))
         samples_in_lib_prep["avail_samples"]["heading"] = wetlab.config.HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_in_lib_prep["avail_samples"]["lib_prep_protocols"] = get_protocols_for_library_preparation()
         
