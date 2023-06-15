@@ -517,10 +517,6 @@ if [ $upgrade == true ]; then
 
         cd -
 
-        # Rename install path to lower
-        install_path_lower=$(echo "$INSTALL_PATH" | tr '[:upper:]' '[:lower:]')
-        mv $INSTALL_PATH $install_path_lower
-
         # Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)
 
