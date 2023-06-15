@@ -206,11 +206,12 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
         _description_
     """
     samples_in_lib_prep = {}
+    samples_in_lib_prep["avail_samples"] = {}
     s_in_lib_prep = core.utils.samples.get_sample_objs_in_state("Library preparation", user, friend_list)
     
     s_lib_prep_defined = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Defined")
-    s_lib_prep_upd_param = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Update parameters")
-    s_lib_prep_upd_kit = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Update additional Kits")
+    s_lib_prep_upd_param = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Updated parameters")
+    s_lib_prep_upd_kit = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Updated additional kits")
     
     if s_lib_prep_defined:
         samples_in_lib_prep["lib_prep_defined"] = list(s_lib_prep_defined.values_list("sample_id__sample_name", "lib_prep_code_id", "protocol_id__name", "pk"))
@@ -219,8 +220,13 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
         samples_in_lib_prep["lib_prep_updated_param"] = ""
 
     if s_lib_prep_upd_kit:
-        samples_in_lib_prep["lib_prep_update_kits"] = ""
-    
+        if wetlab.utils.sequencers.configuration_sequencer_exists():
+            samples_in_lib_prep.update(wetlab.utils.sequencers.get_configuration_sequencers_data())
+            samples_in_lib_prep["display_sample_sheet"] = True
+            samples_in_lib_prep["avail_samples"][
+                "lib_prep_protocols"
+            ] = get_protocols_for_library_preparation()
+        
     # find out the samples that have not be defined in LibPrepare
     if len(s_in_lib_prep) > (len(s_lib_prep_defined) + len(s_lib_prep_upd_param) + len(s_lib_prep_upd_kit)):
         s_def = list(s_lib_prep_defined.values_list("pk", flat=True))
@@ -230,7 +236,7 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
         def_lib = s_def + s_param + s_kit
         s_not_def_ids = list(set(s_in_lib_prep_ids).symmetric_difference(set(def_lib)))
         # s_not_def = wetlab.models.LibPrepare.objects.filter(pk__in=s_not_def_ids)
-        samples_in_lib_prep["avail_samples"] = {}
+        
         molecules_obj = core.models.MoleculePreparation.objects.filter(sample__pk__in=s_not_def_ids)
         samples_in_lib_prep["avail_samples"]["data"] = list(molecules_obj.values_list("sample__sample_name", "sample_id__pk", "molecule_code_id", "pk"))
         samples_in_lib_prep["avail_samples"]["heading"] = wetlab.config.HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL

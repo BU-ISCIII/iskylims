@@ -3801,7 +3801,7 @@ def create_new_run(request):
 
         run_obj.set_run_state("Recorded")
 
-        sample_sheet_name = wetlab.utils.run.store_confirmation_sample_sheet(run_data)
+        wetlab.utils.run.store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
         pools_obj = wetlab.models.LibraryPool.objects.filter(run_process_id=run_obj)
 
@@ -3813,7 +3813,7 @@ def create_new_run(request):
         created_new_run = {}
         created_new_run["exp_name"] = run_data["exp_name"]
         created_new_run["run_process_id"] = request.POST["run_process_id"]
-        created_new_run["sample_sheet"] = sample_sheet_name
+        created_new_run["sample_sheet"] = run_obj.get_sample_file()
 
         return render(
             request,
