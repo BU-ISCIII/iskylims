@@ -1252,8 +1252,8 @@ def stats_by_services_request(request):
         # redirect to login webpage
         return redirect("/accounts/login")
     if request.method == "POST" and request.POST["action"] == "service_statistics":
-        start_date = request.POST["startdate"]
-        end_date = request.POST["enddate"]
+        start_date = request.POST["start_date"]
+        end_date = request.POST["end_date"]
         if start_date != "" and not drylab.utils.common.check_valid_date_format(
             start_date
         ):
@@ -1263,6 +1263,7 @@ def stats_by_services_request(request):
                 return render(request, "drylab/stats_services_time.html")
         else:
             end_date = date.today().strftime("%Y-%m-%d")
+        
         start_date_format = datetime.strptime(start_date, "%Y-%m-%d")
         end_date_format = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -1300,6 +1301,7 @@ def stats_by_services_request(request):
             services_stats_info[
                 "graphic_requested_services_per_user"
             ] = graphic_requested_services.render()
+            
             # preparing stats for status of the services
             status_services = {}
             for service in services_found:
@@ -1308,6 +1310,7 @@ def stats_by_services_request(request):
                     status_services[status] += 1
                 else:
                     status_services[status] = 1
+            
             # creating the graphic for status services
             data_source = drylab.utils.graphics.graphic_3D_pie(
                 "Status of Requested Services",
@@ -1343,6 +1346,7 @@ def stats_by_services_request(request):
                     user_area_dict[user_classification_area] += 1
                 else:
                     user_area_dict[user_classification_area] = 1
+            
             # creating the graphic for areas
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Services requested per Area",
@@ -1571,31 +1575,6 @@ def stats_by_services_request(request):
     else:
         # form = ByServicesRequest()
         return render(request, "drylab/stats_services_time.html")
-
-
-@login_required
-def user_login(request):
-    if not request.user.is_authenticated:
-        return redirect("/accounts/login")
-    if request.user.username != "admin":
-        return redirect("")
-
-    user_data = []
-    login_data = {}
-    user_list = django.contrib.auth.models.User.objects.all().order_by("-last_login")
-    for user in user_list:
-        user_data.append(
-            [
-                user.username,
-                user.first_name,
-                user.last_name,
-                user.email,
-                user.last_login,
-            ]
-        )
-    login_data["user_data"] = user_data
-
-    return render(request, "drylab/userLogin.html", {"login_data": login_data})
 
 
 @login_required

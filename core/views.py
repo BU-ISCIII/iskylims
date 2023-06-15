@@ -1,4 +1,6 @@
 # Generic imports
+import django.contrib.auth.models
+from django.contrib.auth.decorators import login_required
 from django.core.mail import BadHeaderError, send_mail
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -42,3 +44,28 @@ def contact(request):
 def thanks(request):
     return render(request, "core/thanks.html")
     # return HttpResponse('Thank you for your message.')
+
+
+@login_required
+def user_login(request):
+    if not request.user.is_authenticated:
+        return redirect("/accounts/login")
+    if request.user.username != "admin":
+        return redirect("")
+
+    user_data = []
+    login_data = {}
+    user_list = django.contrib.auth.models.User.objects.all().order_by("-last_login")
+    for user in user_list:
+        user_data.append(
+            [
+                user.username,
+                user.first_name,
+                user.last_name,
+                user.email,
+                user.last_login,
+            ]
+        )
+    login_data["user_data"] = user_data
+
+    return render(request, "core/user_login.html", {"login_data": login_data})

@@ -32,6 +32,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/contact">CONTACT</a>
                     </li>
+                    {% if user.username == "admin" %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
+                        aria-expanded="false">USER ACTIVITY</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/user-login">USER LAST LOGING</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

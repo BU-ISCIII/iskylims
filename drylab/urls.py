@@ -85,7 +85,6 @@ urlpatterns = [
         drylab.views.stats_by_services_request,
         name="stats_by_services_request",
     ),
-    path("userLogin", drylab.views.user_login, name="user_login"),
     path(
         "upload-file-delete=<int:file_id>",
         drylab.views.upload_service_file_delete,
