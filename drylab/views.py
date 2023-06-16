@@ -808,7 +808,7 @@ def add_resolution(request):
         )
 
     if request.method == "POST" and request.POST["action"] == "add_resolution":
-        resolution_data_form = drylab.utils.resolutions.get_add_resolution_data_form(
+        resolution_data_form = drylab.utils.resolutions.get_add_resolution_data(
             request.POST
         )
         new_resolution = drylab.utils.resolutions.create_new_resolution(
