@@ -29,11 +29,6 @@ urlpatterns = [
         name="configuration_email",
     ),
     path(
-        "configurationTest",
-        drylab.views.configuration_test,
-        name="configuration_test",
-    ),
-    path(
         "delete-samples-service",
         drylab.views.delete_samples_service,
         name="delete_samples_service",
