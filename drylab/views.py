@@ -2,7 +2,6 @@
 # Generic imports
 import json
 import os
-import statistics
 from datetime import date, datetime
 
 import django.contrib.auth.models
@@ -26,6 +25,7 @@ import drylab.utils.multi_files
 import drylab.utils.pipelines
 import drylab.utils.req_services
 import drylab.utils.resolutions
+import drylab.utils.stats
 import drylab.utils.test_conf
 
 
@@ -1026,36 +1026,13 @@ def add_delivery(request):
 
 @login_required
 def stats_by_user(request):
-    if request.user.is_authenticated:
-        try:
-            groups = django.contrib.auth.models.Group.objects.get(
-                name=drylab.config.SERVICE_MANAGER
-            )
-            if groups not in request.user.groups.all():
-                return render(
-                    request,
-                    "drylab/error_page.html",
-                    {
-                        "content": [
-                            "You do have the enough privileges to see this page ",
-                            "Contact with your administrator .",
-                        ]
-                    },
-                )
-        except Exception:
-            return render(
-                request,
-                "drylab/error_page.html",
-                {
-                    "content": [
-                        "You do have the enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+    if not drylab.utils.common.is_service_manager:
+        return render(
+            request,
+            "drylab/stats_by_user.html",
+            {"error_message": "You do have enough privileges to see this page"},
+        )
+    
     user_list = drylab.utils.common.get_users_requested_services()
     if request.method == "POST" and request.POST["action"] == "userStatistics":
         # validate the input data in the form
@@ -1069,7 +1046,7 @@ def stats_by_user(request):
             error_message = drylab.config.ERROR_INCORRECT_FORMAT_DATE
             return render(
                 request,
-                "drylab/statsByUser.html",
+                "drylab/stats_by_user.html",
                 {"user_list": user_list, "ERROR": error_message},
             )
         if end_date != "":
@@ -1077,7 +1054,7 @@ def stats_by_user(request):
                 error_message = drylab.config.ERROR_INCORRECT_FORMAT_DATE
                 return render(
                     request,
-                    "drylab/statsByUser.html",
+                    "drylab/stats_by_user.html",
                     {"user_list": user_list, "ERROR": error_message},
                 )
         else:
@@ -1089,134 +1066,21 @@ def stats_by_user(request):
             error_message = drylab.config.ERROR_USER_NOT_DEFINED
             return render(
                 request,
-                "drylab/statsByUser.html",
+                "drylab/stats_by_user.html",
                 {"user_list": user_list, "ERROR": error_message},
             )
 
-        service_objs = drylab.models.Service.objects.filter(
-            service_user_id__exact=user_id
-        ).order_by("-service_request_number")
-        if start_date != "":
-            service_objs = service_objs.filter(service_created_date__gte=start_date)
-        if end_date != "":
-            service_objs = service_objs.filter(service_created_date__lte=end_date)
-        if len(service_objs) == 0:
-            error_message = drylab.config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+        stats_info = drylab.utils.stats.create_statistics_by_user(user_id, start_date, end_date)
+        if "ERROR" in stats_info:
             return render(
-                request,
-                "drylab/statsByUser.html",
-                {"user_list": user_list, "ERROR": error_message},
-            )
-
-        stats_info = {}
-        stats_info["service_by_user"] = []
-        stats_info["user_name"] = (
-            django.contrib.auth.models.User.objects.filter(pk__exact=user_id)
-            .last()
-            .username
+            request,
+            "drylab/stats_by_user.html",
+            {"user_list": user_list, "ERROR": stats_info["ERROR"]},
         )
-        for service_item in service_objs:
-            stats_info["service_by_user"].append(service_item.get_stats_information())
 
-        # perform calculation time media delivery for user
-        if service_objs.filter(service_state__state_value__exact="delivered").exists():
-            delivery_services = service_objs.filter(
-                service_state__state_value__exact="delivered"
-            )
-            delivery_time_in_days = []
-            for service_item in delivery_services:
-                delivery_time_in_days.append(int(service_item.get_time_to_delivery()))
-
-            stats_info["time_mean_for_user"] = format(
-                statistics.mean(delivery_time_in_days), ".2f"
-            )
-        # preparing graphic for status of the services
-        number_of_services = {}
-
-        number_of_services["RECORDED"] = service_objs.filter(
-            service_state__state_value__exact="recorded"
-        ).count()
-        number_of_services["QUEUED"] = service_objs.filter(
-            service_state__state_value__exact="queued"
-        ).count()
-        number_of_services["IN PROGRESS"] = service_objs.filter(
-            service_state__state_value__exact="in_progress"
-        ).count()
-        number_of_services["DELIVERED"] = service_objs.filter(
-            service_state__state_value__exact="delivered"
-        ).count()
-
-        data_source = drylab.utils.graphics.graphic_3D_pie(
-            "Status of Requested Services from:",
-            stats_info["user_name"],
-            "",
-            "",
-            "fint",
-            number_of_services,
-        )
-        graphic_by_user_date_services = core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d", "ex1", "600", "350", "chart-1", "json", data_source
-        )
-        stats_info[
-            "graphic_by_user_date_services"
-        ] = graphic_by_user_date_services.render()
-
-        # getting statistics of the created services
-
-        service_dict = {}
-        for service_available in service_objs:
-            service_list = service_available.service_available_service.filter(level=3)
-            for service in service_list:
-                service_name = service.avail_service_description
-                if service_name in service_dict:
-                    service_dict[service_name] += 1
-                else:
-                    service_dict[service_name] = 1
-        # creating the graphic for requested services
-        data_source = drylab.utils.graphics.column_graphic_dict(
-            "Requested Services by:",
-            stats_info["user_name"],
-            "",
-            "",
-            "fint",
-            service_dict,
-        )
-        graphic_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d", "ex2", "550", "350", "chart-2", "json", data_source
-        )
-        stats_info["graphic_requested_services"] = graphic_requested_services.render()
-
-        # getting statistics for requested per time
-        service_time_dict = {}
-        for service_per_time in service_objs:
-            date_service = service_per_time.service_created_date.strftime("%m_%Y")
-            if date_service in service_time_dict:
-                service_time_dict[date_service] += 1
-            else:
-                service_time_dict[date_service] = 1
-        # sorting the dictionary to get
-        # creating the graphic for monthly requested services
-        service_time_tupla = []
-        for key, value in sorted(service_time_dict.items()):
-            service_time_tupla.append([key, service_time_dict[key]])
-        data_source = drylab.utils.graphics.column_graphic_tupla(
-            "Requested Services by:",
-            stats_info["user_name"],
-            "",
-            "",
-            "fint",
-            service_time_tupla,
-        )
-        graphic_date_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d", "ex3", "550", "350", "chart-3", "json", data_source
-        )
-        stats_info[
-            "graphic_date_requested_services"
-        ] = graphic_date_requested_services.render()
-
-        return render(request, "drylab/statsByUser.html", {"stats_info": stats_info})
+        return render(request, "drylab/stats_by_user.html", {"stats_info": stats_info})
     else:
-        return render(request, "drylab/statsByUser.html", {"user_list": user_list})
+        return render(request, "drylab/stats_by_user.html", {"user_list": user_list})
 
 
 @login_required

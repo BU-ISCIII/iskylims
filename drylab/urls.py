@@ -79,7 +79,7 @@ urlpatterns = [
         drylab.views.add_on_hold,
         name="add_on_hold",
     ),
-    path("statsByUser", drylab.views.stats_by_user, name="stats_by_user"),
+    path("stats-by-user", drylab.views.stats_by_user, name="stats_by_user"),
     path(
         "stats-services-time",
         drylab.views.stats_by_services_request,

@@ -91,27 +91,22 @@ def get_configuration_from_database(configuration_name):
 
 
 def is_service_manager(request):
-    """
-    Description:
-        The function will check if the logged user belongs to service
+    """The function will check if the logged user belongs to service
         manager group
-    Input:
-        request # contains the session information
-    Variables:
-        groups # drylab manager object group
-    Return:
-        Return True if the user belongs to service Manager, False if not
-    """
-    try:
-        groups = django.contrib.auth.models.Group.objects.get(
-            name=drylab.config.SERVICE_MANAGER
-        )
-        if groups not in request.user.groups.all():
-            return False
-    except Exception:
-        return False
 
-    return True
+    Parameters
+    ----------
+    request : user instance
+        instance of the logged user
+
+    Returns
+    -------
+    Boolean
+        True if logged user is service manager. False if not
+    """
+    if request.user.groups.filter(name=drylab.config.SERVICE_MANAGER).exists():
+        return True
+    return False
 
 
 def increment_service_number(request_user):

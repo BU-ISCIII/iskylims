@@ -1,0 +1,226 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% include "core/graphic_chart_functionality.html" %}
+{% include "core/cdn_table_functionality.html"%}
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+        <div class="row justify-content-center my-3 pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card border-danger">
+                    <div class="card-header border-danger text-center">
+                        <h3> Unable to process your request</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center">{{error_message}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if stats_info %}
+            <div class="row my-2">
+                <div class="col-md"> 
+                    <nav>
+                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                            <button class="nav-link active" id="nav-req-services-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-req-services" type="button" role="tab" aria-controls="nav-req-services"
+                                aria-selected="true">Requested services
+                            </button>
+                            <button class="nav-link" id="nav-graphics-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-graphics" type="button" role="tab" aria-controls="nav-graphics"
+                                aria-selected="false">Graphics
+                            </button>
+                        </div>
+                    </nav>
+                    <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                        <!-- div tab 1 -->
+                        <div class="tab-pane fade show active" id="nav-req-services" role="tabpanel"
+                            aria-labelledby="nav-req-services-tab">
+                            <div class="container-md">
+                                <div class="row pb-2 pt-2 justify-content-center">
+                                    <div class="col-md-12">
+                                        <div class="card ">
+                                            <div class="card-header text-center"><h3>Service requested for {{stats_info.user_name}}</h3></div>
+                                            <div class="card-body">
+                                                <table class="table table-hover" id="req_services">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Service number</th>
+                                                            <th>State</th>
+                                                            <th>Creation date</th>
+                                                            <th>Resolution date</th>
+                                                            <th>Delivery date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for key, service_number, status, create_date, resolution_date, delivery_date in stats_info.service_by_user %}
+                                                            <tr>
+                                                                <td><a href ="display-service={{key}}">{{service_number}}</a></td>
+                                                                <td> {{ status }} </td>
+                                                                <td> {{ create_date }}</td>
+                                                                <td> {{ resolution_date }}</td>
+                                                                <td> {{ delivery_date }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td>Service</td>
+                                                            <td>State</td>
+                                                            <td>Creation date</td>
+                                                            <td>Resolution date</td>
+                                                            <td>Delivery date</td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                        <div class="tab-pane fade show" id="nav-graphics" role="tabpanel"
+                            aria-labelledby="nav-graphics-tab">
+                            <div class="container-md">
+                                <div class="row pb-2 pt-2">
+                                    <div class="col-md-6">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>User requested services state</h3></div>
+                                            <div class="card-body">
+                                                {% if stats_info.user_services_graphic %}
+                                                
+                                                    <div id="user_services_chart"> </div>
+                                                    {{ stats_info.user_services_graphic |safe }}
+                                                {% else %}
+                                                    There are not services for the user {{ stats_info.user_name }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Services requested for all users.</h3></div>
+                                            <div class="card-body">
+                                                {% if stats_info.research_vs_other_graphic %}
+                                                
+                                                    <div id="research_vs_other_chart"> </div>
+                                                    {{ stats_info.research_vs_other_graphic |safe }}
+                                                {% else %}
+                                                    There are not services for the user {{ stats_info.user_name }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Requested services for user per week.</h3></div>
+                                            <div class="card-body">
+                                                {% if stats_info.research_service_weeks_graphic %}
+                                                    <div id="research_service_weeks_chart"> </div>
+                                                    {{ stats_info.research_service_weeks_graphic |safe }}
+                                                {% else %}
+                                                    There are not services for this user
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card ">
+                                            <div class="card-header"><h3>Type of available services Level 2</h3></div>
+                                            <div class="card-body">
+                                                {% if stats_info.research_avail_services_graphic %}
+                                                    <div id="research_avail_services_chart"> </div>
+                                                    {{ stats_info.research_avail_services_graphic |safe }}
+                                                {% else %}
+                                                    There are not services for this user
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
+                            </div> 
+                        </div>
+                    </div> 
+                </div>
+            </div> 
+        {% elif user_list %}
+            <div class="row my-3 justify-content-center">
+                <div class="col-md-8">
+                    <div class="card ">
+                        <div class="card-header"><h1>Services request statistics per user</h1></div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="userStatistics" id="userStatistics" class="form-horizontal well">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="userStatistics"/>
+                                <div class="row">
+                                    <div class="col-md">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" name="userID" id="userID" aria-label="userID select" required = "required">
+                                                <option value="">Choose a value</option>
+                                                {% for id, userid in user_list %}
+                                                    <option value="{{id}}">{{userid}}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="userID" class="text-danger">Select researcher id</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="date" class="form-control" id="start_date" name="start_date" placeholder="Filter run from start date" >
+                                            <label for="start_date">From Start Date (DD/MM/YYYY)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="date" class="form-control" id="end_date" name="end_date" placeholder="Filter run from end date" >
+                                            <label for="end_date">End Date (DD/MM/YYYY)</label>
+                                        </div>
+                                    </div> 
+                                </div>  
+                                <p class="ms-3 my-3"> Fields in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                            </form>
+                        </div>  
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+    </div>
+</section>
+<script>
+    $(document).ready(function() {
+        $('#req_services tfoot td').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        $('#req_services').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+            dom: "Bfltirp",
+            responsive: true,
+            buttons: ['excel', 'csv']
+        });
+    });
+</script>
+{% endblock %}
