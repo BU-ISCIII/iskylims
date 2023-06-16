@@ -63,7 +63,7 @@
                     <div class="card-header">Service request for massive sequencing experiments</div>
                     <div class="card-body">
                         <form id="fileupload" method="post" action="/drylab/sequencing-request"
-                            name="fileupload" enctype="multipart/form-data" class="form-horizontal well">
+                            name="fileupload" enctype="multipart/form-data">
                             {% csrf_token %}
                             <input type="hidden" name="sub_action" value="create_service" />
                             <div class="container-md">
@@ -241,7 +241,7 @@
                                 </div>
                                 <div class="row pt-2 pb-2 justify-content-end">
                                     <div class="col-md-auto">
-                                        <input class="btn btn-primary" type="submit" id="btnSubmit" value="Submit your Request">
+                                        <input class="btn btn-primary" type="submit" id="btn_submit" value="Submit your Request">
                                     </div>
                                 </div>
                             </div>
@@ -255,11 +255,7 @@
 </section>
 
 {% upload_js %}
-<!-- <script>
-$(document).ready(function () {
-    
-});
-</script> -->
+
 <script> 
     $(document).ready(function () {
         // Create search foot
@@ -329,7 +325,26 @@ $(document).ready(function () {
             csvFileName:'SamplesDefined.csv',
         }); 
         {% endif %}
-        
+        // Add samples to post request
+        $("#fileupload").submit(function (e) {
+            {% if service_data_info.samples_heading %}
+            var table_data1 = table1.getData()
+            var data_json1 = JSON.stringify(table_data1)
+            $("<input />").attr("type", "hidden")
+                .attr("name", "samples_requested")
+                .attr("value", data_json1)
+                .appendTo("#fileupload");
+            {% endif %}
+            {% if service_data_info.sample_only_recorded_heading %}
+            var table_data2 = table2.getData()
+            var data_json2 = JSON.stringify(table_data2)
+            $("<input />").attr("type", "hidden")
+                .attr("name", "only_recorded_samples")
+                .attr("value", data_json2)
+                .appendTo("#fileupload");
+            {% endif %}
+            $("#btn_submit").attr("disabled", true);
+        });    
         // disable submit button if there are no samples to select
         {% if not service_data_info.sample_only_recorded_heading and not service_data_info.samples_heading %}
         $("#create_service").submit(function (e) {
@@ -386,27 +401,6 @@ $(document).ready(function () {
         // Call the function to initialize the behavior
         updateParentCheckboxes();
     });
-
-    // Add samples to post request
-    $("#fileupload").submit(function (e) {
-        {% if service_data_info.samples_heading %}
-        var table_data1 = table1.getData()
-        var data_json = JSON.stringify(table_data1)
-        $("<input />").attr("type", "hidden")
-            .attr("name", "samples_requested")
-            .attr("value", data_json)
-            .appendTo("#fileupload");
-        {% endif %}
-        {% if service_data_info.samples_only_recorded_heading %}
-        var table_data2 = table2.getData()
-        var data_json = JSON.stringify(table_data2)
-        $("<input />").attr("type", "hidden")
-            .attr("name", "only_recorded_samples")
-            .attr("value", data_json)
-            .appendTo("#fileupload");
-        {% endif %}
-        $("#btnSubmit").attr("disabled", true);
-    });
     
     // Get the form element and the submit button
     const form = document.querySelector('form');
@@ -414,8 +408,8 @@ $(document).ready(function () {
 
     // Function to disable the submit button
     function disableSubmitButton() {
-    submitButton.disabled = true;
-    submitButton.innerText = 'Submitting...'; // Optional: Change the button text
+        submitButton.disabled = true;
+        submitButton.innerText = 'Submitting...'; // Optional: Change the button text
     }
 
     // Event listener for form submission

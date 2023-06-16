@@ -158,7 +158,7 @@ def request_seq_service(request):
         email_result = drylab.utils.req_services.send_service_confirmation_email(
             email_data
         )
-        # PDF preparation file for confirmation of service request
+
         confirmation_result = {}
         service_request_number = new_service.get_identifier()
         confirmation_result["text"] = list(
@@ -167,6 +167,7 @@ def request_seq_service(request):
                 drylab.config.CONFIRMATION_TEXT_MESSAGE,
             )
         )
+        import pdb; pdb.set_trace()
         if len(sample_stored) > 0:
             confirmation_result["samples"] = sample_stored
         if email_result != "OK":
@@ -178,11 +179,12 @@ def request_seq_service(request):
                     "error_message": email_result,
                 },
             )
-        return render(
-            request,
-            "drylab/request_seq_service.html",
-            {"confirmation_result": confirmation_result},
-        )
+        else:
+            return render(
+                request,
+                "drylab/request_seq_service.html",
+                {"confirmation_result": confirmation_result},
+            )
     else:
         service_data_info = drylab.utils.req_services.get_service_data(request)
         return render(
