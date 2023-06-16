@@ -125,7 +125,7 @@ def create_resolution_number(service_id):
     return resolution_number
 
 
-def get_add_resolution_data_form(form_data):
+def get_add_resolution_data(form_data):
     """
     Description:
         The function extract the user form information and store it in a dictionary
@@ -224,6 +224,11 @@ def create_new_resolution(resolution_data_form):
     resolution_data_form["resolution_number"] = create_resolution_number(
         resolution_data_form["service_id"]
     )
+
+    if resolution_data_form["service_accepted"] == "accepted":
+        resolution_data_form["state"] = "queued"
+    else:
+        resolution_data_form["state"] = "rejected"
 
     # service_request_number = service_obj.get_identifier()
     new_resolution = drylab.models.Resolution.objects.create_resolution(

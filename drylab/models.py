@@ -497,7 +497,7 @@ class ResolutionManager(models.Manager):
         resolution_service_id = Service.objects.get(
             service_request_number__exact=resolution_data["service_id"]
         )
-        state = ResolutionStates.objects.get(state_value__exact="Queued")
+        state = ResolutionStates.objects.get(state_value__exact=resolution_data["state"])
         new_resolution = self.create(
             resolution_service_id=resolution_service_id,
             resolution_assigned_user=resolution_assigned_user,
