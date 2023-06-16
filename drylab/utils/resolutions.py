@@ -146,7 +146,11 @@ def get_add_resolution_data_form(form_data):
     resolution_data_form["resolution_assigned_user"] = form_data[
         "resolution_assigned_user"
     ]
-    resolution_data_form["service_accepted"] = form_data["service_accepted"]
+    if "service_accepted" in form_data:
+        resolution_data_form["service_accepted"] = "accepted"
+    else:
+        resolution_data_form["service_accepted"] = "rejected"
+
     resolution_data_form["resolution_notes"] = form_data["resolution_notes"]
 
     if "pipeline_data" in form_data:
@@ -249,7 +253,7 @@ def create_new_resolution(resolution_data_form):
         store_resolution_additional_parameter(
             resolution_data_form["additional_parameters"], new_resolution
         )
-    if resolution_data_form["service_accepted"] == "Accepted":
+    if resolution_data_form["service_accepted"] == "accepted":
         if "select_available_services" in resolution_data_form:
             if len(resolution_data_form["select_available_services"]) == len(
                 service_obj.get_child_services()

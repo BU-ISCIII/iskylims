@@ -167,9 +167,10 @@ def request_seq_service(request):
                 drylab.config.CONFIRMATION_TEXT_MESSAGE,
             )
         )
-        import pdb; pdb.set_trace()
+
         if len(sample_stored) > 0:
             confirmation_result["samples"] = sample_stored
+
         if email_result != "OK":
             return render(
                 request,
