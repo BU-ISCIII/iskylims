@@ -315,30 +315,6 @@ class Service(models.Model):
             service_dates.append("--")
         return service_dates
 
-    def get_stats_information(self):
-        stats_information = []
-        stats_information.append(self.id)
-        stats_information.append(self.service_request_number)
-        stats_information.append(self.service_state.get_state(to_display=True))
-        # stats_information.append(self.serviceStatus)
-
-        stats_information.append(self.service_created_date.strftime("%d %B, %Y"))
-        if self.service_approved_date is None:
-            if self.service_rejected_date is None:
-                stats_information.append("--")
-            else:
-                stats_information.append(
-                    self.service_rejected_date.strftime("%d %B, %Y")
-                )
-        else:
-            stats_information.append(self.service_approved_date.strftime("%d %B, %Y"))
-        if self.service_delivered_date is None:
-            stats_information.append("--")
-        else:
-            stats_information.append(self.service_delivered_date.strftime("%d %B, %Y"))
-
-        return stats_information
-
     def get_creation_date(self, format=True):
         if format:
             return self.service_created_date.strftime("%d %B, %Y")
@@ -379,16 +355,6 @@ class Service(models.Model):
 
     def get_notes(self):
         return "%s" % (self.service_notes)
-
-    def get_time_to_delivery(self):
-        if self.service_delivered_date == self.service_created_date:
-            return 1
-        else:
-            number_days, _ = str(
-                self.service_delivered_date - self.service_created_date
-            ).split(",")
-            number, _ = number_days.split(" ")
-        return number
 
     def get_user_email(self):
         return "%s" % (self.service_user_id.email)
