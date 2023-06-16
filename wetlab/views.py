@@ -295,7 +295,7 @@ def create_nextseq_run(request):
             return render(
                 request,
                 "wetlab/create_next_seq_run.html",
-                {"error_message": "Uploaded file does not containt csv extension"}
+                {"error_message": "Uploaded file does not containt csv extension"},
             )
         ext_file = split_filename.group(2)
 
@@ -305,7 +305,7 @@ def create_nextseq_run(request):
             return render(
                 request,
                 "wetlab/create_next_seq_run.html",
-                {"error_message": "Sample Sheet must have a csv extension"}
+                {"error_message": "Sample Sheet must have a csv extension"},
             )
         fs = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -373,7 +373,7 @@ def create_nextseq_run(request):
                 return render(
                     request,
                     "wetlab/create_next_seq_run.html",
-                    {"error_message": "Run Name is already used. "}
+                    {"error_message": "Run Name is already used. "},
                 )
 
         # Fetch from the Sample Sheet file the projects included in
@@ -388,7 +388,9 @@ def create_nextseq_run(request):
             return render(
                 request,
                 "wetlab/create_next_seq_run.html",
-                {"error_message": "Sample Sheet does not contain Sample project and/or Description fields"}
+                {
+                    "error_message": "Sample Sheet does not contain Sample project and/or Description fields"
+                },
             )
 
         # Check if the projects are already defined on database.
@@ -767,10 +769,7 @@ def search_run(request):
 
     """
     # check user privileges
-    groups = django.contrib.auth.models.Group.objects.filter(
-        name=wetlab.config.WETLAB_MANAGER
-    ).last()
-    if groups not in request.user.groups.all():
+    if wetlab.utils.common.is_wetlab_manager:
         allowed_all_runs = False
     else:
         allowed_all_runs = True
@@ -1102,14 +1101,12 @@ def search_project(request):
 @login_required
 def retry_error_run(request):
     # check user privileges
-    if request.user.is_authenticated:
-        groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager")
-        if groups not in request.user.groups.all():
-            return render(
-                request,
-                "wetlab/display_run.html",
-                {"error_message": "You do have the enough privileges to see this page "},
-            )
+    if not wetlab.utils.common.is_wetlab_manager:
+        return render(
+            request,
+            "wetlab/display_run.html",
+            {"error_message": "You do have the enough privileges to see this page "},
+        )
     if request.method == "POST" and (request.POST["action"] == "retry_correct_error"):
         run_id = request.POST["run_id"]
         if wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
@@ -1141,17 +1138,12 @@ def retry_error_run(request):
 @login_required
 def skip_cancel_situation(request):
     # check user privileges
-    if request.user.is_authenticated:
-        groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager")
-        if groups not in request.user.groups.all():
-            return render(
-                request,
-                "wetlab/skip_cancel_situation.html",
-                {"error_message": "You do have the enough privileges to see this page "},
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+    if not wetlab.utils.common.is_wetlab_manager:
+        return render(
+            request,
+            "wetlab/skip_cancel_situation.html",
+            {"error_message": "You do have the enough privileges to see this page "},
+        )
     if request.method == "POST" and (request.POST["action"] == "skip_cancel_situation"):
         run_id = request.POST["run_id"]
         if wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
@@ -1181,13 +1173,7 @@ def skip_cancel_situation(request):
 @login_required
 def display_run(request, run_id):
     # check user privileges
-    if not request.user.is_authenticated:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    groups = django.contrib.auth.models.Group.objects.get(
-        name=wetlab.config.WETLAB_MANAGER
-    )
-    if groups not in request.user.groups.all():
+    if not wetlab.utils.common.is_wetlab_manager:
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
         if wetlab.models.wetlab.models.Projects.objects.filter(
@@ -1235,18 +1221,12 @@ def display_run(request, run_id):
 @login_required
 def last_run_by_sequencer(request):
     # check user privileges
-    if request.user.is_authenticated:
-        groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager")
-        if groups not in request.user.groups.all():
-            return render(
-                request,
-                "wetlab/last_run_by_sequencer.html",
-                {"error_message": "You do have the enough privileges to see this page "},
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
+    if not wetlab.utils.common.is_wetlab_manager:
+        return render(
+            request,
+            "wetlab/last_run_by_sequencer.html",
+            {"error_message": "You do have the enough privileges to see this page "},
+        )
     last_runs = wetlab.utils.fetch_info.get_last_runs_by_sequencer()
     if len(last_runs) == 0:
         return render(
@@ -1264,17 +1244,12 @@ def last_run_by_sequencer(request):
 @login_required
 def incompleted_runs(request):
     # check user privileges
-    if request.user.is_authenticated:
-        groups = django.contrib.auth.models.Group.objects.filter(name="WetlabManager")
-        if groups not in request.user.groups.all():
-            return render(
-                request,
-                "wetlab/incompleted_runs.html",
-                {"error_message": "You do have the enough privileges to see this page "},
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+    if not wetlab.utils.common.is_wetlab_manager:
+        return render(
+            request,
+            "wetlab/incompleted_runs.html",
+            {"error_message": "You do have the enough privileges to see this page "},
+        )
     if (
         wetlab.models.wetlab.models.RunProcess.objects.all()
         .exclude(state__run_state_name="Completed")
@@ -1292,23 +1267,9 @@ def incompleted_runs(request):
         return render(request, "wetlab/incompleted_runs.html")
 
 
-def check_user_access(request, project_found_id):
-    groups = django.contrib.auth.models.Group.objects.get(
-        name=wetlab.config.WETLAB_MANAGER
-    )
-    # check if user belongs to WetlabManager . If true allow to see the page
-    if groups not in request.user.groups.all():
-        # check if project belongs to the same user as the one requesting the page
-        if project_found_id.user_id.id != request.user.id:
-            return False
-    return True
-
-
 @login_required
 def display_project(request, project_id):
-    if not request.user.is_authenticated:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+
     if wetlab.models.Projects.objects.filter(pk=project_id).exists():
         project_obj = wetlab.models.Projects.objects.filter(pk=project_id).last()
 
@@ -1632,7 +1593,6 @@ def change_run_name(request, run_id):
 
 @login_required
 def stats_per_researcher(request):
-    sequencer_names = wetlab.utils.fetch_info.get_sequencer_installed_names()
     if request.method == "POST":
         r_name = request.POST["researchername"]
         start_date = request.POST["startdate"]
@@ -1779,10 +1739,7 @@ def get_list_of_libraries_values(
 @login_required
 def annual_report(request):
     # check user privileges
-    groups = django.contrib.auth.models.Group.objects.filter(
-        name="WetlabManager"
-    ).last()
-    if groups not in request.user.groups.all():
+    if not wetlab.utils.common.is_wetlab_manager:
         return render(
             request,
             "wetlab/annual_report.html",
@@ -1828,13 +1785,12 @@ def get_size_dir(
 
 @login_required
 def create_protocol(request):
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/create_protocol.html",
-                {"error_message": "You do not have enough privileges to see this page "},
-            )
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/create_protocol.html",
+            {"error_message": "You do not have enough privileges to see this page "},
+        )
     # get the list of defined protocols
     (
         defined_protocols,
@@ -1884,14 +1840,13 @@ def create_protocol(request):
 
 @login_required
 def define_sample_projects(request):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/define_sample_projects.html",
-                {"error_message": "You do not have enough privileges to see this page "},
-            )
+
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/define_sample_projects.html",
+            {"error_message": "You do not have enough privileges to see this page "},
+        )
     # get the information of defined sample Projects
     defined_samples_projects = core.utils.samples.get_info_for_defined_sample_projects(
         __package__
@@ -1936,7 +1891,7 @@ def define_sample_projects(request):
 
 @login_required
 def define_additional_kits(request, protocol_id):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
@@ -2364,17 +2319,13 @@ def record_samples(request):
 
 @login_required
 def define_sample_projects_fields(request, sample_project_id):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/define_sample_projects_fields.html",
-                {"error_message": "You do not have enough privileges to see this page "},
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/define_sample_projects_fields.html",
+            {"error_message": "You do not have enough privileges to see this page "},
+        )
     # get the list of defined sample Projects
     if (
         request.method == "POST"
@@ -2452,19 +2403,12 @@ def define_sample_projects_fields(request, sample_project_id):
 
 @login_required
 def modify_additional_kit(request, protocol_id):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/modify_additional_kit.html",
-                {
-                    "error_message": "You do not have enough privileges to see this page "
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/modify_additional_kit.html",
+            {"error_message": "You do not have enough privileges to see this page "},
+        )
 
     if request.method == "POST" and request.POST["action"] == "modifyAdditionalKits":
         additional_kits_data_saved = (
@@ -2496,23 +2440,17 @@ def modify_additional_kit(request, protocol_id):
 
 @login_required
 def modify_protocol_fields(request, protocol_id):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/modify_protocol_fields.html",
-                {
-                    "error_mes": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/modify_protocol_fields.html",
+            {
+                "error_mes": [
+                    "You do not have enough privileges to see this page ",
+                    "Contact with your administrator .",
+                ]
+            },
+        )
     if request.method == "POST" and request.POST["action"] == "modifyProtocolFields":
         protocol_field_saved = core.utils.protocols.modify_fields_in_protocol(
             request.POST
@@ -2539,24 +2477,17 @@ def modify_protocol_fields(request, protocol_id):
 
 @login_required
 def modify_sample_project_fields(request, sample_project_id):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-
-    if request.user.is_authenticated:
-        if not wetlab.utils.common.is_wetlab_manager(request):
-            return render(
-                request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        "You do not have enough privileges to see this page ",
-                        "Contact with your administrator .",
-                    ]
-                },
-            )
-    else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/modify_sample_project_fields.html",
+            {
+                "content": [
+                    "You do not have enough privileges to see this page ",
+                    "Contact with your administrator .",
+                ]
+            },
+        )
     if (
         request.method == "POST"
         and request.POST["action"] == "modifySampleProjectFields"
@@ -2589,11 +2520,17 @@ def modify_sample_project_fields(request, sample_project_id):
 
 @login_required
 def define_molecule_uses(request):
-    """
-    Functions:
-        display_molecule_use
-        record_molecule_use
-    """
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/define_molecule_uses.html",
+            {
+                "content": [
+                    "You do not have enough privileges to see this page ",
+                    "Contact with your administrator .",
+                ]
+            },
+        )
     molecule_use_data = core.utils.samples.display_molecule_use(__package__)
     if request.method == "POST" and request.POST["action"] == "record_molecule_use":
         molecule_use_data.update(
@@ -2609,11 +2546,17 @@ def define_molecule_uses(request):
 
 @login_required
 def define_type_of_samples(request):
-    """
-    Functions:
-        display_sample_types
-        save_type_of_sample
-    """
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        return render(
+            request,
+            "wetlab/define_type_of_samples.html",
+            {
+                "content": [
+                    "You do not have enough privileges to see this page ",
+                    "Contact with your administrator .",
+                ]
+            },
+        )
     sample_types = core.utils.samples.display_sample_types(__package__)
     if request.method == "POST" and request.POST["action"] == "addNewSampleType":
         sample_types.update(
@@ -2629,13 +2572,7 @@ def define_type_of_samples(request):
 
 @login_required
 def display_sample(request, sample_id):
-    """
-    Functions:
-        get_all_sample_information
-        get_all_library_information
-        get_additional_kits_used_in_sample
-        get_sample_in_project_obj_from_sample_name
-    """
+
     sample_information = core.utils.samples.get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
         sample_information.update(
@@ -2702,10 +2639,7 @@ def display_sample_in_run(request, sample_run_id):
 
 @login_required
 def display_type_of_sample(request, sample_type_id):
-    """
-    Functions:
-        get_type_of_sample_information
-    """
+
     type_of_sample_data = core.utils.samples.get_type_of_sample_information(
         sample_type_id
     )
@@ -2718,24 +2652,13 @@ def display_type_of_sample(request, sample_type_id):
 
 @login_required
 def handling_library_preparation(request):
-    """
-    Functions:
-        analyze_and_store_input_additional_kits
-        get_samples_for_library_preparation
-        create_library_preparation_instance
-        extract_user_sample_sheet_data
-        get_additional_kits_from_lib_prep
-        get_type_of_sample_information
-        get_library_preparation_heading_for_samples
-        get_protocols_for_library_preparation
-        get_samples_in_lib_prep_state
-        validate_sample_sheet_data
-    """
-    # get the information for returning the uploaded file in case errors in the sample sheet
+
     if wetlab.utils.common.is_wetlab_manager(request):
         samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation()
     else:
-        samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation(request.user, True)
+        samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation(
+            request.user, True
+        )
 
     if request.method == "POST" and request.POST["action"] == "assignProtocol":
         samples_in_lib_prep_protocol = (
@@ -2777,9 +2700,15 @@ def handling_library_preparation(request):
                 },
             )
         # separate samples based on different protocols
-        lib_prep_sep_protocol = wetlab.utils.library.separate_lib_prep_on_protocols(lib_prep_ids)
+        lib_prep_sep_protocol = wetlab.utils.library.separate_lib_prep_on_protocols(
+            lib_prep_ids
+        )
 
-        lib_prep_protocol_parameters = wetlab.utils.library.get_protocol_parameters_for_library_preparation(lib_prep_sep_protocol)
+        lib_prep_protocol_parameters = (
+            wetlab.utils.library.get_protocol_parameters_for_library_preparation(
+                lib_prep_sep_protocol
+            )
+        )
         return render(
             request,
             "wetlab/handling_library_preparation.html",
@@ -2793,9 +2722,9 @@ def handling_library_preparation(request):
         )
         if "ERROR" in stored_params:
             error_message = stored_params["ERROR"]
-            # TO DO in previoous form add lib_prep_ids 
+            # TO DO in previoous form add lib_prep_ids
             lib_prep_ids = request.POST["lib_prep_ids"].split(",")
-            
+
             library_preparation_objs = []
             for lib_prep_id in lib_prep_ids:
                 library_preparation_objs.append(
@@ -3197,12 +3126,6 @@ def repeat_library_preparation(request):
 
 @login_required
 def repeat_molecule_extraction(request):
-    """
-    Functions:
-    analyze_reprocess_data
-    get_table_record_molecule
-    """
-
     if request.method == "POST" and request.POST["action"] == "repeat_extraction":
         sample_id = request.POST["sample_id"]
         if wetlab.utils.sample.analyze_reprocess_data(
@@ -3212,10 +3135,6 @@ def repeat_molecule_extraction(request):
                 [sample_id], __package__
             )
             molecule_protocol["samples"] = sample_id
-            # create a copy of the request, to allow to modify it
-            # request.POST = request.POST.copy()
-            # request.POST['action'] = 'selectedMolecules'
-            # request.POST['samples'] = sample_id
 
             return render(
                 request,
@@ -3228,10 +3147,6 @@ def repeat_molecule_extraction(request):
 
 @login_required
 def repeat_pool(request):
-    """
-    Functions:
-    analyze_reprocess_data  : located at utils/sample_functions.py
-    """
     if request.method == "POST" and request.POST["action"] == "repeat_pool":
         lib_prep_obj = wetlab.utils.library.get_lib_prep_obj_from_id(
             request.POST["lib_prep_id"]
@@ -3266,13 +3181,6 @@ def repeat_pool(request):
 
 @login_required
 def search_sample(request):
-    """
-    Functions:
-        get_sample_states
-        check_valid_date_format
-        search_samples
-        search_run_samples
-    """
     search_data = {}
     search_data["s_state"] = core.utils.samples.get_sample_states()
 
@@ -3509,7 +3417,7 @@ def set_molecule_values(request):
 
 @login_required
 def create_pool(request):
-    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
@@ -3550,7 +3458,7 @@ def create_new_run(request):
         return render(
             request,
             "wetlab/create_new_run.html",
-            { "error_message":  "You do not have enough privileges to see this page "}
+            {"error_message": "You do not have enough privileges to see this page "},
         )
 
     if request.method == "POST" and request.POST["action"] == "createNewRun":

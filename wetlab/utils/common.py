@@ -30,7 +30,9 @@ def get_configuration_value(parameter_name):
         parameter_value
     """
     parameter_value = "False"
-    if wetlab.models.ConfigSetting.objects.filter(configuration_name__exact=parameter_name).exists():
+    if wetlab.models.ConfigSetting.objects.filter(
+        configuration_name__exact=parameter_name
+    ).exists():
         parameter_obj = wetlab.models.ConfigSetting.objects.filter(
             configuration_name__exact=parameter_name
         ).last()
@@ -73,7 +75,7 @@ def check_valid_date_format(date):
         try:
             datetime.strptime(date, "%d-%m-%Y")
             return True
-        except ValueError:  
+        except ValueError:
             return False
 
 
@@ -147,9 +149,7 @@ def open_samba_connection():
             int(samba_data["port_server"]),
         )
     else:
-        conn.connect(
-            samba_data["ip_server"], int(samba_data["port_server"])
-        )
+        conn.connect(samba_data["ip_server"], int(samba_data["port_server"]))
 
     logger.debug("End function open_samba_connection")
     return conn
@@ -280,19 +280,22 @@ def get_userid_list():
 
 
 def is_wetlab_manager(request):
-    """
-    Description:
-        The function will check if the logged user belongs to wetlab
+    """The function will check if the logged user belongs to service
         manager group
-    Input:
-        request # contains the session information
-    Return:
-        Return True if the user belongs to Wetlab Manager, False if not
+
+    Parameters
+    ----------
+    request : user instance
+        instance of the logged user
+
+    Returns
+    -------
+    Boolean
+        True if logged user is service manager. False if not
     """
-    groups = Group.objects.filter(name=wetlab.config.WETLAB_MANAGER).last()
-    if groups not in request.user.groups.all():
-        return False
-    return True
+    if request.user.groups.filter(name=wetlab.config.WETLAB_MANAGER).exists():
+        return True
+    return False
 
 
 def normalized_data(set_data, all_data):
