@@ -31,7 +31,7 @@ Examples:
     $0 --upgrade full --script <migration_script> --tables
 
     Make adjustments for apps renaming in upgrade 2.3.0 to 2.3.1
-    $0 --upgrade full --script <migration_script> --tables
+    $0 --upgrade full --ren_app --script <migration_script> --tables
 EOF
 }
 
@@ -747,6 +747,7 @@ if [ $install == true ]; then
         python3 manage.py makemigrations django_utils core wetlab drylab clinic
         python3 manage.py migrate
 
+        # copy static files 
         echo "Run collectstatic"
         python3 manage.py collectstatic
 

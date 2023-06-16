@@ -40,7 +40,7 @@ Follow the prompt message to create the super user account.
 
 When script ends open your navigator typing **localhost:8000** to access to iSkyLIMS
 
-## Install iSkyLIMS in your server running ubuntu
+## Install iSkyLIMS in your server running ubuntu/CentOS
  
 ### Pre-requesites
 Before starting the installation check :
@@ -51,16 +51,16 @@ Before starting the installation check :
 -   Python installed in server
 -   Dependencies:
      - lsb_release:
-     RedHat/CentOS: ```yum install redhat-lsb-core```
-     Ubuntu: ```xxx`
+        - RedHat/CentOS: ```yum install redhat-lsb-core```
+        - Ubuntu: ```apt install lsb_release```
 
 #### Clone github repository
-Open a linux terminal and move to a directory where relecov code will be 
+Open a linux terminal and move to a directory where iSkyLIMS code will be 
 downloaded
 ```bash
 cd <your personal folder>
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-cd iSkyLIMS
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
+cd iskylims
 ``` 
 
 #### Create relecov database and grant permissions
@@ -84,16 +84,127 @@ sudo nano install_settings.txt
 
 ### Run installation script
 
-iSkyLIMS should be installed on the "/opt" directory. Before start the installation be sure you have sudo priveleges.
+iSkyLIMS should be installed on the "/opt" directory. 
 
-Execute the following commands in a linux terminal.
+
+Before start the installation be sure you have sudo priveleges.
+
+
+To handle different installation responsibilities inside the organization, where 
+software packets are responsability on different unit that application software.
+
+
+To support this kind of scenario, instalation script has these options in ```--install```
+ parameter.
+
+- dep. To install the software packages as well as python packages inside the virtual environment.
+- app. To install only the iSkyLIMS application software.
+- full. For those organizations that not require separate installation it wil install both, 
+dependecies and iSkyLIMS application.
+
+Execute on of the following commands in a linux terminal to install, according as 
+above description.
+
 
 ```bash
+# to install only software packages dependences
+sudo bash install.sh --install dep
 
-sudo bash install.sh
+# to install only iSkyLIMS application
+bash install.sh --install app
+
+# to install both software
+sudo bash install.sh --install full
 ```
 
-After installation is completed open you navigator typing "localhost" or the "server local IP".
+### Configure Apache server
+
+Copy the apache configuration file according to your distribution inside the 
+apache configutation directory and rename it to iskylims.conf
+
+### Installation verification
+
+After installation is completed and apache server is up and running open you navigator
+ typing "localhost" or the "server local IP".
+
+# Upgrade to iSkyLIMS version 2.3.1
+
+If you have already iSkyLIMS on version 2.3.0 you can upgrade to the latest stable 
+version 2.3.1.
+
+There are many changes in version 2.3.1 we have upgraded to bootstrap 5, renaming 
+tables, update code for a better readability and support, fixing bugs. For a more 
+deatils of the changes see the release note for this release.
+
+As previous mention these changes in the code structure of iSkyLIMS, were necessary
+ to allow us to incorporate iSkyLIMS with new functionalities and make it easy to
+ maintain.
+
+
+## Requirements
+
+Because in this upgrade many tables in database are impacted it is required that
+you backup:
+
+- iskylims database
+- iSkyLIMS document folder
+
+It is highly recomended that you made these backups and keep them safely in case of 
+upgrade failure, to recover your system.
+
+## Executing the upgrade
+
+We have also change the way that iSkyLIMS is upgraded. In previous releases upgrade
+changes where done directly on the directory which iSkyLIMS is running. From these 
+release git repository is in the local user folder.
+
+
+### Clone github repository
+Open a linux terminal and move to a directory where iSkyLIMS code will be 
+downloaded
+
+```bash
+cd <your personal folder>
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
+cd iskylims
+``` 
+
+### Configuration settings
+Copy the initial setting template into a file named install_settings.txt
+```bash
+cp conf/template_install_settings.txt install_settings.txt
+```
+
+Open with your favourite editor the configuration file to set your own values for
+database ,email settings and the local IP of the server where iSkyLIMS will run.
+```bash
+
+sudo nano install_settings.txt
+```
+### Runing upgrade script
+
+if your organization requires that software packages are installed by a different
+person that install the software application the upgrade script is also updated
+to support this situation.
+
+In the linux terminal execute one of the following command that fit better to you
+
+```bash
+# to upgrade only software packages dependences
+sudo bash install.sh --upgrade dep
+
+# to upgrade only iSkyLIMS application including changes required in this release
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --tables
+
+# to install both software
+sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --tables
+```
+
+### Verification installation.
+
+Open the navigator and type "localhost" or the "server local IP" and check that
+ iSkyLIMs is running.
+
 
 # iSkyLIMS documentation
 
