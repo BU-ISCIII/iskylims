@@ -52,7 +52,7 @@ Before starting the installation check :
 -   Dependencies:
      - lsb_release:
         - RedHat/CentOS: ```yum install redhat-lsb-core```
-        - Ubuntu: ```apt install lsb_release```
+        - Ubuntu: ```apt install lsb-core lsb-release```
 
 #### Clone github repository
 Open a linux terminal and move to a directory where iSkyLIMS code will be 
