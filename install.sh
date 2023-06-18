@@ -290,9 +290,10 @@ printf "${BLUE}Successful check for database${NC}\n"
 apache_check
 printf "${BLUE}Successful check for apache${NC}\n"
 
-if [ "$install" = "full" ] || [ "$install" = "dep" ]; then
-    printf "${ORANGE} You need to be root for full or dep install"
+if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ]; then
+    printf "${YELLOW} Checking requirement of root  user when installation is full or dep ${NC}\n"
     root_check
+    printf "${BLUE}Successful checking of root user${NC}\n"
 fi
 
 #=============================================================================
@@ -552,7 +553,7 @@ fi
 
 if [ $install == true ]; then
 
-    if [ "$install_type" = "full" ] || [ "$install_type" = "dep" ]; then
+    if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ]; then
 
         #================================================================
         # MAIN_BODY FOR INSTALL
@@ -570,19 +571,12 @@ if [ $install == true ]; then
         # Find out server Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)
 
-        read -p "Are you sure you want to install repository software required for iSkyLIMS? (Y/N) " -n 1 -r
+        read -p "Are you sure you want to install software required dependences for iSkyLIMS? (Y/N) " -n 1 -r
             echo    # (optional) move to a new line
             if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                echo "Exiting without installing required software for iSkyLIMS installation"
+                echo "Exiting without installing required dependences software for iSkyLIMS installation"
                 exit 1
             fi
-
-        read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
-        echo    # (optional) move to a new line
-        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-            echo "Exiting without running iskylims installation"
-            exit 1
-        fi
 
         echo "Installing Interop"
         if [ -d /opt/interop ]; then
@@ -604,9 +598,9 @@ if [ $install == true ]; then
             apt-get update && apt-get upgrade -y
             apt-get install -y \
                 apt-utils wget \
-                libmysqlclient-dev apache2-dev \
-                python3-venv mariadb-server \
-                gcc libpq-dev \
+                libmysqlclient-dev \
+                python3-venv  \
+                libpq-dev \
                 python3-dev python3-pip python3-wheel
         fi
 
@@ -665,7 +659,7 @@ if [ $install == true ]; then
     # INSTALL iSkyLIMS PLATFORM APPLICATION
     #================================================================
 
-    if [ "$install" = "full" ] || [ "$install" = "app" ]; then
+    if [ "$install_type" == "full" ] || [ "$install_type" == "app" ]; then
 
         read -p "Are you sure you want to install iSkyLIMS app in this server? (Y/N) " -n 1 -r
         echo    # (optional) move to a new line
