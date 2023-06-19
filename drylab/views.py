@@ -39,8 +39,10 @@ def index(request):
             service_state__state_value__exact="recorded"
         ).order_by("service_created_date")
         service_list["recorded"] = []
+
         for r_service_obj in r_service_objs:
-            s_info = r_service_obj.get_identifier_and_user_center()
+            s_info = []
+            s_info.append(r_service_obj.get_identifier())
             s_info.append(r_service_obj.get_user_name())
             service_list["recorded"].append(s_info)
 
@@ -57,11 +59,14 @@ def index(request):
             .order_by("service_approved_date")
         )
         service_list["ongoing"] = []
+
         for ongoing_services_obj in ongoing_services_objs:
-            s_info = ongoing_services_obj.get_identifier_and_user_center()
+            s_info = []
+            s_info.append(ongoing_services_obj.get_identifier())
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list["ongoing"].append(s_info)
     org_name = drylab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
+
     return render(
         request,
         "drylab/index.html",
