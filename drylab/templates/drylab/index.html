@@ -3,6 +3,8 @@
 
 {% block content %}
 
+{% include "core/cdn_table_functionality.html"%}
+
 {% include "drylab/menu.html" %}
 
 <section class="iskylims d-flex flex-column fill-height">
@@ -37,19 +39,18 @@
             </div>
         </div>
         <div class="row pb-2 pt-2">
-            <div class="col-md-5">
+            <div class="col-md-6">
                 <div class="card ">
                     <div class="card-header">
-                        Recorded Services
+                        Recorded services
                     </div>
                     <div class="card-body">
                         {% if service_list.recorded %}
                         <div class="scrolling-wrapper">
-                            <table class="table table-responsive table-hover">
+                            <table id="table_recorded" name="table_recorded" class="table table-responsive table-hover">
                                 <thead>
                                     <tr>
                                         <th>Service Number</th>
-                                        <th>Request Center</th>
                                         <th>Requested by</th>
                                     </tr>
                                 </thead>
@@ -62,6 +63,12 @@
                                     </tr>
                                     {% endfor %}
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Service Number</th>
+                                        <th>Requested by</th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                         {% else %}
@@ -70,17 +77,16 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-7">
+            <div class="col-md-6">
                 <div class="card ">
-                    <div class="card-header">In progress Services</div>
+                    <div class="card-header">In progress services</div>
                     <div class="card-body">
                         {% if service_list.ongoing %}
                         <div class="scrolling-wrapper">
-                            <table class="table table-responsive table-hover">
+                            <table id="table_inprogress" name="table_inprogress" class="table table-responsive table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Service Number</th>
-                                        <th>Request Center</th>
+                                        <th>Service number</th>
                                         <th>Expected delivery date</th>
                                     </tr>
                                 </thead>
@@ -93,6 +99,12 @@
                                     </tr>
                                     {% endfor %}
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Service number</th>
+                                        <th>Expected delivery date</th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                         {% else %}
@@ -105,12 +117,53 @@
     </div>
 </section>
 
-<style>
-    .scrolling-wrapper {
-        overflow-x: auto;
-        overflow-y: auto;
-        white-space: nowrap;
-        height: 300px;
-    }
-</style>
+<script>
+    // table samples foot search
+    $('#table_recorded tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    // DataTable
+    var table = $('#table_recorded').DataTable({
+        "pageLength": 5,
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+
+    // table samples foot search
+    $('#table_inprogress tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    // DataTable
+    var table = $('#table_inprogress').DataTable({
+        "pageLength": 5,
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+</script>
 {% endblock %}
