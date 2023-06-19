@@ -396,6 +396,19 @@ if [ $upgrade == true ]; then
         ### RENAME APP  in database and migration files ####
         if [ $ren_app == true ] ; then
             
+            echo "Modifying names in migration files..."
+            sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
+            # sed -i 's/iSkyLIMS_clinic/clinic/g' clinic/migrations/*.py
+            # sed -i 's/iSkyLIMS_core/core/g' clinic/migrations/*.py
+            sed -i 's/iSkyLIMS_drylab/drylab/g' drylab/migrations/*.py
+            sed -i 's/iSkyLIMS_wetlab/wetlab/g' drylab/migrations/*.py
+            sed -i 's/iSkyLIMS_core/core/g' drylab/migrations/*.py
+            sed -i 's/iSkyLIMS_wetlab/wetlab/g' wetlab/migrations/*.py
+            sed -i 's/iSkyLIMS_drylab/drylab/g' wetlab/migrations/*.py
+            sed -i 's/iSkyLIMS_core/core/g' wetlab/migrations/*.py
+            sed -i 's/iSkyLIMS_core/core/g' core/migrations/*.py
+            echo "Done modifying names in migration files..."
+            
             echo "Modifying database names and constraints..."
             mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
                 -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
