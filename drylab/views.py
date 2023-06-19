@@ -1035,7 +1035,7 @@ def stats_by_user(request):
             "drylab/stats_by_user.html",
             {"error_message": "You do have enough privileges to see this page"},
         )
-    
+
     user_list = drylab.utils.common.get_users_requested_services()
     if request.method == "POST" and request.POST["action"] == "userStatistics":
         # validate the input data in the form
@@ -1074,12 +1074,13 @@ def stats_by_user(request):
             )
 
         stats_info = drylab.utils.stats.create_statistics_by_user(user_id, start_date, end_date)
+
         if "ERROR" in stats_info:
             return render(
-            request,
-            "drylab/stats_by_user.html",
-            {"user_list": user_list, "ERROR": stats_info["ERROR"]},
-        )
+                request,
+                "drylab/stats_by_user.html",
+                {"user_list": user_list, "ERROR": stats_info["ERROR"]},
+            )
 
         return render(request, "drylab/stats_by_user.html", {"stats_info": stats_info})
     else:
