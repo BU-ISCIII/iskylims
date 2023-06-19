@@ -323,7 +323,7 @@ def get_pending_services_info():
                 service_data.append(service_obj.get_creation_date())
                 # fetch resolution info
                 service_data.append(resolution_obj.get_resolution_number())
-                service_data.append(resolution_obj.get_asigned_user())
+                service_data.append(resolution_obj.get_assigned_user())
                 service_data.append(resolution_obj.get_on_queued_date())
                 service_data.append(resolution_obj.get_resolution_estimated_date())
                 info_by_state[state].append(service_data)
