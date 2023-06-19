@@ -149,7 +149,7 @@ class Pipelines(models.Model):
         data = []
         data.append(self.pipeline_name)
         data.append(self.pipeline_version)
-        data.append(self.generated_at.strftime("%B %d, %Y"))
+        data.append(self.generated_at.strftime("%Y-%m-%d"))
         data.append(self.pipeline_in_use)
         return data
 
@@ -161,7 +161,7 @@ class Pipelines(models.Model):
         data.append(self.user_name.username)
         data.append(self.pipeline_name)
         data.append(self.pipeline_version)
-        data.append(self.generated_at.strftime("%d/ %B/ %Y"))
+        data.append(self.generated_at.strftime("%Y-%m-%d"))
         data.append(self.pipeline_in_use)
         data.append(self.pk)
         return data
@@ -300,31 +300,31 @@ class Service(models.Model):
 
     def get_dates(self):
         service_dates = []
-        service_dates.append(self.service_created_date.strftime("%d %B, %Y"))
+        service_dates.append(self.service_created_date.strftime("%Y-%m-%d"))
         try:
-            service_dates.append(self.service_approved_date.strftime("%d %B, %Y"))
+            service_dates.append(self.service_approved_date.strftime("%Y-%m-%d"))
         except (TypeError, AttributeError):
             service_dates.append("--")
         try:
-            service_dates.append(self.service_rejected_date.strftime("%d %B, %Y"))
+            service_dates.append(self.service_rejected_date.strftime("%Y-%m-%d"))
         except (TypeError, AttributeError):
             service_dates.append("--")
         try:
-            service_dates.append(self.service_delivered_date.strftime("%d %B, %Y"))
+            service_dates.append(self.service_delivered_date.strftime("%Y-%m-%d"))
         except (TypeError, AttributeError):
             service_dates.append("--")
         return service_dates
 
     def get_creation_date(self, format=True):
         if format:
-            return self.service_created_date.strftime("%d %B, %Y")
+            return self.service_created_date.strftime("%Y-%m-%d")
         else:
             return self.service_created_date
 
     def get_delivery_date(self, format=True):
         if self.service_delivered_date:
             if format:
-                return self.service_delivered_date.strftime("%d %B, %Y")
+                return self.service_delivered_date.strftime("%Y-%m-%d")
             else:
                 return self.service_delivered_date
         else:
@@ -608,12 +608,12 @@ class Resolution(models.Model):
         else:
             resolution_info.append("Not assigned")
         if self.resolution_estimated_date is not None:
-            resolution_info.append(self.resolution_estimated_date.strftime("%d %B, %Y"))
+            resolution_info.append(self.resolution_estimated_date.strftime("%Y-%m-%d"))
         else:
             resolution_info.append("Not defined yet")
 
         if self.resolution_queued_date is not None:
-            resolution_info.append(self.resolution_queued_date.strftime("%d %B, %Y"))
+            resolution_info.append(self.resolution_queued_date.strftime("%Y-%m-%d"))
         else:
             resolution_info.append("Not defined yet")
 
@@ -621,7 +621,7 @@ class Resolution(models.Model):
             resolution_info.append("--")
         else:
             resolution_info.append(
-                self.resolution_in_progress_date.strftime("%d %B, %Y")
+                self.resolution_in_progress_date.strftime("%Y-%m-%d")
             )
 
         resolution_info.append(self.resolution_notes)
@@ -633,11 +633,11 @@ class Resolution(models.Model):
         if self.resolution_queued_date is None:
             on_queued_date = "Not defined"
         else:
-            on_queued_date = self.resolution_queued_date.strftime("%d %B, %Y")
+            on_queued_date = self.resolution_queued_date.strftime("%Y-%m-%d")
         if self.resolution_estimated_date is None:
             on_estimated_date = "Not defined"
         else:
-            on_estimated_date = self.resolution_estimated_date.strftime("%d %B, %Y")
+            on_estimated_date = self.resolution_estimated_date.strftime("%Y-%m-%d")
         data = []
         data.append(self.resolution_service_id.get_service_id())
         data.append(self.resolution_service_id.get_identifier())
@@ -668,14 +668,17 @@ class Resolution(models.Model):
 
     def get_resolution_estimated_date(self):
         if self.resolution_estimated_date is not None:
-            return "%s" % (self.resolution_estimated_date)
+            if format:
+                return self.resolution_estimated_date.strftime("%Y-%m-%d")
+            else:
+                return self.resolution_estimated_date
         else:
             return None
 
     def get_on_queued_date(self, format=True):
         if self.resolution_queued_date is not None:
             if format:
-                return self.resolution_queued_date.strftime("%d %B, %Y")
+                return self.resolution_queued_date.strftime("%Y-%m-%d")
             else:
                 return self.resolution_queued_date
         else:
@@ -684,13 +687,13 @@ class Resolution(models.Model):
     def get_in_progress_date(self, format=True):
         if self.resolution_in_progress_date is not None:
             if format:
-                return self.resolution_in_progress_date.strftime("%d %B, %Y")
+                return self.resolution_in_progress_date.strftime("%Y-%m-%d")
             else:
                 return self.resolution_in_progress_date
         else:
             return None
 
-    def get_asigned_user(self):
+    def get_assigned_user(self):
         if self.resolution_assigned_user is not None:
             return self.resolution_assigned_user.username
         return None
@@ -793,7 +796,7 @@ class Delivery(models.Model):
         delivery_info.append(self.delivery_resolution_id.resolution_number)
         try:
             delivery_info.append(
-                self.delivery_resolution_id.resolution_delivery_date.strftime("%d %B, %Y")
+                self.delivery_resolution_id.resolution_delivery_date.strftime("%Y-%m-%d")
             )
         except Exception:
             delivery_info.append("-")
