@@ -441,7 +441,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name="service",
-            name="serviceStatus",
+            name="service_status",
             field=models.CharField(
                 choices=[
                     ("recorded", "Recorded"),
