@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-#iSkyLIMS version 2.0.0 Docker installation
+#iSkyLIMS version 2.3.1 Docker installation
 
 docker build -t iskylimsv2 .
 

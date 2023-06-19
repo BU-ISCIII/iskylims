@@ -8,8 +8,8 @@ RUN apt-get update && apt-get upgrade -y
 
 # Essential software
 RUN apt-get install -y \
-    lightdm git apt-utils libcairo2 libcairo2-dev  wget gnuplot python3-pip \
-    libmysqlclient-dev apache2 apache2-dev vim 
+    git apt-utils  wget gnuplot  python3-pip \
+    libmysqlclient-dev vim mysql-client apache2-dev
 
 RUN mkdir /opt/interop
 WORKDIR /opt/interop
@@ -20,36 +20,34 @@ RUN ln -s InterOp-1.1.15-Linux-GNU interop
 RUN rm InterOp-1.1.15-Linux-GNU.tar.gz
 
 
-RUN mkdir /opt/iSkyLIMS
-WORKDIR /opt/iSkyLIMS
+RUN mkdir /opt/iskylims
+WORKDIR /opt/iskylims
 
 RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
 
-# RUN git submodule init
-RUN git checkout develop
-# RUN git submodule init
-# RUN git submodule update --checkout
-RUN cd wetlab git 
+# RUN git checkout develop
 
-
-
-RUN mkdir -p /opt/iSkyLIMS/documents/wetlab/tmp
-RUN mkdir -p /opt/iSkyLIMS/documents/drylab
-RUN mkdir -p /opt/iSkyLIMS/logs
+RUN mkdir -p /opt/iskylims/documents/wetlab/tmp
+RUN mkdir -p /opt/iskylims/documents/drylab
+RUN mkdir -p /opt/iskylims/logs
 
 
 
 # Starting iSkyLIMS
-RUN python3 -m pip install -r conf/requirements.txt
-RUN django-admin startproject iSkyLIMS .
-RUN /bin/bash -c 'grep ^SECRET iSkyLIMS/settings.py > ~/.secret'
+# for develop
+# RUN python3 -m pip install -r conf/requirements.txt
+
+# for main
+RUN python3 -m pip install -r conf/pythonPackagesRequired.txt
+RUN django-admin startproject iskylims .
+RUN /bin/bash -c 'grep ^SECRET iskylims/settings.py > ~/.secret'
 
 
 # Copying config files and script
-RUN cp conf/docker_settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
-RUN cp conf/urls.py /opt/iSkyLIMS/iSkyLIMS/
+RUN cp conf/docker_settings.py /opt/iskylims/iskylims/settings.py
+RUN cp conf/urls.py /opt/iskylims/iskylims/
 
-RUN sed -i "/^SECRET/c\\$(cat ~/.secret)" iSkyLIMS/settings.py
+RUN sed -i "/^SECRET/c\\$(cat ~/.secret)" iskylims/settings.py
 ENV PATH="usr/bin:$PATH"
 # Expose and run
 EXPOSE 8000

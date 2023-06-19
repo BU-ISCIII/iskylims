@@ -65,7 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'iSkyLIMS.urls'
+ROOT_URLCONF = 'iskylims.urls'
 
 TEMPLATES = [
     {
@@ -84,7 +84,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'iSkyLIMS.wsgi.application'
+WSGI_APPLICATION = 'iskylims.wsgi.application'
 
 
 # Database
@@ -95,10 +95,10 @@ DATABASES = {
         'USER': 'django',
         'PASSWORD':'djangopass',
         'PORT':'3306',
-        'NAME': 'iSkyLIMS',
+        'NAME': 'iskylims',
         'HOST':'db1',
         'TEST': {
-            'NAME': 'iSkyLIMS_test',
+            'NAME': 'iskylims_test',
         },
     },
 }
@@ -162,7 +162,7 @@ EMAIL_PORT = '25'
 EMAIL_HOST_USER = 'bioinfo'
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
-EMAIL_ISKYLIMS = "iSkyLIMS@localhost"
+EMAIL_ISKYLIMS = "iskylims@localhost"
 ALLOWED_EMAIL_DOMAINS = []
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')

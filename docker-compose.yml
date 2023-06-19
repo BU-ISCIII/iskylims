@@ -6,7 +6,7 @@ services:
         container_name: db1
         command: --default-authentication-plugin=mysql_native_password
         environment:
-            MYSQL_DATABASE: iSkyLIMS
+            MYSQL_DATABASE: iskylims
             MYSQL_USER : django
             MYSQL_PASSWORD : djangopass
             MYSQL_ROOT_PASSWORD: root
@@ -23,7 +23,7 @@ services:
     web1:
         build: .
         container_name: iskylimsv2_app
-        command: python3 /opt/iSkyLIMS/manage.py runserver 0:8000
+        command: python3 /opt/iskylims/manage.py runserver 0:8000
         ports:
             - "8000:8000"
         networks:
@@ -32,7 +32,7 @@ services:
             - db1
 
         volumes:
-            - ./:/opt/iSkyLIMS
+            - ./:/opt/iskylims
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
 networks:
