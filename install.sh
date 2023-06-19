@@ -194,6 +194,7 @@ while getopts $options opt; do
             upgrade=false
             if [[ "$OPTARG" -eq "full" || "$OPTARG" -eq "dep" || "$OPTARG" -eq "app" ]]; then
                 install_type=$OPTARG
+                upgrade_type=$OPTARG
             else
                 echo "Upgrade is not set to one valid option. Use: --upgrade full/app/dep"
                 exit 1
@@ -204,6 +205,7 @@ while getopts $options opt; do
             upgrade=true
             if [[ "$OPTARG" -eq "full" || "$OPTARG" -eq "dep" || "$OPTARG" -eq "app" ]]; then
                 upgrade_type=$OPTARG
+                install_type=$OPTARG
             else
                 echo "Upgrade is not set to one valid option. Use: --upgrade full/app/dep"
                 exit 1
@@ -290,7 +292,7 @@ printf "${BLUE}Successful check for database${NC}\n"
 apache_check
 printf "${BLUE}Successful check for apache${NC}\n"
 
-if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ]; then
+if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ] || [ "$upgrade_type" == "full" ] || [ "$upgrade_type" == "dep" ]; then
     printf "${YELLOW} Checking requirement of root  user when installation is full or dep ${NC}\n"
     root_check
     printf "${BLUE}Successful checking of root user${NC}\n"
