@@ -387,6 +387,7 @@ if [ $upgrade == true ]; then
         echo "Update settings and url file."
         update_settings_and_urls
         # update illumina template files.# Copy illumina sample sheet templates
+        mkdir -p $INSTALL_PATH/documents/wetlab/templates/
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
 
         cd $INSTALL_PATH
