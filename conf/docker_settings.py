@@ -52,7 +52,10 @@ INSTALLED_APPS = [
     "django_cleanup",
 ]
 
-APPS_NAMES = [["wetlab", "Genomics unit: massive sequencing"], ["drylab", "Bioinformatics unit: analysis requests"]]
+APPS_NAMES = [
+    ["wetlab", "Genomics unit: massive sequencing"],
+    ["drylab", "Bioinformatics unit: analysis requests"],
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

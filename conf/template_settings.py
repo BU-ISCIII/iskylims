@@ -53,10 +53,10 @@ INSTALLED_APPS = [
 ]
 
 APPS_NAMES = [
-    # ["clinic", "Clinic"],
-    ["wetlab", "Masive Sequencing"],
-    ["drylab", "Request Service"],
+    ["wetlab", "Genomics unit: massive sequencing"],
+    ["drylab", "Bioinformatics unit: analysis requests"],
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
