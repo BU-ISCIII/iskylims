@@ -23,9 +23,9 @@ services:
     web1:
         build: .
         container_name: iskylimsv2_app
-        command: python3 /opt/iskylims/manage.py runserver 0:8000
+        command: python3 /opt/iskylims/manage.py runserver 0:8001
         ports:
-            - "8000:8000"
+            - "8000:8004"
         networks:
             - developv2
         depends_on:
