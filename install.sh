@@ -138,6 +138,17 @@ update_settings_and_urls(){
     sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py    
 }
 
+upgrade_venv(){
+    rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
+    cd $INSTALL_PATH
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+    echo "Installing required python packages"
+    $PYTHON_BIN_PATH -m pip install --upgrade pip
+    $PYTHON_BIN_PATH -m pip install -r conf/requirements.txt
+    cd -
+}
+
 #================================================================
 #SET TEMINAL COLORS
 #================================================================
@@ -326,15 +337,29 @@ if [ $upgrade == true ]; then
     printf "${YELLOW}------------------${NC}\n\n"
     
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "dep" ]; then
-        # upgrade pip dependencies if needed
-        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
-        cd $INSTALL_PATH
-        echo "activate the virtualenv"
-        source virtualenv/bin/activate
-        echo "Installing required python packages"
-        $PYTHON_BIN_PATH -m pip install --upgrade pip
-        $PYTHON_BIN_PATH -m pip install -r conf/requirements.txt
-        cd -
+        if [ -d $INSTALL_PATH/virtualenv ]; then
+            read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                rm -rf $INSTALL_PATH/virtualenv
+                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+                upgrade_venv()
+            else
+                upgrade_venv()
+            fi
+        else
+            echo "There is no virtualenv to upgrade in $INSTALL_PATH."
+            read -p "Do you want to create a new virtualenv and reinstall? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                rm -rf $INSTALL_PATH/virtualenv
+                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+                upgrade_venv()
+            else
+                echo "Exiting..."
+                exit 0
+            fi
+        fi
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
