@@ -25,14 +25,13 @@ services:
         container_name: iskylimsv2_app
         command: python3 /opt/iskylims/manage.py runserver 0:8001
         ports:
-            - "8000:8004"
+            - "8001:8004"
         networks:
             - developv2
         depends_on:
             - db1
 
         volumes:
-            - ./:/opt/iskylims
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
 networks:
