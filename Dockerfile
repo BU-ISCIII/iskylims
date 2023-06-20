@@ -24,7 +24,7 @@ RUN mkdir /opt/iskylims
 WORKDIR /opt/iskylims
 
 # RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
-RUN git clone https://github.com/luissian/iSkyLIMS.git .
+RUN git clone https://github.com/smonzon/iSkyLIMS.git .
 RUN git checkout develop
 # RUN git checkout develop
 
