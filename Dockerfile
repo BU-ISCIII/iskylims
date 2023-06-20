@@ -24,7 +24,8 @@ RUN mkdir /opt/iskylims
 WORKDIR /opt/iskylims
 
 # RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
-RUN git clone https://github.com/luissian/iSkyLIMS.git
+RUN git clone https://github.com/luissian/iSkyLIMS.git .
+RUN git checkout develop
 # RUN git checkout develop
 
 RUN mkdir -p /opt/iskylims/documents/wetlab/tmp
@@ -50,5 +51,5 @@ RUN cp conf/urls.py /opt/iskylims/iskylims/
 RUN sed -i "/^SECRET/c\\$(cat ~/.secret)" iskylims/settings.py
 ENV PATH="usr/bin:$PATH"
 # Expose and run
-EXPOSE 8000
+EXPOSE 8001
 # CMD python3 manage.py runserver 0:8000
