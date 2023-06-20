@@ -393,15 +393,9 @@ if [ $upgrade == true ]; then
             source virtualenv/bin/activate
 
             echo "Create a fake initial"
-<<<<<<< HEAD
-            python manage.py makemigrations django_utils iSkyLIMS_core \
-                iSkyLIMS_wetlab iSkyLIMS_drylab
-            python manage.py migrate --fake-initial
-=======
             $PYTHON_BIN_PATH manage.py makemigrations django_utils iSkyLIMS_core \
                 iSkyLIMS_wetlab iSkyLIMS_drylab
             $PYTHON_BIN_PATH manage.py migrate --fake-initial
->>>>>>> 8a5293f8 (modify readme, fixed stuff in install.sh)
 
             if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
                 echo "Changing app dir names in $INSTALL_PATH..."
@@ -515,12 +509,12 @@ if [ $upgrade == true ]; then
             echo "activate the virtualenv"
             source virtualenv/bin/activate
             echo "Running migrate..."
-            $PYTHON_BIN_PATH manage.py migrate
+            python manage.py migrate
             echo "Done migrate command."
 
         else
             echo "checking for database changes"
-            if $PYTHON_BIN_PATH manage.py makemigrations | grep -q "No changes"; then
+            if python manage.py makemigrations | grep -q "No changes"; then
                 echo "No migration is required"
             else
                 read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
@@ -530,24 +524,24 @@ if [ $upgrade == true ]; then
                     exit 1
                 fi
                 echo "Running migrate..."
-                $PYTHON_BIN_PATH manage.py migrate
+                python manage.py migrate
                 echo "Done migrate command."
             fi
         fi     
         
         echo "Running collect statics..."
-        $PYTHON_BIN_PATH manage.py collectstatic
+        python manage.py collectstatic
         echo "Done collect statics"
         
         if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
-            $PYTHON_BIN_PATH manage.py loaddata conf/first_install_tables.json
+            python manage.py loaddata conf/first_install_tables.json
             echo "Done loading pre-filled tables..."
         fi
 
         if [ $run_script ]; then
             echo "Running migration script: $migration_script"
-            $PYTHON_BIN_PATH manage.py runscript $migration_script
+            python manage.py runscript $migration_script
             echo "Done migration script: $migration_script"
         fi
 
@@ -634,7 +628,7 @@ if [ $install == true ]; then
             apt-get install -y \
                 apt-utils wget \
                 libmysqlclient-dev \
-                $PYTHON_BIN_PATH-venv  \
+                python3-venv  \
                 libpq-dev \
                 python3-dev python3-pip python3-wheel \
                 apache2-dev
@@ -669,8 +663,8 @@ if [ $install == true ]; then
 
         # Install python packages required for iSkyLIMS
         echo "Installing required python packages"
-        $PYTHON_BIN_PATH -m pip install wheel
-        $PYTHON_BIN_PATH -m pip install -r conf/requirements.txt
+        python -m pip install wheel
+        python -m pip install -r conf/requirements.txt
 
         ## Create apache group if it does not exist.
         if ! grep -q apache /etc/group
@@ -773,20 +767,20 @@ if [ $install == true ]; then
         update_settings_and_urls
 
         echo "Creating the database structure for iSkyLIMS"
-        $PYTHON_BIN_PATH manage.py migrate
-        $PYTHON_BIN_PATH manage.py makemigrations django_utils core wetlab drylab clinic
-        $PYTHON_BIN_PATH manage.py migrate
+        python manage.py migrate
+        python manage.py makemigrations django_utils core wetlab drylab clinic
+        python manage.py migrate
 
         # copy static files 
         echo "Run collectstatic"
-        $PYTHON_BIN_PATH manage.py collectstatic
+        python manage.py collectstatic
 
         echo "Loading in database initial data"
-        $PYTHON_BIN_PATH manage.py loaddata conf/first_install_tables.json
+        python manage.py loaddata conf/first_install_tables.json
 
         echo "Running crontab"
         ## TODO: CHECK THIS.
-        $PYTHON_BIN_PATH manage.py crontab add
+        python manage.py crontab add
         mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
         chown www-data /var/spool/cron/crontabs/www-data
 
@@ -800,7 +794,7 @@ if [ $install == true ]; then
         fi
 
         echo "Creating super user "
-        $PYTHON_BIN_PATH manage.py createsuperuser --username admin
+        python manage.py createsuperuser --username admin
 
         printf "\n\n%s"
         printf "${BLUE}------------------${NC}\n"
