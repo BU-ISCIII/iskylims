@@ -32,8 +32,6 @@ RUN mkdir -p /opt/iskylims/documents/wetlab/tmp
 RUN mkdir -p /opt/iskylims/documents/drylab
 RUN mkdir -p /opt/iskylims/logs
 
-
-
 # Starting iSkyLIMS
 # for develop
 RUN python3 -m pip install -r conf/requirements.txt
