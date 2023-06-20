@@ -340,7 +340,7 @@ if [ $upgrade == true ]; then
         if [ -d $INSTALL_PATH/virtualenv ]; then
             read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
             echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            if [[ $REPLY =~ ^[Yy]$ ]] ; then
                 rm -rf $INSTALL_PATH/virtualenv
                 bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
                 upgrade_venv
@@ -351,8 +351,7 @@ if [ $upgrade == true ]; then
             echo "There is no virtualenv to upgrade in $INSTALL_PATH."
             read -p "Do you want to create a new virtualenv and reinstall? (Y/N) " -n 1 -r
             echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                rm -rf $INSTALL_PATH/virtualenv
+            if [[ $REPLY =~ ^[Yy]$ ]] ; then
                 bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
                 upgrade_venv
             else
