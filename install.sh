@@ -665,8 +665,13 @@ if [ $install == true ]; then
             groupadd apache
         fi
 
-        if [ install == "full" || install == "app" ]; then
-            echo "Software dep are successfuly installed"
+        if [ $install == "full" || $install == "app" ]; then
+            printf "\n\n%s"
+            printf "${BLUE}------------------${NC}\n"
+            printf "%s"
+            printf "${BLUE}Software dep are successfuly installed${NC}\n"
+            printf "%s"
+            printf "${BLUE}------------------${NC}\n\n"
         else
             printf "\n\n%s"
             printf "${BLUE}------------------${NC}\n"
@@ -683,13 +688,6 @@ if [ $install == true ]; then
     #================================================================
 
     if [ "$install_type" == "full" ] || [ "$install_type" == "app" ]; then
-
-        read -p "Are you sure you want to install iSkyLIMS app in this server? (Y/N) " -n 1 -r
-        echo    # (optional) move to a new line
-        if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-            echo "Exiting without installing required software for iSkyLIMS installation"
-            exit 1
-        fi
 
         if [ $LOG_TYPE == "symbolic_link" ]; then
             if [ -d $LOG_PATH ]; then
