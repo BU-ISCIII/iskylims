@@ -8,7 +8,7 @@ RUN apt-get update && apt-get upgrade -y
 
 # Essential software
 RUN apt-get install -y \
-    git lsb-core lsb-release
+    git wget lsb-core lsb-release
 
 RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
 WORKDIR /srv/iskylims
@@ -16,7 +16,10 @@ RUN git checkout develop
 
 RUN bash install.sh --install full --dev --conf conf/docker_install_settings.txt --docker
 
-ENV PATH="usr/bin:$PATH"
+ENV PATH="/usr/bin:/opt/iskylims/virtualenv/bin:$PATH"
+ENV PYTHONPATH="/opt/iskylims/virtualenv/lib/python3.10/site-packages:${PYTHONPATH}"
 
 # Expose
 EXPOSE 8001
+# Start the application
+CMD ["python3", "/opt/iskylims/manage.py", "runserver", "0:8001"]
