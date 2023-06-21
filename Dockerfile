@@ -11,11 +11,10 @@ RUN apt-get install -y \
     git lsb-core lsb-release
 
 RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
+WORKDIR /srv/iskylims
 RUN git checkout develop
 
-WORKDIR /srv/iskylims
-
-RUN bash install.sh --install full --dev --conf conf/docker_install_settings.txt
+RUN bash install.sh --install full --dev --conf conf/docker_install_settings.txt --docker
 
 ENV PATH="usr/bin:$PATH"
 
