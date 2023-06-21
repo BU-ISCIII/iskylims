@@ -651,6 +651,9 @@ if [ $install == true ]; then
         ## Create the installation folder
         mkdir -p $INSTALL_PATH
         
+        # Copy requirements before moving to install path
+        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
+        
         cd $INSTALL_PATH
         # install virtual environment
         echo "Creating virtual environment"
