@@ -649,7 +649,7 @@ if [ $install == true ]; then
         fi
 
         ## Create the installation folder
-        mkdir -p $INSTALL_PATH
+        mkdir -p $INSTALL_PATH/conf
         
         # Copy requirements before moving to install path
         rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
