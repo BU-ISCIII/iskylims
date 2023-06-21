@@ -39,7 +39,7 @@ services:
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
-            - ngs_data_vol:/mnt:z
+            - ngs_data_vol:/mnt
         command: '-s "ngs_data;/mnt;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
     
     app:
