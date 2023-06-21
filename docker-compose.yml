@@ -16,12 +16,13 @@ services:
         networks:
             - develop_net
         volumes:
-            - db_data:/var/lib/mysql
+            - db_data_vol:/var/lib/mysql
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
     
     samba:
         image: dperson/samba
+        container_name: samba
         networks:
         - develop_net
         ports:
@@ -42,8 +43,8 @@ services:
         command: '-s "ngs_data;/mnt;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
     
     app:
-        build: .
-        container_name: iskylimsv2_app
+        build: Dockerfile
+        container_name: iskylims_app
         ports:
             - "8001:8001"
         networks:
@@ -59,5 +60,5 @@ networks:
   develop_net:
 
 volumes:
-  db_data:
+  db_data_vol:
   ngs_data_vol:
