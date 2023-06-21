@@ -8,9 +8,9 @@ RUN apt-get update && apt-get upgrade -y
 
 # Essential software
 RUN apt-get install -y \
-    lsb-core lsb-release
+    git lsb-core lsb-release
 
-RUN git clone https://github.com/BU-ISCIII/iskylims.git /srv/iskylims
+RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
 RUN git checkout develop
 
 WORKDIR /srv/iskylims
