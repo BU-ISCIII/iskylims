@@ -684,7 +684,7 @@ if [ $install == true ]; then
 
         cd -
 
-        if [[ $install == "full" || $install == "app" ]]; then
+        if [ "$install_type" == "full" ] || [ "$install_type" == "app" ]; then
             printf "\n\n%s"
             printf "${BLUE}------------------${NC}\n"
             printf "%s"
@@ -698,6 +698,12 @@ if [ $install == true ]; then
             printf "${BLUE}Software dep are successfuly installed${NC}\n"
             printf "%s"
             printf "${BLUE}------------------${NC}\n\n"
+            printf "\n\n%s"
+            printf "${RED}------------------${NC}\n"
+            printf "%s"
+            printf "${RED}Exiting${NC}\n"
+            printf "%s"
+            printf "${RED}------------------${NC}\n\n"
             exit 0
         fi
     fi
@@ -779,7 +785,7 @@ if [ $install == true ]; then
         python manage.py crontab add
 
         cd -
-        
+
         printf "\n\n%s"
         printf "${BLUE}------------------${NC}\n"
         printf "%s"
