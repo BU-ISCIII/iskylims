@@ -6,10 +6,10 @@ PYTHON_BIN_PATH='python3' # example: /opt/python/3.9.6/bin/python3
 
 ### Settings required to access database
 
-DB_USER='<user_name>'
-DB_PASS='<your_passwd>'
+DB_USER='django'
+DB_PASS='djangopass'
 DB_NAME='iskylims' 
-DB_SERVER_IP='<IP_db_server>'
+DB_SERVER_IP='db1'
 DB_PORT=3306
 
 ### Settings required for sending emails
@@ -21,10 +21,10 @@ EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
 
 ### Settings required for accessing iSkyLIMS
-LOCAL_SERVER_IP='<Relecov_IP>' # example: 172.0.0.1
-DNS_URL='<Relecov_url_address>' # example: iskylims.isciii.es
+LOCAL_SERVER_IP='*' # example: 172.0.0.1
+DNS_URL='*' # example: iskylims.isciii.es
 
 ### Logs settings
-LOG_TYPE="symbolic_link" # can be symbolic link, or regular_folder
+LOG_TYPE="regular_folder" # can be symbolic link, or regular_folder
 LOG_PATH="" # mandatory if LOG_TYPE="symbolic_link", where is the log folder so we can create a symbolic link in the repository folder.
 
