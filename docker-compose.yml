@@ -6,7 +6,7 @@ services:
         container_name: db1
         command: --default-authentication-plugin=mysql_native_password
         environment:
-            MYSQL_DATABASE: iskylims
+            MYSQL_DATABASE: iskylims_docker
             MYSQL_USER : django
             MYSQL_PASSWORD : djangopass
             MYSQL_ROOT_PASSWORD: root
