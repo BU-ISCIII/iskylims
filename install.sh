@@ -302,10 +302,12 @@ fi
 echo "Checking main requirements"
 python_check
 printf "${BLUE}Valid version of Python${NC}\n"
-db_check
-printf "${BLUE}Successful check for database${NC}\n"
-apache_check
-printf "${BLUE}Successful check for apache${NC}\n"
+if [ $docker == false ]; then
+    db_check
+    printf "${BLUE}Successful check for database${NC}\n"
+    apache_check
+    printf "${BLUE}Successful check for apache${NC}\n"
+fi
 
 if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ] || [ "$upgrade_type" == "full" ] || [ "$upgrade_type" == "dep" ]; then
     printf "${YELLOW} Checking requirement of root  user when installation is full or dep ${NC}\n"
@@ -764,7 +766,7 @@ if [ $install == true ]; then
         # update the settings.py and the main urls
         update_settings_and_urls
 
-        if [ ! $docker ]; then
+        if [ $docker == false ]; then
             echo "Creating the database structure for iSkyLIMS"
             python manage.py migrate
             python manage.py makemigrations django_utils core wetlab drylab clinic
