@@ -335,7 +335,6 @@ if [ $upgrade == true ]; then
     printf "${YELLOW}------------------${NC}\n\n"
     
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "dep" ]; then
-<<<<<<< HEAD
         if [ -d $INSTALL_PATH/virtualenv ]; then
             read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
             echo    # (optional) move to a new line
@@ -364,17 +363,6 @@ if [ $upgrade == true ]; then
                 exit 0
             fi
         fi
-=======
-        # upgrade pip dependencies if needed
-        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
-        cd $INSTALL_PATH
-        echo "activate the virtualenv"
-        source virtualenv/bin/activate
-        echo "Installing required python packages"
-        $PYTHON_BIN_PATH -m pip install --upgrade pip
-        $PYTHON_BIN_PATH -m pip install -r conf/requirements.txt
-        cd -
->>>>>>> 8a5293f8 (modify readme, fixed stuff in install.sh)
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
@@ -393,9 +381,9 @@ if [ $upgrade == true ]; then
             source virtualenv/bin/activate
 
             echo "Create a fake initial"
-            $PYTHON_BIN_PATH manage.py makemigrations django_utils iSkyLIMS_core \
+            python manage.py makemigrations django_utils iSkyLIMS_core \
                 iSkyLIMS_wetlab iSkyLIMS_drylab
-            $PYTHON_BIN_PATH manage.py migrate --fake-initial
+            python manage.py migrate --fake-initial
 
             if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
                 echo "Changing app dir names in $INSTALL_PATH..."
