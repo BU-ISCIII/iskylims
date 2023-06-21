@@ -600,6 +600,19 @@ if [ $install == true ]; then
         # Find out server Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)
 
+        echo "Starting iSkyLIMS installation"
+        if [ -d $INSTALL_PATH ]; then
+            echo "There already is an installation of iskylims in $INSTALL_PATH."
+            read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
+            echo    # (optional) move to a new line
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                echo "Exiting without running iSkyLIMS installation"
+                exit 1
+            else
+                rm -rf $INSTALL_PATH
+            fi
+        fi
+
         echo "Installing Interop"
         if [ -d /opt/interop ]; then
             echo "There is already an interop installation"
@@ -635,6 +648,10 @@ if [ $install == true ]; then
                         mariadb-devel libffi-devel
         fi
 
+        ## Create the installation folder
+        mkdir -p $INSTALL_PATH
+        
+        cd $INSTALL_PATH
         # install virtual environment
         echo "Creating virtual environment"
         if [ -d $INSTALL_PATH/virtualenv ]; then
@@ -665,7 +682,9 @@ if [ $install == true ]; then
             groupadd apache
         fi
 
-        if [ $install == "full" || $install == "app" ]; then
+        cd -
+
+        if [[ $install == "full" || $install == "app" ]]; then
             printf "\n\n%s"
             printf "${BLUE}------------------${NC}\n"
             printf "%s"
@@ -702,22 +721,6 @@ if [ $install == true ]; then
             chown $user:apache $INSTALL_PATH/logs
             chmod 775 $INSTALL_PATH/logs
         fi
-
-        echo "Starting iSkyLIMS installation"
-        if [ -d $INSTALL_PATH ]; then
-            echo "There already is an installation of iskylims in $INSTALL_PATH."
-            read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                echo "Exiting without running iSkyLIMS installation"
-                exit 1
-            else
-                rm -rf $INSTALL_PATH
-            fi
-        fi
-
-        ## Create the installation folder
-        mkdir -p $INSTALL_PATH
 
         rsync -rlv README.md LICENSE conf core drylab \
                 wetlab clinic django_utils $INSTALL_PATH
@@ -775,6 +778,8 @@ if [ $install == true ]; then
         echo "Running crontab"
         python manage.py crontab add
 
+        cd -
+        
         printf "\n\n%s"
         printf "${BLUE}------------------${NC}\n"
         printf "%s"
