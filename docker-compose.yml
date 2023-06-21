@@ -1,9 +1,9 @@
-version: '3.3'
+version: '3.4'
 
 services:
-    db1:
+    db:
         image: mysql:8.0
-        container_name: db1
+        container_name: db
         command: --default-authentication-plugin=mysql_native_password
         environment:
             MYSQL_DATABASE: iskylims_docker
@@ -14,27 +14,50 @@ services:
         ports:
             - 6606:3306
         networks:
-            - developv2
+            - develop_net
         volumes:
-            - db1:/var/lib/mysql
+            - db_data:/var/lib/mysql
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
-
-    web1:
+    
+    samba:
+        image: dperson/samba
+        networks:
+        - develop_net
+        ports:
+        - "137:137/udp"
+        - "138:138/udp"
+        - "139:139/tcp"
+        - "445:445/tcp"
+        read_only: true
+        tmpfs:
+        - /tmp
+        restart: unless-stopped
+        stdin_open: true
+        tty: true
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - /usr/share/zoneinfo:/usr/share/zoneinfo
+            - ngs_data_vol:/mnt:z
+        command: '-s "ngs_data;/mnt;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
+    
+    app:
         build: .
         container_name: iskylimsv2_app
         ports:
             - "8001:8001"
         networks:
-            - developv2
+            - develop_net
         depends_on:
-            - db1
-
+            - db
+            - samba
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
+
 networks:
-  developv2:
+  develop_net:
 
 volumes:
-  db1:
+  db_data:
+  ngs_data_vol:

@@ -9,7 +9,7 @@ sleep 20
 
 echo "Creating the database structure for iSkyLIMS"
 docker exec -it iskylimsv2_app python3 manage.py migrate
-docker exec -it iskylimsv2_app python3 manage.py makemigrations django_utils core wetlab drylab clinic
+docker exec -it iskylimsv2_app python3 manage.py makemigrations django_utils core wetlab drylab
 docker exec -it iskylimsv2_app python3 manage.py migrate
 
 echo "Loading in database initial data"
