@@ -14,7 +14,8 @@ usage : $0 --upgrade --dev --conf
     --conf    | Select custom configuration file. Default: ./install_settings.txt
     --tables  | Load the first inital tables for upgrades in conf folder
     --script  | Run a migration script.
-    --ren_app | Rename apps required for the upgrade migration to 2.3.1 
+    --ren_app | Rename apps required for the upgrade migration to 3.0.0
+    --docker  | Specific installation for docker compose configuration.
 
 
 Examples:
@@ -175,6 +176,7 @@ do
         --dev)      set -- "$@" -d ;;
         --conf)     set -- "$@" -c ;;
         --ren_app)  set -- "$@" -r ;;
+        --docker)  set -- "$@" -k ;;
 
     # ADITIONAL
         --help)     set -- "$@" -h ;;
@@ -193,9 +195,10 @@ install=true
 install_type="full"
 upgrade=false
 upgrade_type="full"
+docker=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:drtvh"
+options=":c:s:i:u:drtkvh"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -235,6 +238,9 @@ while getopts $options opt; do
             ;;
         c )
             conf=$OPTARG
+            ;;
+        k )
+            docker=true
             ;;
         h )
             usage
@@ -520,6 +526,10 @@ if [ $upgrade == true ]; then
         echo "Running collect statics..."
         python manage.py collectstatic
         echo "Done collect statics"
+
+        echo "Running crontab add..."
+        python manage.py crontab add
+        echo "Done crontab add"
         
         if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
@@ -754,35 +764,23 @@ if [ $install == true ]; then
         # update the settings.py and the main urls
         update_settings_and_urls
 
-        echo "Creating the database structure for iSkyLIMS"
-        python manage.py migrate
-        python manage.py makemigrations django_utils core wetlab drylab clinic
-        python manage.py migrate
+        if [ ! $docker ]; then
+            echo "Creating the database structure for iSkyLIMS"
+            python manage.py migrate
+            python manage.py makemigrations django_utils core wetlab drylab clinic
+            python manage.py migrate
+            echo "Loading in database initial data"
+            python manage.py loaddata conf/first_install_tables.json
+            echo "Creating super user "
+            python manage.py createsuperuser --username admin
+        fi
 
         # copy static files 
         echo "Run collectstatic"
         python manage.py collectstatic
-
-        echo "Loading in database initial data"
-        python manage.py loaddata conf/first_install_tables.json
-
+            
         echo "Running crontab"
-        ## TODO: CHECK THIS.
         python manage.py crontab add
-        mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
-        chown www-data /var/spool/cron/crontabs/www-data
-
-        echo "Updating Apache configuration"
-        if [[ $linux_distribution == "Ubuntu" ]]; then
-            cp conf/iskylims_apache_ubuntu.conf /etc/apache2/sites-available/000-default.conf
-        fi
-
-        if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-            cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
-        fi
-
-        echo "Creating super user "
-        python manage.py createsuperuser --username admin
 
         printf "\n\n%s"
         printf "${BLUE}------------------${NC}\n"
