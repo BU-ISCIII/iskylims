@@ -600,13 +600,6 @@ if [ $install == true ]; then
         # Find out server Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)
 
-        read -p "Are you sure you want to install software required dependences for iSkyLIMS? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                echo "Exiting without installing required dependences software for iSkyLIMS installation"
-                exit 1
-            fi
-
         echo "Installing Interop"
         if [ -d /opt/interop ]; then
             echo "There is already an interop installation"
