@@ -16,6 +16,7 @@ RUN git checkout develop
 
 RUN bash install.sh --install full --dev --conf conf/docker_install_settings.txt --docker
 
+WORKDIR /opt/iskylims
 ENV PATH="/usr/bin:/opt/iskylims/virtualenv/bin:$PATH"
 ENV PYTHONPATH="/opt/iskylims/virtualenv/lib/python3.10/site-packages:${PYTHONPATH}"
 
