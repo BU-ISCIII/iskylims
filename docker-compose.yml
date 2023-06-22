@@ -5,6 +5,12 @@ services:
         image: mysql:8.0
         container_name: db
         command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        healthcheck:
+          test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="djangopass" --silent']
+          interval: 3s
+          retries: 5
+          start_period: 30s
         environment:
             MYSQL_DATABASE: iskylims_docker
             MYSQL_USER : django
@@ -39,7 +45,8 @@ services:
         networks:
             - develop_net
         depends_on:
-            - db
+            db:
+              condition: service_healthy
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
