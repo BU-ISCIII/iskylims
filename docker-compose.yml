@@ -30,16 +30,10 @@ services:
         - "138:138/udp"
         - "139:139/tcp"
         - "445:445/tcp"
-        read_only: true
-        tmpfs:
-        - /tmp
-        restart: unless-stopped
-        stdin_open: true
-        tty: true
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
-            - ngs_data_vol:/mnt
+            - /home/smonzon/tests_iskylims/test_ngs_data:/mnt:z
         command: '-s "ngs_data;/mnt;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
     
     app:
@@ -51,7 +45,6 @@ services:
             - develop_net
         depends_on:
             - db
-            - samba
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
@@ -61,4 +54,3 @@ networks:
 
 volumes:
   db_data_vol:
-  ngs_data_vol:
