@@ -9,7 +9,7 @@ PYTHON_BIN_PATH='python3' # example: /opt/python/3.9.6/bin/python3
 DB_USER='django'
 DB_PASS='djangopass'
 DB_NAME='iskylims_docker' 
-DB_SERVER_IP='db1'
+DB_SERVER_IP='db'
 DB_PORT=3306
 
 ### Settings required for sending emails
