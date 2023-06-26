@@ -156,6 +156,7 @@ urlpatterns = [
     path("searchRun/", wetlab.views.search_run, name="search_run"),
     path("searchSample/", wetlab.views.search_sample, name="search_sample"),
     path("searchUserLotKit", wetlab.views.search_user_lot_kit, name="search_user_lot_kit"),
+    path("sequencerDetails=<int:seq_id>/", wetlab.views.sequencer_details, name="sequencer_details"),
     path("sequencerInventory", wetlab.views.sequencer_inventory, name="sequencer_inventory"),
     path("setMoleculeValues", wetlab.views.set_molecule_values, name="set_molecule_values"),
     # path('setLibraryValues', wetlab.views.set_library_values, name = 'set_library_values'),
@@ -164,8 +165,8 @@ urlpatterns = [
         wetlab.views.sequencer_configuration,
         name="sequencer_configuration",
     ),
-        path(
-        "skipCancelSituation", wetlab.views.skip_cancel_situation, name="skip_cancel_situation"
+    path(
+    "skipCancelSituation", wetlab.views.skip_cancel_situation, name="skip_cancel_situation"
     ),
     path("statsPerSequencer/", wetlab.views.stats_per_sequencer, name="stats_per_sequencer"),
     path(
