@@ -459,7 +459,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="resolution",
             name="resolution_number",
-            field=models.CharField(max_length=255, null=True, verbose_name="Resolution name"),
+            field=models.CharField(
+                max_length=255, null=True, verbose_name="Resolution name"
+            ),
         ),
         migrations.AlterModelTable(
             name="availableservice",
