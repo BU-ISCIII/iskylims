@@ -769,10 +769,10 @@ def search_run(request):
 
     """
     # check user privileges
-    if wetlab.utils.common.is_wetlab_manager:
-        allowed_all_runs = False
-    else:
+    if wetlab.utils.common.is_wetlab_manager(request):
         allowed_all_runs = True
+    else:
+        allowed_all_runs = False
 
     # Search for runs that fullfil the input values
     ########
@@ -792,9 +792,10 @@ def search_run(request):
             and run_state == ""
             and platform_name == ""
         ):
-            return render(request, "wetlab/search_run.html")
+            return render(request, "wetlab/search_run.html", {"run_form_data": run_form_data})
 
         # check the right format of start and end date
+
         if start_date != "":
             if not wetlab.utils.common.check_valid_date_format(start_date):
                 error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
@@ -825,7 +826,7 @@ def search_run(request):
             run_list = []
             for user_project in user_projects:
                 # run_list.append(user_project.runprocess_id.id)
-                run_objs = user_project.runProcess.all()
+                run_objs = user_project.run_process.all()
                 for run_obj in run_objs:
                     run_list.append(run_obj.get_run_id())
             if wetlab.models.RunProcess.objects.filter(pk__in=run_list).exists():
@@ -839,7 +840,6 @@ def search_run(request):
                     "wetlab/search_run.html",
                     {"run_form_data": run_form_data, "error_message": error_message},
                 )
-
         # Get runs when run name is not empty
         if run_name != "":
             if wetlab.models.RunProcess.objects.filter(
@@ -919,9 +919,13 @@ def search_run(request):
                 )
 
         # If only 1 run mathes the user conditions, then get the project information
-
         if len(runs_found) == 1:
             return redirect("display_run", run_id=runs_found[0].pk)
+        elif len(runs_found) == 0:
+            error_message = wetlab.config.ERROR_NO_MATCHES_FOR_RUN_SEARCH
+            return render(
+            request, "wetlab/search_run.html", {"run_form_data": run_form_data, "error_message": error_message}
+        )
 
         else:
             # collect the list of run that matches the run date
@@ -1101,7 +1105,7 @@ def search_project(request):
 @login_required
 def retry_error_run(request):
     # check user privileges
-    if not wetlab.utils.common.is_wetlab_manager:
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/display_run.html",
@@ -1138,7 +1142,7 @@ def retry_error_run(request):
 @login_required
 def skip_cancel_situation(request):
     # check user privileges
-    if not wetlab.utils.common.is_wetlab_manager:
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/skip_cancel_situation.html",
@@ -1173,7 +1177,7 @@ def skip_cancel_situation(request):
 @login_required
 def display_run(request, run_id):
     # check user privileges
-    if not wetlab.utils.common.is_wetlab_manager:
+    if not wetlab.utils.common.is_wetlab_manager(request):
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
         if wetlab.models.wetlab.models.Projects.objects.filter(
@@ -1221,7 +1225,7 @@ def display_run(request, run_id):
 @login_required
 def last_run_by_sequencer(request):
     # check user privileges
-    if not wetlab.utils.common.is_wetlab_manager:
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/last_run_by_sequencer.html",
@@ -1244,7 +1248,7 @@ def last_run_by_sequencer(request):
 @login_required
 def incompleted_runs(request):
     # check user privileges
-    if not wetlab.utils.common.is_wetlab_manager:
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/incompleted_runs.html",
@@ -1739,7 +1743,7 @@ def get_list_of_libraries_values(
 @login_required
 def annual_report(request):
     # check user privileges
-    if not wetlab.utils.common.is_wetlab_manager:
+    if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
             "wetlab/annual_report.html",

@@ -732,9 +732,7 @@ ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = "There is not any Index Library Kit  t
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = [
     "There is not any project that mathes your input conditions"
 ]
-ERROR_NO_MATCHES_FOR_RUN_SEARCH = [
-    "There is not any run that matches your input conditions"
-]
+ERROR_NO_MATCHES_FOR_RUN_SEARCH = "There are not matches that fits your input conditions"
 ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = [
     "There is not any run that where using the sequencer"
 ]
