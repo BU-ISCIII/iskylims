@@ -19,7 +19,7 @@ echo "Creating super user "
 docker exec -it iskylims_app python3 manage.py createsuperuser
 
 echo "Download testing files and copy it to samba container"
-wget https://zenodo.org/record/8059345/files/iskylims_demo_data.tar.gz
+wget https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
 docker cp iskylims_demo_data.tar.gz samba:/mnt
 docker exec -it samba tar -xf  /mnt/iskylims_demo_data.tar.gz -C /mnt
 
@@ -27,4 +27,7 @@ echo "deleting compress testing file"
 docker exec -it samba rm /mnt/iskylims_demo_data.tar.gz
 rm  iskylims_demo_data.tar.gz
 
+
+echo "Running crontab"
+docker exec -it iskylims_app python3 manage.py crontab add
 echo "You can now access iskylims via: http://localhost:8001"
