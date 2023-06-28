@@ -1,0 +1,36 @@
+name: python_lint
+
+on:
+  push:
+    paths:
+      - '**.py'
+  pull_request:
+    paths:
+      - '**.py'
+
+jobs:
+  flake8_py3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9.x
+          architecture: x64
+      - name: Checkout PyTorch
+        uses: actions/checkout@master
+      - name: Install flake8
+        run: pip install flake8
+      - name: Run flake8
+        run: flake8 --ignore E501,W503,E203,W605
+
+  black_lint:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Setup
+          uses: actions/checkout@v2
+        - name: Install black in jupyter
+          run: pip install black[jupyter]
+        - name: Check code lints with Black
+          uses: psf/black@stable
+
