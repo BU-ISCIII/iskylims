@@ -46,7 +46,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
                 try:
                     description_index = line.index("Description")
                     continue
-                except:
+                except Exception:
                     users[
                         "ERROR"
                     ] = wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
@@ -54,7 +54,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
             else:
                 try:
                     u_name = line[description_index]
-                except:
+                except Exception:
                     continue
                 if u_name in user_id_list:
                     userid_names.append(u_name)
@@ -84,7 +84,7 @@ def delete_stored_file(input_file):
     if os.path.exists(input_file):
         try:
             os.remove(input_file)
-        except:
+        except Exception:
             return False
         return True
     return False
@@ -182,7 +182,7 @@ def get_projects_in_sample_sheet(file_lines):
         if header_found:
             try:
                 project_list.append(line.split(",")[index_project_name])
-            except:
+            except Exception:
                 continue
     project_name_list = list(set(project_list))
     return project_name_list
@@ -239,7 +239,7 @@ def get_samples_in_sample_sheet(file_lines):
             line_split = line.split(",")
             try:
                 sample_name = line_split[index_sample_name].strip()
-            except:
+            except Exception:
                 continue
             if sample_name == "":
                 continue
@@ -340,7 +340,7 @@ def get_sample_with_user_owner(sample_sheet_path):
             index_sample_name = sample_sheet_heading.index("Sample_Name")
             try:
                 index_description = sample_sheet_heading.index("Description")
-            except:
+            except Exception:
                 index_description = None
             continue
         if header_found:
@@ -351,7 +351,7 @@ def get_sample_with_user_owner(sample_sheet_path):
                     user_id = line_split[index_description].strip()
                 else:
                     user_id = None
-            except:
+            except Exception:
                 continue
             if sample_name == "":
                 continue
@@ -436,7 +436,7 @@ def update_library_kit_field(library_file_name, library_kit_name, library_name):
     try:
         fh_in = open(library_file_name, "r")
         fh_out = open(out_file, "w")
-    except:
+    except Exception:
         return "ERROR:"
 
     for line in fh_in:
@@ -467,7 +467,7 @@ def update_sample_sheet(in_file, experiment_name):
             fh_out.write(out_line)
             experiment_line_found = True
 
-        elif line == "\n" and experiment_line_found == False:
+        elif line == "\n" and experiment_line_found is False:
             fh_out.write(out_line)
             fh_out.write("\n")
             experiment_line_found = True
@@ -658,7 +658,7 @@ def read_user_iem_file(in_file):
         file_read = fh.read()
         fh.close()
         return file_read
-    except:
+    except Exception:
         fh.close()
         return False
 

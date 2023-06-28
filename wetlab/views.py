@@ -2604,7 +2604,7 @@ def display_sample_in_run(request, sample_run_id):
     if not wetlab.utils.common.is_wetlab_manager(request):
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
-        if not sample_run_obj.get_user_id in shared_user_ids:
+        if sample_run_obj.get_user_id not in shared_user_ids:
             return render(
                 request,
                 "wetlab/display_sample.html",

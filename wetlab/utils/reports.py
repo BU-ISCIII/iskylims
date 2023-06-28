@@ -1,6 +1,5 @@
 # Generic imports
-from django.contrib.auth.models import User
-from django.db.models import Avg, F, Count, Func, Value, CharField
+from django.db.models import F, Count
 from django.db.models.functions import ExtractMonth, ExtractYear
 
 # Local imports

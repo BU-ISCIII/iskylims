@@ -48,7 +48,7 @@ class SampleSerializer(serializers.ModelSerializer):
     )
     collectionSampleDate = serializers.DateTimeField(
         format="%Y-%m-%d", label="Collection sample date"
-    ) 
+    )
     """
     project_values = ProjectValuesSerializers(many=True)
 

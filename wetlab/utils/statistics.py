@@ -150,9 +150,10 @@ def get_per_time_statistics(start_date, end_date):
     ).render()
 
     # Graphic chart for unknown barcodes
-    barcode_objs = wetlab.models.RawTopUnknowBarcodes.objects.filter(
-        runprocess_id__in=run_objs
-    )
+    # pening to fix issue 158
+    # barcode_objs = wetlab.models.RawTopUnknowBarcodes.objects.filter(
+    #    runprocess_id__in=run_objs
+    # )
 
     # chart graph for Q > 30 based on runs
     # ##############################
@@ -596,9 +597,9 @@ def get_sequencer_statistics(sequencer_name, start_date, end_date):
     else:
         run_objs = wetlab.models.RunProcess.objects.all()
     all_run_objs = run_objs
-    other_run_objs = run_objs.exclude(
-        used_sequencer__sequencer_name__iexact=sequencer_name
-    )
+    # other_run_objs = run_objs.exclude(
+    #    used_sequencer__sequencer_name__iexact=sequencer_name
+    # )
     run_objs = run_objs.filter(used_sequencer__sequencer_name__iexact=sequencer_name)
 
     if len(run_objs) == 0:
