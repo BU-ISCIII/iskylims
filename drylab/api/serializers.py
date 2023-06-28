@@ -4,8 +4,13 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from django_utils.models import Profile
-from drylab.models import (Delivery, Pipelines, RequestedSamplesInServices,
-                           Resolution, Service)
+from drylab.models import (
+    Delivery,
+    Pipelines,
+    RequestedSamplesInServices,
+    Resolution,
+    Service,
+)
 
 
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):
@@ -41,7 +46,9 @@ class UpdateResolutionStateSerializer(serializers.ModelSerializer):
                 "resolution_inprogress_date"
             ]
         if "resolution_delivery_date" in validated_data:
-            instance.resolution_delivery_date = validated_data["resolution_delivery_date"]
+            instance.resolution_delivery_date = validated_data[
+                "resolution_delivery_date"
+            ]
         instance.save()
         return instance
 
@@ -113,7 +120,6 @@ class CustomAvailableServiceField(serializers.RelatedField):
 
 
 class PipelinesSerializer(serializers.ModelSerializer):
-
     def to_representation(self, instance):
         output_label = self.context["output_label"]
         data = super(PipelinesSerializer, self).to_representation(instance)
@@ -213,10 +219,11 @@ class ResolutionSerializer(serializers.ModelSerializer):
 
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
-
     def to_representation(self, instance):
         output_label = self.context["output_label"]
-        data = super(RequestedSamplesInServicesSerializer, self).to_representation(instance)
+        data = super(RequestedSamplesInServicesSerializer, self).to_representation(
+            instance
+        )
         data_update = OrderedDict()
         for key in self.fields:
             if output_label:
@@ -232,7 +239,14 @@ class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RequestedSamplesInServices
-        fields = ["run_name", "project_name", "sample_name", "sample_key", "pk", "sample_path"]
+        fields = [
+            "run_name",
+            "project_name",
+            "sample_name",
+            "sample_key",
+            "pk",
+            "sample_path",
+        ]
 
 
 class ServiceListSerializer(serializers.ModelSerializer):

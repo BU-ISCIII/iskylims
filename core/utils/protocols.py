@@ -66,7 +66,9 @@ def define_table_for_prot_parameters(protocol_id):
 
     prot_parameters["protocol_name"] = protocol_obj.get_name()
     prot_parameters["protocol_id"] = protocol_id
-    prot_parameters["heading"] = core.core_config.HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+    prot_parameters[
+        "heading"
+    ] = core.core_config.HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
     return prot_parameters
 
 
@@ -232,7 +234,9 @@ def get_all_protocol_info(protocol_id):
     protocol_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
 
     if core.models.ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
-        protocol_data["parameter_heading"] = core.core_config.HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+        protocol_data[
+            "parameter_heading"
+        ] = core.core_config.HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
         protocol_data["protocol_name"] = protocol_obj.get_name()
         protocol_parameters = core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj
@@ -281,7 +285,9 @@ def get_protocol_fields(protocol_id):
             parameter_data.append(protocol_parameter_obj.get_parameter_protocol_id())
             parameter_list.append(parameter_data)
 
-        parameters_protocol["heading"] = core.core_config.HEADING_FOR_MODIFY_PROTOCOL_FIELDS
+        parameters_protocol[
+            "heading"
+        ] = core.core_config.HEADING_FOR_MODIFY_PROTOCOL_FIELDS
         parameters_protocol["protocol_id"] = protocol_id
         parameters_protocol["protocol_name"] = protocol_obj.get_name()
         parameters_protocol["fields"] = parameter_list

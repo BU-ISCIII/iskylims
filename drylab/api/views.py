@@ -130,9 +130,9 @@ def service_list(request):
 
     service_objs = Service.objects.all()
     if "state" in request.GET:
-        service_objs = service_objs.filter(service_state__state_value__iexact=state).order_by(
-            "service_request_number"
-        )
+        service_objs = service_objs.filter(
+            service_state__state_value__iexact=state
+        ).order_by("service_request_number")
     if "date_from" in request.GET and "date_until" in request.GET:
         service_objs = service_objs.filter(
             service_delivered_date__range=(date_from, date_until)
@@ -227,7 +227,9 @@ def service_full_data(request):
         service_obj = Service.objects.prefetch_related(
             Prefetch(
                 "resolutions",
-                queryset=Resolution.objects.filter(resolution_number__iexact=resolution),
+                queryset=Resolution.objects.filter(
+                    resolution_number__iexact=resolution
+                ),
                 to_attr="filtered_resolutions",
             )
         )
@@ -381,7 +383,9 @@ def create_delivery(request):
             data = data.dict()
 
         resolution_pk = (
-            Resolution.objects.filter(resolution_number__exact=data["resolution_number"])
+            Resolution.objects.filter(
+                resolution_number__exact=data["resolution_number"]
+            )
             .last()
             .pk
         )
