@@ -43,9 +43,7 @@ def get_all_defined_pipelines(only_in_used):
     defined_pipelines = []
     pipeline_objs = False
     if only_in_used:
-        if drylab.models.Pipelines.objects.filter(
-            pipeline_in_use=True
-        ).exists():
+        if drylab.models.Pipelines.objects.filter(pipeline_in_use=True).exists():
             pipeline_objs = (
                 drylab.models.Pipelines.objects.filter(pipeline_in_use=True)
                 .order_by("pipeline_name")
@@ -79,9 +77,7 @@ def get_data_form_pipeline():
         additional_data
     """
     additional_data = {}
-    additional_data[
-        "heading"
-    ] = drylab.config.HEADING_PARAMETER_PIPELINE
+    additional_data["heading"] = drylab.config.HEADING_PARAMETER_PIPELINE
 
     return additional_data
 
@@ -102,9 +98,7 @@ def get_detail_pipeline_data(pipeline_id):
     """
     detail_pipelines_data = {}
     if drylab.models.Pipelines.objects.filter(pk__exact=pipeline_id).exists():
-        pipeline_obj = drylab.models.Pipelines.objects.get(
-            pk__exact=pipeline_id
-        )
+        pipeline_obj = drylab.models.Pipelines.objects.get(pk__exact=pipeline_id)
         detail_pipelines_data["pipeline_name"] = pipeline_obj.get_pipeline_name()
         detail_pipelines_data["pipeline_basic"] = pipeline_obj.get_pipeline_basic()
         detail_pipelines_data[
@@ -154,9 +148,7 @@ def get_defined_pipeline_data_to_display(pipeline_obj):
         pipeline_obj.get_pipeline_version(),
         pipeline_obj.get_pipeline_description(),
     ]
-    pipeline_data[
-        "heading_pipeline"
-    ] = drylab.config.DISPLAY_NEW_DEFINED_PIPELINE
+    pipeline_data["heading_pipeline"] = drylab.config.DISPLAY_NEW_DEFINED_PIPELINE
     return pipeline_data
 
 
@@ -175,9 +167,7 @@ def get_pipelines_for_manage():
         pipeline_data["data"] = []
         for pipeline in pipelines_objs:
             pipeline_data["data"].append(pipeline.get_pipeline_info())
-        pipeline_data[
-            "heading"
-        ] = drylab.config.HEADING_MANAGE_PIPELINES
+        pipeline_data["heading"] = drylab.config.HEADING_MANAGE_PIPELINES
 
     return pipeline_data
 

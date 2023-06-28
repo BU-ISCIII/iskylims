@@ -9,9 +9,7 @@ import drylab.views
 urlpatterns = [
     path("", drylab.views.index, name="index"),
     path("add-resolution", drylab.views.add_resolution, name="add_resolution"),
-    path(
-        "add-in-progress", drylab.views.add_in_progress, name="add_in_progress"
-    ),
+    path("add-in-progress", drylab.views.add_in_progress, name="add_in_progress"),
     path("add-delivery", drylab.views.add_delivery, name="add_delivery"),
     path(
         "add-samples-service",

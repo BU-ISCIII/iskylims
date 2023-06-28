@@ -9,9 +9,10 @@ from jsonschema import Draft202012Validator
 
 # Local imports
 import core.core_config
-import core.models 
+import core.models
 
 import core.utils.samples
+
 
 def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
     """
@@ -41,24 +42,30 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
     Input:
         sample_batch_df     # sample data in dataframe
         package     # name of the apps that request the checking
-    
+
     Return:
         OK or error code
     """
     # Check if option values are already defined
     unique_lab_request = sample_batch_df["Lab requested"].unique().tolist()
     if not core.models.LabRequest.objects.all().exists():
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED
+        return (
+            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED
+        )
     lab_requested_values = list(
         core.models.LabRequest.objects.all().values_list("lab_name_coding", flat=True)
     )
     for lab_request in unique_lab_request:
         if lab_request not in lab_requested_values:
-            error_cause = core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED.copy()
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED.copy()
+            )
             error_cause.insert(1, lab_request)
             return error_cause
     if not core.models.SampleType.objects.filter(apps_name=package).exists():
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES
+        return (
+            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES
+        )
     sample_type_values = list(
         core.models.SampleType.objects.filter(apps_name=package).values_list(
             "sample_type", flat=True
@@ -67,23 +74,31 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
     unique_sample_types = sample_batch_df["Type of Sample"].unique().tolist()
     for sample_type in unique_sample_types:
         if sample_type not in sample_type_values:
-            error_cause = core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE.copy()
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE.copy()
+            )
             error_cause.insert(1, sample_type)
             return error_cause
     if not core.models.Species.objects.filter(apps_name=package).exists():
         return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES
     species_values = list(
-        core.models.Species.objects.filter(apps_name=package).values_list("species_name", flat=True)
+        core.models.Species.objects.filter(apps_name=package).values_list(
+            "species_name", flat=True
+        )
     )
     unique_species = sample_batch_df["Species"].unique().tolist()
     for specie in unique_species:
         if specie not in species_values:
-            error_cause = core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES.copy()
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES.copy()
+            )
             error_cause.insert(1, specie)
             return error_cause
     # check if sample projects are defined
     if not core.models.SampleProjects.objects.filter(apps_name=package).exists():
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS
+        return (
+            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS
+        )
     sample_project_values = list(
         core.models.SampleProjects.objects.filter(apps_name=package).values_list(
             "sample_project_name", flat=True
@@ -92,7 +107,9 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
     unique_sample_projects = sample_batch_df["Project/Service"].unique().tolist()
     for sample_project in unique_sample_projects:
         if sample_project not in sample_project_values:
-            error_cause = core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS.copy()
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS.copy()
+            )
             error_cause.insert(1, sample_project)
             return error_cause
 
@@ -142,7 +159,9 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
             error_cause.insert(1, m_field)
             return error_cause
     if not core.models.MoleculeType.objects.filter(apps_name__exact=package).exists():
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES
+        return (
+            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES
+        )
     molecule_values = list(
         core.models.MoleculeType.objects.filter(apps_name__exact=package).values_list(
             "molecule_type", flat=True
@@ -151,7 +170,9 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
     unique_molecule_types = sample_batch_df["Molecule Type"].unique().tolist()
     for molecule_type in unique_molecule_types:
         if molecule_type not in molecule_values:
-            error_cause = core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE.copy()
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE.copy()
+            )
             error_cause.insert(1, molecule_type)
             return error_cause
     if not core.models.Protocols.objects.filter(
@@ -193,7 +214,9 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
 
     sample_new = {}
     # Check if sample alredy  defined for this user
-    if not core.utils.samples.check_if_sample_already_defined(sample_data["Sample Name"], reg_user):
+    if not core.utils.samples.check_if_sample_already_defined(
+        sample_data["Sample Name"], reg_user
+    ):
         if sample_data["Type of Sample"] == "":
             print("Type of Sample is null for the Sample ", sample_data["Sample Name"])
 
@@ -202,10 +225,14 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
 
     #  Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
     if sample_data["Patient Code ID"] != "":
-        patient_obj = core.utils.samples.check_patient_code_exists(sample_data["Patient Code ID"])
+        patient_obj = core.utils.samples.check_patient_code_exists(
+            sample_data["Patient Code ID"]
+        )
         if patient_obj is False:
             # Define the new patient only Patient code is defined
-            sample_new["patient"] = core.utils.samples.create_empty_patient(sample_data["Patient Code ID"])
+            sample_new["patient"] = core.utils.samples.create_empty_patient(
+                sample_data["Patient Code ID"]
+            )
         else:
             sample_new["patient"] = patient_obj
     else:
@@ -292,7 +319,9 @@ def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
     molecule_data["numberOfReused"] = str(0)
     molecule_data["app_name"] = package
     molecule_data["user"] = reg_user
-    new_molecule = core.models.MoleculePreparation.objects.create_molecule(molecule_data)
+    new_molecule = core.models.MoleculePreparation.objects.create_molecule(
+        molecule_data
+    )
     return new_molecule
 
 
@@ -332,8 +361,8 @@ def create_molecule_parameter_from_file(molecule_obj, sample_data):
             p_parameter_obj.get_parameter_name()
         ]
         core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
-                molecule_parameter_value
-            )
+            molecule_parameter_value
+        )
     return
 
 
@@ -351,7 +380,9 @@ def read_batch_sample_file(batch_file):
     num_rows, _ = sample_batch_df.shape
     if num_rows == 0:
         sample_data = {}
-        sample_data["ERROR"] = core.core_config.ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
+        sample_data[
+            "ERROR"
+        ] = core.core_config.ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
         return sample_data
 
     return sample_batch_df
@@ -380,10 +411,14 @@ def valid_sample_batch_file(sample_batch_df, package):
     if sample_batch_df.isnull().values.any():
         return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
     if not check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_df):
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
+        return (
+            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
+        )
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
     if check_opt_values != "OK":
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
+        return (
+            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
+        )
     # check molecule columns data
     check_molecule_par = check_molecule_has_same_data_type(sample_batch_df, package)
     if check_molecule_par != "OK":
@@ -447,7 +482,9 @@ def store_schema(schema, field, valid_fields, s_project_id):
     # sample project list
     ont_list = []
     if core.models.OntologyMap.objects.all().exists():
-        ont_list = list(core.models.OntologyMap.objects.values_list("ontology", flat=True))
+        ont_list = list(
+            core.models.OntologyMap.objects.values_list("ontology", flat=True)
+        )
     else:
         ont_list = []
     for property in schema["properties"].keys():
@@ -500,10 +537,12 @@ def store_schema(schema, field, valid_fields, s_project_id):
                 sample_projects_id=s_project_obj,
                 classification_name__iexact=property["classification"],
             ).exists():
-                classification_obj = core.models.SampleProjectFieldClassification.objects.filter(
-                    sample_projects_id=s_project_obj,
-                    classification_name__iexact=property["classification"],
-                ).last()
+                classification_obj = (
+                    core.models.SampleProjectFieldClassification.objects.filter(
+                        sample_projects_id=s_project_obj,
+                        classification_name__iexact=property["classification"],
+                    ).last()
+                )
             else:
                 c_data = {
                     "sample_project_id": s_project_obj,
@@ -521,8 +560,10 @@ def store_schema(schema, field, valid_fields, s_project_id):
         property["Option Values"] = ""
         property["sample_project_id"] = s_project_obj
         property["Order"] = counter
-        new_s_project_prop = core.models.SampleProjectsFields.objects.create_sample_project_fields(
-            property
+        new_s_project_prop = (
+            core.models.SampleProjectsFields.objects.create_sample_project_fields(
+                property
+            )
         )
         if "enum" in property:
             for opt in property["enum"]:

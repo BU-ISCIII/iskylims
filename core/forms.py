@@ -46,12 +46,10 @@ class ContactForm(forms.Form):
             layout.Div(
                 layout.Div(
                     bootstrap.FormActions(
-                        layout.Submit(
-                            ("submit"), _("Submit")
-                        ),
+                        layout.Submit(("submit"), _("Submit")),
                     ),
                     css_class="col-md-auto",
                 ),
-                css_class="row justify-content-end"
+                css_class="row justify-content-end",
             ),
         )

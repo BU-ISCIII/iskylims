@@ -6,7 +6,6 @@ from django.db import models
 
 
 class StateInCountryManager(models.Manager):
-
     def create_new_state(self, data):
         new_state = self.create(state_name=data["state"], apps_name=data["apps_name"])
         return new_state
@@ -988,7 +987,9 @@ class SampleProjectsFields(models.Model):
 
     def get_classification_name(self):
         if self.sample_project_field_classification_id is not None:
-            return self.sample_project_field_classification_id.get_classification_display()
+            return (
+                self.sample_project_field_classification_id.get_classification_display()
+            )
 
     def get_sample_project_fields_name(self):
         if self.sample_project_field_used:
@@ -1198,7 +1199,9 @@ class Samples(models.Model):
         blank=True,
     )
 
-    sample_name = models.CharField(max_length=255, null=True, verbose_name="Sample Name")
+    sample_name = models.CharField(
+        max_length=255, null=True, verbose_name="Sample Name"
+    )
     sample_location = models.CharField(
         max_length=255, null=True, verbose_name="Sample location", blank=True
     )
@@ -1214,9 +1217,7 @@ class Samples(models.Model):
     sample_code_id = models.CharField(
         max_length=60, null=True, verbose_name="Sample code id"
     )
-    reused_number = models.IntegerField(
-        default=0, verbose_name="Number of type reused"
-    )
+    reused_number = models.IntegerField(default=0, verbose_name="Number of type reused")
     sequencing_date = models.DateTimeField(
         auto_now_add=False, null=True, blank=True, verbose_name="Sequencing date"
     )
@@ -1279,7 +1280,9 @@ class Samples(models.Model):
 
     def get_info_for_display(self):
         if self.collection_sample_date:
-            collection_sample_date = self.collection_sample_date.strftime("%d , %B , %Y")
+            collection_sample_date = self.collection_sample_date.strftime(
+                "%d , %B , %Y"
+            )
         else:
             collection_sample_date = ""
         if self.sample_entry_date:
@@ -1586,7 +1589,9 @@ class MoleculePreparation(models.Model):
         return self
 
     def set_state(self, state_value):
-        self.state = StatesForMolecule.objects.get(molecule_state_name__exact=state_value)
+        self.state = StatesForMolecule.objects.get(
+            molecule_state_name__exact=state_value
+        )
         self.save()
 
     def set_increase_reuse(self):
@@ -1705,7 +1710,9 @@ class SequencerInLab(models.Model):
     sequencer_operation_start = models.DateField(
         auto_now_add=False, null=True, blank=True
     )
-    sequencer_operation_end = models.DateField(auto_now_add=False, null=True, blank=True)
+    sequencer_operation_end = models.DateField(
+        auto_now_add=False, null=True, blank=True
+    )
     sequencer_number_lanes = models.CharField(max_length=5, null=True, blank=True)
 
     class Meta:
@@ -1751,7 +1758,7 @@ class SequencerInLab(models.Model):
             op_end = "Not available date"
         data["platform"] = platform_name
         data["seq_name"] = self.sequencer_name
-        data["description"]= self.sequencer_description
+        data["description"] = self.sequencer_description
         data["location"] = self.sequencer_location
         data["serial"] = self.sequencer_serial_number
         data["state"] = self.sequencer_state
@@ -1762,13 +1769,13 @@ class SequencerInLab(models.Model):
         return data
 
     def update_sequencer_data(self, data):
-        self.sequencer_description=data["description"]
-        self.sequencer_location=data["location"]
-        self.sequencer_serial_number=data["serial"]
-        self.sequencer_operation_end=data["end_date"]
-        self.sequencer_operation_start=data["start_date"]
-        self.sequencer_state=data["state"]
-        self.sequencer_number_lanes=data["lanes"]
+        self.sequencer_description = data["description"]
+        self.sequencer_location = data["location"]
+        self.sequencer_serial_number = data["serial"]
+        self.sequencer_operation_end = data["end_date"]
+        self.sequencer_operation_start = data["start_date"]
+        self.sequencer_state = data["state"]
+        self.sequencer_number_lanes = data["lanes"]
         self.save()
 
     objects = SequencerInLabManager()

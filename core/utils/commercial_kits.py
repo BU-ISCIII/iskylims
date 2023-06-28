@@ -254,7 +254,6 @@ def get_user_lot_kit_data(register_user_obj=None, expired=False):
                 Value("%Y-%m-%d"),
                 function="DATE_FORMAT",
                 output_field=CharField(),
-                
             )
         )
     )

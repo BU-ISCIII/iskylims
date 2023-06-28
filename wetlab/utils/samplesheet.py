@@ -11,6 +11,7 @@ from django.core.files.storage import FileSystemStorage
 
 # Local imports
 import wetlab.config
+
 # import wetlab.models
 
 
@@ -119,24 +120,25 @@ def get_heading(file_lines):
     ----------
     file_lines : list
         List of lines from sample sheet
-        
+
     Return
     ------
     heading : list
-        contain the values from heading row of file 
+        contain the values from heading row of file
     """
-    
-     # For accepting characters like spanish characters.
+
+    # For accepting characters like spanish characters.
     heading = []
     for line in file_lines:
         line = line.strip()
         if line == "":
             continue
-        found_header=re.search("^Sample_ID,Sample_Name",line)
+        found_header = re.search("^Sample_ID,Sample_Name", line)
         if found_header:
-            heading = line.split(',')
+            heading = line.split(",")
             break
     return heading
+
 
 def get_index_adapter(file_lines):
     """

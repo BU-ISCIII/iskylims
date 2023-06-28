@@ -19,7 +19,7 @@ def get_annual_report(rep_year):
     ----------
     rep_year : string
         Year number to collect statistics data
-    
+
     Return
     ------
     report_data : dictionnary
@@ -32,10 +32,8 @@ def get_annual_report(rep_year):
         run_date__range=(start_date, end_date)
     )
     if len(run_objs) == 0:
-        report_data[
-            "ERROR"
-        ] = wetlab.config.ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD
-    
+        report_data["ERROR"] = wetlab.config.ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD
+
     sample_objs = wetlab.models.SamplesInProject.objects.filter(
         run_process_id__in=run_objs
     )
@@ -48,13 +46,19 @@ def get_annual_report(rep_year):
         )
     )
     g_data = core.utils.graphics.preparation_graphic_data(
-        "Run states in " + rep_year, "", "", "", "ocean", rep_year_run_states, "sum_state", "value"
+        "Run states in " + rep_year,
+        "",
+        "",
+        "",
+        "ocean",
+        rep_year_run_states,
+        "sum_state",
+        "value",
     )
     report_data["rep_state_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "pie3d", "rep_state_graph", "600", "300", "rep_state_chart", "json", g_data
     ).render()
-    
-    
+
     # Graphic for runs per months
     run_per_month = (
         run_objs.annotate(year=ExtractYear("run_date"))
@@ -73,9 +77,7 @@ def get_annual_report(rep_year):
         "ocean",
         format_run_per_month,
     )
-    report_data[
-        "rep_run_month_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
+    report_data["rep_run_month_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d",
         "rep_run_month_graph",
         "600",
@@ -84,7 +86,7 @@ def get_annual_report(rep_year):
         "json",
         g_data,
     ).render()
-    
+
     # Graphic chart for samples per researcher
     sample_per_researcher = list(
         sample_objs.values(Researcher=F("user_id__username")).annotate(
@@ -101,9 +103,7 @@ def get_annual_report(rep_year):
         "Researcher",
         "value",
     )
-    report_data[
-        "rep_researcher_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
+    report_data["rep_researcher_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "pie3d",
         "rep_researcher_graph",
         "600",
@@ -112,7 +112,7 @@ def get_annual_report(rep_year):
         "json",
         g_data,
     ).render()
-    
+
     # Graphic chart for samples
     sample_per_month = (
         sample_objs.annotate(year=ExtractYear("run_process_id__run_date"))
@@ -142,15 +142,22 @@ def get_annual_report(rep_year):
         "json",
         g_data,
     ).render()
-    
+
     # Collecting data for previous years
     # ##################################
     all_run_objs = wetlab.models.RunProcess.objects.filter(run_date__lte=end_date)
-    all_sample_objs = wetlab.models.SamplesInProject.objects.filter(run_process_id__in=all_run_objs)
-    
+    all_sample_objs = wetlab.models.SamplesInProject.objects.filter(
+        run_process_id__in=all_run_objs
+    )
+
     # Graphic for runs comparision
-    comp_run = all_run_objs.annotate(year=ExtractYear("run_date")).values("year").annotate(values=Count("run_name")).order_by("year")
-    
+    comp_run = (
+        all_run_objs.annotate(year=ExtractYear("run_date"))
+        .values("year")
+        .annotate(values=Count("run_name"))
+        .order_by("year")
+    )
+
     g_data = core.utils.graphics.preparation_graphic_data(
         "Runs per year",
         "",
@@ -161,9 +168,7 @@ def get_annual_report(rep_year):
         "year",
         "values",
     )
-    report_data[
-        "rep_comp_run_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
+    report_data["rep_comp_run_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d",
         "rep_comp_run_graph",
         "600",
@@ -172,10 +177,15 @@ def get_annual_report(rep_year):
         "json",
         g_data,
     ).render()
-    
+
     # Graphic for sample comparision
-    comp_sample = all_sample_objs.annotate(year=ExtractYear("run_process_id__run_date")).values("year").annotate(values=Count("sample_name")).order_by("year")
-    
+    comp_sample = (
+        all_sample_objs.annotate(year=ExtractYear("run_process_id__run_date"))
+        .values("year")
+        .annotate(values=Count("sample_name"))
+        .order_by("year")
+    )
+
     g_data = core.utils.graphics.preparation_graphic_data(
         "Samples per year",
         "",
@@ -225,7 +235,7 @@ def get_annual_report(rep_year):
         "json",
         g_data,
     ).render()
-    
+
     report_data["year"] = rep_year
-    
+
     return report_data

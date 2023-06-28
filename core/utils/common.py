@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 # local imports
 import core.core_config
 import core.models
- 
+
 
 def get_installed_apps():
     return settings.APPS_NAMES
@@ -26,7 +26,7 @@ def get_friend_list(user_name):
     -------
     List
         The list contains user objects that are in the friend list
-    """    
+    """
     friend_list = []
     user_groups = user_name.groups.values_list("name", flat=True)
     if len(user_groups) > 0:
@@ -57,7 +57,9 @@ def get_inital_sample_settings_values(apps_name):
                 [species_obj.get_name(), species_obj.get_id()]
             )
     if core.models.LabRequest.objects.filter(apps_name__exact=apps_name).exists():
-        lab_request_objs = core.models.LabRequest.objects.filter(apps_name__exact=apps_name)
+        lab_request_objs = core.models.LabRequest.objects.filter(
+            apps_name__exact=apps_name
+        )
         initial_data["lab_request_data"] = []
         for lab_request_obj in lab_request_objs:
             data = lab_request_obj.get_all_data()
@@ -65,7 +67,9 @@ def get_inital_sample_settings_values(apps_name):
             initial_data["lab_request_data"].append(data)
     if core.models.MoleculeType.objects.filter(apps_name__exact=apps_name).exists():
         initial_data["molecule_type_data"] = []
-        molecule_type_objs = core.models.MoleculeType.objects.filter(apps_name__exact=apps_name)
+        molecule_type_objs = core.models.MoleculeType.objects.filter(
+            apps_name__exact=apps_name
+        )
         for molecule_type_obj in molecule_type_objs:
             initial_data["molecule_type_data"].append(
                 [molecule_type_obj.get_name(), molecule_type_obj.get_id()]
@@ -84,16 +88,18 @@ def get_inital_sample_settings_values(apps_name):
                 ]
             )
     if core.models.StateInCountry.objects.filter(apps_name__exact=apps_name).exists():
-        state_objs = core.models.StateInCountry.objects.filter(apps_name__exact=apps_name).order_by(
-            "state_name"
-        )
+        state_objs = core.models.StateInCountry.objects.filter(
+            apps_name__exact=apps_name
+        ).order_by("state_name")
         initial_data["states_data"] = []
         for state_obj in state_objs:
             initial_data["states_data"].append(
                 [state_obj.get_state_name(), state_obj.get_state_id()]
             )
     if core.models.City.objects.filter(apps_name__exact=apps_name).exists():
-        city_objs = core.models.City.objects.filter(apps_name__exact=apps_name).order_by("city_name")
+        city_objs = core.models.City.objects.filter(
+            apps_name__exact=apps_name
+        ).order_by("city_name")
         initial_data["cities_data"] = []
         for city_obj in city_objs:
             initial_data["cities_data"].append(
@@ -228,9 +234,7 @@ def save_inital_sample_setting_value(apps_name, data):
                 molecule_type_data["moleculeType"],
             ]
             return setting_defined
-        core.models.MoleculeType.objects.create_molecule_type(
-            molecule_type_data
-        )
+        core.models.MoleculeType.objects.create_molecule_type(molecule_type_data)
         setting_defined["settings"] = "Molecule Type"
         setting_defined["value"] = molecule_type_data["moleculeType"]
 
@@ -252,9 +256,7 @@ def save_inital_sample_setting_value(apps_name, data):
                 protocol_type_data["protocol_type"],
             ]
             return setting_defined
-        core.models.ProtocolType.objects.create_protocol_type(
-            protocol_type_data
-        )
+        core.models.ProtocolType.objects.create_protocol_type(protocol_type_data)
         setting_defined["settings"] = "Protocol Type"
         setting_defined["value"] = protocol_type_data["protocol_type"]
 
@@ -263,7 +265,10 @@ def save_inital_sample_setting_value(apps_name, data):
         if core.models.StateInCountry.objects.filter(
             state_name__iexact=data["state"], apps_name__exact=apps_name
         ).exists():
-            setting_defined["ERROR"] = [core.core_config.ERROR_STATE_ALREADY_DEFINED, data["state"]]
+            setting_defined["ERROR"] = [
+                core.core_config.ERROR_STATE_ALREADY_DEFINED,
+                data["state"],
+            ]
             return setting_defined
         state_data["apps_name"] = apps_name
         state_data["state"] = data["state"]
@@ -294,7 +299,7 @@ def save_inital_sample_setting_value(apps_name, data):
 
 def week_month_number_to_date(input_data, type_number, value_param=None, format=None):
     """Convert year + number of week or year + number of month into a complete date format.
-    If value_param is set the converted date is used as key and value_param as value. 
+    If value_param is set the converted date is used as key and value_param as value.
 
     Parameters
     ----------
@@ -315,10 +320,12 @@ def week_month_number_to_date(input_data, type_number, value_param=None, format=
     output_date = []
     for record in input_data:
         if type_number == "week":
-            week = "{year}-W{week}-1".format(year=record['year'], week=record['week'])
+            week = "{year}-W{week}-1".format(year=record["year"], week=record["week"])
             timestamp = datetime.datetime.strptime(week, "%Y-W%W-%w")
         else:
-            month = "{year}-M{month}-1".format(year=record['year'], month=record['month'])
+            month = "{year}-M{month}-1".format(
+                year=record["year"], month=record["month"]
+            )
             timestamp = datetime.datetime.strptime(month, "%Y-M%m-%M")
         if format is not None:
             timestamp = datetime.datetime.strftime(timestamp, format)

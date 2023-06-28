@@ -54,17 +54,28 @@ def analyze_and_store_prot_lib_param_values(form_data):
         return stored_params
     prot_obj = core.utils.protocols.get_protocol_obj_from_id(form_data["protocol_id"])
     parameters = core.utils.protocols.get_protocol_parameters(prot_obj)
-    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(protocol_id=prot_obj).exists():
+    if wetlab.models.AdditionaKitsLibPrepare.objects.filter(
+        protocol_id=prot_obj
+    ).exists():
         additional_kits = True
     else:
         additional_kits = False
-    headings = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS + ["lib_id"] + parameters
+    headings = (
+        wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+        + ["lib_id"]
+        + parameters
+    )
     stored_params["data"] = []
     for row_index in range(len(json_data)):
         library_prep_obj = get_lib_prep_obj_from_id(json_data[row_index][2])
-        for p_index in range(len(wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS) +1, len(json_data[row_index])):
+        for p_index in range(
+            len(wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS) + 1,
+            len(json_data[row_index]),
+        ):
             lib_parameter_value = {}
-            lib_parameter_value["parameter_id"] = core.models.ProtocolParameters.objects.filter(
+            lib_parameter_value[
+                "parameter_id"
+            ] = core.models.ProtocolParameters.objects.filter(
                 protocol_id=prot_obj,
                 parameter_name__exact=headings[p_index],
                 parameter_used=True,
@@ -72,9 +83,9 @@ def analyze_and_store_prot_lib_param_values(form_data):
             lib_parameter_value["library_id"] = library_prep_obj
             lib_parameter_value["parameterValue"] = json_data[row_index][p_index]
             wetlab.models.LibParameterValue.objects.create_library_parameter_value(
-                    lib_parameter_value
+                lib_parameter_value
             )
-            
+
             if additional_kits:
                 library_prep_obj.set_state("Updated parameters")
             else:
@@ -106,9 +117,9 @@ def create_library_preparation_instance(samples_data, user):
         "SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX"
     )
     if prot_in_samples == "TRUE":
-            protocol_separation = wetlab.utils.common.get_configuration_value(
-                "PROTOCOL_SEPARATION_IN_SAMPLE_SHEET"
-            )
+        protocol_separation = wetlab.utils.common.get_configuration_value(
+            "PROTOCOL_SEPARATION_IN_SAMPLE_SHEET"
+        )
 
     for key, values in samples_data.items():
         s_name = core.utils.samples.get_sample_obj_from_id(key).get_sample_name()
@@ -116,7 +127,8 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data["sample_id"] = key
         lib_prep_data["molecule_id"] = values["mol_id"]
         lib_prep_data["protocol_obj"] = core.models.Protocols.objects.filter(
-            type__protocol_type__exact="Library Preparation", name__exact=values["prot_name"]
+            type__protocol_type__exact="Library Preparation",
+            name__exact=values["prot_name"],
         ).last()
         lib_prep_data["prefixProtocol"] = values["prot_name"]
         if prot_in_samples == "TRUE":
@@ -126,16 +138,20 @@ def create_library_preparation_instance(samples_data, user):
         else:
             lib_prep_data["samplename_in_samplesheet"] = s_name
         lib_prep_data["registerUser"] = user
-        lib_prep_data["user_sampleID"] = core.utils.samples.get_sample_obj_from_id(key).get_sample_code()
+        lib_prep_data["user_sampleID"] = core.utils.samples.get_sample_obj_from_id(
+            key
+        ).get_sample_code()
         (
             lib_prep_data["lib_prep_code_id"],
             lib_prep_data["uniqueID"],
         ) = get_library_code_and_unique_id(
             lib_prep_data["sample_id"], lib_prep_data["molecule_id"]
         )
-        lib_prep_obj = wetlab.models.LibPrepare.objects.create_lib_preparation(lib_prep_data)
-        if values["prot_name"] not in lib_prep_for_params :
-            lib_prep_for_params[values["prot_name"]]= []
+        lib_prep_obj = wetlab.models.LibPrepare.objects.create_lib_preparation(
+            lib_prep_data
+        )
+        if values["prot_name"] not in lib_prep_for_params:
+            lib_prep_for_params[values["prot_name"]] = []
         # create the structure data to get later the list of parameters
         lib_prep_for_params[values["prot_name"]].append(key)
         lib_prep_for_params[values["prot_name"]].append(lib_prep_obj.get_id())
@@ -175,18 +191,25 @@ def get_protocol_parameters_for_library_preparation(protocol_libs):
     Return:
         lib_prep_same_prot_parameters
     """
-  
-    
+
     protocol_lib_prep_data = []
     for prot_name, lib_prep in protocol_libs.items():
         prot_obj = core.utils.protocols.get_protocol_obj_from_name(prot_name)
         prot_lib_data = {"protocol_name": prot_obj.get_name()}
         prot_lib_data["protocol_id"] = prot_obj.get_protocol_id()
-        prot_lib_data["lib_prep_data"] = list(wetlab.models.LibPrepare.objects.filter(pk__in=lib_prep).values_list("sample_id__sample_name", "lib_prep_code_id", "pk")) 
-        prot_lib_data["param_heading_type"] = core.utils.protocols.get_protocol_parameters_and_type(prot_obj)
-        prot_lib_data["fix_heading"] = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+        prot_lib_data["lib_prep_data"] = list(
+            wetlab.models.LibPrepare.objects.filter(pk__in=lib_prep).values_list(
+                "sample_id__sample_name", "lib_prep_code_id", "pk"
+            )
+        )
+        prot_lib_data[
+            "param_heading_type"
+        ] = core.utils.protocols.get_protocol_parameters_and_type(prot_obj)
+        prot_lib_data[
+            "fix_heading"
+        ] = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
         protocol_lib_prep_data.append(prot_lib_data)
-        
+
     return protocol_lib_prep_data
 
 
@@ -207,42 +230,69 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
     """
     samples_in_lib_prep = {}
     samples_in_lib_prep["avail_samples"] = {}
-    s_in_lib_prep = core.utils.samples.get_sample_objs_in_state("Library preparation", user, friend_list)
-    
-    s_lib_prep_defined = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Defined")
-    s_lib_prep_upd_param = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Updated parameters")
-    s_lib_prep_upd_kit = wetlab.models.LibPrepare.objects.filter(sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Updated additional kits")
-    
+    s_in_lib_prep = core.utils.samples.get_sample_objs_in_state(
+        "Library preparation", user, friend_list
+    )
+
+    s_lib_prep_defined = wetlab.models.LibPrepare.objects.filter(
+        sample_id__in=s_in_lib_prep, lib_prep_state__lib_prep_state__exact="Defined"
+    )
+    s_lib_prep_upd_param = wetlab.models.LibPrepare.objects.filter(
+        sample_id__in=s_in_lib_prep,
+        lib_prep_state__lib_prep_state__exact="Updated parameters",
+    )
+    s_lib_prep_upd_kit = wetlab.models.LibPrepare.objects.filter(
+        sample_id__in=s_in_lib_prep,
+        lib_prep_state__lib_prep_state__exact="Updated additional kits",
+    )
+
     if s_lib_prep_defined:
-        samples_in_lib_prep["lib_prep_defined"] = list(s_lib_prep_defined.values_list("sample_id__sample_name", "lib_prep_code_id", "protocol_id__name", "pk"))
+        samples_in_lib_prep["lib_prep_defined"] = list(
+            s_lib_prep_defined.values_list(
+                "sample_id__sample_name", "lib_prep_code_id", "protocol_id__name", "pk"
+            )
+        )
 
     if s_lib_prep_upd_param:
         samples_in_lib_prep["lib_prep_updated_param"] = ""
 
     if s_lib_prep_upd_kit:
         if wetlab.utils.sequencers.configuration_sequencer_exists():
-            samples_in_lib_prep.update(wetlab.utils.sequencers.get_configuration_sequencers_data())
+            samples_in_lib_prep.update(
+                wetlab.utils.sequencers.get_configuration_sequencers_data()
+            )
             samples_in_lib_prep["display_sample_sheet"] = True
             samples_in_lib_prep["avail_samples"][
                 "lib_prep_protocols"
             ] = get_protocols_for_library_preparation()
-        
+
     # find out the samples that have not be defined in LibPrepare
-    if len(s_in_lib_prep) > (len(s_lib_prep_defined) + len(s_lib_prep_upd_param) + len(s_lib_prep_upd_kit)):
+    if len(s_in_lib_prep) > (
+        len(s_lib_prep_defined) + len(s_lib_prep_upd_param) + len(s_lib_prep_upd_kit)
+    ):
         s_def = list(s_lib_prep_defined.values_list("pk", flat=True))
         s_param = list(s_lib_prep_upd_param.values_list("pk", flat=True))
-        s_kit = list(s_lib_prep_upd_kit.values_list("pk",flat=True))
-        s_in_lib_prep_ids =list(s_in_lib_prep.values_list("pk", flat=True)) 
+        s_kit = list(s_lib_prep_upd_kit.values_list("pk", flat=True))
+        s_in_lib_prep_ids = list(s_in_lib_prep.values_list("pk", flat=True))
         def_lib = s_def + s_param + s_kit
         s_not_def_ids = list(set(s_in_lib_prep_ids).symmetric_difference(set(def_lib)))
         # s_not_def = wetlab.models.LibPrepare.objects.filter(pk__in=s_not_def_ids)
-        
-        molecules_obj = core.models.MoleculePreparation.objects.filter(sample__pk__in=s_not_def_ids)
-        samples_in_lib_prep["avail_samples"]["data"] = list(molecules_obj.values_list("sample__sample_name", "sample_id__pk", "molecule_code_id", "pk"))
-        samples_in_lib_prep["avail_samples"]["heading"] = wetlab.config.HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
-        samples_in_lib_prep["avail_samples"]["lib_prep_protocols"] = get_protocols_for_library_preparation()
-        
-    
+
+        molecules_obj = core.models.MoleculePreparation.objects.filter(
+            sample__pk__in=s_not_def_ids
+        )
+        samples_in_lib_prep["avail_samples"]["data"] = list(
+            molecules_obj.values_list(
+                "sample__sample_name", "sample_id__pk", "molecule_code_id", "pk"
+            )
+        )
+        samples_in_lib_prep["avail_samples"][
+            "heading"
+        ] = wetlab.config.HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
+        samples_in_lib_prep["avail_samples"][
+            "lib_prep_protocols"
+        ] = get_protocols_for_library_preparation()
+
     """
                                                                    
     wetlab.models.LibPrepare.objects.filter().values_list("sample_id__sample_name", )
@@ -366,7 +416,9 @@ def extract_userids_from_sample_sheet_data(file_read):
 
     user_id_list = wetlab.utils.common.get_userid_list()
 
-    user_ids = wetlab.utils.samplesheet.validate_userid_in_user_iem_file(file_read, user_id_list)
+    user_ids = wetlab.utils.samplesheet.validate_userid_in_user_iem_file(
+        file_read, user_id_list
+    )
     if user_ids == [""]:
         user_ids["ERROR"] = wetlab.config.ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
     return user_ids
@@ -417,13 +469,17 @@ def validate_sample_sheet_data(input_data):
                 wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL.copy()
             )
         else:
-            error_not_defined = wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
+            error_not_defined = (
+                wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
+            )
         error_not_defined.insert(1, " , ".join(not_defined_samples))
         error["ERROR"] = error_not_defined
     if len(invalid_state_samples) > 0:
-        error_state = wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
+        error_state = (
+            wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
+        )
         error_state.insert(1, " , ".join(error_state))
-        error["ERROR"] =  ". ".join(error_state)
+        error["ERROR"] = ". ".join(error_state)
     if len(not_defined_samples) > 0 and len(invalid_state_samples) > 0:
         error["ERROR"] = error_not_defined + error_state
     if "ERROR" in error:
@@ -612,8 +668,12 @@ def get_lib_prep_to_add_parameters():
     """
     lib_prep_parameters = {}
     lib_prep_parameters["length"] = 0
-    if wetlab.models.LibPrepare.objects.filter(lib_prep_state__lib_prep_state__exact="Defined").exists():
-        samples = wetlab.models.LibPrepare.objects.filter(lib_prep_state__lib_prep_state__exact="Defined")
+    if wetlab.models.LibPrepare.objects.filter(
+        lib_prep_state__lib_prep_state__exact="Defined"
+    ).exists():
+        samples = wetlab.models.LibPrepare.objects.filter(
+            lib_prep_state__lib_prep_state__exact="Defined"
+        )
         sample_info = []
         for sample in samples:
             lib_prep_info = []
@@ -640,7 +700,9 @@ def get_protocol_from_library_id(library_prep_id):
         protocol name or empty if library id does not exists.
     """
     if wetlab.models.LibPrepare.objects.filter(pk__exact=library_prep_id).exists():
-        return wetlab.models.LibPrepare.objects.get(pk__exact=library_prep_id).get_protocol_used()
+        return wetlab.models.LibPrepare.objects.get(
+            pk__exact=library_prep_id
+        ).get_protocol_used()
     return ""
 
 
@@ -668,7 +730,9 @@ def get_samples_in_lib_prep_state():
         )
 
         for sample in samples_obj:
-            if (not wetlab.models.LibPrepare.objects.filter(sample_id=sample).exists()) or (
+            if (
+                not wetlab.models.LibPrepare.objects.filter(sample_id=sample).exists()
+            ) or (
                 wetlab.models.LibPrepare.objects.filter(sample_id=sample)
                 .exclude(lib_prep_state__lib_prep_state__in=states_excluded)
                 .exists()
@@ -685,7 +749,9 @@ def get_samples_in_lib_prep_state():
                 lib_prep_data.append(sample_information + molecule_data)
 
         samples_in_lib_prep["library_information"] = lib_prep_data
-        samples_in_lib_prep["lib_prep_heading"] = wetlab.config.HEADING_FOR_LIBRARY_PREPARATION_STATE
+        samples_in_lib_prep[
+            "lib_prep_heading"
+        ] = wetlab.config.HEADING_FOR_LIBRARY_PREPARATION_STATE
         samples_in_lib_prep["length"] = len(lib_prep_data)
 
         return samples_in_lib_prep
@@ -705,12 +771,18 @@ def find_index_sequence_collection_values_kit(sequence):
         index_found and the sequence
     """
 
-    if wetlab.models.CollectionIndexValues.objects.filter(i_7_seq__icontains=sequence).exists():
+    if wetlab.models.CollectionIndexValues.objects.filter(
+        i_7_seq__icontains=sequence
+    ).exists():
         return ["I7", sequence]
-    if wetlab.models.CollectionIndexValues.objects.filter(i_5_seq__icontains=sequence).exists():
+    if wetlab.models.CollectionIndexValues.objects.filter(
+        i_5_seq__icontains=sequence
+    ).exists():
         return ["I5", sequence]
     rev_sequence = str(Seq(sequence).reverse_complement())
-    if wetlab.models.CollectionIndexValues.objects.filter(i_5_seq__icontains=rev_sequence).exists():
+    if wetlab.models.CollectionIndexValues.objects.filter(
+        i_5_seq__icontains=rev_sequence
+    ).exists():
         return ["I5", rev_sequence]
     return "None", sequence
 
@@ -807,8 +879,10 @@ def store_library_preparation_sample_sheet(
     sample_sheet_data["user"] = user
     sample_sheet_data["platform"] = platform
     sample_sheet_data["configuration"] = configuration
-    new_user_s_sheet_obj = wetlab.models.LibUserSampleSheet.objects.create_lib_prep_user_sample_sheet(
-        sample_sheet_data
+    new_user_s_sheet_obj = (
+        wetlab.models.LibUserSampleSheet.objects.create_lib_prep_user_sample_sheet(
+            sample_sheet_data
+        )
     )
 
     return new_user_s_sheet_obj
@@ -840,7 +914,9 @@ def get_library_code_and_unique_id(sample_id, molecule_id):
         lib_prep_code_id = split_code.group(1) + new_index
         s_uniqueID = sample_obj.get_unique_sample_id()
         # count the number that library preparation was used on the same sample
-        lib_prep_times = str(wetlab.models.LibPrepare.objects.filter(sample_id=sample_obj).count())
+        lib_prep_times = str(
+            wetlab.models.LibPrepare.objects.filter(sample_id=sample_obj).count()
+        )
         uniqueID = s_uniqueID + "-" + lib_prep_times
     else:
         lib_prep_code_id = molecule_obj.get_molecule_code_id() + "_LIB_01"
@@ -913,7 +989,9 @@ def get_lib_prep_obj_from_id(library_preparation_id):
         library_preparation_obj or None if not match
     """
 
-    if wetlab.models.LibPrepare.objects.filter(pk__exact=library_preparation_id).exists():
+    if wetlab.models.LibPrepare.objects.filter(
+        pk__exact=library_preparation_id
+    ).exists():
         library_preparation_obj = wetlab.models.LibPrepare.objects.get(
             pk__exact=library_preparation_id
         )
@@ -931,11 +1009,15 @@ def separate_lib_prep_on_protocols(lib_prep_ids):
         _description_
     """
     protocols = {}
-    lib_prep_protocols = wetlab.models.LibPrepare.objects.filter(pk__in=lib_prep_ids).values("protocol_id__name", "pk")
+    lib_prep_protocols = wetlab.models.LibPrepare.objects.filter(
+        pk__in=lib_prep_ids
+    ).values("protocol_id__name", "pk")
     for lib_prep_protocol in lib_prep_protocols:
         if lib_prep_protocol["protocol_id__name"] not in protocols:
             protocols[lib_prep_protocol["protocol_id__name"]] = []
-        protocols[lib_prep_protocol["protocol_id__name"]].append(lib_prep_protocol["pk"])
+        protocols[lib_prep_protocol["protocol_id__name"]].append(
+            lib_prep_protocol["pk"]
+        )
     return protocols
 
 
@@ -966,7 +1048,9 @@ def update_library_preparation_for_reuse(sample):
     Return:
         None
     """
-    if wetlab.models.LibPrepare.objects.filter(sample_id__sampleName__exact=sample).exists():
+    if wetlab.models.LibPrepare.objects.filter(
+        sample_id__sampleName__exact=sample
+    ).exists():
         lib_prep_obj = wetlab.models.LibPrepare.objects.filter(
             sample_id__sampleName__exact=sample
         ).last()

@@ -57,7 +57,9 @@ def get_and_save_service_file(request):
     else:
         # store the file
 
-        new_upload_file_obj = drylab.models.UploadServiceFile.objects.create_upload_file(file_data)
+        new_upload_file_obj = (
+            drylab.models.UploadServiceFile.objects.create_upload_file(file_data)
+        )
         files[0]["file_id"] = new_upload_file_obj.get_upload_file_id()
         files[0]["deleteUrl"] = str(
             "upload-file-delete=" + new_upload_file_obj.get_upload_file_id()
@@ -77,8 +79,12 @@ def get_uploaded_files(service_obj):
         with file and file name stored  on database
     """
     file_list = []
-    if drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj).exists():
-        file_objs = drylab.models.UploadServiceFile.objects.filter(upload_service=service_obj)
+    if drylab.models.UploadServiceFile.objects.filter(
+        upload_service=service_obj
+    ).exists():
+        file_objs = drylab.models.UploadServiceFile.objects.filter(
+            upload_service=service_obj
+        )
         for file_obj in file_objs:
             file_list.append(
                 [
@@ -99,7 +105,9 @@ def update_upload_file_with_service(file_id, service_obj):
         None
     """
     if drylab.models.UploadServiceFile.objects.filter(pk__exact=file_id).exists():
-        drylab.models.UploadServiceFile.objects.get(pk__exact=file_id).update_service_id(service_obj)
+        drylab.models.UploadServiceFile.objects.get(
+            pk__exact=file_id
+        ).update_service_id(service_obj)
     return
 
 

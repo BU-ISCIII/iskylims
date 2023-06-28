@@ -118,7 +118,9 @@ def delete_invalid_run():
 
     for run_found in run_found_for_deleting:
         if wetlab.models.Projects.objects.filter(runprocess_id=run_found).exists():
-            projects_to_be_deleted = wetlab.models.Projects.objects.filter(runprocess_id=run_found)
+            projects_to_be_deleted = wetlab.models.Projects.objects.filter(
+                runprocess_id=run_found
+            )
             for projects in projects_to_be_deleted:
                 projects.delete()
                 print("deleted project", projects)

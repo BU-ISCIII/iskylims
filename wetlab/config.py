@@ -200,7 +200,13 @@ HEADING_FOR_MODIFYING_ADDITIONAL_KITS = [
     "Description",
 ]
 
-HEADING_FOR_PENDING_PROCESS_SAMPLES = ["Sample name" , "Laboratory", "Sample type" , "Sample project" , "User name"]
+HEADING_FOR_PENDING_PROCESS_SAMPLES = [
+    "Sample name",
+    "Laboratory",
+    "Sample type",
+    "Sample project",
+    "User name",
+]
 
 # CONFIGURATION FOR SAMPLE SHEET CONVERSION #
 # FILE TO BASESPACE FORMAT     #
@@ -563,10 +569,26 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5 = [
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 
-HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE = ["Samples","Project name","Run name","Platform"]
+HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE = [
+    "Samples",
+    "Project name",
+    "Run name",
+    "Platform",
+]
 HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
-HEADING_STATISTICS_FOR_TIME_SAMPLE = ["Sample name", "Researcher","Project name", "Run name", "Barcode"]
-HEADING_STATISTICS_FOR_SEQUENCER_RUNS = ["Run name", "Run state", "Sequencer" , "Run date"]
+HEADING_STATISTICS_FOR_TIME_SAMPLE = [
+    "Sample name",
+    "Researcher",
+    "Project name",
+    "Run name",
+    "Barcode",
+]
+HEADING_STATISTICS_FOR_SEQUENCER_RUNS = [
+    "Run name",
+    "Run state",
+    "Sequencer",
+    "Run date",
+]
 NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER = 5
 
 # ############## SUCCESSFUL_MESSAGES #######################################
@@ -724,12 +746,18 @@ ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YY
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
     "There are many user names that matches your request"
 ]
-ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = "There is not any match for your input conditions "
-ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = "There is not any Index Library Kit  that mathes your input conditions"
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = (
+    "There is not any match for your input conditions "
+)
+ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = (
+    "There is not any Index Library Kit  that mathes your input conditions"
+)
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = [
     "There is not any project that mathes your input conditions"
 ]
-ERROR_NO_MATCHES_FOR_RUN_SEARCH = "There are not matches that fits your input conditions"
+ERROR_NO_MATCHES_FOR_RUN_SEARCH = (
+    "There are not matches that fits your input conditions"
+)
 ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = [
     "There is not any run that where using the sequencer"
 ]
@@ -738,7 +766,9 @@ ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
 ]
 ERROR_NO_SAMPLES_SELECTED = "They were not selected any Sample on your request"
 
-ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = "There are not runs for the selected period of time"
+ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = (
+    "There are not runs for the selected period of time"
+)
 ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
     "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
 ]

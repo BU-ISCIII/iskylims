@@ -25,7 +25,9 @@ def prepare_delivery_form(resolution_id):
         delivery_data_form
     """
     delivery_data_form = {}
-    resolution_obj = drylab.utils.resolutions.get_resolution_obj(resolution_id, input="id")
+    resolution_obj = drylab.utils.resolutions.get_resolution_obj(
+        resolution_id, input="id"
+    )
     if resolution_obj is not None:
         delivery_data_form[
             "available_services"
