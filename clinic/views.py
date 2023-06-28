@@ -1,38 +1,40 @@
+# Generic imports
 import datetime
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from clinic.clinic_config import *
-from clinic.models import *
-from clinic.utils.patient import *
-from clinic.utils.projects import *
-from clinic.utils.results import *
-from clinic.utils.samples import *
-from core.utils.commercial_kits import *
-from core.utils.patient_projects import *
-from core.utils.protocols import *
-from core.utils.samples import *
+# Local imports
+import clinic.clinic_config
+import clinic.models
+import clinic.utils.patient
+import clinic.utils.projects
+import clinic.utils.samples
+
+import core.utils.commercial_kits
+import core.utils.patient_projects
+import core.utils.protocols
+import core.utils.samples
+import clinic.utils.common
 
 
 def index(request):
-    org_name = get_configuration_from_database("ORGANIZATION_NAME")
-    return render(
-        request, "clinic/index.html", {"organization_name": org_name}
-    )
+    org_name = clinic.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
+    return render(request, "clinic/index.html", {"organization_name": org_name})
 
 
 @login_required
 def add_commercial_kit(request):
     app_name = __package__.split(".")[0]
     # exclude the protocols that have no molecule involved
-    defined_protocols = get_defined_protocols(app_name, True)
+    defined_protocols = core.utils.protocols.get_defined_protocols(app_name, True)
 
-    commercial_kits_data = get_data_for_commercial_kits("Non_NGS")
+    commercial_kits_data = core.utils.commercial_kits.get_data_for_commercial_kits(
+        "Non_NGS"
+    )
 
     if request.method == "POST" and request.POST["action"] == "addCommercialKit":
-        if get_commercial_kit_id(request.POST["kitName"]):
+        if core.utils.commercial_kits.get_commercial_kit_id(request.POST["kitName"]):
             return render(
                 request,
                 "clinic/addCommercialKit.html",
@@ -41,8 +43,8 @@ def add_commercial_kit(request):
                     "invalid_name": request.POST["kitName"],
                 },
             )
-        new_kit = store_commercial_kit(request.POST)
-        new_kit_data = get_commercial_kit_basic_data(new_kit)
+        new_kit = core.utils.commercial_kits.store_commercial_kit(request.POST)
+        new_kit_data = core.utils.commercial_kits.get_commercial_kit_basic_data(new_kit)
         return render(
             request,
             "clinic/addCommercialKit.html",
@@ -62,8 +64,10 @@ def add_commercial_kit(request):
 @login_required
 def add_user_lot_commercial_kit(request):
     if request.method == "POST" and request.POST["action"] == "addUserLotKit":
-        if get_lot_user_commercial_kit_obj(request.POST["nickName"]):
-            defined_kits = get_defined_commercial_kits()
+        if core.utils.commercial_kits.get_lot_user_commercial_kit_obj(
+            request.POST["nickName"]
+        ):
+            defined_kits = core.utils.commercial_kits.get_defined_commercial_kits()
             return render(
                 request,
                 "clinic/addUserLotCommercialKit.html",
@@ -72,15 +76,21 @@ def add_user_lot_commercial_kit(request):
                     "invalid_name": request.POST["nickName"],
                 },
             )
-        new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
-        new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
+        new_lot_kit = core.utils.commercial_kits.store_lot_user_commercial_kit(
+            request.POST, request.user
+        )
+        new_lot_kit_data = (
+            core.utils.commercial_kits.get_lot_user_commercial_kit_basic_data(
+                new_lot_kit
+            )
+        )
         return render(
             request,
             "clinic/addUserLotCommercialKit.html",
             {"new_lot_kit_data": new_lot_kit_data},
         )
     else:
-        defined_kits = get_defined_commercial_kits()
+        defined_kits = core.utils.commercial_kits.get_defined_commercial_kits()
         return render(
             request,
             "clinic/addUserLotCommercialKit.html",
@@ -95,7 +105,7 @@ def assign_project(request):
         (
             defined_project["fields"],
             defined_project["project_id"],
-        ) = assign_project_patient(request.POST, __package__)
+        ) = clinic.utils.projects.assign_project_patient(request.POST, __package__)
         defined_project["patient_id"] = request.POST["patient_id"]
 
         return render(
@@ -104,7 +114,7 @@ def assign_project(request):
             {"defined_project": defined_project},
         )
     elif request.method == "POST" and request.POST["action"] == "defineProjectFields":
-        project_fields_added = add_project_fields(request.POST)
+        project_fields_added = clinic.utils.projects.add_project_fields(request.POST)
         return render(
             request,
             "clinic/addPatientProject.html",
@@ -116,16 +126,20 @@ def assign_project(request):
 
 @login_required
 def create_new_patient_project(request):
-    defined_projects = get_defined_patient_projects(__package__)
+    defined_projects = core.utils.patient_projects.get_defined_patient_projects(
+        __package__
+    )
     if request.method == "POST" and request.POST["action"] == "addNewProject":
-        new_project = create_patient_project(request.POST, __package__)
+        new_project = core.utils.patient_projects.create_patient_project(
+            request.POST, __package__
+        )
         if "ERROR" in new_project:
             return render(
                 request,
                 "clinic/createNewProject.html",
                 {
                     "defined_projects": defined_projects,
-                    "error": ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS,
+                    "error": clinic.clinic_config.ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS,
                 },
             )
         return render(
@@ -144,21 +158,24 @@ def create_new_patient_project(request):
 @login_required
 def create_protocol(request):
     # get the list of defined protocols
-    defined_protocols, other_protocol_list = display_available_protocols(__package__)
-    defined_protocol_types = display_protocol_types(__package__)
+    (
+        defined_protocols,
+        other_protocol_list,
+    ) = core.utils.protocols.display_available_protocols(__package__)
+    defined_protocol_types = core.utils.protocols.display_protocol_types(__package__)
 
     if request.method == "POST" and request.POST["action"] == "addNewProtocol":
         new_protocol = request.POST["newProtocolName"]
         protocol_type = request.POST["protocolType"]
         description = request.POST["description"]
 
-        if check_if_protocol_exists(new_protocol, __package__):
+        if core.utils.protocols.check_if_protocol_exists(new_protocol, __package__):
             return render(
                 request,
                 "clinic/createProtocol.html",
                 {"content": ["Protocol Name ", new_protocol, "Already exists."]},
             )
-        new_protocol_id = create_new_protocol(
+        new_protocol_id = core.utils.protocols.create_new_protocol(
             new_protocol, protocol_type, description, __package__
         )
 
@@ -188,14 +205,18 @@ def create_protocol(request):
 @login_required
 def create_sample_projects(request):
     # get the information of defined sample Projects
-    defined_samples_projects = get_info_for_defined_sample_projects(__package__)
+    defined_samples_projects = core.utils.samples.get_info_for_defined_sample_projects(
+        __package__
+    )
 
     if request.method == "POST" and request.POST["action"] == "addNewSampleProject":
         sample_project_name = request.POST["sampleProyectName"]
         # description = request.POST['description']
 
-        if check_if_sample_project_exists(sample_project_name, __package__):
-            error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
+        if core.utils.samples.check_if_sample_project_exists(
+            sample_project_name, __package__
+        ):
+            error_message = clinic.clinic_config.ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
                 "clinic/createSampleProjects.html",
@@ -204,7 +225,9 @@ def create_sample_projects(request):
                     "error_message": error_message,
                 },
             )
-        new_sample_project_id = create_new_sample_project(request.POST, __package__)
+        new_sample_project_id = core.utils.samples.create_new_sample_project(
+            request.POST, __package__
+        )
         new_defined_sample_project = sample_project_name
         return render(
             request,
@@ -227,9 +250,9 @@ def create_sample_projects(request):
 def define_extraction_molecules(request):
     extraction_molecules = {}
 
-    extraction_molecules["extract_molecule"] = get_samples_in_defined_state(
-        request.user
-    )
+    extraction_molecules[
+        "extract_molecule"
+    ] = core.utils.samples.get_sample_objs_in_state("defined", request.user)
     if request.method == "POST" and request.POST["action"] == "continueWithMolecule":
         # processing the samples selected by user
         pass
@@ -266,15 +289,19 @@ def define_extraction_molecules(request):
 @login_required
 def define_new_patient(request):
     if request.method == "POST" and request.POST["action"] == "defineNewPatient":
-        defined_patient = create_new_patient(request.POST, __package__)
+        defined_patient = clinic.utils.patient.create_new_patient(
+            request.POST, __package__
+        )
         if "ERROR" in defined_patient:
-            patient_definition_data = fields_for_new_patient(__package__)
+            patient_definition_data = clinic.utils.patient.fields_for_new_patient(
+                __package__
+            )
             return render(
                 request,
                 "clinic/defineNewPatient.html",
                 {
                     "patient_definition_data": patient_definition_data,
-                    "error": ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS,
+                    "error": clinic.clinic_config.ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS,
                 },
             )
         return render(
@@ -284,9 +311,13 @@ def define_new_patient(request):
         )
     elif request.method == "POST" and request.POST["action"] == "defineBatchPatient":
         if "patientExcel" in request.FILES:
-            patient_batch_data = read_batch_patient_file(request.FILES["patientExcel"])
+            patient_batch_data = clinic.utils.patient.read_batch_patient_file(
+                request.FILES["patientExcel"]
+            )
             if "ERROR" in patient_batch_data:
-                patient_definition_data = fields_for_new_patient(__package__)
+                patient_definition_data = clinic.utils.patient.fields_for_new_patient(
+                    __package__
+                )
                 return render(
                     request,
                     "clinic/defineNewPatient.html",
@@ -295,7 +326,9 @@ def define_new_patient(request):
                         "error": patient_batch_data["ERROR"],
                     },
                 )
-            defined_batch_patient = store_batch_patient(patient_batch_data)
+            defined_batch_patient = clinic.utils.patient.store_batch_patient(
+                patient_batch_data
+            )
         return render(
             request,
             "clinic/defineNewPatient.html",
@@ -305,20 +338,22 @@ def define_new_patient(request):
         request.method == "POST"
         and request.POST["action"] == "addAdditionalInformation"
     ):
-        add_additional_information(request.POST)
+        clinic.utils.patient.add_additional_information(request.POST)
         return redirect(
             "display_patient_information", patient_id=request.POST["patient_id"]
         )
         # return render(request, 'clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
     elif request.method == "POST" and request.POST["action"] == "defineProjectFields":
-        project_fields_added = add_project_fields(request.POST)
+        project_fields_added = clinic.utils.projects.add_project_fields(request.POST)
         return render(
             request,
             "clinic/defineNewPatient.html",
             {"project_fields_added": project_fields_added},
         )
     else:
-        patient_definition_data = fields_for_new_patient(__package__)
+        patient_definition_data = clinic.utils.patient.fields_for_new_patient(
+            __package__
+        )
         return render(
             request,
             "clinic/defineNewPatient.html",
@@ -335,8 +370,8 @@ def define_new_patient_history(request):
 def define_new_samples(request):
     """
     Functions :
-        analyze_input_samples  
-        analyze_input_sample_project_fields  
+        analyze_input_samples
+        analyze_input_sample_project_fields
         prepare_sample_input_table
         get_codeID_for_resequencing
         prepare_sample_project_input_table
@@ -345,7 +380,7 @@ def define_new_samples(request):
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
-        sample_recorded = analyze_input_samples(request)
+        sample_recorded = core.utils.samples.analyze_input_samples(request)
         # if no samples are in any of the options, displays the inital page
         if (
             "defined_samples" not in sample_recorded
@@ -353,7 +388,9 @@ def define_new_samples(request):
             and "invalid_samples" not in sample_recorded
             and "incomplete_samples" not in sample_recorded
         ):
-            sample_information = prepare_sample_input_table(__package__)
+            sample_information = core.utils.samples.prepare_sample_input_table(
+                __package__
+            )
             return render(
                 request,
                 "clinic/defineNewSamples.html",
@@ -362,7 +399,7 @@ def define_new_samples(request):
 
         if "valid_samples" in sample_recorded:
             # create the clinic sample  in Define state
-            clinic_sample_list = define_clinic_samples(
+            clinic_sample_list = clinic.utils.samples.define_clinic_samples(
                 sample_recorded["valid_samples"], request.user, "Defined"
             )
             """
@@ -380,19 +417,21 @@ def define_new_samples(request):
             clinic_samples_ids = ",".join(clinic_sample_list)
             sample_recorded["clinic_samples_ids"] = clinic_samples_ids
         if "incomplete_samples" in sample_recorded:
-            sample_recorded.update(prepare_sample_input_table(__package__))
+            sample_recorded.update(
+                core.utils.samples.prepare_sample_input_table(__package__)
+            )
             sample_recorded["number_of_samples"] = len(
                 sample_recorded["incomplete_samples"]
             )
 
         if "pre_defined_samples_id" in sample_recorded:
             # create the clinic sample  in Define state
-            clinic_sample_list = define_clinic_samples(
+            clinic_sample_list = clinic.utils.samples.define_clinic_samples(
                 sample_recorded["pre_defined_samples_id"], request.user, "Pre-Defined"
             )
 
             sample_recorded.update(
-                prepare_sample_project_input_table(
+                core.utils.samples.prepare_sample_project_input_table(
                     sample_recorded["pre_defined_samples_id"]
                 )
             )
@@ -410,7 +449,9 @@ def define_new_samples(request):
     ):
         if "samples_in_list" in request.POST:
             pre_defined_samples_id = request.POST.getlist("samples")
-        sample_recorded = prepare_sample_project_input_table(pre_defined_samples_id)
+        sample_recorded = core.utils.samples.prepare_sample_project_input_table(
+            pre_defined_samples_id
+        )
 
         return render(
             request,
@@ -420,14 +461,18 @@ def define_new_samples(request):
 
     # Add the additional information related to the project
     elif request.method == "POST" and request.POST["action"] == "sampleprojectdata":
-        sample_recorded = analyze_input_sample_project_fields(request.POST)
+        sample_recorded = core.utils.samples.analyze_input_sample_project_fields(
+            request.POST
+        )
         clinic_sample_for_update = request.POST["pre_defined_id"]
-        update_clinic_sample_state_from_core_sample_id(
+        clinic.utils.samples.update_clinic_sample_state_from_core_sample_id(
             clinic_sample_for_update, "Defined"
         )
         if request.POST["pending_pre_defined"] != "":
             sample_recorded.update(
-                prepare_sample_project_input_table(request.POST["pending_pre_defined"])
+                core.utils.samples.prepare_sample_project_input_table(
+                    request.POST["pending_pre_defined"]
+                )
             )
             return render(
                 request,
@@ -442,7 +487,7 @@ def define_new_samples(request):
             )
 
     else:
-        sample_information = prepare_sample_input_table(__package__)
+        sample_information = core.utils.samples.prepare_sample_input_table(__package__)
         return render(
             request,
             "clinic/defineNewSamples.html",
@@ -454,11 +499,11 @@ def define_new_samples(request):
 def define_patient_information(request):
     if request.method == "POST" and request.POST["action"] == "continueWithPatient":
         if "samples_in_list" in request.POST:
-            patient_information = prepare_patient_form(
+            patient_information = clinic.utils.samples.prepare_patient_form(
                 request.POST.getlist("c_samples")
             )
         else:
-            patient_information = prepare_patient_form(
+            patient_information = clinic.utils.samples.prepare_patient_form(
                 request.POST["clinic_samples"].split(",")
             )
         return render(
@@ -467,7 +512,9 @@ def define_patient_information(request):
             {"patient_information": patient_information},
         )
     elif request.method == "POST" and request.POST["action"] == "storePatientInfo":
-        updated_information = analyze_and_store_patient_data(request.POST, request.user)
+        updated_information = clinic.utils.samples.analyze_and_store_patient_data(
+            request.POST, request.user
+        )
 
         return render(
             request,
@@ -475,7 +522,7 @@ def define_patient_information(request):
             {"updated_information": updated_information},
         )
     else:
-        clinic_samples = get_clinic_samples_by_state("Defined")
+        clinic_samples = clinic.utils.samples.get_clinic_samples_by_state("Defined")
         if not clinic_samples:
             return render(
                 request,
@@ -483,7 +530,9 @@ def define_patient_information(request):
                 {"no_samples": True},
             )
         else:
-            patient_information = prepare_patient_form(clinic_samples)
+            patient_information = clinic.utils.samples.prepare_patient_form(
+                clinic_samples
+            )
 
         return render(
             request,
@@ -495,14 +544,18 @@ def define_patient_information(request):
 @login_required
 def define_project_fields(request, project_id):
     if request.method == "POST" and request.POST["action"] == "defineProjectFields":
-        recorded_project_fields = set_project_fields(request.POST)
+        recorded_project_fields = core.utils.patient_projects.set_project_fields(
+            request.POST
+        )
         return render(
             request,
             "clinic/defineProjectFields.html",
             {"recorded_project_fields": recorded_project_fields},
         )
     else:
-        project_fields = define_table_for_project_fields(project_id)
+        project_fields = core.utils.patient_projects.define_table_for_project_fields(
+            project_id
+        )
     return render(
         request,
         "clinic/defineProjectFields.html",
@@ -516,14 +569,14 @@ def define_protocol_parameters(request, protocol_id):
         request.method == "POST"
         and request.POST["action"] == "define_protocol_parameters"
     ):
-        recorded_prot_parameters = set_protocol_parameters(request)
+        recorded_prot_parameters = core.utils.protocols.set_protocol_parameters(request)
         return render(
             request,
             "clinic/defineProtocolParameters.html",
             {"recorded_prot_parameters": recorded_prot_parameters},
         )
     else:
-        if not check_if_protocol_exists(protocol_id, __package__):
+        if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
             return render(
                 request,
                 "clinic/error_page.html",
@@ -534,7 +587,9 @@ def define_protocol_parameters(request, protocol_id):
                     ]
                 },
             )
-        prot_parameters = define_table_for_prot_parameters(protocol_id)
+        prot_parameters = core.utils.protocols.define_table_for_prot_parameters(
+            protocol_id
+        )
         return render(
             request,
             "clinic/defineProtocolParameters.html",
@@ -550,7 +605,9 @@ def define_sample_projects_fields(request, sample_project_id):
         request.method == "POST"
         and request.POST["action"] == "defineSampleProjectFields"
     ):
-        sample_project_field_data = set_sample_project_fields(request.POST)
+        sample_project_field_data = core.utils.samples.set_sample_project_fields(
+            request.POST
+        )
 
         return render(
             request,
@@ -559,7 +616,7 @@ def define_sample_projects_fields(request, sample_project_id):
         )
 
     else:
-        if not check_if_sample_project_id_exists(sample_project_id):
+        if not core.utils.samples.check_if_sample_project_id_exists(sample_project_id):
             return render(
                 request,
                 "clinic/error_page.html",
@@ -571,7 +628,9 @@ def define_sample_projects_fields(request, sample_project_id):
                 },
             )
 
-        sample_project_data = define_table_for_sample_project_fields(sample_project_id)
+        sample_project_data = core.utils.samples.define_table_for_sample_project_fields(
+            sample_project_id
+        )
         return render(
             request,
             "clinic/defineSampleProjectFields.html",
@@ -581,7 +640,9 @@ def define_sample_projects_fields(request, sample_project_id):
 
 @login_required
 def display_patient_information(request, patient_id):
-    display_patient_info = display_one_patient_info(patient_id, __package__)
+    display_patient_info = clinic.utils.patient.display_one_patient_info(
+        patient_id, __package__
+    )
     if "ERROR" in display_patient_info:
         return render(
             request,
@@ -599,7 +660,7 @@ def display_patient_information(request, patient_id):
 
 @login_required
 def display_patient_project(request, project_id):
-    if not check_if_project_exists(project_id, __package__):
+    if not core.utils.patient_projects.check_if_project_exists(project_id, __package__):
         return render(
             request,
             "clinic/error_page.html",
@@ -610,16 +671,14 @@ def display_patient_project(request, project_id):
                 ]
             },
         )
-    project_data = get_all_project_info(project_id)
+    project_data = core.utils.patient_projects.get_all_project_info(project_id)
 
-    return render(
-        request, "clinic/displayProject.html", {"project_data": project_data}
-    )
+    return render(request, "clinic/displayProject.html", {"project_data": project_data})
 
 
 @login_required
 def display_protocol(request, protocol_id):
-    if not check_if_protocol_exists(protocol_id, __package__):
+    if not core.utils.protocols.check_if_protocol_exists(protocol_id, __package__):
         return render(
             request,
             "clinic/error_page.html",
@@ -630,7 +689,7 @@ def display_protocol(request, protocol_id):
                 ]
             },
         )
-    protocol_data = get_all_protocol_info(protocol_id)
+    protocol_data = core.utils.protocols.get_all_protocol_info(protocol_id)
 
     return render(
         request,
@@ -641,7 +700,9 @@ def display_protocol(request, protocol_id):
 
 @login_required
 def display_result_protocol(request, result_protocol_id):
-    if not check_if_protocol_exists(result_protocol_id, __package__):
+    if not core.utils.protocols.check_if_protocol_exists(
+        result_protocol_id, __package__
+    ):
         return render(
             request,
             "clinic/error_page.html",
@@ -652,7 +713,9 @@ def display_result_protocol(request, result_protocol_id):
                 ]
             },
         )
-    result_protocol_data = get_all_protocol_info(result_protocol_id)
+    result_protocol_data = core.utils.protocols.get_all_protocol_info(
+        result_protocol_id
+    )
 
     return render(
         request,
@@ -672,8 +735,8 @@ def display_sample_clinic_info(request, sample_c_id):
     Return:
         patient_definition_data.
     """
-    if check_if_sample_c_exists(sample_c_id):
-        display_sample_info = display_one_sample_info(sample_c_id)
+    if clinic.utils.samples.check_if_sample_c_exists(sample_c_id):
+        display_sample_info = clinic.utils.samples.display_one_sample_info(sample_c_id)
 
         return render(
             request,
@@ -681,7 +744,7 @@ def display_sample_clinic_info(request, sample_c_id):
             {"display_sample_info": display_sample_info},
         )
     else:
-        search_sample_data = collect_sample_data_for_search()
+        search_sample_data = clinic.utils.samples.collect_sample_data_for_search()
         error_message = [
             "The clinic sample that you are trying to get",
             "DOES NOT exists .",
@@ -695,12 +758,12 @@ def display_sample_clinic_info(request, sample_c_id):
 
 @login_required
 def display_sample_project(request, sample_project_id):
-    samples_project_data = get_info_to_display_sample_project(sample_project_id)
+    samples_project_data = core.utils.samples.get_info_to_display_sample_project(
+        sample_project_id
+    )
     if "ERROR" in samples_project_data:
         error_message = samples_project_data["ERROR"]
-        return render(
-            request, "clinic/error_page.html", {"content": error_message}
-        )
+        return render(request, "clinic/error_page.html", {"content": error_message})
 
     return render(
         request,
@@ -712,36 +775,46 @@ def display_sample_project(request, sample_project_id):
 def pending_to_update(request):
     if "wetlab" in settings.INSTALLED_APPS:
         for c_sample_state in ["Sequencing", "Patient update"]:
-            check_if_need_update(c_sample_state)
+            clinic.utils.samples.check_if_need_update(c_sample_state)
     pending = {}
 
     # get the samples in defined state
-    pending["defined"] = get_clinic_samples_defined_state(request.user)
+    pending["defined"] = clinic.utils.samples.get_clinic_samples_defined_state(
+        request.user
+    )
 
-    pending["patient_update"] = get_clinic_samples_patient_sequencing_state(
+    pending[
+        "patient_update"
+    ] = clinic.utils.samples.get_clinic_samples_patient_sequencing_state(
         request.user, "Patient update"
     )
 
-    pending["sequencing"] = get_clinic_samples_patient_sequencing_state(
+    pending[
+        "sequencing"
+    ] = clinic.utils.samples.get_clinic_samples_patient_sequencing_state(
         request.user, "Sequencing"
     )
-    pending["pending_protocol"] = get_clinic_samples_pending_results(
+    pending[
+        "pending_protocol"
+    ] = clinic.utils.samples.get_clinic_samples_pending_results(
         request.user, "Pending protocol"
     )
-    pending["pending_results"] = get_clinic_samples_pending_results(
+    pending[
+        "pending_results"
+    ] = clinic.utils.samples.get_clinic_samples_pending_results(
         request.user, "Pending results"
     )
 
-    pending["graphic_pending_samples"] = pending_clinic_samples_for_grafic(
-        pending
-    ).render()
+    pending[
+        "graphic_pending_samples"
+    ] = clinic.utils.samples.pending_clinic_samples_for_grafic(pending).render()
 
     return render(request, "clinic/pendingToUpdate.html", {"pending": pending})
 
 
 @login_required
 def search_sample(request):
-    search_sample_data = collect_sample_data_for_search()
+    search_sample_data = clinic.utils.samples.collect_sample_data_for_search()
     if request.method == "POST" and (request.POST["action"] == "searchSample"):
         data_request = {}
         data_request["sampleName"] = request.POST["sampleName"]
@@ -770,19 +843,19 @@ def search_sample(request):
                     "clinic/searchSample.html",
                     {
                         "search_sample_data": search_sample_data,
-                        "Error": ERROR_MESSAGE_FOR_INCORRECT_START_SEARCH_DATE,
+                        "Error": clinic.clinic_config.ERROR_MESSAGE_FOR_INCORRECT_START_SEARCH_DATE,
                     },
                 )
         if data_request["end_date"] != "":
             try:
-                datetime.strptime(data_request["end_date"], "%Y-%m-%d")
+                datetime.datetime.strptime(data_request["end_date"], "%Y-%m-%d")
             except Exception:
                 return render(
                     request,
                     "clinic/searchSample.html",
                     {
                         "search_sample_data": search_sample_data,
-                        "Error": ERROR_MESSAGE_FOR_INCORRECT_END_SEARCH_DATE,
+                        "Error": clinic.clinic_config.ERROR_MESSAGE_FOR_INCORRECT_END_SEARCH_DATE,
                     },
                 )
         # Patient name length must be longer than 5 characters
@@ -792,10 +865,10 @@ def search_sample(request):
                 "clinic/searchSample.html",
                 {
                     "search_sample_data": search_sample_data,
-                    "Error": ERROR_MESSAGE_FOR_SORT_PATIENT_NAME,
+                    "Error": clinic.clinic_config.ERROR_MESSAGE_FOR_SORT_PATIENT_NAME,
                 },
             )
-        sample_c_list = get_samples_clinic_in_search(data_request)
+        sample_c_list = clinic.utils.samples.get_samples_clinic_in_search(data_request)
 
         if len(sample_c_list) == 0:
             return render(
@@ -803,11 +876,13 @@ def search_sample(request):
                 "clinic/searchSample.html",
                 {
                     "search_sample_data": search_sample_data,
-                    "Error": ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH,
+                    "Error": clinic.clinic_config.ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH,
                 },
             )
         if len(sample_c_list) == 1:
-            display_sample_info = display_one_sample_info(sample_c_list[0])
+            display_sample_info = clinic.utils.samples.display_one_sample_info(
+                sample_c_list[0]
+            )
 
             return render(
                 request,
@@ -815,7 +890,9 @@ def search_sample(request):
                 {"display_sample_info": display_sample_info},
             )
         else:
-            display_sample_list_info = display_sample_list(sample_c_list)
+            display_sample_list_info = clinic.utils.samples.display_sample_list(
+                sample_c_list
+            )
             return render(
                 request,
                 "clinic/displaySampleClinicInfo.html",
@@ -832,7 +909,7 @@ def search_sample(request):
 
 @login_required
 def search_patient(request):
-    s_patient_data = from_data_for_search_patient()
+    s_patient_data = clinic.utils.patient.from_data_for_search_patient()
     if request.method == "POST" and (request.POST["action"] == "searchPatient"):
         data_request = {}
         data_request["p_name"] = request.POST["patientname"]
@@ -848,23 +925,25 @@ def search_patient(request):
             return render(
                 request,
                 "clinic/searchPatient.html",
-                {"Error": ERROR_MESSAGE_FOR_SORT_PATIENT_NAME},
+                {"Error": clinic.clinic_config.ERROR_MESSAGE_FOR_SORT_PATIENT_NAME},
             )
-        patient_list = get_patients_in_search(data_request)
+        patient_list = clinic.utils.patient.get_patients_in_search(data_request)
 
         if len(patient_list) == 0:
             return render(
                 request,
                 "clinic/searchPatient.html",
                 {
-                    "Error": ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH,
+                    "Error": clinic.clinic_config.ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH,
                     "s_patient_data": s_patient_data,
                 },
             )
         if len(patient_list) == 1:
             return redirect("display_patient_information", patient_id=patient_list[0])
         else:
-            display_patient_list_info = display_patient_list(patient_list)
+            display_patient_list_info = clinic.utils.patient.display_patient_list(
+                patient_list
+            )
             return render(
                 request,
                 "clinic/searchPatient.html",
@@ -893,7 +972,9 @@ def set_molecule_values(request):
         else:
             c_samples = request.POST["c_samples"].split(",")
 
-        molecule_protocol = get_table_record_molecule(c_samples, __package__)
+        molecule_protocol = core.utils.samples.get_table_record_molecule(
+            c_samples, __package__
+        )
         if "ERROR" in molecule_protocol:
             return render(
                 request,
@@ -912,11 +993,13 @@ def set_molecule_values(request):
     elif (
         request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
     ):
-        molecule_recorded = record_molecules(request)
+        molecule_recorded = core.utils.samples.record_molecules(request)
 
         if "heading" not in molecule_recorded:
             samples = request.POST["samples"].split(",")
-            molecule_protocol = get_table_record_molecule(samples, __package__)
+            molecule_protocol = core.utils.samples.get_table_record_molecule(
+                samples, __package__
+            )
             molecule_protocol["data"] = molecule_recorded["incomplete_molecules"]
             molecule_protocol["samples"] = ",".join(samples)
             return render(
@@ -928,7 +1011,7 @@ def set_molecule_values(request):
             if "incomplete_molecules" in molecule_recorded:
                 samples = molecule_recorded["incomplete_molecules_ids"].split(",")
                 molecule_recorded.update(
-                    get_table_record_molecule(samples, __package__)
+                    core.utils.samples.get_table_record_molecule(samples, __package__)
                 )
 
             return render(
@@ -945,8 +1028,10 @@ def set_molecule_values(request):
             molecules = request.POST.getlist("molecules")
         else:
             molecules = request.POST["molecules"].split(",")
-        show_molecule_parameters = display_molecule_protocol_parameters(
-            molecules, request.user
+        show_molecule_parameters = (
+            core.utils.samples.display_molecule_protocol_parameters(
+                molecules, request.user
+            )
         )
         return render(
             request,
@@ -958,18 +1043,20 @@ def set_molecule_values(request):
         (
             added_molecule_protocol_parameters,
             sample_updated_list,
-        ) = add_molecule_protocol_parameters(request)
+        ) = core.utils.samples.add_molecule_protocol_parameters(request)
         # Update the clinic sample request state
 
         for sample_updated in sample_updated_list:
-            get_clinic_sample_obj_from_sample_id(sample_updated).set_state(
-                "Pending results"
-            )
+            clinic.utils.samples.get_clinic_sample_obj_from_sample_id(
+                sample_updated
+            ).set_state("Pending results")
 
         if "pending" in request.POST:
             molecules = request.POST["pending"].split(",")
-            show_molecule_parameters = display_molecule_protocol_parameters(
-                molecules, request.user
+            show_molecule_parameters = (
+                core.utils.samples.display_molecule_protocol_parameters(
+                    molecules, request.user
+                )
             )
             return render(
                 request,
@@ -990,11 +1077,10 @@ def set_molecule_values(request):
 
     else:
         register_user = request.user.username
-        display_list = get_defined_samples(register_user)
+        display_list = core.utils.samples.get_defined_samples(register_user)
 
         return render(
             request,
             "clinic/setMoleculeValues.html",
             {"display_list": display_list},
         )
-    return render(request, "clinic/setMoleculeValues.html", {})

@@ -1,9 +1,11 @@
+# Generic imports
 import json
 
-from clinic.clinic_config import *
-from clinic.models import *
-from clinic.utils.common import *
-from core.utils.samples import *
+# Local imports
+import clinic.clinic_config
+import clinic.models
+import core.utils.common
+import core.utils.samples
 
 
 def analyze_and_store_patient_data(user_post, user):
@@ -14,11 +16,11 @@ def analyze_and_store_patient_data(user_post, user):
     incomplete_clinic_samples_ids = []
     json_data = json.loads(user_post["patient_data"])
     clinic_samples = user_post["clinic_samples"].split(",")
-    heading = ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+    heading = clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
     for c_samples_id in range(len(clinic_samples)):
         # check if patient history number matches
 
-        if check_empty_fields(json_data[c_samples_id]):
+        if core.utils.samples.check_empty_fields(json_data[c_samples_id]):
             incomplete_clinic_samples.append(json_data[c_samples_id])
             incomplete_clinic_samples_ids.append(clinic_samples[c_samples_id])
             continue
@@ -35,7 +37,7 @@ def analyze_and_store_patient_data(user_post, user):
         else:
             patient_data = {}
             patient_data["patient_id"] = patient_obj
-            for map_column in MAP_ADDITIONAL_HEADING_TO_DATABASE:
+            for map_column in clinic.clinic_config.MAP_ADDITIONAL_HEADING_TO_DATABASE:
                 patient_data[map_column[1]] = json_data[c_samples_id][
                     heading.index(map_column[0])
                 ]
@@ -63,14 +65,20 @@ def analyze_and_store_patient_data(user_post, user):
             suspicion_data["description"] = json_data[c_samples_id][
                 heading.index("Suspicion")
             ]
-            SuspicionHistory.objects.create_suspicion_history(
+            clinic.models.SuspicionHistory.objects.create_suspicion_history(
                 suspicion_data
             )
     if stored_samples:
-        analyze_data["stored_samples_heading"] = HEADING_FOR_STORED_PATIENT_DATA
+        analyze_data[
+            "stored_samples_heading"
+        ] = clinic.clinic_config.HEADING_FOR_STORED_PATIENT_DATA
     if incomplete_clinic_samples_ids:
-        analyze_data["heading"] = ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
-        analyze_data["heading_length"] = len(ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES)
+        analyze_data[
+            "heading"
+        ] = clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+        analyze_data["heading_length"] = len(
+            clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+        )
         analyze_data["incomplete_clinic_samples"] = incomplete_clinic_samples
         analyze_data["data_length"] = len(incomplete_clinic_samples)
         analyze_data["incomplete_clinic_samples_ids"] = ",".join(
@@ -82,7 +90,7 @@ def analyze_and_store_patient_data(user_post, user):
 
     if not_match:
         analyze_data["not_match"] = not_match
-        analyze_data["heading_not_match"] = HEADING_FOR_NOT_MATCH
+        analyze_data["heading_not_match"] = clinic.clinic_config.HEADING_FOR_NOT_MATCH
     # analyze_data['not_match_samples_ids'] =not_match_samples_ids
     if stored_samples:
         analyze_data["stored_samples"] = stored_samples
@@ -96,7 +104,9 @@ def check_if_need_update(c_sample_state):
     if c_samples_in_patient:
         for c_sample in c_samples_in_patient:
             sample_core_state = c_sample.get_sample_core_state()
-            mapped_sample_state = MAPPING_SAMPLES_CORE_VS_CLINIC[sample_core_state]
+            mapped_sample_state = clinic.clinic_config.MAPPING_SAMPLES_CORE_VS_CLINIC[
+                sample_core_state
+            ]
             if mapped_sample_state == "Patient update":
                 continue
             # Update the clinic sample with new State
@@ -106,7 +116,7 @@ def check_if_need_update(c_sample_state):
 
 
 def check_if_sample_c_exists(sample_c_id):
-    if ClinicSampleRequest.objects.filter(pk__exact=sample_c_id).exists():
+    if clinic.models.ClinicSampleRequest.objects.filter(pk__exact=sample_c_id).exists():
         return True
     else:
         return False
@@ -130,10 +140,10 @@ def collect_sample_data_for_search():
 
 
 def get_clinic_sample_in_state(state):
-    if ClinicSampleRequest.objects.filter(
+    if clinic.models.ClinicSampleRequest.objects.filter(
         clinic_sample_state__clinic_state__exact=state
     ).exists():
-        return ClinicSampleRequest.objects.filter(
+        return clinic.models.ClinicSampleRequest.objects.filter(
             clinic_sample_state__clinic_state__exact=state
         )
     return
@@ -143,13 +153,15 @@ def define_clinic_samples(sample_list, user, state):
     clinic_sample_list = []
     for sample_id in sample_list:
         c_sample_data = {}
-        sample_obj = get_sample_obj_from_id(sample_id)
+        sample_obj = core.utils.samplesget_sample_obj_from_id(sample_id)
         c_sample_data["sampleCore"] = sample_obj
         c_sample_data["patientCore"] = sample_obj.get_sample_patient_obj()
         c_sample_data["user"] = user
         c_sample_data["state"] = "Defined"
-        new_clinic_sample = ClinicSampleRequest.objects.create_clinic_sample(
-            c_sample_data
+        new_clinic_sample = (
+            clinic.models.ClinicSampleRequest.objects.create_clinic_sample(
+                c_sample_data
+            )
         )
         clinic_sample_list.append(new_clinic_sample.get_id())
     return clinic_sample_list
@@ -163,25 +175,35 @@ def display_one_sample_info(id):
 
     sample_info["s_name"] = core_sample_obj.get_sample_name()
     sample_info["sample_core_info"] = clinic_sample_obj.get_sample_core_info()
-    sample_info["sample_core_heading"] = HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
+    sample_info[
+        "sample_core_heading"
+    ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
 
     p_main_info = clinic_sample_obj.get_patient_information()
 
     # collect patient name and code
     sample_info["patient_basic_info"] = list(
-        zip(HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION, p_main_info)
+        zip(
+            clinic.clinic_config.HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION,
+            p_main_info,
+        )
     )
     # get patient data
-    if PatientData.objects.filter(patien_core__exact=p_core_obj).exists():
-        patient_data_obj = PatientData.objects.get(patienCore__exact=p_core_obj)
+    if clinic.models.PatientData.objects.filter(patien_core__exact=p_core_obj).exists():
+        patient_data_obj = clinic.models.PatientData.objects.get(
+            patienCore__exact=p_core_obj
+        )
         p_data_info = patient_data_obj.get_patient_full_data()
         sample_info["patient_data"] = list(
-            zip(HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION, p_data_info)
+            zip(
+                clinic.clinic_config.HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION,
+                p_data_info,
+            )
         )
-    sample_info["not_massive"] = get_all_sample_information(
+    sample_info["not_massive"] = core.utils.samples.get_all_sample_information(
         core_sample_obj.get_sample_id(), False
     )
-    sample_info["massive"] = get_all_sample_information(
+    sample_info["massive"] = core.utils.samples.get_all_sample_information(
         core_sample_obj.get_sample_id(), True
     )
     return sample_info
@@ -189,10 +211,12 @@ def display_one_sample_info(id):
 
 def display_sample_list(sample_c_list):
     display_sample_list_info = {}
-    display_sample_list_info["heading"] = HEADING_SEARCH_LIST_SAMPLES_CLINIC
+    display_sample_list_info[
+        "heading"
+    ] = clinic.clinic_config.HEADING_SEARCH_LIST_SAMPLES_CLINIC
     sample_c_data = []
     for sample_c in sample_c_list:
-        sample_c_obj = ClinicSampleRequest.objects.get(pk__exact=sample_c)
+        sample_c_obj = clinic.models.ClinicSampleRequest.objects.get(pk__exact=sample_c)
         sample_c_data.append(sample_c_obj.get_sample_info_for_list())
 
     display_sample_list_info["sample_c_data"] = sample_c_data
@@ -200,15 +224,15 @@ def display_sample_list(sample_c_list):
 
 
 def get_clinic_sample_obj_from_id(id):
-    clinic_sample_obj = ClinicSampleRequest.objects.get(pk__exact=id)
+    clinic_sample_obj = clinic.models.ClinicSampleRequest.objects.get(pk__exact=id)
     return clinic_sample_obj
 
 
 def get_clinic_samples_by_state(state):
-    if ClinicSampleRequest.objects.filter(
+    if clinic.models.ClinicSampleRequest.objects.filter(
         clinic_sample_state__clinic_state__exact=state
     ).exists():
-        c_samples = ClinicSampleRequest.objects.filter(
+        c_samples = clinic.models.ClinicSampleRequest.objects.filter(
             clinic_sample_state__clinic_state__exact=state
         )
         c_samples_ids = []
@@ -221,23 +245,25 @@ def get_clinic_samples_by_state(state):
 
 def get_available_doctor():
     doctor_list = []
-    if Doctor.objects.all().exists():
-        doctors = Doctor.objects.all().order_by("doctorName")
+    if clinic.models.Doctor.objects.all().exists():
+        doctors = clinic.models.Doctor.objects.all().order_by("doctorName")
         for doctor in doctors:
             doctor_list.append(doctor.get_name())
     return doctor_list
 
 
 def get_doctor_obj(doctor_name):
-    if Doctor.objects.filter(doctor_name__exact=doctor_name).exists():
-        return Doctor.objects.get(doctor_name__exact=doctor_name)
+    if clinic.models.Doctor.objects.filter(doctor_name__exact=doctor_name).exists():
+        return clinic.models.Doctor.objects.get(doctor_name__exact=doctor_name)
     else:
         return None
 
 
 def get_patient_obj(history_number):
-    if PatientCore.objects.filter(history_number__exact=history_number).exists():
-        return PatientCore.objects.get(history_number__exact=history_number)
+    if core.models.PatientCore.objects.filter(
+        history_number__exact=history_number
+    ).exists():
+        return core.models.PatientCore.objects.get(history_number__exact=history_number)
     else:
         return None
 
@@ -254,12 +280,12 @@ def get_clinic_samples_in_state(user, state):
     Return:
         samples or False
     """
-    user_friend_list = get_friend_list(user)
-    if ClinicSampleRequest.objects.filter(
+    user_friend_list = core.utils.common.get_friend_list(user)
+    if clinic.models.ClinicSampleRequest.objects.filter(
         clinic_sample_state__clinic_state__exact=state,
         sample_request_user__in=user_friend_list,
     ).exists():
-        samples = ClinicSampleRequest.objects.filter(
+        samples = clinic.models.ClinicSampleRequest.objects.filter(
             clinic_sample_state__clinic_state__exact=state,
             sample_request_user__in=user_friend_list,
         ).order_by("priority")
@@ -288,7 +314,9 @@ def get_clinic_samples_defined_state(user):
         for sample_obj in samples_obj:
             sample_information.append(sample_obj.get_info_for_defined_state())
         samples_in_state["sample_information"] = sample_information
-        samples_in_state["sample_heading"] = HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE
+        samples_in_state[
+            "sample_heading"
+        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE
         samples_in_state["length"] = len(sample_information)
         return samples_in_state
     else:
@@ -320,7 +348,7 @@ def get_clinic_samples_patient_sequencing_state(user, state):
         samples_in_state["sample_information"] = sample_information
         samples_in_state[
             "sample_heading"
-        ] = HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE
+        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE
         samples_in_state["length"] = len(sample_information)
         return samples_in_state
     else:
@@ -329,8 +357,12 @@ def get_clinic_samples_patient_sequencing_state(user, state):
 
 
 def get_clinic_sample_obj_from_sample_id(sample_core_id):
-    if ClinicSampleRequest.objects.filter(sample_core__exact=sample_core_id).exists():
-        c_sample_obj = ClinicSampleRequest.objects.get(sample_core__exact=sample_core_id)
+    if clinic.models.ClinicSampleRequest.objects.filter(
+        sample_core__exact=sample_core_id
+    ).exists():
+        c_sample_obj = clinic.models.ClinicSampleRequest.objects.get(
+            sample_core__exact=sample_core_id
+        )
         return c_sample_obj
     else:
         return
@@ -358,7 +390,7 @@ def get_clinic_samples_pending_results(user, state):
         samples_in_state["sample_information"] = sample_information
         samples_in_state[
             "sample_heading"
-        ] = HEADING_FOR_DISPLAY_SAMPLE_PENDING_RESULT_STATE
+        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_PENDING_RESULT_STATE
         samples_in_state["length"] = len(sample_information)
         return samples_in_state
     else:
@@ -367,16 +399,20 @@ def get_clinic_samples_pending_results(user, state):
 
 
 def get_service_unit_obj(unit_name):
-    if ServiceUnits.objects.filter(service_unit_name__exact=unit_name).exists():
-        return ServiceUnits.objects.get(service_unit_name__exact=unit_name)
+    if clinic.models.ServiceUnits.objects.filter(
+        service_unit_name__exact=unit_name
+    ).exists():
+        return clinic.models.ServiceUnits.objects.get(
+            service_unit_name__exact=unit_name
+        )
     else:
         return None
 
 
 def get_service_units():
     service_unit_list = []
-    if ServiceUnits.objects.all().exists():
-        services = ServiceUnits.objects.all().order_by("serviceUnitName")
+    if clinic.models.ServiceUnits.objects.all().exists():
+        services = clinic.models.ServiceUnits.objects.all().order_by("serviceUnitName")
         for service in services:
             service_unit_list.append(service.get_name())
     return service_unit_list
@@ -384,8 +420,8 @@ def get_service_units():
 
 def get_samples_clinic_in_search(data_request):
     clinic_s_list = []
-    if ClinicSampleRequest.objects.all().exists():
-        clinic_s_found = ClinicSampleRequest.objects.all()
+    if clinic.models.ClinicSampleRequest.objects.all().exists():
+        clinic_s_found = clinic.models.ClinicSampleRequest.objects.all()
     else:
         return clinic_s_list
     if data_request["patientCode"] != "":
@@ -440,8 +476,10 @@ def get_samples_clinic_in_search(data_request):
 def prepare_patient_form(clinic_samples_ids):
     patient_info = {}
     patient_info["data"] = []
-    patient_info["heading"] = ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
-    heading_length = len(ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES)
+    patient_info[
+        "heading"
+    ] = clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+    heading_length = len(clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES)
     for clinic_s_id in clinic_samples_ids:
         clinic_sample_obj = get_clinic_sample_obj_from_id(clinic_s_id)
         data_sample = [""] * heading_length
@@ -458,7 +496,9 @@ def prepare_patient_form(clinic_samples_ids):
 
 def update_clinic_sample_state_from_core_sample_id(sample_list, state):
     for core_sample_id in sample_list:
-        core_sample_obj = get_sample_obj_from_id(core_sample_id)
-        clinic_sample_obj = ClinicSampleRequest.objects.get(sampleCore=core_sample_obj)
+        core_sample_obj = core.utils.samples.get_sample_obj_from_id(core_sample_id)
+        clinic_sample_obj = clinic.models.ClinicSampleRequest.objects.get(
+            sampleCore=core_sample_obj
+        )
         clinic_sample_obj.set_state(state)
     return
