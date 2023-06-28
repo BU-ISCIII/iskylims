@@ -47,16 +47,17 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
 sudo bash docker_iskylims_install.sh
 ```
 
-The script creates a docker compose container with 2 services:
+The script creates a docker compose container with 3 services:
 
 - web1: contains the iSkyLIMS web application
 - db1: contains the mySQL database
+- samba: contains samba server
 
 After Docker is created and services are up, database structure and initial data are loaded into database. When this step is completed, you will be asked to define the super user which will have access to django admin pages. You can type any name, but we recommend that you use "admin", because admin user is requested later on when defining the initial settings.
 
 Follow the prompt message to create the super user account.
 
-When script ends open your navigator typing **localhost:8000** to access to iSkyLIMS
+When script ends open your navigator typing **localhost:8001** to access to iSkyLIMS
 
 ## Install iSkyLIMS in your server running ubuntu/CentOS
 
