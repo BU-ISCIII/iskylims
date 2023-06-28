@@ -131,7 +131,7 @@ SWAGGER_SETTINGS = {"SECURITY_DEFINITIONS": {"basic": {"type": "basic"}}}
             'type': 'apiKey',
             'in': 'header',
             'name': 'Authorization'
-        }   
+        }
 """
 # 'PERSIST_AUTH': True
 
