@@ -1,9 +1,9 @@
-
+# Generic imports
 from django.contrib.auth.models import User
 from django.db import models
 
-from core.models import (PatientCore, ProtocolParameters, Protocols,
-                                  Samples)
+# Local imports
+import core.models
 
 
 class PatientDataManager(models.Manager):
@@ -23,7 +23,7 @@ class PatientDataManager(models.Manager):
 
 class PatientData(models.Model):
     patien_core = models.OneToOneField(
-        PatientCore,
+        core.models.PatientCore,
         on_delete=models.CASCADE,
         primary_key=True,
     )
@@ -69,7 +69,7 @@ class PatientHistoryManager(models.Manager):
 
 class PatientHistory(models.Model):
     patient_core = models.ForeignKey(
-        PatientCore, on_delete=models.CASCADE, null=True, blank=True
+        core.models.PatientCore, on_delete=models.CASCADE, null=True, blank=True
     )
     entry_date = models.DateTimeField(auto_now_add=False, null=True, blank=True)
     description = models.CharField(max_length=255)
@@ -130,9 +130,9 @@ class ClinicSampleRequestManager(models.Manager):
 
 
 class ClinicSampleRequest(models.Model):
-    sample_core = models.ForeignKey(Samples, on_delete=models.CASCADE)
+    sample_core = models.ForeignKey(core.models.Samples, on_delete=models.CASCADE)
     patient_core = models.ForeignKey(
-        PatientCore, on_delete=models.CASCADE, null=True, blank=True
+        core.models.PatientCore, on_delete=models.CASCADE, null=True, blank=True
     )
     doctor_id = models.ForeignKey(
         Doctor, on_delete=models.CASCADE, null=True, blank=True
@@ -250,7 +250,7 @@ class ClinicSampleRequest(models.Model):
         return "%s" % (self.sample_core.get_sample_state())
 
     def set_protocol(self, protocol_name):
-        self.protocol_id = Protocols.objects.get(name__exact=protocol_name)
+        self.protocol_id = core.models.Protocols.objects.get(name__exact=protocol_name)
         self.save()
         return self
 
@@ -295,7 +295,7 @@ class ResultParameterValue(models.Model):
         ClinicSampleRequest, on_delete=models.CASCADE, null=True
     )
     parameter_id = models.ForeignKey(
-        ProtocolParameters, on_delete=models.CASCADE, null=True
+        core.models.ProtocolParameters, on_delete=models.CASCADE, null=True
     )
     parameterValue = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
@@ -321,7 +321,7 @@ class FamilyRelatives(models.Model):
 
 class Family(models.Model):
     patien_core_id = models.ForeignKey(
-        PatientCore, on_delete=models.CASCADE, null=True, blank=True
+        core.models.PatientCore, on_delete=models.CASCADE, null=True, blank=True
     )
     family_relatives_id = models.ForeignKey(
         FamilyRelatives, on_delete=models.CASCADE, null=True, blank=True

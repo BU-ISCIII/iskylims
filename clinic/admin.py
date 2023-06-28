@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from clinic.models import *
+import clinic.models
 
 
 # Register your models here.
@@ -43,9 +43,9 @@ class ConfigSettingAdmin(admin.ModelAdmin):
     list_display = ["configuration_name", "configuration_value"]
 
 
-admin.site.register(ClinicSampleRequest, ClinicSampleRequestAdmin)
-admin.site.register(ClinicSampleState, ClinicSampleStateAdmin)
-admin.site.register(Doctor, DoctorAdmin)
-admin.site.register(PatientData, PatientDataAdmin)
-admin.site.register(ServiceUnits, ServiceUnitsAdmin)
-admin.site.register(ConfigSetting, ConfigSettingAdmin)
+admin.site.register(clinic.models.ClinicSampleRequest, ClinicSampleRequestAdmin)
+admin.site.register(clinic.models.ClinicSampleState, ClinicSampleStateAdmin)
+admin.site.register(clinic.models.Doctor, DoctorAdmin)
+admin.site.register(clinic.models.PatientData, PatientDataAdmin)
+admin.site.register(clinic.models.ServiceUnits, ServiceUnitsAdmin)
+admin.site.register(clinic.models.ConfigSetting, ConfigSettingAdmin)

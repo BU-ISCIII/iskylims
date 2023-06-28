@@ -13,7 +13,7 @@ from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect, render
 
 # Local imports
-import core.fusioncharts.fusioncharts
+# import core.fusioncharts.fusioncharts
 import core.utils.commercial_kits
 import core.utils.common
 import core.utils.load_batch
