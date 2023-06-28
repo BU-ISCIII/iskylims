@@ -13,6 +13,6 @@ def get_patient_core_obj_from_id(p_id):
     """
     try:
         patient_obj = core.models.PatientCore.objects.get(pk__exact=p_id)
-    except:
+    except Exception:
         patient_obj = None
     return patient_obj

@@ -1,6 +1,5 @@
 # Generic import
 import django.contrib.auth.models
-import statistics
 from django.db.models import F, Count, Func, Value, CharField
 from django.db.models.functions import ExtractWeek, ExtractYear
 

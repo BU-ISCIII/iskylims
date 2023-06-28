@@ -8,7 +8,7 @@ import traceback
 from datetime import datetime
 from logging.config import fileConfig
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from smb.SMBConnection import SMBConnection
 

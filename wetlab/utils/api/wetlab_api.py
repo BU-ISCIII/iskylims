@@ -1,6 +1,6 @@
 from django.db import connection
 
-from wetlab.models import Projects, RunningParameters, SamplesInProject
+import wetlab.models
 
 
 def get_runs_projects_samples_and_dates(user_list_ids):
@@ -14,7 +14,7 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         samples_data
     """
     samples_data = []
-    if SamplesInProject.objects.filter(user_id_id__in=user_list_ids).exists():
+    if wetlab.models.SamplesInProject.objects.filter(user_id_id__in=user_list_ids).exists():
         cursor = connection.cursor()
         user_list_str = [str(id_str) for id_str in user_list_ids]
         user_list = "( " + ",".join(user_list_str) + " )"
