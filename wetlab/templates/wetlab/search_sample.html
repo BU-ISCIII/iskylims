@@ -5,19 +5,17 @@
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
-        {% if no_samples %}
-            <div class="row my-2">
-                <div class="col-sm-7 offset-3">
+        {% if error_message %}
+            <div class="row my-2 justify-content-center">
+                <div class="col-md-7">
                     <div class="card border-danger mb-3">
-                        <div class="card-header"><h3 style="text-align:center">Not matches</h3> </div>
+                        <div class="card-header text-center"><h3>Not matches</h3> </div>
                         <div class="card-body">
-                            {% for value in no_samples %}
-                                <p>{{value}}</p>
-                            {% endfor %}
+                            <h4>{{error_message}}</h4>
                         </div>
                     </div>
-                </div> <!--  end of col-sm-6 -->
-            </div> <!--// end row -->
+                </div> 
+            </div> 
         {% endif %}
 
         {% if sample_list  or run_sample_list %}
@@ -140,8 +138,8 @@
         {% else %}
             {% load user_groups %}
             <div class="container">
-                <div class="row my-2">
-                    <div class="col-sm-7 offset-3" >
+                <div class="row my-2 justify-content-center">
+                    <div class="col-md-7" >
                         <div class="card ">
                             <div class="card-header"><h3 class="text-center">Search Samples</h3></div>
                             <div class="card-body">
@@ -179,9 +177,11 @@
                                         {% if request.user|has_group:"WetlabManager" %}
                                             <input type="text" class="form-control" name="username" id="username" placeholder="User name">
                                             <label for="username">User name of the sample responsible</label>
+                                            <input type="hidden" name="manager" value="True"/>
                                         {% else %}
                                             <input type="text" class="form-control" value="{{user.get_username}}" name="username" id="username" placeholder="User name" readonly>
                                             <label for="username">User name</label>
+                                            <input type="hidden" name="manager" value="False"/>
                                         {% endif%}
                                     </div>
                                     <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">

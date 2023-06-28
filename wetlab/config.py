@@ -652,10 +652,7 @@ ERROR_EMPTY_VALUES = [
 ]
 
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ["Sample Project is already defined"]
-ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = [
-    "The Sample Project that you requested ",
-    "Does not exist",
-]
+ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = "Sample Project requested does not exist"
 
 ERROR_LIBRARY_PREPARATION_NOT_EXISTS = ["Library preparation are not defined", ""]
 ERROR_NOT_LIBRARY_PREPARATION_SELECTED = [
@@ -676,7 +673,7 @@ ERROR_RUN_IN_WRONG_STATE = [
     "Unable to accept your Run definition",
     "Because the Run is in state",
 ]
-
+ERROR_RUN_DOES_NOT_EXIST = "Requested run does not exist"
 ERROR_UNABLE_SAVE_REQUEST = ["Unable to save your request."]
 
 ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP = [

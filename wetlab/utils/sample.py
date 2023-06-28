@@ -277,7 +277,7 @@ def get_sample_in_project_obj_from_sample_name(sample_name_in_project):
     return sample_in_project_obj
 
 
-def search_run_samples(sample_name, user_name, start_date, end_date):
+def search_run_samples(sample_name, user_name, start_date, end_date, is_wetlab_manager):
     """
     Description:
         The function search the run samples that matchs with the requested conditions.
@@ -294,20 +294,27 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
     """
     run_sample_list = []
 
-    if wetlab.models.SamplesInProject.objects.all().exists():
-        run_sample_founds = wetlab.models.SamplesInProject.objects.all()
-    else:
+    if not wetlab.models.SamplesInProject.objects.all().exists():
         return run_sample_list
-    if user_name != "":
+    if is_wetlab_manager:
+        if user_name == "":
+            run_sample_founds = wetlab.models.SamplesInProject.objects.all()
+        else:
+            run_sample_founds = wetlab.models.SamplesInProject.objects.filter(
+                user_id__username__iexact=user_name
+            )
+    else:
         if wetlab.models.User.objects.filter(username__exact=user_name).exists():
             user_name_obj = wetlab.models.User.objects.filter(
                 username__exact=user_name
             ).last()
             user_friend_list = core.utils.common.get_friend_list(user_name_obj)
-            if not run_sample_founds.filter(user_id__in=user_friend_list).exists():
+            if not wetlab.models.SamplesInProject.objects.filter(
+                user_id__in=user_friend_list
+            ).exists():
                 return run_sample_list
             else:
-                run_sample_founds = run_sample_founds.filter(
+                run_sample_founds = wetlab.models.SamplesInProject.objects.filter(
                     user_id__in=user_friend_list
                 )
         else:
@@ -339,9 +346,16 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
     if len(run_sample_founds) == 1:
         run_sample_list.append(run_sample_founds[0].pk)
         return run_sample_list
-
-    for run_sample in run_sample_founds:
-        run_sample_list.append(run_sample.get_basic_info())
-
+    run_sample_list = list(
+        run_sample_founds.values_list(
+            "pk", "sample_name", "project_id__project_name", "run_process_id__run_name"
+        ).annotate(
+            formated_date=Func(
+                F("run_process_id__run_finish_date"),
+                Value("%Y-%m-%d"),
+                function="DATE_FORMAT",
+                output_field=CharField(),
+            )
+        )
+    )
     return run_sample_list
-

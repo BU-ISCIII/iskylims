@@ -391,7 +391,7 @@ class Projects(models.Model):
             return self.user_id.username
         return "Not provided"
 
-    def get_user_center_name(self):
+    def get_user_id(self):
         return "%s" % (self.user_id.pk)
 
     def get_project_name(self):
@@ -994,7 +994,7 @@ class SamplesInProject(models.Model):
             sample_info.append(self.run_process_id.get_run_name())
         else:
             sample_info.append("None")
-        sample_info.append(self.generated_at.strftime("%I:%M%p on %B %d, %Y"))
+        sample_info.append(self.generated_at.strftime("%Y-%m-%d"))
         return sample_info
 
     def get_sample_id(self):
@@ -1067,6 +1067,10 @@ class SamplesInProject(models.Model):
         if self.user_id is not None:
             return "%s" % (self.user_id.username)
         return "None"
+    def get_user_id(self):
+        if self.user_id is not None:
+            return self.user_id.pk
+        return None
 
     objects = SamplesInProjectManager()
 

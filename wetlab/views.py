@@ -727,47 +727,21 @@ def add_collection_index_kit(request):
 
 @login_required
 def search_run(request):
-    """
-    Description:
-        The function is called from web, having 2 main parts:
+    """The function is called from web, having 2 main parts:
             - User form with the information to search runs
             - Result information can be :
                 - list of the matched runs
                 - run information in case that only 1 match is found
-    Input:
-        request     # contains the request dictionary sent by django
-    Imports:
-        Machines and Platform are imported from drylab.models
-            for filtering runs based on the platform
-    Constants:
-    ERROR_NO_MATCHES_FOR_RUN_SEARCH
-    Functions:
-        get_information_run() # Collects information about one run
-    Variables:
-        User inputs from search options
-            run_name        # string characters to find in the run name
-            platform_name   # platform name filter
-            run_state       # state of the run
-            start_date      # filter of starting date of the runs
-            end_date        # filter for the end of the runs
-        available_platforms # contains the list of platform defined in
-                            # iSkyLIMS.models.Platform
-        machine_list        # list of machines to filter on the matches runs
-        platforms           # contain the object from iSkyLIMS.models.Platform
-        platform_name       # has the platform get from user form
+    Parameters
+    ----------
+    request : _type_
+        _description_
 
-        runs_found          # runProcess object that contains the result query
-                            # it is updated with the user form conditions
-        r_data_display      # contains the information to display about the run
-        run_list            # contains the run list that mathches te user conditions
-    Return:
-        Return the different information depending on the execution:
-        -- Error page in case no run is founded on the matching conditions.
-        -- search_run.html is returned with one of the following information :
-            -- r_data_display   # in case that only one run is matched
-            ---run_list         # in case several run matches the user conditions.
-
-    """
+    Returns
+    -------
+    render: _type_
+        Contains dictionnary with run data
+    """    
     # check user privileges
     if wetlab.utils.common.is_wetlab_manager(request):
         allowed_all_runs = True
@@ -792,7 +766,9 @@ def search_run(request):
             and run_state == ""
             and platform_name == ""
         ):
-            return render(request, "wetlab/search_run.html", {"run_form_data": run_form_data})
+            return render(
+                request, "wetlab/search_run.html", {"run_form_data": run_form_data}
+            )
 
         # check the right format of start and end date
 
@@ -924,8 +900,10 @@ def search_run(request):
         elif len(runs_found) == 0:
             error_message = wetlab.config.ERROR_NO_MATCHES_FOR_RUN_SEARCH
             return render(
-            request, "wetlab/search_run.html", {"run_form_data": run_form_data, "error_message": error_message}
-        )
+                request,
+                "wetlab/search_run.html",
+                {"run_form_data": run_form_data, "error_message": error_message},
+            )
 
         else:
             # collect the list of run that matches the run date
@@ -1176,50 +1154,37 @@ def skip_cancel_situation(request):
 
 @login_required
 def display_run(request, run_id):
+    if  not wetlab.models.wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
+        return render(
+            request,
+            "wetlab/display_run.html",
+            {"error_message": wetlab.config.ERROR_RUN_DOES_NOT_EXIST},
+        )
     # check user privileges
     if not wetlab.utils.common.is_wetlab_manager(request):
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
-        if wetlab.models.wetlab.models.Projects.objects.filter(
-            run_process__exact=run_id
-        ).exists():
-            projects = wetlab.models.wetlab.models.Projects.objects.filter(
+        project_objs = wetlab.models.wetlab.models.Projects.objects.filter(
                 run_process__exact=run_id
-            )
-            allowed = False
-            for project in projects:
-                if int(project.get_user_center_name()) in shared_user_ids:
-                    allowed = True
-                    break
-            if not allowed:
-                return render(
-                    request,
-                    "wetlab/display_run.html",
-                    {
-                        "error_message": "You do have the enough privileges to see this page "
-                    },
-                )
-        else:
+        )
+        allowed = False
+        for project_obj in project_objs:
+            if int(project_obj.get_user_id()) in shared_user_ids:
+                allowed = True
+                break
+        if not allowed:
             return render(
                 request,
                 "wetlab/display_run.html",
-                {"error_message": "No matches were found for the run "},
+                {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER}
             )
-
-    if wetlab.models.wetlab.models.RunProcess.objects.filter(pk=run_id).exists():
-        run_name_found = wetlab.models.wetlab.models.RunProcess.objects.get(pk=run_id)
-        r_data_display = wetlab.utils.fetch_info.get_information_run(run_name_found)
-        return render(
-            request,
-            "wetlab/display_run.html",
-            {"display_one_run": r_data_display},
-        )
-    else:
-        return render(
-            request,
-            "wetlab/display_run.html",
-            {"error_message": "No matches have been found for the run"},
-        )
+    run_name_found = wetlab.models.wetlab.models.RunProcess.objects.get(pk=run_id)
+    r_data_display = wetlab.utils.fetch_info.get_information_run(run_name_found)
+    return render(
+        request,
+        "wetlab/display_run.html",
+        {"display_one_run": r_data_display},
+    )
 
 
 @login_required
@@ -1285,7 +1250,7 @@ def display_project(request, project_id):
             p_shared_list = wetlab.utils.common.get_allowed_user_for_sharing(
                 request.user
             )
-            if int(project_obj.get_user_center_name()) not in p_shared_list:
+            if int(project_obj.get_user_id()) not in p_shared_list:
                 return render(
                     request,
                     "wetlab/display_project.html",
@@ -2633,6 +2598,16 @@ def display_sample_in_run(request, sample_run_id):
             "wetlab/display_sample.html",
             {"error_message": "No Sample was found"},
         )
+    # check user privileges
+    if not wetlab.utils.common.is_wetlab_manager(request):
+        # check if user is owner of the run or belongs to the shared user
+        shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
+        if not sample_run_obj.get_user_id in shared_user_ids:
+            return render(
+                request,
+                "wetlab/display_sample.html",
+                {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER}
+            )
     sample_information = wetlab.utils.fetch_info.get_info_sample_in_run(sample_run_obj)
     return render(
         request,
@@ -3194,78 +3169,71 @@ def search_sample(request):
         end_date = request.POST["enddate"]
         user_name = request.POST["username"]
         sample_state = request.POST["sampleState"]
+        if request.POST["manager"] == "True":
+            is_wetlab_manager = True
+        else:
+            is_wetlab_manager = False
 
-        # check that some values are in the request if not return the form
+        # check if all inputs are empty
         if (
-            user_name == ""
-            and start_date == ""
+            start_date == ""
             and end_date == ""
             and sample_name == ""
             and sample_state == ""
+            and (
+                (user_name != "" and not is_wetlab_manager)
+                or (user_name == "" and is_wetlab_manager)
+            )
         ):
             return render(
                 request,
                 "wetlab/search_sample.html",
                 {"search_data": search_data},
             )
-
         if user_name != "" and len(user_name) < 5:
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/search_sample.html",
                 {
-                    "content": [
-                        "The user name must contains at least 5 caracters ",
-                        "ADVICE:",
-                        "write the full user name to get a better match",
-                    ]
+                    "error_message": "The user name must contains at least 5 caracters ",
+                    "search_data": search_data,
                 },
             )
         # check the right format of start and end date
-
         if start_date != "" and not wetlab.utils.common.check_valid_date_format(
             start_date
         ):
+            error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request,
-                "wetlab/error_page.html",
-                {
-                    "content": [
-                        'The format for the "Start Date Search" Field is incorrect ',
-                        "ADVICE:",
-                        "Use the format  (DD-MM-YYYY)",
-                    ]
-                },
+                "wetlab/search_sample.html",
+                {"error_message": error_message, "search_data": search_data},
             )
         if end_date != "" and not wetlab.utils.common.check_valid_date_format(end_date):
+            error_message = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
             return render(
                 request,
-                "wetlab/error_page.html",
+                "wetlab/search_sample.html",
                 {
-                    "content": [
-                        'The format for the "End Date Search" Field is incorrect ',
-                        "ADVICE:",
-                        "Use the format  (DD-MM-YYYY)",
-                    ]
+                    "error_message": error_message,
+                    "search_data": search_data,
                 },
             )
-        # Get projects when sample name is not empty
+        # Get samples that are defined from collecting
         sample_list = core.utils.samples.search_samples(
             sample_name, user_name, sample_state, start_date, end_date
         )
-        if sample_state == "":
-            run_sample_list = wetlab.utils.sample.search_run_samples(
-                sample_name, user_name, start_date, end_date
-            )
-        else:
-            run_sample_list = ""
+        # Get samples that are defined in the run
+        run_sample_list = wetlab.utils.sample.search_run_samples(
+            sample_name, user_name, start_date, end_date, is_wetlab_manager
+        )
 
         if len(sample_list) == 0 and len(run_sample_list) == 0:
             return render(
                 request,
                 "wetlab/search_sample.html",
                 {
-                    "no_samples": wetlab.config.ERROR_NO_SAMPLE_FOUND,
+                    "error_message": wetlab.config.ERROR_NO_SAMPLE_FOUND,
                     "sample_list": sample_list,
                     "search_data": search_data,
                 },
