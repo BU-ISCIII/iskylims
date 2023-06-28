@@ -8,6 +8,7 @@ tmp/
 logs/
 /static/
 install_settings.txt
+wetlab/logging_config.ini
 #--- updates introduced for iSkyLIMS in submodules packaging ---
 virtualenv/
 iSkyLIMS/

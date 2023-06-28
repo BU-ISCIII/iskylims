@@ -425,6 +425,9 @@ if [ $upgrade == true ]; then
         # update illumina template files.# Copy illumina sample sheet templates
         mkdir -p $INSTALL_PATH/documents/wetlab/templates/
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
+        # update logging configuration file
+        cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/logging_config.ini
+        sed -i "/INSTALL_PATH/${INSTALL_PATH}/g" $INSTALL_PATH/logging_config.ini
 
         cd $INSTALL_PATH
         echo "activate the virtualenv"
@@ -758,6 +761,10 @@ if [ $install == true ]; then
 
         # Copy illumina sample sheet templates
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
+
+        # update logging configuration file
+        cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/logging_config.ini
+        sed -i "/INSTALL_PATH/${INSTALL_PATH}/g" $INSTALL_PATH/wetlab/logging_config.ini
 
         # Starting iSkyLIMS
         echo "activate the virtualenv"
