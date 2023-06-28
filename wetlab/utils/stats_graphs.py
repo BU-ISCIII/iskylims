@@ -395,7 +395,6 @@ def bloxplot_graphic(
     category = {}
     category_list = []
     for item in categories:
-
         label_category = {}
         label_category["label"] = item
         category_list.append(label_category)

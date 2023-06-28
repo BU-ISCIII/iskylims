@@ -290,7 +290,6 @@ class ResultParameterValueManager(models.Manager):
 
 
 class ResultParameterValue(models.Model):
-
     clinicSample_id = models.ForeignKey(
         ClinicSampleRequest, on_delete=models.CASCADE, null=True
     )

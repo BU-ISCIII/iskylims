@@ -216,7 +216,6 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
                 .reverse()
             )
     if sample_objs != "":
-
         samples_data["data"] = list(
             sample_objs.values_list(
                 "run_process_id__run_name", "user_id__username", "sample_name"

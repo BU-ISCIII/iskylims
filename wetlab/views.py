@@ -1240,7 +1240,6 @@ def incompleted_runs(request):
 
 @login_required
 def display_project(request, project_id):
-
     if wetlab.models.Projects.objects.filter(pk=project_id).exists():
         project_obj = wetlab.models.Projects.objects.filter(pk=project_id).last()
 
@@ -1811,7 +1810,6 @@ def create_protocol(request):
 
 @login_required
 def define_sample_projects(request):
-
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
@@ -1862,7 +1860,6 @@ def define_sample_projects(request):
 
 @login_required
 def define_additional_kits(request, protocol_id):
-
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
@@ -2290,7 +2287,6 @@ def record_samples(request):
 
 @login_required
 def define_sample_projects_fields(request, sample_project_id):
-
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,
@@ -2543,7 +2539,6 @@ def define_type_of_samples(request):
 
 @login_required
 def display_sample(request, sample_id):
-
     sample_information = core.utils.samples.get_all_sample_information(sample_id, True)
     if "Error" not in sample_information:
         sample_information.update(
@@ -2620,7 +2615,6 @@ def display_sample_in_run(request, sample_run_id):
 
 @login_required
 def display_type_of_sample(request, sample_type_id):
-
     type_of_sample_data = core.utils.samples.get_type_of_sample_information(
         sample_type_id
     )
@@ -2633,7 +2627,6 @@ def display_type_of_sample(request, sample_type_id):
 
 @login_required
 def handling_library_preparation(request):
-
     if wetlab.utils.common.is_wetlab_manager(request):
         samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation()
     else:
@@ -2890,7 +2883,6 @@ def handling_library_preparation(request):
 
 
 def handling_molecules(request):
-
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
 
@@ -3391,7 +3383,6 @@ def set_molecule_values(request):
 
 @login_required
 def create_pool(request):
-
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
             request,

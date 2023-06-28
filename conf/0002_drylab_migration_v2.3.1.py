@@ -430,8 +430,8 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='resolutionstates',
-            name='description',
+            model_name="resolutionstates",
+            name="description",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
@@ -457,9 +457,9 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name='resolution',
-            name='resolution_number',
-            field=models.CharField(max_length=255, null=True, verbose_name='Resolution name'),
+            model_name="resolution",
+            name="resolution_number",
+            field=models.CharField(max_length=255, null=True, verbose_name="Resolution name"),
         ),
         migrations.AlterModelTable(
             name="availableservice",

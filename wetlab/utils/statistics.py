@@ -544,7 +544,6 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
 def get_pending_graphic_data(
     pend_data, heading, theme, ex_value, width, heigth, chart_value
 ):
-
     g_data = core.utils.graphics.preparation_graphic_data(
         heading, "", "", "", theme, pend_data
     )

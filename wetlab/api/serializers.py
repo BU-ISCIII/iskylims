@@ -42,7 +42,7 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
 class SampleSerializer(serializers.ModelSerializer):
     labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
     sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
-    """  
+    """
     sampleEntryDate = serializers.DateTimeField(
         format="%Y-%m-%d", label="Recorded sample date"
     )
@@ -121,6 +121,7 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
                 data_update[self.fields[key].label] = data[key]
 
         return data_update
+
     sample_name = serializers.CharField(source="sample_id.sampleName")
 
     class Meta:

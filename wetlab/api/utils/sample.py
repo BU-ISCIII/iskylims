@@ -1,15 +1,27 @@
 from datetime import datetime
 
-from core.models import (City, LabRequest, OntologyMap, PatientCore,
-                         SampleProjects, SampleProjectsFields,
-                         SampleProjectsFieldsValue, Samples, SampleType,
-                         Species, StateInCountry, StatesForSample)
+from core.models import (
+    City,
+    LabRequest,
+    OntologyMap,
+    PatientCore,
+    SampleProjects,
+    SampleProjectsFields,
+    SampleProjectsFieldsValue,
+    Samples,
+    SampleType,
+    Species,
+    StateInCountry,
+    StatesForSample,
+)
 from core.utils.samples import increase_unique_value
 from wetlab.api.serializers import CreateSampleTypeSerializer
-from wetlab.config import (ERROR_API_NO_SAMPLE_DEFINED,
-                           ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
-                           ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
-                           ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED)
+from wetlab.config import (
+    ERROR_API_NO_SAMPLE_DEFINED,
+    ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
+    ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
+    ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED,
+)
 
 
 def create_state(state, apps_name):
@@ -209,7 +221,9 @@ def include_coding(user_name, sample):
         c_data["uniqueSampleID"] = "AAA-0001"
     else:
         last_unique_value = (
-            Samples.objects.exclude(unique_sample_id__isnull=True).last().unique_sample_id
+            Samples.objects.exclude(unique_sample_id__isnull=True)
+            .last()
+            .unique_sample_id
         )
         c_data["uniqueSampleID"] = increase_unique_value(last_unique_value)
     c_data["sampleCodeID"] = str(user_name + "_" + sample)
