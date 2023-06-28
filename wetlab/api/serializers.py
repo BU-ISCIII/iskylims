@@ -58,15 +58,12 @@ class SampleSerializer(serializers.ModelSerializer):
         field_values = dict()
 
         for key in self.fields:
-
             # Append all dictionaries into one.
             # origin: [{'id1':value1}{id1:value2}]
             # dest: {'id1':value1, 'id2:value2'}
             if key == "project_values":
-
                 for item in data["project_values"]:
                     field_values.update(item)
-
                 data_update[self.fields[key].label] = field_values
             else:
                 # Change id to label for api rest output
@@ -219,7 +216,6 @@ class SampleFields(object):
 
 
 class SampleFieldsSerializer(serializers.Serializer):
-
     sample_fields = serializers.CharField(max_length=800)
 
 
