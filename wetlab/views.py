@@ -741,7 +741,7 @@ def search_run(request):
     -------
     render: _type_
         Contains dictionnary with run data
-    """    
+    """
     # check user privileges
     if wetlab.utils.common.is_wetlab_manager(request):
         allowed_all_runs = True
@@ -1154,7 +1154,9 @@ def skip_cancel_situation(request):
 
 @login_required
 def display_run(request, run_id):
-    if  not wetlab.models.wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
+    if not wetlab.models.wetlab.models.RunProcess.objects.filter(
+        pk__exact=run_id
+    ).exists():
         return render(
             request,
             "wetlab/display_run.html",
@@ -1165,7 +1167,7 @@ def display_run(request, run_id):
         # check if user is owner of the run or belongs to the shared user
         shared_user_ids = wetlab.utils.common.get_allowed_user_for_sharing(request.user)
         project_objs = wetlab.models.wetlab.models.Projects.objects.filter(
-                run_process__exact=run_id
+            run_process__exact=run_id
         )
         allowed = False
         for project_obj in project_objs:
@@ -1176,7 +1178,7 @@ def display_run(request, run_id):
             return render(
                 request,
                 "wetlab/display_run.html",
-                {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER}
+                {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
             )
     run_name_found = wetlab.models.wetlab.models.RunProcess.objects.get(pk=run_id)
     r_data_display = wetlab.utils.fetch_info.get_information_run(run_name_found)
@@ -2606,7 +2608,7 @@ def display_sample_in_run(request, sample_run_id):
             return render(
                 request,
                 "wetlab/display_sample.html",
-                {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER}
+                {"error_message": wetlab.config.ERROR_USER_NOT_WETLAB_MANAGER},
             )
     sample_information = wetlab.utils.fetch_info.get_info_sample_in_run(sample_run_obj)
     return render(
