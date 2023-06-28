@@ -4,7 +4,7 @@ import os
 import re
 import time
 
-#from django.conf import settings
+# from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
 # Local imports
@@ -147,7 +147,9 @@ def get_collection_settings(input_file):
 
 def get_collection_index_information(collection_index_id):
     collection_index_dict = {}
-    collection_index_obj = wetlab.models.CollectionIndexKit.objects.get(pk=collection_index_id)
+    collection_index_obj = wetlab.models.CollectionIndexKit.objects.get(
+        pk=collection_index_id
+    )
 
     general_information = [collection_index_obj.get_collection_index_information()]
     collection_index_dict["general_information"] = general_information

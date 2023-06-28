@@ -67,7 +67,9 @@ def get_boxplot_comparation_runs(run_object):
     """
     # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
     if (
-        not wetlab.models.StatsLaneSummary.objects.filter(runprocess_id__exact=run_object)
+        not wetlab.models.StatsLaneSummary.objects.filter(
+            runprocess_id__exact=run_object
+        )
         .exclude(default_all__isnull=False)
         .exists()
     ):
@@ -115,7 +117,9 @@ def get_boxplot_comparation_runs(run_object):
         same_runs_in_year_list.append(run.get_run_id())
 
     all_lane_summary = (
-        wetlab.models.StatsLaneSummary.objects.filter(runprocess_id__in=same_runs_in_year_list)
+        wetlab.models.StatsLaneSummary.objects.filter(
+            runprocess_id__in=same_runs_in_year_list
+        )
         .exclude(default_all__isnull=False)
         .exclude(runprocess_id__exact=run_object)
     )
@@ -138,10 +142,16 @@ def get_boxplot_comparation_runs(run_object):
     mean_run_normalized, mean_all_normalized = wetlab.utils.common.normalized_data(
         mean_run_value_float, mean_all_value_float
     )
-    yield_mb_run_normalized, yield_mb_all_normalized = wetlab.utils.common.normalized_data(
+    (
+        yield_mb_run_normalized,
+        yield_mb_all_normalized,
+    ) = wetlab.utils.common.normalized_data(
         yield_mb_run_value_float, yield_mb_all_value_float
     )
-    cluster_pf_run_normalized, cluster_pf_all_normalized = wetlab.utils.common.normalized_data(
+    (
+        cluster_pf_run_normalized,
+        cluster_pf_all_normalized,
+    ) = wetlab.utils.common.normalized_data(
         cluster_pf_run_value_float, cluster_pf_all_value_float
     )
     q30_run_str = ",".join(q_30_run_normalized)
@@ -242,9 +252,13 @@ def get_run_graphics(run_object):
     """
     # prepare the graphics for the run
     run_graphics = []
-    if not wetlab.models.GraphicsStats.objects.filter(runprocess_id__exact=run_object).exists():
+    if not wetlab.models.GraphicsStats.objects.filter(
+        runprocess_id__exact=run_object
+    ).exists():
         return run_graphics
-    run_graphics_object = wetlab.models.GraphicsStats.objects.get(runprocess_id__exact=run_object)
+    run_graphics_object = wetlab.models.GraphicsStats.objects.get(
+        runprocess_id__exact=run_object
+    )
     folder_graphic = os.path.join(
         settings.MEDIA_URL,
         wetlab.config.RUN_IMAGES_DIRECTORY,
@@ -330,7 +344,9 @@ def get_run_summary_data(run_object, num_of_reads):
         run_summary_values and per_read_run_summary     # contain a tupla list with text and its value
     """
 
-    run_parameters = wetlab.models.RunningParameters.objects.get(run_name_id__exact=run_object)
+    run_parameters = wetlab.models.RunningParameters.objects.get(
+        run_name_id__exact=run_object
+    )
     num_of_reads = run_parameters.get_number_of_reads()
     index_run_summary = [i + 1 for i in range(num_of_reads)]
     index_run_summary.append("Non Index")
@@ -373,7 +389,9 @@ def get_running_parameters(run_object):
     """
     rp_info = []
     # finding the running parameters index for the run
-    running_parameter_object = wetlab.models.RunningParameters.objects.get(run_name_id=run_object)
+    running_parameter_object = wetlab.models.RunningParameters.objects.get(
+        run_name_id=run_object
+    )
 
     # Adding the Run Parameters information
     rp_list = [
@@ -435,8 +453,10 @@ def match_unkownbarcodes_with_index(unknow_dict):
             if wetlab.models.CollectionIndexValues.objects.filter(
                 i_7_seq__exact=split_base[0]
             ).exists():
-                libraries_using_base = wetlab.models.CollectionIndexValues.objects.filter(
-                    i_7_seq__exact=split_base[0]
+                libraries_using_base = (
+                    wetlab.models.CollectionIndexValues.objects.filter(
+                        i_7_seq__exact=split_base[0]
+                    )
                 )
                 index_temp = split_base[0]
                 for library in libraries_using_base:
@@ -451,8 +471,10 @@ def match_unkownbarcodes_with_index(unknow_dict):
                     index_temp += str(" + " + split_base[1])
                 else:
                     index_temp = split_base[1]
-                libraries_using_base = wetlab.models.CollectionIndexValues.objects.filter(
-                    i_5_seq__exact=split_base[1]
+                libraries_using_base = (
+                    wetlab.models.CollectionIndexValues.objects.filter(
+                        i_5_seq__exact=split_base[1]
+                    )
                 )
                 for library in libraries_using_base:
                     library_info.append(
@@ -460,10 +482,14 @@ def match_unkownbarcodes_with_index(unknow_dict):
                     )
 
         else:
-            if wetlab.models.CollectionIndexValues.objects.filter(i_7_seq__exact=key).exists():
+            if wetlab.models.CollectionIndexValues.objects.filter(
+                i_7_seq__exact=key
+            ).exists():
                 found_unknow_index.append(key)
-                libraries_using_base = wetlab.models.CollectionIndexValues.objects.filter(
-                    i_7_seq__exact=key
+                libraries_using_base = (
+                    wetlab.models.CollectionIndexValues.objects.filter(
+                        i_7_seq__exact=key
+                    )
                 )
                 for library in libraries_using_base:
                     library_info.append(
@@ -495,11 +521,13 @@ def get_information_for_incompleted_run():
     """
     run_information = {}
     today = datetime.today().date()
-    if wetlab.models.RunProcess.objects.filter(state__run_state_name="Recorded").exists():
+    if wetlab.models.RunProcess.objects.filter(
+        state__run_state_name="Recorded"
+    ).exists():
         run_information["recorded"] = []
-        run_objs = wetlab.models.RunProcess.objects.filter(state__run_state_name="Recorded").order_by(
-            "run_name"
-        )
+        run_objs = wetlab.models.RunProcess.objects.filter(
+            state__run_state_name="Recorded"
+        ).order_by("run_name")
         for run_obj in run_objs:
             data = []
             data.append(run_obj.get_run_id())
@@ -511,9 +539,9 @@ def get_information_for_incompleted_run():
 
     if wetlab.models.RunProcess.objects.filter(state__run_state_name="Error").exists():
         run_information["error"] = []
-        run_objs = wetlab.models.RunProcess.objects.filter(state__run_state_name="Error").order_by(
-            "run_name"
-        )
+        run_objs = wetlab.models.RunProcess.objects.filter(
+            state__run_state_name="Error"
+        ).order_by("run_name")
         for run_obj in run_objs:
             data = []
             data.append(run_obj.get_run_id())
@@ -528,11 +556,13 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["error"].append(data)
 
-    if wetlab.models.RunProcess.objects.filter(state__run_state_name="Cancelled").exists():
+    if wetlab.models.RunProcess.objects.filter(
+        state__run_state_name="Cancelled"
+    ).exists():
         run_information["cancelled"] = []
-        run_objs = wetlab.models.RunProcess.objects.filter(state__run_state_name="Cancelled").order_by(
-            "run_name"
-        )
+        run_objs = wetlab.models.RunProcess.objects.filter(
+            state__run_state_name="Cancelled"
+        ).order_by("run_name")
         for run_obj in run_objs:
             data = []
             data.append(run_obj.get_run_id())
@@ -549,7 +579,11 @@ def get_information_for_incompleted_run():
 
     exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "Pre-Recorded"]
 
-    if wetlab.models.RunProcess.objects.all().exclude(state__run_state_name__in=exclude_state).exists():
+    if (
+        wetlab.models.RunProcess.objects.all()
+        .exclude(state__run_state_name__in=exclude_state)
+        .exists()
+    ):
         run_information["other"] = []
         run_objs = (
             wetlab.models.RunProcess.objects.all()
@@ -574,9 +608,13 @@ def get_information_for_incompleted_run():
         for key in run_information.keys():
             runs_in_state[key] = len(run_information[key])
     # graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, theme, source_data)
-    data_source = wetlab.utils.stats_graphs.graphic_3D_pie("Incomplete Runs", "", "", "", "fint", runs_in_state)
+    data_source = wetlab.utils.stats_graphs.graphic_3D_pie(
+        "Incomplete Runs", "", "", "", "fint", runs_in_state
+    )
 
-    run_information["incompleted_graphic"] = core.fusioncharts.fusioncharts.FusionCharts(
+    run_information[
+        "incompleted_graphic"
+    ] = core.fusioncharts.fusioncharts.FusionCharts(
         "pie3d", "ex1", "550", "400", "chart-1", "json", data_source
     ).render()
     return run_information
@@ -718,8 +756,12 @@ def get_information_run(run_object):
         info_dict["running_parameters"] = get_running_parameters(run_object)
 
     # get the run metric  statistics if they are already processed
-    if wetlab.models.StatsRunSummary.objects.filter(runprocess_id__exact=run_object).exists():
-        run_parameters = wetlab.models.RunningParameters.objects.get(run_name_id__exact=run_object)
+    if wetlab.models.StatsRunSummary.objects.filter(
+        runprocess_id__exact=run_object
+    ).exists():
+        run_parameters = wetlab.models.RunningParameters.objects.get(
+            run_name_id__exact=run_object
+        )
         num_of_reads = run_parameters.get_number_of_reads()
         number_of_lanes = int(run_parameters.get_number_of_lanes())
 
@@ -795,8 +837,10 @@ def get_information_run(run_object):
 
         percent_default_lane = []
 
-        default_lanes_for_percent_graphic = wetlab.models.StatsLaneSummary.objects.filter(
-            runprocess_id__exact=run_object, default_all__exact="default"
+        default_lanes_for_percent_graphic = (
+            wetlab.models.StatsLaneSummary.objects.filter(
+                runprocess_id__exact=run_object, default_all__exact="default"
+            )
         )
         for default_lane in default_lanes_for_percent_graphic:
             percent_default_lane.append(float(default_lane.percent_lane))
@@ -812,7 +856,9 @@ def get_information_run(run_object):
         data_source = wetlab.utils.stats_graphs.column_graphic_simple(
             heading, sub_caption, x_axis_name, y_axis_name, theme, percent_projects
         )
-        info_dict["run_project_comparation"] = core.fusioncharts.fusioncharts.FusionCharts(
+        info_dict[
+            "run_project_comparation"
+        ] = core.fusioncharts.fusioncharts.FusionCharts(
             "column3d", "column1", "600", "400", "column_chart1", "json", data_source
         ).render()
 
@@ -903,7 +949,9 @@ def get_information_run(run_object):
             info_dict[lane_number] = lane_unknow_barcode
 
         # create chart with the top unknown barcode in the run
-        data_source = wetlab.utils.stats_graphs.json_unknow_barcode_graphic("Unknow Sequence", unknow_dict)
+        data_source = wetlab.utils.stats_graphs.json_unknow_barcode_graphic(
+            "Unknow Sequence", unknow_dict
+        )
         unknow_pie3d = core.fusioncharts.fusioncharts.FusionCharts(
             "pie3d", "ex1", "600", "400", "chart-1", "json", data_source
         )
@@ -913,7 +961,9 @@ def get_information_run(run_object):
         info_dict["match_unknows"] = match_unkownbarcodes_with_index(unknow_dict)
 
         # get te samples included in the run
-        if wetlab.models.SamplesInProject.objects.filter(run_process_id=run_object).exists():
+        if wetlab.models.SamplesInProject.objects.filter(
+            run_process_id=run_object
+        ).exists():
             sample_objs = wetlab.models.SamplesInProject.objects.filter(
                 run_process_id=run_object
             ).order_by("project_id")
@@ -1059,13 +1109,17 @@ def get_info_sample_in_run(sample_run_obj):
     # Quality graphic
     quality_sample = sample_run_obj.get_quality_sample()
     heading_chart_quality = "Quality for the Sample " + sample_run_obj.sample_name
-    data_source = wetlab.utils.stats_graphs.graphic_for_quality_angular(heading_chart_quality, quality_sample)
+    data_source = wetlab.utils.stats_graphs.graphic_for_quality_angular(
+        heading_chart_quality, quality_sample
+    )
     quality_sample_angular = core.fusioncharts.fusioncharts.FusionCharts(
         "angulargauge", "ex1", "350", "200", "chart-1", "json", data_source
     )
     sample_info_dict["quality_chart1"] = quality_sample_angular.render()
     percentage_in_project = {}
-    samples_in_project = wetlab.models.SamplesInProject.objects.filter(project_id__exact=project_id)
+    samples_in_project = wetlab.models.SamplesInProject.objects.filter(
+        project_id__exact=project_id
+    )
     for sample in samples_in_project:
         percentage_in_project[sample.sample_name] = sample.percent_in_project
     heading_samples_in_project = "Samples belonging to the same project"
@@ -1132,8 +1186,12 @@ def get_sequencers_run_from_time_interval(sequencer, start_date, end_date):
         runs_using_sequencer
     """
     runs_using_sequencer = {}
-    if core.models.SequencerInLab.objects.filter(sequencer_name__exact=sequencer).exists():
-        sequencer_obj = core.models.SequencerInLab.objects.get(sequencer_name__exact=sequencer)
+    if core.models.SequencerInLab.objects.filter(
+        sequencer_name__exact=sequencer
+    ).exists():
+        sequencer_obj = core.models.SequencerInLab.objects.get(
+            sequencer_name__exact=sequencer
+        )
         if wetlab.models.RunProcess.objects.filter(
             used_sequencer=sequencer_obj, run_date__range=(start_date, end_date)
         ).exists():
@@ -1203,7 +1261,9 @@ def get_sequencer_names_from_platform(platform):
         sample_info_dict with all information collected in the function
     """
     sequencer_list = []
-    if core.models.SequencerInLab.objects.filter(platform_id__platform_name__exact=platform).exists():
+    if core.models.SequencerInLab.objects.filter(
+        platform_id__platform_name__exact=platform
+    ).exists():
         sequencers = core.models.SequencerInLab.objects.filter(
             platform_id__platform_name__exact=platform
         )
@@ -1234,7 +1294,9 @@ def get_stats_sequencer_data_from_selected_runs(
     sequencer_data["sequencer_name"] = sequencer
     sequencer_data["run_completed"] = []
     sequencer_data["not_run_completed"] = []
-    sequencer_data["run_name_heading"] = wetlab.config.HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+    sequencer_data[
+        "run_name_heading"
+    ] = wetlab.config.HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
     # get the run completed and not completed for the sequencer
     for run_in_seq in runs_using_sequencer["completed_run_objs"]:
         sequencer_data["run_completed"].append(
@@ -1256,7 +1318,9 @@ def get_stats_sequencer_data_from_selected_runs(
     # get the data for comparation sequencer vs all sequencers
     sequencer_runs = get_number_of_runs_per_sequencer()
     heading = "Runs executed in each sequencer in (%)"
-    data_source = wetlab.utils.stats_graphs.pie_graphic_standard(heading, "", "ocean", sequencer_runs)
+    data_source = wetlab.utils.stats_graphs.pie_graphic_standard(
+        heading, "", "ocean", sequencer_runs
+    )
     run_pie_graph = core.fusioncharts.fusioncharts.FusionCharts(
         "pie3d", "run_pie_graph", "500", "400", "run_pie_chart", "json", data_source
     ).render()
@@ -1291,7 +1355,9 @@ def get_stats_sequencer_data_from_selected_runs(
     data_source = wetlab.utils.stats_graphs.column_graphic_tupla(
         heading, "", "", "Number of Runs", "ocean", run_time_tupla, None
     )
-    sequencer_data["sequencer_runs_per_month_graph"] = core.fusioncharts.fusioncharts.FusionCharts(
+    sequencer_data[
+        "sequencer_runs_per_month_graph"
+    ] = core.fusioncharts.fusioncharts.FusionCharts(
         "column3d",
         "run_per_month_graph",
         "500",
@@ -1303,7 +1369,9 @@ def get_stats_sequencer_data_from_selected_runs(
 
     # get the data for run executed in other sequencers per months
     if (
-        wetlab.models.RunProcess.objects.filter(state__run_state_name__exact="Completed")
+        wetlab.models.RunProcess.objects.filter(
+            state__run_state_name__exact="Completed"
+        )
         .exclude(used_sequencer__sequencer_name__exact=sequencer)
         .exists()
     ):
@@ -1324,7 +1392,9 @@ def get_stats_sequencer_data_from_selected_runs(
         data_source = wetlab.utils.stats_graphs.column_graphic_tupla(
             heading, "", "", "Number of Runs", "fint", run_time_tupla, None
         )
-        sequencer_data["other_sequencers_runs_per_month_graph"] = core.fusioncharts.fusioncharts.FusionCharts(
+        sequencer_data[
+            "other_sequencers_runs_per_month_graph"
+        ] = core.fusioncharts.fusioncharts.FusionCharts(
             "column3d",
             "other_run_per_month_graph",
             "500",

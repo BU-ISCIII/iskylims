@@ -1078,7 +1078,9 @@ def stats_by_user(request):
                 {"user_list": user_list, "ERROR": error_message},
             )
 
-        stats_info = drylab.utils.stats.create_statistics_by_user(user_id, start_date, end_date)
+        stats_info = drylab.utils.stats.create_statistics_by_user(
+            user_id, start_date, end_date
+        )
 
         if "ERROR" in stats_info:
             return render(
@@ -1136,7 +1138,7 @@ def stats_by_services_request(request):
                 return render(request, "drylab/stats_services_time.html")
         else:
             end_date = date.today().strftime("%Y-%m-%d")
-        
+
         start_date_format = datetime.strptime(start_date, "%Y-%m-%d")
         end_date_format = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -1174,7 +1176,7 @@ def stats_by_services_request(request):
             services_stats_info[
                 "graphic_requested_services_per_user"
             ] = graphic_requested_services.render()
-            
+
             # preparing stats for status of the services
             status_services = {}
             for service in services_found:
@@ -1183,7 +1185,7 @@ def stats_by_services_request(request):
                     status_services[status] += 1
                 else:
                     status_services[status] = 1
-            
+
             # creating the graphic for status services
             data_source = drylab.utils.graphics.graphic_3D_pie(
                 "Status of Requested Services",
@@ -1219,7 +1221,7 @@ def stats_by_services_request(request):
                     user_area_dict[user_classification_area] += 1
                 else:
                     user_area_dict[user_classification_area] = 1
-            
+
             # creating the graphic for areas
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Services requested per Area",

@@ -265,8 +265,12 @@ class RunConfigurationTestAdmin(admin.ModelAdmin):
 admin.site.register(wetlab.models.LibPrepare, LibraryPreparationAdmin)
 admin.site.register(wetlab.models.LibParameterValue, LibParameterValueAdmin)
 admin.site.register(wetlab.models.LibraryPool, LibraryPoolAdmin)
-admin.site.register(wetlab.models.LibUserSampleSheet, libPreparationUserSampleSheetAdmin)
-admin.site.register(wetlab.models.AdditionaKitsLibPrepare, AdditionaKitsLibraryPreparationAdmin)
+admin.site.register(
+    wetlab.models.LibUserSampleSheet, libPreparationUserSampleSheetAdmin
+)
+admin.site.register(
+    wetlab.models.AdditionaKitsLibPrepare, AdditionaKitsLibraryPreparationAdmin
+)
 admin.site.register(wetlab.models.AdditionalUserLotKit, AdditionalUserLotKitAdmin)
 admin.site.register(wetlab.models.RunningParameters, RunningParametersAdmin)
 admin.site.register(wetlab.models.RunProcess, RunProcessAdmin)

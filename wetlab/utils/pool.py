@@ -66,7 +66,9 @@ def check_if_duplicated_index(lib_prep_ids):
                 s_name = []
                 for value in values:
                     s_name.append(
-                        wetlab.models.LibPrepare.objects.get(pk__exact=value).get_sample_name()
+                        wetlab.models.LibPrepare.objects.get(
+                            pk__exact=value
+                        ).get_sample_name()
                     )
                 incompatible_index.append([" and  ".join(s_name), key])
         incompatible_samples["incompatible_index"] = incompatible_index
@@ -85,7 +87,9 @@ def get_single_paired(lib_prep_ids):
         PairedEnd or SingleRead
     """
     for lib_prep_id in lib_prep_ids:
-        i5_index_value = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_id).get_i5_index()
+        i5_index_value = wetlab.models.LibPrepare.objects.get(
+            pk__exact=lib_prep_id
+        ).get_i5_index()
         if i5_index_value != "":
             return "PairedEnd"
     return "SingleRead"
@@ -175,8 +179,12 @@ def generate_pool_code_id():
         today_date + subindex
     """
     today_date = date.today().strftime("%Y_%m_%d")
-    if wetlab.models.LibraryPool.objects.filter(pool_code_id__icontains=today_date).exists():
-        lib_pool = wetlab.models.LibraryPool.objects.filter(pool_code_id__icontains=today_date).last()
+    if wetlab.models.LibraryPool.objects.filter(
+        pool_code_id__icontains=today_date
+    ).exists():
+        lib_pool = wetlab.models.LibraryPool.objects.filter(
+            pool_code_id__icontains=today_date
+        ).last()
         latest_code_id = lib_pool.get_pool_code_id()
         last_seq_number = int(latest_code_id.split("_")[-1])
         return str(today_date + "_" + str(last_seq_number + 1))
@@ -223,7 +231,9 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool = {}
     information_for_created_pool["data"] = pool_obj.get_info()
     information_for_created_pool["pool_name"] = pool_obj.get_pool_name()
-    information_for_created_pool["heading_pool"] = wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
+    information_for_created_pool[
+        "heading_pool"
+    ] = wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
     lib_prep_data = []
     if wetlab.models.LibPrepare.objects.filter(pools=pool_obj).exists():
         lib_prep_ids = wetlab.models.LibPrepare.objects.filter(pools=pool_obj)

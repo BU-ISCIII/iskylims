@@ -12,7 +12,7 @@ import drylab.config
 import drylab.models
 
 
-def get_service_obj(service_id,input="pk"):
+def get_service_obj(service_id, input="pk"):
     """
     Description:
         The function get the  service obj  from the id
@@ -25,10 +25,16 @@ def get_service_obj(service_id,input="pk"):
     service_obj = None
     if input == "pk":
         if drylab.models.Service.objects.filter(pk__exact=service_id).exists():
-            service_obj = drylab.models.Service.objects.filter(pk__exact=service_id).last()
+            service_obj = drylab.models.Service.objects.filter(
+                pk__exact=service_id
+            ).last()
     elif input == "id":
-        if drylab.models.Service.objects.filter(service_request_number__exact=service_id).exists():
-            service_obj = drylab.models.Service.objects.filter(service_request_number__exact=service_id).last()
+        if drylab.models.Service.objects.filter(
+            service_request_number__exact=service_id
+        ).exists():
+            service_obj = drylab.models.Service.objects.filter(
+                service_request_number__exact=service_id
+            ).last()
 
     return service_obj
 
@@ -59,9 +65,7 @@ def create_service_id(service_number, user_name):
                 profile_user_id=user_name
             ).profile_center.center_abbr
         except ValueError:
-            user_center = (
-                drylab.config.USER_CENTER_USED_WHEN_NOT_PROVIDED
-            )
+            user_center = drylab.config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     else:
         user_center = ""
     abbr = get_configuration_from_database("ABBREVIATION_USED_FOR_SERVICE_REQUEST")
@@ -81,11 +85,9 @@ def get_configuration_from_database(configuration_name):
     if drylab.models.ConfigSetting.objects.filter(
         configuration_name__exact=configuration_name
     ).exists():
-        configuration_settings_obj = (
-            drylab.models.ConfigSetting.objects.filter(
-                configuration_name__exact=configuration_name
-            ).last()
-        )
+        configuration_settings_obj = drylab.models.ConfigSetting.objects.filter(
+            configuration_name__exact=configuration_name
+        ).last()
         configuration_value = configuration_settings_obj.get_configuration_value()
     return configuration_value
 
@@ -127,13 +129,9 @@ def increment_service_number(request_user):
         user_center = drylab.config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
 
-    if drylab.models.Service.objects.filter(
-        service_center__exact=user_center
-    ).exists():
+    if drylab.models.Service.objects.filter(service_center__exact=user_center).exists():
         number_request = (
-            drylab.models.Service.objects.filter(
-                service_center__exact=user_center
-            )
+            drylab.models.Service.objects.filter(service_center__exact=user_center)
             .last()
             .get_number()
         )
@@ -254,9 +252,7 @@ def save_database_configuration_value(configuration_name, configuration_value):
         ).last()
         config_settings_obj.set_configuration_value(configuration_value)
     else:
-        config_settings_obj = (
-            drylab.models.ConfigSetting.objects.create_config_setting(
-                configuration_name, configuration_value
-            )
+        config_settings_obj = drylab.models.ConfigSetting.objects.create_config_setting(
+            configuration_name, configuration_value
         )
     return config_settings_obj

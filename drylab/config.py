@@ -286,9 +286,7 @@ COLORS_MULTI_LEVEL_PIE = [
     "#ccccff",
     "#66ccff",
 ]
-MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE = (
-    "Service pending on <b>$label</b> are <b>$value</b>, which was $percentValue of parent Service"
-)
+MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE = "Service pending on <b>$label</b> are <b>$value</b>, which was $percentValue of parent Service"
 MULTI_LEVEL_PIE_PENDING_MAIN_TEXT = (
     "Please hover over a services requested Unit to see details"
 )

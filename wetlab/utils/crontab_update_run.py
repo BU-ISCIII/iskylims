@@ -110,7 +110,9 @@ def search_update_new_runs(request_reason):
                     conn, new_run, s_run_parameter_path, l_run_parameter_path
                 )
                 logger.info("%s : Sucessfully fetch of RunParameter file", new_run)
-                experiment_name = wetlab.utils.common.get_experiment_name_from_file(l_run_parameter)
+                experiment_name = wetlab.utils.common.get_experiment_name_from_file(
+                    l_run_parameter
+                )
             except Exception:
                 error_message = (
                     "Unable to fetch RunParameter file for folder :" + new_run
@@ -120,7 +122,9 @@ def search_update_new_runs(request_reason):
                 wetlab.utils.common.logging_errors(error_message, True, False)
                 # we don't have experiment name when there is no run_parameters file.
                 # We used the run folder name instead.
-                run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(new_run)
+                run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(
+                    new_run
+                )
                 wetlab.utils.crontab_process.handling_errors_in_run(new_run, "21")
                 logger.debug("%s : Deleting RunParameter file", experiment_name)
                 logger.debug(
@@ -159,9 +163,13 @@ def search_update_new_runs(request_reason):
                     continue
 
             # Fetch run info
-            l_run_info_path = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, wetlab.config.RUN_INFO)
+            l_run_info_path = os.path.join(
+                wetlab.config.RUN_TEMP_DIRECTORY, wetlab.config.RUN_INFO
+            )
             s_run_info_path = os.path.join(
-                wetlab.utils.crontab_process.get_samba_application_shared_folder(), new_run, wetlab.config.RUN_INFO
+                wetlab.utils.crontab_process.get_samba_application_shared_folder(),
+                new_run,
+                wetlab.config.RUN_INFO,
             )
             try:
                 l_run_info = wetlab.utils.crontab_process.fetch_remote_file(
@@ -178,7 +186,9 @@ def search_update_new_runs(request_reason):
                 run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(
                     experiment_name
                 )
-                wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, "20")
+                wetlab.utils.crontab_process.handling_errors_in_run(
+                    experiment_name, "20"
+                )
                 # cleaning up the RunParameter in local temporaty file
                 logger.debug("%s : Deleting RunParameter file", experiment_name)
                 os.remove(l_run_parameter)
@@ -220,8 +230,10 @@ def search_update_new_runs(request_reason):
                 )
                 continue
 
-            running_parameters = wetlab.utils.crontab_process.parsing_run_info_and_parameter_information(
-                l_run_info, l_run_parameter, experiment_name
+            running_parameters = (
+                wetlab.utils.crontab_process.parsing_run_info_and_parameter_information(
+                    l_run_info, l_run_parameter, experiment_name
+                )
             )
             logger.info("%s  : Deleting runParameter file", experiment_name)
             os.remove(l_run_parameter)
@@ -231,8 +243,10 @@ def search_update_new_runs(request_reason):
             run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(
                 experiment_name
             )
-            sequencer_obj = wetlab.utils.crontab_process.get_sequencer_obj_or_create_if_no_exists(
-                running_parameters, experiment_name
+            sequencer_obj = (
+                wetlab.utils.crontab_process.get_sequencer_obj_or_create_if_no_exists(
+                    running_parameters, experiment_name
+                )
             )
             run_process_obj = run_process_obj.set_used_sequencer(sequencer_obj)
             run_process_obj.set_run_date(running_parameters["run_date"])
@@ -240,8 +254,10 @@ def search_update_new_runs(request_reason):
 
             if run_process_obj.get_sample_file() == "":
                 # Fetch sample Sheet from remote server
-                l_sample_sheet_path = wetlab.utils.crontab_process.get_remote_sample_sheet(
-                    conn, new_run, experiment_name
+                l_sample_sheet_path = (
+                    wetlab.utils.crontab_process.get_remote_sample_sheet(
+                        conn, new_run, experiment_name
+                    )
                 )
                 if not l_sample_sheet_path:
                     logger.debug(
@@ -259,8 +275,12 @@ def search_update_new_runs(request_reason):
                     == "TRUE"
                 ):
                     user_id_list = wetlab.utils.common.get_userid_list()
-                    file_read = wetlab.utils.samplesheet.read_user_iem_file(l_sample_sheet_path)
-                    users = wetlab.utils.samplesheet.validate_userid_in_user_iem_file(file_read, user_id_list)
+                    file_read = wetlab.utils.samplesheet.read_user_iem_file(
+                        l_sample_sheet_path
+                    )
+                    users = wetlab.utils.samplesheet.validate_userid_in_user_iem_file(
+                        file_read, user_id_list
+                    )
 
                     if "ERROR" in users:
                         string_message = (
@@ -268,7 +288,9 @@ def search_update_new_runs(request_reason):
                             + " : Description field does not contains userid."
                         )
                         wetlab.utils.common.logging_errors(string_message, True, False)
-                        wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, "1")
+                        wetlab.utils.crontab_process.handling_errors_in_run(
+                            experiment_name, "1"
+                        )
                         continue
 
                 wetlab.utils.crontab_process.assign_projects_to_run(
@@ -284,7 +306,9 @@ def search_update_new_runs(request_reason):
                 if (
                     wetlab.config.COPY_SAMPLE_SHEET_TO_REMOTE
                     and "NextSeq"
-                    in running_parameters["running_data"][wetlab.config.APPLICATION_NAME_TAG]
+                    in running_parameters["running_data"][
+                        wetlab.config.APPLICATION_NAME_TAG
+                    ]
                 ):
                     sample_sheet = run_process_obj.get_sample_file()
                     sample_sheet_path = os.path.join(settings.MEDIA_ROOT, sample_sheet)
@@ -302,7 +326,9 @@ def search_update_new_runs(request_reason):
                             + new_run
                         )
                         wetlab.utils.common.logging_errors(string_message, True, False)
-                        wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, "23")
+                        wetlab.utils.crontab_process.handling_errors_in_run(
+                            experiment_name, "23"
+                        )
                         logger.debug(
                             "%s : Aborting the process. Exiting with exception",
                             experiment_name,
@@ -376,7 +402,9 @@ def handle_not_completed_run():
     for state in state_list_be_processed:
         # run_state_obj = wetlab.models.RunStates.objects.filter(runStateName__exact = state).last()
 
-        if wetlab.models.RunProcess.objects.filter(state__run_state_name__exact=state).exists():
+        if wetlab.models.RunProcess.objects.filter(
+            state__run_state_name__exact=state
+        ).exists():
             runs_to_handle[state] = []
             runs_in_state_objs = wetlab.models.RunProcess.objects.filter(
                 state__run_state_name__exact=state
@@ -441,7 +469,9 @@ def manage_run_in_recorded_state(conn, run_process_objs):
     logger.debug(" Starting function manage_run_in_recorded_state")
     for run_process_obj in run_process_objs:
         experiment_name = run_process_obj.get_run_name()
-        if not wetlab.models.RunningParameters.objects.filter(run_name_id=run_process_obj).exists():
+        if not wetlab.models.RunningParameters.objects.filter(
+            run_name_id=run_process_obj
+        ).exists():
             logger.info(
                 "%s : Ignore this run. Waiting for existing folder on remote server",
                 experiment_name,
@@ -483,7 +513,9 @@ def manage_run_in_recorded_state(conn, run_process_objs):
                         + run_folder
                     )
                     wetlab.utils.common.logging_errors(string_message, False, False)
-                    wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, 19)
+                    wetlab.utils.crontab_process.handling_errors_in_run(
+                        experiment_name, 19
+                    )
                     logger.debug(
                         "%s : Aborting the process. Exceeded the waiting time for fetching ths sample sheet",
                         experiment_name,
@@ -571,7 +603,10 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
             .last()
             .get_number_of_cycles()
         )
-        run_status, run_completion_date = wetlab.utils.crontab_process.check_sequencer_run_is_completed(
+        (
+            run_status,
+            run_completion_date,
+        ) = wetlab.utils.crontab_process.check_sequencer_run_is_completed(
             conn, run_folder, platform, number_of_cycles, experiment_name
         )
 
@@ -607,7 +642,9 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
                     + " is not defined in wetlab.config.py file (on PLATFORM_WAY_TO_CHECK_RUN_COMPLETION variable) "
                 )
             wetlab.utils.common.logging_errors(string_message, False, False)
-            wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, run_status["ERROR"])
+            wetlab.utils.crontab_process.handling_errors_in_run(
+                experiment_name, run_status["ERROR"]
+            )
             logger.debug(
                 "%s : End manage_run_in_sample_sent_processing_state function",
                 experiment_name,
@@ -685,22 +722,33 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             .get_run_folder()
         )
         # delete existing information to avoid having duplicated tables
-        wetlab.utils.crontab_process.delete_existing_run_metrics_table_processed(run_process_obj, experiment_name)
-        run_metric_files = wetlab.utils.crontab_process.get_run_metric_files(conn, run_folder, experiment_name)
+        wetlab.utils.crontab_process.delete_existing_run_metrics_table_processed(
+            run_process_obj, experiment_name
+        )
+        run_metric_files = wetlab.utils.crontab_process.get_run_metric_files(
+            conn, run_folder, experiment_name
+        )
 
         if "ERROR" in run_metric_files:
             string_message = (
                 experiment_name + " : Unable to collect all files for run metrics"
             )
             wetlab.utils.common.logging_errors(string_message, True, False)
-            wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, run_metric_files["ERROR"])
+            wetlab.utils.crontab_process.handling_errors_in_run(
+                experiment_name, run_metric_files["ERROR"]
+            )
             wetlab.utils.crontab_process.delete_run_metric_files(experiment_name)
             logger.debug(
                 "%s : End manage_run_in_processed_run_state function", experiment_name
             )
             continue
-        parsed_run_stats_summary, parsed_run_stats_read = wetlab.utils.crontab_process.parsing_run_metrics_files(
-            wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, run_process_obj, experiment_name
+        (
+            parsed_run_stats_summary,
+            parsed_run_stats_read,
+        ) = wetlab.utils.crontab_process.parsing_run_metrics_files(
+            wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING,
+            run_process_obj,
+            experiment_name,
         )
 
         for run_stat_summary in parsed_run_stats_summary:
@@ -709,19 +757,26 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             )
         logger.info("%s : run metrics summary data saved to database", experiment_name)
         for run_stat_read in parsed_run_stats_read:
-            wetlab.models.StatsRunRead.objects.create_stats_run_read(run_stat_read, run_process_obj)
+            wetlab.models.StatsRunRead.objects.create_stats_run_read(
+                run_stat_read, run_process_obj
+            )
         logger.info("%s :run metrics read data saved to database", experiment_name)
 
         # create run graphics
         run_graphics = wetlab.utils.crontab_process.create_run_metric_graphics(
-            wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING, run_process_obj, run_folder, experiment_name
+            wetlab.config.RUN_TEMP_DIRECTORY_PROCESSING,
+            run_process_obj,
+            run_folder,
+            experiment_name,
         )
         if "ERROR" in run_graphics:
             string_message = (
                 experiment_name + " : Unable to save graphics for run metrics"
             )
             wetlab.utils.common.logging_errors(string_message, True, False)
-            wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, run_graphics["ERROR"])
+            wetlab.utils.crontab_process.handling_errors_in_run(
+                experiment_name, run_graphics["ERROR"]
+            )
             wetlab.utils.crontab_process.delete_existing_run_metrics_table_processed(
                 run_process_obj, experiment_name
             )
@@ -772,8 +827,10 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
             run_name_id=run_process_obj
         ).get_run_folder()
 
-        bcl2fastq_finish_date = wetlab.utils.crontab_process.check_demultiplexing_folder_exists(
-            conn, run_folder, experiment_name
+        bcl2fastq_finish_date = (
+            wetlab.utils.crontab_process.check_demultiplexing_folder_exists(
+                conn, run_folder, experiment_name
+            )
         )
         if "ERROR" in bcl2fastq_finish_date:
             if (
@@ -797,7 +854,9 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
                         + " :  Aborting the process. No Run completion date was defined."
                     )
                     wetlab.utils.common.logging_errors(string_message, True, False)
-                    wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, 30)
+                    wetlab.utils.crontab_process.handling_errors_in_run(
+                        experiment_name, 30
+                    )
                     logger.debug(
                         "%s : Aborting the process. No Run completion date was defined",
                         experiment_name,
@@ -829,7 +888,9 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
                     + run_folder
                 )
                 wetlab.utils.common.logging_errors(string_message, True, False)
-                wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, bcl2fastq_finish_date["ERROR"])
+                wetlab.utils.crontab_process.handling_errors_in_run(
+                    experiment_name, bcl2fastq_finish_date["ERROR"]
+                )
                 continue
         run_process_obj.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
         run_process_obj.set_run_state("Processed Bcl2fastq")
@@ -875,11 +936,17 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
             "%s : Start handling in manage_run_in_processed_bcl2fastq_state function",
             experiment_name,
         )
-        run_param_obj = wetlab.models.RunningParameters.objects.get(run_name_id=run_process_obj)
+        run_param_obj = wetlab.models.RunningParameters.objects.get(
+            run_name_id=run_process_obj
+        )
         run_folder = run_param_obj.get_run_folder()
         # delete existing information to avoid having duplicated tables
-        wetlab.utils.crontab_process.delete_existing_bcl2fastq_table_processed(run_process_obj, experiment_name)
-        demux_files = wetlab.utils.crontab_process.get_demultiplexing_files(conn, run_folder, experiment_name)
+        wetlab.utils.crontab_process.delete_existing_bcl2fastq_table_processed(
+            run_process_obj, experiment_name
+        )
+        demux_files = wetlab.utils.crontab_process.get_demultiplexing_files(
+            conn, run_folder, experiment_name
+        )
         if "ERROR" in demux_files:
             if demux_files["ERROR"] == 29 or demux_files["ERROR"] == 31:
                 string_message = (
@@ -887,7 +954,9 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
                     + " : Aborting the process. Unable to reach demultiplexing files "
                 )
                 wetlab.utils.common.logging_errors(string_message, True, False)
-                wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, demux_files["ERROR"])
+                wetlab.utils.crontab_process.handling_errors_in_run(
+                    experiment_name, demux_files["ERROR"]
+                )
                 continue
 
         number_of_lanes = run_param_obj.get_number_of_lanes()
@@ -908,13 +977,17 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
 
         # parsing the files to get the xml Stats
         logger.info("%s : Start parsing  demultiplexing files", experiment_name)
-        project_parsed_data = wetlab.utils.crontab_process.parsing_demux_and_conversion_files(
-            demux_files, number_of_lanes, experiment_name
+        project_parsed_data = (
+            wetlab.utils.crontab_process.parsing_demux_and_conversion_files(
+                demux_files, number_of_lanes, experiment_name
+            )
         )
 
         logger.info("%s : Start parsing  samples demultiplexing", experiment_name)
-        sample_project_parsed_data = wetlab.utils.crontab_process.parsing_demux_sample_project(
-            demux_files, number_of_lanes, experiment_name
+        sample_project_parsed_data = (
+            wetlab.utils.crontab_process.parsing_demux_sample_project(
+                demux_files, number_of_lanes, experiment_name
+            )
         )
 
         try:
@@ -948,7 +1021,7 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
             project_parsed_data, run_process_obj, number_of_lanes, experiment_name
         )
 
-        wetlab.utils.crontab_process. process_and_store_unknown_barcode_data(
+        wetlab.utils.crontab_process.process_and_store_unknown_barcode_data(
             project_parsed_data, run_process_obj, number_of_lanes, experiment_name
         )
 
@@ -963,7 +1036,9 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
             )
             wetlab.utils.common.logging_errors(string_message, True, False)
             if key_error.args[0] == 33:
-                wetlab.utils.crontab_process.handling_errors_in_run(experiment_name, "33")
+                wetlab.utils.crontab_process.handling_errors_in_run(
+                    experiment_name, "33"
+                )
             else:
                 string_message = (
                     experiment_name

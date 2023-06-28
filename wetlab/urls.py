@@ -8,7 +8,9 @@ import wetlab.views
 
 urlpatterns = [
     path("", wetlab.views.index, name="index"),
-    path("addCommercialKit", wetlab.views.add_commercial_kit, name="add_commercial_kit"),
+    path(
+        "addCommercialKit", wetlab.views.add_commercial_kit, name="add_commercial_kit"
+    ),
     path(
         "addCollectionIndexKit",
         wetlab.views.add_collection_index_kit,
@@ -20,21 +22,41 @@ urlpatterns = [
         name="add_user_lot_commercial_kit",
     ),
     path("annualReport/", wetlab.views.annual_report, name="annual_report"),
-    path("changeRunName=<int:run_id>", wetlab.views.change_run_name, name="change_run_name"),
+    path(
+        "changeRunName=<int:run_id>",
+        wetlab.views.change_run_name,
+        name="change_run_name",
+    ),
     path("compareSamples", wetlab.views.compare_samples, name="compare_samples"),
     path("createNewRun/", wetlab.views.create_new_run, name="create_new_run"),
-    path("createNextSeqRun/", wetlab.views.create_nextseq_run, name="create_nextseq_run"),
+    path(
+        "createNextSeqRun/", wetlab.views.create_nextseq_run, name="create_nextseq_run"
+    ),
     path("createPool/", wetlab.views.create_pool, name="create_pool"),
     path("createProtocol", wetlab.views.create_protocol, name="create_protocol"),
-    path("configurationEmail", wetlab.views.configuration_email, name="configuration_email"),
-    path("configurationSamba", wetlab.views.configuration_samba, name="configuration_samba"),
-    path("configurationTest/", wetlab.views.configuration_test, name="configuration_test"),
+    path(
+        "configurationEmail",
+        wetlab.views.configuration_email,
+        name="configuration_email",
+    ),
+    path(
+        "configurationSamba",
+        wetlab.views.configuration_samba,
+        name="configuration_samba",
+    ),
+    path(
+        "configurationTest/", wetlab.views.configuration_test, name="configuration_test"
+    ),
     path(
         "defineAdditionalKits=<int:protocol_id>",
         wetlab.views.define_additional_kits,
         name="define_additional_kits",
     ),
-    path("defineMoleculeUses", wetlab.views.define_molecule_uses, name="define_molecule_uses"),
+    path(
+        "defineMoleculeUses",
+        wetlab.views.define_molecule_uses,
+        name="define_molecule_uses",
+    ),
     path(
         "defineProtocolParameters=<int:protocol_id>",
         wetlab.views.define_protocol_parameters,
@@ -60,7 +82,11 @@ urlpatterns = [
         wetlab.views.display_collection_index,
         name="display_collection_index",
     ),
-    path("displaySample=<int:sample_id>/", wetlab.views.display_sample, name="display_sample"),
+    path(
+        "displaySample=<int:sample_id>/",
+        wetlab.views.display_sample,
+        name="display_sample",
+    ),
     path(
         "displaySampleInRun=<int:sample_run_id>/",
         wetlab.views.display_sample_in_run,
@@ -77,7 +103,11 @@ urlpatterns = [
         name="display_protocol",
     ),
     path("displayRun=<int:run_id>/", wetlab.views.display_run, name="display_run"),
-    path("displaySample=<int:sample_id>/", wetlab.views.display_sample, name="display_sample"),
+    path(
+        "displaySample=<int:sample_id>/",
+        wetlab.views.display_sample,
+        name="display_sample",
+    ),
     path(
         "displaySampleInRun=<int:sample_run_project_id>/",
         wetlab.views.display_sample_in_run,
@@ -103,15 +133,19 @@ urlpatterns = [
         wetlab.views.handling_library_preparation,
         name="handling_library_preparation",
     ),
-    path("handlingMolecules", wetlab.views.handling_molecules, name="handling_molecules"),
+    path(
+        "handlingMolecules", wetlab.views.handling_molecules, name="handling_molecules"
+    ),
     path("initialSettings", wetlab.views.initial_settings, name="initial_settings"),
-        path(
+    path(
         "kitInventory/",
         wetlab.views.kit_inventory,
         name="kit_inventory",
     ),
     path(
-        "lastRunBySequencer/", wetlab.views.last_run_by_sequencer, name="last_run_by_sequencer"
+        "lastRunBySequencer/",
+        wetlab.views.last_run_by_sequencer,
+        name="last_run_by_sequencer",
     ),
     path("incompletedRuns", wetlab.views.incompleted_runs, name="incompleted_runs"),
     path(
@@ -155,10 +189,24 @@ urlpatterns = [
     path("searchProject/", wetlab.views.search_project, name="search_project"),
     path("searchRun/", wetlab.views.search_run, name="search_run"),
     path("searchSample/", wetlab.views.search_sample, name="search_sample"),
-    path("searchUserLotKit", wetlab.views.search_user_lot_kit, name="search_user_lot_kit"),
-    path("sequencerDetails=<int:seq_id>/", wetlab.views.sequencer_details, name="sequencer_details"),
-    path("sequencerInventory", wetlab.views.sequencer_inventory, name="sequencer_inventory"),
-    path("setMoleculeValues", wetlab.views.set_molecule_values, name="set_molecule_values"),
+    path(
+        "searchUserLotKit", wetlab.views.search_user_lot_kit, name="search_user_lot_kit"
+    ),
+    path(
+        "sequencerDetails=<int:seq_id>/",
+        wetlab.views.sequencer_details,
+        name="sequencer_details",
+    ),
+    path(
+        "sequencerInventory",
+        wetlab.views.sequencer_inventory,
+        name="sequencer_inventory",
+    ),
+    path(
+        "setMoleculeValues",
+        wetlab.views.set_molecule_values,
+        name="set_molecule_values",
+    ),
     # path('setLibraryValues', wetlab.views.set_library_values, name = 'set_library_values'),
     path(
         "sequencerConfiguration",
@@ -166,14 +214,21 @@ urlpatterns = [
         name="sequencer_configuration",
     ),
     path(
-    "skipCancelSituation", wetlab.views.skip_cancel_situation, name="skip_cancel_situation"
+        "skipCancelSituation",
+        wetlab.views.skip_cancel_situation,
+        name="skip_cancel_situation",
     ),
-    path("statsPerSequencer/", wetlab.views.stats_per_sequencer, name="stats_per_sequencer"),
     path(
-        "statsPerResearcher/", wetlab.views.stats_per_researcher, name="stats_per_researcher"
+        "statsPerSequencer/",
+        wetlab.views.stats_per_sequencer,
+        name="stats_per_sequencer",
+    ),
+    path(
+        "statsPerResearcher/",
+        wetlab.views.stats_per_researcher,
+        name="stats_per_researcher",
     ),
     path("statsPerTime/", wetlab.views.stats_per_time, name="stats_per_time"),
-
 ]
 
 if settings.DEBUG:

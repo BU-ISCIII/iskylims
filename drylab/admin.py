@@ -103,7 +103,9 @@ admin.site.register(drylab.models.ResolutionStates, ResolutionStatesAdmin)
 admin.site.register(drylab.models.Service, ServiceAdmin)
 admin.site.register(drylab.models.UploadServiceFile, UploadServiceFileAdmin)
 admin.site.register(drylab.models.ResolutionParameters, ResolutionParametersAdmin)
-admin.site.register(drylab.models.RequestedSamplesInServices, RequestedSamplesInServicesAdmin)
+admin.site.register(
+    drylab.models.RequestedSamplesInServices, RequestedSamplesInServicesAdmin
+)
 admin.site.register(drylab.models.AvailableService, AvailableServiceAdmin)
 admin.site.register(drylab.models.Resolution, ResolutionAdmin)
 admin.site.register(drylab.models.Delivery, DeliveryAdmin)

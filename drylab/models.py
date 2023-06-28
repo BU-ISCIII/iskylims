@@ -258,7 +258,9 @@ class Service(models.Model):
     service_center = models.CharField(
         _("Sequencing center"), max_length=50, blank=False, null=True
     )
-    service_request_number = models.CharField(max_length=80, verbose_name="Service ID", null=True)
+    service_request_number = models.CharField(
+        max_length=80, verbose_name="Service ID", null=True
+    )
     service_request_int = models.CharField(max_length=80, null=True)
     service_run_specs = models.CharField(
         _("Run specifications"), max_length=10, blank=True, null=True
@@ -497,7 +499,9 @@ class ResolutionManager(models.Manager):
         resolution_service_id = Service.objects.get(
             service_request_number__exact=resolution_data["service_id"]
         )
-        state = ResolutionStates.objects.get(state_value__exact=resolution_data["state"])
+        state = ResolutionStates.objects.get(
+            state_value__exact=resolution_data["state"]
+        )
         new_resolution = self.create(
             resolution_service_id=resolution_service_id,
             resolution_assigned_user=resolution_assigned_user,
@@ -796,7 +800,9 @@ class Delivery(models.Model):
         delivery_info.append(self.delivery_resolution_id.resolution_number)
         try:
             delivery_info.append(
-                self.delivery_resolution_id.resolution_delivery_date.strftime("%Y-%m-%d")
+                self.delivery_resolution_id.resolution_delivery_date.strftime(
+                    "%Y-%m-%d"
+                )
             )
         except Exception:
             delivery_info.append("-")

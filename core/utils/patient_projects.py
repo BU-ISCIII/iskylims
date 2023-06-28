@@ -5,6 +5,7 @@ import json
 import core.models
 import core.core_config
 
+
 def add_project_to_patient(project_obj, patient_obj):
     """
     Description:
@@ -72,8 +73,12 @@ def get_all_project_info(proyect_id):
     project_data["fields"] = []
     project_obj = core.models.PatientProjects.objects.get(pk__exact=proyect_id)
 
-    if core.models.PatientProjectsFields.objects.filter(patient_projects_id=project_obj).exists():
-        project_data["field_heading"] = core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
+    if core.models.PatientProjectsFields.objects.filter(
+        patient_projects_id=project_obj
+    ).exists():
+        project_data[
+            "field_heading"
+        ] = core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
         project_data["project_name"] = project_obj.get_project_name()
         project_fields = core.models.PatientProjectsFields.objects.filter(
             patient_projects_id=project_obj
@@ -120,7 +125,9 @@ def get_defined_patient_projects(app_name):
     """
     patient_projects = []
     if core.models.PatientProjects.objects.filter(apps_name__exact=app_name).exists():
-        pat_projects = core.models.PatientProjects.objects.filter(apps_name__exact=app_name)
+        pat_projects = core.models.PatientProjects.objects.filter(
+            apps_name__exact=app_name
+        )
         for pat_project in pat_projects:
             data = pat_project.get_patient_project_data()
             if core.models.PatientProjectsFields.objects.filter(
@@ -294,8 +301,10 @@ def set_project_fields(data_form):
         project_fields["project_id"] = project_id_obj
         for i in range(len(fields)):
             project_fields[fields[i]] = row_data[i]
-        new_p_field_obj = core.models.PatientProjectsFields.objects.create_project_fields(
-            project_fields
+        new_p_field_obj = (
+            core.models.PatientProjectsFields.objects.create_project_fields(
+                project_fields
+            )
         )
         saved_fields.append(
             [new_p_field_obj.get_field_name(), new_p_field_obj.get_description()]

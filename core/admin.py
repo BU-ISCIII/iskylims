@@ -1,18 +1,37 @@
 from django.contrib import admin
 
-from core.models import (City, CommercialKits, Contact, LabRequest,
-                                  MoleculeParameterValue, MoleculePreparation,
-                                  MoleculeType, MoleculeUsedFor, OntologyMap,
-                                  PatientCore, PatientProjects, PatientSex,
-                                  ProtocolParameters, Protocols, ProtocolType,
-                                  SampleProjectFieldClassification,
-                                  SampleProjects, SampleProjectsFields,
-                                  SampleProjectsFieldsValue, Samples,
-                                  SamplesProjectsTableOptions, SampleType,
-                                  SequencerInLab, SequencingConfiguration,
-                                  SequencingPlatform, Species, StateInCountry,
-                                  StatesForMolecule, StatesForSample,
-                                  UserLotCommercialKits)
+from core.models import (
+    City,
+    CommercialKits,
+    Contact,
+    LabRequest,
+    MoleculeParameterValue,
+    MoleculePreparation,
+    MoleculeType,
+    MoleculeUsedFor,
+    OntologyMap,
+    PatientCore,
+    PatientProjects,
+    PatientSex,
+    ProtocolParameters,
+    Protocols,
+    ProtocolType,
+    SampleProjectFieldClassification,
+    SampleProjects,
+    SampleProjectsFields,
+    SampleProjectsFieldsValue,
+    Samples,
+    SamplesProjectsTableOptions,
+    SampleType,
+    SequencerInLab,
+    SequencingConfiguration,
+    SequencingPlatform,
+    Species,
+    StateInCountry,
+    StatesForMolecule,
+    StatesForSample,
+    UserLotCommercialKits,
+)
 
 
 class ContactAdmin(admin.ModelAdmin):
@@ -161,7 +180,11 @@ class SamplesProjectsTableOptionsAdmin(admin.ModelAdmin):
 
 
 class SampleProjectsFieldsValueAdmin(admin.ModelAdmin):
-    list_display = ["sample_id", "sample_project_field_id", "sample_project_field_value"]
+    list_display = [
+        "sample_id",
+        "sample_project_field_id",
+        "sample_project_field_value",
+    ]
     list_filter = ["sample_id"]
     search_fields = (
         "sample_project_field_id__sample_project_field_name",
@@ -192,7 +215,12 @@ class SequencerInLabAdmin(admin.ModelAdmin):
 
 
 class SpeciesAdmin(admin.ModelAdmin):
-    list_display = ("species_name", "ref_genome_name", "ref_genome_size", "ref_genome_id")
+    list_display = (
+        "species_name",
+        "ref_genome_name",
+        "ref_genome_size",
+        "ref_genome_id",
+    )
 
 
 class StatesForMoleculeAdmin(admin.ModelAdmin):

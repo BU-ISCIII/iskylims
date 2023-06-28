@@ -1067,6 +1067,7 @@ class SamplesInProject(models.Model):
         if self.user_id is not None:
             return "%s" % (self.user_id.username)
         return "None"
+
     def get_user_id(self):
         if self.user_id is not None:
             return self.user_id.pk

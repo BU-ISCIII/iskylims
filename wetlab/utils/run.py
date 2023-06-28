@@ -35,7 +35,9 @@ def check_valid_data_for_creation_run(form_data, user_obj):
     error = {}
     pool_ids = form_data.getlist("poolID")
     experiment_name = form_data["experimentName"]
-    if wetlab.models.RunProcess.objects.filter(run_name__exact=experiment_name).exists():
+    if wetlab.models.RunProcess.objects.filter(
+        run_name__exact=experiment_name
+    ).exists():
         error_message = wetlab.config.ERROR_RUN_NAME_ALREADY_DEFINED.copy()
         error_message[0] = error_message[0] + experiment_name
         error["ERROR"] = error_message
@@ -72,9 +74,13 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
     lib_prep_ids = get_library_prep_in_pools(pool_ids)
     try:
         center_requested_id = (
-            django_utils.models.Profile.objects.filter(profile_user_id=user_obj).last().profile_center.id
+            django_utils.models.Profile.objects.filter(profile_user_id=user_obj)
+            .last()
+            .profile_center.id
         )
-        center_requested_by = django_utils.models.Center.objects.get(pk__exact=center_requested_id)
+        center_requested_by = django_utils.models.Center.objects.get(
+            pk__exact=center_requested_id
+        )
     except Exception:
         center_requested_by = None
     reagent_kit_objs = fetch_reagent_kits_used_in_run(form_data)
@@ -166,11 +172,19 @@ def collect_data_and_update_library_preparation_samples_for_run(data_form, user)
     else:
         record_data["platform"] = "NextSeq"
         if record_data["single_read"] == "TRUE":
-            heading = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
-            mapping_fields = wetlab.config.MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
+            heading = (
+                wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
+            )
+            mapping_fields = (
+                wetlab.config.MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
+            )
         else:
-            heading = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
-            mapping_fields = wetlab.config.MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
+            heading = (
+                wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+            )
+            mapping_fields = (
+                wetlab.config.MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
+            )
 
     sample_sheet_data_field = []
     # Store the confirmation information form user form
@@ -264,13 +278,17 @@ def create_new_projects_added_to_run(project_list, run_obj, user_obj):
             if allow_projects_in_multi_run == "FALSE":
                 duplicated_projects.append(project)
                 continue
-            project_obj = wetlab.models.Projects.objects.filter(project_name__iexact=project).last()
+            project_obj = wetlab.models.Projects.objects.filter(
+                project_name__iexact=project
+            ).last()
             projects_objs.append(project_obj)
         else:
             project_data = {}
             project_data["user_id"] = user_obj
             project_data["projectName"] = project
-            project_obj = wetlab.models.Projects.objects.create_new_empty_project(project_data)
+            project_obj = wetlab.models.Projects.objects.create_new_empty_project(
+                project_data
+            )
             projects_objs.append(project_obj)
     if len(duplicated_projects) > 0:
         # delete defined projects
@@ -334,7 +352,9 @@ def get_pool_duplicated_index(pool_objs):
         for lib_prep_obj in lib_prep_objs:
             library_preparation_ids.append(lib_prep_obj.get_id())
 
-        result_index = wetlab.utils.pool.check_if_duplicated_index(library_preparation_ids)
+        result_index = wetlab.utils.pool.check_if_duplicated_index(
+            library_preparation_ids
+        )
     if "True" in result_index:
         return "False"
     else:
@@ -369,7 +389,9 @@ def check_pools_compatible(data_form):
 
     duplicated_index = get_pool_duplicated_index(pool_objs)
     if "False" not in duplicated_index:
-        error_message = wetlab.config.ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS.copy()
+        error_message = (
+            wetlab.config.ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS.copy()
+        )
         for duplicated in duplicated_index["incompatible_index"]:
             error_message.insert(1, ",".join(duplicated))
         error["ERROR"] = error_message
@@ -397,9 +419,13 @@ def store_confirmation_sample_sheet(fields):
     """
     exp_name_in_file = fields["exp_name"].replace(" ", "̣_")
     today_date = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
-    file_name = str(exp_name_in_file + "_" + today_date + "_" + wetlab.config.SAMPLE_SHEET)
+    file_name = str(
+        exp_name_in_file + "_" + today_date + "_" + wetlab.config.SAMPLE_SHEET
+    )
     tmp_file_relative_path = os.path.join(wetlab.config.RUN_TEMP_DIRECTORY, file_name)
-    ss_file_relative_path = os.path.join(wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY, file_name)
+    ss_file_relative_path = os.path.join(
+        wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY, file_name
+    )
     ss_file_full_path = os.path.join(settings.MEDIA_ROOT, tmp_file_relative_path)
 
     today_date = datetime.datetime.today().strftime("%d/%m/%Y")
@@ -507,9 +533,7 @@ def get_library_preparation_data_in_run(lib_prep_ids, pool_ids):
         lib_prep_data["uniqueID_list"]
     )
 
-    display_sample_information[
-        "date"
-    ] = datetime.datetime.today().strftime("%Y%m%d")
+    display_sample_information["date"] = datetime.datetime.today().strftime("%Y%m%d")
     display_sample_information["single_read"] = lib_prep_data["single_read"]
     display_sample_information["platform_type"] = platform_in_pool
 
@@ -526,7 +550,9 @@ def get_iem_version_from_user_sample_sheet(lib_prep_id):
     Return:
         iem_version
     """
-    iem_versions = wetlab.utils.library.get_iem_version_for_library_prep_ids(lib_prep_id)
+    iem_versions = wetlab.utils.library.get_iem_version_for_library_prep_ids(
+        lib_prep_id
+    )
     if len(iem_versions) == 1:
         iem_version = iem_versions[0]
     else:
@@ -632,29 +658,41 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
             if iem_version == "4":
                 lib_data[
                     "heading"
-                ] = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
+                ] = (
+                    wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
+                )
             else:
                 lib_data[
                     "heading"
-                ] = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
+                ] = (
+                    wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
+                )
         else:
             if iem_version == "4":
                 lib_data[
                     "heading"
-                ] = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
+                ] = (
+                    wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
+                )
             else:
                 lib_data[
                     "heading"
-                ] = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
+                ] = (
+                    wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
+                )
     else:
         if single_read:
             lib_data[
                 "heading"
-            ] = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
+            ] = (
+                wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
+            )
         else:
             lib_data[
                 "heading"
-            ] = wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+            ] = (
+                wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+            )
     return lib_data
 
 
@@ -695,9 +733,9 @@ def get_library_prep_in_pools(pool_ids):
 
     for pool_id in pool_ids:
         if wetlab.models.LibPrepare.objects.filter(pools__exact=pool_id).exists():
-            lib_prep_objs = wetlab.models.LibPrepare.objects.filter(pools__exact=pool_id).order_by(
-                "register_user"
-            )
+            lib_prep_objs = wetlab.models.LibPrepare.objects.filter(
+                pools__exact=pool_id
+            ).order_by("register_user")
             for lib_prep_obj in lib_prep_objs:
                 lib_prep_ids.append(lib_prep_obj.get_id())
     return lib_prep_ids
@@ -726,12 +764,16 @@ def get_available_pools_for_run():
             pools_to_update["pools_available"][platform].append(pool_obj)
     # get the pools that are associated to a run but not yet completed
     if (
-        wetlab.models.LibraryPool.objects.filter(pool_state__pool_state__exact="Selected")
+        wetlab.models.LibraryPool.objects.filter(
+            pool_state__pool_state__exact="Selected"
+        )
         .exclude(run_process_id=None)
         .exists()
     ):
         pools_to_update["defined_runs"] = (
-            wetlab.models.LibraryPool.objects.filter(pool_state__pool_state__exact="Selected")
+            wetlab.models.LibraryPool.objects.filter(
+                pool_state__pool_state__exact="Selected"
+            )
             .exclude(run_process_id=None)
             .order_by("run_process_id")
         )
@@ -787,8 +829,10 @@ def get_pool_info(pools_to_update):
                         .get_user_sample_sheet_obj()
                         .get_sequencing_configuration_name()
                     )
-                    user_lot_configuration_kit = core.utils.commercial_kits.get_lot_reagent_from_comercial_kit(
-                        configutation_name
+                    user_lot_configuration_kit = (
+                        core.utils.commercial_kits.get_lot_reagent_from_comercial_kit(
+                            configutation_name
+                        )
                     )
                     if len(user_lot_configuration_kit) > 0:
                         reagents_kits[platform].append(user_lot_configuration_kit)
@@ -870,7 +914,9 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
     kit_data = {}
     kit_data["run_kits_from_sample"] = {}
     if wetlab.models.LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
-        kit_data["heading_run_kits"] = wetlab.config.HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
+        kit_data[
+            "heading_run_kits"
+        ] = wetlab.config.HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
         library_preparation_items = wetlab.models.LibPrepare.objects.filter(
             sample_id__pk__exact=sample_id
         ).order_by("protocol_id")
@@ -937,6 +983,10 @@ def fetch_reagent_kits_used_in_run(form_data):
         for kit_name in commercial_kit_names:
             if form_data[kit_name] == "":
                 continue
-            user_reagents_kit_objs.append(core.utils.commercial_kits.update_usage_user_lot_kit(form_data[kit_name]))
+            user_reagents_kit_objs.append(
+                core.utils.commercial_kits.update_usage_user_lot_kit(
+                    form_data[kit_name]
+                )
+            )
 
     return user_reagents_kit_objs
