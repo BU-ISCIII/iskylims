@@ -119,7 +119,7 @@ update_settings_and_urls(){
     grep ^SECRET $INSTALL_PATH/iskylims/settings.py > ~/.secret
 
     # Copying config files and script. TODO CHANGE iSkyLIMS to app name
-    cp conf/template_settings.py $INSTALL_PATH/iskylims/settings.py
+    cp conf/template_settings.txt $INSTALL_PATH/iskylims/settings.py
     cp conf/urls.py $INSTALL_PATH/iskylims
     
     # replacing dummy variables with real values
