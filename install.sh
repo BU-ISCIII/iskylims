@@ -779,7 +779,7 @@ if [ $install == true ]; then
         if [ $docker == false ]; then
             echo "Creating the database structure for iSkyLIMS"
             python manage.py migrate
-            python manage.py makemigrations django_utils core wetlab drylab clinic
+            python manage.py makemigrations django_utils core wetlab drylab
             python manage.py migrate
             echo "Loading in database initial data"
             python manage.py loaddata conf/first_install_tables.json
