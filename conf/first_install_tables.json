@@ -1859,7 +1859,7 @@
     "pk": 8,
     "fields": {
         "configuration_name": "SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX",
-        "configuration_value": "TRUE",
+        "configuration_value": "FALSE",
         "generated_at": "2021-05-15T09:16:33.969"
     }
 },
