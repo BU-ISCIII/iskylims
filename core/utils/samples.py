@@ -2011,9 +2011,6 @@ def set_molecule_use(form_data, app_name):
     molecule_update["data"] = []
 
     for row_index in range(len(molecule_json_data)):
-        import pdb
-
-        pdb.set_trace()
         if molecule_json_data[row_index][3] != "":
             mol_id = molecule_json_data[row_index][2]
             molecule_obj = get_molecule_obj_from_id(mol_id)
