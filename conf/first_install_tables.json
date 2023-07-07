@@ -1814,7 +1814,7 @@
     "pk": 1,
     "fields": {
         "configuration_name": "PROJECTS_ALLOWED_IN_MULTIPLE_RUNS",
-        "configuration_value": "TRUE",
+        "configuration_value": "FALSE",
         "generated_at": "2021-01-21T18:11:58.509"
     }
 },
@@ -1841,7 +1841,7 @@
     "pk": 4,
     "fields": {
         "configuration_name": "DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME",
-        "configuration_value": "FALSE",
+        "configuration_value": "TRUE",
         "generated_at": "2021-02-09T20:38:46.814"
     }
 },
