@@ -427,7 +427,7 @@ if [ $upgrade == true ]; then
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/logging_config.ini
-        sed -i "s/INSTALL_PATH/\${INSTALL_PATH}/g" $INSTALL_PATH/logging_config.ini
+        sed -i "s@INSTALL_PATH@${INSTALL_PATH}@g" $INSTALL_PATH/logging_config.ini
 
         cd $INSTALL_PATH
         echo "activate the virtualenv"
