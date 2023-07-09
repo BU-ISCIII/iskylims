@@ -50,49 +50,54 @@
                     </div>
                 </div> 
             </div>
-        {% else %}
+        {% elif samples_data.heading%}
             <div class="container">
                 <div class="row mt-4">
                     <div class="card">
                         <div class="card-header text-center"><h3>Available Samples for {{samples_data.user}}</h3></div>
                         <div class="card-body">
                             <div class="container">
-                                {% if samples_data.heading %}
-                                    <h5 class="text-center">Select the samples to be included in the sample comparation.</h5>
-                                    <form method="post" enctype="multipart/form-data" name="compareSamples"  id="compareSamples">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="compareSamples"/>
-                                        <div id="spreadsheet"></div>
-                                        
-                                        <div class="row align-items-end">
-                                            <div class="col-md-3">
-                                                <div class="form-floating">
-                                                    <select  class="form-select" aria-label="sort number" id='column_number'>
-                                                        {% for value in samples_data.heading %}
-                                                            {% if not forloop.last %}
-                                                                <option value='{{ forloop.counter0 }}'>{{value}}</option>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </select>
-                                                    <label for="column_number">Sort columns by:</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">                                                
-                                                <input type='button' class="btn btn-outline-secondary" value='Sort column' onclick="mySpreadsheet.orderBy(document.getElementById('column_number').value)">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                                <h5 class="text-center">Select the samples to be included in the sample comparation.</h5>
+                                <form method="post" enctype="multipart/form-data" name="compareSamples"  id="compareSamples">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="compareSamples"/>
+                                    <div id="spreadsheet"></div>
+                                    
+                                    <div class="row align-items-end">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <select  class="form-select" aria-label="sort number" id='column_number'>
+                                                    {% for value in samples_data.heading %}
+                                                        {% if not forloop.last %}
+                                                            <option value='{{ forloop.counter0 }}'>{{value}}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="column_number">Sort columns by:</label>
                                             </div>
                                         </div>
-                                    </form>
-                                    
-                                {% else %}
-                                    <h3 style="text-align:center">There are no samples belong to {{sample_data.user}} </h3>
-                                {% endif %}
+                                        <div class="col-md-3">                                                
+                                            <input type='button' class="btn btn-outline-secondary" value='Sort column' onclick="mySpreadsheet.orderBy(document.getElementById('column_number').value)">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input class="btn float-end btn-outline-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div> 
                     </div>
-                </div> 
+                </div>
+            </div>                  
+        {% else %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h3 style="text-align:center">There are no samples belong to {{samples_data.user}} </h3>
+                        </div>
+                    </div> 
+                </div>
             </div>
         {% endif %}
     </div>

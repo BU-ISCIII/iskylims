@@ -136,7 +136,7 @@ update_settings_and_urls(){
     sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iskylims/settings.py
     sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iskylims/settings.py
     sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py    
+    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py
 }
 
 upgrade_venv(){
@@ -427,7 +427,7 @@ if [ $upgrade == true ]; then
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/logging_config.ini
-        sed -i "/INSTALL_PATH/${INSTALL_PATH}/g" $INSTALL_PATH/logging_config.ini
+        sed -i "s/INSTALL_PATH/\${INSTALL_PATH}/g" $INSTALL_PATH/logging_config.ini
 
         cd $INSTALL_PATH
         echo "activate the virtualenv"
