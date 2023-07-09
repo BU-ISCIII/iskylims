@@ -746,9 +746,11 @@ ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YY
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
     "There are many user names that matches your request"
 ]
-ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = "There is not any match for your input conditions "
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = (
+    "There is not any match for your input conditions"
+)
 ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = (
-    "There is not any Index Library Kit  that mathes your input conditions"
+    "There is not any Index Library Kit that mathes your input conditions"
 )
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = (
     "There is not any project that mathes your input conditions"
