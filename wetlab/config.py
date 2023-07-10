@@ -609,28 +609,22 @@ SUCCESSFUL_REUSE_LIB_PREP = [
 # ######### ERROR MESSAGES  #########################
 
 ERROR_USER_NOT_WETLAB_MANAGER = "You do not have enough privileges to see this page "
-ERROR_INVALID_FILE_FORMAT = [
-    "Invalid file format for the selected file",
-    "Select the valid file and submit it again",
-]
+ERROR_INVALID_FILE_FORMAT = (
+    "Invalid file format for the selected file"
+)
 ERROR_UNABLE_TO_DELETE_USER_FILE = "Unable to delete user file form iSkyLIMS"
-ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = [
-    "Sample sheet cannot be uploaded because there are samples",
-    "which are not defined yet.",
-]
-ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL = [
-    "Sample sheet cannot be uploaded because there are samples",
-    "which are not defined yet.",
-    "Check that samples contain as prefix the protocol name ",
-]
-ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = [
-    "Sample sheet cannot be uploaded because there are samples",
-    " are in a state from which cannot accept index information data.",
-]
-ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = [
-    "Sample sheet cannot be uploaded because there are samples",
-    "which have duplicated index",
-]
+ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = (
+    "Sample sheet with not defined samples"
+)
+ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL = (
+    "Sample sheet with not prefix protocol in samples"
+)
+ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = (
+    "Sample sheet with samples which are not in library preparation state."
+)
+ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = (
+    "Sample sheet have samples with duplicated index"
+)
 
 
 ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED = [
@@ -798,10 +792,9 @@ ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED = [
     "Unable to save the Sequencer configuration, because it already exists"
 ]
 
-ERROR_NOT_ALLOWED_REPEATED_PROJECTS = [
-    "Configuration settigs are set do not allow that a project can be in 2 different runs",
-    "The following project is already defined",
-]
+ERROR_NOT_ALLOWED_REPEATED_PROJECTS = (
+    "Configuration settigs are set that same project can not be in different runs"
+)
 
 # ########################  Configuration test errors #####################################
 ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND = [

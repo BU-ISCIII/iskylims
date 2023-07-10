@@ -343,7 +343,7 @@ def validate_sample_sheet_data(input_data):
         sample data objects if all checks are valid or ERROR if file is invalid
     """
     # check that samples are defined and in the right state
-    error = {}
+
     not_defined_samples = []
     invalid_state_samples = []
 
@@ -365,25 +365,16 @@ def validate_sample_sheet_data(input_data):
             )
             == "TRUE"
         ):
-            error_not_defined = (
-                wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL.copy()
+            not_defined = (
+                wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL
             )
         else:
-            error_not_defined = (
-                wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
+            not_defined = (
+                wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
             )
-        error_not_defined.insert(1, " , ".join(not_defined_samples))
-        error["ERROR"] = error_not_defined
+        return {"ERROR": not_defined}
     if len(invalid_state_samples) > 0:
-        error_state = (
-            wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
-        )
-        error_state.insert(1, " , ".join(error_state))
-        error["ERROR"] = ". ".join(error_state)
-    if len(not_defined_samples) > 0 and len(invalid_state_samples) > 0:
-        error["ERROR"] = error_not_defined + error_state
-    if "ERROR" in error:
-        return error
+        return {"ERROR" : wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION}
 
     # check if sample sheet has duplicate index
     duplicate_index = find_duplicate_index(
@@ -429,10 +420,7 @@ def find_duplicate_index(sample_row_data, heading):
         index_values[sample_row[sample_name_index]].append([indexes_in_sample])
     if len(duplicated_index_sample) > 0:
         error = {}
-        error_message = wetlab.config.ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES.copy()
-        error_message.append(" , ".join(duplicated_index_sample))
-        error["ERROR"] = error_message
-        return error
+        return {"ERROR": wetlab.config.ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES}
     return "False"
 
 

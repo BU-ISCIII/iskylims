@@ -89,7 +89,6 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
         lib_prep_ids, pool_ids
     )
     display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids))
-
     # update Reagents kits
     new_run_obj = wetlab.models.RunProcess(
         run_name=form_data["experimentName"],
@@ -180,12 +179,11 @@ def collect_data_and_update_library_preparation_samples_for_run(data_form, user)
             )
         else:
             heading = (
-                wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+                wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END.copy()
             )
             mapping_fields = (
                 wetlab.config.MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
             )
-
     sample_sheet_data_field = []
     # Store the confirmation information form user form
     for row_index in range(len(json_data)):
@@ -294,10 +292,10 @@ def create_new_projects_added_to_run(project_list, run_obj, user_obj):
         # delete defined projects
         for project_obj in projects_objs:
             project_obj.delete()
-        error_message = wetlab.config.ERROR_NOT_ALLOWED_REPEATED_PROJECTS.copy()
-        error_message.append(", ".join(duplicated_projects))
-        error = {"ERROR": error_message}
-        return error
+        error_message = wetlab.config.ERROR_NOT_ALLOWED_REPEATED_PROJECTS
+        error_message += ". Check: " + ", ".join(duplicated_projects)
+        return {"ERROR": error_message}
+
     # join project with run
     for project_obj in projects_objs:
         project_obj.run_process.add(run_obj)
@@ -523,7 +521,7 @@ def get_library_preparation_data_in_run(lib_prep_ids, pool_ids):
     if "MiSeq" in sequencers_platform:
         platform_in_pool = "MiSeq"
     else:
-        platform_in_pool = ""
+        platform_in_pool = "NextSeq"
     # single_paired = get_type_read_sequencing(pool_ids)
     lib_prep_data = collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool)
     display_sample_information["data"] = lib_prep_data["data"]
@@ -536,7 +534,6 @@ def get_library_preparation_data_in_run(lib_prep_ids, pool_ids):
     display_sample_information["date"] = datetime.datetime.today().strftime("%Y%m%d")
     display_sample_information["single_read"] = lib_prep_data["single_read"]
     display_sample_information["platform_type"] = platform_in_pool
-
     return display_sample_information
 
 
@@ -636,6 +633,7 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
                 row_data.insert(8, lib_prep_obj.get_genome_folder())
         else:
             row_data.insert(4, lib_prep_obj.get_index_plate_well())
+            
         row_data[0] = row_data[0] + "-" + lib_prep_obj.get_reused_value()
         uniqueID_list.append(row_data[0])
         data.append(row_data)
