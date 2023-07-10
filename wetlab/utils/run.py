@@ -633,7 +633,6 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
                 row_data.insert(8, lib_prep_obj.get_genome_folder())
         else:
             row_data.insert(4, lib_prep_obj.get_index_plate_well())
-            
         row_data[0] = row_data[0] + "-" + lib_prep_obj.get_reused_value()
         uniqueID_list.append(row_data[0])
         data.append(row_data)

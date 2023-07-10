@@ -369,12 +369,12 @@ def validate_sample_sheet_data(input_data):
                 wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL
             )
         else:
-            not_defined = (
-                wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
-            )
+            not_defined = wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
         return {"ERROR": not_defined}
     if len(invalid_state_samples) > 0:
-        return {"ERROR" : wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION}
+        return {
+            "ERROR" : wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
+        }
 
     # check if sample sheet has duplicate index
     duplicate_index = find_duplicate_index(
@@ -419,7 +419,6 @@ def find_duplicate_index(sample_row_data, heading):
             index_values[sample_row[sample_name_index]] = []
         index_values[sample_row[sample_name_index]].append([indexes_in_sample])
     if len(duplicated_index_sample) > 0:
-        error = {}
         return {"ERROR": wetlab.config.ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES}
     return "False"
 
