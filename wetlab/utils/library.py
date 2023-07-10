@@ -372,10 +372,7 @@ def validate_sample_sheet_data(input_data):
             not_defined = wetlab.config.ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
         return {"ERROR": not_defined}
     if len(invalid_state_samples) > 0:
-        return {
-            "ERROR" : wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
-        }
-
+        return {"ERROR" : wetlab.config.ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION}
     # check if sample sheet has duplicate index
     duplicate_index = find_duplicate_index(
         input_data["sample_data"], input_data["heading"]
