@@ -5,13 +5,13 @@
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
-        {% if not_found_matchs %}
+        {% if error_message %}
             <div class="row my-2">
                 <div class="col-sm-6 offset-3" >
                     <div class="card border-danger mb-3">
-                        <div class="card-header"><h3>No Results</h3></div>
+                        <div class="card-header"><h3>Unable to process your request</h3></div>
                         <div class="card-body">
-                            <p>There are no matches that meet your query</p>
+                            <h5>{{error_message}}</h5>
                         </div>
                     </div>
                 </div>
@@ -38,15 +38,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        {% if matched_collection_index|length > 7 %}
-                            <script type="text/javascript">
-                                $(document).ready(function() {
-                                    $('#index_table').DataTable({
-                                        responsive: true,
-                                    });
-                                });
-                            </script>
-                        {% endif %}
                     </div>
                 </div> <!--  end of col-sm-6 -->
             </div>
@@ -103,4 +94,11 @@
         {% endif %}
     </div>
 </section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#index_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
 {% endblock %}

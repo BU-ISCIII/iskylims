@@ -1394,19 +1394,19 @@ def search_collection_index_library(request):
             collection_values = wetlab.models.CollectionIndexValues.objects.all()
             if index_name != "":
                 if collection_values.filter(
-                    index_7_contains=index_name,
+                    index_7__icontains=index_name,
                     collection_index_kit_id__in=collection_indexes,
                 ).exists():
                     collection_values = collection_values.filter(
-                        index_7_contains=index_name,
+                        index_7__icontains=index_name,
                         collection_index_kit_id__in=collection_indexes,
                     )
                 elif collection_values.filter(
-                    index_5_contains=index_name,
+                    index_5__icontains=index_name,
                     collection_index_kit_id__in=collection_indexes,
                 ).exists():
                     collection_values = collection_values.filter(
-                        index_5_contains=index_name,
+                        index_5__icontains=index_name,
                         collection_index_kit_id__in=collection_indexes,
                     )
                 else:
@@ -3456,7 +3456,6 @@ def create_new_run(request):
                 request.POST, request.user
             )
         )
-
         return render(
             request,
             "wetlab/create_new_run.html",
@@ -3535,7 +3534,6 @@ def create_new_run(request):
         created_new_run["exp_name"] = run_data["exp_name"]
         created_new_run["run_process_id"] = request.POST["run_process_id"]
         created_new_run["sample_sheet"] = run_obj.get_sample_file()
-
         return render(
             request,
             "wetlab/create_new_run.html",
