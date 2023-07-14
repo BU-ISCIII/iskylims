@@ -763,7 +763,7 @@ if [ $install == true ]; then
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
 
         # update logging configuration file
-        cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/logging_config.ini
+        cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
         sed -i "/INSTALL_PATH/${INSTALL_PATH}/g" $INSTALL_PATH/wetlab/logging_config.ini
 
         # Starting iSkyLIMS
