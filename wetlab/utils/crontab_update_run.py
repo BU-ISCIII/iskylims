@@ -249,7 +249,8 @@ def search_update_new_runs(request_reason):
                 )
             )
             run_process_obj = run_process_obj.set_used_sequencer(sequencer_obj)
-            run_process_obj.set_run_date(running_parameters["run_date"])
+            if isinstance(running_parameters["run_date"], datetime.datetime):
+                run_process_obj.set_run_date(running_parameters["run_date"])
             logger.info("%s : Sequencer  stored on database", experiment_name)
 
             if run_process_obj.get_sample_file() == "":

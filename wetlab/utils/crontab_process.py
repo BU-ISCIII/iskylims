@@ -268,7 +268,7 @@ def check_sequencer_status_from_log_file(
     last_log_time = last_line_in_file.split(" ")[0:2]
     last_log_time[0] = str("20" + last_log_time[0])
     string_completion_date = " ".join(last_log_time)
-    run_completion_date = datetime.datime.strptime(
+    run_completion_date = datetime.datetime.strptime(
         string_completion_date, "%Y-%m-%d %H:%M:%S.%f"
     )
     logger.debug(
@@ -429,7 +429,7 @@ def check_sequencer_run_is_completed(
             logger.info("%s : Deleted Run Completion file", experiment_name)
             shared_folder = get_samba_shared_folder()
             conversion_attributes = conn.getAttributes(shared_folder, s_run_completion)
-            run_completion_date = datetime.datime.fromtimestamp(
+            run_completion_date = datetime.datetime.fromtimestamp(
                 int(conversion_attributes.create_time)
             ).strftime("%Y-%m-%d %H:%M:%S")
             logger.debug(
@@ -469,7 +469,7 @@ def check_sequencer_run_is_completed(
             )
             return "still_running", ""
         try:
-            run_completion_date = datetime.datime.fromtimestamp(
+            run_completion_date = datetime.datetime.fromtimestamp(
                 int(conversion_attributes.create_time)
             ).strftime("%Y-%m-%d %H:%M:%S")
         except Exception:
@@ -1084,12 +1084,12 @@ def parsing_run_info_and_parameter_information(
     # get date for miSeq and NextSeq with the format yymmdd
     date = p_run.find("Date").text
     try:
-        run_date = datetime.datime.strptime(date, "%y%m%d")
+        run_date = datetime.datetime.strptime(date, "%y%m%d")
     except Exception:
         # get date for novaseq sequencer
         date = p_run.find("Date").text.split(" ")[0]
         try:
-            run_date = datetime.datime.strptime(date, "%m/%d/%Y")
+            run_date = datetime.datetime.strptime(date, "%m/%d/%Y")
         except Exception:
             run_date = ""
 
@@ -1173,7 +1173,7 @@ def store_sample_sheet_if_not_defined_in_run(
         "%s : Starting the function store_sample_sheet_in_run", experiment_name
     )
     # Get the present time in miliseconds to add to have an unique file name
-    now = datetime.datime.now()
+    now = datetime.datetime.now()
     timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
     new_sample_sheet_name = "SampleSheet" + timestr + ".csv"
 
@@ -1213,7 +1213,7 @@ def waiting_time_expired(run_process_obj, time_to_check, maximun_time, experimen
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function waiting_time_expired", experiment_name)
-    today = datetime.datime.now().date()
+    today = datetime.datetime.now().date()
     number_of_days = abs((today - time_to_check).days)
     if number_of_days > int(maximun_time):
         logger.info("%s  : Waiting time already exceeded", experiment_name)
@@ -2126,7 +2126,7 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
             experiment_name,
         )
         return {"ERROR": 31}
-    bcl2fastq_finish_date = datetime.datime.fromtimestamp(
+    bcl2fastq_finish_date = datetime.datetime.fromtimestamp(
         int(conversion_attributes.create_time)
     ).strftime("%Y-%m-%d %H:%M:%S")
     logger.info("%s : Collected Bcl2Fastq time ", experiment_name)
