@@ -270,9 +270,9 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
     if len(s_in_lib_prep) > (
         len(s_lib_prep_defined) + len(s_lib_prep_upd_param) + len(s_lib_prep_upd_kit)
     ):
-        s_def = list(s_lib_prep_defined.values_list("pk", flat=True))
-        s_param = list(s_lib_prep_upd_param.values_list("pk", flat=True))
-        s_kit = list(s_lib_prep_upd_kit.values_list("pk", flat=True))
+        s_def = list(s_lib_prep_defined.values_list("sample_id__pk", flat=True))
+        s_param = list(s_lib_prep_upd_param.values_list("sample_id__pk", flat=True))
+        s_kit = list(s_lib_prep_upd_kit.values_list("sample_id__pk", flat=True))
         s_in_lib_prep_ids = list(s_in_lib_prep.values_list("pk", flat=True))
         def_lib = s_def + s_param + s_kit
         s_not_def_ids = list(set(s_in_lib_prep_ids).symmetric_difference(set(def_lib)))
