@@ -548,7 +548,7 @@ def store_schema(schema, field, valid_fields, s_project_id):
                     "sample_project_id": s_project_obj,
                     "classification_name": property["classification"],
                 }
-                core.models.SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                classification_obj = core.models.SampleProjectFieldClassification.objects.create_sample_project_field_classification(
                     c_data
                 )
             property["SampleProjectFieldClassificationID"] = classification_obj
