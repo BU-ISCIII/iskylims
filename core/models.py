@@ -1280,9 +1280,7 @@ class Samples(models.Model):
 
     def get_info_for_display(self):
         if self.collection_sample_date:
-            collection_sample_date = self.collection_sample_date.strftime(
-                "%Y-%m-%d"
-            )
+            collection_sample_date = self.collection_sample_date.strftime("%Y-%m-%d")
         else:
             collection_sample_date = ""
         if self.sample_entry_date:
