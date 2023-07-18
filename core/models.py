@@ -1238,7 +1238,7 @@ class Samples(models.Model):
     def get_sample_definition_information(self):
         sample_info = []
         if self.sample_entry_date is not None:
-            recorded_date = self.sample_entry_date.strftime("%d , %B , %Y")
+            recorded_date = self.sample_entry_date.strftime("%Y-%m-%d")
         else:
             recorded_date = ""
         sample_info.append(self.unique_sample_id)
@@ -1251,7 +1251,7 @@ class Samples(models.Model):
     def get_info_in_defined_state(self):
         sample_info = []
         if self.sample_entry_date is not None:
-            sample_entry_date = self.sample_entry_date.strftime("%d , %B , %Y")
+            sample_entry_date = self.sample_entry_date.strftime("%Y-%m-%d")
         else:
             sample_entry_date = ""
         sample_info.append(sample_entry_date)
@@ -1263,7 +1263,7 @@ class Samples(models.Model):
     def get_info_for_searching(self):
         sample_info = []
         if self.sample_entry_date is not None:
-            sample_entry_date = self.sample_entry_date.strftime("%d , %B , %Y")
+            sample_entry_date = self.sample_entry_date.strftime("%Y-%m-%d")
         else:
             sample_entry_date = ""
         sample_info.append(str(self.pk))
@@ -1281,19 +1281,19 @@ class Samples(models.Model):
     def get_info_for_display(self):
         if self.collection_sample_date:
             collection_sample_date = self.collection_sample_date.strftime(
-                "%d , %B , %Y"
+                "%Y-%m-%d"
             )
         else:
             collection_sample_date = ""
         if self.sample_entry_date:
-            sample_entry_date = self.sample_entry_date.strftime("%d , %B , %Y")
+            sample_entry_date = self.sample_entry_date.strftime("%Y-%m-%d")
         else:
             sample_entry_date = ""
         sample_info = []
         sample_info.append(self.sample_name)
         sample_info.append(self.sample_code_id)
         sample_info.append(self.sample_state.get_sample_state())
-        sample_info.append(self.generated_at.strftime("%d , %B , %Y"))
+        sample_info.append(self.generated_at.strftime("%Y-%m-%d"))
         sample_info.append(collection_sample_date)
         sample_info.append(sample_entry_date)
         sample_info.append(self.sample_type.get_name())
@@ -1305,7 +1305,7 @@ class Samples(models.Model):
     def get_info_for_patient(self):
         sample_info = []
         if self.sample_entry_date:
-            sample_entry_date = self.sample_entry_date.strftime("%d , %B , %Y")
+            sample_entry_date = self.sample_entry_date.strftime("%Y-%m-%d")
         else:
             sample_entry_date = ""
         sample_info.append(str(self.pk))
@@ -1318,7 +1318,7 @@ class Samples(models.Model):
 
     def get_entry_date(self):
         if self.sample_entry_date:
-            sample_entry_date = self.sample_entry_date.strftime("%d , %B , %Y")
+            sample_entry_date = self.sample_entry_date.strftime("%Y-%m-%d")
         else:
             sample_entry_date = ""
         return "%s" % sample_entry_date
