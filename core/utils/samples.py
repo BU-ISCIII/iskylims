@@ -1258,7 +1258,7 @@ def get_sample_project_information(sample_project_obj, sample_obj, join_values=F
         )
         for s_p_field in sample_project_fields:
             s_project_info["sample_project_field_heading"].append(
-                s_p_field.get_description()
+                s_p_field.get_field_name()
             )
             if core.models.SampleProjectsFieldsValue.objects.filter(
                 sample_id=sample_obj, sample_project_field_id=s_p_field
@@ -1275,6 +1275,7 @@ def get_sample_project_information(sample_project_obj, sample_obj, join_values=F
             else:
                 field_value = core.core_config.VALUE_NOT_PROVIDED
             s_project_info["sample_project_field_value"].append(field_value)
+
     if join_values:
         s_project_info["sample_project_join_value"] = [
             list(x)
