@@ -133,7 +133,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data["prefixProtocol"] = values["prot_name"]
         if prot_in_samples == "TRUE":
             lib_prep_data["samplename_in_samplesheet"] = str(
-                values["protocol_name"] + protocol_separation + s_name
+                values["prot_name"] + protocol_separation + s_name
             )
         else:
             lib_prep_data["samplename_in_samplesheet"] = s_name
