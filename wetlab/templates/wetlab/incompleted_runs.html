@@ -58,21 +58,11 @@
                                                                 <td><a href="/wetlab/displayRun={{ id }}" class="text-decoration-none">{{ name }}</a> </td>
                                                                 <td> {{ date }} </td>
                                                                 <td align="center"> {{ days }} </td>
-                        
                                                             </tr>
                                                         {%endfor%}
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            {% if  display_incompleted_run.recorded|length > 7 %}
-                                                <script type="text/javascript">
-                                                    $(document).ready(function() {
-                                                        $('#rec_table').DataTable({
-                                                            responsive: true,
-                                                        });
-                                                    });
-                                                </script>
-                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -104,21 +94,11 @@
                                                                     <td> {{ state }} </td>
                                                                     <td> {{ error }} </td>
                                                                     <td align="center"> {{ days }} </td>
-                    
                                                                 </tr>
                                                             {%endfor%}
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if  display_incompleted_run.error|length > 7 %}
-                                                    <script type="text/javascript">
-                                                        $(document).ready(function() {
-                                                            $('#error_table').DataTable({
-                                                                responsive: true,
-                                                            });
-                                                        });
-                                                    </script>
-                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -147,21 +127,11 @@
                                                                     <td><a href="/wetlab/displayRun={{ id }}" class="text-decoration-none">{{ name }}</a> </td>
                                                                     <td> {{ date }} </td>
                                                                     <td align="center"> {{ days }} </td>
-                    
                                                                 </tr>
                                                             {%endfor%}
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if  display_incompleted_run.cancelled|length > 7 %}
-                                                    <script type="text/javascript">
-                                                        $(document).ready(function() {
-                                                            $('#cancelled_table').DataTable({
-                                                                responsive: true,
-                                                            });
-                                                        });
-                                                    </script>
-                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -192,21 +162,11 @@
                                                                     <td> {{ date }} </td>
                                                                     <td> {{ state }} </td>
                                                                     <td align="center"> {{ days }} </td>
-                        
                                                                 </tr>
                                                             {%endfor%}
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if  display_incompleted_run.other|length > 7 %}
-                                                    <script type="text/javascript">
-                                                        $(document).ready(function() {
-                                                            $('#cancelled_table').DataTable({
-                                                                responsive: true,
-                                                            });
-                                                        });
-                                                    </script>
-                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -247,4 +207,30 @@
     {% endif %}
     </div>
 </section>
+<script type="text/javascript">
+    // rec_table
+    $(document).ready(function() {
+        $('#rec_table').DataTable({
+            responsive: true,
+        });
+    });
+    // error_table
+    $(document).ready(function() {
+        $('#error_table').DataTable({
+            responsive: true,
+        });
+    });
+    // cancelled_table
+    $(document).ready(function() {
+        $('#cancelled_table').DataTable({
+            responsive: true,
+        });
+    });
+    // other_table 
+    $(document).ready(function() {
+        $('#other_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
 {% endblock %}

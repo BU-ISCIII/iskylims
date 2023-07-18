@@ -533,7 +533,7 @@ def get_information_for_incompleted_run():
             data.append(run_obj.get_run_id())
             data.append(run_obj.get_run_name())
             recorded_date = run_obj.get_recorded_date_no_format().date()
-            data.append(recorded_date.strftime("%d %B  %Y"))
+            data.append(recorded_date.strftime("%Y-%m-%d"))
             data.append(str((today - recorded_date).days))
             run_information["recorded"].append(data)
 
@@ -550,7 +550,7 @@ def get_information_for_incompleted_run():
             if run_date is None:
                 # if no value stored on run date use the recorded date instead
                 run_date = run_obj.get_recorded_date_no_format().date()
-            data.append(run_date.strftime("%d %B  %Y"))
+            data.append(run_date.strftime("%Y-%m-%d"))
             data.append(run_obj.get_state_before_error())
             data.append(run_obj.get_error_text())
             data.append(str((today - run_date).days))
@@ -572,7 +572,7 @@ def get_information_for_incompleted_run():
             if run_date is None:
                 # if no value stored on run date use the recorded date instead
                 run_date = run_obj.get_recorded_date_no_format().date()
-            data.append(run_date.strftime("%d %B %Y"))
+            data.append(run_date.strftime("%Y-%m-%d"))
 
             data.append(str((today - run_date).days))
             run_information["cancelled"].append(data)
@@ -598,7 +598,7 @@ def get_information_for_incompleted_run():
             if run_date is None:
                 # if no value stored on run date use the recorded date instead
                 run_date = run_obj.get_recorded_date_no_format().date()
-            data.append(run_date.strftime("%d %B %Y"))
+            data.append(run_date.strftime("%Y-%m-%d"))
             data.append(run_obj.get_state())
             data.append(str((today - run_date).days))
             run_information["other"].append(data)
