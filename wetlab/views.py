@@ -5,6 +5,7 @@ import os
 import re
 import statistics
 import time
+import smb
 
 import django.contrib.auth.models
 from django.conf import settings
@@ -98,19 +99,32 @@ def configuration_samba(request):
                 samba_user_field[field] = "False"
         wetlab.utils.common.save_samba_connection_data(samba_user_field)
         try:
-            wetlab.utils.common.open_samba_connection()
-            return render(
-                request,
-                "wetlab/configuration_samba.html",
-                {"succesful_settings": True},
-            )
-        except Exception:
+            conn = wetlab.utils.common.open_samba_connection()
+        except OSError:
             error_message = wetlab.config.ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(
                 request,
                 "wetlab/configuration_samba.html",
                 {"samba_conf_data": samba_user_field, "error_message": error_message},
             )
+        try:
+            conn.listPath(samba_user_field["shared_folder_name"], "/")
+            return render(
+                request,
+                "wetlab/configuration_samba.html",
+                {"succesful_settings": True},
+            )
+        
+        except smb.base.NotReadyError:
+            error_message = wetlab.config.ERROR_WRONG_SAMBA_AUTHENTICATION_SETTINGS
+        except Exception:
+            error_message = wetlab.config.ERROR_WRONG_SAMBA_FOLDER_SETTINGS
+        return render(
+            request,
+            "wetlab/configuration_samba.html",
+            {"samba_conf_data": samba_user_field, "error_message": error_message},
+        )
+        
     else:
         return render(
             request,
