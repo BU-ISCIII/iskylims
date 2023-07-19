@@ -107,7 +107,10 @@ def folder_test_exists(folder_run_name):
         "/", wetlab.utils.crontab_process.get_samba_application_shared_folder()
     )
     shared_folder = wetlab.utils.crontab_process.get_samba_shared_folder()
-    run_folder_list = conn.listPath(shared_folder, run_data_root_folder)
+    try:
+        run_folder_list = conn.listPath(shared_folder, run_data_root_folder)
+    except Exception:
+        return False
     for sfh in run_folder_list:
         if sfh.isDirectory:
             folder_run = sfh.filename
