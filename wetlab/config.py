@@ -777,9 +777,15 @@ ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = [
     "User does not have any sample to perform statistics"
 ]
 ERROR_USER_NAME_TOO_SHORT = "User name must contains at least 5 characters"
-ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = "Unsuccessful configuration settings for Samba connection"
-ERROR_WRONG_SAMBA_FOLDER_SETTINGS= "Unsuccessful configuration. Samba folder not reachable"
-ERROR_WRONG_SAMBA_AUTHENTICATION_SETTINGS = "Unsuccessful configuration. Invalid credential"
+ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = (
+    "Unsuccessful configuration settings for Samba connection"
+)
+ERROR_WRONG_SAMBA_FOLDER_SETTINGS = (
+    "Unsuccessful configuration. Samba folder not reachable"
+)
+ERROR_WRONG_SAMBA_AUTHENTICATION_SETTINGS = (
+    "Unsuccessful configuration. Invalid credential"
+)
 
 # ########################  Sequencer errors #####################################
 ERROR_SEQUENCER_ALREADY_DEFINED = [
