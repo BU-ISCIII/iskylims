@@ -640,7 +640,8 @@ if [ $install == true ]; then
                 python3-venv  \
                 libpq-dev \
                 python3-dev python3-pip python3-wheel \
-                apache2-dev
+                apache2-dev\
+                gnuplot
         fi
 
         if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
@@ -648,7 +649,8 @@ if [ $install == true ]; then
             yum groupinstall "Development tools"
             yum install zlib-devel bzip2-devel openssl-devel \
                         wget httpd-devel mysql-libs sqlite sqlite-devel \
-                        mariadb-devel libffi-devel
+                        mariadb-devel libffi-devel\
+                        gnuplot
         fi
 
         ## Create the installation folder
