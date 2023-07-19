@@ -114,7 +114,7 @@ def configuration_samba(request):
                 "wetlab/configuration_samba.html",
                 {"succesful_settings": True},
             )
-        
+
         except smb.base.NotReadyError:
             error_message = wetlab.config.ERROR_WRONG_SAMBA_AUTHENTICATION_SETTINGS
         except Exception:
@@ -124,7 +124,7 @@ def configuration_samba(request):
             "wetlab/configuration_samba.html",
             {"samba_conf_data": samba_user_field, "error_message": error_message},
         )
-        
+
     else:
         return render(
             request,
