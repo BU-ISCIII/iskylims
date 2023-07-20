@@ -649,7 +649,7 @@ if [ $install == true ]; then
             yum groupinstall "Development tools"
             yum install zlib-devel bzip2-devel openssl-devel \
                         wget httpd-devel mysql-libs sqlite sqlite-devel \
-                        mariadb-devel libffi-devel\
+                        mariadb-devel libffi-devel \
                         gnuplot
         fi
 
