@@ -252,8 +252,8 @@ def store_parameters_pipeline(pipeline_obj, parameters):
     for item, value in parameters.items():
         parameter_pipeline = {}
         parameter_pipeline["parameter_pipeline"] = pipeline_obj
-        parameter_pipeline["parameterName"] = item
-        parameter_pipeline["parameterType"] = value
+        parameter_pipeline["parameter_name"] = item
+        parameter_pipeline["parameter_type"] = value
         drylab.models.ParameterPipeline.objects.create_pipeline_parameters(
             parameter_pipeline
         )
