@@ -556,16 +556,16 @@ if [ $upgrade == true ]; then
         echo ""
         echo "Restart apache server to update changes"
         if [[ $linux_distribution == "Ubuntu" ]]; then
-            apache_user="apache2"
+            apache_daemon="apache2"
         else
-            apache_user="httpd"
+            apache_daemon="httpd"
         fi
         
         # systemctl restart $apache_user
 
         if ! [ $? -eq 0 ]; then
             echo -e "${ORANGE}Apache server restart failed. trying with sudo{NC}"
-            sudo systemctl restart $apache_user
+            sudo systemctl restart $apache_daemon
         fi
     fi
     printf "\n\n%s"
@@ -599,9 +599,15 @@ if [ $install == true ]; then
 
         user=$SUDO_USER
         group=$(groups | cut -d" " -f1)
-
+        
         # Find out server Linux distribution
         linux_distribution=$(lsb_release -i | cut -f 2-)
+
+        if [[ $linux_distribution == "Ubuntu" ]]; then
+            apache_group="www-data"
+        else
+            apache_group="apache"
+        fi
 
         echo "Starting iSkyLIMS installation"
         if [ -d $INSTALL_PATH ]; then
@@ -655,6 +661,8 @@ if [ $install == true ]; then
 
         ## Create the installation folder
         mkdir -p $INSTALL_PATH/conf
+        chown -R $user:$apache_group $INSTALL_PATH
+        chmod 775 $INSTALL_PATH
         
         # Copy requirements before moving to install path
         rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
@@ -683,12 +691,6 @@ if [ $install == true ]; then
         echo "Installing required python packages"
         python -m pip install wheel
         python -m pip install -r conf/requirements.txt
-
-        ## Create apache group if it does not exist.
-        if ! grep -q apache /etc/group
-        then
-            groupadd apache
-        fi
 
         cd -
 
@@ -732,7 +734,7 @@ if [ $install == true ]; then
             fi
         else
             mkdir -p $INSTALL_PATH/logs
-            chown $user:apache $INSTALL_PATH/logs
+            chown $user:$apache_group $INSTALL_PATH/logs
             chmod 775 $INSTALL_PATH/logs
         fi
 
@@ -747,18 +749,18 @@ if [ $install == true ]; then
         mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
         mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
         mkdir -p $INSTALL_PATH/documents/wetlab/templates
-        chown $user:apache $INSTALL_PATH/documents
+        chown $user:$apache_group $INSTALL_PATH/documents
         chmod 775 $INSTALL_PATH/documents
-        chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
+        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/tmp
         chmod 775 $INSTALL_PATH/documents/wetlab/tmp
-        chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
+        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/SampleSheets
         chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
-        chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
+        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/images_plot
         chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
-        chown $user:apache $INSTALL_PATH/documents/wetlab/templates
+        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/templates
         chmod 775 $INSTALL_PATH/documents/wetlab/templates
         mkdir -p $INSTALL_PATH/documents/drylab
-        chown $user:apache $INSTALL_PATH/documents/drylab
+        chown $user:$apache_group $INSTALL_PATH/documents/drylab
         chmod 775 $INSTALL_PATH/documents/drylab
 
         # Copy illumina sample sheet templates
@@ -766,7 +768,7 @@ if [ $install == true ]; then
 
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
-        sed -i "/INSTALL_PATH/${INSTALL_PATH}/g" $INSTALL_PATH/wetlab/logging_config.ini
+        sed -i "|INSTALL_PATH|${INSTALL_PATH}|g" $INSTALL_PATH/wetlab/logging_config.ini
 
         # Starting iSkyLIMS
         echo "activate the virtualenv"
