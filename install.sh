@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ISKYLIMS_VERSION="2.x.x"
+ISKYLIMS_VERSION="3.0.0"
 
 usage() {
 cat << EOF
@@ -15,8 +15,6 @@ usage : $0 --upgrade --dev --conf
     --tables  | Load the first inital tables for upgrades in conf folder
     --script  | Run a migration script.
     --ren_app | Rename apps required for the upgrade migration to 3.0.0
-    --docker  | Specific installation for docker compose configuration.
-
 
 Examples:
     Install iskylims only dep
@@ -176,7 +174,6 @@ do
         --dev)      set -- "$@" -d ;;
         --conf)     set -- "$@" -c ;;
         --ren_app)  set -- "$@" -r ;;
-        --docker)  set -- "$@" -k ;;
 
     # ADITIONAL
         --help)     set -- "$@" -h ;;
@@ -195,7 +192,6 @@ install=true
 install_type="full"
 upgrade=false
 upgrade_type="full"
-docker=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
 options=":c:s:i:u:drtkvh"
@@ -238,9 +234,6 @@ while getopts $options opt; do
             ;;
         c )
             conf=$OPTARG
-            ;;
-        k )
-            docker=true
             ;;
         h )
             usage
@@ -302,12 +295,10 @@ fi
 echo "Checking main requirements"
 python_check
 printf "${BLUE}Valid version of Python${NC}\n"
-if [ $docker == false ]; then
-    db_check
-    printf "${BLUE}Successful check for database${NC}\n"
-    apache_check
-    printf "${BLUE}Successful check for apache${NC}\n"
-fi
+db_check
+printf "${BLUE}Successful check for database${NC}\n"
+apache_check
+printf "${BLUE}Successful check for apache${NC}\n"
 
 if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ] || [ "$upgrade_type" == "full" ] || [ "$upgrade_type" == "dep" ]; then
     printf "${YELLOW} Checking requirement of root  user when installation is full or dep ${NC}\n"
@@ -780,16 +771,15 @@ if [ $install == true ]; then
         # update the settings.py and the main urls
         update_settings_and_urls
 
-        if [ $docker == false ]; then
-            echo "Creating the database structure for iSkyLIMS"
-            python manage.py migrate
-            python manage.py makemigrations django_utils core wetlab drylab
-            python manage.py migrate
-            echo "Loading in database initial data"
-            python manage.py loaddata conf/first_install_tables.json
-            echo "Creating super user "
-            python manage.py createsuperuser --username admin
-        fi
+        echo "Creating the database structure for iSkyLIMS"
+        python manage.py migrate
+        python manage.py makemigrations django_utils core wetlab drylab
+        python manage.py migrate
+        echo "Loading in database initial data"
+        python manage.py loaddata conf/first_install_tables.json
+        echo "Creating super user "
+        python manage.py createsuperuser --username admin
+
 
         # copy static files 
         echo "Run collectstatic"
