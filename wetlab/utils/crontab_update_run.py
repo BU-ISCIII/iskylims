@@ -286,7 +286,7 @@ def search_update_new_runs(request_reason):
                     if "ERROR" in users:
                         string_message = (
                             experiment_name
-                            + " : Description field does not contains userid."
+                            + " : Description field does not contains userid or userid is not defined in iskylims."
                         )
                         wetlab.utils.common.logging_errors(string_message, True, False)
                         wetlab.utils.crontab_process.handling_errors_in_run(
