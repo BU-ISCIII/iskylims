@@ -124,15 +124,18 @@ def open_samba_connection():
     logger = logging.getLogger(__name__)
     logger.debug("Starting function open_samba_connection")
     samba_data = get_samba_connection_data()
-    if not samba_data:
+
+    try:
+        if samba_data["samba_folder_name"] != "":
+            samba_data["shared_folder_name"] = os.path.join(
+                samba_data["shared_folder_name"],
+                samba_data["samba_folder_name"],
+            )
+    except KeyError:
         string_message = "Samba connection data on database is empty"
         logging_errors(string_message, True, False)
-        sys.exit(1)
-    if samba_data["samba_folder_name"] != "":
-        samba_data["shared_folder_name"] = os.path.join(
-            samba_data["shared_folder_name"],
-            samba_data["samba_folder_name"],
-        )
+        raise
+
     conn = SMBConnection(
         samba_data["user_id"],
         samba_data["user_password"],
