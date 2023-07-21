@@ -5,9 +5,11 @@ import re
 import shutil
 import xml.etree.ElementTree as ET
 import datetime
+import sys
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core import management
 from interop import py_interop_run, py_interop_run_metrics, py_interop_summary
 
 # Local imports
@@ -656,6 +658,39 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
     logger.debug("%s : End function for fetching remote file", run_dir)
     return local_file
 
+
+def get_crontab_status():
+    """ Function uses the stdout to get the output about crontab show command.
+    Because if using stdout=out parameter in comandd does not return anything
+    """
+    cron_status = {"active": "False"}
+    cron_tmp_file = os.path.join(settings.MEDIA_ROOT, "wetlab", "tmp", "test.crontab")
+    sys.stdout = open(cron_tmp_file, 'w')
+    management.call_command("crontab" , "show")
+    with open(cron_tmp_file, "r") as fh:
+        lines = fh.readlines()
+    for line in lines:
+        cron_match = re.search(r".*wetlab.cron.looking_for_new_runs.*", line )
+        if cron_match:
+            cron_status["active"] = "True"
+            break
+    os.remove(cron_tmp_file)
+    return cron_status
+
+
+def set_crontab_status(state):
+    """
+        Activate or remove crontab execution
+    """
+
+    new_state = {}
+    if state == "activate" :
+        management.call_command("crontab" , "add")
+        new_state["active"] = "True"
+    else:
+        management.call_command("crontab" , "remove")
+        new_state["active"] = "False"
+    return new_state
 
 def get_latest_run_procesing_log(conn, log_folder, experiment_name):
     """

@@ -39,6 +39,7 @@ import wetlab.utils.sequencers
 import wetlab.utils.statistics
 import wetlab.utils.stats_graphs
 import wetlab.utils.test_conf
+import wetlab.utils.crontab_process
 
 
 def index(request):
@@ -235,6 +236,22 @@ def configuration_test(request):
             return render(request, "wetlab/configuration_test.html")
     else:
         return render(request, "wetlab/configuration_test.html")
+
+
+@login_required
+def crontab_status(request):
+    # check user privileges
+    if request.user.is_authenticated:
+        if request.user.username != "admin":
+            return redirect("/wetlab")
+    if request.method == "POST" and request.POST["action"] == "set_crontab_state":
+        state = "activate" if "cron_status" in request.POST else "remove"
+        c_status = wetlab.utils.crontab_process.set_crontab_status(state)
+        c_status["updated"] = wetlab.config.SUCCESSFUL_CRONTAB_STATUS_CHANGED
+        return render(request, "wetlab/crontab_status.html", {"c_status": c_status})
+    else:
+        c_status = wetlab.utils.crontab_process.get_crontab_status()
+        return render(request, "wetlab/crontab_status.html", {"c_status": c_status})
 
 
 @login_required

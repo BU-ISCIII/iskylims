@@ -47,6 +47,7 @@ urlpatterns = [
     path(
         "configurationTest/", wetlab.views.configuration_test, name="configuration_test"
     ),
+    path("crontabStatus", wetlab.views.crontab_status, name="crontab_status"),
     path(
         "defineAdditionalKits=<int:protocol_id>",
         wetlab.views.define_additional_kits,
