@@ -660,7 +660,7 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
 
 
 def get_crontab_status():
-    """ Function uses the stdout to get the output about crontab show command.
+    """Function uses the stdout to get the output about crontab show command.
     Because if using stdout=out parameter in comandd does not return anything
     """
     cron_status = {"active": "False"}
@@ -680,15 +680,15 @@ def get_crontab_status():
 
 def set_crontab_status(state):
     """
-        Activate or remove crontab execution
+    Activate or remove crontab execution
     """
 
     new_state = {}
     if state == "activate" :
-        management.call_command("crontab" , "add")
+        management.call_command("crontab", "add")
         new_state["active"] = "True"
     else:
-        management.call_command("crontab" , "remove")
+        management.call_command("crontab", "remove")
         new_state["active"] = "False"
     return new_state
 
