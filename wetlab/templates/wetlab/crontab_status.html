@@ -1,0 +1,40 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'registration/login_inline.html' %}
+<section class="iskylims">
+    <div class="container px-4">
+        <div class="card">
+            <div class="card-header"><h3 style="text-align:center">Crontab</h3></div>
+                <form method="post" enctype="multipart/form-data" name="sambaconfiguration" id="sambaconfiguration">
+                    <input type="hidden" name="action" value="set_crontab_state"/>
+                    {% csrf_token %}
+                    <div class="row my-2 justify-content-center">
+                        <div class="col-md-6">
+                            <div class="card">
+                                {% if c_status.updated %}
+                                    <div class="card-title align-center"><h5>{{c_status.updated}}</h5></div>
+                                {% else %}
+                                    <div class="card-title align-center"><h5>Crontab status for collecting run data</h5></div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <div class="form-check form-switch">
+                                        <label class="form-check-label  form-label" for="cron_status" >Crontab status</label>
+                                        {% if c_status.active == True  or   c_status.active == "True" %}
+                                            <input class="form-check-input" type="checkbox" name="cron_status" id="cron_status" checked>
+                                        {% else %}
+                                            <input class="form-check-input" type="checkbox" name="cron_status" id="cron_status" >
+                                        {% endif %}
+                                    </div>
+                                    <input class="btn btn-outline-primary float-end me-2 my-3" type="submit" value="Submit update">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -909,3 +909,6 @@ HEADING_COMPARATION_SAMPLE_INFORMATION = [
     "Quality >Q30",
     "Mean Quality",
 ]
+
+# ############# Crontab ###############################
+SUCCESSFUL_CRONTAB_STATUS_CHANGED = "Crontab has successful changed"
