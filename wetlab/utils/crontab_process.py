@@ -670,7 +670,7 @@ def get_crontab_status():
     with open(cron_tmp_file, "r") as fh:
         lines = fh.readlines()
     for line in lines:
-        cron_match = re.search(r".*wetlab.cron.looking_for_new_runs.*", line )
+        cron_match = re.search(r".*wetlab.cron.looking_for_new_runs.*", line)
         if cron_match:
             cron_status["active"] = "True"
             break
@@ -691,6 +691,7 @@ def set_crontab_status(state):
         management.call_command("crontab" , "remove")
         new_state["active"] = "False"
     return new_state
+
 
 def get_latest_run_procesing_log(conn, log_folder, experiment_name):
     """
