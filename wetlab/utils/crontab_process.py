@@ -665,8 +665,8 @@ def get_crontab_status():
     """
     cron_status = {"active": "False"}
     cron_tmp_file = os.path.join(settings.MEDIA_ROOT, "wetlab", "tmp", "test.crontab")
-    sys.stdout = open(cron_tmp_file, 'w')
-    management.call_command("crontab" , "show")
+    sys.stdout = open(cron_tmp_file, "w")
+    management.call_command("crontab", "show")
     with open(cron_tmp_file, "r") as fh:
         lines = fh.readlines()
     for line in lines:
@@ -684,7 +684,7 @@ def set_crontab_status(state):
     """
 
     new_state = {}
-    if state == "activate" :
+    if state == "activate":
         management.call_command("crontab", "add")
         new_state["active"] = "True"
     else:
