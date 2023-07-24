@@ -80,16 +80,6 @@
                                     </table>
                                 </div>  
                             </div>
-                            {% if molecule_use_data.defined_molecule_use|length > 7 %}
-                                <script type="text/javascript">
-                                    $(document).ready(function() {
-                                        $('#m_table').DataTable({
-                                            dom:"frtip",
-                                            responsive: true,
-                                        });
-                                    });
-                                </script>
-                            {% endif %}
                         </div>  
                     {% endif %}
                 </div>
@@ -97,4 +87,12 @@
     {% endif %}
     </div>
 </section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#m_table').DataTable({
+            dom:"frtip",
+            responsive: true,
+        });
+    });
+</script>
 {% endblock %}
