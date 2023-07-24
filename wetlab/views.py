@@ -1793,10 +1793,7 @@ def create_protocol(request):
             {"error_message": "You do not have enough privileges to see this page "},
         )
     # get the list of defined protocols
-    (
-        defined_protocols,
-        other_protocol_list,
-    ) = core.utils.protocols.display_available_protocols(__package__)
+    defined_protocols = core.utils.protocols.display_available_protocols(__package__)
     additional_kits = wetlab.utils.additional_kits.get_additional_kits_list(__package__)
     defined_protocol_types = core.utils.protocols.display_protocol_types(__package__)
 
@@ -1833,7 +1830,6 @@ def create_protocol(request):
         {
             "defined_protocols": defined_protocols,
             "defined_protocol_types": defined_protocol_types,
-            "other_protocol_list": other_protocol_list,
             "additional_kits": additional_kits,
         },
     )

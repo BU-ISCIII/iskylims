@@ -82,68 +82,14 @@ def display_available_protocols(app_name):
         molecule_protocol_list and other_protocol_list .
     """
 
-    molecule_protocol_list = []
-    if (
-        core.models.ProtocolType.objects.filter(apps_name__exact=app_name)
-        .exclude(molecule=None)
-        .exists()
-    ):
-        protocol_types = (
-            core.models.ProtocolType.objects.filter(apps_name__exact=app_name)
-            .exclude(molecule=None)
-            .order_by("molecule")
+    protocol_list = []
+    if core.models.Protocols.objects.filter(type__apps_name__exact=app_name).exists():
+        protocol_list = list(
+            core.models.Protocols.objects.filter(
+                type__apps_name__exact=app_name
+            ).values_list("type__protocol_type", "name", "pk", "description")
         )
-        for protocol_type in protocol_types:
-            molecule_type = protocol_type.get_molecule_type()
-            prot_type_str = protocol_type.get_name()
-            if core.models.Protocols.objects.filter(type=protocol_type).exists():
-                protocols = core.models.Protocols.objects.filter(
-                    type=protocol_type
-                ).order_by("type")
-                for protocol in protocols:
-                    data_prot = []
-                    data_prot.append(molecule_type)
-                    data_prot.append(prot_type_str)
-                    data_prot.append(protocol.get_name())
-                    data_prot.append(protocol.pk)
-                    if core.models.ProtocolParameters.objects.filter(
-                        protocol_id=protocol
-                    ).exists():
-                        data_prot.append(True)
-                    else:
-                        data_prot.append(False)
-                    molecule_protocol_list.append(data_prot)
-    other_protocol_list = []
-    if (
-        core.models.ProtocolType.objects.filter(
-            molecule=None, apps_name__exact=app_name
-        )
-        .exclude(protocol_type__icontains="additional")
-        .exists()
-    ):
-        protocol_types = core.models.ProtocolType.objects.filter(
-            molecule=None, apps_name__exact=app_name
-        ).exclude(protocol_type__icontains="additional")
-        for protocol_type in protocol_types:
-            prot_type_str = protocol_type.get_name()
-            if core.models.Protocols.objects.filter(type=protocol_type).exists():
-                protocols = core.models.Protocols.objects.filter(
-                    type=protocol_type
-                ).order_by("type")
-                for protocol in protocols:
-                    data_prot = []
-                    data_prot.append(prot_type_str)
-                    data_prot.append(protocol.get_name())
-                    data_prot.append(protocol.pk)
-                    if core.models.ProtocolParameters.objects.filter(
-                        protocol_id=protocol
-                    ).exists():
-                        data_prot.append(True)
-                    else:
-                        data_prot.append(False)
-                    other_protocol_list.append(data_prot)
-
-    return molecule_protocol_list, other_protocol_list
+    return protocol_list
 
 
 def display_protocol_list():
