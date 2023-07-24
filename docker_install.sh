@@ -22,6 +22,7 @@ EOF
 
 # translate long options to short
 reset=true
+
 for arg in "$@"
 do
     if [ -n "$reset" ]; then
@@ -44,11 +45,11 @@ done
 demo_data=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:drtkvh"
+options=":d:vh"
 while getopts $options opt; do
     case $opt in
         d)
-            conf=$OPTARG
+            demo_data=$OPTARG
             ;;
         h )
             usage
@@ -94,9 +95,9 @@ echo "Creating super user "
 docker exec -it iskylims_app python3 manage.py createsuperuser
 
 echo "Download testing files and copy it to samba container"
-if [ $demo_data != false ];then
+if [ "$demo_data" == "false" ];then
     wget https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
-    demo_data=$(echo "./iskylims_demo_data.tar.gz")
+    demo_data="./iskylims_demo_data.tar.gz"
 fi
 docker cp $demo_data samba:/mnt
 docker exec -it samba tar -xf  /mnt/iskylims_demo_data.tar.gz -C /mnt
@@ -104,7 +105,7 @@ docker exec -it samba tar -xf  /mnt/iskylims_demo_data.tar.gz -C /mnt
 echo "deleting compress testing file"
 docker exec -it samba rm /mnt/iskylims_demo_data.tar.gz
 
-if [ $demo_data != false ];then
+if [ "$demo_data" == "false" ];then
     rm -f $demo_data
 fi
 
