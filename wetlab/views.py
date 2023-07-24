@@ -1820,7 +1820,6 @@ def create_protocol(request):
                 "defined_protocol_types": defined_protocol_types,
                 "new_defined_protocol": new_protocol,
                 "new_protocol_id": new_protocol_id,
-                "other_protocol_list": other_protocol_list,
             },
         )
 
