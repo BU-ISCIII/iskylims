@@ -41,16 +41,10 @@
                 <div class="col">
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="basic" aria-selected="true">Configuration Files</button>
+                            <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="basic" aria-selected="true">Main results</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link " id="folder-tab" data-bs-toggle="tab" data-bs-target="#folder" type="button" role="tab" aria-controls="folder" aria-selected="false">Folder Permissions</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="database-tab" data-bs-toggle="tab" data-bs-target="#database" type="button" role="tab" aria-controls="database" aria-selected="false">Database Access</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="samba-tab" data-bs-toggle="tab" data-bs-target="#samba" type="button" role="tab" aria-controls="samba" aria-selected="false">Samba Connection</button>
                         </li>
                     </ul>
                     <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
@@ -59,12 +53,64 @@
                                 <div class="row mt-4">
                                     <div class="col">
                                         <div class="card">
-                                            <div class="card-header"><H3>iSkyLIMS configuration settings</H3></div>
+                                            <div class="card-header text-center"><h3>Connection results</h3></div>
                                             <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Database connection result</h3></div>
+                                                            <div class="card-body">
+                                                                <div class="row"> 
+                                                                    {% if test_results.database_access  == 'OK' %}
+                                                                        <div class="col-md-10">
+                                                                            <h4>Success to connect to database</h4>
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <i class="bi bi-check-lg float-end" style="font-size:40px;color:green"></i>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="col-md-10">
+                                                                            <h4>Unable to connect to database</h4>
+                                                                        </div>
+                                                                            <div class="col-md-2">
+                                                                            <i class="bi bi-x-circle float-end" style="font-size:40px;color:red"></i>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="card">
+                                                            <div class="card-header text-center"><h3>Samba connection result</h3></div>
+                                                            <div class="card-body">
+                                                                <div class="row">           
+                                                                    {% if test_results.samba_connection  == 'OK' %}
+                                                                        <div class="col-md-10">
+                                                                            <h4>Success connection to samba server</h4>
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <i class="bi bi-check-lg float-end" style="font-size:40px;color:green"></i>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="col-md-10">
+                                                                            <h4>Unable to stablish samba connection</h4>
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <i class="bi bi-x-circle float-end" style="font-size:40px;color:red"></i>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-header text-center"><h3>iSkyLIMS configuration settings</h3></div>
+                                            <div class="card-body">
+
                                                 <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#settings">Display iSkyLIMS.settings.py</button>
                                                 <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#wetlab">Display wetlab_settings.py</button>
-                                                <button class="btn btn-outline-primary mx-2 float-end" onclick="downloadInnerHtml('settings.py','settings')">Download settings.py </button>
-                                                <button class="btn btn-outline-primary float-end" onclick="downloadInnerHtml('wetlab_settings.py','wetlab')">Download config.py</button>
                                                 <div id="settings" class="collapse">
                                                     {% for line in test_results.iSkyLIMS_settings %}
                                                         {{line}}<br>
@@ -80,19 +126,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <script type="text/javascript">
-                                function downloadInnerHtml(filename, elId, mimeType) {
-                                var elHtml = document.getElementById(elId).innerHTML;
-                                var link = document.createElement('a');
-                                mimeType = mimeType || 'text/plain';
-
-                                link.setAttribute('download', filename);
-                                link.setAttribute('href', 'data:' + mimeType  +  ';charset=utf-8,' + encodeURIComponent(elHtml));
-                                link.click();
-                            }
-
-                            var fileName =  'tags.html';
-                            </script>
                         </div><!-- // end of tab config -->
                     
                         <div class="tab-pane fade" id="folder" role="tabpanel" aria-labelledby="folder-tab">
@@ -102,7 +135,7 @@
                                         <h3 style="text-align:center">Files used for Massive sequencing application</h3>
                                         <div class="card-body">
                                             <div class="overflow-auto">
-                                                <table id="permissions" class="table  table-hover">
+                                                <table id="permissions_table" class="table  table-hover">
                                                     <thead>
                                                         <tr>
                                                             <th>Permissions</th>
@@ -131,52 +164,13 @@
                             <div class="container">
                                 <div class="card">
                                     <h3 style="text-align:center">Database access result</h3> 
-                                    <div class="card-body">
-                                        <div class="row">           
-                                            {% if test_results.database_access  == 'OK' %}
-                                                <div class="col-md-6">
-                                                    <h4>Success to connect to database</h4>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <i class="bi bi-check-lg float-end" style="font-size:40px;color:green"></i>
-                                                </div>
-                                            {% else %}
-                                                <div class="col-md-6">
-                                                    <h4>Unable to connect to database</h4>
-                                                </div>
-                                                    <div class="col-md-6">
-                                                    <i class="bi bi-x-circle float-end" style="font-size:40px;color:red"></i>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
+                                    
                                 </div> 
                             </div>
                         </div><!-- // end of tab database -->
                         <div class="tab-pane fade" id="samba" role="tabpanel" aria-labelledby="samba-tab">
                             <div class="container">
-                                <div class="card">
-                                    <h3 style="text-align:center">Samba connection result</h3> 
-                                    <div class="card-body">
-                                        <div class="row">           
-                                            {% if test_results.samba_connection  == 'OK' %}
-                                                <div class="col-md-6">
-                                                    <h4>Success connection to samba server</h4>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <i class="bi bi-check-lg float-end" style="font-size:40px;color:green"></i>
-                                                </div>
-                                            {% else %}
-                                                <div class="col-md-6">
-                                                    <h4>Unable to stablish samba connection</h4>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <i class="bi bi-x-circle float-end" style="font-size:40px;color:red"></i>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div> 
+                                
                             </div> 
                         </div><!-- // end of tab samba -->
                     </div> <!--  end tab -->
@@ -438,6 +432,13 @@
           // Show spinner
           $("#spinner").prop("hidden", false);
           $("#executeRunTest").submit();
+        });
+    });
+    // cdn table
+    $(document).ready(function() {
+        $('#permissions_table').DataTable({
+            dom:"frtip",
+            responsive: true,
         });
     });
 </script>

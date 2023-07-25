@@ -49,7 +49,7 @@ def get_files_attribute(directory):
 
 def get_iSkyLIMS_settings():
     s_file = []
-    settings_file = os.path.join(settings.BASE_DIR, "iSkyLIMS", "settings.py")
+    settings_file = os.path.join(settings.BASE_DIR, "iskylims", "settings.py")
     try:
         with open(settings_file, "r") as fh:
             for line in fh:
