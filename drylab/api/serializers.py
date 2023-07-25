@@ -65,7 +65,10 @@ class ProfileUserSerializer(serializers.ModelSerializer):
     profile_center = serializers.StringRelatedField()
 
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(ProfileUserSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         for key in self.fields:
@@ -89,7 +92,10 @@ class UserIDSerializer(serializers.ModelSerializer):
     profile = ProfileUserSerializer(many=False)
 
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(UserIDSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         for key in self.fields:
@@ -121,7 +127,10 @@ class CustomAvailableServiceField(serializers.RelatedField):
 
 class PipelinesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(PipelinesSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         for key in self.fields:
@@ -146,7 +155,10 @@ class DeliverySerializer(serializers.ModelSerializer):
     pipelines_in_delivery = PipelinesSerializer(many=True)
 
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(DeliverySerializer, self).to_representation(instance)
         data_update = OrderedDict()
         for key in self.fields:
@@ -183,7 +195,10 @@ class ResolutionSerializer(serializers.ModelSerializer):
     resolution_assigned_user = serializers.StringRelatedField(many=False)
 
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(ResolutionSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         for key in self.fields:
@@ -220,7 +235,10 @@ class ResolutionSerializer(serializers.ModelSerializer):
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(RequestedSamplesInServicesSerializer, self).to_representation(
             instance
         )
@@ -268,7 +286,10 @@ class ServiceSerializer(serializers.ModelSerializer):
     samples = RequestedSamplesInServicesSerializer(many=True)
 
     def to_representation(self, instance):
-        output_label = self.context["output_label"]
+        if self.context["output_label"]:
+            output_label = self.context["output_label"]
+        else:
+            output_label = False
         data = super(ServiceSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         for key in self.fields:
