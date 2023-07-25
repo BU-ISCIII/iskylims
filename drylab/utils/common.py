@@ -47,13 +47,13 @@ def check_valid_date_format(date):
         return False
 
 
-def create_service_id(service_number, user_id):
+def create_service_id(service_number, user_obj):
     """
     Description:
             The function get the user center to build the service ID string
     Input:
             service_number      # number of the service
-    user_id           # user number to get the center
+    user_obj          # user instance to get the center
     Constants:
             USER_CENTER_USED_WHEN_NOT_PROVIDED
     Return:
@@ -62,7 +62,7 @@ def create_service_id(service_number, user_id):
     if get_configuration_from_database("USER_CENTER_USED_FOR_NAMING_SERVICE") == "True":
         try:
             user_center = django_utils.models.Profile.objects.get(
-                profile_user_id=user_id
+                profile_user_id=user_obj
             ).profile_center.center_abbr
         except ValueError:
             user_center = drylab.config.USER_CENTER_USED_WHEN_NOT_PROVIDED
