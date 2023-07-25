@@ -45,7 +45,7 @@
         <div class="row justify-content-center pb-2 pt-2">
             <div class="col-md-12">
                 <div class="card ">
-                    <div class="card-header">Service request form for counseling</div>
+                    <div class="card-header text-center"><h3>Service request form for counseling</h3></div>
                     <div class="card-body">
                         <form id="counseling_request" method="post" action="/drylab/counseling-request"
                             name="counseling_request" enctype="multipart/form-data" class="form-horizontal well">
@@ -53,26 +53,29 @@
                             <input type="hidden" name="sub_action" value="create_service" />
                             <div class="container-md">
                                 {% if service_data_info.users %}
-                                <!-- row card 1: select user id -->
-                                <div class="row justify-content-center pb-2 pt-2">
-                                    <div class="col-md-12">
-                                        <div class="form-control">
-                                            <div class="col-md-6">
-                                                <label class="col-md-6 control-label" for="user_id_label">Select the
-                                                    user requesting the service</label>
-                                                <div class="col-sm-6">
-                                                    <select class="form-control" name="user_id_request"
-                                                        id="user_id_request">
-                                                        <option value="">Choose a value</option>
-                                                        {% for value , id in service_data_info.users %}
-                                                        <option value="{{id}}">{{value}}</option>
-                                                        {% endfor %}
-                                                    </select>
+                                    <!-- row card 1: select user id -->
+                                    <div class="row py-2">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-8">
+                                                        <label class="control-label" for="user_id_label">Select the
+                                                            user requesting the service
+                                                        </label>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <select class="form-control" name="user_id_request"
+                                                            id="user_id_request">
+                                                            <option value="">Choose a value</option>
+                                                            {% for value , id in service_data_info.users %}
+                                                                <option value="{{id}}">{{value}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                                 {% endif %}
                                 <!-- row card 3: select services -->
                                 <div class="row justify-content-center pb-2 pt-2">

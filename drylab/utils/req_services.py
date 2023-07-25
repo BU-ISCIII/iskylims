@@ -138,7 +138,7 @@ def save_counseling_infrastructure_service(request):
             service_data["service_center"] = (
                 django_utils.models.Profile.objects.filter(profile_user_id=request_user)
                 .last()
-                .profile_center.get_center_name()
+                .profile_center.get_user_center_abbr()
             )
         except Exception:
             service_data["service_center"] = drylab.config.INTERNAL_SEQUENCING_UNIT
@@ -148,12 +148,12 @@ def save_counseling_infrastructure_service(request):
     service_data["service_sequencing_platform"] = ""
     service_data["serviceFileExt"] = ""
     service_data["service_run_specs"] = ""
-    service_data["service_user_id"] = request.user
+    service_data["service_user_id"] = request_user
     service_data["service_request_int"] = drylab.utils.common.increment_service_number(
-        request.user.id
+        request_user
     )
     service_data["service_request_number"] = drylab.utils.common.create_service_id(
-        service_data["service_request_int"], request.user.id
+        service_data["service_request_int"], request_user
     )
     # Save the new service
     new_service = drylab.models.Service.objects.create_service(service_data)
