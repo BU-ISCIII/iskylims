@@ -768,7 +768,7 @@ if [ $install == true ]; then
 
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
-        sed -i "|INSTALL_PATH|${INSTALL_PATH}|g" $INSTALL_PATH/wetlab/logging_config.ini
+        sed -i "s|INSTALL_PATH|${INSTALL_PATH}|g" $INSTALL_PATH/wetlab/logging_config.ini
 
         # Starting iSkyLIMS
         echo "activate the virtualenv"
