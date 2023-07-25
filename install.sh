@@ -531,10 +531,6 @@ if [ $upgrade == true ]; then
         echo "Running collect statics..."
         python manage.py collectstatic
         echo "Done collect statics"
-
-        echo "Running crontab add..."
-        python manage.py crontab add
-        echo "Done crontab add"
         
         if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
@@ -794,9 +790,6 @@ if [ $install == true ]; then
         # copy static files 
         echo "Run collectstatic"
         python manage.py collectstatic
-            
-        echo "Running crontab"
-        python manage.py crontab add
 
         cd -
 
