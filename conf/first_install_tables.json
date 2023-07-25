@@ -1805,8 +1805,16 @@
     "model": "wetlab.runconfigurationtest",
     "pk": 4,
     "fields": {
-        "run_test_name": "NextSeq_Test",
+        "run_test_name": "NextSeq_Test_001",
         "run_test_folder": "NextSeq_Test"
+    }
+},
+{
+    "model": "wetlab.runconfigurationtest",
+    "pk": 4,
+    "fields": {
+        "run_test_name": "NovaSeq_Test_001",
+        "run_test_folder": "NovaSeq_Test"
     }
 },
 {
