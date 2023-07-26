@@ -38,4 +38,9 @@ def run():
             eval(table_name).objects.filter(apps_name__icontains=str_to_remove).update(
                 apps_name="wetlab"
             )
+    # perform this dummy check to use core.models to avoid litin error
+    if core.models.MoleculeUsedFor.objects.filter(
+        apps_name__icontains=str_to_remove
+    ).exists():
+        print("ERROR   IN  MIGRATIONS")
     return
