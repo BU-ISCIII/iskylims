@@ -319,6 +319,7 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED = [
     "Check documentation to define the Laboratory",
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE = ["Batch file contains empty values"]
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT = ["Batch file does not have the correct format"]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet",
     "Check documentation to define them",
@@ -369,7 +370,12 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME = [
     "The protocol name",
     "is not defined",
 ]
-
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_SAMPLE_PROJECT_NO_DEFINED = [
+    "Project/Service is not defined",
+]
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_TOO_MANY_PROJECTS = [
+    "Only one project must be defined per sample batch file"
+]
 ERROR_MESSAGE_INVALID_JSON_SCHEMA = [
     "Upload schema cannot used because it contains errors "
 ]

@@ -14,6 +14,13 @@ import core.models
 import core.utils.samples
 
 
+def get_sample_projects_names(sample_df):
+    """
+    """
+    sample_df["Project/Service"] = sample_df["Project/Service"].fillna("")
+    return sample_df["Project/Service"].unique().tolist()
+
+
 def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
     """
     Description:
@@ -366,6 +373,46 @@ def create_molecule_parameter_from_file(molecule_obj, sample_data):
     return
 
 
+def get_sample_project_fields(project_names):
+    """
+    """
+    p_fields = []
+    for p_name in project_names:
+        if p_name == "" or p_name.lower() == "none":
+            continue
+        if core.models.SampleProjects.objects.filter(sample_project_name__iexact=p_name).exists():
+            s_proj_obj = core.models.SampleProjects.objects.filter(sample_project_name__iexact=p_name).last()
+            s_pro_field_objs = core.models.SampleProjectsFields.objects.filter(sample_projects_id=s_proj_obj)
+            for s_pro_field_obj in s_pro_field_objs:
+                p_fields.append(s_pro_field_obj.get_field_name())
+        else:
+            return {"ERROR":core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_SAMPLE_PROJECT_NO_DEFINED}
+    return p_fields
+
+
+def heading_validation(sample_batch_df):
+    """
+    """
+    batch_head = list(sample_batch_df.head(0))
+    for item in core.core_config.HEADING_FOR_RECORD_SAMPLES:
+        if item not in batch_head:
+            return {"ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT}
+    project_names = get_sample_projects_names(sample_batch_df)
+    project_len = len(project_names)
+    if "" in project_names or "None" in project_names:
+        project_len -= 1
+    if project_len > 1 :
+        return {"ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_TOO_MANY_PROJECTS}
+    s_project_fields = get_sample_project_fields(project_names)
+    if "ERROR" in s_project_fields:
+        return s_project_fields
+    for field in s_project_fields:
+        if field not in batch_head:
+            return {"ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT}
+    return "OK"
+
+   
+
 def read_batch_sample_file(batch_file):
     """
     Description:
@@ -395,21 +442,17 @@ def valid_sample_batch_file(sample_batch_df, package):
     Input:
         sample_batch_df     # sample data in dataframe
         package             # name of the apps that request the checking
-    Functions:
-        check_samples_belongs_to_same_type_and_molecule_protocol # located at this file
-        check_defined_option_values_in_samples # located at this file
-        check_record_samples_optional_parameters # located at this file
-         # located at this file
-    Constants:
-        ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
-        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
     Return:
         sample_batch_data
     """
 
     # Check if dataframe has empty values
-    if sample_batch_df.isnull().values.any():
-        return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
+    validate_heading = heading_validation(sample_batch_df)
+    if "ERROR" in validate_heading:
+        return validate_heading
+    # if sample_batch_df.isnull().values.any():
+    #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
+    import pdb; pdb.set_trace()
     if not check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_df):
         return (
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
