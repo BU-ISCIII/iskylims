@@ -20028,8 +20028,7 @@
     "fields": {
         "state_value": "recorded",
         "state_display": "Recorded",
-        "description": "Resolution has been successful recorded in iSkyLIMS",
-        "show_in_stats": true
+        "description": "Resolution has been successful recorded in iSkyLIMS"
     }
 },
 {
@@ -20038,8 +20037,7 @@
     "fields": {
         "state_value": "approved",
         "state_display": "Approved",
-        "description": "Resolution request has been accepted",
-        "show_in_stats": false
+        "description": "Resolution request has been accepted"
     }
 },
 {
@@ -20048,8 +20046,7 @@
     "fields": {
         "state_value": "rejected",
         "state_display": "Rejected",
-        "description": "Resolution can not be handle because is not in porfoloio or for any other reason",
-        "show_in_stats": false
+        "description": "Resolution can not be handle because is not in porfoloio or for any other reason"
     }
 },
 {
@@ -20058,8 +20055,7 @@
     "fields": {
         "state_value": "queued",
         "state_display": "Queued",
-        "description": "Resolution is the the list, waiting for a bioinformatic to be handled",
-        "show_in_stats": true
+        "description": "Resolution is the the list, waiting for a bioinformatic to be handled"
     }
 },
 {
@@ -20068,8 +20064,7 @@
     "fields": {
         "state_value": "in_progress",
         "state_display": "In Progress",
-        "description": "Bioinformatic is working on the Resolution",
-        "show_in_stats": true
+        "description": "Bioinformatic is working on the Resolution"
     }
 },
 {
@@ -20078,8 +20073,7 @@
     "fields": {
         "state_value": "delivered",
         "state_display": "Delivered",
-        "description": "Resolution wascompleted and results were sent to the user",
-        "show_in_stats": false
+        "description": "Resolution wascompleted and results were sent to the user"
     }
 },
 {
@@ -20088,8 +20082,7 @@
     "fields": {
         "state_value": "archived",
         "state_display": "Archived",
-        "description": null,
-        "show_in_stats": false
+        "description": null
     }
 },
 {
@@ -20098,8 +20091,7 @@
     "fields": {
         "state_value": "on_hold",
         "state_display": "On hold",
-        "description": "Resolution is on hold, waiting for user provides more information",
-        "show_in_stats": true
+        "description": "Resolution is on hold, waiting for user provides more information"
     }
 }
 ]
