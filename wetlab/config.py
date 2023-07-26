@@ -29,12 +29,11 @@ RUN_TEMP_DIRECTORY_RECORDED = "wetlab/tmp/recorded/"
 RUN_TEMP_DIRECTORY = "wetlab/tmp"
 RUN_TEMP_DIRECTORY_PROCESSING = "wetlab/tmp/processing"
 RUN_IMAGES_DIRECTORY = "wetlab/images_plot"
-RUN_SAMPLE_SHEET_DIRECTORY = "wetlab/SampleSheets/"
-# SAMPLE_SHEET_CREATED_ON_LAB = 'wetlab/SampleSheetsFromLab'
+RUN_SAMPLE_SHEET_DIRECTORY = "wetlab/sample_sheet/"
 TEMPLATE_FILES_DIRECTORY = "wetlab/templates"
 
-# Directory to store the imported user sampleSheets
-LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY = "wetlab/SampleSheets4LibPrep/"
+# Directory to store the imported user sample_sheet
+LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY = "wetlab/sample_sheets_lib_prep/"
 
 ##############################################################
 

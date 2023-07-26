@@ -89,7 +89,7 @@ docker exec -it iskylims_app python3 manage.py makemigrations django_utils core 
 docker exec -it iskylims_app python3 manage.py migrate
 
 echo "Loading in database initial data"
-docker exec -it iskylims_app python3 manage.py loaddata conf/first_install_tables.json
+docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
 
 echo "Creating super user "
 docker exec -it iskylims_app python3 manage.py createsuperuser

@@ -7,7 +7,7 @@ SERVICE_MANAGER = "ServiceManager"
 
 INTERNAL_SEQUENCING_UNIT = "UCCT"
 # DIRECTORIES #
-USER_REQUESTED_SERVICE_FILE_DIRECTORY = "drylab/servicesRequestFiles"
+USER_REQUESTED_SERVICE_FILE_DIRECTORY = "drylab/service_files"
 PIPELINE_FILE_DIRECTORY = "drylab/pipelinesFiles"
 
 # CSS file to be used for creating the PDF files

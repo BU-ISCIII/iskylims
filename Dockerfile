@@ -10,11 +10,11 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y \
     git wget lsb-core lsb-release
 
-RUN git clone https://github.com/BU-ISCIII/iskylims.git /srv/iskylims
+RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
 WORKDIR /srv/iskylims
 RUN git checkout develop
 
-RUN bash install.sh --install full --dev --conf conf/docker_install_settings.txt --docker
+RUN bash install.sh --install full --tables --dev --conf conf/docker_install_settings.txt --docker
 
 WORKDIR /opt/iskylims
 ENV PATH="/usr/bin:/opt/iskylims/virtualenv/bin:$PATH"
