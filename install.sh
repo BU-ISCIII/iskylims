@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ISKYLIMS_VERSION="2.x.x"
+ISKYLIMS_VERSION="3.x.x"
 
 usage() {
 cat << EOF
@@ -417,7 +417,7 @@ if [ $upgrade == true ]; then
         rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \
               --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
-              README.md LICENSE conf core drylab clinic wetlab django_utils $INSTALL_PATH
+              README.md LICENSE test conf core drylab clinic wetlab django_utils $INSTALL_PATH
         
         # update the settings.py and the main urls
         echo "Update settings and url file."
@@ -734,31 +734,25 @@ if [ $install == true ]; then
             chmod 775 $INSTALL_PATH/logs
         fi
 
-        rsync -rlv README.md LICENSE conf core drylab \
+        rsync -rlv README.md LICENSE test conf core drylab \
                 wetlab clinic django_utils $INSTALL_PATH
 
         cd $INSTALL_PATH
 
         # Create necessary folders
         echo "Created documents structure"
+        mkdir -p $INSTALL_PATH/documents/wetlab
         mkdir -p $INSTALL_PATH/documents/wetlab/tmp
-        mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
+        mkdir -p $INSTALL_PATH/documents/wetlab/sample_sheet
         mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
         mkdir -p $INSTALL_PATH/documents/wetlab/templates
-        chown $user:$apache_group $INSTALL_PATH/documents
-        chmod 775 $INSTALL_PATH/documents
-        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/tmp
-        chmod 775 $INSTALL_PATH/documents/wetlab/tmp
-        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/SampleSheets
-        chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
-        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/images_plot
-        chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
-        chown $user:$apache_group $INSTALL_PATH/documents/wetlab/templates
-        chmod 775 $INSTALL_PATH/documents/wetlab/templates
+        mkdir -p $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
         mkdir -p $INSTALL_PATH/documents/drylab
-        chown $user:$apache_group $INSTALL_PATH/documents/drylab
-        chmod 775 $INSTALL_PATH/documents/drylab
-
+        mkdir -p $INSTALL_PATH/documents/drylab/service_files
+        
+        chown -R $user:$apache_group $INSTALL_PATH/documents
+        chmod 775 $INSTALL_PATH/documents
+        
         # Copy illumina sample sheet templates
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
 
