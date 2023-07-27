@@ -485,7 +485,7 @@ def match_unkownbarcodes_with_index(unknow_dict):
             if wetlab.models.CollectionIndexValues.objects.filter(
                 i_7_seq__exact=key
             ).exists():
-                found_unknow_index.append(key)
+                index_temp = key
                 libraries_using_base = (
                     wetlab.models.CollectionIndexValues.objects.filter(
                         i_7_seq__exact=key
