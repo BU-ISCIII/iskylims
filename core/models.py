@@ -1297,7 +1297,10 @@ class Samples(models.Model):
         sample_info.append(collection_sample_date)
         sample_info.append(sample_entry_date)
         sample_info.append(self.sample_type.get_name())
-        sample_info.append(self.species.get_name())
+        try:
+            sample_info.append(self.species.get_name())
+        except KeyError:
+            sample_info.append("Not defined")
         sample_info.append(self.reused_number)
         sample_info.append(self.sample_user.username)
         return sample_info
