@@ -169,8 +169,8 @@ HEADING_FOR_SAMPLE_PROJECT_FIELDS = [
 ]
 
 HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS = [
-    "Old field name",
-    "New field name",
+    "Field name",
+    "Change field name",
     "Order",
     "Used",
     "Searchable",
