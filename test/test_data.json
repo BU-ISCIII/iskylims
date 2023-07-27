@@ -15830,7 +15830,7 @@
             "ip_server": "",
             "port_server": "445",
             "remote_server_name": "samba",
-            "shared_folder_name": "NGS_Data",
+            "shared_folder_name": "ngs_data",
             "user_id": "samba_user",
             "user_password": "sambapasswd",
             "is_direct_tcp": true,
