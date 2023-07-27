@@ -147,26 +147,14 @@
     },
     {
         "model": "core.species",
-        "pk": 1,
+        "pk": 3,
         "fields": {
-            "species_name": "Human",
+            "species_name": "Escherichia coli",
             "ref_genome_name": "Unknown",
             "ref_genome_size": "Unknown",
             "ref_genome_id": "Unknown",
             "apps_name": "wetlab",
-            "generated_at": "2020-02-03T00:34:58.515"
-        }
-    },
-    {
-        "model": "core.species",
-        "pk": 2,
-        "fields": {
-            "species_name": "Mouse",
-            "ref_genome_name": "Unknown",
-            "ref_genome_size": "Unknown",
-            "ref_genome_id": "Unknown",
-            "apps_name": "wetlab",
-            "generated_at": "2020-02-03T00:34:58.515"
+            "generated_at": "2023-07-25T16:19:41.572"
         }
     },
     {
