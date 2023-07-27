@@ -463,6 +463,11 @@ class Migration(migrations.Migration):
                 max_length=255, null=True, verbose_name="Resolution name"
             ),
         ),
+        migrations.AlterField(
+            model_name='uploadservicefile',
+            name='upload_file',
+            field=models.FileField(upload_to='drylab/service_files'),
+        ),
         migrations.AlterModelTable(
             name="availableservice",
             table="drylab_available_service",
