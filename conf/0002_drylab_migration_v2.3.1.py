@@ -464,9 +464,9 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name='uploadservicefile',
-            name='upload_file',
-            field=models.FileField(upload_to='drylab/service_files'),
+            model_name="uploadservicefile",
+            name="upload_file",
+            field=models.FileField(upload_to="drylab/service_files"),
         ),
         migrations.AlterModelTable(
             name="availableservice",
