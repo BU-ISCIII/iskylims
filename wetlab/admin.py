@@ -122,6 +122,17 @@ class CollectionIndexKitAdmin(admin.ModelAdmin):
     )
 
 
+class CollectionIndexValuesAdmin(admin.ModelAdmin):
+    list_display = (
+        "collection_index_kit_id",
+        "default_well",
+        "index_7",
+        "i_7_seq",
+        "index_5",
+        "i_5_seq",
+    )
+
+
 class SamplesInProjectAdmin(admin.ModelAdmin):
     list_display = [
         "sample_name",
@@ -275,6 +286,7 @@ admin.site.register(wetlab.models.AdditionalUserLotKit, AdditionalUserLotKitAdmi
 admin.site.register(wetlab.models.RunningParameters, RunningParametersAdmin)
 admin.site.register(wetlab.models.RunProcess, RunProcessAdmin)
 admin.site.register(wetlab.models.CollectionIndexKit, CollectionIndexKitAdmin)
+admin.site.register(wetlab.models.CollectionIndexValues, CollectionIndexValuesAdmin)
 admin.site.register(wetlab.models.Projects, ProjectsAdmin)
 admin.site.register(wetlab.models.RunErrors, RunErrorsAdmin)
 admin.site.register(wetlab.models.RunStates, RunStatesAdmin)
