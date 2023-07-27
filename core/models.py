@@ -1369,7 +1369,10 @@ class Samples(models.Model):
         return "%s" % (self.sample_type.get_name())
 
     def get_species(self):
-        return "%s" % (self.species.get_name())
+        if self.species is None:
+            return "Not defined"
+        else:
+            return "%s" % (self.species.get_name())
 
     def get_register_user(self):
         if self.sample_user is None:
