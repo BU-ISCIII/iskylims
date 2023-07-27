@@ -319,7 +319,9 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED = [
     "Check documentation to define the Laboratory",
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE = ["Batch file contains empty values"]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT = ["Batch file does not have the correct format"]
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT = [
+    "Batch file does not have the correct format"
+]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet",
     "Check documentation to define them",
