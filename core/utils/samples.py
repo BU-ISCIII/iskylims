@@ -2072,22 +2072,19 @@ def set_sample_project_fields(data_form):
             s_p_fields["SampleProjectFieldClassificationID"] = classification_obj
         else:
             s_p_fields["SampleProjectFieldClassificationID"] = None
-        if row_data[fields.index("Field type")] == "Option List":
+        sample_project_field_obj = core.models.SampleProjectsFields.objects.create_sample_project_fields(
+                s_p_fields)
+        if row_data[fields.index("Field type")] == "Options List":
             option_list_values = row_data[fields.index("Option Values")].split(",")
-            clean_value_list = []
             for opt_value in option_list_values:
                 value = opt_value.strip()
-                if value != "":
-                    clean_value_list.append(value)
+                if value == "":
+                    continue
+                data = {"s_proj_obj": sample_project_field_obj}
+                data["opt_value"] = value
+                core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
 
-            s_p_fields["Option Values"] = ",".join(clean_value_list)
-        else:
-            s_p_fields["Option Values"] = ""
-        saved_fields.append(
-            core.models.SampleProjectsFields.objects.create_sample_project_fields(
-                s_p_fields
-            ).get_sample_project_fields_name()
-        )
+        saved_fields.append(sample_project_field_obj.get_sample_project_fields_name())
 
     stored_fields["fields"] = saved_fields
     stored_fields["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
