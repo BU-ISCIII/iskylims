@@ -1571,9 +1571,7 @@ def modify_fields_in_sample_project(form_data):
                     s_p_fields
                 )
             )
-            saved_fields["fields"].append(
-                sample_project_field_obj.get_sample_project_fields_name()
-            )
+
             # check if field is a list to create the new opt fields on database
 
         elif row_data[0] != "" and row_data[1] != "":
@@ -1581,18 +1579,14 @@ def modify_fields_in_sample_project(form_data):
             s_p_fields["Field name"] = row_data[1]
         else:
             s_p_fields["Field name"] = row_data[0]
-            # Update  Field
-            right_id = parameter_ids[parameter_names.index(row_data[0])]
-            sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
-            if not sample_project_field_obj:
-                # Unable to find the object class. Skipping this change
-                continue
+        # Update  Field
+        right_id = parameter_ids[parameter_names.index(row_data[0])]
+        sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
+        if not sample_project_field_obj:
+            # Unable to find the object class. Skipping this change
+            continue
 
-            sample_project_field_obj.update_sample_project_fields(s_p_fields)
-            saved_fields["fields"].append(
-                sample_project_field_obj.get_sample_project_fields_name()
-            )
-
+        sample_project_field_obj.update_sample_project_fields(s_p_fields)
         if row_data[fields.index("Field type")] == "Options List":
             option_list_values = row_data[fields.index("Option Values")].split(",")
             for opt_value in option_list_values:
@@ -1604,6 +1598,10 @@ def modify_fields_in_sample_project(form_data):
                 core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(
                     data
                 )
+        saved_fields["fields"].append(
+            sample_project_field_obj.get_sample_project_fields_name()
+        )
+
     return saved_fields
 
 
@@ -2072,8 +2070,11 @@ def set_sample_project_fields(data_form):
             s_p_fields["SampleProjectFieldClassificationID"] = classification_obj
         else:
             s_p_fields["SampleProjectFieldClassificationID"] = None
-        sample_project_field_obj = core.models.SampleProjectsFields.objects.create_sample_project_fields(
-                s_p_fields)
+        sample_project_field_obj = (
+            core.models.SampleProjectsFields.objects.create_sample_project_fields(
+                s_p_fields
+            )
+        )
         if row_data[fields.index("Field type")] == "Options List":
             option_list_values = row_data[fields.index("Option Values")].split(",")
             for opt_value in option_list_values:
@@ -2082,7 +2083,9 @@ def set_sample_project_fields(data_form):
                     continue
                 data = {"s_proj_obj": sample_project_field_obj}
                 data["opt_value"] = value
-                core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
+                core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(
+                    data
+                )
 
         saved_fields.append(sample_project_field_obj.get_sample_project_fields_name())
 
