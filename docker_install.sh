@@ -88,11 +88,11 @@ docker exec -it iskylims_app python3 manage.py migrate
 docker exec -it iskylims_app python3 manage.py makemigrations django_utils core wetlab drylab
 docker exec -it iskylims_app python3 manage.py migrate
 
-echo "Loading in database initial data"
-docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
-
 echo "Creating super user "
 docker exec -it iskylims_app python3 manage.py createsuperuser
+
+echo "Loading in database initial data"
+docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
 
 echo "Download testing files and copy it to samba container"
 if [ "$demo_data" == "false" ];then
