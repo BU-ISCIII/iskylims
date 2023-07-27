@@ -2272,7 +2272,7 @@ def record_samples(request):
             valid_file_result = core.utils.load_batch.valid_sample_batch_file(
                 samples_batch_df, __package__
             )
-            if "ERROR" in valid_file_result :
+            if "ERROR" in valid_file_result:
                 return render(
                     request,
                     "wetlab/record_sample.html",
