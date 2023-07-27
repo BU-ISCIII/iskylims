@@ -428,6 +428,16 @@ if [ $upgrade == true ]; then
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
         sed -i "s@INSTALL_PATH@${INSTALL_PATH}@g" $INSTALL_PATH/wetlab/logging_config.ini
+        # update the sample sheet folder and name
+        if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets" ]; then
+            echo "Updating sample sheet folder name"
+            mv $INSTALL_PATH/documents/wetlab/SampleSheets $INSTALL_PATH/documents/wetlab/sample_sheet
+        fi
+            
+        if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep" ]; then
+            echo "Updating sample sheet for libary preparationfolder name"
+            mv $INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
+        fi
 
         cd $INSTALL_PATH
         echo "activate the virtualenv"
