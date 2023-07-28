@@ -112,6 +112,6 @@ fi
 
 echo "Running crontab"
 docker exec -it iskylims_app python3 manage.py crontab add
-docker exec -it iskylims_app cron
+docker exec -it iskylims_app service cron start
 
 echo "You can now access iskylims via: http://localhost:8001"

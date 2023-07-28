@@ -733,7 +733,7 @@ if [ $install == true ]; then
         if [ $LOG_TYPE == "symbolic_link" ]; then
             if [ -d $LOG_PATH ]; then
                 ln -s $LOG_PATH  $INSTALL_PATH/logs
-            chmod 775 $LOG_PATH
+                chmod 775 $LOG_PATH
             else
                 echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
             exit 1
