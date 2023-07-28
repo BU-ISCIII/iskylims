@@ -305,7 +305,10 @@ def search_update_new_runs(request_reason):
                 )
             else:
                 if (
-                    wetlab.config.COPY_SAMPLE_SHEET_TO_REMOTE
+                    wetlab.utils.common.get_configuration_value(
+                        "COPY_SAMPLE_SHEET_TO_REMOTE"
+                    )
+                    == "TRUE"
                     and "NextSeq"
                     in running_parameters["running_data"][
                         wetlab.config.APPLICATION_NAME_TAG
@@ -313,12 +316,9 @@ def search_update_new_runs(request_reason):
                 ):
                     sample_sheet = run_process_obj.get_sample_file()
                     sample_sheet_path = os.path.join(settings.MEDIA_ROOT, sample_sheet)
-                    run_folder = wetlab.models.RunningParameters.objects.get(
-                        run_name_id__exact=run_process_obj
-                    ).get_run_folder()
                     try:
                         wetlab.utils.crontab_process.copy_sample_sheet_to_remote_folder(
-                            conn, sample_sheet_path, run_folder, experiment_name
+                            conn, sample_sheet_path, new_run, experiment_name
                         )
                     except Exception:
                         string_message = (
