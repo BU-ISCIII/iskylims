@@ -767,6 +767,11 @@ class Migration(migrations.Migration):
                 verbose_name="Species",
             ),
         ),
+        migrations.AlterField(
+            model_name="sampletype",
+            name="optional_fields",
+            field=models.CharField(blank=True, max_length=300, null=True),
+        ),
         migrations.AlterModelTable(
             name="commercialkits",
             table="core_commercial_kits",

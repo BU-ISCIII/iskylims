@@ -20,6 +20,7 @@ HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [
     "Date sample reception",
     "Collection Sample Date",
     "Sample Storage Location",
+    "Only recorded",
 ]
 
 HEADING_FOR_DISPLAY_RECORDED_SAMPLES = [
@@ -288,9 +289,9 @@ VALUE_NOT_PROVIDED = "Not Provided"
 SUCCESSFUL_JSON_SCHEMA = ["Json schema was loaded successfully"]
 # #################### ERROR MESSAGES  #####################
 ERROR_TYPE_OF_SAMPLE_EXISTS = ["Type of sample is already recorded"]
-ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS = [
+ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS = (
     "The type of sample that you request does not exist"
-]
+)
 ERROR_MOLECULE_USE_FOR_EXISTS = ["Molecule use has been already recorded"]
 
 ERROR_SPECIES_ALREADY_DEFINED = ["Species name is already defined"]

@@ -396,7 +396,7 @@ class SampleTypeManager(models.Manager):
 class SampleType(models.Model):
     sample_type = models.CharField(max_length=50)
     apps_name = models.CharField(max_length=50)
-    optional_fields = models.CharField(max_length=50, null=True, blank=True)
+    optional_fields = models.CharField(max_length=300, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
@@ -415,7 +415,7 @@ class SampleType(models.Model):
         if self.optional_fields == "" or self.optional_fields is None:
             return []
         else:
-            return list(map(int, self.optional_fields.split(",")))
+            return self.optional_fields.split(",")
 
     objects = SampleTypeManager()
 
