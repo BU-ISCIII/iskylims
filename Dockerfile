@@ -10,8 +10,8 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y \
     git wget lsb-core lsb-release \
     libmysqlclient-dev \
-    libpq-dev \
-    python3-wheel \
+    python3-pip libpq-dev \
+    python3-wheel apache2-dev \
     gnuplot
 
 RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
