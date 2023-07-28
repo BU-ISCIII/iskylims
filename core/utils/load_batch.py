@@ -20,7 +20,7 @@ def get_sample_projects_names(sample_df):
     return sample_df["Project/Service"].unique().tolist()
 
 
-def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
+def check_type_and_molecule(sample_batch_data):
     """
     Description:
         The Function check if only one type of sample is in data and if the mandatory parameters
