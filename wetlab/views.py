@@ -2644,6 +2644,12 @@ def display_type_of_sample(request, sample_type_id):
     type_of_sample_data = core.utils.samples.get_type_of_sample_information(
         sample_type_id
     )
+    if "ERROR" in type_of_sample_data:
+        return render(
+            request,
+            "wetlab/display_type_of_sample.html",
+            {"error_message": type_of_sample_data["ERROR"]},
+        )
     return render(
         request,
         "wetlab/display_type_of_sample.html",

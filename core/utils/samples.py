@@ -1469,15 +1469,11 @@ def get_type_of_sample_information(sample_type_id):
         sample_type_obj = core.models.SampleType.objects.get(pk__exact=sample_type_id)
         opt_list = sample_type_obj.get_optional_values()
         sample_type_data["sample_type_name"] = sample_type_obj.get_name()
-        for i in range(len(core.core_config.HEADING_FOR_RECORD_SAMPLES)):
-            if i in opt_list:
-                sample_type_data["optional_data"].append(
-                    [core.core_config.HEADING_FOR_RECORD_SAMPLES[i], "Not Required"]
-                )
+        for field in core.core_config.HEADING_FOR_RECORD_SAMPLES:
+            if field in opt_list:
+                sample_type_data["optional_data"].append([field, "Not Required"])
             else:
-                sample_type_data["optional_data"].append(
-                    [core.core_config.HEADING_FOR_RECORD_SAMPLES[i], "Mandatory"]
-                )
+                sample_type_data["optional_data"].append([field, "Mandatory"])
     else:
         sample_type_data[
             "ERROR"
@@ -1909,27 +1905,21 @@ def save_type_of_sample(form_data, app_name):
         save_s_type
     """
     save_s_type = {}
-    optional_index_field_list = []
+    optional_fields = []
     if core.models.SampleType.objects.filter(
         sample_type__exact=form_data["sampleTypeName"], apps_name__exact=app_name
     ).exists():
         save_s_type["ERROR"] = core.core_config.ERROR_TYPE_OF_SAMPLE_EXISTS
         return save_s_type
     # select the optional fields and get the indexes
-    for field in core.core_config.HEADING_FOR_RECORD_SAMPLES:
-        if (
-            field not in form_data
-            and field in core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES
-        ):
-            optional_index_field_list.append(
-                str(core.core_config.HEADING_FOR_RECORD_SAMPLES.index(field))
-            )
-    # add only recorded as always optional
-    optional_index_field_list.append("9")
+    for field in core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES:
+        if field not in form_data:
+            optional_fields.append(field)
+
     data = {}
     data["sampleType"] = form_data["sampleTypeName"]
     data["apps_name"] = app_name
-    data["optional_fields"] = ",".join(optional_index_field_list)
+    data["optional_fields"] = ",".join(optional_fields)
     # Store in database
     sample_type_obj = core.models.SampleType.objects.create_sample_type(data)
     save_s_type = {}

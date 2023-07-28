@@ -4,41 +4,49 @@
 {% include "wetlab/menu.html" %}
 {% include 'registration/login_inline.html' %}
 <section class="iskylims">
-    {% if sample_types.error_message %}
-        <div class="row my-2">
-            <div class="col-sm-6 offset-2" >
-                <div class="card border-danger mb-3">
-                    <div class="card-header text-danger"><h3>Unable to display your Sample Type</h3> </div>
-                    <div class="card-body">
-                        <p>
-                            {% for value in sample_types.ERROR %}
-                                {{ value }} <br>
-                            {% endfor %}
-                        </p>
-                    </div>  
+    <div class="container-md">
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-6 offset-2" >
+                    <div class="card border-danger mb-3">
+                        <div class="card-header text-danger"><h3>Unable to display your Sample Type</h3> </div>
+                        <div class="card-body">
+                            <p> {{ error_message }}</p>
+                        </div>  
+                    </div>
                 </div>
+            </div> 
+        {% else %}
+            <div class="row my-2 justify-content-center">
+                <div class="col-md-6">
+                    <div class="card ">
+                        <div class="card-header text-center"><h3>Type of Sample : {{type_of_sample_data.sample_type_name}}</h3> </div>
+                        <div class="card-body">
+                            <p>Information below describes which fields are set to mandatory when recording samples</p>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <h5 class="text-center">Field name</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="float-end">Mandatory</h5>
+                                </div>
+                            </div>
+
+                            {% for  field, requested in type_of_sample_data.optional_data %}
+                                <div class="form-check form-switch col mb-2">
+                                    <label class="form-check-label  form-label" for="{{field}}">{{field}}</label>
+                                    {% if requested == 'Mandatory' %}
+                                        <input class="form-check-input float-end" type="checkbox" checked disabled>
+                                    {% else %}
+                                        <input class="form-check-input float-end" type="checkbox"  disabled>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>  
+                    </div>
+                </div> 
             </div>
-        </div> 
-    {% endif %}
-    <div class="row my-2">
-        <div class="col-sm-4 offset-4" >
-            <div class="card ">
-                <div class="card-header"><h3 style="text-align:center">Type of Sample : {{type_of_sample_data.sample_type_name}}</h3> </div>
-                <div class="card-body">
-                    <p>Information below describes which fields are mandatory or optional when recording new sample</p>
-                    {% for  field, requested in type_of_sample_data.optional_data %}
-                        <div class="form-check form-switch col mb-2">
-                            <label class="form-check-label  form-label" for="{{field}}">{{field}}</label>
-                            {% if requested == 'Mandatory' %}
-                                <input class="form-check-input float-end" type="checkbox" checked disabled>
-                            {% else %}
-                                <input class="form-check-input float-end" type="checkbox"  disabled>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>  
-            </div>
-        </div> 
-    </div> 
+        {% endif %} 
+    </div>
 </section>
 {% endblock %}
