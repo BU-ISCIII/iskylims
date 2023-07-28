@@ -79,61 +79,67 @@ def add_molecule_protocol_parameters(form_data):
 
 
 def analyze_input_samples(request, app_name):
-    """
-    Description:
-        The function will get the samples data that user filled in the form.
+    """The function will get the samples data that user filled in the form.
         defined_samples are the samples that either has no sample project or for
             the sample projects that no requires additional data
         pre_definde_samples are the ones that requires additional Information
         For already defined samples, no action are done on them and  they are included in not_valid_samples.
         it will return a dictionary which contains the processed samples.
-    Input:
-        request
-        app_name
-    Functions:
-        check_if_sample_already_defined : located at this file
-        check_empty_fields :            located at this file
-        check_patient_code_exists :     located at this file
-        create_empty_patient :          located at this file
-        increase_unique_value :         located at this file
-    Constants:
-        HEADING_FOR_DISPLAY_RECORDED_SAMPLES
-        HEADING_FOR_RECORD_SAMPLES
-        OPTIONAL_SAMPLES_FIELDS
-    Variables:
-        defined_samples  # contains the list of sample in defined state
-        samples_continue  # samples id's from the samples in defined state
-        pre_defined_samples  # contains the list of sample in pre-defined state
-        pre_defined_samples_id  # samples id's from the samples in pre-defined state
-        invalid_samples     # samples that already exists on database
-        invalid_samples_id  # sample id's from the samples that already exists on database
-        incomplete_samples  # samples that contain missing information
-    Return:
-        sample_recorded # Dictionnary with all samples cases .
+
+    Args:
+        request (_type_): _description_
+        app_name (string): application name
+
+    Returns:
+        dictionary: if there are incompleted or already defined samples, it return error key
+            with their sample names and the jexcel data to allow user correct the wrong data.
+            If not issues are found return the converted data is returned
     """
-
-    na_json_data = json.loads(request.POST["table_data"])
-    heading_in_form = core.core_config.HEADING_FOR_RECORD_SAMPLES
-
-    sample_recorded = {}
-
-    defined_samples, samples_continue = [], []
-    pre_defined_samples, pre_defined_samples_id = [], []
-    invalid_samples, invalid_samples_id = [], []
-    incomplete_samples = []
-    sample_recorded["all_samples_defined"] = True
-
     reg_user = request.user.username
+    excel_json_data = json.loads(request.POST["table_data"])
+    c_data = core.utils.common.jspreadsheet_to_dict(
+        core.core_config.HEADING_FOR_RECORD_SAMPLES, excel_json_data
+    )
 
-    for row in na_json_data:
-        sample_data = {}
-        sample_name = str(row[heading_in_form.index("Sample Name")])
-        if sample_name == "":
+    # create different list depending on the sample faulty case
+    defined_samples = []
+    incomplete_sample = []
+
+    for sample in c_data:
+        if sample["Sample Name"] == "":
             continue
-
-        if not check_if_sample_already_defined(
-            row[heading_in_form.index("Sample Name")], reg_user
+        # check if sample is defined for the same user
+        if check_if_sample_already_defined(sample["Sample Name"], reg_user):
+            defined_samples.append(sample["Sample Name"])
+            continue
+        # check mandatory fields
+        if sample["Type of Sample"] == "":
+            incomplete_sample.append(sample["Sample Name"])
+            continue
+        if not check_mandatory_fields_included(
+            sample, sample["Type of Sample"], app_name
         ):
+            incomplete_sample.append(sample["Sample Name"])
+            continue
+    if len(defined_samples) > 0 or len(incomplete_sample) > 0:
+        error_data = {}
+        if len(defined_samples) > 0:
+            error_data[defined_samples] = str(
+                core.core_config.ERROR_SAMPLE_ALREADY_DEFINED
+                + " : "
+                + ", ".join(defined_samples)
+            )
+        if len(incomplete_sample) > 0:
+            error_data[incomplete_sample] = str(
+                core.core_config.ERROR_SAMPLE_INCOMPLETED
+                + " : "
+                + ", ".join(incomplete_sample)
+            )
+
+        return {"ERROR": error_data, "data": excel_json_data}
+    # samples contains all mandatory data return converted data
+    return {"data": c_data}
+    """
             sample_type = str(row[heading_in_form.index("Type of Sample")])
 
             if sample_type == "":
@@ -270,6 +276,7 @@ def analyze_input_samples(request, app_name):
     ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     sample_recorded["valid_samples_ids"] = samples_continue
     return sample_recorded
+    """
 
 
 def analyze_input_sample_project_fields(form_data):
@@ -427,6 +434,35 @@ def check_if_sample_project_exists(sample_project, app_name):
     ).exists():
         return True
     return False
+
+
+def check_mandatory_fields_included(data, sample_type, app_name):
+    """Check if for the type of sample all mandatory fields are not empty
+
+    Args:
+        data (dictionary): contains data recorded by user
+        sample_type (string): Type of sample
+        app_name (_type_): application name
+
+    Returns:
+        _type_: _description_
+    """
+
+    if not SampleType.objects.filter(
+        sample_type__exact=sample_type, app_name__exact=app_name
+    ).exists():
+        return False
+    opt_fields = (
+        SampleType.objects.filter(
+            sample_type__exact=sample_type, app_name__exact=app_name
+        )
+        .last()
+        .get_optional_values
+    )
+    for field, value in data.items():
+        if value == "" and field not in opt_fields:
+            return False
+    return True
 
 
 def check_patient_code_exists(p_code_id):

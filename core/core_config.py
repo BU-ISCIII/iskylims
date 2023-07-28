@@ -66,13 +66,14 @@ HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ["Molecule Code ID", "Lot Commercial Ki
 HEADING_CONFIRM_MOLECULE_RECORDED = ["Molecule Code ID", "Used Protocol"]
 
 # ## Heading values when showing pending samples
+"""
 HEADING_FOR_DEFINED_SAMPLES_STATE = [
     "Sample extraction date",
     "Sample Code ID",
     "Sample",
     "To be included",
 ]
-
+"""
 HEADING_FOR_EXTRACTED_MOLECULES_STATE = [
     "Sample extraction date",
     "Sample",
@@ -305,6 +306,9 @@ ERROR_STATE_ALREADY_DEFINED = ["State is already defined"]
 ERROR_CITY_ALREADY_DEFINED = ["City is already defined"]
 
 ERROR_SAMPLE_NOT_FOUND = "Sample was not found"
+
+ERROR_SAMPLE_ALREADY_DEFINED = "Samples already defined"
+ERROR_SAMPLE_INCOMPLETED = " Samples with imcompleted data"
 
 # ######################  Batch file ###############################################
 ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE = [
