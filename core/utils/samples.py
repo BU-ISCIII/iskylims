@@ -448,12 +448,12 @@ def check_mandatory_fields_included(data, sample_type, app_name):
         _type_: _description_
     """
 
-    if not SampleType.objects.filter(
+    if not core.models.SampleType.objects.filter(
         sample_type__exact=sample_type, app_name__exact=app_name
     ).exists():
         return False
     opt_fields = (
-        SampleType.objects.filter(
+        core.models.SampleType.objects.filter(
             sample_type__exact=sample_type, app_name__exact=app_name
         )
         .last()
