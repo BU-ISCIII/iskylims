@@ -14,7 +14,7 @@ RUN apt-get install -y \
     python3-wheel apache2-dev \
     gnuplot
 
-RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
+RUN git clone https://github.com/bu-isciii/iskylims.git /srv/iskylims
 WORKDIR /srv/iskylims
 RUN git checkout develop
 
