@@ -33,8 +33,7 @@ def check_type_and_molecule(sample_batch_data):
     """
     sample_type = sample_batch_data["Type of Sample"].unique().tolist()
     sample_project = sample_batch_data["Project/Service"].unique().tolist()
-    protocol = sample_batch_data["ProtocolName"].unique().tolist()
-    if len(sample_type) != 1 or len(sample_project) != 1 or len(protocol) != 1:
+    if len(sample_type) != 1 or len(sample_project) != 1:
         return False
     return True
 
@@ -303,14 +302,14 @@ def create_sample_project_fields_value(sample_obj, sample_data, package):
     return
 
 
-def create_molecule_from_file(sample_obj, sample_data, req_user, package):
+def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
     """
     Description:
         The function create new molecule from the data frame
     Inputs:
         sample_obj      # object of the sample
         sample_data     # panda dataframe
-        req_user        # user name
+        reg_user        # user name
         package         # name of the apps that request the checking
     Return:
         new_molecule
@@ -324,7 +323,7 @@ def create_molecule_from_file(sample_obj, sample_data, req_user, package):
     molecule_data["moleculeExtractionDate"] = str(sample_data["Extraction date"])
     molecule_data["numberOfReused"] = str(0)
     molecule_data["app_name"] = package
-    molecule_data["user"] = req_user
+    molecule_data["user"] = reg_user
     new_molecule = core.models.MoleculePreparation.objects.create_molecule(
         molecule_data
     )
@@ -497,7 +496,7 @@ def save_samples_in_batch_file(sample_batch_df, req_user, package):
         new_sample = create_sample_from_batch_file(row_data, req_user, package)
         create_sample_project_fields_value(new_sample, row_data, package)
         new_molecule = create_molecule_from_file(
-            new_sample, row_data, req_user, package
+            new_sample, row_data, reg_user, package
         )
         create_molecule_parameter_from_file(new_molecule, row_data)
         new_sample.set_state("Library preparation")
