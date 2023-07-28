@@ -2105,6 +2105,7 @@ def record_samples(request):
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
+        import pdb; pdb.set_trace()
         sample_recorded = core.utils.samples.analyze_input_samples(request, __package__)
         # if no samples are in any of the options, displays the inital page
 
@@ -2145,80 +2146,13 @@ def record_samples(request):
             "wetlab/record_sample.html",
             {"sample_recorded": sample_recorded},
         )
-
-    # Request to reprocess the samples
-    elif request.method == "POST" and request.POST["action"] == "reprocessSamples":
-        to_be_reprocessed_ids = request.POST["invalidSamplesID"].split(",")
-        reprocess_id = request.POST["sampleIDforAction"]
-        json_data = json.loads(request.POST["reprocess_data"])
-
-        result = wetlab.utils.sample.analyze_reprocess_data(
-            json_data[0], reprocess_id, request.user
-        )
-        if result == "Invalid options":
-            to_be_reprocessed_ids.insert(0, reprocess_id)
-            sample_recorded = core.utils.samples.get_info_for_reprocess_samples(
-                to_be_reprocessed_ids, reprocess_id
-            )
-            sample_recorded["invalid_samples_id"] = request.POST["invalidSamplesID"]
-            sample_recorded["sample_id_for_action"] = reprocess_id
-            sample_recorded.update(
-                wetlab.utils.sample.get_codeID_for_resequencing(sample_recorded)
-            )
-            sample_recorded["reprocess_result"] = "False"
-        else:
-            if to_be_reprocessed_ids[0] == "":
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {"all_sucessful_reprocess": True},
-                )
-            else:
-                next_to_be_process_id = str(to_be_reprocessed_ids[0])
-                sample_recorded = core.utils.samples.get_info_for_reprocess_samples(
-                    to_be_reprocessed_ids, next_to_be_process_id
-                )
-                sample_recorded["invalid_samples_id"] = ",".join(to_be_reprocessed_ids)
-                sample_recorded["sample_id_for_action"] = next_to_be_process_id
-                sample_recorded.update(
-                    wetlab.utils.sample.get_codeID_for_resequencing(sample_recorded)
-                )
-                sample_recorded["reprocess_result"] = "True"
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {"sample_recorded": sample_recorded},
-                )
-
-        # NOT WORKING.This is not working so commented for now. require_to_update not defined anywhere.
-        """
-        if len(require_to_update) > 0:
-            for key, value in require_to_update.items():
-                if value == "newLibPreparation":
-                    if not libraryPreparation.objects.filter(sample_id__pk__exact=key):
-                        continue
-                    lib_prep_obj = libraryPreparation.objects.get(
-                        sample_id__pk__exact=key
-                    )
-                    # lib_prep_obj.set_state('Reused')
-                    lib_prep_obj.set_increase_reuse()
-                elif value == "newPool":
-                    pass
-                else:
-                    continue
-        """
-
-        return render(
-            request,
-            "wetlab/record_sample.html",
-            {"reprocess_result": sample_recorded["reprocess_result"]},
-        )
-
+    
     # display the form to show the samples in pre-defined state that user requested to complete
     elif (
         request.method == "POST"
         and request.POST["action"] == "select_samples_pre_defined"
     ):
+        import pdb; pdb.set_trace()
         if "samples_in_list" in request.POST:
             pre_defined_samples_id = request.POST.getlist("samples")
         sample_recorded = core.utils.samples.prepare_sample_project_input_table(
@@ -2235,6 +2169,7 @@ def record_samples(request):
         sample_recorded = core.utils.samples.analyze_input_sample_project_fields(
             request.POST
         )
+        import pdb; pdb.set_trace()
 
         if request.POST["pending_pre_defined"] != "":
             sample_recorded.update(
