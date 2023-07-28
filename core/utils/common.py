@@ -131,6 +131,25 @@ def get_email_data():
     return email_data
 
 
+def jspreadsheet_to_dict(heading, data):
+    """Convert the list of item list into a list where each item in the list
+    is a dictionary and keys are the heading values
+
+    Args:
+        heading (list): the list which contains the key values
+        data (list): List of data to be mapped to dictianary
+
+    Returns:
+        (list): List which each item has a dictionary with the heading as key values
+    """
+    c_data = []
+    for item in data:
+        tmp_dict = {}
+        for idx in range(len(heading)):
+            tmp_dict[heading[idx]] = item[idx]
+    return c_data
+
+
 def send_test_email(form_data):
     """
     Description:
