@@ -20,7 +20,7 @@ def get_sample_projects_names(sample_df):
     return sample_df["Project/Service"].unique().tolist()
 
 
-def check_type_and_molecule(sample_batch_data):
+def check_type_and_project(sample_batch_data):
     """
     Description:
         The Function check if only one type of sample is in data and if the mandatory parameters
@@ -462,10 +462,10 @@ def valid_sample_batch_file(sample_batch_df, package):
     # if sample_batch_df.isnull().values.any():
     #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
 
-    if not check_type_and_molecule(sample_batch_df):
         return (
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
         )
+    if not check_type_and_project(sample_batch_df):
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
     if check_opt_values != "OK":
         return (
