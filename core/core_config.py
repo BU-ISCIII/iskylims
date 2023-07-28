@@ -386,3 +386,11 @@ ERROR_MESSAGE_INVALID_JSON_SCHEMA = [
 ]
 ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]
 ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
+ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE = [
+    "The sample(s)",
+    "of the excel file is/are repeated"
+]
+ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_DATABASE = [
+    "The sample",
+    "of the excel file is already repeated on the Data Base"
+]

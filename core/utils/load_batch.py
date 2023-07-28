@@ -434,6 +434,43 @@ def heading_validation(sample_batch_df):
     return "OK"
 
 
+def search_repeated_samples(sample_batch_df):
+    """
+    Description:
+        The Function read the batch file and searches for repeated samples and samples already in the DB
+    Constants:
+        ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE
+    Return:
+        OK or ERROR
+    """
+    samples_requested = sample_batch_df["Sample Name"].tolist()
+    duplicates = [x for i, x in enumerate(samples_requested) if i != samples_requested.index(x)]    
+    if len(duplicates) > 0:
+        duplicates = ", ".join([str(item) for item in duplicates])
+        error_cause = (
+            core.core_config.ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE.copy()
+        )
+        error_cause.insert(1, duplicates)
+        error_cause = [" ".join([str(item) for item in error_cause])]
+        return {
+            "ERROR": error_cause
+        }
+    samples_registered = list(
+        core.models.Samples.objects.all().values_list("sample_name", flat=True)
+    )
+    for sample_name in samples_requested:
+        if sample_name in samples_registered:
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_DATABASE.copy()
+            )
+            error_cause.insert(1, sample_name)
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
+    return "OK"
+
+
 def read_batch_sample_file(batch_file):
     """
     Description:
@@ -474,9 +511,10 @@ def valid_sample_batch_file(sample_batch_df, package):
     # if sample_batch_df.isnull().values.any():
     #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
 
-        return (
-            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
-        )
+    validate_repeated_samples = search_repeated_samples(sample_batch_df)
+    if "ERROR" in validate_repeated_samples:
+        return validate_repeated_samples
+
     if not check_type_and_project(sample_batch_df):
         return {
                 "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
