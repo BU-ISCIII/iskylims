@@ -66,7 +66,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED.copy()
             )
             error_cause.insert(1, lab_request)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
     if not core.models.SampleType.objects.filter(apps_name=package).exists():
         return (
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES
@@ -83,7 +86,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE.copy()
             )
             error_cause.insert(1, sample_type)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
     if not core.models.Species.objects.filter(apps_name=package).exists():
         return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES
     species_values = list(
@@ -98,7 +104,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES.copy()
             )
             error_cause.insert(1, specie)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
     # check if sample projects are defined
     if not core.models.SampleProjects.objects.filter(apps_name=package).exists():
         return (
@@ -116,7 +125,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS.copy()
             )
             error_cause.insert(1, sample_project)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
 
     # check if additional sample Project parameters are include in batch file
     if core.models.SampleProjectsFields.objects.filter(
@@ -466,11 +478,12 @@ def valid_sample_batch_file(sample_batch_df, package):
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
         )
     if not check_type_and_project(sample_batch_df):
+        return {
+                "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
+            }
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
     if check_opt_values != "OK":
-        return (
-            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
-        )
+        return (check_opt_values)
     return "OK"
 
 
