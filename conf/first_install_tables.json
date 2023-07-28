@@ -1866,6 +1866,15 @@
     }
 },
 {
+    "model": "wetlab.configsetting",
+    "pk": 13,
+    "fields": {
+        "configuration_name": "COPY_SAMPLE_SHEET_TO_REMOTE",
+        "configuration_value": "FALSE",
+        "generated_at": "2022-10-02T09:58:05.242"
+    }
+},
+{
     "model": "wetlab.collectionindexvalues",
     "pk": 2073,
     "fields": {
