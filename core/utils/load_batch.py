@@ -244,10 +244,10 @@ def create_sample_from_batch_file(sample_data, req_user, package):
         sample_new["patient"] = None
 
     sample_new["app_name"] = package
-    sample_new["onlyRecorded"] = sample_data["Only Record"]
+    sample_new["onlyRecorded"] = sample_data["Only recorded"]
     sample_new["labRequest"] = sample_data["Lab requested"]
     sample_new["species"] = sample_data["Species"]
-    sample_new["sampleLocation"] = sample_data["Sample storage"]
+    sample_new["sampleLocation"] = sample_data["Sample Storage Location"]
     sample_new["sampleEntryDate"] = str(sample_data["Date sample reception"])
     sample_new["sampleProject"] = core.models.SampleProjects.objects.filter(
         sample_project_name__exact=sample_data["Project/Service"], apps_name=package
@@ -262,11 +262,11 @@ def create_sample_from_batch_file(sample_data, req_user, package):
             .last()
             .get_unique_sample_id()
         )
-    if sample_data["Only Record"]:
+    if sample_data["Only recorded"]:
         sample_new["sampleState"] = "Completed"
     else:
         sample_new["sampleState"] = "Defined"
-    sample_new["onlyRecorded"] = sample_data["Only Record"]
+    sample_new["onlyRecorded"] = sample_data["Only recorded"]
     new_sample = core.models.Samples.objects.create_sample(sample_new)
 
     return new_sample
