@@ -471,10 +471,6 @@ def valid_sample_batch_file(sample_batch_df, package):
         return (
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
         )
-    # check molecule columns data
-    check_molecule_par = check_molecule_has_same_data_type(sample_batch_df, package)
-    if check_molecule_par != "OK":
-        return check_molecule_par
     return "OK"
 
 
