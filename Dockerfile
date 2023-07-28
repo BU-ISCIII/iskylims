@@ -8,17 +8,21 @@ RUN apt-get update && apt-get upgrade -y
 
 # Essential software
 RUN apt-get install -y \
-    git wget lsb-core lsb-release
+    git wget lsb-core lsb-release \
+    libmysqlclient-dev \
+    libpq-dev \
+    python3-wheel \
+    gnuplot
 
 RUN git clone https://github.com/saramonzon/iskylims.git /srv/iskylims
 WORKDIR /srv/iskylims
 RUN git checkout develop
 
-RUN bash install.sh --install full --dev --conf conf/docker_install_settings.txt --docker
+RUN pip install -r conf/requirements.txt 
+
+RUN bash install.sh --install app --dev --conf conf/docker_install_settings.txt --docker
 
 WORKDIR /opt/iskylims
-ENV PATH="/usr/bin:/opt/iskylims/virtualenv/bin:$PATH"
-ENV PYTHONPATH="/opt/iskylims/virtualenv/lib/python3.10/site-packages:${PYTHONPATH}"
 
 # Expose
 EXPOSE 8001
