@@ -118,7 +118,7 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
             error_cause.insert(1, sample_project)
             return error_cause
 
-    # check if additional sample Project parameters are include in bathc file
+    # check if additional sample Project parameters are include in batch file
     if core.models.SampleProjectsFields.objects.filter(
         sample_projects_id__sample_project_name__exact=sample_project,
         sample_projects_id__apps_name=package,
