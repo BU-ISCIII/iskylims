@@ -60,13 +60,14 @@ sample_project_fields = openapi.Parameter(
     description="Project name to fetch the sample project fields defined. Example Relecov",
     type=openapi.TYPE_STRING,
 )
-
+"""
 sample_fields = openapi.Parameter(
     "project",
     openapi.IN_QUERY,
     description="Fetch the sample fields",
     type=openapi.TYPE_STRING,
 )
+"""
 
 laboratory = openapi.Parameter(
     "laboratory",
