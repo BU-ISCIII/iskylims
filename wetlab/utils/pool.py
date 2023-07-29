@@ -1,9 +1,11 @@
 # Generic imports
 from datetime import date
+import json
 
 from django.db.models import Q
 
 # Local imports
+import core.utils.common
 import wetlab.config
 import wetlab.models
 
@@ -122,19 +124,20 @@ def define_new_pool(form_data, user_obj):
 
     """
     error = {}
-    lib_prep_ids = form_data.getlist("lib_prep_id")
+    lib_prep_ids = []
+    excel_json_data = json.loads(form_data["table_data"])
+    heading_with_hidden = wetlab.config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL.copy()
+    heading_with_hidden.append("lib_prep_id")
+    c_data = core.utils.common.jspreadsheet_to_dict(
+        heading_with_hidden, excel_json_data
+    )
+    for row in c_data:
+        if row["Include in Pool"] == True:
+            lib_prep_ids.append(row["lib_prep_id"])
+
     if len(lib_prep_ids) == 0:
         error["ERROR"] = wetlab.config.ERROR_NOT_LIBRARY_PREPARATION_SELECTED
         return error
-    # check if index are not duplicate in the library preparation
-
-    # single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
-    # if 'ERROR' in single_paired_compatible:
-    #     error['ERROR'] = ERROR_LIBRARY_PREPARATION_NOT_EXISTS
-    #     return error
-    # if 'False' == single_paired_compatible :
-    #     error['incompatible_s_p_end'] = True
-    #     return error
     duplicated_index = check_if_duplicated_index(lib_prep_ids)
     if "incompatible_index" in duplicated_index:
         error["duplicated_index"] = duplicated_index

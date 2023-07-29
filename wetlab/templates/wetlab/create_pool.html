@@ -2,6 +2,7 @@
 {% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
+{% include 'core/jexcel_functionality.html' %}
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
@@ -180,7 +181,7 @@
                                                 <div class="card">
                                                     <div class="card-header text-center"><h3>Sample preparation information </h3></div>
                                                     <div class="card-body">
-                                                        <form method="post" enctype="multipart/form-data" name="createPool"  id="createPool" class="form-horizontal well">
+                                                        <form method="post" enctype="multipart/form-data" name="createPool_{{key|lower}}"  id="createPool_{{key|lower}}" class="form-horizontal well">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="action" value="createPool"/>
                                                             <input type="hidden" name="platform" value="{{key}}"/>
@@ -194,28 +195,8 @@
                                                             </div>
                                                             <div class="row">
                                                                 <div class="col-md">
-                                                                    <table class="table table-hover">
-                                                                        <thead>
-                                                                            <tr>
-                                                                                {% for value in display_list.heading %}
-                                                                                    <th> {{ value }}</th>
-                                                                                {% endfor %}
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            {% for lib_code, s_name, user, col_kit, index7, index5 ,  lib_id in values  %}
-                                                                                <tr>
-                                                                                    <td>{{lib_code}}</td>
-                                                                                    <td>{{s_name}}</td>
-                                                                                    <td>{{user}}</td>
-                                                                                    <td>{{col_kit}}</td>
-                                                                                    <td>{{index7}}</td>
-                                                                                    <td>{{index5}}</td>
-                                                                                    <td><input type="checkbox" name="lib_prep_id" value="{{lib_id}}"></td>
-                                                                                </tr>
-                                                                            {% endfor %}
-                                                                        </tbody>
-                                                                    </table>
+                                                                    <div id="{{key|lower}}"  class="my-4"></div>
+                                                                    
                                                                     <p class="ms-3 mt-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                                                     <input type="button" class="btn btn-outline-secondary my-3" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                                                     <input class="btn float-end btn-outline-primary my-3" name ="{{key}}" type="submit" value="Submit">
@@ -244,4 +225,55 @@
         {% endif %}
     </div>
 </section>
+<script>
+    {% for key, values in display_list.data.items %}
+        var data_{{key}} = [{% for row in values%}
+            [{% for value in row %}
+                {% if forloop.last%}
+                    '', {{value}}
+                {% else %}
+                    '{{value}}',
+                {% endif %}
+            {% endfor %}],
+        {% endfor %}
+        ];
+
+        mySpreadsheet = $('#{{key|lower}}').jexcel({
+            data:data_{{key}},
+            columns: [
+                {% for values in display_list.heading %}
+                    {% if forloop.last %}
+                        { type: 'checkbox', title:'{{values}}', width:150 },
+                    {% else %}
+                        { type: 'text', title:'{{values}}', width:160 , readOnly:true },
+                    {% endif %}
+                {% endfor %}
+                { type: 'hidden'},
+            ],
+            allowInsertColumn:false,
+            allowDeleteColumn:false,
+            allowRenameColumn:false,
+            allowInsertRow:false,
+            allowDeleteRow:false,
+            tableOverflow:true,
+            tableHeight:'200px',
+        });
+        $(document).ready(function () {
+            $("#createPool_{{key|lower}}").submit(function (e) {
+                //stop submitting the form to see the disabled button effect
+                // e.preventDefault();
+                //disable the submit button
+                var table_data = $('#{{key|lower}}').jexcel('getData')
+                var data_json = JSON.stringify(table_data)
+                $("<input />").attr("type", "hidden")
+                .attr("name", "table_data")
+                .attr("value", data_json)
+                .appendTo("#createPool_{{key|lower}}");
+                $("#btnSubmit").attr("disabled", true);
+                return true;
+            });
+        });
+    {% endfor %}
+
+</script>
 {% endblock %}
