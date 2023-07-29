@@ -648,9 +648,9 @@ ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = [
 ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES = [
     "Sample sheet does not have the rigth format on the Description column"
 ]
-ERROR_SAMPLE_SHEET_USER_ARE_NOT_DEFINED = [
-    "Sample sheet has users which are not defined"
-]
+ERROR_SAMPLE_SHEET_USER_ARE_NOT_DEFINED = (
+    "Sample sheet has users which are not defined : "
+)
 ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = [
     "The Sample Sheet that you are uploaded does not longer exists",
     "Upload again the sample sheet",
