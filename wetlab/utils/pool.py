@@ -132,7 +132,7 @@ def define_new_pool(form_data, user_obj):
         heading_with_hidden, excel_json_data
     )
     for row in c_data:
-        if row["Include in Pool"] == True:
+        if row["Include in Pool"] == "True":
             lib_prep_ids.append(row["lib_prep_id"])
 
     if len(lib_prep_ids) == 0:
