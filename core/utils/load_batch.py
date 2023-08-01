@@ -503,8 +503,8 @@ def valid_sample_batch_file(sample_batch_df, package):
         }
 
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
-    if check_opt_values != "OK":
-        return (check_opt_values)
+    if "ERROR" in check_opt_values:
+        return check_opt_values
     return "OK"
 
 
