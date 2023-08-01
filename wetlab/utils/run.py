@@ -51,7 +51,7 @@ def check_run_already_defined_by_crontab(exp_name, pool_ids):
     if len(sample_in_pools) != len(sample_in_s_sheet["samples"]):
         return {"ERROR": wetlab.config.ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON}
     for sample in sample_in_pools:
-        if not sample in sample_in_s_sheet["samples"]:
+        if sample not in sample_in_s_sheet["samples"]:
             return {
                 "ERROR": wetlab.config.ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON
             }
