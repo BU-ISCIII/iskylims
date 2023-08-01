@@ -17,6 +17,31 @@ import wetlab.config
 import wetlab.models
 import wetlab.utils.library
 import wetlab.utils.pool
+import wetlab.utils.samplesheet
+
+
+def check_run_already_defined_by_crontab(exp_name, pool_id):
+    """Check if user tries to defined a run that it is already
+    Args:
+        exp_name (string): name of the experiment name
+        pool_id (string): number of the pool id
+    Returns:
+        boolean: True if run is created by
+    """
+    if not wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).exists():
+        return False
+    # experiment name already exists, check if samples are the same
+    # to confirm the match
+    run_obj =  wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
+    sample_sheet = run_obj.get_sample_file()
+    f_name = os.path.join(settings.MEDIA_ROOT, sample_sheet)
+    try:
+        with open(f_name, "r") as fh:
+            file_data = fh.readlines()
+    except FileNotFoundError:
+        pass
+    sample_in_s_sheet =  wetlab.utils.samplesheet.get_samples_in_sample_sheet(file_data)
+    sample_in_pool = wetlab.utils.pool.get_sample_name_in_pool(pool_id)
 
 
 def check_valid_data_for_creation_run(form_data, user_obj):

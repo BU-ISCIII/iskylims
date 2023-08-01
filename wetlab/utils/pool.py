@@ -248,3 +248,21 @@ def get_info_to_display_created_pool(pool_obj):
     ] = wetlab.config.HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
 
     return information_for_created_pool
+
+def get_pool_obj_from_id(pool_id):
+    """_summary_
+
+    Args:
+        pool_id (string): pool primary key number
+    
+    Returns:
+        LibraryPool instance 
+    """
+    return wetlab.models.LibraryPool.objects.filter(pk__exact=pool_id).last()
+
+def get_sample_name_in_pool(pool_id):
+    """_summary_
+
+    Args:
+        pool_id (string): pool primary key number
+    """    
