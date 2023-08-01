@@ -3408,16 +3408,34 @@ def create_new_run(request):
             )
         # compatible_index = check_index_compatible(lib_prep_ids)
         # check if run was created by crontab
-        defined_run = wetlab.utils.run.check_run_already_defined_by_crontab()
-        display_sample_information = (
-            wetlab.utils.run.create_run_in_pre_recorded_and_get_data_for_confirmation(
+        defined_run = wetlab.utils.run.check_run_already_defined_by_crontab(
+            request.POST["experimentName"], request.POST["poolID"]
+        )
+        if "ERROR" in defined_run:
+            return render(
+                request,
+                "wetlab/create_new_run.html",
+                {
+                    "display_pools_for_run": display_pools_for_run,
+                    "error_message": defined_run["ERROR"],
+                },
+            )
+        if not defined_run["defined"]:
+            display_sample_information = wetlab.utils.run.create_run_in_pre_recorded_and_get_data_for_confirmation(
                 request.POST, request.user
             )
+            return render(
+                request,
+                "wetlab/create_new_run.html",
+                {"display_sample_information": display_sample_information},
+            )
+        wetlab.utils.run.link_pool_with_existing_run(
+            request.POST["experimentName"], request.POST["poolID"]
         )
         return render(
             request,
             "wetlab/create_new_run.html",
-            {"display_sample_information": display_sample_information},
+            {"info_message": wetlab.config.INFO_RUN_DEFINED_FROM_CRONTAB},
         )
 
     elif request.method == "POST" and request.POST["action"] == "continueWithRun":

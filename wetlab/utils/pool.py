@@ -249,20 +249,30 @@ def get_info_to_display_created_pool(pool_obj):
 
     return information_for_created_pool
 
+
 def get_pool_obj_from_id(pool_id):
     """_summary_
 
     Args:
         pool_id (string): pool primary key number
-    
+
     Returns:
-        LibraryPool instance 
+        LibraryPool instance
     """
     return wetlab.models.LibraryPool.objects.filter(pk__exact=pool_id).last()
 
-def get_sample_name_in_pool(pool_id):
-    """_summary_
+
+def get_sample_name_in_pools(pool_ids):
+    """Get the list of the samples that were involved in the pools
 
     Args:
-        pool_id (string): pool primary key number
-    """    
+        pool_ids (list): pools primary key number
+
+    Returns:
+        list: which contains the list of samples in pools
+    """
+    return list(
+        wetlab.models.LibPrepare.objects.filter(pools__pk__in=pool_ids).values_list(
+            "sample_id__sample_name", flat=True
+        )
+    )
