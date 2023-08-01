@@ -18,6 +18,18 @@
                 </div>
             </div>
         {% endif %}
+        {% if info_message %}
+            <div class="row my-2 justify-content-center">
+                <div class="col-md-8" >
+                    <div class="card mb-3">
+                        <div class="card-header"><h3>Successful creation of the run</h3></div>
+                        <div class="card-body">
+                            <p class="text-center">{{info_message}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
         {% if display_sample_information %}
             <div class="container">
                 <div class="row my-2">
@@ -351,7 +363,7 @@
                     </div> 
                 </div>
             {% endif %}
-            {% if not display_pools_for_run.pool_data.heading and not display_pools_for_run.run_data.heading %}
+            {% if not display_pools_for_run.pool_data.heading and not display_pools_for_run.run_data.heading and not info_message %}
                 <div class="row row-space-4 margin-b-4">
                     <div class="col-sm-10 offset-1" >
                         <div class="card ">

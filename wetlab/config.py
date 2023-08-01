@@ -620,8 +620,7 @@ ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = (
 ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = (
     "Sample sheet have samples with duplicated index"
 )
-
-
+ERROR_SAMPLE_SHEET_NOT_FOUND_WHEN_CREATED_BY_CRONTAB = "Sample sheet was not found"
 ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED = [
     "Sample sheet cannot be uploaded because collection Index Kit",
     "is not defined",
@@ -640,7 +639,6 @@ ERROR_SAMPLE_SHEET_INSTRUMENT_TYPE_NOT_INCLUDED = [
 ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED = [
     "Sample Sheet does not have Instrument type neither Index Adapters"
 ]
-# ERROR_SAMPLE_SHEET_USERS_ARE_NOT_DEFINED = ["Users in sample sheet are not defined"]
 ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED = ["User in sample sheet is not defined"]
 ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = [
     "Sample sheet does not have Description column "
@@ -655,7 +653,6 @@ ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = [
     "The Sample Sheet that you are uploaded does not longer exists",
     "Upload again the sample sheet",
 ]
-
 
 ERROR_EMPTY_VALUES = [
     "Your request cannot be recorded because ",
@@ -685,6 +682,8 @@ ERROR_RUN_IN_WRONG_STATE = [
     "Because the Run is in state",
 ]
 ERROR_RUN_DOES_NOT_EXIST = "Requested run does not exist"
+
+ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON = "Run name defined by crontab has different samples that the ones defined in the pool"
 ERROR_UNABLE_SAVE_REQUEST = ["Unable to save your request."]
 
 ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP = [
@@ -717,6 +716,8 @@ ERROR_RUN_NAME_ALREADY_DEFINED = [
 ]
 
 ERROR_RUN_NAME_CREATED_ALREADY = " Run already created"
+
+ERROR_RUN_NAME_BY_CRONTAB_ALREADY_CREATED = "Run already created when running crontab"
 
 ERROR_DIFFERENT_ADAPTERS_USED_IN_POOL = [
     "Different Adapters ",
@@ -815,6 +816,10 @@ ERROR_API_NO_SAMPLE_DEFINED = "There are no samples defined yet"
 ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED = "The sample state is not defined"
 ERROR_API_NO_SAMPLE_PROJECT_DEFINED = "The sample project is not defined"
 ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED = "The sample project field is not defined"
+
+
+# ############################################
+INFO_RUN_DEFINED_FROM_CRONTAB = "Run has been already created when running crontab"
 
 # ############## HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ["Project Recorder date", "Project date"]

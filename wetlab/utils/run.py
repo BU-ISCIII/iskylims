@@ -20,28 +20,42 @@ import wetlab.utils.pool
 import wetlab.utils.samplesheet
 
 
-def check_run_already_defined_by_crontab(exp_name, pool_id):
+def check_run_already_defined_by_crontab(exp_name, pool_ids):
     """Check if user tries to defined a run that it is already
     Args:
         exp_name (string): name of the experiment name
         pool_id (string): number of the pool id
     Returns:
-        boolean: True if run is created by
+        dictionay: detailing error message or in "defined" key boolean value.
+        True if already defined False if not.
     """
     if not wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).exists():
-        return False
+        return {"defined": False}
     # experiment name already exists, check if samples are the same
     # to confirm the match
-    run_obj =  wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
+    run_obj = wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
     sample_sheet = run_obj.get_sample_file()
     f_name = os.path.join(settings.MEDIA_ROOT, sample_sheet)
     try:
         with open(f_name, "r") as fh:
             file_data = fh.readlines()
     except FileNotFoundError:
-        pass
-    sample_in_s_sheet =  wetlab.utils.samplesheet.get_samples_in_sample_sheet(file_data)
-    sample_in_pool = wetlab.utils.pool.get_sample_name_in_pool(pool_id)
+        error_message = str(
+            wetlab.config.ERROR_RUN_NAME_BY_CRONTAB_ALREADY_CREATED
+            + " but  "
+            + wetlab.config.ERROR_SAMPLE_SHEET_NOT_FOUND_WHEN_CREATED_BY_CRONTAB
+        )
+        return {"ERROR": error_message}
+    sample_in_s_sheet = wetlab.utils.samplesheet.get_samples_in_sample_sheet(file_data)
+    sample_in_pools = wetlab.utils.pool.get_sample_name_in_pools(pool_ids)
+    if len(sample_in_pools) != len(sample_in_s_sheet["samples"]):
+        return {"ERROR": wetlab.config.ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON}
+    for sample in sample_in_pools:
+        if not sample in sample_in_s_sheet["samples"]:
+            return {
+                "ERROR": wetlab.config.ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON
+            }
+    return {"defined": True}
 
 
 def check_valid_data_for_creation_run(form_data, user_obj):
@@ -59,14 +73,6 @@ def check_valid_data_for_creation_run(form_data, user_obj):
     """
     error = {}
     pool_ids = form_data.getlist("poolID")
-    experiment_name = form_data["experimentName"]
-    if wetlab.models.RunProcess.objects.filter(
-        run_name__exact=experiment_name
-    ).exists():
-        error_message = wetlab.config.ERROR_RUN_NAME_ALREADY_DEFINED.copy()
-        error_message[0] = error_message[0] + experiment_name
-        error["ERROR"] = error_message
-        return error
     result_compatibility = check_pools_compatible(form_data)
 
     if "ERROR" in result_compatibility:
@@ -1012,3 +1018,11 @@ def fetch_reagent_kits_used_in_run(form_data):
             )
 
     return user_reagents_kit_objs
+
+
+def link_pool_with_existing_run(exp_name, pool_ids):
+    run_obj = wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
+    for pool in pool_ids:
+        pool_obj = get_pool_instance_from_id(pool)
+        pool_obj.update_run_name(run_obj)
+    return None
