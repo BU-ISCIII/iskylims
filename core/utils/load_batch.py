@@ -20,24 +20,6 @@ def get_sample_projects_names(sample_df):
     return sample_df["Project/Service"].unique().tolist()
 
 
-def check_type_and_project(sample_batch_data):
-    """
-    Description:
-        The Function check if only one type of sample is in data and if the mandatory parameters
-        for the type of sample are included.
-        In case that are more than 1 type of sample it checks one by one the mandatory parameters
-    Input:
-        sample_batch_data
-    Return:
-        True or False
-    """
-    sample_type = sample_batch_data["Type of Sample"].unique().tolist()
-    sample_project = sample_batch_data["Project/Service"].unique().tolist()
-    if len(sample_type) != 1 or len(sample_project) != 1:
-        return False
-    return True
-
-
 def check_defined_option_values_in_samples(sample_batch_df, package):
     """
     Description:
@@ -517,9 +499,13 @@ def valid_sample_batch_file(sample_batch_df, package):
         return validate_sample_name
 
     if not check_type_and_project(sample_batch_df):
+    # Check if sample type is the same in all samples
+    sample_type = sample_batch_df["Type of Sample"].unique().tolist()
+    if len(sample_type) != 1 or len(sample_batch_df) != 1:
         return {
-                "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
-            }
+            "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE
+        }
+
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
     if check_opt_values != "OK":
         return (check_opt_values)
