@@ -490,15 +490,11 @@ def valid_sample_batch_file(sample_batch_df, package):
     # if sample_batch_df.isnull().values.any():
     #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
 
-    validate_repeated_samples = search_repeated_samples(sample_batch_df)
-    if "ERROR" in validate_repeated_samples:
-        return validate_repeated_samples
     # Check if sample name is empty or repeated
     validate_sample_name = sample_name_validation(sample_batch_df)
     if "ERROR" in validate_sample_name:
         return validate_sample_name
 
-    if not check_type_and_project(sample_batch_df):
     # Check if sample type is the same in all samples
     sample_type = sample_batch_df["Type of Sample"].unique().tolist()
     if len(sample_type) != 1 or len(sample_batch_df) != 1:
