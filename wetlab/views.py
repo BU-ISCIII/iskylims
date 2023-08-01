@@ -2098,97 +2098,33 @@ def record_samples(request):
         analyze_input_samples
         analyze_input_sample_project_fields
         prepare_sample_input_table
-        get_codeID_for_resequencing
         prepare_sample_project_input_table
-        analyze_reprocess_data
-        get_info_for_reprocess_samples
     """
     # Record new samples
-    if request.method == "POST" and request.POST["action"] == "recordsample":
+    if request.method == "POST" and request.POST["action"] == "record_samples":
         import pdb; pdb.set_trace()
-        sample_recorded = core.utils.samples.analyze_input_samples(request, __package__)
-        # if no samples are in any of the options, displays the inital page
+        req_user = request.user.username
+        excel_data = json.loads(request.POST["table_data"])
+        excel_json_data = core.utils.common.jspreadsheet_to_dict(
+            core.core_config.HEADING_FOR_RECORD_SAMPLES, excel_data
+        )
 
-        if (
-            "defined_samples" not in sample_recorded
-            and "pre_defined_samples" not in sample_recorded
-            and "invalid_samples" not in sample_recorded
-            and "incomplete_samples" not in sample_recorded
-        ):
-            sample_information = core.utils.samples.prepare_sample_input_table(
-                __package__
-            )
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {"sample_information": sample_information},
-            )
+        validation = core.samples.validate_sample_data(excel_json_data, req_user, __package__)
 
-        if "sample_id_for_action" in sample_recorded:
-            sample_recorded.update(
-                wetlab.utils.sample.get_codeID_for_resequencing(sample_recorded)
-            )
-        if "incomplete_samples" in sample_recorded:
-            sample_recorded.update(
-                core.utils.samples.prepare_sample_input_table(__package__)
-            )
-            sample_recorded["number_of_samples"] = len(
-                sample_recorded["incomplete_samples"]
-            )
-        if "pre_defined_samples_id" in sample_recorded:
-            sample_recorded.update(
-                core.utils.samples.prepare_sample_project_input_table(
-                    sample_recorded["pre_defined_samples_id"]
+        for val in validation:
+            if not val["validate"]:
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "validation": validation,
+                        "excel_data": excel_data,
+                    },
                 )
-            )
-        return render(
-            request,
-            "wetlab/record_sample.html",
-            {"sample_recorded": sample_recorded},
-        )
-    
-    # display the form to show the samples in pre-defined state that user requested to complete
-    elif (
-        request.method == "POST"
-        and request.POST["action"] == "select_samples_pre_defined"
-    ):
-        import pdb; pdb.set_trace()
-        if "samples_in_list" in request.POST:
-            pre_defined_samples_id = request.POST.getlist("samples")
-        sample_recorded = core.utils.samples.prepare_sample_project_input_table(
-            pre_defined_samples_id
-        )
-        return render(
-            request,
-            "wetlab/record_sample.html",
-            {"sample_recorded": sample_recorded},
-        )
+        
+        # If all samples validate
 
-    # Add the additional information related to the project
-    elif request.method == "POST" and request.POST["action"] == "sampleprojectdata":
-        sample_recorded = core.utils.samples.analyze_input_sample_project_fields(
-            request.POST
-        )
-        import pdb; pdb.set_trace()
 
-        if request.POST["pending_pre_defined"] != "":
-            sample_recorded.update(
-                core.utils.samples.prepare_sample_project_input_table(
-                    request.POST["pending_pre_defined"].split(",")
-                )
-            )
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {"sample_recorded": sample_recorded},
-            )
-        else:
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {"sample_recorded": sample_recorded},
-            )
-    # Load batch file
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
         sample_information = core.utils.samples.prepare_sample_input_table(__package__)
         if "samplesExcel" in request.FILES:
@@ -2239,6 +2175,7 @@ def record_samples(request):
     # Form to get the new samples
     else:
         sample_information = core.utils.samples.prepare_sample_input_table(__package__)
+        import pdb; pdb.set_trace()
         return render(
             request,
             "wetlab/record_sample.html",

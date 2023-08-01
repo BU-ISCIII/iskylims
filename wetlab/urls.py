@@ -169,7 +169,7 @@ urlpatterns = [
         wetlab.views.pending_sample_preparation,
         name="pending_sample_preparation",
     ),
-    path("recordSamples", wetlab.views.record_samples, name="record_samples"),
+    path("record-samples", wetlab.views.record_samples, name="record_samples"),
     path(
         "repeatLibraryPreparation",
         wetlab.views.repeat_library_preparation,
@@ -208,7 +208,6 @@ urlpatterns = [
         wetlab.views.set_molecule_values,
         name="set_molecule_values",
     ),
-    # path('setLibraryValues', wetlab.views.set_library_values, name = 'set_library_values'),
     path(
         "sequencerConfiguration",
         wetlab.views.sequencer_configuration,
