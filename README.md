@@ -211,7 +211,7 @@ sudo bash install.sh --upgrade dep
 bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name -- script rename_sample_sheet_folder --tables
 
 # to install both software. NEEDS ROOT.
-sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --tables
+sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name -- script rename_sample_sheet_folder --tables
 ```
 
 ### Verification installation

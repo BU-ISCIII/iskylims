@@ -1232,6 +1232,9 @@ class LibUserSampleSheet(models.Model):
         else:
             return "Not available"
 
+    def get_lib_user_sample_sheet(self):
+        return self.sample_sheet
+
     def get_iem_version(self):
         return "%s" % (self.iem_version)
 
@@ -1258,6 +1261,11 @@ class LibUserSampleSheet(models.Model):
         s_s_data.append(self.assay)
         s_s_data.append(self.reads.split(",")[0])
         return s_s_data
+
+    def set_lib_user_sample_sheet(self, name):
+        self.sample_sheet = name
+        self.save()
+        return self
 
     def update_confirm_used(self, confirmation):
         self.confirmed_used = confirmation
