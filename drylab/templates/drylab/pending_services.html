@@ -197,7 +197,7 @@
                                                         <table id="table_myservices_progress" class="table table-hover">
                                                             <thead>
                                                                 <tr>
-                                                                    {% for column in user_pending_services.heading_in_queued %}
+                                                                    {% for column in user_pending_services.heading_in_progress %}
                                                                     <th>{{column}}</th>
                                                                     {% endfor %}
                                                                 </tr>
@@ -215,7 +215,7 @@
                                                             </tbody>
                                                             <tfoot>
                                                                 <tr>
-                                                                    {% for column in user_pending_services.heading_in_queued %}
+                                                                    {% for column in user_pending_services.heading_in_progress %}
                                                                     <th>{{column}}</th>
                                                                     {% endfor %}
                                                                 </tr>
