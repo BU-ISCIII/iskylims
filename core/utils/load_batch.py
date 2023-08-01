@@ -204,13 +204,13 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
     return "OK"
 
 
-def create_sample_from_batch_file(sample_data, reg_user, package):
+def create_sample_from_batch_file(sample_data, req_user, package):
     """
     Description:
         The function create new sample
     Inputs:
         sample_data     # panda dataframe
-        reg_user        # user name
+        req_user        # user name
         package         # name of the apps that request the checking
     Functions:
         check_if_sample_already_defined     # located
@@ -221,7 +221,7 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     sample_new = {}
     # Check if sample alredy  defined for this user
     if not core.utils.samples.check_if_sample_already_defined(
-        sample_data["Sample Name"], reg_user
+        sample_data["Sample Name"], req_user
     ):
         if sample_data["Type of Sample"] == "":
             print("Type of Sample is null for the Sample ", sample_data["Sample Name"])
@@ -253,8 +253,8 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     sample_new["sampleProject"] = core.models.SampleProjects.objects.filter(
         sample_project_name__exact=sample_data["Project/Service"], apps_name=package
     ).last()
-    sample_new["user"] = reg_user
-    sample_new["sample_id"] = str(reg_user + "_" + sample_data["Sample Name"])
+    sample_new["user"] = req_user
+    sample_new["sample_id"] = str(req_user + "_" + sample_data["Sample Name"])
     if not core.models.Samples.objects.exclude(unique_sample_id__isnull=True).exists():
         sample_new["new_unique_value"] = "AAA-0001"
     else:
@@ -303,14 +303,14 @@ def create_sample_project_fields_value(sample_obj, sample_data, package):
     return
 
 
-def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
+def create_molecule_from_file(sample_obj, sample_data, req_user, package):
     """
     Description:
         The function create new molecule from the data frame
     Inputs:
         sample_obj      # object of the sample
         sample_data     # panda dataframe
-        reg_user        # user name
+        req_user        # user name
         package         # name of the apps that request the checking
     Return:
         new_molecule
@@ -324,7 +324,7 @@ def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
     molecule_data["moleculeExtractionDate"] = str(sample_data["Extraction date"])
     molecule_data["numberOfReused"] = str(0)
     molecule_data["app_name"] = package
-    molecule_data["user"] = reg_user
+    molecule_data["user"] = req_user
     new_molecule = core.models.MoleculePreparation.objects.create_molecule(
         molecule_data
     )
@@ -481,13 +481,13 @@ def valid_sample_batch_file(sample_batch_df, package):
     return "OK"
 
 
-def save_samples_in_batch_file(sample_batch_df, reg_user, package):
+def save_samples_in_batch_file(sample_batch_df, req_user, package):
     """
     Description:
         The Function save the sample and the molecule information in database
     Input:
         sample_batch_df     # sample data in dataframe
-        reg_user            # user name
+        req_user            # user name
         package             # name of the apps that request the checking
     Functions:
         create_sample_from_batch_file   # located at this file
@@ -496,10 +496,10 @@ def save_samples_in_batch_file(sample_batch_df, reg_user, package):
     """
 
     for index, row_data in sample_batch_df.iterrows():
-        new_sample = create_sample_from_batch_file(row_data, reg_user, package)
+        new_sample = create_sample_from_batch_file(row_data, req_user, package)
         create_sample_project_fields_value(new_sample, row_data, package)
         new_molecule = create_molecule_from_file(
-            new_sample, row_data, reg_user, package
+            new_sample, row_data, req_user, package
         )
         create_molecule_parameter_from_file(new_molecule, row_data)
         new_sample.set_state("Library preparation")

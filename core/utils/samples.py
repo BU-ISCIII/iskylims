@@ -77,206 +77,53 @@ def add_molecule_protocol_parameters(form_data):
 
     return molecule_updated_list
 
+def save_sample_data(sample_data, req_user, app_name):
 
-def analyze_input_samples(request, app_name):
-    """The function will get the samples data that user filled in the form.
-        defined_samples are the samples that either has no sample project or for
-            the sample projects that no requires additional data
-        pre_definde_samples are the ones that requires additional Information
-        For already defined samples, no action are done on them and  they are included in not_valid_samples.
-        it will return a dictionary which contains the processed samples.
+    new_sample = core.models.Samples.objects.create_sample(sample_data)
 
-    Args:
-        request (_type_): _description_
-        app_name (string): application name
 
-    Returns:
-        dictionary: if there are incompleted or already defined samples, it return error key
-            with their sample names and the jexcel data to allow user correct the wrong data.
-            If not issues are found return the converted data is returned
-    """
-    reg_user = request.user.username
-    excel_json_data = json.loads(request.POST["table_data"])
-    c_data = core.utils.common.jspreadsheet_to_dict(
-        core.core_config.HEADING_FOR_RECORD_SAMPLES, excel_json_data
-    )
+def validate_sample_data(sample_data, req_user, app_name):
+    """_summary_
 
-    # create different list depending on the sample faulty case
-    defined_samples = []
-    incomplete_sample = []
+    Parameters
+    ----------
+    sample_data
+        sample data formatted in json obtained from jspreadsheet
+    req_user
+        requesting user
+    app_name
+        application name (wetlab, drylab, core, etc.)
 
-    for sample in c_data:
+    Returns
+    -------
+        validation
+            list with validation info for each sample with format:
+            [{"Sample Name": "test 01",
+              "Validate": True,
+              "Validation error": None
+              },
+              {"Sample Name": "test 02",
+              "Validate": False,
+              "Validation error": "Mandatory field is missing."
+              }]
+    """ 
+    
+    validation = []
+    for sample in sample_data:
+        sample_dict = {}
         if sample["Sample Name"] == "":
             continue
-        # check if sample is defined for the same user
-        if check_if_sample_already_defined(sample["Sample Name"], reg_user):
-            defined_samples.append(sample["Sample Name"])
-            continue
-        # check mandatory fields
-        if sample["Type of Sample"] == "":
-            incomplete_sample.append(sample["Sample Name"])
-            continue
-        if not check_mandatory_fields_included(
-            sample, sample["Type of Sample"], app_name
-        ):
-            incomplete_sample.append(sample["Sample Name"])
-            continue
-    if len(defined_samples) > 0 or len(incomplete_sample) > 0:
-        error_data = {}
-        if len(defined_samples) > 0:
-            error_data[defined_samples] = str(
-                core.core_config.ERROR_SAMPLE_ALREADY_DEFINED
-                + " : "
-                + ", ".join(defined_samples)
-            )
-        if len(incomplete_sample) > 0:
-            error_data[incomplete_sample] = str(
-                core.core_config.ERROR_SAMPLE_INCOMPLETED
-                + " : "
-                + ", ".join(incomplete_sample)
-            )
+        ## Add here proper validation
+        # Validate mandatory -> check this function check_mandatory_fields_included, Maybe types (date, string..) also here?
+        # Validate repeated samples -> check_if_sample_already_defined
+        # Other.
+        # Note in config.core_config there are two variables for creating error messages: "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
+        sample_dict["Sample name"] = sample["Sample Name"]
+        sample_dict["Validate"] = True
+        sample_dict["Validation error"] = None
+        validation.append(sample_dict)
 
-        return {"ERROR": error_data, "data": excel_json_data}
-    # samples contains all mandatory data return converted data
-    return {"data": c_data}
-    """
-            sample_type = str(row[heading_in_form.index("Type of Sample")])
-
-            if sample_type == "":
-                incomplete_samples.append(row)
-                continue
-
-            for i in range(len(heading_in_form)):
-                sample_data[core.core_config.MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
-
-            optional_fields = core.models.SampleType.objects.get(
-                sample_type__exact=sample_type, apps_name__exact=app_name
-            ).get_optional_values()
-
-            # check_empty_fields does not consider if the optional values are empty
-            if check_empty_fields(row, optional_fields):
-                incomplete_samples.append(row)
-                sample_recorded["all_samples_defined"] = False
-                continue
-            # Check if patient code  already exists on database,
-            # If not if will be created giving a sequencial dummy value
-            if sample_data["p_code_id"] != "":
-                patient_obj = check_patient_code_exists(sample_data["p_code_id"])
-                if patient_obj is False:
-                    # Define the new patient only Patient code is defined
-                    patient_obj = create_empty_patient(sample_data["p_code_id"])
-            else:
-                patient_obj = None
-            sample_data["patient"] = patient_obj
-            sample_data["user"] = reg_user
-            sample_data["sample_id"] = str(reg_user + "_" + sample_name)
-            if not core.models.Samples.objects.exclude(
-                unique_sample_id__isnull=True
-            ).exists():
-                sample_data["new_unique_value"] = "AAA-0001"
-            else:
-                last_unique_value = (
-                    core.models.Samples.objects.exclude(unique_sample_id__isnull=True)
-                    .last()
-                    .unique_sample_id
-                )
-                sample_data["new_unique_value"] = increase_unique_value(
-                    last_unique_value
-                )
-            # set to Defined state the sample if not required to add more additional data
-
-            if sample_data["project_service"] == "None":
-                sample_data["sampleProject"] = None
-                if sample_data["onlyRecorded"]:
-                    sample_data["sampleState"] = "Completed"
-                    sample_data["completedDate"] = datetime.datetime.now()
-                else:
-                    sample_data["sampleState"] = "Defined"
-            else:
-                sample_data["sampleProject"] = core.models.SampleProjects.objects.get(
-                    sample_project_name__exact=sample_data["project_service"]
-                )
-                if core.models.SampleProjectsFields.objects.filter(
-                    sample_projects_id=sample_data["sampleProject"]
-                ).exists():
-                    sample_recorded["all_samples_defined"] = False
-                    sample_data["sampleState"] = "Pre-Defined"
-                else:
-                    sample_data["sampleState"] = "Defined"
-            sample_data["app_name"] = app_name
-            new_sample = core.models.Samples.objects.create_sample(sample_data)
-
-            if (
-                sample_data["sampleState"] == "Defined"
-                or sample_data["sampleState"] == "Completed"
-            ):
-                defined_samples.append(new_sample.get_sample_definition_information())
-                samples_continue.append(new_sample.get_sample_id())
-            else:
-                # select the samples that requires to add additional Information
-                pre_defined_samples.append(new_sample.get_sample_name())
-                pre_defined_samples_id.append(new_sample.get_sample_id())
-        else:  # get the invalid sample to displays information to user
-            sample_recorded["all_samples_defined"] = False
-            sample_id = core.models.Samples.objects.get(
-                sample_name__exact=sample_name
-            ).get_sample_id()
-            if "sample_id_for_action" not in sample_recorded:
-                # get the first no valid sample to ask user for new action on the sample
-                sample_recorded[
-                    "sample_data_for_action"
-                ] = core.models.Samples.objects.get(
-                    sample_name__exact=sample_name
-                ).get_sample_definition_information()
-                sample_recorded["sample_id_for_action"] = sample_id
-                invalid_samples.append(
-                    core.models.Samples.objects.get(
-                        sample_name__exact=sample_name
-                    ).get_sample_definition_information()
-                )
-            else:
-                invalid_samples_id.append(sample_id)
-                invalid_samples.append(
-                    core.models.Samples.objects.get(
-                        sample_name__exact=sample_name
-                    ).get_sample_definition_information()
-                )
-    # Add already recorded sample in Pre-defined that were not processed because incomplete informatio in samples
-    if "pre_defined_id" in request.POST:
-        old_pre_defined_list = request.POST["pre_defined_id"].split(",")
-        for old_pre_defined in old_pre_defined_list:
-            sample_obj = get_sample_obj_from_id(old_pre_defined)
-            pre_defined_samples.append(sample_obj.get_sample_name())
-            pre_defined_samples_id.append(old_pre_defined)
-    if "pending_pre_defined" in request.POST:
-        old_pending_pre_defined_list = request.POST["pending_pre_defined"].split(",")
-        for old_pending_pre_defined in old_pending_pre_defined_list:
-            sample_obj = get_sample_obj_from_id(old_pending_pre_defined)
-            pre_defined_samples.append(sample_obj.get_sample_name())
-            pre_defined_samples_id.append(old_pending_pre_defined)
-    # collect data into sample_recorded
-    if len(defined_samples) > 0:
-        sample_recorded["defined_samples"] = defined_samples
-    if len(invalid_samples) > 0:
-        sample_recorded["invalid_samples"] = invalid_samples
-        sample_recorded["invalid_samples_id"] = ",".join(invalid_samples_id)
-        sample_recorded[
-            "invalid_heading"
-        ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
-    if len(incomplete_samples) > 0:
-        sample_recorded["incomplete_samples"] = incomplete_samples
-    if len(pre_defined_samples) > 0:
-        sample_recorded["pre_defined_samples"] = pre_defined_samples
-        sample_recorded["pre_defined_samples_id"] = pre_defined_samples_id
-
-    if sample_recorded["all_samples_defined"]:
-        sample_recorded["samples_to_continue"] = ",".join(samples_continue)
-    sample_recorded[
-        "recorded_sample_heading"
-    ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
-    sample_recorded["valid_samples_ids"] = samples_continue
-    return sample_recorded
-    """
+    return validation
 
 
 def analyze_input_sample_project_fields(form_data):
@@ -343,12 +190,7 @@ def build_record_sample_form(app_name):
         sample_information
     """
 
-    sample_information = {}
-    sample_information["species"] = get_species()
-    sample_information["lab_requested"] = get_lab_requested()
-    sample_information["sampleType"] = get_sample_type(app_name)
-    sample_information["sample_project"] = get_defined_sample_projects(app_name)
-    sample_information["sample_project"].insert(0, "None")
+    
     return sample_information
 
 
@@ -404,9 +246,9 @@ def check_if_molecule_use_defined(app_name):
     return False
 
 
-def check_if_sample_already_defined(sample_name, reg_user):
+def check_if_sample_already_defined(sample_name, req_user):
     if core.models.Samples.objects.filter(
-        sample_name__exact=sample_name, sample_user__username__exact=reg_user
+        sample_name__exact=sample_name, sample_user__username__exact=req_user
     ).exists():
         return True
     else:
@@ -1005,30 +847,6 @@ def get_parameters_sample_project(sample_project_id):
         return "ERROR"
 
     return parameters_s_project
-
-
-def get_info_for_reprocess_samples(sample_ids, sample_in_action):
-    sample_recorded = {}
-    invalid_samples = []
-
-    for sample_id in sample_ids:
-        if sample_id == sample_in_action:
-            sample_recorded["sample_data_for_action"] = core.models.Samples.objects.get(
-                pk__exact=sample_id
-            ).get_sample_definition_information()
-        invalid_samples.append(
-            core.models.Samples.objects.get(
-                pk__exact=sample_id
-            ).get_sample_definition_information()
-        )
-
-    sample_recorded["invalid_samples"] = invalid_samples
-    # sample_recorded['invalid_samples_id'] = ','.join(sample_ids)
-    sample_recorded[
-        "invalid_heading"
-    ] = core.core_config.HEADING_FOR_DISPLAY_RECORDED_SAMPLES
-
-    return sample_recorded
 
 
 def get_info_for_defined_sample_projects(app_name):
@@ -1651,21 +1469,23 @@ def prepare_sample_input_table(app_name):
         s_information #
     """
     # get the choices to be included in the form
-    s_information = build_record_sample_form(app_name)
-    s_information["heading"] = core.core_config.HEADING_FOR_RECORD_SAMPLES
-    s_information["table_size"] = len(core.core_config.HEADING_FOR_RECORD_SAMPLES)
-    sample_objs = get_sample_objs_in_state("Pre-defined")
-    if sample_objs:
-        s_information["pre_defined_samples"] = []
-        s_information[
-            "pre_defined_heading"
-        ] = core.core_config.HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED
-        for sample_obj in sample_objs:
-            s_information["pre_defined_samples"].append(
-                sample_obj.get_info_in_defined_state()
-            )
+    sample_info = {}
+    sample_info["fields"] = {}
+    for field in core.models.Samples._meta.get_fields():
+        try:
+            sample_info["fields"][field.name] = field.verbose_name
+        except Exception:
+            sample_info["fields"][field.name] = field.name
 
-    return s_information
+    sample_info["species"] = get_species()
+    sample_info["lab_request"] = get_lab_requested()
+    sample_info["sample_type"] = get_sample_type(app_name)
+    sample_info["sample_project"] = get_defined_sample_projects(app_name)
+    sample_info["sample_project"].insert(0, "None")
+    sample_objs = get_sample_objs_in_state("Pre-defined")
+    sample_info["pre_defined_samples"] = sample_objs
+
+    return sample_info
 
 
 def record_molecule_use(from_data, app_name):

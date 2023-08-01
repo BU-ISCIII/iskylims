@@ -13,60 +13,7 @@ import wetlab.models
 import wetlab.utils.stats_graphs
 
 
-def get_codeID_for_resequencing(sample_recorded):
-    """
-    Description:
-        The function will get the already defined molecule and library preparation objects that
-        are related to the sample to allow user to choose the difference alternatives for
-        resequencing the sample
-        Return a dictionary with all available possibilities
-    Input:
-        sample_recorded : sample id
-    Functions:
-        get_sample_obj_from_id
-        get_molecule_objs_from_sample
-        get_molecule_codeid_from_object
-    Variables:
-        lib_prep_available # list all possibilities for library preparation
-        mol_lib_prep_available # list all possibilities for molecule
-    Return:
-        sample_recorded.
-    """
-
-    mol_lib_prep_available = {}
-    lib_prep_available = ["New Library Preparation"]
-    mol_lib_prep_available["New Extraction"] = [""]
-    sample_obj = core.utils.samples.get_sample_obj_from_id(
-        sample_recorded["sample_id_for_action"]
-    )
-    molecule_objs = core.utils.samples.get_molecule_objs_from_sample(
-        sample_recorded["sample_id_for_action"]
-    )
-
-    for molecule_obj in molecule_objs:
-        molecule_id = core.utils.samples.get_molecule_codeid_from_object(molecule_obj)
-        mol_lib_prep_available[molecule_id] = ["New Library Preparation"]
-        if wetlab.models.LibPrepare.objects.filter(
-            molecule_id=molecule_obj, sample_id=sample_obj
-        ).exists():
-            libs_prep_obj = wetlab.models.LibPrepare.objects.filter(
-                molecule_id=molecule_obj, sample_id=sample_obj
-            )
-            for lib_prep_obj in libs_prep_obj:
-                lib_prep_available.append(lib_prep_obj.get_lib_prep_code())
-                mol_lib_prep_available[molecule_id].append(
-                    lib_prep_obj.get_lib_prep_code()
-                )
-
-    sample_recorded["rep_filter_selection"] = []
-    for key, value in mol_lib_prep_available.items():
-        sample_recorded["rep_filter_selection"].append([key, value])
-    sample_recorded["molecule_available"] = list(mol_lib_prep_available.keys())
-    sample_recorded["lib_prep_available"] = lib_prep_available
-    return sample_recorded
-
-
-def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
+def analyze_reprocess_data(reprocess_data, reprocess_sample_id):
     """
     Description:
         The function will get the option of reprocessing sample and it updates the sample state for reprocessing.
@@ -74,7 +21,7 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
     Input:
         reprocess_data           # data for creating the reuse
         reprocess_sample_id      # sample id to reprocess
-        reg_user                 # register user
+        req_user                 # register user
     Functions:
         update_sample_reused
         update_molecule_reused
@@ -255,7 +202,7 @@ def get_sample_in_project_obj_from_id(sample_in_project_id):
     return sample_in_project_obj
 
 
-def get_sample_in_project_obj_from_sample_name(sample_name_in_project):
+def get_sample_in_project_obj(sample_name_in_project):
     """
     Description:
         The function gets the sampleInProject id and return the object

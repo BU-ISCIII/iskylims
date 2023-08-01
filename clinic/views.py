@@ -1,5 +1,6 @@
 # Generic imports
 import datetime
+import json
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
@@ -367,20 +368,23 @@ def define_new_patient_history(request):
 
 
 @login_required
-def define_new_samples(request):
+def record_samples(request):
     """
     Functions :
         analyze_input_samples
         analyze_input_sample_project_fields
         prepare_sample_input_table
-        get_codeID_for_resequencing
         prepare_sample_project_input_table
         analyze_reprocess_data
-        get_info_for_reprocess_samples
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
-        sample_recorded = core.utils.samples.analyze_input_samples(request)
+        
+        req_user = request.user.username
+        excel_json_data = json.loads(request.POST["table_data"])
+        
+        sample_recorded = core.utils.samples.analyze_input_samples(req_user, excel_json_data)
+        
         # if no samples are in any of the options, displays the inital page
         if (
             "defined_samples" not in sample_recorded
