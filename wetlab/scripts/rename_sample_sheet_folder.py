@@ -6,10 +6,9 @@ import wetlab.models
     Because the folder where the sample sheets were recorded have been
     modified to sample_sheet. All the recorded run must update the field
     of sample sheet.
-    Script reads RunProcess table and check if sample_sheet contains the 
+    Script reads RunProcess table and check if sample_sheet contains the
     SampleSheet string and change it to sample_sheet.
 """
-
 
 def run():
     # update SampleSheets
