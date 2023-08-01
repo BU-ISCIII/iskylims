@@ -394,3 +394,5 @@ ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_DATABASE = [
     "The sample",
     "of the excel file is already repeated on the Data Base"
 ]
+ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE = ["At least one sample name is empty"]
+]

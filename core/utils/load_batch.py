@@ -434,16 +434,26 @@ def heading_validation(sample_batch_df):
     return "OK"
 
 
-def search_repeated_samples(sample_batch_df):
+def sample_name_validation(sample_batch_df):
     """
     Description:
-        The Function read the batch file and searches for repeated samples and samples already in the DB
+        The Function read the batch file and searches for empty sample names, repeated samples or samples already in the DB
     Constants:
         ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE
     Return:
         OK or ERROR
     """
+    # Searches empty samples
     samples_requested = sample_batch_df["Sample Name"].tolist()
+    for sample in samples_requested:
+        if type(sample) != str:
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE.copy()
+            )
+            return {
+                "ERROR": error_cause
+            }
+    # Searches duplicated samples in the excel file
     duplicates = [x for i, x in enumerate(samples_requested) if i != samples_requested.index(x)]    
     if len(duplicates) > 0:
         duplicates = ", ".join([str(item) for item in duplicates])
@@ -455,6 +465,7 @@ def search_repeated_samples(sample_batch_df):
         return {
             "ERROR": error_cause
         }
+    # Searches duplicated samples in the DB
     samples_registered = list(
         core.models.Samples.objects.all().values_list("sample_name", flat=True)
     )
@@ -514,6 +525,10 @@ def valid_sample_batch_file(sample_batch_df, package):
     validate_repeated_samples = search_repeated_samples(sample_batch_df)
     if "ERROR" in validate_repeated_samples:
         return validate_repeated_samples
+    # Check if sample name is empty or repeated
+    validate_sample_name = sample_name_validation(sample_batch_df)
+    if "ERROR" in validate_sample_name:
+        return validate_sample_name
 
     if not check_type_and_project(sample_batch_df):
         return {
