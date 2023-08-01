@@ -352,7 +352,7 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL = [
     "The batch file must have the same type of samples and same project assigned"
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED = [
-    "Required sample project field",
+    "Required project field",
     "is not included in batch file",
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED = [

@@ -130,23 +130,6 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 "ERROR": error_cause
             }
 
-    # check if additional sample Project parameters are include in batch file
-    if core.models.SampleProjectsFields.objects.filter(
-        sample_projects_id__sample_project_name__exact=sample_project,
-        sample_projects_id__apps_name=package,
-    ).exists():
-        sample_project_fields_objs = core.models.SampleProjectsFields.objects.filter(
-            sample_projects_id__sample_project_name__exact=sample_project,
-            sample_projects_id__apps_name=package,
-        )
-        for sample_project_fields_obj in sample_project_fields_objs:
-            if not sample_project_fields_obj.get_field_name() in sample_batch_df:
-                error_cause = (
-                    core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED.copy()
-                )
-                error_cause.insert(1, sample_project_fields_obj.get_field_name())
-                return error_cause
-
     return "OK"
 
 
@@ -417,8 +400,6 @@ def heading_validation(sample_batch_df):
             }
     project_names = get_sample_projects_names(sample_batch_df)
     project_len = len(project_names)
-    if "" in project_names or "None" in project_names:
-        project_len -= 1
     if project_len > 1:
         return {
             "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_TOO_MANY_PROJECTS
@@ -428,8 +409,13 @@ def heading_validation(sample_batch_df):
         return s_project_fields
     for field in s_project_fields:
         if field not in batch_head:
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED.copy()
+            )
+            error_cause.insert(1, field)
+            error_cause = [" ".join([str(item) for item in error_cause])]
             return {
-                "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT
+                "ERROR": error_cause
             }
     return "OK"
 
@@ -515,7 +501,7 @@ def valid_sample_batch_file(sample_batch_df, package):
         sample_batch_data
     """
 
-    # Check if dataframe has empty values
+    # Check if dataframe has missing column names including project specific ones
     validate_heading = heading_validation(sample_batch_df)
     if "ERROR" in validate_heading:
         return validate_heading
