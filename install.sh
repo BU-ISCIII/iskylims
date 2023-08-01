@@ -225,7 +225,7 @@ while getopts $options opt; do
             ;;
         s )
             run_script=true
-            migration_script=$OPTARG
+            migration_script+=("$OPTARG")
             ;;
         t )
             tables=true
@@ -549,9 +549,11 @@ if [ $upgrade == true ]; then
         fi
 
         if [ $run_script ]; then
-            echo "Running migration script: $migration_script"
-            python manage.py runscript $migration_script
-            echo "Done migration script: $migration_script"
+            for val in "${migration_script[@]}"; do
+                echo "Running migration script: $val"
+                python manage.py runscript $val
+                echo "Done migration script: $val"
+            done
         fi
 
         cd -
