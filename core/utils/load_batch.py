@@ -416,7 +416,7 @@ def sample_name_validation(sample_batch_df):
     for sample in samples_requested:
         if type(sample) != str:
             error_cause = (
-                core.core_config.ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE.copy()
+                core.core_config.ERROR_MESSAGE_FOR_EMPTY_SAMPLE_NAME_BATCH_FILE.copy()
             )
             return {
                 "ERROR": error_cause
