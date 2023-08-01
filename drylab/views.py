@@ -702,8 +702,8 @@ def pending_services(request):
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
-                {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
+                "drylab/pending_services.html",
+                {"ERROR": drylab.config.ERROR_USER_NOT_ALLOWED},
             )
     else:
         # redirect to login webpage
