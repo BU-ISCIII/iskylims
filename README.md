@@ -208,7 +208,7 @@ In the linux terminal execute one of the following command that fit better to yo
 sudo bash install.sh --upgrade dep
 
 # to upgrade only iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --tables
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name -- script rename_sample_sheet_folder --tables
 
 # to install both software. NEEDS ROOT.
 sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --tables
