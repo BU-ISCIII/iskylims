@@ -3407,6 +3407,8 @@ def create_new_run(request):
                 },
             )
         # compatible_index = check_index_compatible(lib_prep_ids)
+        # check if run was created by crontab
+        defined_run = wetlab.utils.run.check_run_already_defined_by_crontab()
         display_sample_information = (
             wetlab.utils.run.create_run_in_pre_recorded_and_get_data_for_confirmation(
                 request.POST, request.user
