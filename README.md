@@ -44,7 +44,7 @@ Clone the iSkyLIMS github repository and run the docker script to create the doc
 
 ```bash
 git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-sudo bash docker_iskylims_install.sh
+sudo bash docker_install.sh
 ```
 
 The script creates a docker compose container with 3 services:
