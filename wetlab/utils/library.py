@@ -257,6 +257,14 @@ def get_samples_for_library_preparation(user=None, friend_list=False):
         samples_in_lib_prep["lib_prep_updated_param"] = ""
 
     if s_lib_prep_upd_kit:
+        samples_in_lib_prep["sample_to_be_s_sheet"] = list(
+            s_lib_prep_upd_kit.values_list(
+                "sample_id__sample_name",
+                "sample_id__pk",
+                "lib_prep_code_id",
+                "protocol_id__name",
+            )
+        )
         if wetlab.utils.sequencers.configuration_sequencer_exists():
             samples_in_lib_prep.update(
                 wetlab.utils.sequencers.get_configuration_sequencers_data()
@@ -481,9 +489,11 @@ def get_all_library_information(sample_id):
                     ).exists():
                         try:
                             lib_prep_param_value.append(
-                                wetlab.models.LibParameterValue.objects.get(
+                                wetlab.models.LibParameterValue.objects.filter(
                                     library_id=library_item, parameter_id=p_name
-                                ).get_parameter_information()
+                                )
+                                .last()
+                                .get_parameter_information()
                             )
                         except wetlab.models.LibParameterValue.DoesNotExist:
                             lib_prep_param_value.append("")
