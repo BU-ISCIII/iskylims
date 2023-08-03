@@ -379,12 +379,13 @@ def record_samples(request):
     """
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "recordsample":
-        
         req_user = request.user.username
         excel_json_data = json.loads(request.POST["table_data"])
-        
-        sample_recorded = core.utils.samples.analyze_input_samples(req_user, excel_json_data)
-        
+
+        sample_recorded = core.utils.samples.analyze_input_samples(
+            req_user, excel_json_data
+        )
+
         # if no samples are in any of the options, displays the inital page
         if (
             "defined_samples" not in sample_recorded
