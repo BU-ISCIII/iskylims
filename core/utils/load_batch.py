@@ -462,9 +462,7 @@ def valid_sample_batch_file(sample_batch_df, package):
         return validate_heading
     # if sample_batch_df.isnull().values.any():
     #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
-    import pdb
 
-    pdb.set_trace()
     if not check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_df):
         return (
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
