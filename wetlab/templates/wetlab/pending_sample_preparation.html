@@ -10,7 +10,7 @@
             <div class="col" >
                 <h3 class="text-center">Pending sample preparation</h3>
                 <div class="col">
-                    {% if pending_data %}
+                    {% if pending_data.state %}
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             {% for state, values in pending_data.state.items %}
                                 {% if forloop.first %}
