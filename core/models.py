@@ -1083,7 +1083,6 @@ class SamplesProjectsTableOptions(models.Model):
 
 class SamplesManager(models.Manager):
     def create_sample(self, sample_data):
-
         if sample_data["lab_request"] != "":
             lab_request = LabRequest.objects.filter(
                 lab_name_coding__exact=sample_data["lab_request"]
