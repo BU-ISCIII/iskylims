@@ -88,7 +88,6 @@ def sheet_header_to_field_name(header, field_info):
 
 
 def save_recorded_samples(samples_data, req_user, app_name):
-
     for sample in samples_data:
         # Fill fields
         sample["user"] = req_user
