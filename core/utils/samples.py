@@ -177,10 +177,12 @@ def validate_sample_data(sample_data, req_user, app_name):
         if sample["sample_name"] == "":
             continue
         # Add here proper validation
-        # Validate mandatory -> check this function check_mandatory_fields_included, Maybe types (date, string..) also here?
+        # Validate mandatory -> check this function check_mandatory_fields_included, 
+        # Maybe types (date, string..) also here?
         # Validate repeated samples -> check_if_sample_already_defined
         # Other.
-        # Note in config.core_config there are two variables for creating error messages: "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
+        # Note in config.core_config there are two variables for creating error messages: 
+        # "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
         sample_dict["Sample name"] = sample["sample_name"]
         sample_dict["Validate"] = True
         sample_dict["Validation error"] = None
