@@ -127,7 +127,7 @@ class LabRequest(models.Model):
         db_table = "core_lab_request"
 
     def __str__(self):
-        return "%s" % (self.lab_name)
+        return "%s" % (self.lab_name_coding)
 
     def get_name(self):
         return "%s" % (self.lab_name)
@@ -1083,75 +1083,78 @@ class SamplesProjectsTableOptions(models.Model):
 
 class SamplesManager(models.Manager):
     def create_sample(self, sample_data):
-        if sample_data["labRequest"] != "":
-            sample_data["labRequest"] = LabRequest.objects.filter(
-                lab_name_coding__exact=sample_data["labRequest"]
+
+        if sample_data["lab_request"] != "":
+            lab_request = LabRequest.objects.filter(
+                lab_name_coding__exact=sample_data["lab_request"]
             ).last()
         else:
-            sample_data["labRequest"] = None
+            lab_request = None
+
         if sample_data["species"] != "":
-            sample_data["species"] = Species.objects.filter(
+            species = Species.objects.filter(
                 species_name__exact=sample_data["species"]
             ).last()
         else:
             sample_data["species"] = None
-        if "sampleEntryDate" in sample_data:
-            if not isinstance(sample_data["sampleEntryDate"], datetime.date):
+
+        if "sample_entry_date" in sample_data:
+            if not isinstance(sample_data["sample_entry_date"], datetime.date):
                 try:
                     sample_entry_date = datetime.datetime.strptime(
-                        sample_data["sampleEntryDate"], "%Y-%m-%d %H:%M:%S"
+                        sample_data["sample_entry_date"], "%Y-%m-%d %H:%M:%S"
                     )
                 except ValueError:
                     sample_entry_date = None
             else:
-                sample_entry_date = sample_data["sampleEntryDate"]
+                sample_entry_date = sample_data["sample_entry_date"]
         else:
             sample_entry_date = None
 
-        if "collectionSampleDate" in sample_data:
-            if not isinstance(sample_data["collectionSampleDate"], datetime.date):
+        if "collection_sample_date" in sample_data:
+            if not isinstance(sample_data["collection_sample_date"], datetime.date):
                 try:
                     collection_sample_date = datetime.datetime.strptime(
-                        sample_data["collectionSampleDate"], "%Y-%m-%d %H:%M:%S"
+                        sample_data["collection_sample_date"], "%Y-%m-%d %H:%M:%S"
                     )
                 except ValueError:
                     collection_sample_date = None
             else:
-                collection_sample_date = sample_data["collectionSampleDate"]
+                collection_sample_date = sample_data["collection_sample_date"]
         else:
             collection_sample_date = None
 
-        if "completedDate" in sample_data:
-            if not isinstance(sample_data["completedDate"], datetime.date):
+        if "completed_date" in sample_data:
+            if not isinstance(sample_data["completed_date"], datetime.date):
                 try:
                     completed_date = datetime.datetime.strptime(
-                        sample_data["completedDate"], "%Y-%m-%d %H:%M:%S"
+                        sample_data["completed_date"], "%Y-%m-%d %H:%M:%S"
                     )
                 except ValueError:
                     completed_date = None
             else:
-                completed_date = sample_data["completedDate"]
+                completed_date = sample_data["completed_date"]
         else:
             completed_date = None
 
         new_sample = self.create(
             sample_state=StatesForSample.objects.get(
-                sample_state_name__exact=sample_data["sampleState"]
+                sample_state_name__exact=sample_data["sample_state"]
             ),
-            patient_core=sample_data["patient"],
-            lab_request=sample_data["labRequest"],
-            sample_project=sample_data["sampleProject"],
+            patient_core=sample_data["patient_core"],
+            lab_request=lab_request,
+            sample_project=sample_data["sample_project"],
             sample_type=SampleType.objects.get(
-                sample_type__exact=sample_data["sampleType"],
+                sample_type__exact=sample_data["sample_type"],
                 apps_name__exact=sample_data["app_name"],
             ),
             sample_user=User.objects.get(username__exact=sample_data["user"]),
-            sample_code_id=sample_data["sample_id"],
-            sample_name=sample_data["sampleName"],
-            unique_sample_id=sample_data["new_unique_value"],
-            species=sample_data["species"],
-            sample_location=sample_data["sampleLocation"],
-            only_recorded=sample_data["onlyRecorded"],
+            sample_code_id=sample_data["sample_code_id"],
+            sample_name=sample_data["sample_name"],
+            unique_sample_id=sample_data["unique_sample_id"],
+            species=species,
+            sample_location=sample_data["sample_location"],
+            only_recorded=sample_data["only_recorded"],
             sample_entry_date=sample_entry_date,
             collection_sample_date=collection_sample_date,
             completed_date=completed_date,

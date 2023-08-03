@@ -144,10 +144,11 @@ def jspreadsheet_to_dict(heading, data):
     """
     c_data = []
     for item in data:
-        tmp_dict = {}
-        for idx in range(len(heading)):
-            tmp_dict[heading[idx]] = item[idx]
-        c_data.append(tmp_dict)
+        if any(item):
+            tmp_dict = {}
+            for idx in range(len(heading)):
+                tmp_dict[heading[idx]] = item[idx]
+            c_data.append(tmp_dict)
     return c_data
 
 

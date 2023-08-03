@@ -2093,26 +2093,43 @@ def add_user_lot_commercial_kit(request):
 
 @login_required
 def record_samples(request):
+    """_summary_
+
+    Parameters
+    ----------
+    request
+        _description_
+
+    Returns
+    -------
+        _description_
     """
-    Functions :
-        analyze_input_samples
-        analyze_input_sample_project_fields
-        prepare_sample_input_table
-        prepare_sample_project_input_table
-    """
+
+    # Get Samples model fields with its verbose name, and dropdown lists for each of them
+    fields_info = core.utils.samples.sample_table_fields(__package__)
+
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "record_samples":
-        import pdb; pdb.set_trace()
+        # Get data from POST
         req_user = request.user.username
-        excel_data = json.loads(request.POST["table_data"])
+        excel_data = json.loads(request.POST["record_table_data"])
+        header = json.loads(request.POST["record_table_header"])
+
+        # Change excel header (verbose_name) to field names
+        field_names = core.utils.samples.sheet_header_to_field_name(
+            header, fields_info["fields"]
+        )
+        # Convert excel list-list to dictionary with field_names
         excel_json_data = core.utils.common.jspreadsheet_to_dict(
-            core.core_config.HEADING_FOR_RECORD_SAMPLES, excel_data
+            field_names, excel_data
+        )
+        # validate mandatory and redundant samples
+        validation = core.utils.samples.validate_sample_data(
+            excel_json_data, req_user, __package__
         )
 
-        validation = core.samples.validate_sample_data(excel_json_data, req_user, __package__)
-
         for val in validation:
-            if not val["validate"]:
+            if not val["Validate"]:
                 return render(
                     request,
                     "wetlab/record_sample.html",
@@ -2121,9 +2138,45 @@ def record_samples(request):
                         "excel_data": excel_data,
                     },
                 )
-        
-        # If all samples validate
 
+        # If all samples are validated
+        try:
+            # Record sample results.
+            sample_record_result = core.utils.samples.save_recorded_samples(
+                excel_json_data, req_user, __package__
+            )
+
+            # If any samples couldn't be recorded for any error.
+            for sample in sample_record_result:
+                if not sample["success"]:
+                    # If some samples got an error. Some samples have been recorded and some of them don't.
+                    return render(
+                        request,
+                        "wetlab/record_sample.html",
+                        {
+                            "fields_info": fields_info,
+                            "error_message": "Some samples couldn't be recorded. Table summary:",
+                            "sample_record_result": sample_record_result,
+                        },
+                    )
+            # If everything goes right
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "sample_record_result": sample_record_result,
+                },
+            )
+
+        except Exception:
+            # In case come uncatched error occurs
+            error_message = "There was an unexpected error when recording the samples."
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {"error_message": error_message},
+            )
 
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
         sample_information = core.utils.samples.prepare_sample_input_table(__package__)
@@ -2174,12 +2227,11 @@ def record_samples(request):
             )
     # Form to get the new samples
     else:
-        sample_information = core.utils.samples.prepare_sample_input_table(__package__)
-        import pdb; pdb.set_trace()
+        pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
         return render(
             request,
             "wetlab/record_sample.html",
-            {"sample_information": sample_information},
+            {"fields_info": fields_info, "pre_def_samples": pre_def_samples},
         )
 
 
