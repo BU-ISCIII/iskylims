@@ -77,9 +77,73 @@ def add_molecule_protocol_parameters(form_data):
 
     return molecule_updated_list
 
-def save_sample_data(sample_data, req_user, app_name):
 
-    new_sample = core.models.Samples.objects.create_sample(sample_data)
+def sheet_header_to_field_name(header, field_info):
+    field_names = []
+    for item in header:
+        for name, verbose_name in field_info.items():
+            if item == verbose_name and name not in field_names:
+                field_names.append(name)
+    return field_names
+
+
+def save_recorded_samples(samples_data, req_user, app_name):
+
+    for sample in samples_data:
+        # Fill fields
+        sample["user"] = req_user
+        sample["app_name"] = app_name
+
+        sample["sample_code_id"] = str(req_user + "_" + sample["sample_name"])
+
+        # Set unique ID
+        if not core.models.Samples.objects.exclude(
+            unique_sample_id__isnull=True
+        ).exists():
+            sample["unique_sample_id"] = "AAA-0001"
+        else:
+            last_unique_value = (
+                core.models.Samples.objects.exclude(unique_sample_id__isnull=True)
+                .last()
+                .unique_sample_id
+            )
+            sample["unique_sample_id"] = increase_unique_value(last_unique_value)
+
+        # Check if patient code  already exists on database,
+        # If not if will be created giving a sequencial dummy value
+        if sample["patient_core"] != "":
+            patient_obj = check_patient_code_exists(sample["patient_core"])
+            if patient_obj is False:
+                # Define the new patient only Patient code is defined
+                patient_obj = create_empty_patient(sample["patient_core"])
+        else:
+            patient_obj = None
+
+        sample["patient_core"] = patient_obj
+
+        # Check if sample project exist and generate de appropiate objetct
+        if sample["sample_project"] == "None":
+            sample["sample_project"] = None
+        else:
+            sample["sample_project"] = core.models.SampleProjects.objects.get(
+                sample_project_name__exact=sample["sample_project"]
+            )
+
+        # If only recorded set sample to completed state
+        if sample["only_recorded"]:
+            sample["sample_state"] = "Completed"
+            sample["completed_date"] = datetime.datetime.now()
+        else:
+            sample["sample_state"] = "Pre-Defined"
+
+        try:
+            core.models.Samples.objects.create_sample(sample)
+            sample["success"] = True
+        except Exception as e:
+            sample["success"] = False
+            sample["error"] = e
+
+    return samples_data
 
 
 def validate_sample_data(sample_data, req_user, app_name):
@@ -106,19 +170,19 @@ def validate_sample_data(sample_data, req_user, app_name):
               "Validate": False,
               "Validation error": "Mandatory field is missing."
               }]
-    """ 
-    
+    """
+
     validation = []
     for sample in sample_data:
         sample_dict = {}
-        if sample["Sample Name"] == "":
+        if sample["sample_name"] == "":
             continue
-        ## Add here proper validation
+        # Add here proper validation
         # Validate mandatory -> check this function check_mandatory_fields_included, Maybe types (date, string..) also here?
         # Validate repeated samples -> check_if_sample_already_defined
         # Other.
         # Note in config.core_config there are two variables for creating error messages: "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
-        sample_dict["Sample name"] = sample["Sample Name"]
+        sample_dict["Sample name"] = sample["sample_name"]
         sample_dict["Validate"] = True
         sample_dict["Validation error"] = None
         validation.append(sample_dict)
@@ -171,27 +235,6 @@ def analyze_input_sample_project_fields(form_data):
     sample_recorded["display_samples"] = sample_to_display
 
     return sample_recorded
-
-
-def build_record_sample_form(app_name):
-    """
-    Description:
-        The function collect the stored information of  species, sample origin and sample type to use in the
-        selected form.
-    Input:
-
-    Functions:
-        get_species             located at this file
-        get_lab_requested       located at this file
-        get_sample_type         located at this file
-    Variables:
-        sample_information:     Dictionnary to collect the information
-    Return:
-        sample_information
-    """
-
-    
-    return sample_information
 
 
 def check_empty_fields(row_data, optional_index):
@@ -1031,7 +1074,6 @@ def get_molecule_protocols(apps_name):
     return protocols, protocol_list
 
 
-# state get samples per user
 def get_sample_objs_in_state(s_state, user=None, friend_list=None):
     """Return a list of sample objects that are in the indicate state.
     Sample are filter by the user and the user friend list. If no user
@@ -1455,7 +1497,7 @@ def modify_fields_in_sample_project(form_data):
     return saved_fields
 
 
-def prepare_sample_input_table(app_name):
+def sample_table_fields(app_name):
     """
     Description: The function collect the species, Lab request, type of
         samples, and heading used in the input table.
@@ -1469,23 +1511,21 @@ def prepare_sample_input_table(app_name):
         s_information #
     """
     # get the choices to be included in the form
-    sample_info = {}
-    sample_info["fields"] = {}
+    fields_info = {}
+    fields_info["fields"] = {}
     for field in core.models.Samples._meta.get_fields():
         try:
-            sample_info["fields"][field.name] = field.verbose_name
+            fields_info["fields"][field.name] = field.verbose_name
         except Exception:
-            sample_info["fields"][field.name] = field.name
+            fields_info["fields"][field.name] = field.name
 
-    sample_info["species"] = get_species()
-    sample_info["lab_request"] = get_lab_requested()
-    sample_info["sample_type"] = get_sample_type(app_name)
-    sample_info["sample_project"] = get_defined_sample_projects(app_name)
-    sample_info["sample_project"].insert(0, "None")
-    sample_objs = get_sample_objs_in_state("Pre-defined")
-    sample_info["pre_defined_samples"] = sample_objs
+    fields_info["species"] = get_species()
+    fields_info["lab_request"] = get_lab_requested()
+    fields_info["sample_type"] = get_sample_type(app_name)
+    fields_info["sample_project"] = get_defined_sample_projects(app_name)
+    fields_info["sample_project"].insert(0, "None")
 
-    return sample_info
+    return fields_info
 
 
 def record_molecule_use(from_data, app_name):
