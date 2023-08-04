@@ -502,11 +502,11 @@ if [ $upgrade == true ]; then
                    
             # copy modified migration files
             echo "Copying custom migration files from conf."
-            cp $INSTALL_PATH/conf/0002_core_migration_v2.3.1.py $INSTALL_PATH/core/migrations/0002_migration_v2_3_1.py
-            cp $INSTALL_PATH/conf/0002_drylab_migration_v2.3.1.py $INSTALL_PATH/drylab/migrations/0002_migration_v2_3_1.py
-            cp $INSTALL_PATH/conf/0002_wetlab_migration_v2.3.1.py $INSTALL_PATH/wetlab/migrations/0002_migration_v2_3_1.py
+            cp $INSTALL_PATH/conf/0002_core_migration_v3.0.0.py $INSTALL_PATH/core/migrations/0002_migration_v3_0_0.py
+            cp $INSTALL_PATH/conf/0002_drylab_migration_v3.0.0.py $INSTALL_PATH/drylab/migrations/0002_migration_v3_0_0.py
+            cp $INSTALL_PATH/conf/0002_wetlab_migration_v3.0.0.py $INSTALL_PATH/wetlab/migrations/0002_migration_v3_0_0.py
             # cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
-            cp $INSTALL_PATH/conf/0002_django_utils_migration_v2.3.1.py $INSTALL_PATH/django_utils/migrations/0002_migration_v2_3_1.py
+            cp $INSTALL_PATH/conf/0002_django_utils_migration_v3.0.0.py $INSTALL_PATH/django_utils/migrations/0002_migration_v3_0_0.py
 
             read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
             echo    # (optional) move to a new line
