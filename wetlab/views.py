@@ -2116,7 +2116,7 @@ def record_samples(request):
         header = json.loads(request.POST["record_table_header"])
 
         # Change excel header (verbose_name) to field names
-        field_names = core.utils.samples.sheet_header_to_field_name(
+        field_names = core.utils.common.sheet_header_to_field_name(
             header, fields_info["fields"]
         )
         # Convert excel list-list to dictionary with field_names
@@ -2124,6 +2124,7 @@ def record_samples(request):
             field_names, excel_data
         )
         # validate mandatory and redundant samples
+
         validation = core.utils.samples.validate_sample_data(
             excel_json_data, req_user, __package__
         )
