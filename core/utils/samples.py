@@ -78,15 +78,6 @@ def add_molecule_protocol_parameters(form_data):
     return molecule_updated_list
 
 
-def sheet_header_to_field_name(header, field_info):
-    field_names = []
-    for item in header:
-        for name, verbose_name in field_info.items():
-            if item == verbose_name and name not in field_names:
-                field_names.append(name)
-    return field_names
-
-
 def save_recorded_samples(samples_data, req_user, app_name):
     for sample in samples_data:
         # Fill fields

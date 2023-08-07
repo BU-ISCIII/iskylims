@@ -131,6 +131,31 @@ def get_email_data():
     return email_data
 
 
+def sheet_header_to_field_name(header, field_info):
+    """function that changes header/verbose names to 
+    field names as defined in models.py
+
+    Parameters
+    ----------
+    header
+        list with the header names in the web excel table
+    field_info
+        dictionary with the map between the verbose names and the db field names
+
+    Returns
+    -------
+        field_names: same header list but changing the verbose names to the field names.
+        IMPORTANT: IN THE SAME ORDER!!
+    """
+    field_names = [
+        name
+        for item in header
+        for name, verbose_name in field_info.items()
+        if item == verbose_name
+    ]
+    return field_names
+
+
 def jspreadsheet_to_dict(heading, data):
     """Convert the list of item list into a list where each item in the list
     is a dictionary and keys are the heading values
@@ -142,13 +167,11 @@ def jspreadsheet_to_dict(heading, data):
     Returns:
         (list): List which each item has a dictionary with the heading as key values
     """
-    c_data = []
-    for item in data:
-        if any(item):
-            tmp_dict = {}
-            for idx in range(len(heading)):
-                tmp_dict[heading[idx]] = item[idx]
-            c_data.append(tmp_dict)
+    c_data = [
+        {heading[idx]: item[idx] for idx in range(len(heading))}
+        for item in data
+        if any(item)
+    ]
     return c_data
 
 
