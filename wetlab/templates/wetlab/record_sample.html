@@ -84,7 +84,7 @@
             </div>
         </div>
         {% endif %}
-        {% if incomplete_samples %}
+        {% if validation %}
         <div class="row justify-content-center pb-2 pt-2">
             <div class="col-md-12">
                 <div class="card ">
@@ -92,7 +92,31 @@
                         There is some required information missing in some samples
                     </div>
                     <div class="card-body">
-                        <p>Write down the missing information and then click on the submit button</p>
+                        <table class="table table-hover" id="validation_result">
+                            <thead>
+                                <tr>
+                                    {% for key in validation.0.keys %}
+                                    <th>{{ key }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sample in validation %}
+                                <tr>
+                                    {% for _, value in sample.items %}
+                                    <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    {% for key in validation.keys %}
+                                    <th>{{ key }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -170,6 +194,9 @@
         {% endif %}
     </div>
 </section>
+{% if excel_data %}
+{{ excel_data|json_script:"excel_data" }}
+{% endif %}
 <script>
     $(document).ready(function () {
         
@@ -210,19 +237,8 @@
         
         {% endif %}
 
-        {% if incomplete_samples %}
-        var s_info = [{% for value in incomplete_samples %}
-                    ["{{ value.patient_core }}", 
-                    "{{ value.sample_name }}",
-                    "{{ value.lab_request }}", 
-                    "{{ value.sample_type }}", 
-                    "{{ value.species }}", 
-                    "{{ value.sample_project }}", 
-                    "{{ value.sample_entry_date }}", 
-                    "{{ value.collection_sample_date }}", 
-                    "{{ value.sample_location }}", 
-                    "{{ value.sample_only_recorded }}"],
-                    {% endfor %}];
+        {% if excel_data %}
+        var s_info = JSON.parse(document.getElementById('excel_data').textContent);
         {% else %}
         var s_info = [[],[],[],[],[],[],[],[],[],[]];
         {% endif %}

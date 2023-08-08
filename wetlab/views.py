@@ -2135,6 +2135,7 @@ def record_samples(request):
                     request,
                     "wetlab/record_sample.html",
                     {
+                        "fields_info": fields_info,
                         "validation": validation,
                         "excel_data": excel_data,
                     },
