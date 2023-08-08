@@ -111,7 +111,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    {% for key in validation.keys %}
+                                    {% for key in validation.0.keys %}
                                     <th>{{ key }}</th>
                                     {% endfor %}
                                 </tr>
@@ -287,6 +287,27 @@
         });
 
         var table_sample_fields = $('#result_record').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+        
+        $('#validation_result tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        var table_validation_result = $('#validation_result').DataTable({
             initComplete: function () {
                 // Apply the search
                 this.api()

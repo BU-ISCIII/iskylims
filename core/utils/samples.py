@@ -175,8 +175,8 @@ def validate_sample_data(sample_data, req_user, app_name):
         # Note in config.core_config there are two variables for creating error messages:
         # "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
         sample_dict["Sample name"] = sample["sample_name"]
-        sample_dict["Validate"] = True
-        sample_dict["Validation error"] = None
+        sample_dict["Validate"] = False
+        sample_dict["Validation error"] = "pruebaaaaa"
         validation.append(sample_dict)
 
     return validation
