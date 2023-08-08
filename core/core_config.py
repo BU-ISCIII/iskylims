@@ -332,7 +332,7 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES = [
     "Check documentation to define them",
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE = [
-    "The Type of sample",
+    "The Type of Sample",
     "is not defined",
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES = [
@@ -348,13 +348,11 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
     "is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL = [
-    "The batch file must have the same type of samples",
-    "Same Sample project",
-    "and the same Protocol Name",
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE = [
+    "The batch file must have the same type of samples and same project assigned"
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED = [
-    "Required sample project field",
+    "Required project field",
     "is not included in batch file",
 ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED = [
@@ -388,3 +386,13 @@ ERROR_MESSAGE_INVALID_JSON_SCHEMA = [
 ]
 ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]
 ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
+ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE = [
+    "The sample(s)",
+    "of the excel file is/are repeated"
+]
+ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_DATABASE = [
+    "The sample",
+    "of the excel file is already repeated on the Data Base"
+]
+ERROR_MESSAGE_FOR_EMPTY_SAMPLE_NAME_BATCH_FILE = ["At least one sample name is empty"]
+]

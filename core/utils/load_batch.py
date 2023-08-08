@@ -20,25 +20,6 @@ def get_sample_projects_names(sample_df):
     return sample_df["Project/Service"].unique().tolist()
 
 
-def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
-    """
-    Description:
-        The Function check if only one type of sample is in data and if the mandatory parameters
-        for the type of sample are included.
-        In case that are more than 1 type of sample it checks one by one the mandatory parameters
-    Input:
-        sample_batch_data
-    Return:
-        True or False
-    """
-    sample_type = sample_batch_data["Type of Sample"].unique().tolist()
-    sample_project = sample_batch_data["Project/Service"].unique().tolist()
-    protocol = sample_batch_data["ProtocolName"].unique().tolist()
-    if len(sample_type) != 1 or len(sample_project) != 1 or len(protocol) != 1:
-        return False
-    return True
-
-
 def check_defined_option_values_in_samples(sample_batch_df, package):
     """
     Description:
@@ -67,7 +48,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED.copy()
             )
             error_cause.insert(1, lab_request)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
     if not core.models.SampleType.objects.filter(apps_name=package).exists():
         return (
             core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES
@@ -84,7 +68,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE.copy()
             )
             error_cause.insert(1, sample_type)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
     if not core.models.Species.objects.filter(apps_name=package).exists():
         return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES
     species_values = list(
@@ -99,7 +86,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES.copy()
             )
             error_cause.insert(1, specie)
-            return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
     # check if sample projects are defined
     if not core.models.SampleProjects.objects.filter(apps_name=package).exists():
         return (
@@ -117,24 +107,10 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
                 core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS.copy()
             )
             error_cause.insert(1, sample_project)
-            return error_cause
-
-    # check if additional sample Project parameters are include in bathc file
-    if core.models.SampleProjectsFields.objects.filter(
-        sample_projects_id__sample_project_name__exact=sample_project,
-        sample_projects_id__apps_name=package,
-    ).exists():
-        sample_project_fields_objs = core.models.SampleProjectsFields.objects.filter(
-            sample_projects_id__sample_project_name__exact=sample_project,
-            sample_projects_id__apps_name=package,
-        )
-        for sample_project_fields_obj in sample_project_fields_objs:
-            if not sample_project_fields_obj.get_field_name() in sample_batch_df:
-                error_cause = (
-                    core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED.copy()
-                )
-                error_cause.insert(1, sample_project_fields_obj.get_field_name())
-                return error_cause
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
+            }
 
     return "OK"
 
@@ -245,10 +221,10 @@ def create_sample_from_batch_file(sample_data, req_user, package):
         sample_new["patient"] = None
 
     sample_new["app_name"] = package
-    sample_new["onlyRecorded"] = sample_data["Only Record"]
+    sample_new["onlyRecorded"] = sample_data["Only recorded"]
     sample_new["labRequest"] = sample_data["Lab requested"]
     sample_new["species"] = sample_data["Species"]
-    sample_new["sampleLocation"] = sample_data["Sample storage"]
+    sample_new["sampleLocation"] = sample_data["Sample Storage Location"]
     sample_new["sampleEntryDate"] = str(sample_data["Date sample reception"])
     sample_new["sampleProject"] = core.models.SampleProjects.objects.filter(
         sample_project_name__exact=sample_data["Project/Service"], apps_name=package
@@ -263,11 +239,11 @@ def create_sample_from_batch_file(sample_data, req_user, package):
             .last()
             .get_unique_sample_id()
         )
-    if sample_data["Only Record"]:
+    if sample_data["Only recorded"]:
         sample_new["sampleState"] = "Completed"
     else:
         sample_new["sampleState"] = "Defined"
-    sample_new["onlyRecorded"] = sample_data["Only Record"]
+    sample_new["onlyRecorded"] = sample_data["Only recorded"]
     new_sample = core.models.Samples.objects.create_sample(sample_new)
 
     return new_sample
@@ -303,14 +279,14 @@ def create_sample_project_fields_value(sample_obj, sample_data, package):
     return
 
 
-def create_molecule_from_file(sample_obj, sample_data, req_user, package):
+def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
     """
     Description:
         The function create new molecule from the data frame
     Inputs:
         sample_obj      # object of the sample
         sample_data     # panda dataframe
-        req_user        # user name
+        reg_user        # user name
         package         # name of the apps that request the checking
     Return:
         new_molecule
@@ -324,7 +300,7 @@ def create_molecule_from_file(sample_obj, sample_data, req_user, package):
     molecule_data["moleculeExtractionDate"] = str(sample_data["Extraction date"])
     molecule_data["numberOfReused"] = str(0)
     molecule_data["app_name"] = package
-    molecule_data["user"] = req_user
+    molecule_data["user"] = reg_user
     new_molecule = core.models.MoleculePreparation.objects.create_molecule(
         molecule_data
     )
@@ -406,8 +382,6 @@ def heading_validation(sample_batch_df):
             }
     project_names = get_sample_projects_names(sample_batch_df)
     project_len = len(project_names)
-    if "" in project_names or "None" in project_names:
-        project_len -= 1
     if project_len > 1:
         return {
             "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_TOO_MANY_PROJECTS
@@ -417,8 +391,61 @@ def heading_validation(sample_batch_df):
         return s_project_fields
     for field in s_project_fields:
         if field not in batch_head:
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED.copy()
+            )
+            error_cause.insert(1, field)
+            error_cause = [" ".join([str(item) for item in error_cause])]
             return {
-                "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT
+                "ERROR": error_cause
+            }
+    return "OK"
+
+
+def sample_name_validation(sample_batch_df):
+    """
+    Description:
+        The Function read the batch file and searches for empty sample names, repeated samples or samples already in the DB
+    Constants:
+        ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE
+    Return:
+        OK or ERROR
+    """
+    # Searches empty samples
+    samples_requested = sample_batch_df["Sample Name"].tolist()
+    for sample in samples_requested:
+        if type(sample) != str:
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_EMPTY_SAMPLE_NAME_BATCH_FILE.copy()
+            )
+            return {
+                "ERROR": error_cause
+            }
+    # Searches duplicated samples in the excel file
+    duplicates = [x for i, x in enumerate(samples_requested) if i != samples_requested.index(x)]    
+    if len(duplicates) > 0:
+        duplicates = ", ".join([str(item) for item in duplicates])
+        error_cause = (
+            core.core_config.ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_FILE.copy()
+        )
+        error_cause.insert(1, duplicates)
+        error_cause = [" ".join([str(item) for item in error_cause])]
+        return {
+            "ERROR": error_cause
+        }
+    # Searches duplicated samples in the DB
+    samples_registered = list(
+        core.models.Samples.objects.all().values_list("sample_name", flat=True)
+    )
+    for sample_name in samples_requested:
+        if sample_name in samples_registered:
+            error_cause = (
+                core.core_config.ERROR_MESSAGE_FOR_REPEATED_SAMPLE_BATCH_DATABASE.copy()
+            )
+            error_cause.insert(1, sample_name)
+            error_cause = [" ".join([str(item) for item in error_cause])]
+            return {
+                "ERROR": error_cause
             }
     return "OK"
 
@@ -456,26 +483,28 @@ def valid_sample_batch_file(sample_batch_df, package):
         sample_batch_data
     """
 
-    # Check if dataframe has empty values
+    # Check if dataframe has missing column names including project specific ones
     validate_heading = heading_validation(sample_batch_df)
     if "ERROR" in validate_heading:
         return validate_heading
     # if sample_batch_df.isnull().values.any():
     #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
 
-    if not check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_df):
-        return (
-            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
-        )
+    # Check if sample name is empty or repeated
+    validate_sample_name = sample_name_validation(sample_batch_df)
+    if "ERROR" in validate_sample_name:
+        return validate_sample_name
+
+    # Check if sample type is the same in all samples
+    sample_type = sample_batch_df["Type of Sample"].unique().tolist()
+    if len(sample_type) != 1 or len(sample_batch_df) != 1:
+        return {
+            "ERROR": core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE
+        }
+
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
-    if check_opt_values != "OK":
-        return (
-            core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
-        )
-    # check molecule columns data
-    check_molecule_par = check_molecule_has_same_data_type(sample_batch_df, package)
-    if check_molecule_par != "OK":
-        return check_molecule_par
+    if "ERROR" in check_opt_values:
+        return check_opt_values
     return "OK"
 
 
@@ -497,7 +526,7 @@ def save_samples_in_batch_file(sample_batch_df, req_user, package):
         new_sample = create_sample_from_batch_file(row_data, req_user, package)
         create_sample_project_fields_value(new_sample, row_data, package)
         new_molecule = create_molecule_from_file(
-            new_sample, row_data, req_user, package
+            new_sample, row_data, reg_user, package
         )
         create_molecule_parameter_from_file(new_molecule, row_data)
         new_sample.set_state("Library preparation")
