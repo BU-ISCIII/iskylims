@@ -140,7 +140,6 @@ update_settings_and_urls(){
 }
 
 upgrade_venv(){
-    rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
     echo "activate the virtualenv"
     source virtualenv/bin/activate
     echo "Installing required python packages"
@@ -348,11 +347,13 @@ if [ $upgrade == true ]; then
             echo    # (optional) move to a new line
             if [[ $REPLY =~ ^[Yy]$ ]] ; then
                 rm -rf $INSTALL_PATH/virtualenv
+                rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
                 cd $INSTALL_PATH
                 bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
                 upgrade_venv
                 cd -
             else
+                rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
                 cd $INSTALL_PATH
                 upgrade_venv
                 cd -
@@ -362,6 +363,7 @@ if [ $upgrade == true ]; then
             read -p "Do you want to create a new virtualenv and reinstall? (Y/N) " -n 1 -r
             echo    # (optional) move to a new line
             if [[ $REPLY =~ ^[Yy]$ ]] ; then
+                rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
                 cd $INSTALL_PATH
                 bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
                 upgrade_venv
