@@ -66,7 +66,7 @@ When script ends open your navigator typing **localhost:8001** to access to iSky
 Before starting the installation make sure :
 
 - You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
-- Database (MySQL/MariaDB) is running.
+- Database (MySQL/MariaDB) > 10.4 is running.
 - Local server configured for sending emails
 - Apache server is running.
 - Python > 3.8 installed
