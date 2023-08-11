@@ -387,6 +387,9 @@ if [ $upgrade == true ]; then
             rm -rf $INSTALL_PATH/iSkyLIMS_drylab/migrations/*
 
             cd $INSTALL_PATH
+            sed -i "s/ugettext/gettext/g" iSkyLIMS_wetlab/models.py
+            sed -i "s/ugettext/gettext/g" iSkyLIMS_core/forms.py
+            sed -i "s/ugettext/gettext/g" django_utils/forms.py
             echo "activate the virtualenv"
             source virtualenv/bin/activate
 
@@ -501,7 +504,14 @@ if [ $upgrade == true ]; then
             mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
 
             echo "Done modifying database names and constraints..." 
-                   
+
+            echo "Modifying names in migration files..."
+            sed -i 's/iSkyLIMS_core/core/g' */migrations/*.py
+            # sed -i 's/iSkyLIMS_clinic/clinic/g' */migrations/*.py
+            sed -i 's/iSkyLIMS_drylab/drylab/g' */migrations/*.py
+            sed -i 's/iSkyLIMS_wetlab/wetlab/g' */migrations/*.py
+            echo "Done modifying names in migration files..."
+            
             # copy modified migration files
             echo "Copying custom migration files from conf."
             cp $INSTALL_PATH/conf/0002_core_migration_v3.0.0.py $INSTALL_PATH/core/migrations/0002_migration_v3_0_0.py
