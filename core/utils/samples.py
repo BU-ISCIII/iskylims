@@ -175,7 +175,7 @@ def validate_sample_data(sample_data, req_user, app_name):
         # Note in config.core_config there are two variables for creating error messages:
         # "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
         sample_dict["Sample name"] = sample["sample_name"]
-        sample_dict["Validate"] = False
+        sample_dict["Validate"] = True
         sample_dict["Validation error"] = "pruebaaaaa"
         validation.append(sample_dict)
 
@@ -1490,17 +1490,27 @@ def modify_fields_in_sample_project(form_data):
 
 
 def sample_table_fields(app_name):
-    """
-    Description: The function collect the species, Lab request, type of
-        samples, and heading used in the input table.
-        Return a dictionary with collected information.
+    """ Gathers fields info to include in record sample form. It grabs verbose_name from
+        Samples model when available and options for dropdown lists.
 
-    Functions:
-        build_record_sample_form  : located at this file
-    Variables:
-        s_information # dictionary which collects all info
-    Return:
-        s_information #
+    Parameters
+    ----------
+    app_name
+        app name. p.e wetlab or drylab
+
+    Returns
+    -------
+        field_info
+        {
+            "fields": {
+                "sample_name": "Sample Name",
+                "sample_collection_date": "Sample collection date"
+            },
+            "species": ["human", "rat"],
+            "lab_request": ["isciii", "hrycl"],
+            "sample_type": ["fastq", "blood"],
+            "sample_project": ["None","Relecov"],
+        }
     """
     # get the choices to be included in the form
     fields_info = {}
