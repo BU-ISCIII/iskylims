@@ -526,4 +526,9 @@ class Migration(migrations.Migration):
                 verbose_name="Service State",
             ),
         ),
+        migrations.AlterField(
+            model_name='service',
+            name='service_request_number',
+            field=models.CharField(max_length=80, null=True, verbose_name='Service ID'),
+        ),
     ]
