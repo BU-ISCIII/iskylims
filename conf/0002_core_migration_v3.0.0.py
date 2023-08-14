@@ -983,4 +983,9 @@ class Migration(migrations.Migration):
                 to="core.sampleprojectfieldclassification",
             ),
         ),
+        migrations.AlterField(
+            model_name='samples',
+            name='patient_core',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientcore', verbose_name='Patient Code ID'),
+        ),
     ]
