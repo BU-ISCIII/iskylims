@@ -1171,8 +1171,13 @@ class Samples(models.Model):
     )
 
     patient_core = models.ForeignKey(
-        PatientCore, on_delete=models.CASCADE, null=True, blank=True
+        PatientCore,
+        on_delete=models.CASCADE,
+        verbose_name="Patient Code ID",
+        null=True,
+        blank=True
     )
+    
     lab_request = models.ForeignKey(
         LabRequest,
         on_delete=models.CASCADE,
