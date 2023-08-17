@@ -307,8 +307,8 @@ ERROR_CITY_ALREADY_DEFINED = ["City is already defined"]
 
 ERROR_SAMPLE_NOT_FOUND = "Sample was not found"
 
-ERROR_SAMPLE_ALREADY_DEFINED = "Samples already defined"
-ERROR_SAMPLE_INCOMPLETED = " Samples with imcompleted data"
+ERROR_SAMPLE_ALREADY_DEFINED = ["Sample",
+                                "already exist in the database"]
 
 # ######################  Batch file ###############################################
 ERROR_EMPTY_SAMPLE_BATCH_FILE = [
@@ -320,23 +320,24 @@ ERROR_NO_LAB_REQUESTED = [
     "from where the samples are received is not defined",
 ]
 ERROR_NO_DEFINED_LAB_REQUESTED = [
+    "No Laboratory is defined yet. Check documentation to define the Laboratory"
 ]
 ERROR_BATCH_FILE_INVALID_FORMAT = [
     "Batch file does not have the correct format"
 ]
 ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES = [
-    "No Type of Samples are defined yet",
-    "Check documentation to define them",
+    "No Type of Samples are defined yet. Check documentation to define them"
 ]
 ERROR_NO_SAMPLE_TYPE = [
     "The Type of sample",
-    "is not defined",
+    "is not defined in the database.",
 ]
 ERROR_NO_DEFINED_SPECIES = [
+    "No Species are defined yet. Check documentation to define them"
 ]
 ERROR_NO_SPECIES = ["The specie", "is not defined"]
 ERROR_NO_DEFINED_SAMPLE_PROJECTS = [
+    "No Sample Projects are defined yet. Check documentation to define them"
 ]
 ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
@@ -364,7 +365,7 @@ ERROR_NO_MOLECULE_TYPE = [
     "is not defined",
 ]
 ERROR_NO_DEFINED_PROTOCOL = [
-    "No protocols name are defined yet",
+    "No protocols are defined yet",
     "Check documentation to define them",
 ]
 ERROR_NO_MOLECULE_PROTOCOL_NAME = [
