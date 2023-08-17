@@ -311,80 +311,74 @@ ERROR_SAMPLE_ALREADY_DEFINED = "Samples already defined"
 ERROR_SAMPLE_INCOMPLETED = " Samples with imcompleted data"
 
 # ######################  Batch file ###############################################
-ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE = [
+ERROR_EMPTY_SAMPLE_BATCH_FILE = [
     "The uploaded sample batch file does not have any sample",
     "Upload a valid batch file",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED = [
+ERROR_NO_LAB_REQUESTED = [
     "The Laboratory",
     "from where the samples are received is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED = [
-    "No Laboratory is defined yet",
-    "Check documentation to define the Laboratory",
+ERROR_NO_DEFINED_LAB_REQUESTED = [
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE = ["Batch file contains empty values"]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_INVALID_FORMAT = [
+ERROR_BATCH_FILE_INVALID_FORMAT = [
     "Batch file does not have the correct format"
 ]
+ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet",
     "Check documentation to define them",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE = [
+ERROR_NO_SAMPLE_TYPE = [
     "The Type of sample",
     "is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES = [
-    "No Species are defined yet",
-    "Check documentation to define them",
+ERROR_NO_DEFINED_SPECIES = [
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES = ["The specie", "is not defined"]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS = [
-    "No Sample Projects are defined yet",
-    "Check documentation to define them",
+ERROR_NO_SPECIES = ["The specie", "is not defined"]
+ERROR_NO_DEFINED_SAMPLE_PROJECTS = [
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS = [
+ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
     "is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL = [
+ERROR_NOT_SAME_SAMPLE_PROTOCOL = [
     "The batch file must have the same type of samples",
     "Same Sample project",
     "and the same Protocol Name",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED = [
+ERROR_PROJECT_FIELD_NOT_DEFINED = [
     "Required sample project field",
     "is not included in batch file",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED = [
+ERROR_MOLECULE_FIELD_NOT_DEFINED = [
     "The mandatory field for molecule",
     "must be included in the batch file",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES = [
+ERROR_NO_DEFINED_MOLECULE_TYPES = [
     "No molecule types are defined yet",
     "Check documentation to define them",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE = [
+ERROR_NO_MOLECULE_TYPE = [
     "The molecule Type",
     "is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_PROTOCOL = [
+ERROR_NO_DEFINED_PROTOCOL = [
     "No protocols name are defined yet",
     "Check documentation to define them",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME = [
+ERROR_NO_MOLECULE_PROTOCOL_NAME = [
     "The protocol name",
     "is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_SAMPLE_PROJECT_NO_DEFINED = [
+ERROR_SAMPLE_PROJECT_NO_DEFINED = [
     "Project/Service is not defined",
 ]
-ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_TOO_MANY_PROJECTS = [
+ERROR_TOO_MANY_PROJECTS = [
     "Only one project must be defined per sample batch file"
 ]
-ERROR_MESSAGE_INVALID_JSON_SCHEMA = [
+ERROR_INVALID_JSON_SCHEMA = [
     "Upload schema cannot used because it contains errors "
 ]
-ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]
+ERROR_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]
 ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
