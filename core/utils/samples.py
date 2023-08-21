@@ -15,70 +15,120 @@ import core.utils.commercial_kits
 import core.utils.protocols
 
 
-def add_molecule_protocol_parameters(form_data):
-    """The function stores in database the molecule parameters.
-        Return the list of the molecules updated
+def project_table_fields(projects, samples):
+    """Gathers projects fields info to be displayed in the record project form
 
-    Parameters:
-    -----------
-        request
+    Parameters
+    ----------
+    projects
+        List of project names. Pe. ["None", "Relecov"]
+    samples
+        List of sample dict. Pe. [{"sample_name": "2133", "sample_project": "Relecov",...},
+                                  {"sample_name": "2134", "sample_project": "Relecov",...}]
+        "sample_project" key is mandatory
 
-    Return:
-    ------
-        molecule_updated_list.
-    """
-
-    molecule_parameter_value = {}
-    molecule_updated_list = []
-
-    molecule_json_data = json.loads(form_data["parameters_data"])
-    molecule_ids = form_data["molecules"].split(",")
-    molecule_code_ids = form_data["molecule_code_ids"].split(",")
-    parameter_heading = form_data["heading_in_excel"].split("::")
-    parameters_length = len(molecule_json_data[0])
-    fixed_heading_length = len(core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
-
-    for row_index in range(len(molecule_json_data)):
-        user_lot_commercial_kit_obj = core.models.UserLotCommercialKits.objects.filter(
-            chip_lot__exact=molecule_json_data[row_index][1]
-        ).last()
-        # increase the number of use and updated the last use date
-        user_lot_commercial_kit_obj.set_increase_use()
-        user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
-        right_id = molecule_ids[
-            molecule_code_ids.index(molecule_json_data[row_index][0])
+    Returns
+    -------
+        project_fields = [
+            {
+                "project_name": "Relecov",
+                "project_fields": [list of projectField objects],
+                "project_data": [list of samples belonging to this project dict]
+            }
         ]
-
-        molecule_obj = get_molecule_obj_from_id(right_id)
-        molecule_obj.set_user_lot_kit_obj(user_lot_commercial_kit_obj)
-        molecule_obj.set_state("Completed")
-        molecule_updated_list.append(molecule_obj.get_molecule_code_id())
-        protocol_used_obj = molecule_obj.get_protocol_obj()
-
-        for p_index in range(fixed_heading_length, parameters_length):
-            molecule_parameter_value[
-                "moleculeParameter_id"
-            ] = core.models.ProtocolParameters.objects.filter(
-                protocol_id=protocol_used_obj,
-                parameter_name__exact=parameter_heading[p_index - fixed_heading_length],
-                parameter_used__exact=True,
-            ).last()
-            molecule_parameter_value["molecule_id"] = molecule_obj
-            molecule_parameter_value["parameterValue"] = molecule_json_data[row_index][
-                p_index
-            ]
-            core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
-                molecule_parameter_value
+    """
+    projects_fields = []
+    for project_name in projects:
+        if project_name != "None":
+            project = {
+                "project_name": "",
+                "project_fields": [],
+                "project_data": [],
+            }
+            project_fields = (
+                core.models.SampleProjectsFields.objects.filter(
+                    sample_projects_id=project_name
+                )
+                .exclude(sample_project_field_used=None)
+                .order_by("sample_project_field_order")
             )
+            # If it doesn't exist the project is added to the list
+            if any(p["project_name"] == project_name for p in projects_fields):
+                project["project_name"] = project_name
+                project["project_fields"] = project_fields
+            # Append sample data associated with the project
+            project["project_data"] = [
+                s for s in samples if s["sample_project"] == project_name
+            ]
+            projects_fields.append(project)
+    return projects_fields
 
-        # Update sample state
-        sample_obj = molecule_obj.get_sample_obj()
-        sample_obj.set_state("Pending for use")
 
-    return molecule_updated_list
+def sample_table_fields(app_name):
+    """Gathers fields info to include in record sample form. It grabs verbose_name from
+        Samples model when available and options for dropdown lists.
+
+    Parameters
+    ----------
+    app_name
+        app name. p.e wetlab or drylab
+
+    Returns
+    -------
+        field_info
+        {
+            "fields": {
+                "sample_name": "Sample Name",
+                "sample_collection_date": "Sample collection date"
+            },
+            "species": ["human", "rat"],
+            "lab_request": ["isciii", "hrycl"],
+            "sample_type": ["fastq", "blood"],
+            "sample_project": ["None","Relecov"],
+        }
+    """
+    # get the choices to be included in the form
+    fields_info = {}
+    fields_info["fields"] = {}
+    for field in core.models.Samples._meta.get_fields():
+        try:
+            fields_info["fields"][field.name] = field.verbose_name
+        except Exception:
+            fields_info["fields"][field.name] = field.name
+
+    fields_info["species"] = get_species()
+    fields_info["lab_request"] = get_lab_requested()
+    fields_info["sample_type"] = get_sample_type(app_name)
+    fields_info["sample_project"] = get_defined_sample_projects(app_name)
+    fields_info["sample_project"].insert(0, "None")
+
+    return fields_info
 
 
 def save_recorded_samples(samples_data, req_user, app_name):
+    """This function saves samples using record_samples form/view
+
+    Parameters
+    ----------
+    samples_data
+        accepts a list of dicts obtained from the jspreadsheet in the form
+        eg.
+    req_user
+        user recording the samples
+    app_name
+        app_name. (wetlab, drylab, core, etc.)
+
+    Returns
+    -------
+        sample sample_data as a list of dicts, including fields like:
+        - unique_sample_id
+        - patient_core obj if exists
+        - sample project obj if exists
+        - sample_state
+        - complete_date - if only recorded and sample_state is completed
+        - success: True / False if recording failed
+        - error: if success False the actual error
+    """
     for sample in samples_data:
         # Fill fields
         sample["user"] = req_user
@@ -123,6 +173,9 @@ def save_recorded_samples(samples_data, req_user, app_name):
         if sample["only_recorded"]:
             sample["sample_state"] = "Completed"
             sample["completed_date"] = datetime.datetime.now()
+        # If no sample project data needed set to defined
+        elif sample["sample_project"] == "None":
+            sample["sample_state"] = "Defined"
         else:
             sample["sample_state"] = "Pre-Defined"
 
@@ -137,7 +190,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
 
 
 def validate_sample_data(sample_data, req_user, app_name):
-    """_summary_
+    """ Sample data validation
 
     Parameters
     ----------
@@ -265,6 +318,69 @@ def create_empty_patient(p_code_id):
     patient_obj = core.models.PatientCore.objects.create_patient(patient_data)
 
     return patient_obj
+
+
+def add_molecule_protocol_parameters(form_data):
+    """The function stores in database the molecule parameters.
+        Return the list of the molecules updated
+
+    Parameters:
+    -----------
+        request
+
+    Return:
+    ------
+        molecule_updated_list.
+    """
+
+    molecule_parameter_value = {}
+    molecule_updated_list = []
+
+    molecule_json_data = json.loads(form_data["parameters_data"])
+    molecule_ids = form_data["molecules"].split(",")
+    molecule_code_ids = form_data["molecule_code_ids"].split(",")
+    parameter_heading = form_data["heading_in_excel"].split("::")
+    parameters_length = len(molecule_json_data[0])
+    fixed_heading_length = len(core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
+
+    for row_index in range(len(molecule_json_data)):
+        user_lot_commercial_kit_obj = core.models.UserLotCommercialKits.objects.filter(
+            chip_lot__exact=molecule_json_data[row_index][1]
+        ).last()
+        # increase the number of use and updated the last use date
+        user_lot_commercial_kit_obj.set_increase_use()
+        user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
+        right_id = molecule_ids[
+            molecule_code_ids.index(molecule_json_data[row_index][0])
+        ]
+
+        molecule_obj = get_molecule_obj_from_id(right_id)
+        molecule_obj.set_user_lot_kit_obj(user_lot_commercial_kit_obj)
+        molecule_obj.set_state("Completed")
+        molecule_updated_list.append(molecule_obj.get_molecule_code_id())
+        protocol_used_obj = molecule_obj.get_protocol_obj()
+
+        for p_index in range(fixed_heading_length, parameters_length):
+            molecule_parameter_value[
+                "moleculeParameter_id"
+            ] = core.models.ProtocolParameters.objects.filter(
+                protocol_id=protocol_used_obj,
+                parameter_name__exact=parameter_heading[p_index - fixed_heading_length],
+                parameter_used__exact=True,
+            ).last()
+            molecule_parameter_value["molecule_id"] = molecule_obj
+            molecule_parameter_value["parameterValue"] = molecule_json_data[row_index][
+                p_index
+            ]
+            core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
+                molecule_parameter_value
+            )
+
+        # Update sample state
+        sample_obj = molecule_obj.get_sample_obj()
+        sample_obj.set_state("Pending for use")
+
+    return molecule_updated_list
 
 
 def check_if_molecule_use_defined(app_name):
@@ -1489,47 +1605,6 @@ def modify_fields_in_sample_project(form_data):
     return saved_fields
 
 
-def sample_table_fields(app_name):
-    """ Gathers fields info to include in record sample form. It grabs verbose_name from
-        Samples model when available and options for dropdown lists.
-
-    Parameters
-    ----------
-    app_name
-        app name. p.e wetlab or drylab
-
-    Returns
-    -------
-        field_info
-        {
-            "fields": {
-                "sample_name": "Sample Name",
-                "sample_collection_date": "Sample collection date"
-            },
-            "species": ["human", "rat"],
-            "lab_request": ["isciii", "hrycl"],
-            "sample_type": ["fastq", "blood"],
-            "sample_project": ["None","Relecov"],
-        }
-    """
-    # get the choices to be included in the form
-    fields_info = {}
-    fields_info["fields"] = {}
-    for field in core.models.Samples._meta.get_fields():
-        try:
-            fields_info["fields"][field.name] = field.verbose_name
-        except Exception:
-            fields_info["fields"][field.name] = field.name
-
-    fields_info["species"] = get_species()
-    fields_info["lab_request"] = get_lab_requested()
-    fields_info["sample_type"] = get_sample_type(app_name)
-    fields_info["sample_project"] = get_defined_sample_projects(app_name)
-    fields_info["sample_project"].insert(0, "None")
-
-    return fields_info
-
-
 def record_molecule_use(from_data, app_name):
     """
     Description:    The function collect the name for the molecule use field and the tag if massive
@@ -1718,76 +1793,6 @@ def pending_sample_summary(req_user=None, friend_list=None):
         for pend_user in pend_users:
             pending_data["users"][pend_user["User"]] = pend_user["value"]
     return pending_data
-
-
-def prepare_sample_project_input_table(pre_defined_samples_id):
-    """
-    Description:    The function collects the sample project fields for the samples in the input variable.
-            It return the fields heading of the sample project
-            In case that samples do not have the same project then it
-            grouped store in database the new molecule and molecule_updated_list
-            the sample state to Extracted molecule.
-    Input:
-        pre_defined_samples_id  # sample_id list to be processed
-    Variables:
-        molecule_information # dictionary which collects all info
-    Return:
-        molecules_recorded with the list of the recorded molecules and the heading to
-        display them
-    """
-    sample_projects = {}
-    selected_sample_project = ""
-    sample_project_field_heading = []
-    updated_pre_defined_samples_id = []
-    pending_pre_defined_samples_id = []
-    only_field_heading_name = []
-    sample_projects["pre_defined_sample_data"] = []
-    pre_defined_samples_name = []
-    for sample_id in pre_defined_samples_id:
-        sample_obj = get_sample_obj_from_id(sample_id)
-        s_project_obj = sample_obj.get_sample_project_obj()
-        if selected_sample_project == "":
-            selected_sample_project = s_project_obj.get_sample_project_name()
-            s_project_fields = (
-                core.models.SampleProjectsFields.objects.filter(
-                    sample_projects_id=s_project_obj
-                )
-                .exclude(sample_project_field_used=None)
-                .order_by("sample_project_field_order")
-            )
-            for s_project_field in s_project_fields:
-                heading_item = []
-                heading_item.append(s_project_field.get_field_name())
-                heading_item.append(s_project_field.get_field_type())
-                heading_item.append(s_project_field.get_field_options_list())
-                sample_project_field_heading.append(heading_item)
-                only_field_heading_name.append(s_project_field.get_field_name())
-            heading_length = len(sample_project_field_heading)
-
-        if selected_sample_project == s_project_obj.get_sample_project_name():
-            updated_pre_defined_samples_id.append(sample_id)
-            data = [""] * (heading_length + 1)
-            sample_name = sample_obj.get_sample_name()
-            data[0] = sample_name
-            pre_defined_samples_name.append(sample_name)
-            sample_projects["pre_defined_sample_data"].append(data)
-        else:
-            pending_pre_defined_samples_id.append(sample_id)
-
-    sample_projects["updated_pre_defined_samples_id"] = ",".join(
-        updated_pre_defined_samples_id
-    )
-    sample_projects["pending_pre_defined_samples_id"] = ",".join(
-        pending_pre_defined_samples_id
-    )
-    sample_projects["pre_defined_fields_heading_type"] = sample_project_field_heading
-    sample_projects["pre_defined_fields_heading_list"] = ",".join(
-        only_field_heading_name
-    )
-    sample_projects["pre_defined_fields_length"] = heading_length + 1
-    sample_projects["pre_defined_samples_length"] = len(updated_pre_defined_samples_id)
-    sample_projects["pre_defined_samples_name"] = ",".join(pre_defined_samples_name)
-    return sample_projects
 
 
 def save_type_of_sample(form_data, app_name):
