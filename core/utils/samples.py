@@ -34,33 +34,39 @@ def project_table_fields(projects, samples):
                 "project_name": "Relecov",
                 "project_fields": [list of projectField objects],
                 "project_data": [list of samples belonging to this project dict]
+            },
+            {
+                "project_name": "Mepram",
+                "project_fields": [list of projectField objects],
+                "project_data": [list of samples belonging to this project dict]
             }
         ]
     """
     projects_fields = []
-    for project_name in projects:
-        if project_name != "None":
-            project = {
-                "project_name": "",
-                "project_fields": [],
-                "project_data": [],
-            }
-            project_fields = (
-                core.models.SampleProjectsFields.objects.filter(
-                    sample_projects_id=project_name
+    for project_id in projects:
+        if project_id != "None":
+            # If projects_fields is empty or the project already is in projects_fields list -> include the project
+            if not projects_fields or not any(p["project"] == project_id for p in projects_fields):
+                # If it doesn't exist the project is added to the list
+                project = {
+                    "project": "",
+                    "project_fields": [],
+                    "project_data": [],
+                }
+                p_fields = (
+                    core.models.SampleProjectsFields.objects.filter(
+                        sample_projects_id=project_id
+                    )
+                    .exclude(sample_project_field_used=None)
+                    .order_by("sample_project_field_order")
                 )
-                .exclude(sample_project_field_used=None)
-                .order_by("sample_project_field_order")
-            )
-            # If it doesn't exist the project is added to the list
-            if any(p["project_name"] == project_name for p in projects_fields):
-                project["project_name"] = project_name
-                project["project_fields"] = project_fields
-            # Append sample data associated with the project
-            project["project_data"] = [
-                s for s in samples if s["sample_project"] == project_name
-            ]
-            projects_fields.append(project)
+                project["project"] = project_id
+                project["project_fields"] = p_fields
+                # Append sample data associated with the project
+                project["project_data"] = [
+                    s for s in samples if s["sample_project"] == project_id
+                ]
+                projects_fields.append(project)
     return projects_fields
 
 

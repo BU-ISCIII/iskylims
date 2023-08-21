@@ -2176,14 +2176,14 @@ def record_samples(request):
         filter_samples = [
             sample
             for sample in sorted(
-                sample_record_result, key=lambda x: x["sample_project"]
+                sample_record_result, key=lambda x: x["sample_project"].get_sample_project_name()
             )
             if sample["sample_state"] == "Pre-Defined"
         ]
-        project_names = [sample["sample_project"] for sample in filter_samples]
+        project_ids = [sample["sample_project"] for sample in filter_samples]
 
         # If no sample Pre-Defined just show result
-        if not project_names:
+        if not project_ids:
             return render(
                 request,
                 "wetlab/record_sample.html",
@@ -2194,11 +2194,10 @@ def record_samples(request):
             )
 
         try:
-            projects_fields = core.utils.samples.project_table_fields(project_names, filter_samples)
-            import pdb; pdb.set_trace()
+            projects_fields = core.utils.samples.project_table_fields(project_ids, filter_samples)
             return render(
                 request,
-                "wetlab/record_sample.html",
+                "wetlab/record_project_fields.html",
                 {
                     "projects_fields": projects_fields,
                     "sample_record_result": filter_samples,
