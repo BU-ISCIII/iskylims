@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+{% block content %}
+  {% include 'wetlab/menu.html' %}
+  {% include 'core/jexcel_functionality.html' %}
+  {% include 'core/cdn_table_functionality.html' %}
+  <section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+      {% include 'registration/login_inline.html' %}
+      {% if error_message %}
+        <div class="row justify-content-center pb-2 pt-2">
+          <div class="col-md-8">
+            <div class="card border-danger mb-3">
+              <div class="card-header">ERROR</div>
+              <div class="card-body">{{ error_message }}</div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <div class="row justify-content-center pb-2 pt-2">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">Please fill project-related fields</div>
+            <div class="card-body">
+              <form method="post" enctype="multipart/form-data" name="project_data_form" id="project_data_form">
+                {% csrf_token %}
+				<input type="hidden" name="action" value="project_data" />
+                {% for project in projects_fields %}
+				<h5 class="border-bottom d-inline-block">Project form: {{ project.project.sample_project_name }}</h5>
+				<div class="row justify-content-center horizontal-scroll">
+                  <div class="col-md-auto">
+                    <div id="spreadsheet_{{ project.project.sample_project_name }}"></div>
+                  </div>
+                </div>
+				{% endfor %}
+                <input type="button" class="btn btn-outline-secondary" value="Download spreadsheet" onclick="record_samples.download()" />
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" />
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+
+    
+    $(document).ready(function () {
+		{% for project in projects_fields %}
+		{% if project_record_result %}
+		var project_data = [{% for sample in project_record_result %}
+						[{% for value in values %}'{{value}}', {% endfor %}],
+						{% endfor %}
+						];
+		{% else %}
+		var {{ project.project.sample_project_name }}_data = [{% for sample in project.project_data %}
+						['{{ sample.sample_name }}'],
+						{% endfor %}
+						];
+    	{% endif %}
+		var {{ project.project.sample_project_name }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ project.project.sample_project_name }}'), {
+			data: {{ project.project.sample_project_name }}_data,
+			columns: [
+				{ type: 'text', title: 'Sample Name', width: 150, readOnly: true },
+				{% for field in project.project_fields %}
+				{% if field.sample_project_field_type == 'Date' %}
+				{ type: 'calendar', title: '{{ field.sample_project_field_name }}', width: 150 },
+				{% elif sample_project_field_type == 'Option List' %}
+				{ type: 'dropdown', title: '{{ field.sample_project_field_name }}', width: 150, source: [{% for value in field.sample_project_option_list %} '{{ value }}', {% endfor %}] },
+				{% else %}
+				{ type: 'text', title: '{{ field.sample_project_field_name }}', width: 150 },
+				{% endif %}
+				{% endfor %}
+			],
+			allowInsertColumn: false,
+			allowDeleteColumn: false,
+			allowRenameColumn: false,
+			tableOverflow:true,
+			tableHeight:'300px',
+			csvFileName: 'project_data.csv',
+			minDimensions: [ {{ project.project_fields|length }} + 1 , {{ project.project.sample_project_name }}_data.length],
+		});
+
+        $("#project_data_form").submit(function (e) {
+            var table_data = {{ project.project.sample_project_name }}_data_table.getData()
+            var data_json = JSON.stringify(table_data)
+            $("<input />").attr("type", "hidden")
+                .attr("name", "{{ project.project.sample_project_name }}_table_data")
+                .attr("value", data_json)
+                .appendTo("#project_data_form");
+            $("#button-submit").attr("disabled", true);
+            return true;
+        });
+		{% endfor %}
+    });
+</script>
+{% endblock %}
