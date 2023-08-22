@@ -57,7 +57,7 @@ def project_table_fields(projects, samples):
                     core.models.SampleProjectsFields.objects.filter(
                         sample_projects_id=project_id
                     )
-                    .exclude(sample_project_field_used=None)
+                    .exclude(sample_project_field_used=False)
                     .order_by("sample_project_field_order")
                 )
                 project["project"] = project_id
