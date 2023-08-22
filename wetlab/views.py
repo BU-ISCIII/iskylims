@@ -2200,7 +2200,6 @@ def record_samples(request):
                 "wetlab/record_project_fields.html",
                 {
                     "projects_fields": projects_fields,
-                    "sample_record_result": filter_samples,
                 },
             )
         except Exception:
