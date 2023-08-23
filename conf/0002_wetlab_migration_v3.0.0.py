@@ -1000,13 +1000,15 @@ class Migration(migrations.Migration):
             name="LibraryPreparation",
         ),
         migrations.AlterField(
-            model_name='libusersamplesheet',
-            name='sample_sheet',
-            field=models.FileField(upload_to='wetlab/sample_sheets_lib_prep/'),
+            model_name="libusersamplesheet",
+            name="sample_sheet",
+            field=models.FileField(upload_to="wetlab/sample_sheets_lib_prep/"),
         ),
         migrations.AlterField(
-            model_name='runprocess',
-            name='sample_sheet',
-            field=models.FileField(blank=True, null=True, upload_to='wetlab/sample_sheet/'),
+            model_name="runprocess",
+            name="sample_sheet",
+            field=models.FileField(
+                blank=True, null=True, upload_to="wetlab/sample_sheet/"
+            ),
         ),
     ]

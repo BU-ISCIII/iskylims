@@ -1852,7 +1852,8 @@ def define_sample_projects(request):
         # description = request.POST['description']
 
         if core.models.SampleProjects.objects.filter(
-            sample_project_name__iexact=sample_project_name, apps_name__exact=__package__
+            sample_project_name__iexact=sample_project_name,
+            apps_name__exact=__package__,
         ).exists():
             error_message = wetlab.config.ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
@@ -2131,9 +2132,9 @@ def record_samples(request):
                 request,
                 "wetlab/record_sample.html",
                 {"fields_info": fields_info, "pre_def_samples": pre_def_samples},
-                )
+            )
         else:
-        # validate mandatory and redundant samples
+            # validate mandatory and redundant samples
             validation = core.utils.samples.validate_sample_data(
                 excel_json_data, req_user, __package__
             )
@@ -2172,7 +2173,9 @@ def record_samples(request):
                         )
             except Exception:
                 # In case come uncatched error occurs
-                error_message = "There was an unexpected error when recording the samples."
+                error_message = (
+                    "There was an unexpected error when recording the samples."
+                )
                 return render(
                     request,
                     "wetlab/record_sample.html",

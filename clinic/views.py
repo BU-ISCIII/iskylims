@@ -216,7 +216,8 @@ def create_sample_projects(request):
         # description = request.POST['description']
 
         if core.models.SampleProjects.objects.filter(
-            sample_project_name__iexact=sample_project_name, apps_name__exact=__package__
+            sample_project_name__iexact=sample_project_name,
+            apps_name__exact=__package__,
         ).exists():
             error_message = clinic.clinic_config.ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
