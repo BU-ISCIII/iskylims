@@ -13,44 +13,6 @@ HEADING_FOR_RECORD_SAMPLES = [
     "Only recorded",
 ]
 
-HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [
-    "Patient Code ID",
-    "Lab requested",
-    "Species",
-    "Date sample reception",
-    "Collection Sample Date",
-    "Sample Storage Location",
-    "Only recorded",
-]
-
-HEADING_FOR_DISPLAY_RECORDED_SAMPLES = [
-    "Unique Sample ID",
-    "Sample CodeID",
-    "Sample Name",
-    "Date for entry in Lab",
-    "Type of Sample",
-]
-
-HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = [
-    "Date sample extraction",
-    "Sample CodeID",
-    "Sample name",
-    "Select sample",
-]
-
-MAPPING_SAMPLE_FORM_TO_DDBB = [
-    ("Patient Code ID", "p_code_id"),
-    ("Sample Name", "sample_name"),
-    ("Lab requested", "labRequest"),
-    ("Type of Sample", "sampleType"),
-    ("Species", "species"),
-    ("Project/Service", "project_service"),
-    ("Date sample extraction", "sampleEntryDate"),
-    ("Collection Sample Date", "collectionSampleDate"),
-    ("Sample Storage Location", "sampleLocation"),
-    ("Only recorded", "onlyRecorded"),
-]
-
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = [
     "Sample ID",
     "Sample Type",
@@ -66,44 +28,12 @@ HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ["Molecule Code ID", "Lot Commercial Ki
 HEADING_CONFIRM_MOLECULE_RECORDED = ["Molecule Code ID", "Used Protocol"]
 
 # ## Heading values when showing pending samples
-"""
-HEADING_FOR_DEFINED_SAMPLES_STATE = [
-    "Sample extraction date",
-    "Sample Code ID",
-    "Sample",
-    "To be included",
-]
-"""
-HEADING_FOR_EXTRACTED_MOLECULES_STATE = [
-    "Sample extraction date",
-    "Sample",
-    "Molecule Code ID",
-    "Molecule Extraction Date",
-    "Used Protocol",
-    "Select sample",
-]
-
 HEADING_FOR_PENDING_MOLECULES = [
     "Sample",
     "Molecule Code ID",
     "Molecule Extraction Date",
     "Used Protocol",
     "Select Molecule",
-]
-
-HEADING_FOR_DEFINED_SAMPLES_STATE_WETLAB_MANAGER = [
-    "Sample extraction date",
-    "Sample",
-    "Sample Code ID",
-    "UserID",
-]
-HEADING_FOR_EXTRACTED_MOLECULES_STATE_WETLAB_MANAGER = [
-    "Sample extraction date",
-    "Sample",
-    "Molecule Code ID",
-    "Molecule Extraction Date",
-    "Used Protocol",
-    "UserID",
 ]
 
 # ## Heading for display information on sample definition
@@ -253,20 +183,6 @@ HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA = [
 ]
 
 
-# ########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
-# # Relative path from settings.MEDIA_ROOT
-COLLECTION_INDEX_KITS_DIRECTORY = "core/collection_index_kits/"
-
-# # Configuration for index library file
-COLLECTION_INDEX_HEADING = [
-    "[Version]",
-    "[Name]",
-    "[PlateExtension]",
-    "[Settings]",
-    "[I7]",
-]
-
-
 # ##################### FIELDS NAME USED IN USER FORM  ########################################
 
 SAMPLE_PROJECT_MAIN_DATA = [
@@ -381,5 +297,4 @@ ERROR_TOO_MANY_PROJECTS = [
 ERROR_INVALID_JSON_SCHEMA = [
     "Upload schema cannot used because it contains errors "
 ]
-ERROR_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]
 ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
