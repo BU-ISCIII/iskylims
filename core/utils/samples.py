@@ -423,23 +423,6 @@ def check_if_sample_project_id_exists(sample_project_id):
     return False
 
 
-def check_if_sample_project_exists(sample_project, app_name):
-    """
-    Description:
-        The function check if sample project name is defined in database.
-    Input:
-        sample_project:       sample project name
-        app_name :           # application name
-    Return:
-        False is sample project does not exists. True if sample project exists
-    """
-    if core.models.SampleProjects.objects.filter(
-        sample_project_name__iexact=sample_project, apps_name__exact=app_name
-    ).exists():
-        return True
-    return False
-
-
 def check_mandatory_fields_included(data, sample_type, app_name):
     """Check if for the type of sample all mandatory fields are not empty
 
