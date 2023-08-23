@@ -24,7 +24,9 @@ def create_city(data, apps_name):
 
 def create_new_laboratory(lab_data):
     """Create new laboratory instance with the data collected in the request"""
-    if core.models.City.objects.filter(city_name__exact=lab_data["geo_loc_city"]).exists():
+    if core.models.City.objects.filter(
+        city_name__exact=lab_data["geo_loc_city"]
+    ).exists():
         city_id = (
             core.models.City.objects.filter(city_name__exact=lab_data["geo_loc_city"])
             .last()
@@ -79,17 +81,17 @@ def get_sample_fields(apps_name):
         "Only recorded": {"field_name": "only_recorded"},
     }
     if core.models.SampleType.objects.filter(apps_name__exact=apps_name).exists():
-        s_type_objs = core.models.SampleType.objects.filter(apps_name__exact=apps_name).order_by(
-            "sample_type"
-        )
+        s_type_objs = core.models.SampleType.objects.filter(
+            apps_name__exact=apps_name
+        ).order_by("sample_type")
         sample_fields["Type of Sample"]["options"] = []
         for s_type_obj in s_type_objs:
             sample_fields["Type of Sample"]["options"].append(s_type_obj.get_name())
     if core.models.Species.objects.filter(apps_name__exact=apps_name).exists():
         sample_fields["Species"]["options"] = []
-        species_objs = core.models.Species.objects.filter(apps_name__exact=apps_name).order_by(
-            "species_name"
-        )
+        species_objs = core.models.Species.objects.filter(
+            apps_name__exact=apps_name
+        ).order_by("species_name")
         for species_obj in species_objs:
             sample_fields["Species"]["options"].append(species_obj.get_name())
     if core.models.LabRequest.objects.all().exists():
@@ -123,7 +125,9 @@ def get_sample_fields(apps_name):
 
 def get_sample_project_obj(project_name):
     """Check if sampleProyect is defined in database"""
-    if core.models.SampleProjects.objects.filter(sample_project_name__exact=project_name).exists():
+    if core.models.SampleProjects.objects.filter(
+        sample_project_name__exact=project_name
+    ).exists():
         return core.models.SampleProjects.objects.filter(
             sample_project_name__exact=project_name
         ).last()
@@ -134,7 +138,9 @@ def include_instances_in_sample(data, lab_data, apps_name):
     """Collect the instances before creating the sample instance
     If laboratory will be created if it is not defined
     """
-    if core.models.LabRequest.objects.filter(lab_name__exact=data["lab_request"]).exists():
+    if core.models.LabRequest.objects.filter(
+        lab_name__exact=data["lab_request"]
+    ).exists():
         data["lab_request"] = (
             core.models.LabRequest.objects.filter(lab_name__exact=data["lab_request"])
             .last()
@@ -143,9 +149,13 @@ def include_instances_in_sample(data, lab_data, apps_name):
     else:
         lab_data["apps_name"] = apps_name
         data["lab_request"] = create_new_laboratory(lab_data).get_id()
-    if core.models.SampleType.objects.filter(sample_type__exact=data["sample_type"]).exists():
+    if core.models.SampleType.objects.filter(
+        sample_type__exact=data["sample_type"]
+    ).exists():
         data["sample_type"] = (
-            core.models.SampleType.objects.filter(sample_type__exact=data["sample_type"])
+            core.models.SampleType.objects.filter(
+                sample_type__exact=data["sample_type"]
+            )
             .last()
             .get_sample_type_id()
         )
@@ -156,7 +166,9 @@ def include_instances_in_sample(data, lab_data, apps_name):
         # return str("sampleType " + data["sampleType"] + " is not defined in database")
     if core.models.Species.objects.filter(species_name__exact=data["species"]).exists():
         data["species"] = (
-            core.models.Species.objects.filter(species_name__exact=data["species"]).last().get_id()
+            core.models.Species.objects.filter(species_name__exact=data["species"])
+            .last()
+            .get_id()
         )
     else:
         return str("species " + data["species"] + " is not defined in database")
@@ -164,7 +176,9 @@ def include_instances_in_sample(data, lab_data, apps_name):
         data["patient_core"] = None
     else:
         try:
-            data["patient_core"] = get_patient_obj(data["patient_core"]).get_patient_id()
+            data["patient_core"] = get_patient_obj(
+                data["patient_core"]
+            ).get_patient_id()
         except AttributeError:
             return str(
                 "patient_core " + data["patient_core"] + " is not defined in database"
@@ -190,7 +204,9 @@ def include_instances_in_sample(data, lab_data, apps_name):
         data["completed_date"] = datetime.now()
     else:
         data["sample_state"] = (
-            core.models.StatesForSample.objects.filter(sample_state_name="Defined").last().get_id()
+            core.models.StatesForSample.objects.filter(sample_state_name="Defined")
+            .last()
+            .get_id()
         )
         data["completed_date"] = None
     return data
@@ -207,7 +223,9 @@ def include_coding(user_name, sample):
             .last()
             .unique_sample_id
         )
-        c_data["unique_sample_id"] = core.utils.samples.increase_unique_value(last_unique_value)
+        c_data["unique_sample_id"] = core.utils.samples.increase_unique_value(
+            last_unique_value
+        )
     c_data["sample_code_id"] = str(user_name + "_" + sample)
     return c_data
 
@@ -215,8 +233,12 @@ def include_coding(user_name, sample):
 def get_project_fields_id_and_name(p_obj):
     """Fetch the fields defined for project"""
     fields = []
-    if core.models.SampleProjectsFields.objects.filter(sample_projects_id=p_obj).exists():
-        p_field_objs = core.models.SampleProjectsFields.objects.filter(sample_projects_id=p_obj)
+    if core.models.SampleProjectsFields.objects.filter(
+        sample_projects_id=p_obj
+    ).exists():
+        p_field_objs = core.models.SampleProjectsFields.objects.filter(
+            sample_projects_id=p_obj
+        )
         for p_field_obj in p_field_objs:
             fields.append([p_field_obj.get_field_id(), p_field_obj.get_field_name()])
     return fields
@@ -225,7 +247,9 @@ def get_project_fields_id_and_name(p_obj):
 def get_patient_obj(patient):
     """Get the patient instance"""
     if core.models.PatientCore.objects.filter(patient_code__iexact=patient).exists():
-        return core.models.PatientCore.objects.filter(patient_code__iexact=patient).last()
+        return core.models.PatientCore.objects.filter(
+            patient_code__iexact=patient
+        ).last()
     return False
 
 
@@ -372,7 +396,9 @@ def summarize_samples(data):
                 sample_projects_id=s_project_obj,
                 sample_project_field_description__iexact=data["sample_project_field"],
             ).exists():
-                return {"ERROR": wetlab.config.ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED}
+                return {
+                    "ERROR": wetlab.config.ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED
+                }
 
             s_project_field_objs = core.models.SampleProjectsFields.objects.filter(
                 sample_projects_id=s_project_obj,
@@ -387,7 +413,9 @@ def summarize_samples(data):
         regions = [data["region"]]
     else:
         regions = (
-            core.models.StateInCountry.objects.all().values_list("state_name", flat=True).distinct()
+            core.models.StateInCountry.objects.all()
+            .values_list("state_name", flat=True)
+            .distinct()
         )
     for region in regions:
         summarize["region"][region] = sample_objs.filter(
@@ -400,7 +428,9 @@ def summarize_samples(data):
         summarize.pop("region", None)
     else:
         laboratories = (
-            core.models.LabRequest.objects.all().values_list("lab_name", flat=True).distinct()
+            core.models.LabRequest.objects.all()
+            .values_list("lab_name", flat=True)
+            .distinct()
         )
     for laboratory in laboratories:
         summarize["laboratory"][laboratory] = sample_objs.filter(
@@ -513,7 +543,9 @@ def collect_statistics_information(data):
                             stats_data[par1_val][par2_val] = value
             else:
                 for par1_val in par1_values:
-                    stats_data[par1_val] = core.models.SampleProjectsFieldsValue.objects.filter(
+                    stats_data[
+                        par1_val
+                    ] = core.models.SampleProjectsFieldsValue.objects.filter(
                         sample_project_field_id__sample_projects_id=s_project_obj,
                         sample_project_field_id__sample_project_field_name__iexact=query_params[
                             0
@@ -531,7 +563,9 @@ def collect_statistics_information(data):
                 "fields_value": {},
             }
 
-            num_samples = core.models.Samples.objects.filter(sample_project=s_project_obj).count()
+            num_samples = core.models.Samples.objects.filter(
+                sample_project=s_project_obj
+            ).count()
             s_project_field_objs = core.models.SampleProjectsFields.objects.filter(
                 sample_project_id=s_project_obj
             )
