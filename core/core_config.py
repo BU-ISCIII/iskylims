@@ -227,9 +227,8 @@ ERROR_SAMPLE_ALREADY_DEFINED = ["Sample",
                                 "already exist in the database"]
 
 # ######################  Batch file ###############################################
-ERROR_EMPTY_SAMPLE_BATCH_FILE = [
-    "The uploaded sample batch file does not have any sample",
-    "Upload a valid batch file",
+ERROR_EMPTY = [
+    "The uploaded table or batch file does not have any sample. Upload a valid batch file"
 ]
 ERROR_NO_LAB_REQUESTED = [
     "The Laboratory",
@@ -244,6 +243,9 @@ ERROR_BATCH_FILE_INVALID_FORMAT = [
 ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet. Check documentation to define them"
 ]
+ERROR_EMPTY_SAMPLE_TYPE = [
+    "The Type of sample is empty and it is mandatory"
+]
 ERROR_NO_SAMPLE_TYPE = [
     "The Type of sample",
     "is not defined in the database.",
@@ -257,7 +259,7 @@ ERROR_NO_DEFINED_SAMPLE_PROJECTS = [
 ]
 ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
-    "is not defined",
+    "is not defined in the database",
 ]
 ERROR_NOT_SAME_SAMPLE_PROTOCOL = [
     "The batch file must have the same type of samples",
@@ -298,3 +300,8 @@ ERROR_INVALID_JSON_SCHEMA = [
     "Upload schema cannot used because it contains errors "
 ]
 ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
+ERROR_EMPTY_SAMPLE_NAME = ["Sample name in line", "is empty"]
+ERROR_REPEATED_SAMPLE_NAME = ["Sample name in line", "is repeated in the table"]
+ERROR_ONLY_RECORDED_FIELD = ["Only recorded field must be True, False or empty"]
+ERROR_DATE_FORMAT_FIELD = ["Date must have this format: YYYY-MM-DD hh:mm:ss"]
+ERROR_MISSING_MANDATORY = ["The following columns are empty and are mandatory for the sample type:"]

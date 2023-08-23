@@ -223,22 +223,115 @@ def validate_sample_data(sample_data, req_user, app_name):
               "Validation error": "Mandatory field is missing."
               }]
     """
-
     validation = []
+    date_columns = []
+    sample_name_list = []
+    line = 0
+
+    # Get all date columns
+    for value in sample_data[0]:
+        if "date" in value:
+            date_columns.append(value)
+
     for sample in sample_data:
+        line+=1
         sample_dict = {}
+
+        # Check if sample name is not empty
         if sample["sample_name"] == "":
+            error_cause = (
+                core.core_config.ERROR_EMPTY_SAMPLE_NAME.copy()
+                )
+            error_cause.insert(1, str(line))
+            sample_dict["Sample name"] = "Empty_"+str(line)
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"] = " ".join(error_cause)
+            validation.append(sample_dict)
             continue
-        # Add here proper validation
-        # Validate mandatory -> check this function check_mandatory_fields_included,
-        # Maybe types (date, string..) also here?
-        # Validate repeated samples -> check_if_sample_already_defined
-        # Other.
-        # Note in config.core_config there are two variables for creating error messages:
-        # "ERROR_SAMPLE_ALREADY_DEFINED" and "ERROR_SAMPLE_INCOMPLETED"
+
+        if sample["sample_name"] not in sample_name_list:
+            sample_name_list.append(sample["sample_name"])
+        else:
+            error_cause = (
+                core.core_config.ERROR_REPEATED_SAMPLE_NAME.copy()
+                )
+            error_cause.insert(1, str(line))
+            sample_dict["Sample name"] = sample["sample_name"]+"_repeated_"+str(line)
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"] = " ".join(error_cause)
+            validation.append(sample_dict)
+            continue
+
+        # Create not error dictionary
         sample_dict["Sample name"] = sample["sample_name"]
         sample_dict["Validate"] = True
-        sample_dict["Validation error"] = "pruebaaaaa"
+        sample_dict["Validation error"] = []
+
+        # Check only recorded format
+        if sample["only_recorded"] != "" and sample["only_recorded"] != True and sample["only_recorded"] != False:
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"].append(core.core_config.ERROR_ONLY_RECORDED_FIELD)
+
+        # Check if dates have date format
+        for date_field in date_columns:
+            if sample[date_field] != "":
+                try:
+                    datetime_object = datetime.strptime(sample[date_field], "%Y-%m-%d %H:%M:%S")
+                except: #check this for batch sampled
+                    sample_dict["Validate"] = False
+                    sample_dict["Validation error"].append(core.core_config.ERROR_DATE_FORMAT_FIELD)
+                    continue
+
+        # Check if sample already in the DB
+        if core.models.Samples.objects.filter(
+            sample_name__exact=sample["sample_name"], sample_user__username__exact=req_user
+        ).exists():
+            error_cause = (
+                core.core_config.ERROR_SAMPLE_ALREADY_DEFINED.copy()
+                )
+            error_cause.insert(1, sample["sample_name"])
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"].append(" ".join(error_cause))
+
+        # Check sample type filled (mandatory), check if its in the DB, check sample type's mandatory fields
+        if sample["sample_type"] == "":
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"].append("".join(core.core_config.ERROR_EMPTY_SAMPLE_TYPE))
+        elif defined_sample_type(sample["sample_type"],app_name):
+                sample_dict["Validate"] = False
+                sample_dict["Validation error"].append(defined_sample_type(sample["sample_type"],app_name))
+        else:
+            # Check mandatory fields
+            missing_mandatory = check_mandatory_fields_included(sample, sample["sample_type"], app_name)
+            if len(missing_mandatory) != 0:
+                missing_fields = []
+                for field in core.models.Samples._meta.get_fields():
+                    if field.name in missing_mandatory:
+                        try:
+                            missing_fields.append(field.verbose_name)
+                        except Exception:
+                            missing_fields.append(field.name)
+                error_cause = (
+                    core.core_config.ERROR_MISSING_MANDATORY.copy()
+                )
+                error_cause.insert(1, ", ".join(missing_fields))
+                sample_dict["Validate"] = False
+                sample_dict["Validation error"].append(" ".join(error_cause))
+
+        # Check if project exist in the DB
+        if sample["sample_project"] != "" and sample["sample_project"] != "None" and defined_project(sample["sample_project"],app_name):
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"].append(defined_project(sample["sample_project"],app_name))
+
+        # Check if laboratory is in the DB
+        if sample["lab_request"] != "" and defined_lab_request(sample["lab_request"],app_name):
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"].append(defined_lab_request(sample["lab_request"],app_name))
+        
+        if len(sample_dict["Validation error"]) == 0:
+            sample_dict["Validation error"] = ""
+        else:
+            sample_dict["Validation error"] = ". ".join(map(str,sample_dict["Validation error"]))
         validation.append(sample_dict)
 
     return validation
@@ -292,7 +385,6 @@ def save_project_data(excel_data, project_info):
                 raise
 
     return project_info
-
 
 def check_empty_fields(row_data, optional_index):
     """
@@ -1999,3 +2091,88 @@ def update_sample_reused(reprocess_id):
     sample_obj.set_increase_reuse()
 
     return sample_obj
+
+def defined_sample_type(sample_type,app_name):
+    """_summary_
+
+    Parameters
+    ----------
+    sample_type
+        sample's sample type obtained from jspreadsheet
+    app_name
+        application name (wetlab, drylab, core, etc.)
+    Returns
+    -------
+        error_cause
+            String with the error explanation:
+            "No Type of Samples are defined yet. Check documentation to define them"
+    """
+    if not core.models.SampleType.objects.filter(apps_name=app_name).exists():
+        error_cause = core.core_config.ERROR_NO_DEFINED_TYPE_OF_SAMPLES
+        return (error_cause)
+    
+    if not core.models.SampleType.objects.filter(
+        sample_type__iexact=sample_type, apps_name__exact=app_name
+    ).exists():
+        error_cause = (
+            core.core_config.ERROR_NO_SAMPLE_TYPE.copy()
+        )
+        error_cause.insert(1, sample_type)
+        return " ".join(error_cause)
+
+
+def defined_project(project_name,app_name):
+    """_summary_
+
+    Parameters
+    ----------
+    project_name
+        sample's project obtained from jspreadsheet
+    app_name
+        application name (wetlab, drylab, core, etc.)
+    Returns
+    -------
+        error_cause
+            String with the error explanation:
+            "No Sample Projects are defined yet. Check documentation to define them"
+    """
+    if not core.models.SampleProjects.objects.filter(apps_name=app_name).exists():
+        error_cause = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
+        return (error_cause)
+
+    if not core.models.SampleProjects.objects.filter(
+        sample_project_name__iexact=project_name, apps_name__exact=app_name
+    ).exists():
+        error_cause = (
+            core.core_config.ERROR_NO_SAMPLE_PROJECTS.copy()
+        )
+        error_cause.insert(1, project_name)
+        return " ".join(error_cause)
+
+def defined_lab_request(lab_request,app_name):
+    """_summary_
+
+    Parameters
+    ----------
+    lab_request
+        sample's laboratory requested obtained from jspreadsheet
+    app_name
+        application name (wetlab, drylab, core, etc.)
+    Returns
+    -------
+        error_cause
+            String with the error explanation:
+            "No Laboratory is defined yet. Check documentation to define the Laboratory"
+    """
+    if not core.models.LabRequest.objects.filter(apps_name=app_name).exists():
+        error_cause = core.core_config.ERROR_NO_DEFINED_LAB_REQUESTED
+        return (error_cause)
+
+    if not core.models.LabRequest.objects.filter(
+        lab_name_coding__iexact=lab_request, apps_name__exact=app_name
+    ).exists():
+        error_cause = (
+            core.core_config.ERROR_NO_LAB_REQUESTED.copy()
+        )
+        error_cause.insert(1, lab_request)
+        return " ".join(error_cause)
