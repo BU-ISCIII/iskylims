@@ -40,7 +40,7 @@ HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = [
 
 MAPPING_SAMPLE_FORM_TO_DDBB = [
     ("Patient Code ID", "p_code_id"),
-    ("Sample Name", "sampleName"),
+    ("Sample Name", "sample_name"),
     ("Lab requested", "labRequest"),
     ("Type of Sample", "sampleType"),
     ("Species", "species"),

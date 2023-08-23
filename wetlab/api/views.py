@@ -37,28 +37,28 @@ sample_in_run = openapi.Parameter(
 )
 
 sample_state = openapi.Parameter(
-    "sampleState",
+    "sample_state",
     openapi.IN_QUERY,
     description="Filter result to the sample which are in this state",
     type=openapi.TYPE_STRING,
 )
 
 start_date = openapi.Parameter(
-    "startDate",
+    "start_date",
     openapi.IN_QUERY,
     description="Start date from starting collecting samples",
     type=openapi.TYPE_STRING,
 )
 
 end_date = openapi.Parameter(
-    "endDate",
+    "end_date",
     openapi.IN_QUERY,
     description="Start date from starting collecting samples",
     type=openapi.TYPE_STRING,
 )
 
 sample_parameter = openapi.Parameter(
-    "sampleParameter",
+    "sample_parameter",
     openapi.IN_QUERY,
     description="Get the samples grouped by the parameter",
     type=openapi.TYPE_STRING,
@@ -124,36 +124,36 @@ sample_project_field = openapi.Parameter(
             "sample": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Sample name"
             ),
-            "sampleState": openapi.Schema(
+            "sample_state": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Sample state"
             ),
-            "patientCore": openapi.Schema(
+            "patient_core": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Code assigned to the patient"
             ),
-            "labRequest": openapi.Schema(
+            "lab_request": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Laboratory that request the sample",
             ),
-            "sampleType": openapi.Schema(
+            "sample_type": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Type of the sample"
             ),
             "species": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Specie that the sample belongs to",
             ),
-            "sampleLocation": openapi.Schema(
+            "sample_location": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Location where the sample is stored",
             ),
-            "sampleEntryDate": openapi.Schema(
+            "sample_entry_date": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Date when sample is received in the lab",
             ),
-            "sampleCollectionDate": openapi.Schema(
+            "sample_collection_date": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Date when the sample is collected from the specimen",
             ),
-            "onlyRecorded": openapi.Schema(
+            "only_recorded": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Select if sample is just recorded or if DNA/RNA manipulation will be done in the lab ",
             ),
@@ -176,9 +176,9 @@ def create_sample_data(request):
         data = request.data
         if isinstance(data, QueryDict):
             data = data.dict()
-        if "sampleName" not in data or "sampleProject" not in data:
+        if "sample_name" not in data or "sample_project" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if core.models.Samples.objects.filter(sample_name__iexact=data["sampleName"]).exists():
+        if core.models.Samples.objects.filter(sample_name__iexact=data["sample_name"]).exists():
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = wetlab.api.utils.sample.split_sample_data(data)
@@ -191,10 +191,10 @@ def create_sample_data(request):
         if not isinstance(inst_req_sample, dict):
             return Response(inst_req_sample, status=status.HTTP_400_BAD_REQUEST)
         split_data["s_data"] = inst_req_sample
-        split_data["s_data"]["sampleUser"] = request.user.pk
+        split_data["s_data"]["sample_user"] = request.user.pk
         # Adding coding for sample
         split_data["s_data"].update(
-            wetlab.api.utils.sample.include_coding(request.user.username, split_data["s_data"]["sampleName"])
+            wetlab.api.utils.sample.include_coding(request.user.username, split_data["s_data"]["sample_name"])
         )
         sample_serializer = wetlab.api.serializers.CreateSampleSerializer(data=split_data["s_data"])
         if not sample_serializer.is_valid():
@@ -238,7 +238,7 @@ def fetch_run_information(request):
                         wetlab.api.serializers.SampleRunInfoSerializers(s_found_obj, many=False).data
                     )
             else:
-                s_data.append({"sampleName": sample, "Run data": "Not found"})
+                s_data.append({"sample_name": sample, "Run data": "Not found"})
         return Response(s_data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -311,13 +311,11 @@ def fetch_sample_information(request):
 @api_view(["GET"])
 def sample_fields(request):
     apps_name = __package__.split(".")[0]
-    # sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
 
     sample_fields = wetlab.api.utils.sample.get_sample_fields(apps_name)
 
     if "ERROR" in sample_fields:
         return Response(sample_fields, status=status.HTTP_202_ACCEPTED)
-        # return Response(sample_fields.data, status=status.HTTP_204_NO_CONTENT)
     else:
         return Response(sample_fields, status=status.HTTP_200_OK)
 
