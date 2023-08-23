@@ -30,7 +30,9 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
         data_update = dict()
         # Convert dict according to db table fields, to id and values inside the table.
         # WARNING: This will have to be change if db fields change in models.py
-        data_update[data["sample_project_field_id"]] = data["sample_project_field_value"]
+        data_update[data["sample_project_field_id"]] = data[
+            "sample_project_field_value"
+        ]
 
         return data_update
 
