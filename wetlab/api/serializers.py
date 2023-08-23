@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from collections import OrderedDict
@@ -19,6 +18,29 @@ class CreateProjectDataSerializer(serializers.ModelSerializer):
         fields = ["sample_id", "sample_project_field_id", "sample_project_field_value"]
 
 
+class SampleProjectOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = core.models.SamplesProjectsTableOptions
+        fields = ("id", "option_value")
+
+
+class SampleProjectFieldSerializer(serializers.ModelSerializer):
+    sample_project_option_list = SampleProjectOptionSerializer(
+        source="opt_value_prop", many=True
+    )
+
+    class Meta:
+        model = core.models.SampleProjectsFields
+        depth = 1
+        fields = [
+            "sample_project_field_name",
+            "sample_project_field_used",
+            "sample_project_field_type",
+            "sample_project_option_list",
+            "sample_project_field_description",
+        ]
+
+
 class ProjectValuesSerializers(serializers.ModelSerializer):
     sample_project_field_id = serializers.StringRelatedField(many=False)
 
@@ -36,6 +58,33 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
     class Meta:
         model = core.models.SampleProjectsFieldsValue
         fields = ["sample_project_field_id", "sample_project_field_value"]
+
+
+class SampleProjectParameterSerializer(serializers.ModelSerializer):
+    sample_name = serializers.CharField(source="sample_id.sample_name")
+
+    def to_representation(self, instance):
+        data = super(SampleProjectParameterSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            # change parameter label name
+            if key == "sample_project_field_value":
+                data_update[self.context["parameter"]] = data[key]
+            else:
+                # Change id to label for api rest output
+                data_update[self.fields[key].label] = data[key]
+
+        return data_update
+
+    class Meta:
+        model = core.models.SampleProjectsFieldsValue
+        fields = ["sample_name", "sample_project_field_value"]
+
+
+class ProjectsSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = wetlab.models.Projects
+        fields = ["project_name"]
 
 
 class SampleSerializer(serializers.ModelSerializer):
@@ -96,27 +145,6 @@ class CreateSampleSerializer(serializers.ModelSerializer):
         ]
 
 
-class SampleProjectParameterSerializer(serializers.ModelSerializer):
-    sample_name = serializers.CharField(source="sample_id.sample_name")
-
-    def to_representation(self, instance):
-        data = super(SampleProjectParameterSerializer, self).to_representation(instance)
-        data_update = OrderedDict()
-        for key in self.fields:
-            # change parameter label name
-            if key == "sample_project_field_value":
-                data_update[self.context["parameter"]] = data[key]
-            else:
-                # Change id to label for api rest output
-                data_update[self.fields[key].label] = data[key]
-
-        return data_update
-
-    class Meta:
-        model = core.models.SampleProjectsFieldsValue
-        fields = ["sample_name", "sample_project_field_value"]
-
-
 class SampleParameterSerializer(serializers.ModelSerializer):
     req_param = serializers.SerializerMethodField("parameter_value")
 
@@ -171,29 +199,6 @@ class LabRequestSerializer(serializers.ModelSerializer):
         return self
 
 
-class SamplProjetPropertyOptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = core.models.SamplesProjectsTableOptions
-        fields = ("id", "option_value")
-
-
-class SampleProjectFieldSerializer(serializers.ModelSerializer):
-    sampleProjectOptionList = SamplProjetPropertyOptionSerializer(
-        source="opt_value_prop", many=True
-    )
-
-    class Meta:
-        model = core.models.SampleProjectsFields
-        depth = 1
-        fields = [
-            "sample_project_field_name",
-            "sample_project_field_used",
-            "sample_project_field_type",
-            "sample_project_option_list",
-            "sample_project_field_description",
-        ]
-
-
 class SampleFields(object):
     def __init__(self, sample_fields):
         self.sample_fields = sample_fields
@@ -201,12 +206,6 @@ class SampleFields(object):
 
 class SampleFieldsSerializer(serializers.Serializer):
     sample_fields = serializers.CharField(max_length=800)
-
-
-class ProjectsSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = wetlab.models.Projects
-        fields = ["project_name"]
 
 
 class RunProcessSerializers(serializers.ModelSerializer):
