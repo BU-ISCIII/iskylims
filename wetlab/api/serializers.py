@@ -31,13 +31,26 @@ class SampleProjectFieldSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = core.models.SampleProjectsFields
-        depth = 1
+        # depth = 1
         fields = [
             "sample_project_field_name",
             "sample_project_field_used",
             "sample_project_field_type",
             "sample_project_option_list",
             "sample_project_field_description",
+        ]
+
+
+class ProjectsSerializer(serializers.ModelSerializer):
+    sample_project_fields = SampleProjectFieldSerializer(source="project_fields_options", many=True)
+
+    class Meta:
+        model = core.models.SampleProjects
+        fields = [
+            "sample_project_name",
+            "sample_project_manager",
+            "sample_project_contact",
+            "sample_project_fields",
         ]
 
 
@@ -79,12 +92,6 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = core.models.SampleProjectsFieldsValue
         fields = ["sample_name", "sample_project_field_value"]
-
-
-class ProjectsSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = wetlab.models.Projects
-        fields = ["project_name"]
 
 
 class SampleSerializer(serializers.ModelSerializer):
@@ -215,7 +222,7 @@ class RunProcessSerializers(serializers.ModelSerializer):
 
 
 class SampleRunInfoSerializers(serializers.ModelSerializer):
-    project_id = ProjectsSerializers(many=False)
+    project_id = serializers.StringRelatedField(many=False)
     user_id = UserIDSerializer(many=False)
     runProcess_id = RunProcessSerializers(many=False)
     generated_at = serializers.DateTimeField(format="%Y-%m-%d")

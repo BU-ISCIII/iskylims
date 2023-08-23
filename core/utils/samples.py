@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
-from django.db.models import CharField, Count, F, Func, Value
+from django.db.models import CharField, Count, F, Func, Prefetch, Value
 
 # Local imports
 import core.core_config
@@ -13,9 +13,10 @@ import core.models
 import core.utils.commercial_kits
 import core.utils.common
 import core.utils.protocols
+import wetlab.api.serializers
 
 
-def project_table_fields(projects, samples):
+def project_table_fields(projects):
     """Gathers projects fields info to be displayed in the record project form
 
     Parameters
@@ -43,32 +44,23 @@ def project_table_fields(projects, samples):
         ]
     """
     projects_fields = []
-    for project_id in projects:
-        if project_id != "None":
-            # If projects_fields is empty or the project already is in projects_fields list -> include the project
-            if not projects_fields or not any(
-                p["project"] == project_id for p in projects_fields
-            ):
-                # If it doesn't exist the project is added to the list
-                project = {
-                    "project": "",
-                    "project_fields": [],
-                    "project_samples": [],
-                }
-                p_fields = (
-                    core.models.SampleProjectsFields.objects.filter(
-                        sample_projects_id=project_id
-                    )
-                    .exclude(sample_project_field_used=False)
-                    .order_by("sample_project_field_order")
-                )
-                project["project"] = project_id
-                project["project_fields"] = p_fields
-                # Append sample data associated with the project
-                project["project_samples"] = [
-                    s for s in samples if s["sample_project"] == project_id
-                ]
-                projects_fields.append(project)
+
+    projects = core.models.SampleProjects.objects.prefetch_related(
+        Prefetch(
+            "sample_project_fields",
+            queryset=core.models.SampleProjectsFields.objects.prefetch_related(
+                "opt_value_prop"
+            )
+            .exclude(sample_project_field_used=False)
+            .order_by("sample_project_field_order"),
+            to_attr="project_fields_options",
+        )
+    ).filter(sample_project_name__in=projects)
+
+    projects_fields = wetlab.api.serializers.ProjectsSerializer(
+        projects, many=True
+    ).data
+
     return projects_fields
 
 

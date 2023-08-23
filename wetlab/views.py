@@ -2182,51 +2182,57 @@ def record_samples(request):
                     {"error_message": error_message},
                 )
 
-            # If everything goes right, check if we need to add project data
-            # Sort samples by project, and filter keeping only samples in "Pre-Defined" state.
-            # Those only_recorded are already in complete state.
-            filter_samples = [
-                sample
-                for sample in sorted(
-                    sample_record_result,
-                    key=lambda x: x["sample_project"].get_sample_project_name(),
-                )
-                if sample["sample_state"] == "Pre-Defined"
-            ]
-            project_ids = [sample["sample_project"] for sample in filter_samples]
+        # If everything goes right, check if we need to add project data
+        # Sort samples by project, and filter keeping only samples in "Pre-Defined" state.
+        # Those only_recorded are already in complete state.
+        filter_samples = [
+            sample
+            for sample in sorted(
+                sample_record_result,
+                key=lambda x: x["sample_project"].get_sample_project_name(),
+            )
+            if sample["sample_state"] == "Pre-Defined"
+        ]
+        project_ids = []
+        project_ids = list(set([
+            sample["sample_project"].sample_project_name
+            for sample in filter_samples
+            if sample["sample_project"].sample_project_name not in project_ids
+        ]))
 
-            # If no sample Pre-Defined just show result
-            if not project_ids:
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {
-                        "fields_info": fields_info,
-                        "sample_record_result": sample_record_result,
-                    },
-                )
+        # If no sample Pre-Defined just show result
+        if not project_ids:
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "sample_record_result": sample_record_result,
+                },
+            )
 
-            try:
-                projects_fields = core.utils.samples.project_table_fields(
-                    project_ids, filter_samples
-                )
-                return render(
-                    request,
-                    "wetlab/record_project_fields.html",
-                    {
-                        "projects_fields": projects_fields,
-                    },
-                )
-            except Exception:
-                # In case come uncatched error occurs
-                error_message = (
-                    "There was an unexpected error when processing the project form."
-                )
-                return render(
-                    request,
-                    "wetlab/record_project_fields.html",
-                    {"error_message": error_message},
-                )
+        try:
+            projects_fields = core.utils.samples.project_table_fields(
+                project_ids
+            )
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {
+                    "projects_fields": projects_fields,
+                    "filter_samples": filter_samples,
+                },
+            )
+        except Exception:
+            # In case come uncatched error occurs
+            error_message = (
+                "There was an unexpected error when processing the project form."
+            )
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {"error_message": error_message},
+            )
 
     # Record project data
     elif request.method == "POST" and request.POST["action"] == "record_project_fields":

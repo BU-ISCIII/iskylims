@@ -932,7 +932,7 @@ class SampleProjectsFieldsManager(models.Manager):
 
 class SampleProjectsFields(models.Model):
     sample_projects_id = models.ForeignKey(
-        SampleProjects, on_delete=models.CASCADE, null=True, blank=True
+        SampleProjects, on_delete=models.CASCADE, null=True, blank=True, related_name="sample_project_fields"
     )
     sample_project_field_classification_id = models.ForeignKey(
         SampleProjectFieldClassification,
