@@ -408,15 +408,6 @@ def check_if_molecule_use_defined(app_name):
     return False
 
 
-def check_if_sample_already_defined(sample_name, req_user):
-    if core.models.Samples.objects.filter(
-        sample_name__exact=sample_name, sample_user__username__exact=req_user
-    ).exists():
-        return True
-    else:
-        return False
-
-
 def check_if_sample_project_id_exists(sample_project_id):
     if core.models.SampleProjects.objects.filter(pk__exact=sample_project_id).exists():
         return True
