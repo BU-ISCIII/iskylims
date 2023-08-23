@@ -27,7 +27,7 @@
     "model": "core.ontologymap",
     "pk": 4,
     "fields": {
-        "label": "sampleName",
+        "label": "sample_name",
         "ontology": "GENEPIO:0001123"
     }
 },

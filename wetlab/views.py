@@ -3187,7 +3187,7 @@ def search_sample(request):
     search_data["s_state"] = core.utils.samples.get_sample_states()
 
     if request.method == "POST" and request.POST["action"] == "searchsample":
-        sample_name = request.POST["samplename"]
+        sample_name = request.POST["sample_name"]
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
         user_name = request.POST["username"]

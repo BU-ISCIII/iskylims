@@ -945,7 +945,7 @@ class SamplesInProjectManager(models.Manager):
 
         sample_project = self.create(
             project_id=sample_p_data["project_id"],
-            sample_name=sample_p_data["sampleName"],
+            sample_name=sample_p_data["sample_name"],
             barcode_name=sample_p_data["barcodeName"],
             pf_clusters=sample_p_data["pfClusters"],
             percent_in_project=sample_p_data["percentInProject"],

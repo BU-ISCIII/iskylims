@@ -438,9 +438,9 @@ def get_samples_clinic_in_search(data_request):
             patient_core__patient_surname__icontains=data_request["patientSurname"]
         )
 
-    if data_request["sampleName"] != "":
+    if data_request["sample_name"] != "":
         clinic_s_found = clinic_s_found.filter(
-            sample_core__sample_name__icontains=data_request["sampleName"]
+            sample_core__sample_name__icontains=data_request["sample_name"]
         )
         if len(clinic_s_found) == 1:
             clinic_s_list.append(clinic_s_found[0].pk)

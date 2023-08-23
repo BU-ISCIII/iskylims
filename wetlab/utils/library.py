@@ -945,10 +945,10 @@ def update_library_preparation_for_reuse(sample):
         None
     """
     if wetlab.models.LibPrepare.objects.filter(
-        sample_id__sampleName__exact=sample
+        sample_id__sample_name__exact=sample
     ).exists():
         lib_prep_obj = wetlab.models.LibPrepare.objects.filter(
-            sample_id__sampleName__exact=sample
+            sample_id__sample_name__exact=sample
         ).last()
         lib_prep_obj.set_increase_reuse()
     return

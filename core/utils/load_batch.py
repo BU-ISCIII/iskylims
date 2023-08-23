@@ -227,7 +227,7 @@ def create_sample_from_batch_file(sample_data, req_user, package):
             print("Type of Sample is null for the Sample ", sample_data["Sample Name"])
 
     sample_new["sampleType"] = sample_data["Type of Sample"]
-    sample_new["sampleName"] = sample_data["Sample Name"]
+    sample_new["sample_name"] = sample_data["Sample Name"]
 
     #  Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
     if sample_data["Patient Code ID"] != "":

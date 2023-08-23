@@ -2962,7 +2962,7 @@ def process_and_store_samples_projects_data(
 
         for sample in parsed_data[project]:
             project_sample_data = {}
-            project_sample_data["sampleName"] = sample
+            project_sample_data["sample_name"] = sample
             project_sample_data["barcodeName"] = parsed_data[project][sample][
                 "barcodeName"
             ]
