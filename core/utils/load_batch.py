@@ -293,8 +293,8 @@ def create_sample_project_fields_value(sample_obj, sample_data, package):
         sample_projects_id__apps_name=package,
     )
     for sample_project_fields_obj in sample_project_fields_objs:
-        s_project_field_data["sampleProjecttField_id"] = sample_project_fields_obj
-        s_project_field_data["sampleProjectFieldValue"] = sample_data[
+        s_project_field_data["sample_project_field_id"] = sample_project_fields_obj
+        s_project_field_data["sample_project_field_value"] = sample_data[
             sample_project_fields_obj.get_field_name()
         ]
         core.models.SampleProjectsFieldsValue.objects.create_project_field_value(

@@ -23,7 +23,7 @@
             <div class="card-body">
               <form method="post" enctype="multipart/form-data" name="project_data_form" id="project_data_form">
                 {% csrf_token %}
-				<input type="hidden" name="action" value="project_data" />
+				<input type="hidden" name="action" value="record_project_fields" />
                 {% for project in projects_fields %}
 				<h5 class="border-bottom d-inline-block">Project form: {{ project.project.sample_project_name }}</h5>
 				<div class="row justify-content-center horizontal-scroll">
@@ -53,7 +53,7 @@
 						{% endfor %}
 						];
 		{% else %}
-		var {{ project.project.sample_project_name }}_data = [{% for sample in project.project_data %}
+		var {{ project.project.sample_project_name }}_data = [{% for sample in project.project_samples %}
 						['{{ sample.sample_name }}'],
 						{% endfor %}
 						];

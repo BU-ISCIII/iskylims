@@ -160,12 +160,17 @@ def jspreadsheet_to_dict(heading, data):
     """Convert the list of item list into a list where each item in the list
     is a dictionary and keys are the heading values
 
-    Args:
-        heading (list): the list which contains the key values
-        data (list): List of data to be mapped to dictianary
+    Parameters
+    ----------
+    heading
+         list which contains the key values
+    data
+        list of data to be mapped to dictianary
 
-    Returns:
-        (list): List which each item has a dictionary with the heading as key values
+    Returns
+    -------
+    c_data
+        list of dicts with the heading names as key values
     """
     c_data = [
         {heading[idx]: item[idx] for idx in range(len(heading))}
