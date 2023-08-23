@@ -107,7 +107,7 @@ def sample_table_fields(app_name):
 
     fields_info["species"] = get_species()
     fields_info["lab_request"] = get_lab_requested()
-    fields_info["sample_type"] = get_sample_type(app_name)
+    fields_info["sample_type"] = list(core.models.SampleType.objects.filter(apps_name=app_name).values_list("sample_type", flat=True))
     fields_info["sample_project"] = get_defined_sample_projects(app_name)
     fields_info["sample_project"].insert(0, "None")
 
