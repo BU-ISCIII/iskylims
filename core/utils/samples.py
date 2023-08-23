@@ -742,9 +742,17 @@ def display_sample_types(app_name):
         for s_type in s_types:
             defined_sample_types.append([s_type.get_sample_type_id, s_type.get_name])
         sample_types["defined_sample_types"] = defined_sample_types
+
+    opt_value = {}
+    for field in core.models.Samples._meta.get_fields():
+        try:
+            opt_value[field.name] = field.verbose_name
+        except Exception:
+            opt_value[field.name] = field.name
+   
     sample_types[
         "optional_values"
-    ] = core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES
+    ] = opt_value
     return sample_types
 
 
