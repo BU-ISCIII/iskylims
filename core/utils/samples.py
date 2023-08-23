@@ -1285,26 +1285,6 @@ def get_sample_project_information(sample_project_obj, sample_obj, join_values=F
     return s_project_info
 
 
-def get_sample_type(app_name):
-    """
-    Description:
-        The function will return the type of samples defined in database.
-    Input:
-        none
-    Variables:
-        sample_type_names # list containing all sample types names
-    Return:
-        sample_type_names.
-    """
-    sample_type_names = []
-    if core.models.SampleType.objects.filter(apps_name__exact=app_name).exists():
-        sample_types = core.models.SampleType.objects.filter(apps_name__exact=app_name)
-
-        for sample in sample_types:
-            sample_type_names.append(sample.get_name())
-    return sample_type_names
-
-
 def get_sample_states():
     """
     Description:
