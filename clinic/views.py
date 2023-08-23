@@ -17,6 +17,7 @@ import core.utils.patient_projects
 import core.utils.protocols
 import core.utils.samples
 import clinic.utils.common
+import core.models
 
 
 def index(request):
@@ -214,9 +215,9 @@ def create_sample_projects(request):
         sample_project_name = request.POST["sampleProyectName"]
         # description = request.POST['description']
 
-        if core.utils.samples.check_if_sample_project_exists(
-            sample_project_name, __package__
-        ):
+        if core.models.SampleProjects.objects.filter(
+            sample_project_name__iexact=sample_project_name, apps_name__exact=__package__
+        ).exists():
             error_message = clinic.clinic_config.ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
             return render(
                 request,
