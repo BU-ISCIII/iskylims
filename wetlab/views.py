@@ -2123,98 +2123,107 @@ def record_samples(request):
         excel_json_data = core.utils.common.jspreadsheet_to_dict(
             field_names, excel_data
         )
-        # validate mandatory and redundant samples
 
-        validation = core.utils.samples.validate_sample_data(
-            excel_json_data, req_user, __package__
-        )
-
-        for val in validation:
-            if not val["Validate"]:
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {
-                        "fields_info": fields_info,
-                        "validation": validation,
-                        "excel_data": excel_data,
-                    },
+        # Test if json is empty and go back to table
+        if len(excel_json_data) == 0:
+            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {"fields_info": fields_info, "pre_def_samples": pre_def_samples},
                 )
-
-        # If all samples are validated
-        try:
-            # Record sample results.
-            sample_record_result = core.utils.samples.save_recorded_samples(
+        else:
+        # validate mandatory and redundant samples
+            validation = core.utils.samples.validate_sample_data(
                 excel_json_data, req_user, __package__
             )
 
-            # If any samples couldn't be recorded for any error.
-            for sample in sample_record_result:
-                if not sample["success"]:
-                    # If some samples got an error. Some samples have been recorded and some of them don't.
+            for val in validation:
+                if not val["Validate"]:
                     return render(
                         request,
                         "wetlab/record_sample.html",
                         {
                             "fields_info": fields_info,
-                            "error_message": "Some samples couldn't be recorded. Table summary:",
-                            "sample_record_result": sample_record_result,
+                            "validation": validation,
+                            "excel_data": excel_data,
                         },
                     )
-        except Exception:
-            # In case come uncatched error occurs
-            error_message = "There was an unexpected error when recording the samples."
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {"error_message": error_message},
-            )
 
-        # If everything goes right, check if we need to add project data
-        # Sort samples by project, and filter keeping only samples in "Pre-Defined" state.
-        # Those only_recorded are already in complete state.
-        filter_samples = [
-            sample
-            for sample in sorted(
-                sample_record_result,
-                key=lambda x: x["sample_project"].get_sample_project_name(),
-            )
-            if sample["sample_state"] == "Pre-Defined"
-        ]
-        project_ids = [sample["sample_project"] for sample in filter_samples]
+            # If all samples are validated
+            try:
+                # Record sample results.
+                sample_record_result = core.utils.samples.save_recorded_samples(
+                    excel_json_data, req_user, __package__
+                )
 
-        # If no sample Pre-Defined just show result
-        if not project_ids:
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {
-                    "fields_info": fields_info,
-                    "sample_record_result": sample_record_result,
-                },
-            )
+                # If any samples couldn't be recorded for any error.
+                for sample in sample_record_result:
+                    if not sample["success"]:
+                        # If some samples got an error. Some samples have been recorded and some of them don't.
+                        return render(
+                            request,
+                            "wetlab/record_sample.html",
+                            {
+                                "fields_info": fields_info,
+                                "error_message": "Some samples couldn't be recorded. Table summary:",
+                                "sample_record_result": sample_record_result,
+                            },
+                        )
+            except Exception:
+                # In case come uncatched error occurs
+                error_message = "There was an unexpected error when recording the samples."
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {"error_message": error_message},
+                )
 
-        try:
-            projects_fields = core.utils.samples.project_table_fields(
-                project_ids, filter_samples
-            )
-            return render(
-                request,
-                "wetlab/record_project_fields.html",
-                {
-                    "projects_fields": projects_fields,
-                },
-            )
-        except Exception:
-            # In case come uncatched error occurs
-            error_message = (
-                "There was an unexpected error when processing the project form."
-            )
-            return render(
-                request,
-                "wetlab/record_project_fields.html",
-                {"error_message": error_message},
-            )
+            # If everything goes right, check if we need to add project data
+            # Sort samples by project, and filter keeping only samples in "Pre-Defined" state.
+            # Those only_recorded are already in complete state.
+            filter_samples = [
+                sample
+                for sample in sorted(
+                    sample_record_result,
+                    key=lambda x: x["sample_project"].get_sample_project_name(),
+                )
+                if sample["sample_state"] == "Pre-Defined"
+            ]
+            project_ids = [sample["sample_project"] for sample in filter_samples]
+
+            # If no sample Pre-Defined just show result
+            if not project_ids:
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "fields_info": fields_info,
+                        "sample_record_result": sample_record_result,
+                    },
+                )
+
+            try:
+                projects_fields = core.utils.samples.project_table_fields(
+                    project_ids, filter_samples
+                )
+                return render(
+                    request,
+                    "wetlab/record_project_fields.html",
+                    {
+                        "projects_fields": projects_fields,
+                    },
+                )
+            except Exception:
+                # In case come uncatched error occurs
+                error_message = (
+                    "There was an unexpected error when processing the project form."
+                )
+                return render(
+                    request,
+                    "wetlab/record_project_fields.html",
+                    {"error_message": error_message},
+                )
 
     # Record project data
     elif request.method == "POST" and request.POST["action"] == "record_project_fields":
