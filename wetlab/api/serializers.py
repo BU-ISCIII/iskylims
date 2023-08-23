@@ -1,25 +1,22 @@
+
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from collections import OrderedDict
 
-from core.models import (
-    LabRequest,
-    Samples,
-    SampleType,
-    SampleProjectsFieldsValue,
-    SampleProjectsFields,
-    SamplesProjectsTableOptions,
-)
-
-from wetlab.models import SamplesInProject, Projects, RunProcess
-from django.contrib.auth.models import User
-
-# from rest_framework.parsers import JSONParser
+import core.models
+import wetlab.models
 
 
 class UserIDSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username"]
+
+
+class CreateProjectDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = core.models.SampleProjectsFieldsValue
+        fields = ["sample_id", "sample_project_field_id", "sample_project_field_value"]
 
 
 class ProjectValuesSerializers(serializers.ModelSerializer):
@@ -37,21 +34,13 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
         return data_update
 
     class Meta:
-        model = SampleProjectsFieldsValue
+        model = core.models.SampleProjectsFieldsValue
         fields = ["sample_project_field_id", "sample_project_field_value"]
 
 
 class SampleSerializer(serializers.ModelSerializer):
     labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
     sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
-    """
-    sampleEntryDate = serializers.DateTimeField(
-        format="%Y-%m-%d", label="Recorded sample date"
-    )
-    collectionSampleDate = serializers.DateTimeField(
-        format="%Y-%m-%d", label="Collection sample date"
-    )
-    """
     project_values = ProjectValuesSerializers(many=True)
 
     def to_representation(self, instance):
@@ -74,40 +63,42 @@ class SampleSerializer(serializers.ModelSerializer):
         return data_update
 
     class Meta:
-        model = Samples
+        model = core.models.Samples
         fields = [
-            "sampleName",
-            "labRequest",
-            "sampleProject",
-            "sampleEntryDate",
-            "collectionSampleDate",
+            "sample_name",
+            "lab_request",
+            "sample_project",
+            "sample_entry_date",
+            "collection_sample_date",
             "project_values",
         ]
 
 
 class CreateSampleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Samples
+        model = core.models.Samples
         fields = [
-            "patientCore",
-            "sampleName",
-            "labRequest",
-            "sampleType",
+            "patient_core",
+            "sample_name",
+            "lab_request",
+            "sample_type",
             "species",
-            "sampleProject",
-            "sampleEntryDate",
-            "collectionSampleDate",
-            "sampleLocation",
-            "onlyRecorded",
-            "sampleCodeID",
-            "uniqueSampleID",
-            "sampleUser",
-            "sampleState",
-            "completedDate",
+            "sample_project",
+            "sample_entry_date",
+            "collection_sample_date",
+            "sample_location",
+            "only_recorded",
+            "sample_code_id",
+            "unique_sample_id",
+            "sample_user",
+            "sample_state",
+            "completed_date",
         ]
 
 
 class SampleProjectParameterSerializer(serializers.ModelSerializer):
+    sample_name = serializers.CharField(source="sample_id.sample_name")
+
     def to_representation(self, instance):
         data = super(SampleProjectParameterSerializer, self).to_representation(instance)
         data_update = OrderedDict()
@@ -121,14 +112,14 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
 
         return data_update
 
-    sample_name = serializers.CharField(source="sample_id.sampleName")
-
     class Meta:
-        model = SampleProjectsFieldsValue
+        model = core.models.SampleProjectsFieldsValue
         fields = ["sample_name", "sample_project_field_value"]
 
 
 class SampleParameterSerializer(serializers.ModelSerializer):
+    req_param = serializers.SerializerMethodField("parameter_value")
+
     def to_representation(self, instance):
         data = super(SampleParameterSerializer, self).to_representation(instance)
         data_update = OrderedDict()
@@ -141,12 +132,6 @@ class SampleParameterSerializer(serializers.ModelSerializer):
                 data_update[self.fields[key].label] = data[key]
 
         return data_update
-
-    req_param = serializers.SerializerMethodField("parameter_value")
-
-    class Meta:
-        model = Samples
-        fields = ["sampleName", "req_param"]
 
     def parameter_value(self, obj):
         param = self.context["parameter"]
@@ -162,23 +147,20 @@ class SampleParameterSerializer(serializers.ModelSerializer):
                 return value
         return False
 
+    class Meta:
+        model = core.models.Samples
+        fields = ["sample_name", "req_param"]
+
 
 class CreateSampleTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SampleType
+        model = core.models.SampleType
         fields = "__all__"
-
-
-class CreateProjectDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SampleProjectsFieldsValue
-        fields = ["sample_id", "sample_project_field_id", "sample_project_field_value"]
 
 
 class LabRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = LabRequest
-        # fields = ["labContactName", "labPhone", "labEmail"]
+        model = core.models.LabRequest
         fields = "__all__"
 
     def update(self, data):
@@ -191,8 +173,8 @@ class LabRequestSerializer(serializers.ModelSerializer):
 
 class SamplProjetPropertyOptionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SamplesProjectsTableOptions
-        fields = ("id", "optionValue")
+        model = core.models.SamplesProjectsTableOptions
+        fields = ("id", "option_value")
 
 
 class SampleProjectFieldSerializer(serializers.ModelSerializer):
@@ -201,14 +183,14 @@ class SampleProjectFieldSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = SampleProjectsFields
+        model = core.models.SampleProjectsFields
         depth = 1
         fields = [
-            "sampleProjectFieldName",
-            "sampleProjectFieldUsed",
-            "sampleProjectFieldType",
-            "sampleProjectOptionList",
-            "sampleProjectFieldDescription",
+            "sample_project_field_name",
+            "sample_project_field_used",
+            "sample_project_field_type",
+            "sample_project_option_list",
+            "sample_project_field_description",
         ]
 
 
@@ -223,14 +205,14 @@ class SampleFieldsSerializer(serializers.Serializer):
 
 class ProjectsSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Projects
-        fields = ["projectName"]
+        model = wetlab.models.Projects
+        fields = ["project_name"]
 
 
 class RunProcessSerializers(serializers.ModelSerializer):
     class Meta:
-        model = RunProcess
-        fields = ["runName"]
+        model = wetlab.models.RunProcess
+        fields = ["run_name"]
 
 
 class SampleRunInfoSerializers(serializers.ModelSerializer):
@@ -240,6 +222,6 @@ class SampleRunInfoSerializers(serializers.ModelSerializer):
     generated_at = serializers.DateTimeField(format="%Y-%m-%d")
 
     class Meta:
-        model = SamplesInProject
+        model = wetlab.models.SamplesInProject
         # fields = "__all__"
-        exclude = ["sampleInCore"]
+        exclude = ["sample_in_core"]

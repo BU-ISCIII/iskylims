@@ -1,58 +1,19 @@
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
-
-from rest_framework.decorators import (
-    authentication_classes,
-    permission_classes,
-    api_view,
-)
-from rest_framework import status
-from rest_framework.response import Response
 from django.http import QueryDict
-
-from core.models import (
-    SampleProjects,
-    SampleProjectsFields,
-    SampleProjectsFieldsValue,
-    LabRequest,
-    Samples,
-)
-
-from wetlab.models import SamplesInProject
-
-from .serializers import (
-    CreateSampleSerializer,
-    CreateProjectDataSerializer,
-    SampleProjectFieldSerializer,
-    SampleSerializer,
-    SampleParameterSerializer,
-    SampleProjectParameterSerializer,
-    LabRequestSerializer,
-    SampleRunInfoSerializers,
-)
-
-from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.authentication import (BasicAuthentication,
+                                           SessionAuthentication)
+from rest_framework.decorators import (api_view, authentication_classes,
+                                       permission_classes)
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from .utils.lab import get_laboratory_instance
-
-from .utils.sample import (
-    collect_statistics_information,
-    include_instances_in_sample,
-    include_coding,
-    get_sample_fields,
-    split_sample_data,
-    summarize_samples,
-)
-
-"""
-stats = openapi.Parameter(
-    "project",
-    openapi.IN_QUERY,
-    description="Project name to fetch the statistics utilization fields. Example Relecov",
-    type=openapi.TYPE_STRING,
-)
-"""
+import core.models
+import wetlab.api.serializers
+import wetlab.api.utils.lab
+import wetlab.api.utils.sample
+import wetlab.models
 
 sample_project_fields = openapi.Parameter(
     "project",
@@ -60,14 +21,6 @@ sample_project_fields = openapi.Parameter(
     description="Project name to fetch the sample project fields defined. Example Relecov",
     type=openapi.TYPE_STRING,
 )
-"""
-sample_fields = openapi.Parameter(
-    "project",
-    openapi.IN_QUERY,
-    description="Fetch the sample fields",
-    type=openapi.TYPE_STRING,
-)
-"""
 
 laboratory = openapi.Parameter(
     "laboratory",
@@ -225,14 +178,14 @@ def create_sample_data(request):
             data = data.dict()
         if "sampleName" not in data or "sampleProject" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if Samples.objects.filter(sample_name__iexact=data["sampleName"]).exists():
+        if core.models.Samples.objects.filter(sample_name__iexact=data["sampleName"]).exists():
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        split_data = split_sample_data(data)
+        split_data = wetlab.api.utils.sample.split_sample_data(data)
         if not isinstance(split_data, dict):
             return Response(split_data, status=status.HTTP_400_BAD_REQUEST)
         apps_name = __package__.split(".")[0]
-        inst_req_sample = include_instances_in_sample(
+        inst_req_sample = wetlab.api.utils.sample.include_instances_in_sample(
             split_data["s_data"], split_data["lab_data"], apps_name
         )
         if not isinstance(inst_req_sample, dict):
@@ -241,9 +194,9 @@ def create_sample_data(request):
         split_data["s_data"]["sampleUser"] = request.user.pk
         # Adding coding for sample
         split_data["s_data"].update(
-            include_coding(request.user.username, split_data["s_data"]["sampleName"])
+            wetlab.api.utils.sample.include_coding(request.user.username, split_data["s_data"]["sampleName"])
         )
-        sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
+        sample_serializer = wetlab.api.serializers.CreateSampleSerializer(data=split_data["s_data"])
         if not sample_serializer.is_valid():
             return Response(
                 sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
@@ -251,7 +204,7 @@ def create_sample_data(request):
         new_sample_id = sample_serializer.save().get_sample_id()
         for d_field in split_data["p_data"]:
             d_field["sample_id"] = new_sample_id
-            s_project_serializer = CreateProjectDataSerializer(data=d_field)
+            s_project_serializer = wetlab.api.serializers.CreateProjectDataSerializer(data=d_field)
             if not s_project_serializer.is_valid():
                 return Response(
                     s_project_serializer.errors, status=status.HTTP_400_BAD_REQUEST
@@ -276,13 +229,13 @@ def fetch_run_information(request):
         s_data = []
         for sample in s_list:
             sample = sample.strip()
-            if SamplesInProject.objects.filter(sample_name__iexact=sample).exists():
-                s_found_objs = SamplesInProject.objects.filter(
+            if wetlab.models.SamplesInProject.objects.filter(sample_name__iexact=sample).exists():
+                s_found_objs = wetlab.models.SamplesInProject.objects.filter(
                     sample_name__iexact=sample
                 )
                 for s_found_obj in s_found_objs:
                     s_data.append(
-                        SampleRunInfoSerializers(s_found_obj, many=False).data
+                        wetlab.api.serializers.SampleRunInfoSerializers(s_found_obj, many=False).data
                     )
             else:
                 s_data.append({"sampleName": sample, "Run data": "Not found"})
@@ -299,36 +252,36 @@ def fetch_sample_information(request):
     sample_data = {}
     if "sample" in request.GET:
         sample = request.GET["sample"]
-        if not Samples.objects.filter(sample_name__iexact=sample).exists():
+        if not core.modesl.Samples.objects.filter(sample_name__iexact=sample).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
-        sample_obj = Samples.objects.filter(sample_name__iexact=sample).last()
-        sample_data = SampleSerializer(sample_obj, many=False).data
+        sample_obj = core.models.Samples.objects.filter(sample_name__iexact=sample).last()
+        sample_data = wetlab.api.serializers.SampleSerializer(sample_obj, many=False).data
     else:
         if "sample_project_name" in request.GET:
             project_name = request.GET["sample_project_name"]
             if "parameter" not in request.GET:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             param = request.GET["parameter"]
-            if SampleProjects.objects.filter(
+            if core.models.SampleProjects.objects.filter(
                 sample_project_name__iexact=project_name
             ).exists():
-                project_obj = SampleProjects.objects.filter(
+                project_obj = core.models.SampleProjects.objects.filter(
                     sample_project_name__iexact=project_name
                 ).last()
 
-                if not SampleProjectsFields.objects.filter(
+                if not core.models.SampleProjectsFields.objects.filter(
                     sample_projects_id=project_obj,
                     sample_project_field_name__iexact=param,
                 ).exists():
                     return Response(status=status.HTTP_400_BAD_REQUEST)
-                s_p_field_obj = SampleProjectsFields.objects.filter(
+                s_p_field_obj = core.models.SampleProjectsFields.objects.filter(
                     sample_projects_id=project_obj,
                     sample_project_field_name__iexact=param,
                 ).last()
-                sample_obj = SampleProjectsFieldsValue.objects.filter(
+                sample_obj = core.models.SampleProjectsFieldsValue.objects.filter(
                     sample_project_field_id=s_p_field_obj
                 )
-                sample_data = SampleProjectParameterSerializer(
+                sample_data = wetlab.api.serializers.SampleProjectParameterSerializer(
                     sample_obj, many=True, context={"parameter": param}
                 ).data
                 return Response(sample_data, status=status.HTTP_200_OK)
@@ -336,18 +289,18 @@ def fetch_sample_information(request):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         if "parameter" in request.GET:
             param = request.GET["parameter"]
-            sample_obj = Samples.objects.all()
+            sample_obj = core.models.Samples.objects.all()
             # check if parameter exists
             try:
                 eval("sample_obj[0]." + param)
             except AttributeError:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            sample_data = SampleParameterSerializer(
+            sample_data = wetlab.api.serializers.SampleParameterSerializer(
                 sample_obj, many=True, context={"parameter": param}
             ).data
         else:
-            sample_obj = Samples.objects.prefetch_related("project_values")
-            sample_data = SampleSerializer(sample_obj, many=True).data
+            sample_obj = core.models.Samples.objects.prefetch_related("project_values")
+            sample_data = wetlab.api.serializers.SampleSerializer(sample_obj, many=True).data
     return Response(sample_data, status=status.HTTP_200_OK)
 
 
@@ -360,14 +313,13 @@ def sample_fields(request):
     apps_name = __package__.split(".")[0]
     # sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
 
-    sample_fields = get_sample_fields(apps_name)
+    sample_fields = wetlab.api.utils.sample.get_sample_fields(apps_name)
 
     if "ERROR" in sample_fields:
         return Response(sample_fields, status=status.HTTP_202_ACCEPTED)
         # return Response(sample_fields.data, status=status.HTTP_204_NO_CONTENT)
     else:
         return Response(sample_fields, status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -379,14 +331,14 @@ def sample_fields(request):
 def sample_project_fields(request):
     if "project" in request.GET:
         project = request.GET["project"].strip()
-        if SampleProjects.objects.filter(sample_project_name__iexact=project).exists():
-            s_project_obj = SampleProjects.objects.filter(
+        if core.models.SampleProjects.objects.filter(sample_project_name__iexact=project).exists():
+            s_project_obj = core.models.SampleProjects.objects.filter(
                 sample_project_name__iexact=project
             ).last()
-            s_project_field_objs = SampleProjectsFields.objects.filter(
+            s_project_field_objs = core.models.SampleProjectsFields.objects.filter(
                 sample_projects_id=s_project_obj
             )
-            s_project_serializer = SampleProjectFieldSerializer(
+            s_project_serializer = wetlab.api.serializers.SampleProjectFieldSerializer(
                 s_project_field_objs, many=True
             )
             return Response(s_project_serializer.data, status=status.HTTP_200_OK)
@@ -400,9 +352,9 @@ def sample_project_fields(request):
 def get_lab_information_contact(request):
     if "laboratory" in request.GET:
         lab_name = request.GET["laboratory"].strip()
-        if LabRequest.objects.filter(lab_name__iexact=lab_name).exists():
-            lab_req_obj = LabRequest.objects.filter(lab_name__iexact=lab_name).last()
-            lab_req_serializer = LabRequestSerializer(lab_req_obj, many=False)
+        if core.models.LabRequest.objects.filter(lab_name__iexact=lab_name).exists():
+            lab_req_obj = core.models.LabRequest.objects.filter(lab_name__iexact=lab_name).last()
+            lab_req_serializer = core.models.LabRequestSerializer(lab_req_obj, many=False)
             return Response(lab_req_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -425,7 +377,7 @@ def get_lab_information_contact(request):
 )
 @api_view(["GET"])
 def summarize_data_information(request):
-    summarize_data = summarize_samples(request.GET)
+    summarize_data = wetlab.api.utils.sample.summarize_samples(request.GET)
     if "ERROR" in summarize_data:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if len(summarize_data) == 0:
@@ -443,7 +395,7 @@ def summarize_data_information(request):
 )
 @api_view(["GET"])
 def statistic_information(request):
-    statistics_data = collect_statistics_information(request.GET)
+    statistics_data = wetlab.api.utils.sample.collect_statistics_information(request.GET)
     if "ERROR" in statistics_data:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if len(statistics_data) == 0:
@@ -491,10 +443,10 @@ def update_lab(request):
         if isinstance(data, QueryDict):
             data = data.dict()
         if "lab_name" in data:
-            lab_obj = get_laboratory_instance(data["lab_name"])
+            lab_obj = wetlab.api.utils.lab.get_laboratory_instance(data["lab_name"])
             if lab_obj is None:
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            LabRequestSerializer.update(lab_obj, data)
+            wetlab.api.serializers.LabRequestSerializer.update(lab_obj, data)
 
             return Response(
                 "Successful Update information", status=status.HTTP_201_CREATED
