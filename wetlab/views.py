@@ -2176,7 +2176,8 @@ def record_samples(request):
         filter_samples = [
             sample
             for sample in sorted(
-                sample_record_result, key=lambda x: x["sample_project"].get_sample_project_name()
+                sample_record_result,
+                key=lambda x: x["sample_project"].get_sample_project_name(),
             )
             if sample["sample_state"] == "Pre-Defined"
         ]
@@ -2194,7 +2195,9 @@ def record_samples(request):
             )
 
         try:
-            projects_fields = core.utils.samples.project_table_fields(project_ids, filter_samples)
+            projects_fields = core.utils.samples.project_table_fields(
+                project_ids, filter_samples
+            )
             return render(
                 request,
                 "wetlab/record_project_fields.html",
@@ -2204,7 +2207,9 @@ def record_samples(request):
             )
         except Exception:
             # In case come uncatched error occurs
-            error_message = "There was an unexpected error when processing the project form."
+            error_message = (
+                "There was an unexpected error when processing the project form."
+            )
             return render(
                 request,
                 "wetlab/record_project_fields.html",
@@ -2224,14 +2229,18 @@ def record_samples(request):
                     {"error_message": error_message},
                 )
 
-            field_names = [field.sample_project_field_name for field in p_data["project_fields"]]
-            excel_data = json.loads(request.POST[f"{p_data['project'].sample_project_name}_table_data"])
+            field_names = [
+                field.sample_project_field_name for field in p_data["project_fields"]
+            ]
+            excel_data = json.loads(
+                request.POST[f"{p_data['project'].sample_project_name}_table_data"]
+            )
             excel_json_data = core.utils.common.jspreadsheet_to_dict(
                 p_data["project_fields"], excel_data
             )
             project_data_result = core.utils.samples.save_project_data(
-                    excel_json_data, p_data
-                )
+                excel_json_data, p_data
+            )
 
             return render(
                 request,

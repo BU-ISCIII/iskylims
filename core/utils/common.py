@@ -132,7 +132,7 @@ def get_email_data():
 
 
 def sheet_header_to_field_name(header, field_info):
-    """function that changes header/verbose names to 
+    """function that changes header/verbose names to
     field names as defined in models.py
 
     Parameters
