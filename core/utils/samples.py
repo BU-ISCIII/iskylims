@@ -426,23 +426,24 @@ def check_mandatory_fields_included(data, sample_type, app_name):
     Returns:
         _type_: _description_
     """
-
-    if not core.models.SampleType.objects.filter(
-        sample_type__exact=sample_type, app_name__exact=app_name
-    ).exists():
-        return False
-    opt_fields = (
+    missing_mandatory = []
+    mandatory_fields = (
         core.models.SampleType.objects.filter(
-            sample_type__exact=sample_type, app_name__exact=app_name
+            sample_type__exact=sample_type, apps_name__exact=app_name
         )
         .last()
-        .get_optional_values
+        .get_optional_values()
     )
-    for field, value in data.items():
-        if value == "" and field not in opt_fields:
-            return False
-    return True
 
+    for field in mandatory_fields:
+        if field == "only_recorded":
+            if not data[field]:
+                missing_mandatory.append(field)
+        else:
+            if data[field] == "":
+                missing_mandatory.append(field)
+
+    return missing_mandatory
 
 def check_patient_code_exists(p_code_id):
     """
