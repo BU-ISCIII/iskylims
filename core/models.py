@@ -1175,9 +1175,9 @@ class Samples(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Patient Code ID",
         null=True,
-        blank=True
+        blank=True,
     )
-    
+
     lab_request = models.ForeignKey(
         LabRequest,
         on_delete=models.CASCADE,

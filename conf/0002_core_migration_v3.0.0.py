@@ -615,9 +615,9 @@ class Migration(migrations.Migration):
             new_name="unique_sample_id",
         ),
         migrations.RenameField(
-            model_name='sampletype',
-            old_name='optional_fields',
-            new_name='mandatory_fields',
+            model_name="sampletype",
+            old_name="optional_fields",
+            new_name="mandatory_fields",
         ),
         migrations.AlterField(
             model_name="sampleprojectsfieldsvalue",
@@ -989,8 +989,14 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name='samples',
-            name='patient_core',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientcore', verbose_name='Patient Code ID'),
+            model_name="samples",
+            name="patient_core",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.patientcore",
+                verbose_name="Patient Code ID",
+            ),
         ),
     ]

@@ -527,8 +527,8 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name='service',
-            name='service_request_number',
-            field=models.CharField(max_length=80, null=True, verbose_name='Service ID'),
+            model_name="service",
+            name="service_request_number",
+            field=models.CharField(max_length=80, null=True, verbose_name="Service ID"),
         ),
     ]
