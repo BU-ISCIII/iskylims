@@ -2207,13 +2207,40 @@ def record_samples(request):
             error_message = "There was an unexpected error when processing the project form."
             return render(
                 request,
-                "wetlab/record_sample.html",
+                "wetlab/record_project_fields.html",
                 {"error_message": error_message},
             )
 
     # Record project data
     elif request.method == "POST" and request.POST["action"] == "record_project_fields":
-        pass
+        # Convert excel list-list to dictionary with field_names
+        for p_data in projects_fields:
+            if not request.POST[p_data["project"].sample_project_name]:
+                # In case come uncatched error occurs
+                error_message = f"Information for project {p_data['project'].sample_project_name} is missing."
+                return render(
+                    request,
+                    "wetlab/record_project_fields.html",
+                    {"error_message": error_message},
+                )
+
+            field_names = [field.sample_project_field_name for field in p_data["project_fields"]]
+            excel_data = json.loads(request.POST[f"{p_data['project'].sample_project_name}_table_data"])
+            excel_json_data = core.utils.common.jspreadsheet_to_dict(
+                p_data["project_fields"], excel_data
+            )
+            project_data_result = core.utils.samples.save_project_data(
+                    excel_json_data, p_data
+                )
+
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {
+                    "projects_data_result": project_data_result,
+                },
+            )
+
     # Record batch of samples
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
         sample_information = core.utils.samples.prepare_sample_input_table(__package__)

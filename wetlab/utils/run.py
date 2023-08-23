@@ -736,6 +736,7 @@ def increase_reuse_if_samples_exists(sample_list):
     """
     samples_reused = []
     for sample in sample_list:
+        # PROBLEM GET SAMPLE OBJ FROM SAMPLE NAME IS INCORRECT AS SAMPLE NAMES CAN BE REPEATED
         sample_obj = core.utils.samples.get_sample_obj_from_sample_name(sample)
         if sample_obj:
             core.utils.samples.update_sample_reused(sample_obj.get_sample_id())

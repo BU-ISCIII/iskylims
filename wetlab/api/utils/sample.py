@@ -304,16 +304,16 @@ def split_sample_data(data):
             try:
                 split_data["p_data"].append(
                     {
-                        "sampleProjecttField_id": p_field[0],
-                        "sampleProjectFieldValue": data[p_field[1]],
+                        "sample_project_field_id": p_field[0],
+                        "sample_project_field_value": data[p_field[1]],
                     }
                 )
             except KeyError:
                 # if not entry for the field set it to empty
                 split_data["p_data"].append(
                     {
-                        "sampleProjecttField_id": p_field[0],
-                        "sampleProjectFieldValue": "",
+                        "sample_project_field_id": p_field[0],
+                        "sample_project_field_value": "",
                     }
                 )
     # fetched data to define new lab
@@ -498,7 +498,7 @@ def collect_statistics_information(data):
                         0
                     ],
                 )
-                .values_list("sampleProjectFieldValue", flat=True)
+                .values_list("sample_project_field_value", flat=True)
                 .distinct()
             )
 

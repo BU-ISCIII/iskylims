@@ -1406,8 +1406,8 @@ class SampleProjectsFieldsValueManager(models.Manager):
     def create_project_field_value(self, field_value):
         new_field_data = self.create(
             sample_id=field_value["sample_id"],
-            sample_project_field_id=field_value["sampleProjecttField_id"],
-            sample_project_field_value=field_value["sampleProjectFieldValue"],
+            sample_project_field_id=field_value["sample_project_field_id"],
+            sample_project_field_value=field_value["sample_project_field_value"],
         )
         return new_field_data
 

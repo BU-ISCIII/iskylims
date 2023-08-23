@@ -31,14 +31,14 @@ def project_table_fields(projects, samples):
     -------
         project_fields = [
             {
-                "project_name": "Relecov",
+                "project": <SampleProject "Relecov"> , (obj)
                 "project_fields": [list of projectField objects],
-                "project_data": [list of samples belonging to this project dict]
+                "project_samples": [list of samples belonging to this project dict]
             },
             {
-                "project_name": "Mepram",
+                "project": <SampleProject "Mepram">,
                 "project_fields": [list of projectField objects],
-                "project_data": [list of samples belonging to this project dict]
+                "project_samples": [list of samples belonging to this project dict]
             }
         ]
     """
@@ -46,12 +46,14 @@ def project_table_fields(projects, samples):
     for project_id in projects:
         if project_id != "None":
             # If projects_fields is empty or the project already is in projects_fields list -> include the project
-            if not projects_fields or not any(p["project"] == project_id for p in projects_fields):
+            if not projects_fields or not any(
+                p["project"] == project_id for p in projects_fields
+            ):
                 # If it doesn't exist the project is added to the list
                 project = {
                     "project": "",
                     "project_fields": [],
-                    "project_data": [],
+                    "project_samples": [],
                 }
                 p_fields = (
                     core.models.SampleProjectsFields.objects.filter(
@@ -63,7 +65,7 @@ def project_table_fields(projects, samples):
                 project["project"] = project_id
                 project["project_fields"] = p_fields
                 # Append sample data associated with the project
-                project["project_data"] = [
+                project["project_samples"] = [
                     s for s in samples if s["sample_project"] == project_id
                 ]
                 projects_fields.append(project)
@@ -196,7 +198,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
 
 
 def validate_sample_data(sample_data, req_user, app_name):
-    """ Sample data validation
+    """Sample data validation
 
     Parameters
     ----------
@@ -241,51 +243,55 @@ def validate_sample_data(sample_data, req_user, app_name):
     return validation
 
 
-def analyze_input_sample_project_fields(form_data):
+def save_project_data(excel_data, project_info):
+    """Saves the project form data for each sample 
+
+    Parameters
+    ----------
+    excel_data
+        excel form data in json format (list of dicts)
+        e.g.
+    project_info
+        project info according to project_table_fields function.
+
+    Returns
+    -------
+        Same project info adding keys
+         - project_data: field_value information for each sample
+         - success: True/False
+         - error: error message
     """
-    Description:
-        The function analyze the user data to assign values to the sample project field.
-    Input:
-        form_data
-    Functions:
-        get_sample_obj_from_id   : located at this file
-    Return:
-        sample_to_display.
-    """
-    sample_recorded = {}
-    field_value_json_data = json.loads(form_data["table_data"])
-    samples_name = form_data["pre_defined_samples"].split(",")
-    samples_ids = form_data["pre_defined_id"].split(",")
-    # pending_ids = form_data["pending_pre_defined"].split(",")
-    heading_list = form_data["pre_defined_heading"].split(",")
-    sample_to_display = []
-    for i in range(len(samples_ids)):
-        right_id = samples_ids[samples_name.index(field_value_json_data[i][0])]
-        sample_obj = get_sample_obj_from_id(right_id)
-        sample_project_obj = sample_obj.get_sample_project_obj()
-        for j in range(len(heading_list)):
-            sample_project_field = core.models.SampleProjectsFields.objects.get(
-                sample_projects_id=sample_project_obj,
-                sample_project_field_name__exact=heading_list[j],
-            )
+    import pdb; pdb.set_trace()
+    project_info["project_data"] = []
+    for sample in project_info["project_samples"]:
+        for field in project_info["project_fields"]:
             field_value = {}
-            field_value["sample_id"] = sample_obj
-            field_value["sampleProjecttField_id"] = sample_project_field
-            field_value["sampleProjectFieldValue"] = field_value_json_data[i][j + 1]
-
-            core.models.SampleProjectsFieldsValue.objects.create_project_field_value(
-                field_value
+            field_value["sample_id"] = core.models.Samples.objects.get(
+                sample_code_id__exact=sample.sample_code_id
             )
+            field_value["sample_project_field_id"] = field
+            field_value["sample_project_field_value"] = next(
+                (
+                    sample[field.sample_project_name]
+                    for sample in excel_data
+                    if sample["sample_code_id"] == sample.sample_code_id
+                ),
+                None,
+            )
+            project_info["project_data"].append(field_value)
+            try:
+                core.models.SampleProjectsFieldsValue.objects.create_project_field_value(
+                    field_value
+                )
+                field_value["sample_id"].set_state("Defined")
+                project_info["success"] = True
+            except Exception:
+                project_info["success"] = False
+                project_info["error"] = "Error saving any of the project fields"
+                field_value["sample_id"].set_state("Pre-Defined")
+                raise
 
-        sample_to_display.append([field_value_json_data[i][0], right_id])
-        if sample_obj.is_only_recorded():
-            sample_obj.set_state("Completed")
-        else:
-            # Update Sample state to defined
-            sample_obj.set_state("Defined")
-    sample_recorded["display_samples"] = sample_to_display
-
-    return sample_recorded
+    return project_info
 
 
 def check_empty_fields(row_data, optional_index):

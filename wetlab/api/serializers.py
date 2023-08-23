@@ -23,20 +23,20 @@ class UserIDSerializer(serializers.ModelSerializer):
 
 
 class ProjectValuesSerializers(serializers.ModelSerializer):
-    sampleProjecttField_id = serializers.StringRelatedField(many=False)
+    sample_project_field_id = serializers.StringRelatedField(many=False)
 
     def to_representation(self, instance):
         data = super(ProjectValuesSerializers, self).to_representation(instance)
         data_update = dict()
         # Convert dict according to db table fields, to id and values inside the table.
         # WARNING: This will have to be change if db fields change in models.py
-        data_update[data["sampleProjecttField_id"]] = data["sampleProjectFieldValue"]
+        data_update[data["sample_project_field_id"]] = data["sample_project_field_value"]
 
         return data_update
 
     class Meta:
         model = SampleProjectsFieldsValue
-        fields = ["sampleProjecttField_id", "sampleProjectFieldValue"]
+        fields = ["sample_project_field_id", "sample_project_field_value"]
 
 
 class SampleSerializer(serializers.ModelSerializer):
@@ -111,7 +111,7 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
         data_update = OrderedDict()
         for key in self.fields:
             # change parameter label name
-            if key == "sampleProjectFieldValue":
+            if key == "sample_project_field_value":
                 data_update[self.context["parameter"]] = data[key]
             else:
                 # Change id to label for api rest output
@@ -123,7 +123,7 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SampleProjectsFieldsValue
-        fields = ["sample_name", "sampleProjectFieldValue"]
+        fields = ["sample_name", "sample_project_field_value"]
 
 
 class SampleParameterSerializer(serializers.ModelSerializer):
@@ -170,7 +170,7 @@ class CreateSampleTypeSerializer(serializers.ModelSerializer):
 class CreateProjectDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleProjectsFieldsValue
-        fields = ["sample_id", "sampleProjecttField_id", "sampleProjectFieldValue"]
+        fields = ["sample_id", "sample_project_field_id", "sample_project_field_value"]
 
 
 class LabRequestSerializer(serializers.ModelSerializer):
