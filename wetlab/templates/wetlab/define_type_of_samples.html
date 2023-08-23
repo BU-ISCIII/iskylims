@@ -52,12 +52,48 @@
                                     </div>
                                     <p class="mt-2"> Check the Mandatory Fields required when recording a new sample</p>
                                     <div class="form-control">
-                                        {% for values  in sample_types.optional_values  %}
-                                            <div class="form-check form-switch col mb-2">
-                                                <label class="form-check-label  form-label" for="{{values}}">{{values}}</label>
-                                                <input class="form-check-input" type="checkbox" name="{{values}}" id="{{values}}" >
-                                            </div>
-                                        {% endfor %}
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="patient_core">{{sample_types.optional_values.patient_core}}</label>
+                                            <input class="form-check-input" type="checkbox" name="patient_core" id="patient_core" >
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="sample_name">{{sample_types.optional_values.sample_name}}</label>
+                                            <input class="form-check-input" type="checkbox" name="sample_name" id="sample_name" checked disabled>
+                                            <input name="sample_name" type="hidden" value="on"/>
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="lab_request">{{sample_types.optional_values.lab_request}}</label>
+                                            <input class="form-check-input" type="checkbox" name="lab_request" id="lab_request" >
+                                        </div>                                        
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="sample_type">{{sample_types.optional_values.sample_type}}</label>
+                                            <input class="form-check-input" type="checkbox" name="sample_type" id="sample_type" checked disabled >
+                                            <input name="sample_type" type="hidden" value="on"/>
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="species">{{sample_types.optional_values.species}}</label>
+                                            <input class="form-check-input" type="checkbox" name="species" id="species" >
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="sample_project">{{sample_types.optional_values.sample_project}}</label>
+                                            <input class="form-check-input" type="checkbox" name="sample_project" id="sample_project" >
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="sample_entry_date">{{sample_types.optional_values.sample_entry_date}}</label>
+                                            <input class="form-check-input" type="checkbox" name="sample_entry_date" id="sample_entry_date" >
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="collection_sample_date">{{sample_types.optional_values.collection_sample_date}}</label>
+                                            <input class="form-check-input" type="checkbox" name="collection_sample_date" id="collection_sample_date" >
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="sample_location">{{sample_types.optional_values.sample_location}}</label>
+                                            <input class="form-check-input" type="checkbox" name="sample_location" id="sample_location" >
+                                        </div>
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="only_recorded">{{sample_types.optional_values.only_recorded}}</label>
+                                            <input class="form-check-input" type="checkbox" name="only_recorded" id="only_recorded" >
+                                        </div>
                                     </div>
                                     <p class="mt-2"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                     <input class="btn float-end btn-outline-primary mb-2 me-2" type="submit" value="Submit" id="btnSubmit">
