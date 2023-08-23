@@ -244,7 +244,7 @@ def validate_sample_data(sample_data, req_user, app_name):
 
 
 def save_project_data(excel_data, project_info):
-    """Saves the project form data for each sample 
+    """Saves the project form data for each sample
 
     Parameters
     ----------
@@ -261,7 +261,6 @@ def save_project_data(excel_data, project_info):
          - success: True/False
          - error: error message
     """
-    import pdb; pdb.set_trace()
     project_info["project_data"] = []
     for sample in project_info["project_samples"]:
         for field in project_info["project_fields"]:
