@@ -141,7 +141,7 @@
         "fields": {
             "sample_type": "blood",
             "apps_name": "wetlab",
-            "optional_fields": "0,7,8,9",
+            "mandatory_fields": "sample_name, sample_type, species, sample_project, only_recorded",
             "generated_at": "2023-07-25T16:16:59.630"
         }
     },
