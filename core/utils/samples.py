@@ -1792,8 +1792,7 @@ def pending_sample_summary(req_user=None, friend_list=None):
 def save_type_of_sample(form_data, app_name):
     """
     Description:
-        The function store the new type of sample, together with the index of the optional fields
-        that can be empty
+        The function store the new type of sample, together with the names of the mandatory fields
 
     Input:
         form_data # information collected from the form
@@ -1802,26 +1801,28 @@ def save_type_of_sample(form_data, app_name):
         save_s_type
     """
     save_s_type = {}
-    optional_fields = []
+    mandatory_fields = []
     if core.models.SampleType.objects.filter(
         sample_type__exact=form_data["sampleTypeName"], apps_name__exact=app_name
     ).exists():
         save_s_type["ERROR"] = core.core_config.ERROR_TYPE_OF_SAMPLE_EXISTS
         return save_s_type
     # select the optional fields and get the indexes
-    for field in core.core_config.HEADING_FOR_OPTIONAL_FIELD_SAMPLES:
-        if field not in form_data:
-            optional_fields.append(field)
+    for field in form_data:
+        if form_data[field] == 'on':
+            mandatory_fields.append(field)
 
     data = {}
     data["sampleType"] = form_data["sampleTypeName"]
     data["apps_name"] = app_name
-    data["optional_fields"] = ",".join(optional_fields)
+    data["mandatory_fields"] = ",".join(mandatory_fields)
+
     # Store in database
     sample_type_obj = core.models.SampleType.objects.create_sample_type(data)
     save_s_type = {}
     save_s_type["new_defined_sample_type"] = form_data["sampleTypeName"]
     save_s_type["new_defined_id"] = sample_type_obj.get_sample_type_id()
+
     return save_s_type
 
 

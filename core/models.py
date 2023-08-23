@@ -388,7 +388,7 @@ class SampleTypeManager(models.Manager):
         new_sample_type = self.create(
             sample_type=sample_type_data["sampleType"],
             apps_name=sample_type_data["apps_name"],
-            optional_fields=sample_type_data["optional_fields"],
+            mandatory_fields=sample_type_data["mandatory_fields"],
         )
         return new_sample_type
 
@@ -396,7 +396,7 @@ class SampleTypeManager(models.Manager):
 class SampleType(models.Model):
     sample_type = models.CharField(max_length=50)
     apps_name = models.CharField(max_length=50)
-    optional_fields = models.CharField(max_length=300, null=True, blank=True)
+    mandatory_fields = models.CharField(max_length=300, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
@@ -412,10 +412,10 @@ class SampleType(models.Model):
         return "%s" % (self.sample_type)
 
     def get_optional_values(self):
-        if self.optional_fields == "" or self.optional_fields is None:
+        if self.mandatory_fields == "" or self.mandatory_fields is None:
             return []
         else:
-            return self.optional_fields.split(",")
+            return self.mandatory_fields.split(",")
 
     objects = SampleTypeManager()
 

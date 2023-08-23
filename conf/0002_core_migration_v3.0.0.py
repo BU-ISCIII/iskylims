@@ -614,6 +614,11 @@ class Migration(migrations.Migration):
             old_name="uniqueSampleID",
             new_name="unique_sample_id",
         ),
+        migrations.RenameField(
+            model_name='sampletype',
+            old_name='optional_fields',
+            new_name='mandatory_fields',
+        ),
         migrations.AlterField(
             model_name="sampleprojectsfieldsvalue",
             name="sample_project_field_value",

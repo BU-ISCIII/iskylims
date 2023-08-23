@@ -147,7 +147,7 @@ class SamplesAdmin(admin.ModelAdmin):
 
 
 class SampleTypeAdmin(admin.ModelAdmin):
-    list_display = ("sample_type", "apps_name", "optional_fields")
+    list_display = ("sample_type", "apps_name", "mandatory_fields")
 
 
 class SampleProjectsAdmin(admin.ModelAdmin):
