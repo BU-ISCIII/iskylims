@@ -271,8 +271,8 @@ def validate_sample_data(sample_data, req_user, app_name):
         # Check only recorded format
         if (
             sample["only_recorded"] != ""
-            and sample["only_recorded"] != True
-            and sample["only_recorded"] != False
+            and sample["only_recorded"] is not True
+            and sample["only_recorded"] is not False
         ):
             sample_dict["Validate"] = False
             sample_dict["Validation error"].append(
@@ -283,7 +283,7 @@ def validate_sample_data(sample_data, req_user, app_name):
         for date_field in date_columns:
             if sample[date_field] != "":
                 try:
-                    datetime_object = datetime.datetime.strptime(
+                    datetime.datetime.strptime(
                         sample[date_field], "%Y-%m-%d %H:%M:%S"
                     )
                 except:  # check this for batch sampled
