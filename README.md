@@ -1,6 +1,6 @@
 # iSkyLIMS
 
-[![Django](https://img.shields.io/static/v1?label=Django&message=4.2.8&color=blue?style=plastic&logo=django)](https://github.com/django/django)
+[![Django](https://img.shields.io/static/v1?label=Django&message=4.2&color=blue?style=plastic&logo=django)](https://github.com/django/django)
 [![Python](https://img.shields.io/static/v1?label=Python&message=3.8.10&color=green?style=plastic&logo=Python)](https://www.python.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.0-blueviolet?style=plastic&logo=Bootstrap)](https://getbootstrap.com)
 [![version](https://img.shields.io/badge/version-3.0.0-orange?style=plastic&logo=GitHub)](https://github.com/BU-ISCIII/iskylims.git)
