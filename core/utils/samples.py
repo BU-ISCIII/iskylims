@@ -302,21 +302,9 @@ def validate_sample_data(sample_data, req_user, app_name):
                 sample_dict["Validation error"].append(defined_sample_type(sample["sample_type"],app_name))
         else:
             # Check mandatory fields
-            missing_mandatory = check_mandatory_fields_included(sample, sample["sample_type"], app_name)
-            if len(missing_mandatory) != 0:
-                missing_fields = []
-                for field in core.models.Samples._meta.get_fields():
-                    if field.name in missing_mandatory:
-                        try:
-                            missing_fields.append(field.verbose_name)
-                        except Exception:
-                            missing_fields.append(field.name)
-                error_cause = (
-                    core.core_config.ERROR_MISSING_MANDATORY.copy()
-                )
-                error_cause.insert(1, ", ".join(missing_fields))
+            if check_mandatory_fields_included(sample, sample["sample_type"], app_name):
                 sample_dict["Validate"] = False
-                sample_dict["Validation error"].append(" ".join(error_cause))
+                sample_dict["Validation error"].append(check_mandatory_fields_included(sample, sample["sample_type"], app_name))
 
         # Check if project exist in the DB
         if sample["sample_project"] != "" and sample["sample_project"] != "None" and defined_project(sample["sample_project"],app_name):
@@ -535,7 +523,19 @@ def check_mandatory_fields_included(data, sample_type, app_name):
             if data[field] == "":
                 missing_mandatory.append(field)
 
-    return missing_mandatory
+        if len(missing_mandatory) != 0:
+            missing_fields = []
+            for field in core.models.Samples._meta.get_fields():
+                if field.name in missing_mandatory:
+                    try:
+                        missing_fields.append(field.verbose_name)
+                    except Exception:
+                        missing_fields.append(field.name)
+            error_cause = (
+                core.core_config.ERROR_MISSING_MANDATORY.copy()
+            )
+            error_cause.insert(1, ", ".join(missing_fields))
+            return " ".join(error_cause)
 
 def check_patient_code_exists(p_code_id):
     """
