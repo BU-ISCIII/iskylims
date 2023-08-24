@@ -283,10 +283,8 @@ def validate_sample_data(sample_data, req_user, app_name):
         for date_field in date_columns:
             if sample[date_field] != "":
                 try:
-                    datetime.datetime.strptime(
-                        sample[date_field], "%Y-%m-%d %H:%M:%S"
-                    )
-                except:  # check this for batch sampled
+                    datetime.datetime.strptime(sample[date_field], "%Y-%m-%d %H:%M:%S")
+                except Exception:  # check this for batch sampled
                     sample_dict["Validate"] = False
                     sample_dict["Validation error"].append(
                         core.core_config.ERROR_DATE_FORMAT_FIELD
