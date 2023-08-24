@@ -3,7 +3,6 @@ import datetime
 import json
 import re
 from collections import OrderedDict
-from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db.models import CharField, Count, F, Func, Value
@@ -284,7 +283,7 @@ def validate_sample_data(sample_data, req_user, app_name):
         for date_field in date_columns:
             if sample[date_field] != "":
                 try:
-                    datetime_object = datetime.strptime(
+                    datetime_object = datetime.datetime.strptime(
                         sample[date_field], "%Y-%m-%d %H:%M:%S"
                     )
                 except:  # check this for batch sampled
