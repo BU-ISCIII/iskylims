@@ -148,7 +148,7 @@
                                         <div id="record_sample_sheet"></div>
                                     </div>
                                     <input type="button" class="btn btn-outline-secondary mt-2"
-                                        value="Download spreadsheet" onclick="record_samples.download()" />
+                                        value="Download spreadsheet" id="record_samples_download" />
                                     <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
                                 </form>
                             </div>
@@ -279,6 +279,10 @@
                 .appendTo("#sample_record_form");
             $("#btnSubmit").attr("disabled", true);
             return true;
+        });
+
+        $("#record_samples_download").click(function (e){
+            record_samples.download()
         });
 
         $('#result_record tfoot th').each(function () {
