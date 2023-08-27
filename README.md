@@ -87,7 +87,7 @@ git clone https://github.com/BU-ISCIII/iskylims.git iskylims
 cd iskylims
 ```
 
-### Create relecov database and grant permissions
+### Create iskylims database and grant permissions
 
 1. Create a new database named "iskylims" (this is mandatory)
 2. Create a new user with permission to read and modify that database.
