@@ -376,7 +376,7 @@ def save_project_data(excel_data, project_info):
                 sample_projects_id__exact=core.models.SampleProjects.objects.get(
                     sample_project_name__exact=project_info["sample_project_name"]
                 ),
-                sample_project_field_name__exact=field["sample_project_field_name"]
+                sample_project_field_name__exact=field["sample_project_field_name"],
             )
             field_value["sample_project_field_value"] = next(
                 (

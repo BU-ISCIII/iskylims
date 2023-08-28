@@ -2195,11 +2195,15 @@ def record_samples(request):
             if sample["sample_state"] == "Pre-Defined"
         ]
         project_ids = []
-        project_ids = list(set([
-            sample["sample_project"].sample_project_name
-            for sample in filter_samples
-            if sample["sample_project"].sample_project_name not in project_ids
-        ]))
+        project_ids = list(
+            set(
+                [
+                    sample["sample_project"].sample_project_name
+                    for sample in filter_samples
+                    if sample["sample_project"].sample_project_name not in project_ids
+                ]
+            )
+        )
 
         # If no sample Pre-Defined just show result
         if not project_ids:
@@ -2213,9 +2217,7 @@ def record_samples(request):
             )
 
         try:
-            projects_fields = core.utils.samples.project_table_fields(
-                project_ids
-            )
+            projects_fields = core.utils.samples.project_table_fields(project_ids)
             return render(
                 request,
                 "wetlab/record_project_fields.html",
@@ -2251,13 +2253,12 @@ def record_samples(request):
                 )
 
             field_names = [
-                field["sample_project_field_name"] for field in p_data["sample_project_fields"]
+                field["sample_project_field_name"]
+                for field in p_data["sample_project_fields"]
             ]
             field_names.insert(0, "sample_name")
             field_names.insert(1, "sample_code_id")
-            excel_data = json.loads(
-                request.POST[f"{p_data['sample_project_name']}"]
-            )
+            excel_data = json.loads(request.POST[f"{p_data['sample_project_name']}"])
             excel_json_data = core.utils.common.jspreadsheet_to_dict(
                 field_names, excel_data
             )
