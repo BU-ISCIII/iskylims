@@ -42,7 +42,9 @@ class SampleProjectFieldSerializer(serializers.ModelSerializer):
 
 
 class ProjectsSerializer(serializers.ModelSerializer):
-    sample_project_fields = SampleProjectFieldSerializer(source="project_fields_options", many=True)
+    sample_project_fields = SampleProjectFieldSerializer(
+        source="project_fields_options", many=True
+    )
 
     class Meta:
         model = core.models.SampleProjects
