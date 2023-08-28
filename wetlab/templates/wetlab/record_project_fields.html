@@ -24,15 +24,16 @@
               <form method="post" enctype="multipart/form-data" name="project_data_form" id="project_data_form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="record_project_fields" />
+				<input type="hidden" name="projects_fields" value="{{ projects_fields|safe }}" />
                 {% for project in projects_fields %}
-                  <h5 class="border-bottom d-inline-block">Project form: {{ project.project.sample_project_name }}</h5>
+                  <h5 class="border-bottom d-inline-block">Project form: {{ project.sample_project_name }}</h5>
                   <div class="row justify-content-center horizontal-scroll">
                     <div class="col-md-auto">
-                      <div id="spreadsheet_{{ project.project.sample_project_name }}"></div>
+                      <div id="spreadsheet_{{ project.sample_project_name }}"></div>
                     </div>
                   </div>
                 {% endfor %}
-                <input type="button" class="btn btn-outline-secondary" value="Download spreadsheet" onclick="record_samples.download()" />
+                <input type="button" class="btn btn-outline-secondary" value="Download spreadsheet" onclick="{{ project.sample_project_name }}_data_table.download()" />
                 <input class="btn float-end btn-outline-primary" type="submit" value="Submit" />
               </form>
             </div>
@@ -51,20 +52,23 @@
 						{% endfor %}
 						];
 		{% else %}
-		var {{ project.project.sample_project_name }}_data = [{% for sample in project.project_samples %}
-						['{{ sample.sample_name }}'],
+		var {{ project.sample_project_name }}_data = [{% for sample in filter_samples %}
+						{% if sample.sample_project.sample_project_name == project.sample_project_name %}
+						['{{ sample.sample_name }}', '{{ sample.sample_code_id }}'],
+						{% endif %}
 						{% endfor %}
 						];
     	{% endif %}
-		var {{ project.project.sample_project_name }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ project.project.sample_project_name }}'), {
-			data: {{ project.project.sample_project_name }}_data,
+		var {{ project.sample_project_name }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ project.sample_project_name }}'), {
+			data: {{ project.sample_project_name }}_data,
 			columns: [
 				{ type: 'text', title: 'Sample Name', width: 150, readOnly: true },
-				{% for field in project.project_fields %}
+				{ type: 'hidden', title: 'Sample Code id', width: 150, readOnly: true },
+				{% for field in project.sample_project_fields %}
 				{% if field.sample_project_field_type == 'Date' %}
 				{ type: 'calendar', title: '{{ field.sample_project_field_name }}', width: 150 },
 				{% elif sample_project_field_type == 'Option List' %}
-				{ type: 'dropdown', title: '{{ field.sample_project_field_name }}', width: 150, source: [{% for value in field.sample_project_option_list %} '{{ value }}', {% endfor %}] },
+				{ type: 'dropdown', title: '{{ field.sample_project_field_name }}', width: 150, source: [{% for option in field.sample_project_option_list %} '{{ option.option_value }}', {% endfor %}] },
 				{% else %}
 				{ type: 'text', title: '{{ field.sample_project_field_name }}', width: 150 },
 				{% endif %}
@@ -76,14 +80,14 @@
 			tableOverflow:true,
 			tableHeight:'300px',
 			csvFileName: 'project_data.csv',
-			minDimensions: [ {{ project.project_fields|length }} + 1 , {{ project.project.sample_project_name }}_data.length],
+			minDimensions: [ {{ project.sample_project_fields|length }} + 1 , {{ project.sample_project_name }}_data.length],
 		});
 
         $("#project_data_form").submit(function (e) {
-            var table_data = {{ project.project.sample_project_name }}_data_table.getData()
+            var table_data = {{ project.sample_project_name }}_data_table.getData()
             var data_json = JSON.stringify(table_data)
             $("<input />").attr("type", "hidden")
-                .attr("name", "{{ project.project.sample_project_name }}_table_data")
+                .attr("name", "{{ project.sample_project_name }}")
                 .attr("value", data_json)
                 .appendTo("#project_data_form");
             $("#button-submit").attr("disabled", true);
