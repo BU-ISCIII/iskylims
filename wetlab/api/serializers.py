@@ -193,12 +193,11 @@ class CreateSampleTypeSerializer(serializers.ModelSerializer):
 class LabRequestSerializer(serializers.ModelSerializer):
     # lab_request = serializers.StringRelatedField(many=False, label="Laboratory")
     lab_city = serializers.StringRelatedField(many=False)
-    
+
     def to_representation(self, instance):
         data = super(LabRequestSerializer, self).to_representation(instance)
         data_update = dict()
         for key in self.fields:
-
             data_update[self.fields[key].label] = data[key]
 
         return data_update
@@ -215,8 +214,6 @@ class LabRequestSerializer(serializers.ModelSerializer):
             "address",
             "lab_city",
         ]
-
-    
 
     def update(self, data):
         self.labContactName = data["lab_contact_name"]
