@@ -363,23 +363,29 @@ def save_project_data(excel_data, project_info):
          - success: True/False
          - error: error message
     """
-    project_info["project_data"] = []
-    for sample in project_info["project_samples"]:
-        for field in project_info["project_fields"]:
+    save_result = []
+    for sample in excel_data:
+        for field in project_info["sample_project_fields"]:
             field_value = {}
             field_value["sample_id"] = core.models.Samples.objects.get(
-                sample_code_id__exact=sample.sample_code_id
+                sample_code_id__exact=sample["sample_code_id"]
             )
-            field_value["sample_project_field_id"] = field
+            field_value[
+                "sample_project_field_id"
+            ] = core.models.SampleProjectsFields.objects.get(
+                sample_projects_id__exact=core.models.SampleProjects.objects.get(
+                    sample_project_name__exact=project_info["sample_project_name"]
+                ),
+                sample_project_field_name__exact=field["sample_project_field_name"]
+            )
             field_value["sample_project_field_value"] = next(
                 (
-                    sample[field.sample_project_name]
+                    sample[field["sample_project_name"]]
                     for sample in excel_data
-                    if sample["sample_code_id"] == sample.sample_code_id
+                    if sample["sample_code_id"] == sample["sample_code_id"]
                 ),
                 None,
             )
-            project_info["project_data"].append(field_value)
             try:
                 core.models.SampleProjectsFieldsValue.objects.create_project_field_value(
                     field_value
@@ -392,7 +398,7 @@ def save_project_data(excel_data, project_info):
                 field_value["sample_id"].set_state("Pre-Defined")
                 raise
 
-    return project_info
+    return save_result
 
 
 def check_empty_fields(row_data, optional_index):

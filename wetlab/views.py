@@ -5,9 +5,10 @@ import os
 import re
 import statistics
 import time
-import smb
+from collections import OrderedDict
 
 import django.contrib.auth.models
+import smb
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
@@ -28,6 +29,7 @@ import wetlab.models
 import wetlab.utils.additional_kits
 import wetlab.utils.collection_index
 import wetlab.utils.common
+import wetlab.utils.crontab_process
 import wetlab.utils.fetch_info
 import wetlab.utils.library
 import wetlab.utils.pool
@@ -39,7 +41,6 @@ import wetlab.utils.sequencers
 import wetlab.utils.statistics
 import wetlab.utils.stats_graphs
 import wetlab.utils.test_conf
-import wetlab.utils.crontab_process
 
 
 def index(request):
@@ -2236,9 +2237,11 @@ def record_samples(request):
 
     # Record project data
     elif request.method == "POST" and request.POST["action"] == "record_project_fields":
+        # import pdb; pdb.set_trace()
+        projects_fields = eval(request.POST["projects_fields"])
         # Convert excel list-list to dictionary with field_names
         for p_data in projects_fields:
-            if not request.POST[p_data["project"].sample_project_name]:
+            if not request.POST[p_data["sample_project_name"]]:
                 # In case come uncatched error occurs
                 error_message = f"Information for project {p_data['project'].sample_project_name} is missing."
                 return render(
@@ -2248,25 +2251,28 @@ def record_samples(request):
                 )
 
             field_names = [
-                field.sample_project_field_name for field in p_data["project_fields"]
+                field["sample_project_field_name"] for field in p_data["sample_project_fields"]
             ]
+            field_names.insert(0, "sample_name")
+            field_names.insert(1, "sample_code_id")
             excel_data = json.loads(
-                request.POST[f"{p_data['project'].sample_project_name}_table_data"]
+                request.POST[f"{p_data['sample_project_name']}"]
             )
             excel_json_data = core.utils.common.jspreadsheet_to_dict(
-                p_data["project_fields"], excel_data
+                field_names, excel_data
             )
-            project_data_result = core.utils.samples.save_project_data(
-                excel_json_data, p_data
-            )
-
-            return render(
-                request,
-                "wetlab/record_project_fields.html",
-                {
-                    "projects_data_result": project_data_result,
-                },
-            )
+            # project_result = core.utils.samples.save_project_data(
+            #    excel_json_data, p_data
+            # )
+            # Some query to extract sample data as well
+            # add an append for all projects info
+        return render(
+            request,
+            "wetlab/record_project_fields.html",
+            {
+                "projects_data_result": excel_json_data,
+            },
+        )
 
     # Record batch of samples
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
