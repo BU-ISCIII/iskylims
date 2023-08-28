@@ -2282,8 +2282,10 @@ def record_samples(request):
         req_user = request.user.username
 
         # Read excel file, remove empty rows and rename column names
-        sample_batch_df = pd.read_excel(request.FILES["samplesExcel"], sheet_name=0, parse_dates= False)
-        sample_batch_df = sample_batch_df.dropna(how='all')
+        sample_batch_df = pd.read_excel(
+            request.FILES["samplesExcel"], sheet_name=0, parse_dates=False
+        )
+        sample_batch_df = sample_batch_df.dropna(how="all")
         sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
 
         # Test if column names are valid
@@ -2294,7 +2296,9 @@ def record_samples(request):
                 "wetlab/record_sample.html",
                 {
                     "fields_info": fields_info,
-                    "error_message": core.utils.load_batch.validate_header(sample_batch_df),
+                    "error_message": core.utils.load_batch.validate_header(
+                        sample_batch_df
+                    ),
                     "pre_def_samples": pre_def_samples,
                 },
             )
@@ -2307,7 +2311,9 @@ def record_samples(request):
                 "wetlab/record_sample.html",
                 {
                     "fields_info": fields_info,
-                    "error_message": core.utils.load_batch.check_format_date(sample_batch_df),
+                    "error_message": core.utils.load_batch.check_format_date(
+                        sample_batch_df
+                    ),
                     "pre_def_samples": pre_def_samples,
                 },
             )
@@ -2317,7 +2323,7 @@ def record_samples(request):
 
         # Convert pandas dataframe to json list of dictionaries
         batch_json_data = core.utils.load_batch.read_batch_sample_file(sample_batch_df)
-    
+
         # Test if json data is empty
         if len(batch_json_data) == 0:
             pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
@@ -2338,7 +2344,9 @@ def record_samples(request):
 
             for val in validation:
                 if not val["Validate"]:
-                    pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+                    pre_def_samples = core.utils.samples.get_sample_objs_in_state(
+                        "Pre-defined"
+                    )
                     return render(
                         request,
                         "wetlab/record_sample.html",
@@ -2348,7 +2356,7 @@ def record_samples(request):
                             "pre_def_samples": pre_def_samples,
                         },
                     )
-            
+
             # If all samples are validated
             try:
                 # Record sample results.
@@ -2392,7 +2400,7 @@ def record_samples(request):
             #######################TODO#####################
             ###############ADD PROJECT THING################
 
-# Form to get the new samples
+    # Form to get the new samples
     else:
         pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
         return render(

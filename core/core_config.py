@@ -13,7 +13,18 @@ HEADING_FOR_RECORD_SAMPLES = [
     "Only recorded",
 ]
 
-HEADING_BATCH = ['patient_core', 'sample_name', 'lab_request', 'sample_type', 'species', 'sample_project', 'sample_entry_date', 'collection_sample_date', 'sample_location', 'only_recorded']
+HEADING_BATCH = [
+    "patient_core",
+    "sample_name",
+    "lab_request",
+    "sample_type",
+    "species",
+    "sample_project",
+    "sample_entry_date",
+    "collection_sample_date",
+    "sample_location",
+    "only_recorded",
+]
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = [
     "Sample ID",
