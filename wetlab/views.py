@@ -2278,7 +2278,6 @@ def record_samples(request):
 
     # Record batch of samples
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
-
         req_user = request.user.username
 
         # Read excel file, remove empty rows and rename column names
@@ -2397,6 +2396,8 @@ def record_samples(request):
                     "wetlab/record_sample.html",
                     {"error_message": error_message},
                 )
+            #######################TODO#####################
+            ###############ADD PROJECT THING################
 
     # Form to get the new samples
     else:
