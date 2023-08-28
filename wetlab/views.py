@@ -5,7 +5,7 @@ import os
 import re
 import statistics
 import time
-from collections import OrderedDict
+from collections import OrderedDict  # noqa
 
 import django.contrib.auth.models
 import smb
