@@ -375,76 +375,102 @@ def get_sample_project_fields(project_names):
     return p_fields
 
 
-def heading_validation(sample_batch_df):
-    """ """
-    batch_head = list(sample_batch_df.head(0))
-    for item in core.core_config.HEADING_FOR_RECORD_SAMPLES:
-        if item not in batch_head:
-            return {"ERROR": core.core_config.ERROR_BATCH_FILE_INVALID_FORMAT}
-    project_names = get_sample_projects_names(sample_batch_df)
-    project_len = len(project_names)
-    if "" in project_names or "None" in project_names:
-        project_len -= 1
-    if project_len > 1:
-        return {"ERROR": core.core_config.ERROR_TOO_MANY_PROJECTS}
-    s_project_fields = get_sample_project_fields(project_names)
-    if "ERROR" in s_project_fields:
-        return s_project_fields
-    for field in s_project_fields:
-        if field not in batch_head:
-            return {"ERROR": core.core_config.ERROR_BATCH_FILE_INVALID_FORMAT}
-    return "OK"
+def heading_refactor(sample_batch_data):
+    """
+    Description:
+        The Function read the excel file, checks if the header has proper format and changes the header to the no verbose field name
+    Constants:
+        core.core_config.HEADING_BATCH
+    Return:
+        sample_batch_data
+    """
+
+    fields_info = {}
+    for field in core.models.Samples._meta.get_fields():
+        try:
+            fields_info[field.name] = field.verbose_name
+        except Exception:
+            fields_info[field.name] = field.name
+
+    for field in fields_info:
+        if fields_info[field] in list(sample_batch_data.columns.values):
+            sample_batch_data.rename(columns = {fields_info[field]:field}, inplace = True)
+    
+    return sample_batch_data
+
+def validate_header(sample_batch_data):
+    invalid_col_name = []
+    columns = list(sample_batch_data.columns.values)
+
+    for col_name in columns:
+        if col_name not in core.core_config.HEADING_BATCH:
+            invalid_col_name.append(col_name)
+
+    if len(invalid_col_name) > 0:
+        error_cause = core.core_config.ERROR_BATCH_INVALID_HEADER.copy()
+        error_cause.insert(1, ", ".join(invalid_col_name))
+        return " ".join(error_cause)
 
 
 def read_batch_sample_file(batch_file):
     """
     Description:
-        The Function read the batch file and return a panda data frame with the information
-    Constants:
-        ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
+        The Function read the batch file and return a json list of dictionaries with the information
     Return:
-        sample_batch_data
+        batch_data
     """
 
-    sample_batch_df = pd.read_excel(batch_file, sheet_name=0)
-    num_rows, _ = sample_batch_df.shape
-    if num_rows == 0:
-        sample_data = {}
-        sample_data["ERROR"] = core.core_config.ERROR_EMPTY
-        return sample_data
+    batch_file.fillna('', inplace=True)
+    batch_data = batch_file.to_json(orient='records')
+    batch_data = json.loads(batch_data)
 
-    return sample_batch_df
+    return batch_data
 
-
-def valid_sample_batch_file(sample_batch_df, package):
+def check_format_date(sample_batch_data):
     """
     Description:
-        The Function check if all parameters required in the samples are included in file
-    Input:
-        sample_batch_df     # sample data in dataframe
-        package             # name of the apps that request the checking
+        The Function read the batch dataframe and checks the date format is correct for date colummns
+    Constants:
+        ERROR_DATE_FORMAT_FIELD
+    Return:
+        error_cause
+    """
+
+    columns = list(sample_batch_data.columns.values)
+
+    date_columns = []
+
+    for value in columns:
+        if "date" in value:
+            date_columns.append(value)
+
+    for column in date_columns:
+        try:
+            sample_batch_data[column] = pd.to_datetime(sample_batch_data[column]).dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception: #Unknown string format: string present at position x
+            error_cause = core.core_config.ERROR_DATE_FORMAT_FIELD.copy()
+            return " ".join(error_cause)
+
+def format_date(sample_batch_data):
+    """
+    Description:
+        The Function read the batch dataframe and reformats date colums
     Return:
         sample_batch_data
     """
 
-    # Check if dataframe has empty values
-    validate_heading = heading_validation(sample_batch_df)
-    if "ERROR" in validate_heading:
-        return validate_heading
-    # if sample_batch_df.isnull().values.any():
-    #     return core.core_config.ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
+    columns = list(sample_batch_data.columns.values)
 
-    if not check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_df):
-        return core.core_config.ERROR_NOT_SAME_SAMPLE_PROTOCOL
-    check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
-    if check_opt_values != "OK":
-        return core.core_config.ERROR_NOT_SAME_SAMPLE_PROTOCOL
-    # check molecule columns data
-    check_molecule_par = check_molecule_has_same_data_type(sample_batch_df, package)
-    if check_molecule_par != "OK":
-        return check_molecule_par
-    return "OK"
+    date_columns = []
 
+    for value in columns:
+        if "date" in value or "Date" in value:
+            date_columns.append(value)
+
+    for column in date_columns:
+        sample_batch_data[column] = pd.to_datetime(sample_batch_data[column]).dt.strftime('%Y-%m-%d %H:%M:%S')
+    
+    return sample_batch_data
 
 def save_samples_in_batch_file(sample_batch_df, req_user, package):
     """
