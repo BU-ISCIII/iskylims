@@ -2277,53 +2277,121 @@ def record_samples(request):
 
     # Record batch of samples
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
-        sample_information = core.utils.samples.prepare_sample_input_table(__package__)
-        if "samplesExcel" in request.FILES:
-            samples_batch_df = core.utils.load_batch.read_batch_sample_file(
-                request.FILES["samplesExcel"]
-            )
-            if "ERROR" in samples_batch_df:
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {
-                        "sample_information": sample_information,
-                        "error_message": samples_batch_df["ERROR"],
-                    },
-                )
-            valid_file_result = core.utils.load_batch.valid_sample_batch_file(
-                samples_batch_df, __package__
-            )
-            if "ERROR" in valid_file_result:
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {
-                        "sample_information": sample_information,
-                        "error_message": valid_file_result["ERROR"],
-                    },
-                )
-            result_recorded = core.utils.load_batch.save_samples_in_batch_file(
-                samples_batch_df, request.user.username, __package__
-            )
-            if result_recorded != "OK":
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {
-                        "sample_information": sample_information,
-                        "error_message": result_recorded,
-                    },
-                )
+
+        req_user = request.user.username
+
+        # Read excel file, remove empty rows and rename column names
+        sample_batch_df = pd.read_excel(request.FILES["samplesExcel"], sheet_name=0, parse_dates= False)
+        sample_batch_df = sample_batch_df.dropna(how='all')
+        sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
+
+        # Test if column names are valid
+        if core.utils.load_batch.validate_header(sample_batch_df):
+            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
             return render(
                 request,
                 "wetlab/record_sample.html",
                 {
-                    "sample_information": sample_information,
-                    "successfuly_batch_load": "ok",
+                    "fields_info": fields_info,
+                    "error_message": core.utils.load_batch.validate_header(sample_batch_df),
+                    "pre_def_samples": pre_def_samples,
                 },
             )
-    # Form to get the new samples
+
+        # Test if date columns have date format
+        if core.utils.load_batch.check_format_date(sample_batch_df):
+            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "error_message": core.utils.load_batch.check_format_date(sample_batch_df),
+                    "pre_def_samples": pre_def_samples,
+                },
+            )
+
+        # Reformat date columns to correct format (mandatory befor converting to json)
+        sample_batch_df = core.utils.load_batch.format_date(sample_batch_df)
+
+        # Convert pandas dataframe to json list of dictionaries
+        batch_json_data = core.utils.load_batch.read_batch_sample_file(sample_batch_df)
+    
+        # Test if json data is empty
+        if len(batch_json_data) == 0:
+            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "error_message": "Excell file is empty",
+                    "pre_def_samples": pre_def_samples,
+                },
+            )
+        else:
+            # validate mandatory and redundant samples
+            validation = core.utils.samples.validate_sample_data(
+                batch_json_data, req_user, __package__
+            )
+
+            for val in validation:
+                if not val["Validate"]:
+                    pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+                    return render(
+                        request,
+                        "wetlab/record_sample.html",
+                        {
+                            "fields_info": fields_info,
+                            "validation": validation,
+                            "pre_def_samples": pre_def_samples,
+                        },
+                    )
+            
+            # If all samples are validated
+            try:
+                # Record sample results.
+                sample_record_result = core.utils.samples.save_recorded_samples(
+                    batch_json_data, req_user, __package__
+                )
+
+                # If any samples couldn't be recorded for any error.
+                for sample in sample_record_result:
+                    if not sample["success"]:
+                        # If some samples got an error. Some samples have been recorded and some of them don't.
+                        return render(
+                            request,
+                            "wetlab/record_sample.html",
+                            {
+                                "fields_info": fields_info,
+                                "error_message": "Some samples couldn't be recorded. Table summary:",
+                                "sample_record_result": sample_record_result,
+                            },
+                        )
+                    else:
+                        return render(
+                            request,
+                            "wetlab/record_sample.html",
+                            {
+                                "fields_info": fields_info,
+                                "sample_record_result": sample_record_result,
+                            },
+                        )
+
+            except Exception as e:
+                # In case come uncatched error occurs
+                error_message = (
+                    "There was an unexpected error when recording the samples."
+                )
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {"error_message": error_message},
+                )
+            #######################TODO#####################
+            ###############ADD PROJECT THING################
+
+# Form to get the new samples
     else:
         pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
         return render(
