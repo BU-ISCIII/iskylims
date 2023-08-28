@@ -2387,7 +2387,7 @@ def record_samples(request):
                             },
                         )
 
-            except Exception as e:
+            except Exception:
                 # In case come uncatched error occurs
                 error_message = (
                     "There was an unexpected error when recording the samples."
@@ -2397,8 +2397,6 @@ def record_samples(request):
                     "wetlab/record_sample.html",
                     {"error_message": error_message},
                 )
-            #######################TODO#####################
-            ###############ADD PROJECT THING################
 
     # Form to get the new samples
     else:
