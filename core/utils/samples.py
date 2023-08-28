@@ -363,7 +363,6 @@ def save_project_data(excel_data, project_info):
          - success: True/False
          - error: error message
     """
-    save_result = []
     for sample in excel_data:
         for field in project_info["sample_project_fields"]:
             field_value = {}
@@ -398,7 +397,7 @@ def save_project_data(excel_data, project_info):
                 field_value["sample_id"].set_state("Pre-Defined")
                 raise
 
-    return save_result
+    return project_info
 
 
 def check_empty_fields(row_data, optional_index):
