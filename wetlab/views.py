@@ -8,6 +8,7 @@ import time
 from collections import OrderedDict  # noqa
 
 import django.contrib.auth.models
+import pandas as pd
 import smb
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
