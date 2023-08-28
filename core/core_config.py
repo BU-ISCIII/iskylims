@@ -13,6 +13,8 @@ HEADING_FOR_RECORD_SAMPLES = [
     "Only recorded",
 ]
 
+HEADING_BATCH = ['patient_core', 'sample_name', 'lab_request', 'sample_type', 'species', 'sample_project', 'sample_entry_date', 'collection_sample_date', 'sample_location', 'only_recorded']
+
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = [
     "Sample ID",
     "Sample Type",
@@ -236,7 +238,7 @@ ERROR_NO_LAB_REQUESTED = [
 ERROR_NO_DEFINED_LAB_REQUESTED = [
     "No Laboratory is defined yet. Check documentation to define the Laboratory"
 ]
-ERROR_BATCH_FILE_INVALID_FORMAT = ["Batch file does not have the correct format"]
+ERROR_BATCH_INVALID_HEADER = ["The following columns don't have correct format:"]
 ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet. Check documentation to define them"
 ]
@@ -294,7 +296,7 @@ ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
 ERROR_EMPTY_SAMPLE_NAME = ["Sample name in line", "is empty"]
 ERROR_REPEATED_SAMPLE_NAME = ["Sample name in line", "is repeated in the table"]
 ERROR_ONLY_RECORDED_FIELD = ["Only recorded field must be True, False or empty"]
-ERROR_DATE_FORMAT_FIELD = ["Date must have this format: YYYY-MM-DD hh:mm:ss"]
+ERROR_DATE_FORMAT_FIELD = ["Date must have date format. For example YYYY-MM-DD"]
 ERROR_MISSING_MANDATORY = [
     "The following columns are empty and are mandatory for the sample type:"
 ]
