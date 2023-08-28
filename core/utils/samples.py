@@ -219,14 +219,8 @@ def validate_sample_data(sample_data, req_user, app_name):
               }]
     """
     validation = []
-    date_columns = []
     sample_name_list = []
     line = 0
-
-    # Get all date columns
-    for value in sample_data[0]:
-        if "date" in value:
-            date_columns.append(value)
 
     for sample in sample_data:
         line += 1
@@ -270,18 +264,6 @@ def validate_sample_data(sample_data, req_user, app_name):
             sample_dict["Validation error"].append(
                 core.core_config.ERROR_ONLY_RECORDED_FIELD
             )
-
-        # Check if dates have date format
-        for date_field in date_columns:
-            if sample[date_field] != "":
-                try:
-                    datetime.datetime.strptime(sample[date_field], "%Y-%m-%d %H:%M:%S")
-                except Exception:  # check this for batch sampled
-                    sample_dict["Validate"] = False
-                    sample_dict["Validation error"].append(
-                        core.core_config.ERROR_DATE_FORMAT_FIELD
-                    )
-                    continue
 
         # Check if sample already in the DB
         if core.models.Samples.objects.filter(
