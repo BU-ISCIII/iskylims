@@ -262,7 +262,7 @@ def validate_sample_data(sample_data, req_user, app_name):
         ):
             sample_dict["Validate"] = False
             sample_dict["Validation error"].append(
-                core.core_config.ERROR_ONLY_RECORDED_FIELD
+                "".join(core.core_config.ERROR_ONLY_RECORDED_FIELD)
             )
 
         # Check if sample already in the DB
