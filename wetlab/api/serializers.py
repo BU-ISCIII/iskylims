@@ -191,9 +191,32 @@ class CreateSampleTypeSerializer(serializers.ModelSerializer):
 
 
 class LabRequestSerializer(serializers.ModelSerializer):
+    # lab_request = serializers.StringRelatedField(many=False, label="Laboratory")
+    lab_city = serializers.StringRelatedField(many=False)
+    
+    def to_representation(self, instance):
+        data = super(LabRequestSerializer, self).to_representation(instance)
+        data_update = dict()
+        for key in self.fields:
+
+            data_update[self.fields[key].label] = data[key]
+
+        return data_update
+
     class Meta:
         model = core.models.LabRequest
-        fields = "__all__"
+        fields = [
+            "lab_name",
+            "lab_name_coding",
+            "lab_unit",
+            "lab_contact_name",
+            "lab_phone",
+            "lab_email",
+            "address",
+            "lab_city",
+        ]
+
+    
 
     def update(self, data):
         self.labContactName = data["lab_contact_name"]

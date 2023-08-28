@@ -384,12 +384,13 @@ def get_lab_information_contact(request):
             lab_req_obj = core.models.LabRequest.objects.filter(
                 lab_name__iexact=lab_name
             ).last()
-            lab_req_serializer = core.models.LabRequestSerializer(
+            lab_req_serializer = wetlab.api.serializers.LabRequestSerializer(
                 lab_req_obj, many=False
             )
             return Response(lab_req_serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            error_data = wetlab.config.ERROR_LABORATORY_NOT_FOUND
+            return Response(error_data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

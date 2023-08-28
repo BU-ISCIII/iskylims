@@ -604,7 +604,7 @@ SUCCESSFUL_REUSE_LIB_PREP = [
 ]
 
 # ######### ERROR MESSAGES  #########################
-
+ERROR_LABORATORY_NOT_FOUND = "Laboratory not found"
 ERROR_PROJECT_NOT_FOUND = "Project not found"
 ERROR_PROJECT_DOES_NOT_HAVE_ANY_SAMPLES = "Project does not have any samples"
 ERROR_PARAMETER_NOT_DEFINED = "Parameter is not defined"
