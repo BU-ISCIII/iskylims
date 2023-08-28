@@ -394,9 +394,10 @@ def heading_refactor(sample_batch_data):
 
     for field in fields_info:
         if fields_info[field] in list(sample_batch_data.columns.values):
-            sample_batch_data.rename(columns = {fields_info[field]:field}, inplace = True)
-    
+            sample_batch_data.rename(columns={fields_info[field]: field}, inplace=True)
+
     return sample_batch_data
+
 
 def validate_header(sample_batch_data):
     invalid_col_name = []
@@ -420,11 +421,12 @@ def read_batch_sample_file(batch_file):
         batch_data
     """
 
-    batch_file.fillna('', inplace=True)
-    batch_data = batch_file.to_json(orient='records')
+    batch_file.fillna("", inplace=True)
+    batch_data = batch_file.to_json(orient="records")
     batch_data = json.loads(batch_data)
 
     return batch_data
+
 
 def check_format_date(sample_batch_data):
     """
@@ -446,10 +448,13 @@ def check_format_date(sample_batch_data):
 
     for column in date_columns:
         try:
-            sample_batch_data[column] = pd.to_datetime(sample_batch_data[column]).dt.strftime('%Y-%m-%d %H:%M:%S')
-        except Exception: #Unknown string format: string present at position x
+            sample_batch_data[column] = pd.to_datetime(
+                sample_batch_data[column]
+            ).dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:  # Unknown string format: string present at position x
             error_cause = core.core_config.ERROR_DATE_FORMAT_FIELD.copy()
             return " ".join(error_cause)
+
 
 def format_date(sample_batch_data):
     """
@@ -468,9 +473,12 @@ def format_date(sample_batch_data):
             date_columns.append(value)
 
     for column in date_columns:
-        sample_batch_data[column] = pd.to_datetime(sample_batch_data[column]).dt.strftime('%Y-%m-%d %H:%M:%S')
-    
+        sample_batch_data[column] = pd.to_datetime(
+            sample_batch_data[column]
+        ).dt.strftime("%Y-%m-%d %H:%M:%S")
+
     return sample_batch_data
+
 
 def save_samples_in_batch_file(sample_batch_df, req_user, package):
     """
