@@ -351,8 +351,9 @@ def summarize_samples(data):
     # Filter the samples to get the summary information
     if len(sample_objs) == 0:
         return {"ERROR": wetlab.config.ERROR_API_NO_SAMPLE_DEFINED}
-    if "sample_list" in data:
-        sample_objs = sample_objs.filter(sample_name__in=data["sample_list"])
+    if "samples" in data:
+        s_list = data["samples"].strip().split(",")
+        sample_objs = sample_objs.filter(sample_name__in=s_list)
     if "sample_state" in data:
         if not core.models.StatesForSample.object.filter(
             sample_state_name__iexact=data["state"]
@@ -501,7 +502,7 @@ def collect_statistics_information(data):
             stats_data = {}
             par1_values = (
                 core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id__sample_project_id=s_project_obj,
+                    sample_project_field_id__sample_projects_id=s_project_obj,
                     sample_project_field_id__sample_project_field_name__iexact=query_params[
                         0
                     ],
@@ -515,7 +516,7 @@ def collect_statistics_information(data):
                     stats_data[par1_val] = {}
 
                     samples = core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id__sample_project_id=s_project_obj,
+                        sample_project_field_id__sample_projects_id=s_project_obj,
                         sample_project_field_id__sample_project_field_name__iexact=query_params[
                             0
                         ],
@@ -567,7 +568,7 @@ def collect_statistics_information(data):
                 sample_project=s_project_obj
             ).count()
             s_project_field_objs = core.models.SampleProjectsFields.objects.filter(
-                sample_project_id=s_project_obj
+                sample_projects_id=s_project_obj
             )
             for s_project_field_obj in s_project_field_objs:
                 f_name = s_project_field_obj.get_field_name()
