@@ -2396,8 +2396,6 @@ def record_samples(request):
                     "wetlab/record_sample.html",
                     {"error_message": error_message},
                 )
-            #######################TODO#####################
-            ###############ADD PROJECT THING################
 
     # Form to get the new samples
     else:
