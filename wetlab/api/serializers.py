@@ -97,9 +97,11 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
 
 
 class SampleSerializer(serializers.ModelSerializer):
-    labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
-    sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
+    lab_request = serializers.StringRelatedField(many=False, label="Laboratory")
+    sample_project = serializers.StringRelatedField(many=False, label="Sample Project")
     project_values = ProjectValuesSerializers(many=True)
+    sample_type = serializers.StringRelatedField(many=False, label="Sample type")
+    species = serializers.StringRelatedField(many=False, label="Species")
 
     def to_representation(self, instance):
         data = super(SampleSerializer, self).to_representation(instance)
@@ -125,6 +127,8 @@ class SampleSerializer(serializers.ModelSerializer):
         fields = [
             "sample_name",
             "lab_request",
+            "sample_type",
+            "species",
             "sample_project",
             "sample_entry_date",
             "collection_sample_date",
@@ -181,7 +185,7 @@ class SampleParameterSerializer(serializers.ModelSerializer):
                 else:
                     return value
             else:
-                return value
+                return value.__str__()
         return False
 
     class Meta:

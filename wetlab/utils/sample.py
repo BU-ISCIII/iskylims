@@ -95,7 +95,7 @@ def analyze_compare_samples_form(form_data):
     for row_data in cs_json_data:
         if row_data[-1] is False:
             continue
-        sample_objs.append(get_sample_in_project_obj_from_id(row_data[-2]))
+        sample_objs.append(get_sample_in_project_obj(row_data[-2]))
     return sample_objs
 
 
@@ -181,10 +181,9 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     return samples_data
 
 
-
 def get_sample_in_project_obj(sample_value):
     """Return the sample instance for the request. Two input types are accepted
-        sample name or the PK of the sample 
+        sample name or the PK of the sample
 
     Args:
         sample_value (integer/string): If integer value is fetch then it is
@@ -193,22 +192,22 @@ def get_sample_in_project_obj(sample_value):
 
     Returns:
         SamplesInProject: instance of the input value
-    """    
+    """
     sample_in_project_obj = ""
     try:
-        _ = int(sample)
+        _ = int(sample_value)
         if wetlab.models.SamplesInProject.objects.filter(
-            pk__exact=sample
+            pk__exact=sample_value
         ).exists():
             sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
-                pk__exact=sample_in_project_id
+                pk__exact=sample_value
             )
     except ValueError:
         if wetlab.models.SamplesInProject.objects.filter(
-            sample_name__exact=sample_name_in_project
+            sample_name__exact=sample_value
         ).exists():
             sample_in_project_obj = wetlab.models.SamplesInProject.objects.filter(
-                sample_name__exact=sample_name_in_project
+                sample_name__exact=sample_value
             ).last()
 
     return sample_in_project_obj

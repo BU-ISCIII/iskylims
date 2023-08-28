@@ -605,12 +605,17 @@ SUCCESSFUL_REUSE_LIB_PREP = [
 
 # ######### ERROR MESSAGES  #########################
 
+ERROR_PROJECT_NOT_FOUND = "Project not found"
+ERROR_PROJECT_DOES_NOT_HAVE_ANY_SAMPLES = "Project does not have any samples"
+ERROR_PARAMETER_NOT_DEFINED = "Parameter is not defined"
+
 ERROR_USER_NOT_WETLAB_MANAGER = "You do not have enough privileges to see this page "
 ERROR_INVALID_FILE_FORMAT = "Invalid file format for the selected file"
 ERROR_UNABLE_TO_DELETE_USER_FILE = "Unable to delete user file form iSkyLIMS"
 ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = (
     "Sample sheet with not defined samples"
 )
+ERROR_SAMPLE_NOT_FOUND = "Sample not found in iSkyLIMS "
 ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL = (
     "Sample sheet with not prefix protocol in samples"
 )

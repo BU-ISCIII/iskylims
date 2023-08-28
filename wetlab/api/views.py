@@ -16,6 +16,7 @@ import wetlab.api.serializers
 import wetlab.api.utils.lab
 import wetlab.api.utils.sample
 import wetlab.models
+import wetlab.config
 
 sample_project_fields = openapi.Parameter(
     "project",
@@ -83,14 +84,14 @@ sample_list = openapi.Parameter(
 sample_information = openapi.Parameter(
     "sample",
     openapi.IN_QUERY,
-    description="Fecthing information from sample",
+    description="Select the sample to get information",
     type=openapi.TYPE_STRING,
 )
 
 sample_parameter = openapi.Parameter(
     "parameter",
     openapi.IN_QUERY,
-    description="Fecthing only parameter information from sample",
+    description="Get all samples which have this parameter. If selected project result the project parameter",
     type=openapi.TYPE_STRING,
 )
 
@@ -98,7 +99,7 @@ sample_parameter = openapi.Parameter(
 sample_project_name = openapi.Parameter(
     "sample_project_name",
     openapi.IN_QUERY,
-    description="Sample Project Name",
+    description="Select the project to get all samples assigned to it",
     type=openapi.TYPE_STRING,
 )
 
@@ -259,6 +260,7 @@ def fetch_run_information(request):
 
 @swagger_auto_schema(
     method="get",
+    operation_description="Get the sample/samples belongs to project information, collected when creating in iSkyLIMS",
     manual_parameters=[sample_information, sample_project_name, sample_parameter],
 )
 @api_view(["GET"])
@@ -266,62 +268,68 @@ def fetch_sample_information(request):
     sample_data = {}
     if "sample" in request.GET:
         sample = request.GET["sample"]
-        if not core.modesl.Samples.objects.filter(sample_name__iexact=sample).exists():
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        sample_obj = core.models.Samples.objects.filter(
-            sample_name__iexact=sample
-        ).last()
+        if not core.models.Samples.objects.filter(sample_name__iexact=sample).exists():
+            error_data = wetlab.config.ERROR_SAMPLE_NOT_FOUND
+            return Response(error_data, status=status.HTTP_200_OK)
+        sample_objs = core.models.Samples.objects.filter(sample_name__iexact=sample)
         sample_data = wetlab.api.serializers.SampleSerializer(
-            sample_obj, many=False
+            sample_objs, many=True
         ).data
-    else:
-        if "sample_project_name" in request.GET:
-            project_name = request.GET["sample_project_name"]
-            if "parameter" not in request.GET:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            param = request.GET["parameter"]
-            if core.models.SampleProjects.objects.filter(
-                sample_project_name__iexact=project_name
-            ).exists():
-                project_obj = core.models.SampleProjects.objects.filter(
-                    sample_project_name__iexact=project_name
-                ).last()
+        return Response(sample_data, status=status.HTTP_200_OK)
+    project_name = None
+    param = None
+    if "sample_project_name" in request.GET:
+        project_name = request.GET["sample_project_name"]
+        if not core.models.SampleProjects.objects.filter(
+            sample_project_name__iexact=project_name
+        ).exists():
+            error_data = wetlab.config.ERROR_PROJECT_NOT_FOUND
+            return Response(error_data, status=status.HTTP_200_OK)
+        sample_objs = core.models.Samples.objects.filter(
+            sample_project__sample_project_name__iexact=project_name
+        )
+        if len(sample_objs) == 0:
+            error_data = wetlab.config.ERROR_PROJECT_DOES_NOT_HAVE_ANY_SAMPLES
+            return Response(error_data, status=status.HTTP_200_OK)
+    if "parameter" in request.GET:
+        param = request.GET["parameter"]
 
-                if not core.models.SampleProjectsFields.objects.filter(
-                    sample_projects_id=project_obj,
-                    sample_project_field_name__iexact=param,
-                ).exists():
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-                s_p_field_obj = core.models.SampleProjectsFields.objects.filter(
-                    sample_projects_id=project_obj,
-                    sample_project_field_name__iexact=param,
-                ).last()
-                sample_obj = core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id=s_p_field_obj
-                )
-                sample_data = wetlab.api.serializers.SampleProjectParameterSerializer(
-                    sample_obj, many=True, context={"parameter": param}
-                ).data
-                return Response(sample_data, status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-        if "parameter" in request.GET:
-            param = request.GET["parameter"]
-            sample_obj = core.models.Samples.objects.all()
-            # check if parameter exists
-            try:
-                eval("sample_obj[0]." + param)
-            except AttributeError:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            sample_data = wetlab.api.serializers.SampleParameterSerializer(
-                sample_obj, many=True, context={"parameter": param}
+    if param is not None:
+        if project_name is not None:
+            if not core.models.SampleProjectsFields.objects.filter(
+                sample_project_field_name__iexact=param,
+                sample_projects_id__sample_project_name__iexact=project_name,
+            ).exists():
+                error_data = wetlab.config.ERROR_PARAMETER_NOT_DEFINED
+                return Response(error_data, status=status.HTTP_200_OK)
+            s_proj_field_objs = core.models.SampleProjectsFields.objects.filter(
+                sample_project_field_name__iexact=param,
+                sample_projects_id__sample_project_name__iexact=project_name,
+            )
+            sample_objs = core.models.SampleProjectsFieldsValue.objects.filter(
+                sample_project_field_id__in=s_proj_field_objs
+            )
+            sample_data = wetlab.api.serializers.SampleProjectParameterSerializer(
+                sample_objs, many=True, context={"parameter": param}
             ).data
-        else:
-            sample_obj = core.models.Samples.objects.prefetch_related("project_values")
-            sample_data = wetlab.api.serializers.SampleSerializer(
-                sample_obj, many=True
-            ).data
-    return Response(sample_data, status=status.HTTP_200_OK)
+            return Response(sample_data, status=status.HTTP_200_OK)
+        # check if parameter is defined in Samples
+        sample_objs = core.models.Samples.objects.all()
+        try:
+            eval("sample_objs[0]." + param)
+        except AttributeError:
+            error_data = wetlab.config.ERROR_PARAMETER_NOT_DEFINED
+            return Response(error_data, status=status.HTTP_200_OK)
+        sample_data = wetlab.api.serializers.SampleParameterSerializer(
+            sample_objs, many=True, context={"parameter": param}
+        ).data
+        return Response(sample_data, status=status.HTTP_200_OK)
+    if project_name is not None:
+        sample_data = wetlab.api.serializers.SampleSerializer(
+            sample_objs, many=True
+        ).data
+        return Response(sample_data, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
