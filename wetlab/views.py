@@ -2680,7 +2680,7 @@ def display_sample(request, sample_id):
     sample_obj = core.utils.samples.get_sample_obj_from_id(sample_id)
     if sample_obj:
         sample_name = sample_obj.get_sample_name()
-        run_sample_obj = wetlab.utils.sample.get_sample_in_project_obj_from_sample_name(
+        run_sample_obj = wetlab.utils.sample.get_sample_in_project_obj(
             sample_name
         )
         if run_sample_obj:
@@ -2708,7 +2708,7 @@ def display_sample_in_run(request, sample_run_id):
     Functions:
         get_info_sample_in_run
     """
-    sample_run_obj = wetlab.utils.sample.get_sample_in_project_obj_from_id(
+    sample_run_obj = wetlab.utils.sample.get_sample_in_project_obj(
         sample_run_id
     )
     if not sample_run_obj:
@@ -3371,7 +3371,7 @@ def search_sample(request):
                 sample_obj = core.utils.samples.get_sample_obj_from_id(sample_list[0])
                 sample_list = [sample_obj.get_info_for_searching()]
             if len(run_sample_list) == 1:
-                run_sample_obj = wetlab.utils.sample.get_sample_in_project_obj_from_id(
+                run_sample_obj = wetlab.utils.sample.get_sample_in_project_obj(
                     run_sample_list[0]
                 )
                 run_sample_list = [run_sample_obj.get_basic_info()]

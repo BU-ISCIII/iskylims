@@ -181,44 +181,35 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     return samples_data
 
 
-def get_sample_in_project_obj_from_id(sample_in_project_id):
-    """
-    Description:
-        The function gets the sampleInProject id and return the object
-        Return the if of sampleInProject
-    Input:
-        sample_name     # sample name to look at
-    Return:
-        sample_in_project_obj.
-    """
+
+def get_sample_in_project_obj(sample_value):
+    """Return the sample instance for the request. Two input types are accepted
+        sample name or the PK of the sample 
+
+    Args:
+        sample_value (integer/string): If integer value is fetch then it is
+            considered as the PK if variable contains a string it is considered
+            as sample name.
+
+    Returns:
+        SamplesInProject: instance of the input value
+    """    
     sample_in_project_obj = ""
-    if wetlab.models.SamplesInProject.objects.filter(
-        pk__exact=sample_in_project_id
-    ).exists():
-        sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
-            pk__exact=sample_in_project_id
-        )
-
-    return sample_in_project_obj
-
-
-def get_sample_in_project_obj(sample_name_in_project):
-    """
-    Description:
-        The function gets the sampleInProject id and return the object
-        Return the if of sampleInProject
-    Input:
-        sample_name     # sample name to look at
-    Return:
-        sample_in_project_obj.
-    """
-    sample_in_project_obj = ""
-    if wetlab.models.SamplesInProject.objects.filter(
-        sample_name__exact=sample_name_in_project
-    ).exists():
-        sample_in_project_obj = wetlab.models.SamplesInProject.objects.filter(
+    try:
+        _ = int(sample)
+        if wetlab.models.SamplesInProject.objects.filter(
+            pk__exact=sample
+        ).exists():
+            sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
+                pk__exact=sample_in_project_id
+            )
+    except ValueError:
+        if wetlab.models.SamplesInProject.objects.filter(
             sample_name__exact=sample_name_in_project
-        ).last()
+        ).exists():
+            sample_in_project_obj = wetlab.models.SamplesInProject.objects.filter(
+                sample_name__exact=sample_name_in_project
+            ).last()
 
     return sample_in_project_obj
 
