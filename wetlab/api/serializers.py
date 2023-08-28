@@ -217,7 +217,7 @@ class RunProcessSerializers(serializers.ModelSerializer):
 class SampleRunInfoSerializers(serializers.ModelSerializer):
     project_id = ProjectsSerializers(many=False)
     user_id = UserIDSerializer(many=False)
-    runProcess_id = RunProcessSerializers(many=False)
+    run_process_id = RunProcessSerializers(many=False)
     generated_at = serializers.DateTimeField(format="%Y-%m-%d")
 
     class Meta:
