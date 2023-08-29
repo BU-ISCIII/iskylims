@@ -139,10 +139,21 @@ def include_instances_in_sample(data, lab_data, apps_name):
     If laboratory will be created if it is not defined
     """
     if core.models.LabRequest.objects.filter(
-        lab_name__exact=data["lab_request"]
+        lab_name__iexact=data["lab_request"]
     ).exists():
         data["lab_request"] = (
             core.models.LabRequest.objects.filter(lab_name__exact=data["lab_request"])
+            .last()
+            .get_id()
+        )
+    # allow that lab request data is the coding name
+    elif core.models.LabRequest.objects.filter(
+        lab_name_coding__iexact=data["lab_request"]
+    ).exists():
+        data["lab_request"] = (
+            core.models.LabRequest.objects.filter(
+                lab_name_coding__iexact=data["lab_request"]
+            )
             .last()
             .get_id()
         )
@@ -333,12 +344,28 @@ def split_sample_data(data):
     lab_data["lab_unit"] = ""
     lab_data["lab_contact_name"] = ""
     lab_data["lab_phone"] = ""
+    lab_data_fields = [
+        ("lab_email", "collecting_institution_email"),
+        ("address", "collecting_institution_address"),
+        ("geo_loc_city", "geo_loc_city"),
+        ("geo_loc_state", "geo_loc_state"),
+        ("geo_loc_latitude", "geo_loc_latitude"),
+        ("geo_loc_longitude", "geo_loc_longitude"),
+    ]
+    for l_data, i_data in lab_data_fields:
+        try:
+            lab_data[l_data] = data[i_data]
+        except KeyError:
+            lab_data[l_data] = ""
+
+    """
     lab_data["lab_email"] = data["collecting_institution_email"]
-    lab_data["address"] = data["collecting_institution_email"]
+    lab_data["address"] = data["collecting_institution_address"]
     lab_data["geo_loc_city"] = data["geo_loc_city"]
     lab_data["geo_loc_state"] = data["geo_loc_state"]
     lab_data["geo_loc_latitude"] = data["geo_loc_latitude"]
     lab_data["geo_loc_longitude"] = data["geo_loc_longitude"]
+    """
 
     split_data["lab_data"] = lab_data
 
