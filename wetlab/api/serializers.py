@@ -98,6 +98,7 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
 
 class SampleSerializer(serializers.ModelSerializer):
     lab_request = serializers.StringRelatedField(many=False, label="Laboratory")
+    sample_state = serializers.StringRelatedField(many=False, label="Sample state")
     sample_project = serializers.StringRelatedField(many=False, label="Sample Project")
     project_values = ProjectValuesSerializers(many=True)
     sample_type = serializers.StringRelatedField(many=False, label="Sample type")
@@ -126,7 +127,11 @@ class SampleSerializer(serializers.ModelSerializer):
                         data[key] = data[key].split("T")[0]
                 # Change id to label for api rest output
                 if output_label:
-                    data_update[self.fields[key].label] = data[key]
+                    # output both label and value
+                    label_value = {}
+                    label_value["label"] = self.fields[key].label
+                    label_value["value"] = data[key]
+                    data_update[key] = label_value
                 else:
                     data_update[key] = data[key]
         return data_update
@@ -135,12 +140,14 @@ class SampleSerializer(serializers.ModelSerializer):
         model = core.models.Samples
         fields = [
             "sample_name",
+            "sample_code_id",
             "lab_request",
             "sample_type",
             "species",
             "sample_project",
             "sample_entry_date",
             "collection_sample_date",
+            "sample_state",
             "project_values",
         ]
 
