@@ -78,6 +78,22 @@ def check_valid_date_format(date):
             return False
 
 
+def get_samba_atribute_data(conn, shared_folder, remote_path, attribute=None):
+    """_summary_
+
+    Args:
+        conn (_type_): _description_
+        shared_folder (_type_): _description_
+        remote_path (_type_): _description_
+        attribute (_type_, optional): _description_. Defaults to None.
+    """
+    attributes = conn.getAttributes(shared_folder, remote_path)
+    if attribute is not None:
+        atr_field = "attributes." + attribute
+        return eval(atr_field)
+    return attributes
+
+
 def get_samba_connection_data():
     """
     Description:

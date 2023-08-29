@@ -120,12 +120,39 @@ def search_update_new_runs(request_reason):
                 wetlab.utils.common.logging_errors(error_message, True, False)
                 experiment_name = "Experiment name NOT FOUND"
                 wetlab.utils.common.logging_errors(error_message, True, False)
-                # we don't have experiment name when there is no run_parameters file.
-                # We used the run folder name instead.
-                run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(
-                    new_run
+                # check the run folder creation date to allow more time before
+                # setting the run to error
+                f_created_date = wetlab.utils.common.get_samba_atribute_data(
+                    conn,
+                    wetlab.utils.crontab_process.get_samba_shared_folder(),
+                    new_run,
+                    "created_time",
                 )
-                wetlab.utils.crontab_process.handling_errors_in_run(new_run, "21")
+                time_to_check = datetime.datetime.utcfromtimestamp(
+                    f_created_date
+                ).date()
+                max_time_for_run_parameters = (
+                    wetlab.models.ConfigSetting.objects.filter(
+                        configuration_name__exact="MAXIMUM_TIME_WAIT_RUN_PARAMETERS"
+                    )
+                    .last()
+                    .get_configuration_value()
+                )
+                if wetlab.utils.crontab_process.waiting_time_expired(
+                    time_to_check, max_time_for_run_parameters, experiment_name
+                ):
+                    # Maximum time for waiting run parameter in folder has expired
+                    # we don't have experiment name when there is no run_parameters file.
+                    # We used the run folder name instead.
+                    run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(
+                        new_run
+                    )
+                    wetlab.utils.crontab_process.handling_errors_in_run(new_run, "21")
+                else:
+                    logger.debug(
+                        "%s : RunParameter not in folder run. Allowing more time",
+                        experiment_name,
+                    )
                 logger.debug("%s : Deleting RunParameter file", experiment_name)
                 logger.debug(
                     "%s : Aborting the process for this run. Continue with the next.",
@@ -500,7 +527,7 @@ def manage_run_in_recorded_state(conn, run_process_objs):
                     run_process_obj.get_run_generated_date_no_format().date()
                 )
                 if not wetlab.utils.crontab_process.waiting_time_expired(
-                    run_process_obj, time_to_check, maximun_time, experiment_name
+                    time_to_check, maximun_time, experiment_name
                 ):
                     logger.debug(
                         "%s : End the process. Waiting more time to get Sample Sheet file",
@@ -660,7 +687,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
             )
             time_to_check = run_process_obj.get_run_generated_date_no_format().date()
             if not wetlab.utils.crontab_process.waiting_time_expired(
-                run_process_obj, time_to_check, maximun_time, experiment_name
+                time_to_check, maximun_time, experiment_name
             ):
                 logger.info(
                     "%s : Waiting more time to get Sequencer completion",
@@ -864,7 +891,7 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
                     )
                     continue
                 if not wetlab.utils.crontab_process.waiting_time_expired(
-                    run_process_obj, time_to_check, maximun_time, experiment_name
+                    time_to_check, maximun_time, experiment_name
                 ):
                     logger.debug(
                         "%s : End the process. Waiting more time to get bcf2fastq stats.",
