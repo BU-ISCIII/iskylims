@@ -30,24 +30,30 @@
                             <thead>
                                 <tr>
                                     <th>{{ fields_info.fields.sample_name }}</th>
-                                    <th>{{ fields_info.fields.unique_sample_id }}</th>
+                                    <th>{{ fields_info.fields.sample_code_id }}</th>
                                     <th>{{ fields_info.fields.sample_state }}</th>
+                                    <th>Sucess</th>
+                                    <th>Error</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for sample in sample_record_result %}
                                 <tr>
                                     <td>{{ sample.sample_name }}</td>
-                                    <td>{{ sample.unique_sample_id }}</td>
+                                    <td>{{ sample.sample_code_id }}</td>
                                     <td>{{ sample.sample_state }}</td>
+                                    <td>{{ sample.success }}</td>
+                                    <td>{{ sample.error }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <th>{{ fields_info.fields.sample_name }}</th>
-                                    <th>{{ fields_info.fields.unique_sample_id }}</th>
+                                    <th>{{ fields_info.fields.sample_code_id }}</th>
                                     <th>{{ fields_info.fields.sample_state }}</th>
+                                    <th>Sucess</th>
+                                    <th>Error</th>
                                 </tr>
                             </tfoot>
                         </table>
