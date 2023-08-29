@@ -124,7 +124,7 @@ sample_project_field = openapi.Parameter(
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "sample": openapi.Schema(
+            "sample_name": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Sample name"
             ),
             "sample_state": openapi.Schema(
@@ -152,7 +152,7 @@ sample_project_field = openapi.Parameter(
                 type=openapi.TYPE_STRING,
                 description="Date when sample is received in the lab",
             ),
-            "sample_collection_date": openapi.Schema(
+            "collection_sample_date": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="Date when the sample is collected from the specimen",
             ),
@@ -160,7 +160,7 @@ sample_project_field = openapi.Parameter(
                 type=openapi.TYPE_STRING,
                 description="Select if sample is just recorded or if DNA/RNA manipulation will be done in the lab ",
             ),
-            "project": openapi.Schema(
+            "sample_project": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Project name"
             ),
         },
@@ -270,7 +270,7 @@ def fetch_sample_information(request):
         sample = request.GET["sample"]
         if not core.models.Samples.objects.filter(sample_name__iexact=sample).exists():
             error_data = wetlab.config.ERROR_SAMPLE_NOT_FOUND
-            return Response(error_data, status=status.HTTP_200_OK)
+            return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         sample_objs = core.models.Samples.objects.filter(sample_name__iexact=sample)
         sample_data = wetlab.api.serializers.SampleSerializer(
             sample_objs, many=True
@@ -290,7 +290,7 @@ def fetch_sample_information(request):
         )
         if len(sample_objs) == 0:
             error_data = wetlab.config.ERROR_PROJECT_DOES_NOT_HAVE_ANY_SAMPLES
-            return Response(error_data, status=status.HTTP_200_OK)
+            return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     if "parameter" in request.GET:
         param = request.GET["parameter"]
 
@@ -319,7 +319,7 @@ def fetch_sample_information(request):
             eval("sample_objs[0]." + param)
         except AttributeError:
             error_data = wetlab.config.ERROR_PARAMETER_NOT_DEFINED
-            return Response(error_data, status=status.HTTP_200_OK)
+            return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         sample_data = wetlab.api.serializers.SampleParameterSerializer(
             sample_objs, many=True, context={"parameter": param}
         ).data
@@ -343,7 +343,7 @@ def sample_fields(request):
     sample_fields = wetlab.api.utils.sample.get_sample_fields(apps_name)
 
     if "ERROR" in sample_fields:
-        return Response(sample_fields, status=status.HTTP_202_ACCEPTED)
+        return Response(sample_fields, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         return Response(sample_fields, status=status.HTTP_200_OK)
 
@@ -390,7 +390,7 @@ def get_lab_information_contact(request):
             return Response(lab_req_serializer.data, status=status.HTTP_200_OK)
         else:
             error_data = wetlab.config.ERROR_LABORATORY_NOT_FOUND
-            return Response(error_data, status=status.HTTP_200_OK)
+            return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -464,8 +464,8 @@ def statistic_information(request):
     ),
     responses={
         201: "Successful create information",
-        204: "Laboratory not defined",
         400: "Bad Request",
+        406: "Request not accepted",
         500: "Internal Server Error",
     },
 )
@@ -480,7 +480,8 @@ def update_lab(request):
         if "lab_name" in data:
             lab_obj = wetlab.api.utils.lab.get_laboratory_instance(data["lab_name"])
             if lab_obj is None:
-                return Response(status=status.HTTP_204_NO_CONTENT)
+                error_message = wetlab.config.ERROR_LABORATORY_NOT_FOUND
+                return Response(error_message, status=status.HTTP_406_NOT_ACCEPTABLE)
             wetlab.api.serializers.LabRequestSerializer.update(lab_obj, data)
 
             return Response(
