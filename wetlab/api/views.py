@@ -273,7 +273,7 @@ def fetch_sample_information(request):
             return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         sample_objs = core.models.Samples.objects.filter(sample_name__iexact=sample)
         sample_data = wetlab.api.serializers.SampleSerializer(
-            sample_objs, many=True
+            sample_objs, many=True, context={"output_label": "output_label"}
         ).data
         return Response(sample_data, status=status.HTTP_200_OK)
     project_name = None
@@ -326,7 +326,7 @@ def fetch_sample_information(request):
         return Response(sample_data, status=status.HTTP_200_OK)
     if project_name is not None:
         sample_data = wetlab.api.serializers.SampleSerializer(
-            sample_objs, many=True
+            sample_objs, many=True, context={"output_label": "output_label"}
         ).data
         return Response(sample_data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
