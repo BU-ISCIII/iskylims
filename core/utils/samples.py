@@ -327,6 +327,40 @@ def validate_sample_data(sample_data, req_user, app_name):
     return validation
 
 
+def validate_project_data(project_data, project_name):
+    """Sample data validation
+
+    Parameters
+    ----------
+    project_data
+        project data formatted in json obtained from jspreadsheet
+
+    Returns
+    -------
+        validation
+            list with validation info for each sample with format:
+            [{"Sample Name": "test 01",
+              "Validate": True,
+              "Validation error": None
+              },
+              {"Sample Name": "test 02",
+              "Validate": False,
+              "Validation error": "Mandatory field is missing."
+              }]
+    """
+    validation = []
+    for sample in project_data:
+        sample_dict = {}
+        sample_dict["Sample name"] = sample["sample_name"]
+        sample_dict["Project name"] = project_name
+        sample_dict["Validate"] = True
+        sample_dict["Validation error"] = ""
+
+        validation.append(sample_dict)
+
+    return validation
+
+
 def save_project_data(excel_data, project_info):
     """Saves the project form data for each sample
 
@@ -341,16 +375,16 @@ def save_project_data(excel_data, project_info):
     Returns
     -------
         Same project info adding keys
-         - project_data: field_value information for each sample
          - success: True/False
          - error: error message
     """
     for sample in excel_data:
-        for field in project_info["sample_project_fields"]:
-            field_value = {}
-            field_value["sample_id"] = core.models.Samples.objects.get(
+        sample_id = core.models.Samples.objects.get(
                 sample_code_id__exact=sample["sample_code_id"]
             )
+        for field in project_info["sample_project_fields"]:
+            field_value = {}
+            field_value["sample_id"] = sample_id
             field_value[
                 "sample_project_field_id"
             ] = core.models.SampleProjectsFields.objects.get(
@@ -359,25 +393,20 @@ def save_project_data(excel_data, project_info):
                 ),
                 sample_project_field_name__exact=field["sample_project_field_name"],
             )
-            field_value["sample_project_field_value"] = next(
-                (
-                    sample[field["sample_project_name"]]
-                    for sample in excel_data
-                    if sample["sample_code_id"] == sample["sample_code_id"]
-                ),
-                None,
-            )
+            field_value["sample_project_field_value"] = sample[field["sample_project_field_name"]]
             try:
                 core.models.SampleProjectsFieldsValue.objects.create_project_field_value(
                     field_value
                 )
-                field_value["sample_id"].set_state("Defined")
                 project_info["success"] = True
             except Exception:
                 project_info["success"] = False
                 project_info["error"] = "Error saving any of the project fields"
-                field_value["sample_id"].set_state("Pre-Defined")
-                raise
+
+        if project_info["success"]:
+            sample_id.set_state("Defined")
+        else:
+            sample_id.set_state("Pre-Defined")
 
     return project_info
 
