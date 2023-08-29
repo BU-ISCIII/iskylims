@@ -2187,24 +2187,13 @@ def record_samples(request):
         # If everything goes right, check if we need to add project data
         # Sort samples by project, and filter keeping only samples in "Pre-Defined" state.
         # Those only_recorded are already in complete state.
-        filter_samples = [
-            sample
-            for sample in sorted(
-                sample_record_result,
-                key=lambda x: x["sample_project"].get_sample_project_name(),
-            )
-            if sample["sample_state"] == "Pre-Defined"
-        ]
+        sample_code_ids = [sample["sample_code_id"] for sample in sample_record_result]
+        samples_query = core.models.Samples.objects.filter(sample_code_id__in=sample_code_ids)
+        recorded_samples_info = wetlab.api.serializers.SampleSerializer(samples_query, many=True).data
         project_ids = []
-        project_ids = list(
-            set(
-                [
-                    sample["sample_project"].sample_project_name
-                    for sample in filter_samples
-                    if sample["sample_project"].sample_project_name not in project_ids
-                ]
-            )
-        )
+        for sample in recorded_samples_info:
+            if sample["sample_project"] not in project_ids:
+                project_ids.append(sample["sample_project"])
 
         # If no sample Pre-Defined just show result
         if not project_ids:
@@ -2226,7 +2215,7 @@ def record_samples(request):
                 "wetlab/record_project_fields.html",
                 {
                     "projects_fields": projects_fields,
-                    "filter_samples": filter_samples,
+                    "recorded_samples_info": recorded_samples_info,
                 },
             )
         except Exception:
@@ -2245,6 +2234,7 @@ def record_samples(request):
         not_validated_info = []
         not_saved_info = []
         projects_success = []
+        json_data_all = []
 
         projects_fields = eval(request.POST["projects_fields"])
 
@@ -2274,6 +2264,8 @@ def record_samples(request):
             excel_json_data = core.utils.common.jspreadsheet_to_dict(
                 field_names, excel_data
             )
+            for json_data in excel_json_data:
+                json_data_all.append(json_data)
 
             # validate types and option lists for projects
             validation = core.utils.samples.validate_project_data(
@@ -2294,22 +2286,28 @@ def record_samples(request):
                 if not project_record_result["success"] and p_data["sample_project_name"] not in not_validated_info:
                     not_saved_info.append(project_record_result)
 
-            except Exception:
+            except Exception as e:
                 # In case some uncatched error occurs
                 error_message = (
-                    "There was an unexpected error when recording the project data."
+                    "There was an unexpected error when recording the project data." + str(e)
                 )
                 return render(
                     request,
                     "wetlab/record_sample.html",
-                    {"error_message": error_message},
+                    {
+                        "fields_info": fields_info,
+                        "error_message": error_message
+                    },
                 )
 
             if p_data["sample_project_name"] not in not_validated_info:
                 projects_success.append(p_data["sample_project_name"])
 
+        # Get recorded samples complete info
+        sample_code_ids = [sample["sample_code_id"] for sample in json_data_all]
+        samples_query = core.models.Samples.objects.filter(sample_code_id__in=sample_code_ids)
+        recorded_samples_info = wetlab.api.serializers.SampleSerializer(samples_query, many=True, context={"output_label": "output_label"}).data
         import pdb; pdb.set_trace()
-
         if not_validated_info:
             return render(
                 request,
@@ -2318,7 +2316,7 @@ def record_samples(request):
                     "projects_fields": projects_fields,
                     "projects_success": projects_success,
                     "not_validated_info": not_validated_info,
-                    "filter_samples": filter_samples,
+                    "recorded_samples_info": recorded_samples_info,
                 },
             )
         elif not_saved_info:
@@ -2337,7 +2335,7 @@ def record_samples(request):
                 request,
                 "wetlab/record_project_fields.html",
                 {
-                    "save_result": filter_samples,
+                    "recorded_samples_result": recorded_samples_info,
                 },
             )
 
