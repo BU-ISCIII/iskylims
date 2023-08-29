@@ -6,7 +6,7 @@
 <section class="iskylims d-flex flex-column fill-height">
 	<div class="container-md">
     {% include 'registration/login_inline.html' %}
-    {% if error_message %}
+    	{% if error_message %}
 		<div class="row justify-content-center pb-2 pt-2">
           	<div class="col-md-8">
             	<div class="card border-danger mb-3">
@@ -16,6 +16,45 @@
           	</div>
         </div>
       	{% endif %}
+		{% if recorded_samples_result %}
+		<div class="row justify-content-center pb-2 pt-2">
+    		<div class="col-md-12">
+          		<div class="card">
+            		<div class="card-header">Please fill project-related fields</div>
+            		<div class="card-body">
+						<table class="table table-hover" id="validation_result">
+							<thead>
+								<tr>
+									<th>{{ recorded_samples_result.0.sample_name.label }}</th>
+									<th>{{ recorded_samples_result.0.sample_code_id.label }}</th>
+									<th>{{ recorded_samples_result.0.sample_project.label }}</th>
+									<th>{{ recorded_samples_result.0.sample_state.label }}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for sample in recorded_samples_result %}
+								<tr>
+									<td>{{ sample.sample_name.value }}</td>
+									<td>{{ sample.sample_code_id.value }}</td>
+									<td>{{ sample.sample_project.value }}</td>
+									<td>{{ sample.sample_state.value }}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+							<tfoot>
+								<tr>
+									<th>{{ recorded_samples_result.0.sample_name.label }}</th>
+									<th>{{ recorded_samples_result.0.sample_code_id.label }}</th>
+									<th>{{ recorded_samples_result.0.sample_project.label }}</th>
+									<th>{{ recorded_samples_result.0.sample_state.label }}</th>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% else %}
       	<div class="row justify-content-center pb-2 pt-2">
     		<div class="col-md-12">
           		<div class="card">
@@ -88,6 +127,7 @@
           		</div>
         	</div>
       	</div>
+		{% endif %}
     </div>
 </section>
 
@@ -100,9 +140,9 @@
 						{% endfor %}
 						];
 		{% else %}
-		var {{ project.sample_project_name }}_data = [{% for sample in filter_samples %}
-						{% if sample.sample_project.sample_project_name == project.sample_project_name %}
-						['{{ sample.sample_name }}', '{{ sample.sample_code_id }}', '{{ sample.sample_project_name }}'],
+		var {{ project.sample_project_name }}_data = [{% for sample in recorded_samples_info %}
+						{% if sample.sample_project == project.sample_project_name %}
+						['{{ sample.sample_name }}', '{{ sample.sample_code_id }}', '{{ sample.sample_project }}'],
 						{% endif %}
 						{% endfor %}
 						];
