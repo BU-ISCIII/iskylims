@@ -178,36 +178,6 @@ def find_xml_tag_text(input_file, search_tag):
     return "NOT FOUND"
 
 
-def get_attributes_remote_file(conn, run_dir, remote_file):
-    """
-    Description:
-        Function will fetch the file from remote server and copy on local
-        directory
-    Input:
-        conn    # Samba connection object
-        run_dir # run folder to fetch the file
-        remote_file # file name to fetch on remote server
-    Constants:
-        SAMBA_SHARED_FOLDER_NAME
-    Return:
-        file_attributes if sucessful .
-        Exception if attributes could not be fetched
-    """
-    logger = logging.getLogger(__name__)
-    logger.debug("Starting function for getting remote attributes")
-    try:
-        file_attributes = conn.getAttributes(
-            wetlab.config.SAMBA_SHARED_FOLDER_NAME, remote_file
-        )
-        logger.info("Got attributes from %s", remote_file)
-    except Exception:
-        string_message = "Unable to get attributes for " + remote_file
-        logging_errors(string_message, True, False)
-        raise Exception("Not get attributes")
-    logger.debug("End function for  getting remote attributes")
-    return file_attributes
-
-
 def get_experiment_name_from_file(l_run_parameter):
     """
     Description:
