@@ -107,19 +107,28 @@ class SampleSerializer(serializers.ModelSerializer):
         data = super(SampleSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         field_values = dict()
+        try:
+            output_label = self.context["output_label"]
+        except KeyError:
+            output_label = False
 
         for key in self.fields:
-            # Append all dictionaries into one.
-            # origin: [{'id1':value1}{id1:value2}]
-            # dest: {'id1':value1, 'id2:value2'}
             if key == "project_values":
                 for item in data["project_values"]:
+                    for item_key, val in item.items():
+                        if "date" in item_key.lower():
+                            item[item_key] = val.split(" ")[0]
                     field_values.update(item)
                 data_update[self.fields[key].label] = field_values
             else:
+                if "date" in key.lower():
+                    if data[key] is not None:
+                        data[key] = data[key].split("T")[0]
                 # Change id to label for api rest output
-                data_update[self.fields[key].label] = data[key]
-
+                if output_label:
+                    data_update[self.fields[key].label] = data[key]
+                else:
+                    data_update[key] = data[key]
         return data_update
 
     class Meta:
