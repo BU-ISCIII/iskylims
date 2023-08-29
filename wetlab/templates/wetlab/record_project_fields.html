@@ -1,47 +1,95 @@
 {% extends 'core/base.html' %}
 {% block content %}
-  {% include 'wetlab/menu.html' %}
-  {% include 'core/jexcel_functionality.html' %}
-  {% include 'core/cdn_table_functionality.html' %}
-  <section class="iskylims d-flex flex-column fill-height">
-    <div class="container-md">
-      {% include 'registration/login_inline.html' %}
-      {% if error_message %}
-        <div class="row justify-content-center pb-2 pt-2">
-          <div class="col-md-8">
-            <div class="card border-danger mb-3">
-              <div class="card-header">ERROR</div>
-              <div class="card-body">{{ error_message }}</div>
-            </div>
-          </div>
+{% include 'wetlab/menu.html' %}
+{% include 'core/jexcel_functionality.html' %}
+{% include 'core/cdn_table_functionality.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+	<div class="container-md">
+    {% include 'registration/login_inline.html' %}
+    {% if error_message %}
+		<div class="row justify-content-center pb-2 pt-2">
+          	<div class="col-md-8">
+            	<div class="card border-danger mb-3">
+              		<div class="card-header">ERROR</div>
+              		<div class="card-body">{{ error_message }}</div>
+            	</div>
+          	</div>
         </div>
-      {% endif %}
-      <div class="row justify-content-center pb-2 pt-2">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="card-header">Please fill project-related fields</div>
-            <div class="card-body">
-              <form method="post" enctype="multipart/form-data" name="project_data_form" id="project_data_form">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="record_project_fields" />
-				<input type="hidden" name="projects_fields" value="{{ projects_fields|safe }}" />
-                {% for project in projects_fields %}
-                  <h5 class="border-bottom d-inline-block">Project form: {{ project.sample_project_name }}</h5>
-                  <div class="row justify-content-center horizontal-scroll">
-                    <div class="col-md-auto">
-                      <div id="spreadsheet_{{ project.sample_project_name }}"></div>
-                    </div>
-                  </div>
-                {% endfor %}
-                <input type="button" class="btn btn-outline-secondary" value="Download spreadsheet" onclick="{{ project.sample_project_name }}_data_table.download()" />
-                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" />
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      	{% endif %}
+      	<div class="row justify-content-center pb-2 pt-2">
+    		<div class="col-md-12">
+          		<div class="card">
+            		<div class="card-header">Please fill project-related fields</div>
+            		<div class="card-body">
+						<form method="post" enctype="multipart/form-data" name="project_data_form" id="project_data_form">
+							{% csrf_token %}
+							<input type="hidden" name="action" value="record_project_fields" />
+							<input type="hidden" name="projects_fields" value="{{ projects_fields|safe }}" />
+							{% for project in projects_fields %}
+							<h5 class="border-bottom d-inline-block">Project form: {{ project.sample_project_name }}</h5>
+							<!-- If projects_success is rendered -->
+							{% if projects_success %}
+							<!-- If project is not in this success list -->
+							{% if project not in projects_success %}
+							<!-- If not_validated_info data is rendered -->
+							{% if not_validated_info %}
+							<div class="card ">
+								<div class="card-header">
+									There is some required information missing in some projects
+								</div>
+								<div class="card-body">
+									<table class="table table-hover" id="validation_result">
+										<thead>
+											<tr>
+												{% for key in not_validated_info.0.keys %}
+												<th>{{ key }}</th>
+												{% endfor %}
+											</tr>
+										</thead>
+										<tbody>
+											{% for sample in not_validated_info %}
+											<tr>
+												{% for _, value in sample.items %}
+												<td>{{ value }}</td>
+												{% endfor %}
+											</tr>
+											{% endfor %}
+										</tbody>
+										<tfoot>
+											<tr>
+												{% for key in not_validated_info.0.keys %}
+												<th>{{ key }}</th>
+												{% endfor %}
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+							</div>
+							<div class="row justify-content-center horizontal-scroll">
+								<div class="col-md-auto">
+									<div id="spreadsheet_{{ project.sample_project_name }}"></div>
+								</div>
+							</div>
+							{% endif %}
+							{% endif %}
+							<!-- Display empty form -->
+							{% else %}
+							<div class="row justify-content-center horizontal-scroll">
+								<div class="col-md-auto">
+									<div id="spreadsheet_{{ project.sample_project_name }}"></div>
+								</div>
+							</div>
+							{% endif %}
+							{% endfor %}
+							<input type="button" class="btn btn-outline-secondary" value="Download spreadsheet" onclick="{{ project.sample_project_name }}_data_table.download()" />
+							<input class="btn float-end btn-outline-primary" type="submit" value="Submit" />
+              			</form>
+            		</div>
+          		</div>
+        	</div>
+      	</div>
     </div>
-  </section>
+</section>
 
   <script>
     $(document).ready(function () {
@@ -54,7 +102,7 @@
 		{% else %}
 		var {{ project.sample_project_name }}_data = [{% for sample in filter_samples %}
 						{% if sample.sample_project.sample_project_name == project.sample_project_name %}
-						['{{ sample.sample_name }}', '{{ sample.sample_code_id }}'],
+						['{{ sample.sample_name }}', '{{ sample.sample_code_id }}', '{{ sample.sample_project_name }}'],
 						{% endif %}
 						{% endfor %}
 						];
@@ -64,6 +112,7 @@
 			columns: [
 				{ type: 'text', title: 'Sample Name', width: 150, readOnly: true },
 				{ type: 'hidden', title: 'Sample Code id', width: 150, readOnly: true },
+				{ type: 'hidden', title: 'Sample Project Name', width: 150, readOnly: true },
 				{% for field in project.sample_project_fields %}
 				{% if field.sample_project_field_type == 'Date' %}
 				{ type: 'calendar', title: '{{ field.sample_project_field_name }}', width: 150 },

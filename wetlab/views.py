@@ -2169,7 +2169,7 @@ def record_samples(request):
                             "wetlab/record_sample.html",
                             {
                                 "fields_info": fields_info,
-                                "error_message": "Some samples couldn't be recorded. Table summary:",
+                                "error_message": "Some samples couldn't be recorded.",
                                 "sample_record_result": sample_record_result,
                             },
                         )
@@ -2218,7 +2218,9 @@ def record_samples(request):
             )
 
         try:
+            # if we hace projects, get the fields for each projects associated with the recorded samples
             projects_fields = core.utils.samples.project_table_fields(project_ids)
+            # Render the project data form
             return render(
                 request,
                 "wetlab/record_project_fields.html",
@@ -2240,10 +2242,14 @@ def record_samples(request):
 
     # Record project data
     elif request.method == "POST" and request.POST["action"] == "record_project_fields":
-        # import pdb; pdb.set_trace()
+        not_validated_info = []
+        not_saved_info = []
+        projects_success = []
+
         projects_fields = eval(request.POST["projects_fields"])
-        # Convert excel list-list to dictionary with field_names
+
         for p_data in projects_fields:
+            # Check if for any case there is no excel data sent for a project
             if not request.POST[p_data["sample_project_name"]]:
                 # In case come uncatched error occurs
                 error_message = f"Information for project {p_data['project'].sample_project_name} is missing."
@@ -2253,28 +2259,87 @@ def record_samples(request):
                     {"error_message": error_message},
                 )
 
+            # Get field_names for the project
             field_names = [
                 field["sample_project_field_name"]
                 for field in p_data["sample_project_fields"]
             ]
             field_names.insert(0, "sample_name")
             field_names.insert(1, "sample_code_id")
+            field_names.insert(2, "sample_project_name")
+
+            # Get excel form data for this project from POST
             excel_data = json.loads(request.POST[f"{p_data['sample_project_name']}"])
+            # Convert excel list-list to dictionary with field_names
             excel_json_data = core.utils.common.jspreadsheet_to_dict(
                 field_names, excel_data
             )
-            # project_result = core.utils.samples.save_project_data(
-            #    excel_json_data, p_data
-            # )
-            # Some query to extract sample data as well
-            # add an append for all projects info
-        return render(
-            request,
-            "wetlab/record_project_fields.html",
-            {
-                "projects_data_result": excel_json_data,
-            },
-        )
+
+            # validate types and option lists for projects
+            validation = core.utils.samples.validate_project_data(
+                excel_json_data, p_data["sample_project_name"]
+            )
+            # If some of the fields are not validated skip to next. DO NOT SAVE
+            for val in validation:
+                if not val["Validate"]:
+                    not_validated_info.append(val)
+                    next
+
+            try:
+                # save project data
+                project_record_result = core.utils.samples.save_project_data(
+                    excel_json_data, p_data
+                )
+                # Check if there was any error while saving
+                if not project_record_result["success"] and p_data["sample_project_name"] not in not_validated_info:
+                    not_saved_info.append(project_record_result)
+
+            except Exception:
+                # In case some uncatched error occurs
+                error_message = (
+                    "There was an unexpected error when recording the project data."
+                )
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {"error_message": error_message},
+                )
+
+            if p_data["sample_project_name"] not in not_validated_info:
+                projects_success.append(p_data["sample_project_name"])
+
+        import pdb; pdb.set_trace()
+
+        if not_validated_info:
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "projects_fields": projects_fields,
+                    "projects_success": projects_success,
+                    "not_validated_info": not_validated_info,
+                    "filter_samples": filter_samples,
+                },
+            )
+        elif not_saved_info:
+            # If some project data got an error. Some project data have been recorded and some of them don't.
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "error_message": "Some project data couldn't be recorded.",
+                },
+            )
+        # No validation nor saving errors. Show record summary.
+        else:
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {
+                    "save_result": filter_samples,
+                },
+            )
 
     # Record batch of samples
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
