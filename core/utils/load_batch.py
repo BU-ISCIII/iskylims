@@ -398,7 +398,6 @@ def heading_refactor(sample_batch_data):
 
     return sample_batch_data
 
-
 def validate_header(sample_batch_data):
     invalid_col_name = []
     columns = list(sample_batch_data.columns.values)
@@ -406,6 +405,10 @@ def validate_header(sample_batch_data):
     for col_name in columns:
         if col_name not in core.core_config.HEADING_BATCH:
             invalid_col_name.append(col_name)
+
+    project_id = sample_batch_data['sample_project'].unique().tolist()
+    projects_fields = get_sample_project_fields(project_id)
+    invalid_col_name = [i for i in invalid_col_name if i not in projects_fields]
 
     if len(invalid_col_name) > 0:
         error_cause = core.core_config.ERROR_BATCH_INVALID_HEADER.copy()
