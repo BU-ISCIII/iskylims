@@ -2128,7 +2128,7 @@ def record_samples(request):
         )
 
         # Test if json is empty and go back to table
-        if len(excel_json_data) == 0:
+        if not excel_json_data:
             pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
             return render(
                 request,

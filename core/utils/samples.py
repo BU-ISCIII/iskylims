@@ -314,7 +314,7 @@ def validate_sample_data(sample_data, req_user, app_name):
                 defined_species(sample["species"], app_name)
             )
 
-        if len(sample_dict["Validation error"]) == 0:
+        if not sample_dict["Validation error"]:
             sample_dict["Validation error"] = ""
         else:
             sample_dict["Validation error"] = ". ".join(
