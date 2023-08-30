@@ -3,6 +3,7 @@
 {% include 'wetlab/menu.html' %}
 {% include 'core/jexcel_functionality.html' %}
 {% include 'core/cdn_table_functionality.html' %}
+{% load common %}
 <section class="iskylims d-flex flex-column fill-height">
 	<div class="container-md">
     {% include 'registration/login_inline.html' %}
@@ -22,7 +23,7 @@
           		<div class="card">
             		<div class="card-header">Please fill project-related fields</div>
             		<div class="card-body">
-						<table class="table table-hover" id="validation_result">
+						<table class="table table-hover" id="validation_{{ project.sample_project_name }}">
 							<thead>
 								<tr>
 									<th>{{ recorded_samples_result.0.sample_name.label }}</th>
@@ -72,36 +73,42 @@
 							{% if project not in projects_success %}
 							<!-- If not_validated_info data is rendered -->
 							{% if not_validated_info %}
-							<div class="card ">
-								<div class="card-header">
-									There is some required information missing in some projects
-								</div>
-								<div class="card-body">
-									<table class="table table-hover" id="validation_result">
-										<thead>
-											<tr>
-												{% for key in not_validated_info.0.keys %}
-												<th>{{ key }}</th>
-												{% endfor %}
-											</tr>
-										</thead>
-										<tbody>
-											{% for sample in not_validated_info %}
-											<tr>
-												{% for _, value in sample.items %}
-												<td>{{ value }}</td>
-												{% endfor %}
-											</tr>
-											{% endfor %}
-										</tbody>
-										<tfoot>
-											<tr>
-												{% for key in not_validated_info.0.keys %}
-												<th>{{ key }}</th>
-												{% endfor %}
-											</tr>
-										</tfoot>
-									</table>
+							<div class="row justify-content-center pb-2 pt-2">
+								<div class="col-md-12">
+									<div class="card ">
+										<div class="card-header">
+											There is some required information missing in this project
+										</div>
+										<div class="card-body">
+											<table class="table table-hover" id="validation_{{ project.sample_project_name }}">
+												<thead>
+													<tr>
+														{% for key in not_validated_info.0.keys %}
+														<th>{{ key }}</th>
+														{% endfor %}
+													</tr>
+												</thead>
+												<tbody>
+													{% for sample in not_validated_info %}
+													{% if sample|get:"Project name" == project.sample_project_name %}
+													<tr>
+														{% for _, value in sample.items %}
+														<td>{{ value }}</td>
+														{% endfor %}
+													</tr>
+													{% endif %}
+													{% endfor %}
+												</tbody>
+												<tfoot>
+													<tr>
+														{% for key in not_validated_info.0.keys %}
+														<th>{{ key }}</th>
+														{% endfor %}
+													</tr>
+												</tfoot>
+											</table>
+										</div>
+									</div>
 								</div>
 							</div>
 							<div class="row justify-content-center horizontal-scroll">
@@ -110,6 +117,37 @@
 								</div>
 							</div>
 							{% endif %}
+							{% else %}
+							<table class="table table-hover" id="save_result_{{ project.sample_project_name }}">
+								<thead>
+									<tr>
+										<th>{{ recorded_samples_info.0.sample_name.label }}</th>
+										<th>{{ recorded_samples_info.0.sample_code_id.label }}</th>
+										<th>{{ recorded_samples_info.0.sample_project.label }}</th>
+										<th>{{ recorded_samples_info.0.sample_state.label }}</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for sample in recorded_samples_info %}
+									{% if sample|get:"Project name" == project.sample_project_name %}
+									<tr>
+										<td>{{ sample.sample_name.value }}</td>
+										<td>{{ sample.sample_code_id.value }}</td>
+										<td>{{ sample.sample_project.value }}</td>
+										<td>{{ sample.sample_state.value }}</td>
+									</tr>
+									{% endif %}
+									{% endfor %}
+								</tbody>
+								<tfoot>
+									<tr>
+										<th>{{ recorded_samples_info.0.sample_name.label }}</th>
+										<th>{{ recorded_samples_info.0.sample_code_id.label }}</th>
+										<th>{{ recorded_samples_info.0.sample_project.label }}</th>
+										<th>{{ recorded_samples_info.0.sample_state.label }}</th>
+									</tr>
+								</tfoot>
+							</table>
 							{% endif %}
 							<!-- Display empty form -->
 							{% else %}
@@ -134,9 +172,11 @@
   <script>
     $(document).ready(function () {
 		{% for project in projects_fields %}
-		{% if project_record_result %}
-		var project_data = [{% for sample in project_record_result %}
-						[{% for value in values %}'{{value}}', {% endfor %}],
+		{% if json_data_all %}
+		var {{ project.sample_project_name }}_data = [{% for sample in json_data_all %}
+						{% if sample.sample_project_name == project.sample_project_name %}
+						[{% for _,value in sample.items %}'{{ value }}', {% endfor %}],
+						{% endif %}
 						{% endfor %}
 						];
 		{% else %}
@@ -182,6 +222,56 @@
             $("#button-submit").attr("disabled", true);
             return true;
         });
+		// <!-- If projects_success is rendered -->
+		{% if projects_success %}
+		// <!-- If project is not in this success list -->
+		{% if project not in projects_success %}
+		// <!-- If not_validated_info data is rendered -->
+		{% if not_validated_info %}
+		$('#validation_{{ project.sample_project_name }} tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        var {{ project.sample_project_name }}_table_validation = $('#validation_{{ project.sample_project_name }}').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+		{% endif %}
+		{% else %}
+		$('#save_result_{{ project.sample_project_name }} tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        var {{ project.sample_project_name }}_table_result = $('#validation_{{ project.sample_project_name }}').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+		{% endif %}
+		{% endif %}
 		{% endfor %}
     });
 </script>

@@ -353,7 +353,7 @@ def validate_project_data(project_data, project_name):
         sample_dict = {}
         sample_dict["Sample name"] = sample["sample_name"]
         sample_dict["Project name"] = project_name
-        sample_dict["Validate"] = True
+        sample_dict["Validate"] = False
         sample_dict["Validation error"] = ""
 
         validation.append(sample_dict)
