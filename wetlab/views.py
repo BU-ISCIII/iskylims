@@ -2408,6 +2408,20 @@ def record_samples(request):
             request.FILES["samplesExcel"], sheet_name=0, parse_dates=False
         )
         sample_batch_df = sample_batch_df.dropna(how="all")
+
+        # Test if json data is empty
+        if sample_batch_df.empty:
+            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "error_message": "Excell file is empty",
+                    "pre_def_samples": pre_def_samples,
+                },
+            )
+        else:
             # Check if all samples have same project and if project is in the DB
             if core.utils.load_batch.project_validation(sample_batch_df, __package__):
                 pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
@@ -2459,19 +2473,6 @@ def record_samples(request):
         # Convert pandas dataframe to json list of dictionaries
         batch_json_data = core.utils.load_batch.read_batch_sample_file(sample_batch_df)
 
-        # Test if json data is empty
-        if len(batch_json_data) == 0:
-            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {
-                    "fields_info": fields_info,
-                    "error_message": "Excell file is empty",
-                    "pre_def_samples": pre_def_samples,
-                },
-            )
-        else:
             # validate mandatory and redundant samples
             validation = core.utils.samples.validate_sample_data(
                 batch_json_data, req_user, __package__
