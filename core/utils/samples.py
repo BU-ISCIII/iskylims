@@ -296,17 +296,6 @@ def validate_sample_data(sample_data, req_user, app_name):
                     )
                 )
 
-        # Check if project exist in the DB
-        if (
-            sample["sample_project"] != ""
-            and sample["sample_project"] != "None"
-            and defined_project(sample["sample_project"], app_name)
-        ):
-            sample_dict["Validate"] = False
-            sample_dict["Validation error"].append(
-                defined_project(sample["sample_project"], app_name)
-            )
-
         # Check if laboratory is in the DB
         if sample["lab_request"] != "" and defined_lab_request(
             sample["lab_request"], app_name
@@ -314,6 +303,15 @@ def validate_sample_data(sample_data, req_user, app_name):
             sample_dict["Validate"] = False
             sample_dict["Validation error"].append(
                 defined_lab_request(sample["lab_request"], app_name)
+            )
+
+        # Check if species is in the DB
+        if sample["species"] != "" and defined_species(
+            sample["species"], app_name
+        ):
+            sample_dict["Validate"] = False
+            sample_dict["Validation error"].append(
+                defined_species(sample["species"], app_name)
             )
 
         if len(sample_dict["Validation error"]) == 0:
@@ -2214,34 +2212,6 @@ def defined_sample_type(sample_type, app_name):
         error_cause.insert(1, sample_type)
         return " ".join(error_cause)
 
-
-def defined_project(project_name, app_name):
-    """_summary_
-
-    Parameters
-    ----------
-    project_name
-        sample's project obtained from jspreadsheet
-    app_name
-        application name (wetlab, drylab, core, etc.)
-    Returns
-    -------
-        error_cause
-            String with the error explanation:
-            "No Sample Projects are defined yet. Check documentation to define them"
-    """
-    if not core.models.SampleProjects.objects.filter(apps_name=app_name).exists():
-        error_cause = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
-        return error_cause
-
-    if not core.models.SampleProjects.objects.filter(
-        sample_project_name__iexact=project_name, apps_name__exact=app_name
-    ).exists():
-        error_cause = core.core_config.ERROR_NO_SAMPLE_PROJECTS.copy()
-        error_cause.insert(1, project_name)
-        return " ".join(error_cause)
-
-
 def defined_lab_request(lab_request, app_name):
     """_summary_
 
@@ -2266,4 +2236,30 @@ def defined_lab_request(lab_request, app_name):
     ).exists():
         error_cause = core.core_config.ERROR_NO_LAB_REQUESTED.copy()
         error_cause.insert(1, lab_request)
+        return " ".join(error_cause)
+
+def defined_species(sample_species, app_name):
+    """_summary_
+
+    Parameters
+    ----------
+    lab_request
+        sample's laboratory requested obtained from jspreadsheet
+    app_name
+        application name (wetlab, drylab, core, etc.)
+    Returns
+    -------
+        error_cause
+            String with the error explanation:
+            "No Laboratory is defined yet. Check documentation to define the Laboratory"
+    """
+    if not core.models.Species.objects.filter(apps_name=app_name).exists():
+        error_cause = core.core_config.ERROR_NO_DEFINED_SPECIES
+        return error_cause
+
+    if not core.models.Species.objects.filter(
+        species_name__iexact=sample_species, apps_name__exact=app_name
+    ).exists():
+        error_cause = core.core_config.ERROR_NO_SPECIES.copy()
+        error_cause.insert(1, sample_species)
         return " ".join(error_cause)
