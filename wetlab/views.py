@@ -2437,41 +2437,41 @@ def record_samples(request):
 
             sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
 
-        # Test if column names are valid
-        if core.utils.load_batch.validate_header(sample_batch_df):
-            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {
-                    "fields_info": fields_info,
-                    "error_message": core.utils.load_batch.validate_header(
-                        sample_batch_df
-                    ),
-                    "pre_def_samples": pre_def_samples,
-                },
-            )
+            # Test if column names are valid
+            if core.utils.load_batch.validate_header(sample_batch_df):
+                pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "fields_info": fields_info,
+                        "error_message": core.utils.load_batch.validate_header(
+                            sample_batch_df
+                        ),
+                        "pre_def_samples": pre_def_samples,
+                    },
+                )
 
-        # Test if date columns have date format
-        if core.utils.load_batch.check_format_date(sample_batch_df):
-            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
-            return render(
-                request,
-                "wetlab/record_sample.html",
-                {
-                    "fields_info": fields_info,
-                    "error_message": core.utils.load_batch.check_format_date(
-                        sample_batch_df
-                    ),
-                    "pre_def_samples": pre_def_samples,
-                },
-            )
+            # Test if date columns have date format
+            if core.utils.load_batch.check_format_date(sample_batch_df):
+                pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "fields_info": fields_info,
+                        "error_message": core.utils.load_batch.check_format_date(
+                            sample_batch_df
+                        ),
+                        "pre_def_samples": pre_def_samples,
+                    },
+                )
 
-        # Reformat date columns to correct format (mandatory befor converting to json)
-        sample_batch_df = core.utils.load_batch.format_date(sample_batch_df)
+            # Reformat date columns to correct format (mandatory before converting to json)
+            sample_batch_df = core.utils.load_batch.format_date(sample_batch_df)
 
-        # Convert pandas dataframe to json list of dictionaries
-        batch_json_data = core.utils.load_batch.read_batch_sample_file(sample_batch_df)
+            # Convert pandas dataframe to json list of dictionaries
+            batch_json_data = core.utils.load_batch.read_batch_sample_file(sample_batch_df)
 
             # validate mandatory and redundant samples
             validation = core.utils.samples.validate_sample_data(
