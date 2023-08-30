@@ -2408,7 +2408,20 @@ def record_samples(request):
             request.FILES["samplesExcel"], sheet_name=0, parse_dates=False
         )
         sample_batch_df = sample_batch_df.dropna(how="all")
-        sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
+            # Check if all samples have same project and if project is in the DB
+            if core.utils.load_batch.project_validation(sample_batch_df, __package__):
+                pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "fields_info": fields_info,
+                        "error_message": core.utils.load_batch.project_validation(sample_batch_df, __package__),
+                        "pre_def_samples": pre_def_samples,
+                    },
+                )
+
+            sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
 
         # Test if column names are valid
         if core.utils.load_batch.validate_header(sample_batch_df):
