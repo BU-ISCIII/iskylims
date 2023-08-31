@@ -2239,7 +2239,6 @@ def record_samples(request):
         request.method == "POST"
         and request.POST["action"] == "select_samples_pre_defined"
     ):
-
         excel_data = json.loads(request.POST["predef_table_data"])
         header = json.loads(request.POST["predef_table_header"])
 
