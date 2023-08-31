@@ -2196,7 +2196,10 @@ def record_samples(request):
         ).data
         project_ids = []
         for sample in recorded_samples_info:
-            if sample["sample_project"] not in project_ids and sample["sample_project"] is not None:
+            if (
+                sample["sample_project"] not in project_ids
+                and sample["sample_project"] is not None
+            ):
                 project_ids.append(sample["sample_project"])
         # If no sample Pre-Defined just show result
         if not project_ids:
@@ -2232,7 +2235,10 @@ def record_samples(request):
                 {"error_message": error_message},
             )
 
-    elif request.method == "POST" and request.POST["action"] == "select_samples_pre_defined":
+    elif (
+        request.method == "POST"
+        and request.POST["action"] == "select_samples_pre_defined"
+    ):
 
         excel_data = json.loads(request.POST["predef_table_data"])
         header = json.loads(request.POST["predef_table_header"])
@@ -2248,9 +2254,7 @@ def record_samples(request):
         )
 
         selected_samples_info = [
-            sample
-            for sample in excel_json_data
-            if sample["selected"]
+            sample for sample in excel_json_data if sample["selected"]
         ]
         project_ids = []
         for sample in selected_samples_info:
