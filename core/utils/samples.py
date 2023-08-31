@@ -174,7 +174,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
             )
 
         # If only recorded set sample to completed state
-        if sample["only_recorded"]:
+        if sample["only_recorded"] and sample["sample_project"] == "None":
             sample["sample_state"] = "Completed"
             sample["completed_date"] = datetime.datetime.now()
         # If no sample project data needed set to defined
@@ -353,7 +353,7 @@ def validate_project_data(project_data, project_name):
         sample_dict = {}
         sample_dict["Sample name"] = sample["sample_name"]
         sample_dict["Project name"] = project_name
-        sample_dict["Validate"] = False
+        sample_dict["Validate"] = True
         sample_dict["Validation error"] = ""
 
         validation.append(sample_dict)
@@ -403,7 +403,9 @@ def save_project_data(excel_data, project_info):
                 project_info["success"] = False
                 project_info["error"] = "Error saving any of the project fields"
 
-        if project_info["success"]:
+        if project_info["success"] and sample["only_recorded"]:
+            sample_id.set_state("Completed")
+        elif project_info["success"]:
             sample_id.set_state("Defined")
         else:
             sample_id.set_state("Pre-Defined")
