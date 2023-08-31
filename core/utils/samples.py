@@ -178,7 +178,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
             sample["sample_state"] = "Completed"
             sample["completed_date"] = datetime.datetime.now()
         # If no sample project data needed set to defined
-        elif sample["sample_project"] == "None":
+        elif sample["sample_project"] is None:
             sample["sample_state"] = "Defined"
         else:
             sample["sample_state"] = "Pre-Defined"

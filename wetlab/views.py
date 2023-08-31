@@ -2196,9 +2196,8 @@ def record_samples(request):
         ).data
         project_ids = []
         for sample in recorded_samples_info:
-            if sample["sample_project"] not in project_ids:
+            if sample["sample_project"] not in project_ids and sample["sample_project"] is not None:
                 project_ids.append(sample["sample_project"])
-
         # If no sample Pre-Defined just show result
         if not project_ids:
             return render(
