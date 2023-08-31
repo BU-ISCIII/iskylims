@@ -1875,6 +1875,15 @@
     }
 },
 {
+    "model": "wetlab.configsetting",
+    "pk": 14,
+    "fields": {
+        "configuration_name": "MAXIMUM_TIME_WAIT_RUN_PARAMETERS",
+        "configuration_value": "1",
+        "generated_at": "2021-01-28T22:59:03.042"
+    }
+},
+{
     "model": "wetlab.collectionindexvalues",
     "pk": 2073,
     "fields": {
