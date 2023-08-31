@@ -2211,7 +2211,7 @@ def record_samples(request):
             )
 
         try:
-            # if we hace projects, get the fields for each projects associated with the recorded samples
+            # if we have projects, get the fields for each projects associated with the recorded samples
             projects_fields = core.utils.samples.project_table_fields(project_ids)
             # Render the project data form
             return render(
@@ -2220,6 +2220,54 @@ def record_samples(request):
                 {
                     "projects_fields": projects_fields,
                     "recorded_samples_info": recorded_samples_info,
+                },
+            )
+        except Exception:
+            # In case come uncatched error occurs
+            error_message = (
+                "There was an unexpected error when processing the project form."
+            )
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {"error_message": error_message},
+            )
+
+    elif request.method == "POST" and request.POST["action"] == "select_samples_pre_defined":
+
+        excel_data = json.loads(request.POST["predef_table_data"])
+        header = json.loads(request.POST["predef_table_header"])
+
+        # Change excel header (verbose_name) to field names
+        field_names = core.utils.common.sheet_header_to_field_name(
+            header, fields_info["fields"]
+        )
+        field_names.append("selected")
+        # Convert excel list-list to dictionary with field_names
+        excel_json_data = core.utils.common.jspreadsheet_to_dict(
+            field_names, excel_data
+        )
+
+        selected_samples_info = [
+            sample
+            for sample in excel_json_data
+            if sample["selected"]
+        ]
+        project_ids = []
+        for sample in selected_samples_info:
+            if sample["sample_project"] not in project_ids:
+                project_ids.append(sample["sample_project"])
+
+        try:
+            # if we have projects, get the fields for each projects associated with the recorded samples
+            projects_fields = core.utils.samples.project_table_fields(project_ids)
+            # Render the project data form
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {
+                    "projects_fields": projects_fields,
+                    "recorded_samples_info": selected_samples_info,
                 },
             )
         except Exception:
@@ -2261,6 +2309,7 @@ def record_samples(request):
             field_names.insert(0, "sample_name")
             field_names.insert(1, "sample_code_id")
             field_names.insert(2, "sample_project_name")
+            field_names.insert(3, "only_recorded")
 
             # Get excel form data for this project from POST
             excel_data = json.loads(request.POST[f"{p_data['sample_project_name']}"])
@@ -2316,9 +2365,7 @@ def record_samples(request):
         recorded_samples_info = wetlab.api.serializers.SampleSerializer(
             samples_query, many=True, context={"output_label": "output_label"}
         ).data
-        import pdb
 
-        pdb.set_trace()
         if not_validated_info:
             return render(
                 request,
@@ -2350,7 +2397,6 @@ def record_samples(request):
                     "recorded_samples_result": recorded_samples_info,
                 },
             )
-
     # Record batch of samples
     elif request.method == "POST" and request.POST["action"] == "defineBatchSamples":
         req_user = request.user.username

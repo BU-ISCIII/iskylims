@@ -1,337 +1,345 @@
-{% extends "core/base.html" %}
+{% extends 'core/base.html' %}
 {% block content %}
-{% include "wetlab/menu.html" %}
+{% include 'wetlab/menu.html' %}
 {% include 'core/jexcel_functionality.html' %}
-{% include "core/cdn_table_functionality.html" %}
+{% include 'core/cdn_table_functionality.html' %}
 <section class="iskylims d-flex flex-column fill-height">
-    <div class="container-md">
-        {% include 'registration/login_inline.html' %}
-        {% if error_message %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-8">
-                <div class="card border-danger mb-3">
-                    <div class="card-header">ERROR: Unable to upload sample batch</div>
-                    <div class="card-body">
-                        {{ error_message }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if sample_record_result %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-12">
-                <div class="card ">
-                    <div class="card-header">
-                        Recorded samples:
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-hover" id="result_record">
-                            <thead>
-                                <tr>
-                                    <th>{{ fields_info.fields.sample_name }}</th>
-                                    <th>{{ fields_info.fields.sample_code_id }}</th>
-                                    <th>{{ fields_info.fields.sample_state }}</th>
-                                    <th>Sucess</th>
-                                    <th>Error</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sample in sample_record_result %}
-                                <tr>
-                                    <td>{{ sample.sample_name }}</td>
-                                    <td>{{ sample.sample_code_id }}</td>
-                                    <td>{{ sample.sample_state }}</td>
-                                    <td>{{ sample.success }}</td>
-                                    <td>{{ sample.error }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>{{ fields_info.fields.sample_name }}</th>
-                                    <th>{{ fields_info.fields.sample_code_id }}</th>
-                                    <th>{{ fields_info.fields.sample_state }}</th>
-                                    <th>Sucess</th>
-                                    <th>Error</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% else %}
-        {% if pre_def_samples %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-12">
-                <div class="card ">
-                    <div class="card-header">
-                        <h3>These samples require additional information </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row justify-content-center pb-2 pt-2">
-                            <div class="col-md-11">
-                                <form method="post" action="/wetlab/record-samples" enctype="multipart/form-data"
-                                    name="select_samples_pre_defined" id="select_samples_pre_defined">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="select_samples_pre_defined" />
-                                    <div id="pre_def_samplesheet"></div>                                    
-                                </form>
-                            </div>
-                        </div>
-                        <div class="row justify-content-end pb-2 pt-2">
-                            <div class="col-md-auto">
-                                <input class="btn float-end btn-outline-primary my-3" type="submit" value="Submit">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if validation %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-12">
-                <div class="card ">
-                    <div class="card-header">
-                        There is some required information missing in some samples
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-hover" id="validation_result">
-                            <thead>
-                                <tr>
-                                    {% for key in validation.0.keys %}
-                                    <th>{{ key }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sample in validation %}
-                                <tr>
-                                    {% for _, value in sample.items %}
-                                    <td>{{ value }}</td>
-                                    {% endfor %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    {% for key in validation.0.keys %}
-                                    <th>{{ key }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-12">
-                <ul class="nav nav-tabs" id="tab_record_samples" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="samles-tab" data-bs-toggle="tab" data-bs-target="#samples"
-                            type="button" role="tab" aria-controls="samples" aria-selected="true">Record new
-                            samples</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link " id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch"
-                            type="button" role="tab" aria-controls="batch" aria-selected="false">Record new samples in
-                            batch</button>
-                    </li>
-                </ul>
-                <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
-                    <div class="tab-pane fade show active" id="samples" role="tabpanel" aria-labelledby="samples-tab">
-                        <div class="row justify-content-center pb-2 pt-2">
-                            <div class="col-md-12">
-                                <form method="post" enctype="multipart/form-data" name="sample_record_form"
-                                    id="sample_record_form">
-                                    {% csrf_token %}
-                                    <div class="horizontal-scroll">
-                                        <input type="hidden" name="action" value="record_samples" />
-                                        <div id="record_sample_sheet"></div>
-                                    </div>
-                                    <input type="button" class="btn btn-outline-secondary mt-2"
-                                        value="Download spreadsheet" id="record_samples_download" />
-                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade show" id="batch" role="tabpanel" aria-labelledby="batch-tab">
-                        <div class="row justify-content-center pb-2 pt-2">
-                            <div class="col-md-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        Load new Samples in batch
-                                    </div>
-                                    <div class="card-body">
-                                        <p>Upload the excel file to define a batch of samples</p>
-                                        <form method="post" enctype="multipart/form-data" name="defineBatchSamples"
-                                            id="defineBatchSamples">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="defineBatchSamples" />
-                                            <div class="form-control required">
-                                                <label class="col-sm-5  form-label" for="samplesExcel">
-                                                    <td> Upload Samples file</td>
-                                                </label>
-                                                <div class="col-sm-5">
-                                                    <input class="form-control" required="required" type="file"
-                                                        accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel">
-                                                </div>
-                                                <p class="my-2"> Fields marked with <FONT COLOR="Red">*</FONT> are
-                                                    mandatory</p>
-                                                <input class="btn btn-outline-secondary" type="reset"
-                                                    value="Reset Fields">
-                                                <input class="btn float-end btn-outline-primary" type="submit"
-                                                    value="Submit">
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    </div>
+	<div class="container-md">
+		{% include 'registration/login_inline.html' %}
+		{% if error_message %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-8">
+				<div class="card border-danger mb-3">
+					<div class="card-header">ERROR: Unable to upload sample batch</div>
+					<div class="card-body">{{ error_message }}</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		{% if sample_record_result %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header">Recorded samples:</div>
+					<div class="card-body">
+						<table class="table table-hover" id="result_record">
+							<thead>
+								<tr>
+									<th>{{ fields_info.fields.sample_name }}</th>
+									<th>{{ fields_info.fields.unique_sample_id }}</th>
+									<th>{{ fields_info.fields.sample_state }}</th>
+									<th>Sucess</th>
+									<th>Error</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for sample in sample_record_result %}
+								<tr>
+									<td>{{ sample.sample_name }}</td>
+									<td>{{ sample.sample_code_id }}</td>
+									<td>{{ sample.sample_state }}</td>
+									<td>{{ sample.success }}</td>
+									<td>{{ sample.error }}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+							<tfoot>
+								<tr>
+									<th>{{ fields_info.fields.sample_name }}</th>
+									<th>{{ fields_info.fields.sample_code_id }}</th>
+									<th>{{ fields_info.fields.sample_state }}</th>
+									<th>Sucess</th>
+									<th>Error</th>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% else %}
+		{% if pre_def_samples %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header">
+						<h3>These samples require additional information</h3>
+					</div>
+					<div class="card-body">
+						<form method="post" action="/wetlab/record-samples" enctype="multipart/form-data"
+							name="select_samples_pre_defined" id="select_samples_pre_defined">
+							<div class="row justify-content-center pb-2 pt-2">
+								<div class="col-md-11">
+									<p>Select the samples and click submit to go to the form:</p>
+									{% csrf_token %}
+									<input type="hidden" name="action" value="select_samples_pre_defined" />
+									<div id="pre_def_samplesheet"></div>
+								</div>
+							</div>
+							<div class="row justify-content-end pb-2 pt-2">
+								<div class="col-md-auto">
+									<input class="btn float-end btn-outline-primary my-3" type="submit"
+										value="Submit" />
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		{% if validation %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header">There is some required information missing in some samples</div>
+					<div class="card-body">
+						<table class="table table-hover" id="validation_result">
+							<thead>
+								<tr>
+									{% for key in validation.0.keys %}
+									<th>{{ key }}</th>
+									{% endfor %}
+								</tr>
+							</thead>
+							<tbody>
+								{% for sample in validation %}
+								<tr>
+									{% for _, value in sample.items %}
+									<td>{{ value }}</td>
+									{% endfor %}
+								</tr>
+								{% endfor %}
+							</tbody>
+							<tfoot>
+								<tr>
+									{% for key in validation.0.keys %}
+									<th>{{ key }}</th>
+									{% endfor %}
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		<div class="row justify-content-center pb-2 pt-2">
+			<div class="col-md-12">
+				<ul class="nav nav-tabs" id="tab_record_samples" role="tablist">
+					<li class="nav-item" role="presentation">
+						<button class="nav-link active" id="samles-tab" data-bs-toggle="tab" data-bs-target="#samples"
+							type="button" role="tab" aria-controls="samples" aria-selected="true">Record new
+							samples</button>
+					</li>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch"
+							type="button" role="tab" aria-controls="batch" aria-selected="false">Record new samples in
+							batch</button>
+					</li>
+				</ul>
+				<div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+					<div class="tab-pane fade show active" id="samples" role="tabpanel" aria-labelledby="samples-tab">
+						<div class="row justify-content-center pb-2 pt-2">
+							<div class="col-md-12">
+								<form method="post" enctype="multipart/form-data" name="sample_record_form"
+									id="sample_record_form">
+									{% csrf_token %}
+									<div class="horizontal-scroll">
+										<input type="hidden" name="action" value="record_samples" />
+										<div id="record_sample_sheet"></div>
+									</div>
+									<input type="button" class="btn btn-outline-secondary mt-2"
+										value="Download spreadsheet" onclick="record_samples.download()" />
+									<input class="btn float-end btn-outline-primary mt-2" type="submit"
+										value="Submit" />
+								</form>
+							</div>
+						</div>
+					</div>
+					<div class="tab-pane fade show" id="batch" role="tabpanel" aria-labelledby="batch-tab">
+						<div class="row justify-content-center pb-2 pt-2">
+							<div class="col-md-12">
+								<div class="card">
+									<div class="card-header">Load new Samples in batch</div>
+									<div class="card-body">
+										<p>Upload the excel file to define a batch of samples</p>
+										<form method="post" enctype="multipart/form-data" name="defineBatchSamples"
+											id="defineBatchSamples">
+											{% csrf_token %}
+											<input type="hidden" name="action" value="defineBatchSamples" />
+											<div class="form-control required">
+												<label class="col-sm-5 form-label" for="samplesExcel">
+													<td>Upload Samples file</td>
+												</label>
+												<div class="col-sm-5">
+													<input class="form-control" required="required" type="file"
+														accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel" />
+												</div>
+												<p class="my-2">
+													Fields marked with<FONT COLOR="Red">*</FONT>are mandatory
+												</p>
+												<input class="btn btn-outline-secondary" type="reset"
+													value="Reset Fields" />
+												<input class="btn float-end btn-outline-primary" type="submit"
+													value="Submit" />
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+	</div>
 </section>
 {% if excel_data %}
-{{ excel_data|json_script:"excel_data" }}
+{{ excel_data|json_script:'excel_data' }}
 {% endif %}
 <script>
-    $(document).ready(function () {
-        
-        {% if pre_def_samples %}
+	$(document).ready(function () {
+		{% if pre_def_samples %}
 
-        var data_pre_def = [{% for value in pre_def_samples %}
-                    [
-                    "{{ value.patient_core }}",
-                    "{{ value.sample_name }}",
-                    "{{ value.lab_request }}", 
-                    "{{ value.sample_type }}", 
-                    "{{ value.species }}", 
-                    "{{ value.sample_project }}",
-                    "{{ value.sample_location }}", 
-                    "{{ value.sample_only_recorded }}",
-                    ],
-                    {% endfor %}];
+		var data_pre_def = [{% for value in pre_def_samples %}
+						[
+							"{{ value.patient_core }}",
+							"{{ value.sample_name }}",
+							"{{ value.sample_code_id }}",
+							"{{ value.lab_request }}",
+							"{{ value.sample_type }}",
+							"{{ value.species }}",
+							"{{ value.sample_project }}",
+							"{{ value.sample_only_recorded }}",
+						],
+							{% endfor %}];
 
-        var pre_def_table = jspreadsheet(document.getElementById('pre_def_samplesheet'), {
-            data: data_pre_def,
-            columns: [
-                { type: 'text', title: '{{fields_info.fields.patient_core}}', width: 130 },
-                { type: 'text', title: '{{fields_info.fields.sample_name}}', width: 120 },
-                { type: 'dropdown', title: '{{fields_info.fields.lab_request}}', width: 130, source: [{% for value in fields_info.lab_request %}"{{value}}", {% endfor %}] },
-                { type: 'dropdown', title: '{{fields_info.fields.sample_type}}', width: 120, source: [{% for value in fields_info.sample_type %} "{{value}}", {% endfor %}]},
-                { type: 'dropdown', title: '{{fields_info.fields.species}}', width: 120, source : [{% for value in fields_info.species %} "{{value}}", {% endfor %}] },
-                { type: 'dropdown', title: '{{fields_info.fields.sample_project}}', width: 120, source : [{% for value in fields_info.sample_project %} "{{value}}", {% endfor %}] },
-                { type: 'text', title: '{{fields_info.fields.sample_location}}', width: 120 },
-                { type: 'text', title: '{{fields_info.fields.only_recorded}}', width: 110 },
-                { type: 'checkbox', title: 'Select', width: 110 },
-            ],
-            allowInsertColumn: false,
-            allowDeleteColumn: false,
-            allowRenameColumn: false,
-            csvFileName: 'predef_samples.csv',
-            minDimensions: [9, data_pre_def.length],
-        });
-        
-        {% endif %}
+		var pre_def_table = jspreadsheet(document.getElementById('pre_def_samplesheet'), {
+			data: data_pre_def,
+			columns: [
+				{ type: 'text', title: '{{fields_info.fields.patient_core}}', width: 130 },
+				{ type: 'text', title: '{{fields_info.fields.sample_name}}', width: 120 },
+				{ type: 'text', title: '{{fields_info.fields.sample_code_id}}', width: 120 },
+				{ type: 'dropdown', title: '{{fields_info.fields.lab_request}}', width: 130, source: [{% for value in fields_info.lab_request %}"{{value}}", {% endfor %}] },
+				{ type: 'dropdown', title: '{{fields_info.fields.sample_type}}', width: 120, source: [{% for value in fields_info.sample_type %} "{{value}}", {% endfor %}]},
+				{ type: 'dropdown', title: '{{fields_info.fields.species}}', width: 120, source : [{% for value in fields_info.species %} "{{value}}", {% endfor %}] },
+				{ type: 'dropdown', title: '{{fields_info.fields.sample_project}}', width: 120, source : [{% for value in fields_info.sample_project %} "{{value}}", {% endfor %}] },
+				{ type: 'text', title: '{{fields_info.fields.only_recorded}}', width: 110 },
+				{ type: 'checkbox', title: 'Select', width: 110 },
+				],
+			allowInsertColumn: false,
+			allowDeleteColumn: false,
+			allowRenameColumn: false,
+			csvFileName: 'predef_samples.csv',
+			minDimensions: [9, data_pre_def.length],
+		});
 
-        {% if excel_data %}
-        var s_info = JSON.parse(document.getElementById('excel_data').textContent);
-        {% else %}
-        var s_info = [[],[],[],[],[],[],[],[],[],[]];
-        {% endif %}
-        
-        var record_samples = jspreadsheet(document.getElementById('record_sample_sheet'), {
-            data: s_info,
-            columns: [
-                { type: 'text', title: '{{fields_info.fields.patient_core}}', width: 130 },
-                { type: 'text', title: '{{fields_info.fields.sample_name}}', width: 120 },
-                { type: 'dropdown', title: '{{fields_info.fields.lab_request}}', width: 130, source: [{% for value in fields_info.lab_request %}"{{value}}", {% endfor %}] },
-                { type: 'dropdown', title: '{{fields_info.fields.sample_type}}', width: 120, source: [{% for value in fields_info.sample_type %} "{{value}}", {% endfor %}]},
-                { type: 'dropdown', title: '{{fields_info.fields.species}}', width: 120, source : [{% for value in fields_info.species %} "{{value}}", {% endfor %}] },
-                { type: 'dropdown', title: '{{fields_info.fields.sample_project}}', width: 120, source : [{% for value in fields_info.sample_project %} "{{value}}", {% endfor %}] },
-                { type: 'calendar', title: '{{fields_info.fields.sample_entry_date}}', width: 170 },
-                { type: 'calendar', title: '{{fields_info.fields.collection_sample_date}}', width: 170 },
-                { type: 'text', title: '{{fields_info.fields.sample_location}}', width: 120 },
-                { type: 'checkbox', title: '{{fields_info.fields.only_recorded}}', width: 110 },
-            ],
-            allowInsertColumn: false,
-            allowDeleteColumn: false,
-            allowRenameColumn: false,
-            csvFileName: 'record_samples.csv',
-            minDimensions: [10, s_info.length],
-        });
+		$("#select_samples_pre_defined").submit(function (e) {
+			var table_data = pre_def_table.getData();
+			var header = pre_def_table.getHeaders(true);
+			var header_json = JSON.stringify(header);
+			var data_json = JSON.stringify(table_data);
+			$("<input />").attr("type", "hidden")
+				.attr("name", "predef_table_data")
+				.attr("value", data_json)
+				.appendTo("#select_samples_pre_defined");
+			$("<input />").attr("type", "hidden")
+				.attr("name", "predef_table_header")
+				.attr("value", header_json)
+				.appendTo("#select_samples_pre_defined");
+			$("#btnSubmit").attr("disabled", true);
+			return true;
+		});
 
-        $("#sample_record_form").submit(function (e) {
-            var table_data = record_samples.getData();
-            var header = record_samples.getHeaders(true);
-            var header_json = JSON.stringify(header);
-            var data_json = JSON.stringify(table_data);
-            $("<input />").attr("type", "hidden")
-                .attr("name", "record_table_data")
-                .attr("value", data_json)
-                .appendTo("#sample_record_form");
-            $("<input />").attr("type", "hidden")
-                .attr("name", "record_table_header")
-                .attr("value", header_json)
-                .appendTo("#sample_record_form");
-            $("#btnSubmit").attr("disabled", true);
-            return true;
-        });
+		{% endif %}
 
-        $("#record_samples_download").click(function (e){
-            record_samples.download()
-        });
+		{% if excel_data %}
+		var s_info = JSON.parse(document.getElementById('excel_data').textContent);
+		{% else %}
+		var s_info = [[], [], [], [], [], [], [], [], [], []];
+		{% endif %}
 
-        $('#result_record tfoot th').each(function () {
-            var title = $(this).text();
-            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-        });
+		var record_samples = jspreadsheet(document.getElementById('record_sample_sheet'), {
+			data: s_info,
+			columns: [
+				{ type: 'text', title: '{{fields_info.fields.patient_core}}', width: 130 },
+				{ type: 'text', title: '{{fields_info.fields.sample_name}}', width: 120 },
+				{ type: 'dropdown', title: '{{fields_info.fields.lab_request}}', width: 130, source: [{% for value in fields_info.lab_request %}"{{value}}", {% endfor %}] },
+				{ type: 'dropdown', title: '{{fields_info.fields.sample_type}}', width: 120, source: [{% for value in fields_info.sample_type %} "{{value}}", {% endfor %}]},
+				{ type: 'dropdown', title: '{{fields_info.fields.species}}', width: 120, source : [{% for value in fields_info.species %} "{{value}}", {% endfor %}] },
+				{ type: 'dropdown', title: '{{fields_info.fields.sample_project}}', width: 120, source : [{% for value in fields_info.sample_project %} "{{value}}", {% endfor %}] },
+				{ type: 'calendar', title: '{{fields_info.fields.sample_entry_date}}', width: 170 },
+				{ type: 'calendar', title: '{{fields_info.fields.collection_sample_date}}', width: 170 },
+				{ type: 'text', title: '{{fields_info.fields.sample_location}}', width: 120 },
+				{ type: 'checkbox', title: '{{fields_info.fields.only_recorded}}', width: 110 },
+			],
+			allowInsertColumn: false,
+			allowDeleteColumn: false,
+			allowRenameColumn: false,
+			csvFileName: 'record_samples.csv',
+			minDimensions: [10, s_info.length],
+		});
 
-        var table_sample_fields = $('#result_record').DataTable({
-            initComplete: function () {
-                // Apply the search
-                this.api()
-                    .columns()
-                    .every(function () {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
-                        });
-                    });
-            },
-        });
-        
-        $('#validation_result tfoot th').each(function () {
-            var title = $(this).text();
-            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-        });
+		$("#sample_record_form").submit(function (e) {
+			var table_data = record_samples.getData();
+			var header = record_samples.getHeaders(true);
+			var header_json = JSON.stringify(header);
+			var data_json = JSON.stringify(table_data);
+			$("<input />").attr("type", "hidden")
+				.attr("name", "record_table_data")
+				.attr("value", data_json)
+				.appendTo("#sample_record_form");
+			$("<input />").attr("type", "hidden")
+				.attr("name", "record_table_header")
+				.attr("value", header_json)
+				.appendTo("#sample_record_form");
+			$("#btnSubmit").attr("disabled", true);
+			return true;
+		});
 
-        var table_validation_result = $('#validation_result').DataTable({
-            initComplete: function () {
-                // Apply the search
-                this.api()
-                    .columns()
-                    .every(function () {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
-                        });
-                    });
-            },
-        });
+		$('#result_record tfoot th').each(function () {
+			var title = $(this).text();
+			$(this).html('<input type="text" placeholder="Search ' + title + '" />');
+		});
+
+		var table_sample_fields = $('#result_record').DataTable({
+			initComplete: function () {
+				// Apply the search
+				this.api()
+					.columns()
+					.every(function () {
+						var that = this;
+						$('input', this.footer()).on('keyup change clear', function () {
+							if (that.search() !== this.value) {
+								that.search(this.value).draw();
+							}
+						});
+					});
+			},
+		});
+
+		$('#validation_result tfoot th').each(function () {
+			var title = $(this).text();
+			$(this).html('<input type="text" placeholder="Search ' + title + '" />');
+		});
+
+		var table_validation_result = $('#validation_result').DataTable({
+			initComplete: function () {
+				// Apply the search
+				this.api()
+					.columns()
+					.every(function () {
+						var that = this;
+						$('input', this.footer()).on('keyup change clear', function () {
+							if (that.search() !== this.value) {
+								that.search(this.value).draw();
+							}
+						});
+					});
+			},
+		});
     });
 </script>
 {% endblock %}
