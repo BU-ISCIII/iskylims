@@ -380,8 +380,8 @@ def save_project_data(excel_data, project_info):
     """
     for sample in excel_data:
         sample_id = core.models.Samples.objects.get(
-                sample_code_id__exact=sample["sample_code_id"]
-            )
+            sample_code_id__exact=sample["sample_code_id"]
+        )
         for field in project_info["sample_project_fields"]:
             field_value = {}
             field_value["sample_id"] = sample_id
@@ -393,7 +393,9 @@ def save_project_data(excel_data, project_info):
                 ),
                 sample_project_field_name__exact=field["sample_project_field_name"],
             )
-            field_value["sample_project_field_value"] = sample[field["sample_project_field_name"]]
+            field_value["sample_project_field_value"] = sample[
+                field["sample_project_field_name"]
+            ]
             try:
                 core.models.SampleProjectsFieldsValue.objects.create_project_field_value(
                     field_value
