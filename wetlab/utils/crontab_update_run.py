@@ -753,23 +753,56 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
         wetlab.utils.crontab_process.delete_existing_run_metrics_table_processed(
             run_process_obj, experiment_name
         )
+        # Check run_folder time creation
+        f_created_date = wetlab.utils.common.get_samba_atribute_data(
+                    conn,
+                    wetlab.utils.crontab_process.get_samba_shared_folder(),
+                    run_folder,
+                    "created_time",
+                )
+        time_to_check = datetime.datetime.utcfromtimestamp(
+            f_created_date
+        ).date()
+        # Check maximum time for waiting run metric files
+        max_time_for_run_parameters = (
+            wetlab.models.ConfigSetting.objects.filter(
+                configuration_name__exact="MAXIMUM_TIME_WAIT_RUN_PARAMETERS"
+            )
+            .last()
+            .get_configuration_value()
+        )
+
+        # Get run metric files
         run_metric_files = wetlab.utils.crontab_process.get_run_metric_files(
             conn, run_folder, experiment_name
         )
 
         if "ERROR" in run_metric_files:
-            string_message = (
-                experiment_name + " : Unable to collect all files for run metrics"
-            )
-            wetlab.utils.common.logging_errors(string_message, True, False)
-            wetlab.utils.crontab_process.handling_errors_in_run(
-                experiment_name, run_metric_files["ERROR"]
-            )
-            wetlab.utils.crontab_process.delete_run_metric_files(experiment_name)
+            if wetlab.utils.crontab_process.waiting_time_expired(
+                time_to_check, max_time_for_run_parameters, experiment_name
+            ):
+                string_message = (
+                    experiment_name + " : Unable to collect all files for run metrics"
+                )
+                wetlab.utils.common.logging_errors(string_message, True, False)
+                wetlab.utils.crontab_process.handling_errors_in_run(
+                    experiment_name, run_metric_files["ERROR"]
+                )
+                wetlab.utils.crontab_process.delete_run_metric_files(experiment_name)
+                logger.debug(
+                    "%s : Deleting run metric files", experiment_name
+                )
+            else:
+                logger.debug(
+                        "%s : RunParameter not in folder run. Allowing more time",
+                        experiment_name,
+                    )
             logger.debug(
-                "%s : End manage_run_in_processed_run_state function", experiment_name
-            )
+                    "%s : End manage_run_in_processed_run_state function", experiment_name
+                )
             continue
+        
+        # Parse run metric files
         (
             parsed_run_stats_summary,
             parsed_run_stats_read,
