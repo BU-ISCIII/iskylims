@@ -755,14 +755,12 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
         )
         # Check run_folder time creation
         f_created_date = wetlab.utils.common.get_samba_atribute_data(
-                    conn,
-                    wetlab.utils.crontab_process.get_samba_shared_folder(),
-                    run_folder,
-                    "created_time",
-                )
-        time_to_check = datetime.datetime.utcfromtimestamp(
-            f_created_date
-        ).date()
+            conn,
+            wetlab.utils.crontab_process.get_samba_shared_folder(),
+            run_folder,
+            "created_time",
+        )
+        time_to_check = datetime.datetime.utcfromtimestamp(f_created_date).date()
         # Check maximum time for waiting run metric files
         max_time_for_run_parameters = (
             wetlab.models.ConfigSetting.objects.filter(
@@ -789,19 +787,17 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
                     experiment_name, run_metric_files["ERROR"]
                 )
                 wetlab.utils.crontab_process.delete_run_metric_files(experiment_name)
-                logger.debug(
-                    "%s : Deleting run metric files", experiment_name
-                )
+                logger.debug("%s : Deleting run metric files", experiment_name)
             else:
                 logger.debug(
-                        "%s : RunParameter not in folder run. Allowing more time",
-                        experiment_name,
-                    )
-            logger.debug(
-                    "%s : End manage_run_in_processed_run_state function", experiment_name
+                    "%s : RunParameter not in folder run. Allowing more time",
+                    experiment_name,
                 )
+            logger.debug(
+                "%s : End manage_run_in_processed_run_state function", experiment_name
+            )
             continue
-        
+
         # Parse run metric files
         (
             parsed_run_stats_summary,
