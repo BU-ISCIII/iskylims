@@ -394,10 +394,10 @@ def logging_errors(string_text, showing_traceback, print_on_screen):
     logger.error("-----------------    ERROR   ------------------")
     logger.error(string_text)
     if wetlab.models.ConfigSetting.objects.filter(
-        configuration_name__exact="SENT_EMAIL_ON_ERROR"
+        configuration_name__exact="SENT_EMAIL_ON_CRONTAB_ERROR"
     ).exists():
         email_on_error_obj = wetlab.models.ConfigSetting.objects.filter(
-            configuration_name__exact="SENT_EMAIL_ON_ERROR"
+            configuration_name__exact="SENT_EMAIL_ON_CRONTAB_ERROR"
         ).last()
         if email_on_error_obj.get_configuration_value() == "TRUE":
             if wetlab.models.ConfigSetting.objects.filter(
