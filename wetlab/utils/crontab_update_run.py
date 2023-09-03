@@ -126,7 +126,7 @@ def search_update_new_runs(request_reason):
                     conn,
                     wetlab.utils.crontab_process.get_samba_shared_folder(),
                     new_run,
-                    "created_time",
+                    "create_time",
                 )
                 time_to_check = datetime.datetime.utcfromtimestamp(
                     f_created_date

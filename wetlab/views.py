@@ -841,9 +841,9 @@ def search_run(request):
             if wetlab.models.RunProcess.objects.filter(pk__in=run_list).exists():
                 runs_found = wetlab.models.RunProcess.objects.filter(pk__in=run_list)
             else:
-                error_message = [
+                error_message = (
                     "There are not run where " + request.user.username + " was involved"
-                ]
+                )
                 return render(
                     request,
                     "wetlab/search_run.html",
