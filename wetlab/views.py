@@ -2294,7 +2294,7 @@ def record_samples(request):
 
         for p_data in projects_fields:
             # Check if for any case there is no excel data sent for a project
-            if p_data['sample_project_name'] not in request.POST:
+            if p_data["sample_project_name"] not in request.POST:
                 # In case come uncatched error occurs
                 error_message = f"Information for project {p_data['sample_project_name']} is missing."
                 return render(

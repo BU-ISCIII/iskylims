@@ -8,8 +8,9 @@ register = template.Library()
 def get(mapping, key):
     return mapping.get(key, "")
 
-@register.filter(name='clean_string')
+
+@register.filter(name="clean_string")
 def clean_string(value):
     # Use regular expression to remove spaces, "-" and "/"
-    cleaned_value = re.sub(r'[-/.,;:\s]', '', value)
+    cleaned_value = re.sub(r"[-/.,;:\s]", "", value)
     return cleaned_value
