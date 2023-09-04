@@ -220,7 +220,7 @@
 				var table_data = {{ project.sample_project_name|clean_string }}_data_table.getData()
 					var data_json = JSON.stringify(table_data)
 					$("<input />").attr("type", "hidden")
-						.attr("name", "{{ project.sample_project_name|clean_string }}")
+						.attr("name", "{{ project.sample_project_name }}")
 						.attr("value", data_json)
 						.appendTo("#project_data_form");
 					$("#button-submit").attr("disabled", true);
