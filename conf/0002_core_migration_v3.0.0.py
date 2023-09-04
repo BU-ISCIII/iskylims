@@ -774,7 +774,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name="sampletype",
-            name="optional_fields",
+            name="mandatory_fields",
             field=models.CharField(blank=True, max_length=300, null=True),
         ),
         migrations.AlterModelTable(
@@ -986,6 +986,17 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 to="core.sampleprojectfieldclassification",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="sampleprojectsfields",
+            name="sample_projects_id",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="sample_project_fields",
+                to="core.sampleprojects",
             ),
         ),
         migrations.AlterField(
