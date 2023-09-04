@@ -23,7 +23,7 @@
 				<div class="card">
 					<div class="card-header">The following samples were succesfully recorded:</div>
 					<div class="card-body">
-						<table class="table table-hover" id="save_result_{{ project.sample_project_name }}">
+						<table class="table table-hover" id="save_result_{{ project.sample_project_name|clean_string }}">
 							<thead>
 								<tr>
 									<th>{{ recorded_samples_result.0.sample_name.label }}</th>
@@ -82,7 +82,7 @@
 											project</div>
 										<div class="card-body">
 											<table class="table table-hover"
-												id="validation_{{ project.sample_project_name }}">
+												id="validation_{{ project.sample_project_name|clean_string }}">
 												<thead>
 													<tr>
 														{% for key in not_validated_info.0.keys %}
@@ -115,12 +115,12 @@
 							</div>
 							<div class="row justify-content-center horizontal-scroll">
 								<div class="col-md-auto">
-									<div id="spreadsheet_{{ project.sample_project_name }}"></div>
+									<div id="spreadsheet_{{ project.sample_project_name|clean_string }}"></div>
 								</div>
 							</div>
 							{% endif %}
 							{% else %}
-							<table class="table table-hover" id="save_result_{{ project.sample_project_name }}">
+							<table class="table table-hover" id="save_result_{{ project.sample_project_name|clean_string }}">
 								<thead>
 									<tr>
 										<th>{{ recorded_samples_info.0.sample_name.label }}</th>
@@ -155,13 +155,13 @@
 							{% else %}
 							<div class="row justify-content-center horizontal-scroll">
 								<div class="col-md-auto">
-									<div id="spreadsheet_{{ project.sample_project_name }}"></div>
+									<div id="spreadsheet_{{ project.sample_project_name|clean_string }}"></div>
 								</div>
 							</div>
 							{% endif %}
 							{% endfor %}
 							<input type="button" class="btn btn-outline-secondary" value="Download spreadsheet"
-								onclick="{{ project.sample_project_name }}_data_table.download()" />
+								onclick="{{ project.sample_project_name|clean_string }}_data_table.download()" />
 							<input class="btn float-end btn-outline-primary" type="submit" value="Submit" />
 						</form>
 					</div>
@@ -175,116 +175,116 @@
 <script>
 	$(document).ready(function () {
 		{% for project in projects_fields %}
-		{% if json_data_all %}
-			var {{ project.sample_project_name }}_data = [{% for sample in json_data_all %}
-				{% if sample.sample_project_name == project.sample_project_name %}
-				[{% for _, value in sample.items %}'{{ value }}', {% endfor %}],
-				{% endif %}
-				{% endfor %}
-			];
-		{% else %}
-			var {{ project.sample_project_name }}_data = [{% for sample in recorded_samples_info %}
-				{% if sample.sample_project == project.sample_project_name %}
-				['{{ sample.sample_name }}', '{{ sample.sample_code_id }}', '{{ sample.sample_project }}', '{{ sample.only_recorded }}'],
-				{% endif %}
-				{% endfor %}
-			];
-		{% endif %}
-		var {{ project.sample_project_name }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ project.sample_project_name }}'), {
-			data: {{ project.sample_project_name }}_data,
-			columns: [
-				{ type: 'text', title: 'Sample Name', width: 150, readOnly: true },
-				{ type: 'hidden', title: 'Sample Code id', width: 150, readOnly: true },
-				{ type: 'hidden', title: 'Sample Project Name', width: 150, readOnly: true },
-				{ type: 'hidden', title: 'Only recorded', width: 150, readOnly: true },
-				{% for field in project.sample_project_fields %}
-				{% if field.sample_project_field_type == 'Date' %}
-				{ type: 'calendar', title: '{{ field.sample_project_field_name }}', width: 150 },
-				{% elif sample_project_field_type == 'Option List' %}
-				{ type: 'dropdown', title: '{{ field.sample_project_field_name }}', width: 150, source: [{% for option in field.sample_project_option_list %} '{{ option.option_value }}', {% endfor %}] },
-				{% else %}
-				{ type: 'text', title: '{{ field.sample_project_field_name }}', width: 150 },
-				{% endif %}
-				{% endfor %}
-			],
-			allowInsertColumn: false,
-			allowDeleteColumn: false,
-			allowRenameColumn: false,
-			tableOverflow: true,
-			tableHeight: '300px',
-			csvFileName: 'project_data.csv',
-			minDimensions: [{{ project.sample_project_fields | length }} + 1, {{ project.sample_project_name }}_data.length],
-		});
-
-		$("#project_data_form").submit(function (e) {
-			var table_data = {{ project.sample_project_name }}_data_table.getData()
-				var data_json = JSON.stringify(table_data)
-				$("<input />").attr("type", "hidden")
-					.attr("name", "{{ project.sample_project_name }}")
-					.attr("value", data_json)
-					.appendTo("#project_data_form");
-				$("#button-submit").attr("disabled", true);
-				return true;
+			{% if json_data_all %}
+				var {{ project.sample_project_name|clean_string }}_data = [{% for sample in json_data_all %}
+					{% if sample.sample_project_name == project.sample_project_name %}
+					[{% for _, value in sample.items %}'{{ value }}', {% endfor %}],
+					{% endif %}
+					{% endfor %}
+				];
+			{% else %}
+				var {{ project.sample_project_name|clean_string }}_data = [{% for sample in recorded_samples_info %}
+					{% if sample.sample_project == project.sample_project_name %}
+					['{{ sample.sample_name }}', '{{ sample.sample_code_id }}', '{{ sample.sample_project }}', '{{ sample.only_recorded }}'],
+					{% endif %}
+					{% endfor %}
+				];
+			{% endif %}
+			var {{ project.sample_project_name|clean_string }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ project.sample_project_name|clean_string }}'), {
+				data: {{ project.sample_project_name|clean_string }}_data,
+				columns: [
+					{ type: 'text', title: 'Sample Name', width: 150, readOnly: true },
+					{ type: 'hidden', title: 'Sample Code id', width: 150, readOnly: true },
+					{ type: 'hidden', title: 'Sample Project Name', width: 150, readOnly: true },
+					{ type: 'hidden', title: 'Only recorded', width: 150, readOnly: true },
+					{% for field in project.sample_project_fields %}
+					{% if field.sample_project_field_type == 'Date' %}
+					{ type: 'calendar', title: '{{ field.sample_project_field_name }}', width: 150 },
+					{% elif sample_project_field_type == 'Option List' %}
+					{ type: 'dropdown', title: '{{ field.sample_project_field_name }}', width: 150, source: [{% for option in field.sample_project_option_list %} '{{ option.option_value }}', {% endfor %}] },
+					{% else %}
+					{ type: 'text', title: '{{ field.sample_project_field_name }}', width: 150 },
+					{% endif %}
+					{% endfor %}
+				],
+				allowInsertColumn: false,
+				allowDeleteColumn: false,
+				allowRenameColumn: false,
+				tableOverflow: true,
+				tableHeight: '300px',
+				csvFileName: 'project_data.csv',
+				minDimensions: [{{ project.sample_project_fields | length }} + 1, {{ project.sample_project_name|clean_string }}_data.length],
 			});
-		// <!-- If projects_success is rendered -->
-		{% if projects_success %}
-		// <!-- If project is not in this success list -->
-		{% if project not in projects_success %}
-		// <!-- If not_validated_info data is rendered -->
-		{% if not_validated_info %}
-		$('#validation_{{ project.sample_project_name }} tfoot th').each(function () {
-			var title = $(this).text();
-			$(this).html('<input type="text" placeholder="Search ' + title + '" />');
-		});
 
-		var {{ project.sample_project_name }}_table_validation = $('#validation_{{ project.sample_project_name }}').DataTable({
-			initComplete: function () {
-				// Apply the search
-				this.api()
-					.columns()
-					.every(function () {
-						var that = this;
-						$('input', this.footer()).on('keyup change clear', function () {
-							if (that.search() !== this.value) {
-								that.search(this.value).draw();
-							}
-						});
+			$("#project_data_form").submit(function (e) {
+				var table_data = {{ project.sample_project_name|clean_string }}_data_table.getData()
+					var data_json = JSON.stringify(table_data)
+					$("<input />").attr("type", "hidden")
+						.attr("name", "{{ project.sample_project_name|clean_string }}")
+						.attr("value", data_json)
+						.appendTo("#project_data_form");
+					$("#button-submit").attr("disabled", true);
+					return true;
+				});
+			// <!-- If projects_success is rendered -->
+			{% if projects_success %}
+				// <!-- If project is not in this success list -->
+				{% if project not in projects_success %}
+				// <!-- If not_validated_info data is rendered -->
+					{% if not_validated_info %}
+					$('#validation_{{ project.sample_project_name|clean_string }} tfoot th').each(function () {
+						var title = $(this).text();
+						$(this).html('<input type="text" placeholder="Search ' + title + '" />');
 					});
-			},
-		});
-		{% endif %}
-		{% else %}
-		$('#save_result_{{ project.sample_project_name }} tfoot th').each(function () {
-			var title = $(this).text();
-			$(this).html('<input type="text" placeholder="Search ' + title + '" />');
-		});
 
-		var {{ project.sample_project_name }}_table_result = $('#save_result_{{ project.sample_project_name }}').DataTable({
-			initComplete: function () {
-				// Apply the search
-				this.api()
-					.columns()
-					.every(function () {
-						var that = this;
-						$('input', this.footer()).on('keyup change clear', function () {
-							if (that.search() !== this.value) {
-								that.search(this.value).draw();
-							}
-						});
+					var {{ project.sample_project_name|clean_string }}_table_validation = $('#validation_{{ project.sample_project_name|clean_string }}').DataTable({
+						initComplete: function () {
+							// Apply the search
+							this.api()
+								.columns()
+								.every(function () {
+									var that = this;
+									$('input', this.footer()).on('keyup change clear', function () {
+										if (that.search() !== this.value) {
+											that.search(this.value).draw();
+										}
+									});
+								});
+						},
 					});
-			},
-		});
-		{% endif %}
-		{% endif %}
+					{% endif %}
+				{% else %}
+				$('#save_result_{{ project.sample_project_name|clean_string }} tfoot th').each(function () {
+					var title = $(this).text();
+					$(this).html('<input type="text" placeholder="Search ' + title + '" />');
+				});
+
+				var {{ project.sample_project_name|clean_string }}_table_result = $('#save_result_{{ project.sample_project_name|clean_string }}').DataTable({
+					initComplete: function () {
+						// Apply the search
+						this.api()
+							.columns()
+							.every(function () {
+								var that = this;
+								$('input', this.footer()).on('keyup change clear', function () {
+									if (that.search() !== this.value) {
+										that.search(this.value).draw();
+									}
+								});
+							});
+					},
+				});
+				{% endif %}
+			{% endif %}
 		{% endfor %}
 		
 		{% if recorded_samples_result %}
-		$('#save_result_{{ project.sample_project_name }} tfoot th').each(function () {
+		$('#save_result_{{ project.sample_project_name|clean_string }} tfoot th').each(function () {
 			var title = $(this).text();
 			$(this).html('<input type="text" placeholder="Search ' + title + '" />');
 		});
 
-		var {{ project.sample_project_name }}_table_result = $('#save_result_{{ project.sample_project_name }}').DataTable({
+		var {{ project.sample_project_name|clean_string }}_table_result = $('#save_result_{{ project.sample_project_name|clean_string }}').DataTable({
 			initComplete: function () {
 				// Apply the search
 				this.api()
