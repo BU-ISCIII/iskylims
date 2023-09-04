@@ -758,7 +758,7 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             conn,
             wetlab.utils.crontab_process.get_samba_shared_folder(),
             run_folder,
-            "created_time",
+            "create_time",
         )
         time_to_check = datetime.datetime.utcfromtimestamp(f_created_date).date()
         # Check maximum time for waiting run metric files
