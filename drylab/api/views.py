@@ -14,27 +14,10 @@ from rest_framework.decorators import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from drylab.models import (
-    Delivery,
-    Pipelines,
-    RequestedSamplesInServices,
-    Resolution,
-    ResolutionStates,
-    ServiceState,
-    Service,
-)
-from drylab.utils.deliveries import send_delivery_service_email
-from drylab.utils.resolutions import send_resolution_in_progress_email
-
-from .serializers import (
-    CreateDeliveryPostSerializer,
-    RequestedSamplesInServicesSerializer,
-    ResolutionSerializer,
-    ServiceListSerializer,
-    ServiceSerializer,
-    UpdateResolutionStateSerializer,
-    UpdateServiceStateSerializer,
-)
+import drylab.api.serializers
+import drylab.models
+import drylab.utils.deliveries
+import drylab.utils.resolutions
 
 
 def check_valid_date_format(date):
@@ -81,7 +64,15 @@ resolution_state_param = openapi.Parameter(
     "state",
     openapi.IN_QUERY,
     description="State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]",
-    enum=["recorded", "in_progress", "delivered", "approved", "rejected", "archived", "on_hold"],
+    enum=[
+        "recorded",
+        "in_progress",
+        "delivered",
+        "approved",
+        "rejected",
+        "archived",
+        "on_hold",
+    ],
     type=openapi.TYPE_STRING,
 )
 resolution_number_param = openapi.Parameter(
@@ -126,10 +117,12 @@ def service_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     if "state" in request.GET:
         state = request.GET["state"].strip()
-        if not Service.objects.filter(service_state__state_value__exact=state).exists():
+        if not drylab.models.Service.objects.filter(
+            service_state__state_value__exact=state
+        ).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    service_objs = Service.objects.all()
+    service_objs = drylab.models.Service.objects.all()
     if "state" in request.GET:
         service_objs = service_objs.filter(
             service_state__state_value__iexact=state
@@ -148,7 +141,9 @@ def service_list(request):
         if len(service_objs) == 0:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    services_list_serializer = ServiceListSerializer(service_objs, many=True)
+    services_list_serializer = drylab.api.serializers.ServiceListSerializer(
+        service_objs, many=True
+    )
 
     return Response(services_list_serializer.data, status=status.HTTP_200_OK)
 
@@ -160,17 +155,19 @@ def service_list(request):
 def resolution_data(request):
     if "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
-        if Resolution.objects.filter(resolution_number__exact=resolution).exists():
-            resolution_obj = Resolution.objects.filter(
+        if drylab.models.Resolution.objects.filter(
+            resolution_number__exact=resolution
+        ).exists():
+            resolution_obj = drylab.models.Resolution.objects.filter(
                 resolution_number__exact=resolution
             ).last()
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     elif "state" in request.GET:
-        if Resolution.objects.filter(
+        if drylab.models.Resolution.objects.filter(
             resolution_state__resolution_stateName__exact=request.GET["state"]
         ).exists():
-            resolution_obj = Resolution.objects.filter(
+            resolution_obj = drylab.models.Resolution.objects.filter(
                 resolution_state__resolution_stateName__exact=request.GET["state"]
             )
         else:
@@ -178,7 +175,9 @@ def resolution_data(request):
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    resolution_serializer = ResolutionSerializer(resolution_obj, many=False)
+    resolution_serializer = drylab.api.serializers.ResolutionSerializer(
+        resolution_obj, many=False
+    )
     return Response(resolution_serializer.data, status=status.HTTP_200_OK)
 
 
@@ -186,16 +185,18 @@ def resolution_data(request):
 @api_view(["GET"])
 def samples_in_service(request):
     if "service" in request.GET:
-        if RequestedSamplesInServices.objects.filter(
+        if drylab.models.RequestedSamplesInServices.objects.filter(
             samples_in_service__service_request_number__iexact=request.GET["service"]
         ).exists():
-            sample_objs = RequestedSamplesInServices.objects.filter(
+            sample_objs = drylab.models.RequestedSamplesInServices.objects.filter(
                 samples_in_service__service_request_number__iexact=request.GET[
                     "service"
                 ]
             )
-            sample_serializers = RequestedSamplesInServicesSerializer(
-                sample_objs, many=True
+            sample_serializers = (
+                drylab.api.serializers.RequestedSamplesInServicesSerializer(
+                    sample_objs, many=True
+                )
             )
             return Response(sample_serializers.data, status=status.HTTP_200_OK)
         else:
@@ -211,24 +212,26 @@ def samples_in_service(request):
 def service_full_data(request):
     if "service" in request.GET:
         service = request.GET["service"].strip()
-        service_obj = Service.objects.prefetch_related(
+        service_obj = drylab.models.Service.objects.prefetch_related(
             Prefetch(
                 "resolutions",
-                queryset=Resolution.objects.all(),
+                queryset=drylab.models.Resolution.objects.all(),
                 to_attr="filtered_resolutions",
             )
         )
     elif "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
         service = (
-            Resolution.objects.filter(resolution_number__iexact=resolution)
+            drylab.models.Resolution.objects.filter(
+                resolution_number__iexact=resolution
+            )
             .last()
             .resolution_service_id
         )
-        service_obj = Service.objects.prefetch_related(
+        service_obj = drylab.models.Service.objects.prefetch_related(
             Prefetch(
                 "resolutions",
-                queryset=Resolution.objects.filter(
+                queryset=drylab.models.Resolution.objects.filter(
                     resolution_number__iexact=resolution
                 ),
                 to_attr="filtered_resolutions",
@@ -237,12 +240,16 @@ def service_full_data(request):
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if Service.objects.filter(service_request_number__iexact=service).exists():
+    if drylab.models.Service.objects.filter(
+        service_request_number__iexact=service
+    ).exists():
         service_full_data = {}
 
         service_obj = service_obj.filter(service_request_number__iexact=service).last()
 
-        service_full_data = ServiceSerializer(service_obj, many=False).data
+        service_full_data = drylab.api.serializers.ServiceSerializer(
+            service_obj, many=False
+        ).data
         return Response(service_full_data, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -255,7 +262,7 @@ def service_full_data(request):
 def update_state(request):
     def all_resolutions_delivered(service, state):
         if (
-            Resolution.objects.filter(resolution_service_id=service)
+            drylab.models.Resolution.objects.filter(resolution_service_id=service)
             .exclude(resolution_state=state)
             .exists()
         ):
@@ -265,14 +272,18 @@ def update_state(request):
 
     if ("resolution" in request.query_params) and ("state" in request.query_params):
         resolution = request.query_params["resolution"].strip()
-        if Resolution.objects.filter(resolution_number__exact=resolution).exists():
-            resolution_obj = Resolution.objects.get(resolution_number__exact=resolution)
+        if drylab.models.Resolution.objects.filter(
+            resolution_number__exact=resolution
+        ).exists():
+            resolution_obj = drylab.models.Resolution.objects.get(
+                resolution_number__exact=resolution
+            )
             state = request.query_params["state"].strip()
             try:
-                state_res_obj = ResolutionStates.objects.get(
+                state_res_obj = drylab.models.ResolutionStates.objects.get(
                     state_value__iexact=state
                 )
-                state_ser_obj = ServiceState.objects.get(
+                state_ser_obj = drylab.models.ServiceState.objects.get(
                     state_value__iexact=state
                 )
             except Exception:
@@ -296,7 +307,7 @@ def update_state(request):
                     "service_state": state_ser_obj.pk,
                 }
                 # Send email in progress
-                send_resolution_in_progress_email(email_data)
+                drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
 
             elif state == "delivered":
                 data_resolution = {
@@ -310,10 +321,12 @@ def update_state(request):
                     "service_delivered_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 # Send email
-                send_delivery_service_email(email_data)
+                drylab.utils.deliveries.send_delivery_service_email(email_data)
 
-            resolution_serializer = UpdateResolutionStateSerializer(
-                resolution_obj, data=data_resolution
+            resolution_serializer = (
+                drylab.api.serializers.UpdateResolutionStateSerializer(
+                    resolution_obj, data=data_resolution
+                )
             )
             if resolution_serializer.is_valid(raise_exception=True):
                 resolution_serializer.save()
@@ -322,8 +335,10 @@ def update_state(request):
                 state == "delivered"
                 and all_resolutions_delivered(service_obj, state_res_obj)
             ) or state == "in_progress":
-                serializer_services = UpdateServiceStateSerializer(
-                    service_obj, data=data_service
+                serializer_services = (
+                    drylab.api.serializers.UpdateServiceStateSerializer(
+                        service_obj, data=data_service
+                    )
                 )
                 if serializer_services.is_valid(raise_exception=True):
                     serializer_services.save()
@@ -387,7 +402,7 @@ def create_delivery(request):
             data = data.dict()
 
         resolution_pk = (
-            Resolution.objects.filter(
+            drylab.models.Resolution.objects.filter(
                 resolution_number__exact=data["resolution_number"]
             )
             .last()
@@ -396,7 +411,9 @@ def create_delivery(request):
 
         if "pipelines_in_delivery" in data:
             pipelines = [
-                Pipelines.objects.filter(pipeline_name__exact=pip).last().pk
+                drylab.models.Pipelines.objects.filter(pipeline_name__exact=pip)
+                .last()
+                .pk
                 for pip in data["pipelines_in_delivery"]
             ]
             data["pipelines_in_delivery"] = pipelines
@@ -404,15 +421,17 @@ def create_delivery(request):
         data.pop("resolution_number")
         data["delivery_resolution_id"] = resolution_pk
 
-        if Delivery.objects.filter(
+        if drylab.models.Delivery.objects.filter(
             delivery_resolution_id__exact=resolution_pk
         ).exists():
-            delivery_obj = Delivery.objects.filter(
+            delivery_obj = drylab.models.Delivery.objects.filter(
                 delivery_resolution_id__exact=resolution_pk
             ).last()
-            serializer = CreateDeliveryPostSerializer(delivery_obj, data=data)
+            serializer = drylab.api.serializers.CreateDeliveryPostSerializer(
+                delivery_obj, data=data
+            )
         else:
-            serializer = CreateDeliveryPostSerializer(data=data)
+            serializer = drylab.api.serializers.CreateDeliveryPostSerializer(data=data)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
