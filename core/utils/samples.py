@@ -2091,7 +2091,6 @@ def set_sample_project_fields(data_form):
     fields = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
     excel_json_data = core.utils.common.jspreadsheet_to_dict(fields, json_data)
 
-
     saved_fields = []
     stored_fields = {}
     for row_line in excel_json_data:
