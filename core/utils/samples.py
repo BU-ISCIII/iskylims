@@ -2084,26 +2084,24 @@ def set_molecule_use(form_data, app_name):
 
 def set_sample_project_fields(data_form):
     sample_project_id = data_form["sample_project_id"]
-    json_data = json.loads(data_form["table_data1"])
-    fields = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
-
     sample_project_obj = core.models.SampleProjects.objects.get(
         pk__exact=sample_project_id
     )
+    json_data = json.loads(data_form["table_data1"])
+    fields = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
+    excel_json_data = core.utils.common.jspreadsheet_to_dict(fields, json_data)
+
 
     saved_fields = []
     stored_fields = {}
-    for row_data in json_data:
-        if row_data[0] == "":
+    for row_line in excel_json_data:
+        if row_line["Field name"] == "":
             continue
-        s_p_fields = {}
 
-        s_p_fields["sample_project_id"] = sample_project_obj
-        for i in range(len(fields)):
-            s_p_fields[fields[i]] = row_data[i]
+        row_line["sample_project_id"] = sample_project_obj
 
         # check classification
-        classification_name = row_data[fields.index("Classification")]
+        classification_name = row_line["Classification"]
         if classification_name != "":
             if core.models.SampleProjectFieldClassification.objects.filter(
                 sample_projects_id=sample_project_obj,
@@ -2123,25 +2121,26 @@ def set_sample_project_fields(data_form):
                 classification_obj = core.models.SampleProjectFieldClassification.objects.create_sample_project_field_classification(
                     c_data
                 )
-            s_p_fields["SampleProjectFieldClassificationID"] = classification_obj
+            row_line["SampleProjectFieldClassificationID"] = classification_obj
         else:
-            s_p_fields["SampleProjectFieldClassificationID"] = None
+            row_line["SampleProjectFieldClassificationID"] = None
         sample_project_field_obj = (
             core.models.SampleProjectsFields.objects.create_sample_project_fields(
-                s_p_fields
+                row_line
             )
         )
-        if row_data[fields.index("Field type")] == "Options List":
-            option_list_values = row_data[fields.index("Option Values")].split(",")
-            for opt_value in option_list_values:
-                value = opt_value.strip()
-                if value == "":
-                    continue
-                data = {"s_proj_obj": sample_project_field_obj}
-                data["opt_value"] = value
-                core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(
-                    data
-                )
+        if row_line["Field type"] == "Options List":
+            option_list_values = row_line["Option Values"].split(",")
+            if len(option_list_values) > 0:
+                for opt_value in option_list_values:
+                    value = opt_value.strip()
+                    if value == "":
+                        continue
+                    data = {"s_proj_obj": sample_project_field_obj}
+                    data["opt_value"] = value
+                    core.models.SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(
+                        data
+                    )
 
         saved_fields.append(
             sample_project_field_obj.get_sample_project_fields_name(include_search=True)

@@ -929,7 +929,8 @@ class SampleProjectsFieldsManager(models.Manager):
             sample_project_field_used=project_field_data["Used"],
             sample_project_field_type=project_field_data["Field type"],
             sample_project_searchable=project_field_data["Searchable"],
-            sample_project_option_list=project_field_data["Option Values"],
+            # do not include optional values. Set to empty
+            sample_project_option_list="",
         )
         return new_project_field
 
