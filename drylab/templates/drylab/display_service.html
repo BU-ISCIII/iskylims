@@ -2,371 +2,412 @@
 {% load static %}
 {% load mptt_tags %}
 {% load l10n %}
-
 {% block content %}
-
-{% include "core/cdn_table_functionality.html"%}
-{% include 'core/jexcel_functionality.html' %}
-
-{% include "drylab/menu.html" %}
-
-<section class="iskylims d-flex flex-column fill-height">
-    <div class="container-md">
-        {% include 'registration/login_inline.html' %}
-        {% if ERROR %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h3> Result of your request</h3>
-                    </div>
-                    <div class="card-body">
-                        {% for message in ERROR %}
-                        <p>{{message}}</p>
-                        {% endfor %}
+    {% include "core/cdn_table_functionality.html" %}
+    {% include 'core/jexcel_functionality.html' %}
+    {% include "drylab/menu.html" %}
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if ERROR %}
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Result of your request</h3>
+                            </div>
+                            <div class="card-body">
+                                {% for message in ERROR %}<p>{{ message }}</p>{% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if display_service %}
-        <div class="row justify-content-center pb-2 pt-2">
-            <div class="col-md-12">
-                <div class="card ">
-                    <div class="card-header">
-                        Service information
-                    </div>
-                    <div class="card-body">
-                        <div class="row justify-content-center pb-2 pt-2">
-                            <div class="col-md-6">
-                                <table id="service_info" class="table table-hover">
-                                    <tbody>
-                                        {% if display_service.service_state.value != "recorded" %}
-                                        <tr>
-                                            <td>{{ display_service.resolutions.value.0.resolution_full_number.label }}
-                                            </td>
-                                            <td>{{ display_service.resolutions.value.0.resolution_full_number.value }}
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        <tr>
-                                            <td>{{ display_service.service_user_id.value.username.label }}</td>
-                                            <td> {{ display_service.service_user_id.value.username.value }} </td>
-                                        </tr>
-                                        <tr>
-                                            <td> {{ display_service.service_state.label }} </td>
-                                            <td> {{ display_service.service_state.value }} </td>
-                                        </tr>
-                                        <tr>
-                                            <td> {{ display_service.service_created_date.label }} </td>
-                                            <td> {{ display_service.service_created_date.value }} </td>
-                                        </tr>
-                                        <tr>
-                                            <td> {{ display_service.service_approved_date.label }} </td>
-                                            <td> {{ display_service.service_approved_date.value }} </td>
-                                        </tr>
-                                        <tr>
-                                            <td> {{ display_service.service_rejected_date.label }} </td>
-                                            <td> {{ display_service.service_rejected_date.value }} </td>
-                                        </tr>
-                                        <tr>
-                                            <td> {{ display_service.service_delivered_date.label }} </td>
-                                            <td> {{ display_service.service_delivered_date.value }} </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Files: </td>
-                                            <td>
-                                                {% if service_files %}
-                                                {% for name, path in service_files.items %}
-                                                <a href="{{ path }}" download> {{ name }} <span
-                                                        class="bi bi-download"></span></a>
-                                                {% endfor %}
-                                                {% else %}
-                                                No uploaded files
+            {% endif %}
+            {% if display_service %}
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-12">
+                        <div class="card ">
+                            <div class="card-header">Service information</div>
+                            <div class="card-body">
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-6">
+                                        <table id="service_info" class="table table-hover">
+                                            <tbody>
+                                                {% if display_service.service_state.value != "recorded" %}
+                                                    <tr>
+                                                        <td>{{ display_service.resolutions.value.0.resolution_full_number.label }}</td>
+                                                        <td>{{ display_service.resolutions.value.0.resolution_full_number.value }}</td>
+                                                    </tr>
                                                 {% endif %}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <h3>Requested Services</h3>
-                                {% for analysis,structure in available_services|tree_info %}
-                                    {% if structure.new_level %}<ul><li>{% else %}</li><li>{% endif %}
-                                        {{ analysis.avail_service_description }}
-                                    {% for level in structure.closed_levels %}</li></ul>{% endfor %}
-                                {% endfor %}
-                            </div>
-                            {% if service_manager %}
-                            <div class="col-md-6 ">
-                                <div class="card ">
-                                    <div class="card-header">
-                                        New resolution: {{ display_service.service_request_number.value}}</h3>
+                                                <tr>
+                                                    <td>{{ display_service.service_user_id.value.username.label }}</td>
+                                                    <td>{{ display_service.service_user_id.value.username.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ display_service.service_state.label }}</td>
+                                                    <td>{{ display_service.service_state.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ display_service.service_created_date.label }}</td>
+                                                    <td>{{ display_service.service_created_date.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ display_service.service_approved_date.label }}</td>
+                                                    <td>{{ display_service.service_approved_date.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ display_service.service_rejected_date.label }}</td>
+                                                    <td>{{ display_service.service_rejected_date.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ display_service.service_delivered_date.label }}</td>
+                                                    <td>{{ display_service.service_delivered_date.value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Files:</td>
+                                                    <td>
+                                                        {% if service_files %}
+                                                            {% for name, path in service_files.items %}
+                                                                <a href="{{ path }}" download> {{ name }} <span class="bi bi-download"></span></a>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            No uploaded files
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <h3>Requested Services</h3>
+                                        {% for analysis,structure in available_services|tree_info %}
+                                            {% if structure.new_level %}
+                                                <ul>
+                                                    <li>{% else %}</li>
+                                                    <li>
+                                                    {% endif %}
+                                                    {{ analysis.avail_service_description }}
+                                                    {% for level in structure.closed_levels %}
+                                                    </li>
+                                                </ul>
+                                            {% endfor %}
+                                        {% endfor %}
                                     </div>
-                                    <div class="card-body">
-                                        <div class="container-md">
-                                            <div class="row pt-2 pb-2">
-                                                <div class="col-md-12">
-                                                    <form enctype="multipart/form-data" action="/drylab/add-resolution" method="post" name="add_resolution_form" id="add_resolution_form">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="action" value="add_resolution_form">
-                                                        <input type="hidden" name="service_id"
-                                                            value="{{ display_service.service_request_number.value }}">
+                                    {% if service_manager %}
+                                        <div class="col-md-6 ">
+                                            <div class="card ">
+                                                <div class="card-header">New resolution: {{ display_service.service_request_number.value }}</div>
+                                                <div class="card-body">
+                                                    <div class="container-md">
                                                         <div class="row pt-2 pb-2">
                                                             <div class="col-md-12">
-                                                                <select class="form-select" name="children_services"
-                                                                    multiple size="5"
-                                                                    aria-label="multiple select analysis">
-                                                                    {% for analysis,structure in available_services|tree_info %}
-                                                                    {% if analysis.is_leaf_node %}
-                                                                    <option value="{{ analysis.id }}">{{ analysis.avail_service_description }}</option>
-                                                                    {% endif %}
-                                                                    {% endfor %}
-                                                                </select>
+                                                                <form enctype="multipart/form-data"
+                                                                      action="/drylab/add-resolution"
+                                                                      method="post"
+                                                                      name="add_resolution_form"
+                                                                      id="add_resolution_form">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="action" value="add_resolution_form" />
+                                                                    <input type="hidden"
+                                                                           name="service_id"
+                                                                           value="{{ display_service.service_request_number.value }}" />
+                                                                    <div class="row pt-2 pb-2">
+                                                                        <div class="col-md-12">
+                                                                            <select class="form-select"
+                                                                                    name="children_services"
+                                                                                    multiple
+                                                                                    size="5"
+                                                                                    aria-label="multiple select analysis">
+                                                                                {% for analysis,structure in available_services|tree_info %}
+                                                                                    {% if analysis.is_leaf_node %}
+                                                                                        <option value="{{ analysis.id }}">{{ analysis.avail_service_description }}</option>
+                                                                                    {% endif %}
+                                                                                {% endfor %}
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="row pb-2 pt-2">
+                                                                        <div class="col-md-auto ">
+                                                                            <input class="btn btn-outline-primary"
+                                                                                   type="submit"
+                                                                                   id="btn_add_resolution"
+                                                                                   value="Add Resolution" />
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
                                                             </div>
                                                         </div>
-                                                        <div class="row pb-2 pt-2">
-                                                            <div class="col-md-auto ">
-                                                                <input class="btn btn-outline-primary" type="submit"
-                                                                    id="btn_add_resolution" value="Add Resolution">
-                                                            </div>
-                                                        </div>
-                                                    </form>
+                                                    </div>
                                                 </div>
+                                            </div>
+                                        {% endif %}
+                                        <div class="col-md-12">
+                                            <div class="card ">
+                                                <div class="card-header">{{ display_service.service_notes.label }}</div>
+                                                <div class="card-body">{{ display_service.service_notes.value }}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card ">
-                                    <div class="card-header">
-                                        {{ display_service.service_notes.label }}
-                                    </div>
-                                    <div class="card-body">
-                                        {{ display_service.service_notes.value }}
-                                    </div>
-                                </div>
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row pb-2 justify-content-center pt-2">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        On going resolutions
+                <div class="row pb-2 justify-content-center pt-2">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">On going resolutions</div>
+                            <div class="card-body">
+                                {% if service_manager %}
+                                    <div class="container-md">
+                                        <div class="row justify-content-center pb-2 pt-2">
+                                            {% for resolution in display_service.resolutions.value %}
+                                                {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "in_progress" or resolution.resolution_state.value == "on_hold" %}
+                                                    <div class="col-md-12 pb-2 pt-2">
+                                                        <h5>{{ resolution.resolution_number.label }}: {{ resolution.resolution_number.value }}</h5>
+                                                        <hr />
+                                                        <div class="row pt-2 pb-2">
+                                                            <div class="col-md-12">
+                                                                <table id="table_queued" class="table table-hover">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_state.label }}</td>
+                                                                            <td>{{ resolution.resolution_state.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_assigned_user.label }}</td>
+                                                                            <td>{{ resolution.resolution_assigned_user.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_date.label }}</td>
+                                                                            <td>{{ resolution.resolution_date.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_estimated_date.label }}</td>
+                                                                            <td>{{ resolution.resolution_estimated_date.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_queued_date.label }}</td>
+                                                                            <td>{{ resolution.resolution_queued_date.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_in_progress_date.label }}</td>
+                                                                            <td>{{ resolution.resolution_in_progress_date.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.resolution_notes.label }}</td>
+                                                                            <td>{{ resolution.resolution_notes.value }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>{{ resolution.available_services.label }}</td>
+                                                                            <td>
+                                                                                {% for analysis in resolution.available_services.value %}
+                                                                                    {{ analysis.avail_service_description }}
+                                                                                    <br />
+                                                                                {% endfor %}
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row pb-2 justify-content-center pt-2">
+                                                            {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "in_progress" %}
+                                                                <div class="col-md-3">
+                                                                    <form action="/drylab/add-on-hold" method="post">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="action" value="add_on_hold" />
+                                                                        <input type="hidden"
+                                                                               name="resolution_id"
+                                                                               value="{{ resolution.resolution_number.value }}" />
+                                                                        <input class="btn btn-outline-primary"
+                                                                               type="submit"
+                                                                               id="btn_submit_onhold"
+                                                                               value="On hold" />
+                                                                    </form>
+                                                                </div>
+                                                            {% endif %}
+                                                            {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "on_hold" %}
+                                                                <div class="col-md-3">
+                                                                    <form action="/drylab/add-in-progress" method="post">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="action" value="add_in_progress" />
+                                                                        <input type="hidden"
+                                                                               name="resolution_id"
+                                                                               value="{{ resolution.resolution_number.value }}" />
+                                                                        <input class="btn btn-outline-primary"
+                                                                               type="submit"
+                                                                               id="btn_in_progress"
+                                                                               value="In progress" />
+                                                                    </form>
+                                                                </div>
+                                                            {% endif %}
+                                                            {% if resolution.resolution_state.value == "in_progress" %}
+                                                                <div class="col-md-3">
+                                                                    <form action="/drylab/add-delivery" method="post">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="action" value="add_delivery" />
+                                                                        <input type="hidden"
+                                                                               name="resolution_id"
+                                                                               value="{{ resolution.resolution_number.value }}" />
+                                                                        <input class="btn btn-outline-primary"
+                                                                               type="submit"
+                                                                               id="btn_delivery"
+                                                                               value="Add delivery" />
+                                                                    </form>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        {% if service_manager %}
-                        <div class="container-md">
-                            <div class="row justify-content-center pb-2 pt-2">
-                                {% for resolution in display_service.resolutions.value %}
-                                {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "in_progress" or resolution.resolution_state.value == "on_hold" %}
-                                <div class="col-md-12 pb-2 pt-2">
-                                    <h5>{{ resolution.resolution_number.label}}: {{ resolution.resolution_number.value}}
-                                    </h5>
-                                    <hr>
-                                    <div class="row pt-2 pb-2">
-                                        <div class="col-md-12">
-                                            <table id="table_queued" class="table table-hover">
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_state.label }}</td>
-                                                        <td>{{ resolution.resolution_state.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_assigned_user.label }}</td>
-                                                        <td>{{ resolution.resolution_assigned_user.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_date.label }}</td>
-                                                        <td>{{ resolution.resolution_date.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_estimated_date.label }}</td>
-                                                        <td>{{ resolution.resolution_estimated_date.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_queued_date.label }}</td>
-                                                        <td>{{ resolution.resolution_queued_date.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_in_progress_date.label }}</td>
-                                                        <td>{{ resolution.resolution_in_progress_date.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.resolution_notes.label }}</td>
-                                                        <td>{{ resolution.resolution_notes.value }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>{{ resolution.available_services.label }}</td>
-                                                        <td>
-                                                            {% for analysis in resolution.available_services.value %}
-                                                            {{ analysis.avail_service_description }}<br>
-                                                            {% endfor%}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "in_progress" %}
-                                        <div class="col-md-3">
-                                            <form class="" action="/drylab/add-on-hold" method="post">
+                </div>
+                <div class="row pb-2 justify-content-center pt-2">
+                    <div class="col-md-12">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <button class="nav-link active"
+                                        id="nav-resolutions-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#nav-resolutions"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="nav-resolutions"
+                                        aria-selected="true">Resolutions</button>
+                                <button class="nav-link"
+                                        id="nav-samples-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#nav-samples"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="nav-samples"
+                                        aria-selected="false">Samples</button>
+                            </div>
+                        </nav>
+                        <div class="tab-content bg-white border-tab p-2" id="nav_tab_content">
+                            <div class="tab-pane fade"
+                                 id="nav-samples"
+                                 role="tabpanel"
+                                 aria-labelledby="nav-samples-tab">
+                                <div class="row justify-content-center pb-2 pt-2">
+                                    <div class="col-md-auto">
+                                        {% if display_service.samples.value %}
+                                            <form id="delete_samples_service_form"
+                                                  name="delete_sample_services_form"
+                                                  action="/drylab/delete-samples-service"
+                                                  method="post">
                                                 {% csrf_token %}
-                                                <input type="hidden" name="action" value="add_on_hold">
-                                                <input type="hidden" name="resolution_id"
-                                                    value="{{ resolution.resolution_number.value}}">
-                                                <input class="btn btn-outline-primary" type="submit"
-                                                    id="btn_submit_onhold" value="On hold">
+                                                {% if service_manager %}
+                                                    <input type="hidden" name="action" value="delete_samples_service" />
+                                                    <input type="hidden"
+                                                           name="service_id"
+                                                           value="{{ display_service.service_request_number.value }}" />
+                                                {% endif %}
+                                                <p>
+                                                    Number of samples in service:
+                                                    {{ display_service.samples.value|length }}
+                                                </p>
+                                                <div id="service_samples" name="service_samples"></div>
+                                                <div class="row justify-content-between pb-2 pt-2">
+                                                    <div class="col-md-auto">
+                                                        {% if service_manager %}
+                                                            <input class="btn pull-left btn-danger"
+                                                                   type="submit"
+                                                                   id="btnSubmit"
+                                                                   value="Delete samples" />
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </form>
-                                        </div>
-                                        {% endif %}
-                                        {% if resolution.resolution_state.value == "queued" or resolution.resolution_state.value == "on_hold" %}
-                                        <div class="col-md-3">
-                                            <form class="" action="/drylab/add-in-progress" method="post">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="add_in_progress">
-                                                <input type="hidden" name="resolution_id"
-                                                    value="{{ resolution.resolution_number.value}}">
-                                                <input class="btn btn-outline-primary" type="submit"
-                                                    id="btn_in_progress" value="In progress">
-                                            </form>
-                                        </div>
-                                        {% endif %}
-                                        {% if resolution.resolution_state.value == "in_progress" %}
-                                        <div class="col-md-3">
-                                            <form class="" action="/drylab/add-delivery" method="post">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="add_delivery">
-                                                <input type="hidden" name="resolution_id"
-                                                    value="{{ resolution.resolution_number.value }}">
-                                                <input class="btn btn-outline-primary" type="submit" id="btn_delivery"
-                                                    value="Add delivery">
-                                            </form>
-                                        </div>
+                                            {% if service_manager %}
+                                                <div class="col-md-auto">
+                                                    <form id="add_samples_form"
+                                                          name="add_samples_form"
+                                                          action="/drylab/add-samples-service"
+                                                          method="post">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="add_samples_form" />
+                                                        <input type="hidden"
+                                                               name="service_id"
+                                                               value="{{ display_service.service_request_number.value }}" />
+                                                        <input class="btn float-end btn-outline-primary"
+                                                               type="submit"
+                                                               id="btnSubmit"
+                                                               value="Add samples" />
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+                                        {% else %}
+                                            <h5>There are no samples assigned to this service</h5>
+                                            {% if service_manager %}
+                                                <div class="col-md-auto">
+                                                    <form id="add_samples_form"
+                                                          name="add_samples_form"
+                                                          action="/drylab/add-samples-service"
+                                                          method="post">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="add_samples_form" />
+                                                        <input type="hidden"
+                                                               name="service_id"
+                                                               value="{{ display_service.service_request_number.value }}" />
+                                                        <input class="btn float-end btn-outline-primary"
+                                                               type="submit"
+                                                               id="btnSubmit"
+                                                               value="Add samples" />
+                                                    </form>
+                                                </div>
+                                            {% endif %}
                                         {% endif %}
                                     </div>
                                 </div>
+                            </div>
+                            <div class="tab-pane fade show active"
+                                 id="nav-resolutions"
+                                 role="tabpanel"
+                                 aria-labelledby="nav-resolutions-tab">
+                                {% if display_service.resolutions %}
+                                    <table id="table_resolutions" class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_number.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_state.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_assigned_user.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_date.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_in_progress_date.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_delivery_date.label }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th></th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_number.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_state.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_assigned_user.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_date.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_in_progress_date.label }}</th>
+                                                <th>{{ display_service.resolutions.value.0.resolution_delivery_date.label }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                {% else %}
+                                    <h5>There are no resolutions for this service</h5>
                                 {% endif %}
-                                {% endfor %}
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
-            </div>
             {% endif %}
         </div>
-        <div class="row my-2">
-            <div class="col-sm-12">
-                <nav>
-                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                        <button class="nav-link active" id="nav-resolutions-tab" data-bs-toggle="tab"
-                            data-bs-target="#nav-resolutions" type="button" role="tab" aria-controls="nav-resolutions"
-                            aria-selected="true">Resolutions</button>
-                        <button class="nav-link" id="nav-samples-tab" data-bs-toggle="tab" data-bs-target="#nav-samples"
-                            type="button" role="tab" aria-controls="nav-samples" aria-selected="false">Samples</button>
-                    </div>
-                </nav>
-                <div class="tab-content bg-white border-tab p-2" id="nav_tab_content">
-                    <div class="tab-pane fade" id="nav-samples" role="tabpanel"
-                        aria-labelledby="nav-samples-tab">  
-                        <div class="row justify-content-center pb-2 pt-2">
-                            <div class="col-md-auto">
-                                {% if display_service.samples %}
-                                <form id="delete_samples_service_form" name="delete_sample_services_form" action="/drylab/delete-samples-service" method="post">
-                                    {% csrf_token %}
-                                    {% if service_manager %}
-                                    <input type="hidden" name="action" value="delete_samples_service">
-                                    <input type="hidden" name="service_id"
-                                        value="{{ display_service.service_request_number.value }}">
-                                    {% endif %}
-                                    <p>Number of samples in service:
-                                        {{display_service.samples.value|length}}
-                                    </p>
-                                    <div id="service_samples" name="service_samples"></div>
-                                    <div class="row justify-content-between pb-2 pt-2">
-                                        <div class="col-md-auto">
-                                        {% if service_manager %}
-                                            <input class="btn pull-left btn-danger" type="submit" id="btnSubmit"
-                                                value="Delete samples">
-                                        {% endif %}
-                                        </div>
-                                    </form>
-                                    {% if service_manager %}
-                                    <div class="col-md-auto">
-                                        <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="add_samples_form">
-                                            <input type="hidden" name="service_id"
-                                                value="{{ display_service.service_request_number.value }}">
-                                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                                value="Add samples">
-                                        </form>
-                                    </div>
-                                    {% endif %}
-                                    {% else %}
-                                    <h5> There are no samples assigned to this service </h5>
-                                    {% if service_manager %}
-                                    <div class="col-md-auto">
-                                        <form id="add_samples_form" name="add_samples_form" action="/drylab/add-samples-service" method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="add_samples_form">
-                                            <input type="hidden" name="service_id"
-                                                value="{{ display_service.service_request_number.value }}">
-                                            <input class="btn float-end btn-outline-primary" type="submit" id="btnSubmit"
-                                                value="Add samples">
-                                        </form>
-                                    </div>
-                                    {% endif %}
-                                    {% endif %}
-                                </div>        
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade show active" id="nav-resolutions" role="tabpanel"
-                        aria-labelledby="nav-resolutions-tab">
-                        {% if display_service.resolutions %}        
-                        <table id="table_resolutions" class="table table-hover"  style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_number.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_state.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_assigned_user.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_date.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_in_progress_date.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_delivery_date.label }}</th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                    <th></th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_number.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_state.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_assigned_user.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_date.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_in_progress_date.label }}</th>
-                                    <th>{{ display_service.resolutions.value.0.resolution_delivery_date.label }}</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        {% else %}
-                        <h5 style="text-align:center"> There are no resolutions for this service</h5>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Import data into script tag using django templates. This is then loaded into javascript -->
-{{ display_service.resolutions.value|json_script:"resolutions" }}
-<!-- Data structure example -->
-<!-- [
+    </section>
+    <!-- Import data into script tag using django templates. This is then loaded into javascript -->
+    {{ display_service.resolutions.value|json_script:"resolutions" }}
+    <!-- Data structure example -->
+    <!-- [
     {
         "resolution_number": {
             "label": "Resolution name",
@@ -437,71 +478,104 @@
         }
     }
 ] -->
-<script>
-    
-    function format(d) {
-        return (
-            '<table class="table" cellpadding="6" cellspacing="0">' +
-            '<tr>' +
-            '<td>Service id</td>' +
-            '<td>' +
-            d.resolution_service_id +
-            '</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<td>Folder name</td>' +
-            '<td>' +
-            d.resolution_full_number +
-            '</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<td>Notes</td>' +
-            '<td>' +
-            d.resolution_notes +
-            '</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<td>Pipelines</td>' +
-            '<td>' +
-            d.resolution_pipelines+
-            '</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<td>Analysis:</td>' +
-            '<td>' +
-            d.available_services +
-            '</td>'+
-            '</tr>' +
-            '<tr>' +
-            '<td>Delivery:</td>' +
-            '<td>' +
-            d.delivery +
-            '</td>'+
-            '</tr>' +
-            '</table>'
-        );
-    }
-    
-    
+    <script>
+        function format(d) {
+            return (
+                '<table class="table" cellpadding="6" cellspacing="0">' +
+                '<tr>' +
+                '<td>Service id</td>' +
+                '<td>' +
+                d.resolution_service_id +
+                '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>Folder name</td>' +
+                '<td>' +
+                d.resolution_full_number +
+                '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>Notes</td>' +
+                '<td>' +
+                d.resolution_notes +
+                '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>Pipelines</td>' +
+                '<td>' +
+                d.resolution_pipelines +
+                '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>Analysis:</td>' +
+                '<td>' +
+                d.available_services +
+                '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>Delivery:</td>' +
+                '<td>' +
+                d.delivery +
+                '</td>' +
+                '</tr>' +
+                '</table>'
+            );
+        }
 
-    $(document).ready(function () {
-
-        {% if display_service.samples %}
-            var service_samples = [{% for sample in display_service.samples.value %}['{{ sample.pk.value }}', {% if sample.sample_key.value == 'None' %} '{{ sample.sample_name.value }}' {% else %}'<a href="/wetlab/displaySampleInRun={{ sample.sample_key.value }}" target="_blank" rel="noopener noreferrer">{{sample.sample_name.value}}</a>'{% endif %}, '{{ sample.project_name.value }}', '{{ sample.run_name.value }}' ],{% endfor %}];
+        $(document).ready(function() {
+            {% if display_service.samples %}
+            var service_samples = [{% for sample in display_service.samples.value %} 
+                                    ['{{ sample.pk.value }}', 
+                                    {% if sample.sample_key.value == 'None' %}
+                                    '{{ sample.sample_name.value }}' 
+                                    {%else %}
+                                    '<a href="/wetlab/displaySampleInRun={{ sample.sample_key.value }}" target="_blank" rel="noopener noreferrer">{{sample.sample_name.value}}</a>' 
+                                    {% endif %}, 
+                                    '{{ sample.project_name.value }}', '{{ sample.run_name.value }}'
+                                    ], 
+                                    {% endfor %}];
             console.log(service_samples)
             var table1 = jspreadsheet(document.getElementById('service_samples'), {
                 data: service_samples,
                 columns: [
-                        { type: 'hidden', title: '{{ display_service.samples.value.0.pk.label }}', width: 200, readOnly: true },
-                        {% if sample.sample_key.value == 'None' %}
-                        { type: 'text', title: '{{ display_service.samples.value.0.sample_name.label }}', width: 200, readOnly: true },
-                        {% else %}
-                        { type: 'html', title: '{{ display_service.samples.value.0.sample_name.label }}', width: 200, readOnly: true },
-                        {% endif %}
-                        { type: 'text', title: '{{ display_service.samples.value.0.project_name.label }}', width: 200, readOnly: true },
-                        { type: 'text', title: '{{ display_service.samples.value.0.run_name.label }}', width: 200, readOnly: true },
-                        { type: 'checkbox', title: 'Select Sample', width: 100 },
-                    ],
+                    {
+                        type: 'hidden',
+                        title: '{{ display_service.samples.value.0.pk.label }}',
+                        width: 200,
+                        readOnly: true
+                    }, 
+                    {% if sample.sample_key.value == 'None' %} 
+                    {
+                        type: 'text',
+                        title: '{{ display_service.samples.value.0.sample_name.label }}',
+                        width: 200,
+                        readOnly: true
+                    }, 
+                    {% else %} 
+                    {
+                        type: 'html',
+                        title: '{{ display_service.samples.value.0.sample_name.label }}',
+                        width: 200,
+                        readOnly: true
+                    }, 
+                    {% endif %} 
+                    {
+                        type: 'text',
+                        title: '{{ display_service.samples.value.0.project_name.label }}',
+                        width: 200,
+                        readOnly: true
+                    }, 
+                    {
+                        type: 'text',
+                        title: '{{ display_service.samples.value.0.run_name.label }}',
+                        width: 200,
+                        readOnly: true
+                    }, {
+                        type: 'checkbox',
+                        title: 'Select Sample',
+                        width: 100
+                    }, 
+                ],
                 allowInsertColumn: false,
                 allowDeleteColumn: false,
                 allowRenameColumn: false,
@@ -514,7 +588,7 @@
                 csvFileName: 'SamplesDefined.csv',
             });
 
-            $("#delete_samples_service_form").submit(function (e) {
+            $("#delete_samples_service_form").submit(function(e) {
                 var table_data1 = table1.getData()
                 var data_json = JSON.stringify(table_data1)
                 $("<input />").attr("type", "hidden")
@@ -524,129 +598,133 @@
                 $("#btnSubmit").attr("disabled", true);
                 return true;
             });
-        {% endif %}
+            {% endif %}
 
-        // Create string from array or dict like
-        // for dicts -> key: value<br>
-        // for arrays  value<br>value...
-        function item_to_string (item) {
-            let str = '';
-            if (typeof item === "object"){
-                for (const [p, val] of Object.entries(item)) {
-                    str += `${p}: ${val}<br>`;
+            // Create string from array or dict like
+            // for dicts -> key: value<br />
+            // for arrays  value<br />value...
+            function item_to_string(item) {
+                let str = '';
+                if (typeof item === "object") {
+                    for (const [p, val] of Object.entries(item)) {
+                        str += `${p}: ${val}<br />`;
+                    }
+                } else {
+                    str = item;
                 }
-            }else{
-                str = item;
+                return str;
             }
-            return str;
-        }
-        
-        // Convert nested dicts to simple dicts.
-        // Inside structures are converted to strings.
-        function create_simple_dict (dict){
-            const newdict = {};
-            Object.entries(dict).forEach(([key, item]) => {
-                if (Array.isArray(item.value)) {
+
+            // Convert nested dicts to simple dicts.
+            // Inside structures are converted to strings.
+            function create_simple_dict(dict) {
+                const newdict = {};
+                Object.entries(dict).forEach(([key, item]) => {
+                    if (Array.isArray(item.value)) {
                         newdict[key] = item.value.map((subitem) => {
-                        return item_to_string(subitem);
-                    }).join("");
-                }else{
-                    newdict[key] = item.value;
-                }
-             });
-             return newdict;
-        }
-        // Load data from html tag imported with django templates.
-        const resolution_data = JSON.parse(document.getElementById('resolutions').textContent);
-        // Iterate over the list of dicts and convert to simple dict.
-        const resolution_data_values = resolution_data.map(dict => {
-            if ((typeof dict["delivery"]["value"] !== undefined) && (dict["delivery"]["value"] !== null) && (dict["delivery"]["value"].length > 0)){
-                delivery_dict = create_simple_dict(dict["delivery"]["value"][0])
-                dict["delivery"]["value"] = [delivery_dict]
+                            return item_to_string(subitem);
+                        }).join("");
+                    } else {
+                        newdict[key] = item.value;
+                    }
+                });
+                return newdict;
             }
-            newdict = create_simple_dict(dict);
-        return newdict;
-        });
-        
-        // table samples foot search
-        $('#table_samples tfoot th').each(function () {
-            var title = $(this).text();
-            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-        });
+            // Load data from html tag imported with django templates.
+            const resolution_data = JSON.parse(document.getElementById('resolutions').textContent);
+            // Iterate over the list of dicts and convert to simple dict.
+            const resolution_data_values = resolution_data.map(dict => {
+                if ((typeof dict["delivery"]["value"] !== undefined) && (dict["delivery"]["value"] !== null) && (dict["delivery"]["value"].length > 0)) {
+                    delivery_dict = create_simple_dict(dict["delivery"]["value"][0])
+                    dict["delivery"]["value"] = [delivery_dict]
+                }
+                newdict = create_simple_dict(dict);
+                return newdict;
+            });
 
-        // DataTable
-        var table = $('#table_samples').DataTable({
-            initComplete: function () {
-                // Apply the search
-                this.api()
-                    .columns()
-                    .every(function () {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
+            // table samples foot search
+            $('#table_samples tfoot th').each(function() {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+            });
+
+            // DataTable
+            var table = $('#table_samples').DataTable({
+                initComplete: function() {
+                    // Apply the search
+                    this.api()
+                        .columns()
+                        .every(function() {
+                            var that = this;
+                            $('input', this.footer()).on('keyup change clear', function() {
+                                if (that.search() !== this.value) {
+                                    that.search(this.value).draw();
+                                }
+                            });
                         });
-                    });
-            },
-        });
+                },
+            });
 
-        $("#add_samples_service").one('submit', function () {
-            //stop submitting the form to see the disabled button effect
-            $(this).find('input[type="submit"]').attr('disabled', 'disabled');
-            return true;
-        });
+            $("#add_samples_service").one('submit', function() {
+                //stop submitting the form to see the disabled button effect
+                $(this).find('input[type="submit"]').attr('disabled', 'disabled');
+                return true;
+            });
 
-        $('#table_resolutions tfoot th').each(function () {
-            var title = $(this).text();
-            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-        });
+            $('#table_resolutions tfoot th').each(function() {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+            });
 
-        var table = $('#table_resolutions').DataTable({
-            data: resolution_data_values,
-            columns:[
-                {
+            var table = $('#table_resolutions').DataTable({
+                data: resolution_data_values,
+                columns: [{
                     className: 'dt-control',
                     orderable: false,
                     data: null,
                     defaultContent: '',
-                },
-                { data: 'resolution_number' },
-                { data: 'resolution_state' },
-                { data: 'resolution_assigned_user' },
-                { data: 'resolution_date' },
-                { data: 'resolution_in_progress_date' },
-                { data: 'resolution_delivery_date' },
-            ],
-            initComplete: function () {
-                // Apply the search
-                this.api()
-                    .columns()
-                    .every(function () {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change clear', function () {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
+                }, {
+                    data: 'resolution_number'
+                }, {
+                    data: 'resolution_state'
+                }, {
+                    data: 'resolution_assigned_user'
+                }, {
+                    data: 'resolution_date'
+                }, {
+                    data: 'resolution_in_progress_date'
+                }, {
+                    data: 'resolution_delivery_date'
+                }, ],
+                initComplete: function() {
+                    // Apply the search
+                    this.api()
+                        .columns()
+                        .every(function() {
+                            var that = this;
+                            $('input', this.footer()).on('keyup change clear', function() {
+                                if (that.search() !== this.value) {
+                                    that.search(this.value).draw();
+                                }
+                            });
                         });
-                    });
-            },
-        });
+                },
+            });
 
-        // Add event listener for opening and closing details
-        $('#table_resolutions tbody').on('click', 'td.dt-control', function () {
-            var tr = $(this).closest('tr');
-            var row = table.row(tr);
-            if (row.child.isShown()) {
-                // This row is already open - close it
-                row.child.hide();
-                tr.removeClass('shown');
-            } else {
-                // Open this row
-                row.child(format(row.data())).show();
-                tr.addClass('shown');
-            }
+            // Add event listener for opening and closing details
+            $('#table_resolutions tbody').on('click', 'td.dt-control', function() {
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    // Open this row
+                    row.child(format(row.data())).show();
+                    tr.addClass('shown');
+                }
+            });
         });
-    });
-</script>
+    </script>
 {% endblock %}

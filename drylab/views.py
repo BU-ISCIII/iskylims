@@ -452,7 +452,6 @@ def display_service(request, service_id):
                 )
 
         available_services = service_obj.service_available_service.all()
-
         return render(
             request,
             "drylab/display_service.html",
