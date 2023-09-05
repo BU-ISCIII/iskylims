@@ -20,6 +20,7 @@ from drylab.models import (
     RequestedSamplesInServices,
     Resolution,
     ResolutionStates,
+    ServiceState,
     Service,
 )
 from drylab.utils.deliveries import send_delivery_service_email
@@ -80,7 +81,7 @@ resolution_state_param = openapi.Parameter(
     "state",
     openapi.IN_QUERY,
     description="State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]",
-    enum=["Recorded", "In Progress", "Delivery", "Cancelled"],
+    enum=["recorded", "in_progress", "delivered", "approved", "rejected", "archived", "on_hold"],
     type=openapi.TYPE_STRING,
 )
 resolution_number_param = openapi.Parameter(
@@ -268,8 +269,11 @@ def update_state(request):
             resolution_obj = Resolution.objects.get(resolution_number__exact=resolution)
             state = request.query_params["state"].strip()
             try:
-                state_obj = ResolutionStates.objects.get(
-                    resolution_state_name__iexact=state
+                state_res_obj = ResolutionStates.objects.get(
+                    state_value__iexact=state
+                )
+                state_ser_obj = ServiceState.objects.get(
+                    state_value__iexact=state
                 )
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -278,31 +282,31 @@ def update_state(request):
 
             email_data = {}
             email_data["user_email"] = service_obj.get_user_email()
-            email_data["user_name"] = service_obj.get_username()
+            email_data["user_name"] = service_obj.get_user_name()
             email_data["resolution_number"] = resolution_obj.get_resolution_number()
 
-            if state == "In Progress":
+            if state == "in_progress":
                 data_resolution = {
                     "resolution_number": resolution,
-                    "resolution_state": state_obj.pk,
+                    "resolution_state": state_res_obj.pk,
                     "resolution_inprogress_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 data_service = {
                     "service_request_number": service_obj.service_request_number,
-                    "service_state": "in_progress",
+                    "service_state": state_ser_obj.pk,
                 }
                 # Send email in progress
                 send_resolution_in_progress_email(email_data)
 
-            elif state == "Delivery":
+            elif state == "delivered":
                 data_resolution = {
                     "resolution_number": resolution,
-                    "resolution_state": state_obj.pk,
+                    "resolution_state": state_res_obj.pk,
                     "resolution_delivery_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 data_service = {
                     "service_request_number": service_obj.service_request_number,
-                    "service_state": "delivered",
+                    "service_state": state_ser_obj.pk,
                     "service_delivered_date": datetime.today().strftime("%Y-%m-%d"),
                 }
                 # Send email
@@ -315,9 +319,9 @@ def update_state(request):
                 resolution_serializer.save()
 
             if (
-                state == "Delivery"
-                and all_resolutions_delivered(service_obj, state_obj)
-            ) or state == "In Progress":
+                state == "delivered"
+                and all_resolutions_delivered(service_obj, state_res_obj)
+            ) or state == "in_progress":
                 serializer_services = UpdateServiceStateSerializer(
                     service_obj, data=data_service
                 )

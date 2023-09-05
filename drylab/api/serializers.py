@@ -268,6 +268,8 @@ class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
 
 
 class ServiceListSerializer(serializers.ModelSerializer):
+    service_state = serializers.StringRelatedField(many=False)
+
     class Meta:
         model = Service
         fields = [

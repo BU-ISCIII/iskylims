@@ -6,34 +6,32 @@ app_name = "wetlab_api"
 
 urlpatterns = [
     path(
-        "fetchRunInformation", views.fetch_run_information, name="fetch_run_information"
+        "run-info", views.fetch_run_information, name="fetch_run_information"
     ),
     path(
-        "laboratoryData",
+        "lab-data",
         views.get_lab_information_contact,
         name="get_lab_information_contact",
     ),
     path(
-        "fetchSampleInformation",
+        "sample-info",
         views.fetch_sample_information,
         name="fetch_sample_information",
     ),
-    path("createSampleData", views.create_sample_data, name="create_sample_data"),
-    # path("samplefields", views.sample_fields, name="sample_fields"),
-    path("sampleFields/", views.sample_fields, name="sample_fields"),
+    path("create-sample", views.create_sample_data, name="create_sample_data"),
+    path("sample-fields", views.sample_fields, name="sample_fields"),
     path(
-        "sampleProjectFields", views.sample_project_fields, name="sample_project_fields"
+        "projects-fields", views.sample_project_fields, name="sample_project_fields"
     ),
     path(
-        "statisticsInformation",
+        "stats-info",
         views.statistic_information,
         name="statistic_information",
     ),
     path(
-        "summarizeDataInformation",
+        "summarized-info",
         views.summarize_data_information,
         name="summarize_data_information",
     ),
-    path("updateLab", views.update_lab, name="update_lab"),
+    path("update-lab", views.update_lab, name="update_lab"),
 ]
-# urlpatterns = format_suffix_patterns(urlpatterns)
