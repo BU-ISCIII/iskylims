@@ -14,6 +14,7 @@ import core.models
     sample_project_option_list and moves these values to SamplesProjectsTableOptions
 """
 
+
 def run():
     s_project_field_objs = core.models.SampleProjectsFields.objects.all()
     for s_project_field_obj in s_project_field_objs:
