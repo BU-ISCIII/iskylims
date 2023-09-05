@@ -1,17 +1,4 @@
 # ################ SAMPLE SETTINGS ##############################
-# ## Headings used when recording information
-HEADING_FOR_RECORD_SAMPLES = [
-    "Patient Code ID",
-    "Sample Name",
-    "Lab requested",
-    "Type of Sample",
-    "Species",
-    "Project/Service",
-    "Date sample reception",
-    "Collection Sample Date",
-    "Sample Storage Location",
-    "Only recorded",
-]
 
 HEADING_BATCH = [
     "patient_core",

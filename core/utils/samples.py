@@ -32,12 +32,12 @@ def project_table_fields(projects):
     -------
         project_fields = [
             {
-                "project": <SampleProject "Relecov"> , (obj)
+                "project": < SampleProject "Relecov" > , (obj)
                 "project_fields": [list of projectField objects],
                 "project_samples": [list of samples belonging to this project dict]
             },
             {
-                "project": <SampleProject "Mepram">,
+                "project": < SampleProject "Mepram" >,
                 "project_fields": [list of projectField objects],
                 "project_samples": [list of samples belonging to this project dict]
             }
@@ -553,7 +553,7 @@ def check_mandatory_fields_included(data, sample_type, app_name):
             sample_type__exact=sample_type, apps_name__exact=app_name
         )
         .last()
-        .get_optional_values()
+        .get_mandatory_values()
     )
 
     for field in mandatory_fields:
@@ -876,14 +876,14 @@ def display_sample_types(app_name):
             defined_sample_types.append([s_type.get_sample_type_id, s_type.get_name])
         sample_types["defined_sample_types"] = defined_sample_types
 
-    opt_value = {}
+    mandatory_value = {}
     for field in core.models.Samples._meta.get_fields():
         try:
-            opt_value[field.name] = field.verbose_name
+            mandatory_value[field.name] = field.verbose_name
         except Exception:
-            opt_value[field.name] = field.name
+            mandatory_value[field.name] = field.name
 
-    sample_types["optional_values"] = opt_value
+    sample_types["mandatory_value"] = mandatory_value
     return sample_types
 
 
@@ -1572,17 +1572,38 @@ def get_type_of_sample_information(sample_type_id):
     Return:
         sample_type_data
     """
+    mandatory_fields = [
+        "patient_core",
+        "sample_name",
+        "lab_request",
+        "sample_type",
+        "species",
+        "sample_project",
+        "sample_entry_date",
+        "collection_sample_date",
+        "sample_location",
+        "only_recorded" 
+    ]
     sample_type_data = {}
-    sample_type_data["optional_data"] = []
+    sample_type_data["mandatory_data"] = []
     if core.models.SampleType.objects.filter(pk__exact=sample_type_id).exists():
         sample_type_obj = core.models.SampleType.objects.get(pk__exact=sample_type_id)
-        opt_list = sample_type_obj.get_optional_values()
+        s_type_mandatory = sample_type_obj.get_mandatory_values()
         sample_type_data["sample_type_name"] = sample_type_obj.get_name()
-        for field in core.core_config.HEADING_FOR_RECORD_SAMPLES:
-            if field in opt_list:
-                sample_type_data["optional_data"].append([field, "Not Required"])
-            else:
-                sample_type_data["optional_data"].append([field, "Mandatory"])
+        avail_fields = core.models.Samples._meta.get_fields()
+        for m_field in mandatory_fields:
+            for avail_field in avail_fields:
+                if m_field == avail_field.name:
+                    try:
+                        display_name = avail_field.verbose_name
+                    except Exception:
+                        display_name = avail_field.name
+
+                    if avail_field.name in s_type_mandatory:
+                        sample_type_data["mandatory_data"].append([display_name, "Mandatory"])
+                    else:
+                        sample_type_data["mandatory_data"].append([display_name, "Not required"])
+                    break
     else:
         sample_type_data[
             "ERROR"

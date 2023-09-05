@@ -411,11 +411,15 @@ class SampleType(models.Model):
     def get_name(self):
         return "%s" % (self.sample_type)
 
-    def get_optional_values(self):
+    def get_mandatory_values(self):
         if self.mandatory_fields == "" or self.mandatory_fields is None:
             return []
         else:
             return self.mandatory_fields.split(",")
+
+    def update_mandatory_fields(self, data):
+        self.mandatory_fields = data
+        self.save()
 
     objects = SampleTypeManager()
 
