@@ -24,7 +24,7 @@ def run():
         "sample_entry_date",
         "collection_sample_date",
         "sample_location",
-        "only_recorded" 
+        "only_recorded",
     ]
     sample_type_objs = core.models.SampleType.objects.all()
     for sample_type_obj in sample_type_objs:
