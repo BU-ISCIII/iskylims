@@ -1582,7 +1582,7 @@ def get_type_of_sample_information(sample_type_id):
         "sample_entry_date",
         "collection_sample_date",
         "sample_location",
-        "only_recorded" 
+        "only_recorded",
     ]
     sample_type_data = {}
     sample_type_data["mandatory_data"] = []
@@ -1600,9 +1600,13 @@ def get_type_of_sample_information(sample_type_id):
                         display_name = avail_field.name
 
                     if avail_field.name in s_type_mandatory:
-                        sample_type_data["mandatory_data"].append([display_name, "Mandatory"])
+                        sample_type_data["mandatory_data"].append(
+                            [display_name, "Mandatory"]
+                        )
                     else:
-                        sample_type_data["mandatory_data"].append([display_name, "Not required"])
+                        sample_type_data["mandatory_data"].append(
+                            [display_name, "Not required"]
+                        )
                     break
     else:
         sample_type_data[
