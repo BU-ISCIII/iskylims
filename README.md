@@ -7,7 +7,7 @@
 
 The introduction of massive sequencing (MS) in genomics facilities has meant an exponential growth in data generation, requiring a precise tracking system, from library preparation to fastq file generation, analysis and delivery to the researcher. Software designed to handle those tasks are called Laboratory Information Management Systems (LIMS), and its software has to be adapted to their own genomics laboratory particular needs. iSkyLIMS is born with the aim of helping with the wet laboratory tasks, and implementing a workflow that guides genomics labs on their activities from library preparation to data production, reducing potential errors associated to high throughput technology, and facilitating the quality control of the sequencing. Also, iSkyLIMS connects the wet lab with dry lab facilitating data analysis by bioinformaticians.
 
-<img src="https://github.com/BU-ISCIII/iSkyLIMS/blob/main/img/iskylims_scheme.png" width="900">
+![Image]("https://github.com/BU-ISCIII/iskylims/blob/main/img/iskylims_scheme.png") { width=900 }
 
 According to existent infrastructure sequencing is performed on an Illumina NextSeq instrument. Data is stored in NetApp mass storage device and fastq files are generated (bcl2fastq) on a Sun Grid Engine High Performance Computing cluster (SGE-HPC).
 Application servers run web applications for bioinformatics analysis (GALAXY), the iSkyLIMS app, and host the MySQL information tier. iSkyLIMS WetLab workflow deals with sequencing run tracking and statistics. Run tracking passes through five states: "recorded” genomics user record the new sequencing run into the system, the process will wait till run is completed by the machine and data is transferred to the mass storage device; “Sample sheet sent” sample sheet file with the sequencing run information will be copied to the run folder for bcl2fastq process; “Processing data” run parameters files are processed and data is stored in the database; “Running stats” demultiplexing data generated in bcl2fastq process is processed and stored into the database, “Completed” all data is processed and stored successfully. Statistics per sample, per project, per run and per investigation are provided, as well as annual and monthly reports. iSkyLIMS DryLab workflow deals with bioinformatics services request and statistics. User request services that can be associated with a sequencing run. Stats and services tracking is provided.
@@ -18,7 +18,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
   - [Install iSkyLIMS in your server running ubuntu/CentOS](#install-iskylims-in-your-server-running-ubuntucentos)
     - [Pre-requisites](#pre-requisites)
     - [Clone github repository](#clone-github-repository)
-    - [Create relecov database and grant permissions](#create-relecov-database-and-grant-permissions)
+    - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
     - [Configuration settings](#configuration-settings)
     - [Run installation script](#run-installation-script)
     - [Configure Apache server](#configure-apache-server)
@@ -82,7 +82,7 @@ Open a linux terminal and move to a directory where iSkyLIMS code will be
 downloaded
 
 ```bash
-cd <your personal folder>
+cd < your personal folder >
 git clone https://github.com/BU-ISCIII/iskylims.git iskylims
 cd iskylims
 ```
@@ -167,7 +167,7 @@ Open a linux terminal and move to a directory where iSkyLIMS code will be
 downloaded
 
 ```bash
-cd <your personal folder>
+cd < your personal folder >
 git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
 cd iskylims
 ```
@@ -208,10 +208,10 @@ In the linux terminal execute one of the following command that fit better to yo
 sudo bash install.sh --upgrade dep
 
 # to upgrade only iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name -- script rename_sample_sheet_folder --tables
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name -- script rename_sample_sheet_folder --script migrate_sample_type --script migrate_project_optional_fields --tables
 
 # to install both software. NEEDS ROOT.
-sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name -- script rename_sample_sheet_folder --tables
+sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --tables
 ```
 
 ### Verification installation
@@ -227,4 +227,4 @@ You can also check some of the functionality, while also checking samba and data
 
 ## iSkyLIMS documentation
 
-iSkyLIMS documentation is available at <https://iskylims.readthedocs.io/en/latest>
+iSkyLIMS documentation is available at [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
