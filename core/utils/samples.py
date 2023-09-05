@@ -1008,7 +1008,9 @@ def get_info_to_display_sample_project(sample_project_id):
         )
         # collect data from project
         info_s_project["sample_project_id"] = sample_project_id
-        info_s_project["sample_project_name"] = sample_project_obj.get_sample_project_name()
+        info_s_project[
+            "sample_project_name"
+        ] = sample_project_obj.get_sample_project_name()
         info_s_project["main_data"] = list(
             zip(
                 core.core_config.SAMPLE_PROJECT_MAIN_DATA,
@@ -1025,7 +1027,9 @@ def get_info_to_display_sample_project(sample_project_id):
             s_project_fields_list = []
             for sample_project_field in sample_project_fields:
                 s_project_fields_list.append(
-                    sample_project_field.get_sample_project_fields_name()
+                    sample_project_field.get_sample_project_fields_name(
+                        include_search=True
+                    )
                 )
             info_s_project["fields"] = s_project_fields_list
         info_s_project["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
@@ -1100,14 +1104,15 @@ def get_parameters_sample_project(sample_project_id):
                 sample_projects_id=sample_project_obj
             ).order_by("sample_project_field_order")
             s_project_fields_list = []
-            parameter_ids = []
-            parameter_names = []
+            # parameter_ids = []
+            # parameter_names = []
             for sample_project_field in sample_project_fields:
-                parameter_data = (
-                    sample_project_field.get_sample_project_fields_for_javascript()
+                parameter_data = sample_project_field.get_sample_project_fields_name(
+                    include_search=True
                 )
-                parameter_names.append(parameter_data[0])
-                parameter_ids.append(sample_project_field.get_field_id())
+                # parameter_names.append(parameter_data[0])
+                parameter_data.append(sample_project_field.get_field_id())
+                # add empty field to include the new name
                 parameter_data.insert(1, "")
                 s_project_fields_list.append(parameter_data)
             parameters_s_project["fields"] = s_project_fields_list
@@ -1118,8 +1123,8 @@ def get_parameters_sample_project(sample_project_id):
         parameters_s_project[
             "sample_project_name"
         ] = sample_project_obj.get_sample_project_name()
-        parameters_s_project["parameter_names"] = ",".join(parameter_names)
-        parameters_s_project["parameter_ids"] = ",".join(parameter_ids)
+        # parameters_s_project["parameter_names"] = ",".join(parameter_names)
+        # parameters_s_project["parameter_ids"] = ",".join(parameter_ids)
     else:
         return "ERROR"
 
@@ -1663,20 +1668,25 @@ def modify_fields_in_sample_project(form_data):
     """
 
     sample_project_id = form_data["sample_project_id"]
-    parameter_ids = form_data["parameter_ids"].split(",")
-    parameter_names = form_data["parameter_names"].split(",")
-    json_data = json.loads(form_data["table_data1"])
+    # parameter_ids = form_data["parameter_ids"].split(",")
+    # parameter_names = form_data["parameter_names"].split(",")
     sample_project_obj = core.models.SampleProjects.objects.get(
         pk__exact=sample_project_id
     )
-    fields = core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+    json_data = json.loads(form_data["table_data1"])
+
+    fields = core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS.copy()
+    # add samnple parameter id on field values
+    fields.append("s_p_field_id")
+    excel_json_data = core.utils.common.jspreadsheet_to_dict(fields, json_data)
+
     saved_fields = {}
     saved_fields["fields"] = []
     saved_fields["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
     saved_fields["sample_project_name"] = sample_project_obj.get_sample_project_name()
+
     # Delete existing optionns to add new values. Even they are the same,
     # is easier to remmmve all and created again instaed of infividual checking
-
     if core.models.SamplesProjectsTableOptions.objects.filter(
         sample_project_field__sample_projects_id=sample_project_obj
     ).exists():
@@ -1686,40 +1696,61 @@ def modify_fields_in_sample_project(form_data):
         )
         for s_p_option_obj in s_p_option_objs:
             s_p_option_obj.delete()
-    for row_data in json_data:
-        if row_data[0] == "" and row_data[1] == "":
-            continue
-        s_p_fields = {}
-        for i in range(len(fields)):
-            s_p_fields[fields[i]] = row_data[i]
 
-        if row_data[0] == "" and row_data[1] != "":
+    for row_line in excel_json_data:
+        # ignore empty lines
+        if row_line["Field name"] == "" and row_line["Change field name"] == "":
+            continue
+
+        sample_project_field_obj = None
+        if row_line["Classification"] == "":
+            row_line["SampleProjectFieldClassificationID"] = None
+        else:
+            # create classification object if not exists
+            if not core.models.SampleProjectFieldClassification.objects.filter(
+                classification_name__iexact=row_line["Classification"],
+                sample_projects_id=sample_project_obj,
+            ).exists():
+                c_data = {}
+                c_data["sample_project_id"] = sample_project_obj
+                c_data["classification_name"] = row_line["Classification"]
+                classification_obj = core.models.SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                    c_data
+                )
+            else:
+                classification_obj = (
+                    core.models.SampleProjectFieldClassification.objects.filter(
+                        classification_name__iexact=row_line["Classification"],
+                        sample_projects_id=sample_project_obj,
+                    ).last()
+                )
+            row_line["SampleProjectFieldClassificationID"] = classification_obj
+        # Check if new parameter is added
+        if row_line["Field name"] == "" and row_line["Change field name"] != "":
             # Add new field
-            s_p_fields["Field name"] = row_data[1]
-            s_p_fields["sample_project_id"] = sample_project_obj
+            row_line["Field name"] = row_line["Change field name"]
+            row_line["sample_project_id"] = sample_project_obj
             sample_project_field_obj = (
                 core.models.SampleProjectsFields.objects.create_sample_project_fields(
-                    s_p_fields
+                    row_line
                 )
             )
 
-            # check if field is a list to create the new opt fields on database
-
-        elif row_data[0] != "" and row_data[1] != "":
+        # check if field is a list to create the new opt fields in database
+        elif row_line["Field name"] != "" and row_line["Change field name"] != "":
             # rename field name
-            s_p_fields["Field name"] = row_data[1]
-        else:
-            s_p_fields["Field name"] = row_data[0]
-        # Update  Field
-        right_id = parameter_ids[parameter_names.index(row_data[0])]
-        sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
-        if not sample_project_field_obj:
-            # Unable to find the object class. Skipping this change
-            continue
-
-        sample_project_field_obj.update_sample_project_fields(s_p_fields)
-        if row_data[fields.index("Field type")] == "Options List":
-            option_list_values = row_data[fields.index("Option Values")].split(",")
+            row_line["Field name"] = row_line["Change field name"]
+        # update values for the existing parameters
+        if sample_project_field_obj is None:
+            sample_project_field_obj = get_sample_project_field_obj_from_id(
+                row_line["s_p_field_id"]
+            )
+            if not sample_project_field_obj:
+                # Unable to find the object class. Skipping this change
+                continue
+            sample_project_field_obj.update_sample_project_fields(row_line)
+        if row_line["Field type"] == "Options List":
+            option_list_values = row_line["Option Values"].split(",")
             for opt_value in option_list_values:
                 value = opt_value.strip()
                 if value == "":
@@ -1730,7 +1761,7 @@ def modify_fields_in_sample_project(form_data):
                     data
                 )
         saved_fields["fields"].append(
-            sample_project_field_obj.get_sample_project_fields_name()
+            sample_project_field_obj.get_sample_project_fields_name(include_search=True)
         )
 
     return saved_fields
@@ -2112,7 +2143,9 @@ def set_sample_project_fields(data_form):
                     data
                 )
 
-        saved_fields.append(sample_project_field_obj.get_sample_project_fields_name())
+        saved_fields.append(
+            sample_project_field_obj.get_sample_project_fields_name(include_search=True)
+        )
 
     stored_fields["fields"] = saved_fields
     stored_fields["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
