@@ -999,11 +999,15 @@ class SampleProjectsFields(models.Model):
                 self.sample_project_field_classification_id.get_classification_display()
             )
 
-    def get_sample_project_fields_name(self):
+    def get_sample_project_fields_name(self, include_search=None):
         if self.sample_project_field_used:
-            used = "Yes"
+            used = "true"
         else:
-            used = "No"
+            used = "false"
+        if self.sample_project_searchable:
+            searchable = "true"
+        else:
+            searchable = "false"
         if self.sample_project_field_classification_id is not None:
             classification = (
                 self.sample_project_field_classification_id.get_classification_display()
@@ -1015,32 +1019,13 @@ class SampleProjectsFields(models.Model):
 
         field_data.append(self.sample_project_field_order)
         field_data.append(used)
-        field_data.append(self.sample_project_searchable)
+        if include_search is not None:
+            field_data.append(searchable)
         field_data.append(self.sample_project_field_type)
         field_data.append(",".join(self.get_field_options_list()))
         field_data.append(self.sample_project_field_description)
         field_data.append(classification)
 
-        return field_data
-
-    def get_sample_project_fields_for_javascript(self):
-        if self.sample_project_field_used:
-            used = "true"
-        else:
-            used = "false"
-        if self.sample_project_searchable:
-            searchable = "true"
-        else:
-            searchable = "false"
-        field_data = []
-        field_data.append(self.sample_project_field_name)
-
-        field_data.append(self.sample_project_field_order)
-        field_data.append(used)
-        field_data.append(searchable)
-        field_data.append(self.sample_project_field_type)
-        field_data.append(",".join(self.get_field_options_list()))
-        field_data.append(self.sample_project_field_description)
         return field_data
 
     def update_sample_project_fields(self, project_field_data):
@@ -1050,6 +1035,9 @@ class SampleProjectsFields(models.Model):
         self.sample_project_field_used = project_field_data["Used"]
         self.sample_project_field_type = project_field_data["Field type"]
         self.sample_project_searchable = project_field_data["Searchable"]
+        self.sample_project_field_classification_id = project_field_data[
+            "SampleProjectFieldClassificationID"
+        ]
         self.save()
         return self
 
@@ -1072,6 +1060,14 @@ class SamplesProjectsTableOptions(models.Model):
         blank=True,
         related_name="opt_value_prop",
     )
+    """
+    sample_projects_id = models.ForeignKey(
+        SampleProjects,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    """
     option_value = models.CharField(max_length=120)
 
     class Meta:

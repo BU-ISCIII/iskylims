@@ -109,6 +109,7 @@ HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS = [
     "Field type",
     "Option Values",
     "Description",
+    "Classification",
 ]
 
 # ################ PROJECT  SETTINGS #######################################
