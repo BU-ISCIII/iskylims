@@ -1008,6 +1008,7 @@ def get_info_to_display_sample_project(sample_project_id):
         )
         # collect data from project
         info_s_project["sample_project_id"] = sample_project_id
+        info_s_project["sample_project_name"] = sample_project_obj.get_sample_project_name()
         info_s_project["main_data"] = list(
             zip(
                 core.core_config.SAMPLE_PROJECT_MAIN_DATA,
