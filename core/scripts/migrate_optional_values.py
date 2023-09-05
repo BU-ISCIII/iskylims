@@ -1,6 +1,5 @@
 import core.models
 
-
 """
     The script is applicable for the upgrade from 2.3.0 to 3.0.0.
     Because the new version changes the way that optional values are stored.
@@ -15,7 +14,6 @@ import core.models
     sample_project_option_list and moves these values to SamplesProjectsTableOptions
 """
 
-
 def run():
     s_project_field_objs = core.models.SampleProjectsFields.objects.all()
     for s_project_field_obj in s_project_field_objs:
@@ -25,12 +23,8 @@ def run():
                 or s_project_field_obj.sample_project_option_list is None
             ):
                 continue
-            try:
-                opt_values = s_project_field_obj.sample_project_option_list.split(",")
-            except:
-                import pdb
+            opt_values = s_project_field_obj.sample_project_option_list.split(",")
 
-                pdb.set_trace()
             if len(opt_values) == 0:
                 # field already migrated or contains no values
                 continue
