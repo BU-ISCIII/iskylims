@@ -2410,27 +2410,23 @@ def record_samples(request):
 
         # Test if json data is empty
         if sample_batch_df.empty:
-            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
             return render(
                 request,
                 "wetlab/record_sample.html",
                 {
                     "fields_info": fields_info,
                     "error_message": "Excell file is empty",
-                    "pre_def_samples": pre_def_samples,
                 },
             )
         else:
             # Check if all samples have same project and if project is in the DB
             if core.utils.load_batch.project_validation(sample_batch_df, __package__):
-                pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
                 return render(
                     request,
                     "wetlab/record_sample.html",
                     {
                         "fields_info": fields_info,
                         "error_message": core.utils.load_batch.project_validation(sample_batch_df, __package__),
-                        "pre_def_samples": pre_def_samples,
                     },
                 )
 
@@ -2438,7 +2434,6 @@ def record_samples(request):
 
             # Test if column names are valid
             if core.utils.load_batch.validate_header(sample_batch_df):
-                pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
                 return render(
                     request,
                     "wetlab/record_sample.html",
@@ -2447,13 +2442,11 @@ def record_samples(request):
                         "error_message": core.utils.load_batch.validate_header(
                             sample_batch_df
                         ),
-                        "pre_def_samples": pre_def_samples,
                     },
                 )
 
             # Test if date columns have date format
             if core.utils.load_batch.check_format_date(sample_batch_df):
-                pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
                 return render(
                     request,
                     "wetlab/record_sample.html",
@@ -2462,7 +2455,6 @@ def record_samples(request):
                         "error_message": core.utils.load_batch.check_format_date(
                             sample_batch_df
                         ),
-                        "pre_def_samples": pre_def_samples,
                     },
                 )
 
