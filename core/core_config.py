@@ -253,6 +253,7 @@ ERROR_NO_SPECIES = ["The specie", "is not defined"]
 ERROR_NO_DEFINED_SAMPLE_PROJECTS = [
     "No Sample Projects are defined yet. Check documentation to define them"
 ]
+ERROR_EMPTY_PROJECT = ["At least one project value is empty. If there is no project associated write 'None' as the project." ]
 ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
     "is not defined in the database",
