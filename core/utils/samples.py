@@ -174,7 +174,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
             )
 
         # If only recorded set sample to completed state
-        if sample["only_recorded"] and sample["sample_project"] == "None":
+        if sample["only_recorded"] and sample["sample_project"] is None:
             sample["sample_state"] = "Completed"
             sample["completed_date"] = datetime.datetime.now()
         # If no sample project data needed set to defined
