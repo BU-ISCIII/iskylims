@@ -2523,6 +2523,29 @@ def record_samples(request):
                             },
                         )
 
+        # If no sample Pre-Defined just show result
+        if not project_ids:
+            return render(
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "fields_info": fields_info,
+                    "sample_record_result": sample_record_result,
+                },
+            )
+
+        try:
+            projects_fields = core.utils.samples.project_table_fields(project_ids)
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {
+                    "projects_fields": projects_fields,
+                    "filter_samples": filter_samples,
+                },
+            )
+
+
             except Exception:
                 # In case come uncatched error occurs
                 error_message = (
