@@ -2129,11 +2129,10 @@ def record_samples(request):
 
         # Test if json is empty and go back to table
         if not excel_json_data:
-            pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
             return render(
                 request,
                 "wetlab/record_sample.html",
-                {"fields_info": fields_info, "pre_def_samples": pre_def_samples},
+                {"fields_info": fields_info},
             )
         else:
             # validate mandatory and redundant samples
