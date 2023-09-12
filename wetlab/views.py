@@ -2471,16 +2471,12 @@ def record_samples(request):
 
             for val in validation:
                 if not val["Validate"]:
-                    pre_def_samples = core.utils.samples.get_sample_objs_in_state(
-                        "Pre-defined"
-                    )
                     return render(
                         request,
                         "wetlab/record_sample.html",
                         {
                             "fields_info": fields_info,
                             "validation": validation,
-                            "pre_def_samples": pre_def_samples,
                         },
                     )
 
