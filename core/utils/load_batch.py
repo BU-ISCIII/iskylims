@@ -483,6 +483,7 @@ def format_date(sample_batch_data):
     return sample_batch_data
 
 def project_validation(sample_batch_data, app_name):
+
     if sample_batch_data['Sample Project'].isnull().values.any():
         error_cause = core.core_config.ERROR_EMPTY_PROJECT
         return " ".join(error_cause)
@@ -497,13 +498,14 @@ def project_validation(sample_batch_data, app_name):
     if not core.models.SampleProjects.objects.filter(apps_name=app_name).exists():
         error_cause = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
         return " ".join(error_cause)
-    
-    if not core.models.SampleProjects.objects.filter(
-        sample_project_name__iexact="".join(project_list), apps_name__exact=app_name
-    ).exists():
-        error_cause = core.core_config.ERROR_NO_SAMPLE_PROJECTS.copy()
-        error_cause.insert(1, "".join(project_list))
-        return " ".join(error_cause)
+
+    if project_list[0] != 'None':
+        if not core.models.SampleProjects.objects.filter(
+            sample_project_name__iexact="".join(project_list), apps_name__exact=app_name
+        ).exists():
+            error_cause = core.core_config.ERROR_NO_SAMPLE_PROJECTS.copy()
+            error_cause.insert(1, "".join(project_list))
+            return " ".join(error_cause)
 
 def save_samples_in_batch_file(sample_batch_df, req_user, package):
     """
