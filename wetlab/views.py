@@ -2496,22 +2496,36 @@ def record_samples(request):
                             "wetlab/record_sample.html",
                             {
                                 "fields_info": fields_info,
-                                "error_message": "Some samples couldn't be recorded. Table summary:",
+                                "error_message": "Some samples couldn't be recorded.",
                                 "sample_record_result": sample_record_result,
                             },
                         )
-                    else:
-                        return render(
-                            request,
-                            "wetlab/record_sample.html",
-                            {
-                                "fields_info": fields_info,
-                                "sample_record_result": sample_record_result,
-                            },
-                        )
+            except Exception as e:
+                # In case come uncatched error occurs
+                error_message = (
+                    "There was an unexpected error when recording the samples"
+                    + str(e)
+                )
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "error_message": error_message,
+                        "fields_info": fields_info,
+                    },
+                )
+
+        # If everything goes right, check if we need to add project data
+        project = []
+        for sample in batch_json_data:
+            if (
+                sample["sample_project"] not in project
+                and sample["sample_project"] is not None
+            ):
+                project.append(sample["sample_project"])
 
         # If no sample Pre-Defined just show result
-        if not project_ids:
+        if not project:
             return render(
                 request,
                 "wetlab/record_sample.html",
@@ -2520,29 +2534,6 @@ def record_samples(request):
                     "sample_record_result": sample_record_result,
                 },
             )
-
-        try:
-            projects_fields = core.utils.samples.project_table_fields(project_ids)
-            return render(
-                request,
-                "wetlab/record_project_fields.html",
-                {
-                    "projects_fields": projects_fields,
-                    "filter_samples": filter_samples,
-                },
-            )
-
-
-            except Exception:
-                # In case come uncatched error occurs
-                error_message = (
-                    "There was an unexpected error when recording the samples."
-                )
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {"error_message": error_message},
-                )
 
     # Form to get the new samples
     else:
