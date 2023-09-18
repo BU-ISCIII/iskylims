@@ -1100,7 +1100,7 @@ class SamplesManager(models.Manager):
                 species_name__exact=sample_data["species"]
             ).last()
         else:
-            sample_data["species"] = None
+            species = None
 
         if "sample_entry_date" in sample_data:
             if not isinstance(sample_data["sample_entry_date"], datetime.date):
