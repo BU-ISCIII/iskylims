@@ -485,7 +485,6 @@ def format_date(sample_batch_data):
 
 
 def project_validation(sample_batch_data, app_name):
-
     if sample_batch_data["Sample Project"].isnull().values.any():
         error_cause = core.core_config.ERROR_EMPTY_PROJECT
         return " ".join(error_cause)
