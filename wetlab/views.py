@@ -2333,6 +2333,12 @@ def record_samples(request):
                 if not val["Validate"]:
                     not_validated_info.append(val)
                     next
+            for sample in not_validated_info:
+                sample_name = sample["Sample name"]
+                for sample_info in excel_json_data:
+                    index = excel_json_data.index(sample_info)
+                    if sample_info["sample_name"] == sample_name:
+                        excel_json_data.pop(index)
 
             try:
                 # save project data
