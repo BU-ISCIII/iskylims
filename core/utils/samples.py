@@ -369,7 +369,7 @@ def validate_project_data(project_data, project_name):
                 sample_dict["Validate"] = False
                 sample_dict["Validation error"].append(" ".join(error_cause))
             else:
-                if field_type == "String" and type(sample_field_value) is str:
+                if field_type == "String" and type(sample_field_value) is not str:
                     error_cause = core.core_config.ERROR_PROJECT_FIELD_NOTSTRING.copy()
                     error_cause.insert(1, field_name)
                     sample_dict["Validate"] = False
