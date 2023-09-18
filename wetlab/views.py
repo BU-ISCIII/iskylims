@@ -17,6 +17,7 @@ from django.shortcuts import redirect, render
 
 # Local imports
 # import core.fusioncharts.fusioncharts
+import core.models
 import core.utils.commercial_kits
 import core.utils.common
 import core.utils.load_batch
