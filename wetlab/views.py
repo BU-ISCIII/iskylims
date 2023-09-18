@@ -2354,6 +2354,9 @@ def record_samples(request):
                     and p_data["sample_project_name"] not in not_validated_info
                 ):
                     not_saved_info.append(project_record_result)
+            except KeyError:
+                # If table is empty or none of the fields is validated
+                next
 
             except Exception as e:
                 # In case some uncatched error occurs
