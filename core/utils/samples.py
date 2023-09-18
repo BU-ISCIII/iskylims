@@ -306,9 +306,7 @@ def validate_sample_data(sample_data, req_user, app_name):
             )
 
         # Check if species is in the DB
-        if sample["species"] != "" and defined_species(
-            sample["species"], app_name
-        ):
+        if sample["species"] != "" and defined_species(sample["species"], app_name):
             sample_dict["Validate"] = False
             sample_dict["Validation error"].append(
                 defined_species(sample["species"], app_name)
@@ -378,7 +376,9 @@ def validate_project_data(project_data, project_name):
                     sample_dict["Validation error"].append(" ".join(error_cause))
                 elif field_type == "Date":
                     try:
-                        datetime.datetime.strptime(sample[field_name], "%Y-%m-%d %H:%M:%S")
+                        datetime.datetime.strptime(
+                            sample[field_name], "%Y-%m-%d %H:%M:%S"
+                        )
                     except Exception:  # Unknown string format: string present at position x
                         error_cause = core.core_config.ERROR_PROJECT_FIELD_NODATE.copy()
                         error_cause.insert(1, field_name)
@@ -386,7 +386,9 @@ def validate_project_data(project_data, project_name):
                         sample_dict["Validation error"].append(" ".join(error_cause))
                 elif field_type == "Options List":
                     if sample_field_value not in field_options:
-                        error_cause = core.core_config.ERROR_PROJECT_FIELD_NOOPTION.copy()
+                        error_cause = (
+                            core.core_config.ERROR_PROJECT_FIELD_NOOPTION.copy()
+                        )
                         error_cause.insert(1, field_name)
                         error_cause.insert(3, ", ".join(field_options))
                         sample_dict["Validate"] = False
@@ -445,14 +447,12 @@ def save_project_data(excel_data, project_info):
             except Exception:
                 project_info["success"] = False
                 project_info["error"] = "Error saving any of the project fields"
-
         if project_info["success"] and sample["only_recorded"]:
             sample_id.set_state("Completed")
         elif project_info["success"]:
             sample_id.set_state("Defined")
         else:
             sample_id.set_state("Pre-Defined")
-
     return project_info
 
 
@@ -2255,6 +2255,7 @@ def defined_sample_type(sample_type, app_name):
         error_cause.insert(1, sample_type)
         return " ".join(error_cause)
 
+
 def defined_lab_request(lab_request, app_name):
     """_summary_
 
@@ -2280,6 +2281,7 @@ def defined_lab_request(lab_request, app_name):
         error_cause = core.core_config.ERROR_NO_LAB_REQUESTED.copy()
         error_cause.insert(1, lab_request)
         return " ".join(error_cause)
+
 
 def defined_species(sample_species, app_name):
     """_summary_
