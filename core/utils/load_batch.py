@@ -398,6 +398,7 @@ def heading_refactor(sample_batch_data):
 
     return sample_batch_data
 
+
 def validate_header(sample_batch_data):
     invalid_col_name = []
     columns = list(sample_batch_data.columns.values)
@@ -406,7 +407,7 @@ def validate_header(sample_batch_data):
         if col_name not in core.core_config.HEADING_BATCH:
             invalid_col_name.append(col_name)
 
-    project_id = sample_batch_data['sample_project'].unique().tolist()
+    project_id = sample_batch_data["sample_project"].unique().tolist()
     projects_fields = get_sample_project_fields(project_id)
     invalid_col_name = [i for i in invalid_col_name if i not in projects_fields]
 
@@ -482,13 +483,14 @@ def format_date(sample_batch_data):
 
     return sample_batch_data
 
+
 def project_validation(sample_batch_data, app_name):
 
-    if sample_batch_data['Sample Project'].isnull().values.any():
+    if sample_batch_data["Sample Project"].isnull().values.any():
         error_cause = core.core_config.ERROR_EMPTY_PROJECT
         return " ".join(error_cause)
 
-    project_list = sample_batch_data['Sample Project'].unique().tolist()
+    project_list = sample_batch_data["Sample Project"].unique().tolist()
 
     if len(project_list) > 1:
         error_cause = core.core_config.ERROR_TOO_MANY_PROJECTS.copy()
@@ -499,13 +501,14 @@ def project_validation(sample_batch_data, app_name):
         error_cause = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
         return " ".join(error_cause)
 
-    if project_list[0] != 'None':
+    if project_list[0] != "None":
         if not core.models.SampleProjects.objects.filter(
             sample_project_name__iexact="".join(project_list), apps_name__exact=app_name
         ).exists():
             error_cause = core.core_config.ERROR_NO_SAMPLE_PROJECTS.copy()
             error_cause.insert(1, "".join(project_list))
             return " ".join(error_cause)
+
 
 def save_samples_in_batch_file(sample_batch_df, req_user, package):
     """
