@@ -253,7 +253,9 @@ ERROR_NO_SPECIES = ["The specie", "is not defined"]
 ERROR_NO_DEFINED_SAMPLE_PROJECTS = [
     "No Sample Projects are defined yet. Check documentation to define them"
 ]
-ERROR_EMPTY_PROJECT = ["At least one project value is empty. If there is no project associated write 'None' as the project." ]
+ERROR_EMPTY_PROJECT = [
+    "At least one project value is empty. If there is no project associated write 'None' as the project."
+]
 ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
     "is not defined in the database",
@@ -301,6 +303,9 @@ ERROR_MISSING_MANDATORY = [
     "The following columns are empty and are mandatory for the sample type:"
 ]
 ERROR_PROJECT_FIELD_NOTSTRING = ["Project field", "muest be a normal word or sentence"]
-ERROR_PROJECT_FIELD_NODATE = ["Project field", "must have date format. For example YYYY-MM-DD"]
+ERROR_PROJECT_FIELD_NODATE = [
+    "Project field",
+    "must have date format. For example YYYY-MM-DD",
+]
 ERROR_PROJECT_FIELD_NOOPTION = ["Project field", "only has the following options:"]
 ERROR_PROJECT_FIELD_EMPTY = ["Project field", "is empty"]

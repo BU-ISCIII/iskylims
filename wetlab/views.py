@@ -2323,7 +2323,9 @@ def record_samples(request):
                 json_data_all.append(json_data)
 
             for sample in excel_json_data:
-                sample["only_recorded"] = core.models.Samples.objects.get(sample_code_id__exact=sample["sample_code_id"]).is_only_recorded()
+                sample["only_recorded"] = core.models.Samples.objects.get(
+                    sample_code_id__exact=sample["sample_code_id"]
+                ).is_only_recorded()
 
             # validate types and option lists for projects
             validation = core.utils.samples.validate_project_data(
@@ -2440,7 +2442,9 @@ def record_samples(request):
                     "wetlab/record_sample.html",
                     {
                         "fields_info": fields_info,
-                        "error_message": core.utils.load_batch.project_validation(sample_batch_df, __package__),
+                        "error_message": core.utils.load_batch.project_validation(
+                            sample_batch_df, __package__
+                        ),
                     },
                 )
 
@@ -2476,7 +2480,9 @@ def record_samples(request):
             sample_batch_df = core.utils.load_batch.format_date(sample_batch_df)
 
             # Convert pandas dataframe to json list of dictionaries
-            batch_json_data = core.utils.load_batch.read_batch_sample_file(sample_batch_df)
+            batch_json_data = core.utils.load_batch.read_batch_sample_file(
+                sample_batch_df
+            )
 
             # validate mandatory and redundant samples
             validation = core.utils.samples.validate_sample_data(
@@ -2605,7 +2611,7 @@ def record_samples(request):
                         batch_json_data, p_data
                     )
                     # Check if there was any error while saving
-                    if (not project_record_result["success"]):
+                    if not project_record_result["success"]:
                         not_saved_info.append(project_record_result)
 
                 except Exception as e:
@@ -2620,7 +2626,9 @@ def record_samples(request):
                         {"fields_info": fields_info, "error_message": error_message},
                     )
                 # Get recorded samples complete info
-                sample_code_ids = [sample["sample_code_id"] for sample in batch_json_data]
+                sample_code_ids = [
+                    sample["sample_code_id"] for sample in batch_json_data
+                ]
                 samples_query = core.models.Samples.objects.filter(
                     sample_code_id__in=sample_code_ids
                 )
