@@ -200,7 +200,7 @@
 					{% for field in project.sample_project_fields %}
 					{% if field.sample_project_field_type == 'Date' %}
 					{ type: 'calendar', title: '{{ field.sample_project_field_name }}', width: 150 },
-					{% elif sample_project_field_type == 'Option List' %}
+					{% elif field.sample_project_field_type == 'Options List' %}
 					{ type: 'dropdown', title: '{{ field.sample_project_field_name }}', width: 150, source: [{% for option in field.sample_project_option_list %} '{{ option.option_value }}', {% endfor %}] },
 					{% else %}
 					{ type: 'text', title: '{{ field.sample_project_field_name }}', width: 150 },
