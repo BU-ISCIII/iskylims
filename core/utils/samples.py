@@ -369,7 +369,7 @@ def validate_project_data(project_data, project_name):
                 sample_dict["Validate"] = False
                 sample_dict["Validation error"].append(" ".join(error_cause))
             else:
-                if field_type == "String" and type(sample_field_value) != str:
+                if field_type == "String" and type(sample_field_value) is str:
                     error_cause = core.core_config.ERROR_PROJECT_FIELD_NOTSTRING.copy()
                     error_cause.insert(1, field_name)
                     sample_dict["Validate"] = False
@@ -379,7 +379,8 @@ def validate_project_data(project_data, project_name):
                         datetime.datetime.strptime(
                             sample[field_name], "%Y-%m-%d %H:%M:%S"
                         )
-                    except Exception:  # Unknown string format: string present at position x
+                    except Exception:
+                        # Unknown string format: string present at position x
                         error_cause = core.core_config.ERROR_PROJECT_FIELD_NODATE.copy()
                         error_cause.insert(1, field_name)
                         sample_dict["Validate"] = False
