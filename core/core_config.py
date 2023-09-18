@@ -300,3 +300,7 @@ ERROR_DATE_FORMAT_FIELD = ["Date must have date format. For example YYYY-MM-DD"]
 ERROR_MISSING_MANDATORY = [
     "The following columns are empty and are mandatory for the sample type:"
 ]
+ERROR_PROJECT_FIELD_NOTSTRING = ["Project field", "muest be a normal word or sentence"]
+ERROR_PROJECT_FIELD_NODATE = ["Project field", "must have date format. For example YYYY-MM-DD"]
+ERROR_PROJECT_FIELD_NOOPTION = ["Project field", "only has the following options:"]
+ERROR_PROJECT_FIELD_EMPTY = ["Project field", "is empty"]
