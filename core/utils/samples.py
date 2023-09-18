@@ -352,8 +352,51 @@ def validate_project_data(project_data, project_name):
         sample_dict["Sample name"] = sample["sample_name"]
         sample_dict["Project name"] = project_name
         sample_dict["Validate"] = True
-        sample_dict["Validation error"] = ""
+        sample_dict["Validation error"] = []
 
+        s_proj_obj = core.models.SampleProjects.objects.filter(
+            sample_project_name__iexact=project_name
+        ).last()
+        s_pro_field_objs = core.models.SampleProjectsFields.objects.filter(
+            sample_projects_id=s_proj_obj
+        )
+        for s_pro_field_obj in s_pro_field_objs:
+            field_name = s_pro_field_obj.get_field_name()
+            field_type = s_pro_field_obj.get_field_type()
+            field_options = s_pro_field_obj.get_field_options_list()
+            sample_field_value = sample[field_name]
+            if sample_field_value == "":
+                error_cause = core.core_config.ERROR_PROJECT_FIELD_EMPTY.copy()
+                error_cause.insert(1, field_name)
+                sample_dict["Validate"] = False
+                sample_dict["Validation error"].append(" ".join(error_cause))
+            else:
+                if field_type == "String" and type(sample_field_value) != str:
+                    error_cause = core.core_config.ERROR_PROJECT_FIELD_NOTSTRING.copy()
+                    error_cause.insert(1, field_name)
+                    sample_dict["Validate"] = False
+                    sample_dict["Validation error"].append(" ".join(error_cause))
+                elif field_type == "Date":
+                    try:
+                        datetime.datetime.strptime(sample[field_name], "%Y-%m-%d %H:%M:%S")
+                    except Exception:  # Unknown string format: string present at position x
+                        error_cause = core.core_config.ERROR_PROJECT_FIELD_NODATE.copy()
+                        error_cause.insert(1, field_name)
+                        sample_dict["Validate"] = False
+                        sample_dict["Validation error"].append(" ".join(error_cause))
+                elif field_type == "Options List":
+                    if sample_field_value not in field_options:
+                        error_cause = core.core_config.ERROR_PROJECT_FIELD_NOOPTION.copy()
+                        error_cause.insert(1, field_name)
+                        error_cause.insert(3, ", ".join(field_options))
+                        sample_dict["Validate"] = False
+                        sample_dict["Validation error"].append(" ".join(error_cause))
+        if not sample_dict["Validation error"]:
+            sample_dict["Validation error"] = ""
+        else:
+            sample_dict["Validation error"] = ". ".join(
+                map(str, sample_dict["Validation error"])
+            )
         validation.append(sample_dict)
 
     return validation
