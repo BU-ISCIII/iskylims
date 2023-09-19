@@ -149,6 +149,7 @@ class SampleSerializer(serializers.ModelSerializer):
             "collection_sample_date",
             "sample_state",
             "project_values",
+            "only_recorded",
         ]
 
 
