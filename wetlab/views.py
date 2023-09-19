@@ -2322,11 +2322,6 @@ def record_samples(request):
             for json_data in excel_json_data:
                 json_data_all.append(json_data)
 
-            for sample in excel_json_data:
-                sample["only_recorded"] = core.models.Samples.objects.get(
-                    sample_code_id__exact=sample["sample_code_id"]
-                ).is_only_recorded()
-
             # validate types and option lists for projects
             validation = core.utils.samples.validate_project_data(
                 excel_json_data, p_data["sample_project_name"]
