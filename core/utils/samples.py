@@ -323,7 +323,7 @@ def validate_sample_data(sample_data, req_user, app_name):
     return validation
 
 
-def validate_project_data(project_data, project_name):
+def validate_project_data(project_data, project_name, sample_validation=False):
     """Sample data validation
 
     Parameters
@@ -347,10 +347,20 @@ def validate_project_data(project_data, project_name):
     validation = []
     for sample in project_data:
         sample_dict = {}
-        sample_dict["Sample name"] = sample["sample_name"]
-        sample_dict["Project name"] = project_name
-        sample_dict["Validate"] = True
-        sample_dict["Validation error"] = []
+        if sample_validation:
+            for dict in sample_validation:
+                if dict['Sample name'] == sample["sample_name"]:
+                    sample_dict["Sample name"] = dict['Sample name']
+                    sample_dict["Project name"] = project_name
+                    sample_dict["Validate"] = dict['Validate']
+                    sample_dict["Validation error"] = []
+                    if dict["Validation error"] != "":
+                        sample_dict["Validation error"].append(dict["Validation error"])
+        else:
+            sample_dict["Sample name"] = sample["sample_name"]
+            sample_dict["Project name"] = project_name
+            sample_dict["Validate"] = True
+            sample_dict["Validation error"] = []
 
         s_proj_obj = core.models.SampleProjects.objects.filter(
             sample_project_name__iexact=project_name
@@ -442,6 +452,10 @@ def save_project_data(excel_data, project_info):
                 project_info["success"] = False
                 project_info["error"] = "Error saving any of the project fields"
         if project_info["success"] and sample["only_recorded"] == 'True':
+            sample_id.set_state("Completed")
+        elif project_info["success"] and sample["only_recorded"] == 'False':
+            sample_id.set_state("Defined")
+        elif project_info["success"] and sample["only_recorded"]:
             sample_id.set_state("Completed")
         elif project_info["success"]:
             sample_id.set_state("Defined")
