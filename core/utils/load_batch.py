@@ -403,7 +403,7 @@ def validate_header(sample_batch_data):
     invalid_col_name = []
     missing_col_name = []
     columns = list(sample_batch_data.columns.values)
-    
+
     invalid_col_name = [i for i in columns if i not in core.core_config.HEADING_BATCH]
     project_id = sample_batch_data["sample_project"].unique().tolist()
     projects_fields = get_sample_project_fields(project_id)
