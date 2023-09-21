@@ -238,6 +238,7 @@ ERROR_NO_DEFINED_LAB_REQUESTED = [
     "No Laboratory is defined yet. Check documentation to define the Laboratory"
 ]
 ERROR_BATCH_INVALID_HEADER = ["The following columns don't have correct format:"]
+ERROR_BATCH_MISSING_HEADER = ["The following project columns don't appear in the table:"]
 ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet. Check documentation to define them"
 ]
