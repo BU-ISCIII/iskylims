@@ -2484,7 +2484,7 @@ def record_samples(request):
             for sample in batch_json_data:
                 if (
                     sample["sample_project"] not in project
-                    and sample["sample_project"] is not None
+                    and sample["sample_project"] != "None"
                 ):
                     project.append(sample["sample_project"])
             # If no project just add samples
