@@ -84,7 +84,7 @@
                                                             <div class="col-md">
                                                                 <div class="form-floating mb-3">
                                                                     <select class="form-select" name="protocol" id="protocol" aria-label="Protocol kits" style="height:150px" multiple>
-                                                                        <option value="">Choose a value</option>
+                                                                        <option selected disabled>Choose a value</option>
                                                                         {% for value in defined_protocols %}
                                                                             <option value="{{value}}">{{value}}</option>
                                                                         {% endfor %}
@@ -143,7 +143,7 @@
                                                             <div class="col-md">
                                                                 <div class="form-floating mb-3">
                                                                     <select class="form-select" name="platform" id="platform" aria-label="platform kits">
-                                                                        <option value="">Choose a value</option>
+                                                                        <option selected disabled>Choose a value</option>
                                                                         {% for value, name in defined_platforms %}
                                                                             <option value="{{value}}">{{name}}</option>
                                                                         {% endfor %}
