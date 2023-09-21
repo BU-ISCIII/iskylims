@@ -2479,17 +2479,6 @@ def record_samples(request):
                 batch_json_data, req_user, __package__
             )
 
-            for val in validation:
-                if not val["Validate"]:
-                    return render(
-                        request,
-                        "wetlab/record_sample.html",
-                        {
-                            "fields_info": fields_info,
-                            "validation": validation,
-                        },
-                    )
-
             # If all samples are validated check if we need to add project data
             project = []
             for sample in batch_json_data:
@@ -2500,6 +2489,16 @@ def record_samples(request):
                     project.append(sample["sample_project"])
             # If no project just add samples
             if not project:
+                for val in validation:
+                    if not val["Validate"]:
+                        return render(
+                            request,
+                            "wetlab/record_sample.html",
+                            {
+                                "fields_info": fields_info,
+                                "validation": validation,
+                            },
+                        )
                 try:
                     # Record sample results.
                     sample_record_result = core.utils.samples.save_recorded_samples(
@@ -2546,19 +2545,19 @@ def record_samples(request):
 
             else:
                 # validate types and option lists for projects
-                validation = core.utils.samples.validate_project_data(
-                    batch_json_data, project[0]
+                project_validation = core.utils.samples.validate_project_data(
+                    batch_json_data, project[0], validation
                 )
 
                 # If some of the fields are not validated skip to next. DO NOT SAVE
-                for val in validation:
+                for val in project_validation:
                     if not val["Validate"]:
                         return render(
                             request,
                             "wetlab/record_sample.html",
                             {
                                 "fields_info": fields_info,
-                                "validation": validation,
+                                "validation": project_validation,
                             },
                         )
                 try:
