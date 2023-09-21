@@ -2369,7 +2369,6 @@ def record_samples(request):
         ).data
 
         if not_validated_info:
-            print("entrando en not")
             return render(
                 request,
                 "wetlab/record_project_fields.html",
