@@ -362,38 +362,31 @@ def validate_project_data(project_data, project_name):
             field_name = s_pro_field_obj.get_field_name()
             field_type = s_pro_field_obj.get_field_type()
             field_options = s_pro_field_obj.get_field_options_list()
-            sample_field_value = sample[field_name]
-            if sample_field_value == "":
-                error_cause = core.core_config.ERROR_PROJECT_FIELD_EMPTY.copy()
+            if field_type == "String" and type(sample[field_name]) is not str:
+                error_cause = core.core_config.ERROR_PROJECT_FIELD_NOTSTRING.copy()
                 error_cause.insert(1, field_name)
                 sample_dict["Validate"] = False
                 sample_dict["Validation error"].append(" ".join(error_cause))
-            else:
-                if field_type == "String" and type(sample_field_value) is not str:
-                    error_cause = core.core_config.ERROR_PROJECT_FIELD_NOTSTRING.copy()
+            elif field_type == "Date" and sample[field_name] != "":
+                try:
+                    datetime.datetime.strptime(
+                        sample[field_name], "%Y-%m-%d %H:%M:%S"
+                    )
+                except Exception:
+                    # Unknown string format: string present at position x
+                    error_cause = core.core_config.ERROR_PROJECT_FIELD_NODATE.copy()
                     error_cause.insert(1, field_name)
                     sample_dict["Validate"] = False
                     sample_dict["Validation error"].append(" ".join(error_cause))
-                elif field_type == "Date":
-                    try:
-                        datetime.datetime.strptime(
-                            sample[field_name], "%Y-%m-%d %H:%M:%S"
-                        )
-                    except Exception:
-                        # Unknown string format: string present at position x
-                        error_cause = core.core_config.ERROR_PROJECT_FIELD_NODATE.copy()
-                        error_cause.insert(1, field_name)
-                        sample_dict["Validate"] = False
-                        sample_dict["Validation error"].append(" ".join(error_cause))
-                elif field_type == "Options List":
-                    if sample_field_value not in field_options:
-                        error_cause = (
-                            core.core_config.ERROR_PROJECT_FIELD_NOOPTION.copy()
-                        )
-                        error_cause.insert(1, field_name)
-                        error_cause.insert(3, ", ".join(field_options))
-                        sample_dict["Validate"] = False
-                        sample_dict["Validation error"].append(" ".join(error_cause))
+            elif field_type == "Options List" and sample[field_name] != "":
+                if sample[field_name] not in field_options:
+                    error_cause = (
+                        core.core_config.ERROR_PROJECT_FIELD_NOOPTION.copy()
+                    )
+                    error_cause.insert(1, field_name)
+                    error_cause.insert(3, ", ".join(field_options))
+                    sample_dict["Validate"] = False
+                    sample_dict["Validation error"].append(" ".join(error_cause))
         if not sample_dict["Validation error"]:
             sample_dict["Validation error"] = ""
         else:
@@ -448,7 +441,7 @@ def save_project_data(excel_data, project_info):
             except Exception:
                 project_info["success"] = False
                 project_info["error"] = "Error saving any of the project fields"
-        if project_info["success"] and sample["only_recorded"]:
+        if project_info["success"] and sample["only_recorded"] == 'True':
             sample_id.set_state("Completed")
         elif project_info["success"]:
             sample_id.set_state("Defined")
