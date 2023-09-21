@@ -2286,6 +2286,7 @@ def record_samples(request):
     # Record project data
     elif request.method == "POST" and request.POST["action"] == "record_project_fields":
         not_validated_info = []
+        not_validated_projects = []
         not_saved_info = []
         projects_success = []
         json_data_all = []
@@ -2330,43 +2331,33 @@ def record_samples(request):
             for val in validation:
                 if not val["Validate"]:
                     not_validated_info.append(val)
-                    next
-            for sample in not_validated_info:
-                sample_name = sample["Sample name"]
-                for sample_info in excel_json_data:
-                    index = excel_json_data.index(sample_info)
-                    if sample_info["sample_name"] == sample_name:
-                        excel_json_data.pop(index)
+                    if val["Project name"] not in not_validated_projects:
+                        not_validated_projects.append(val["Project name"])
 
-            try:
-                # save project data
-                project_record_result = core.utils.samples.save_project_data(
-                    excel_json_data, p_data
-                )
-                # Check if there was any error while saving
-                if (
-                    not project_record_result["success"]
-                    and p_data["sample_project_name"] not in not_validated_info
-                ):
-                    not_saved_info.append(project_record_result)
-            except KeyError:
-                # If table is empty or none of the fields is validated
-                next
-
-            except Exception as e:
-                # In case some uncatched error occurs
-                error_message = (
-                    "There was an unexpected error when recording the project data."
-                    + str(e)
-                )
-                return render(
-                    request,
-                    "wetlab/record_sample.html",
-                    {"fields_info": fields_info, "error_message": error_message},
-                )
-
-            if p_data["sample_project_name"] not in not_validated_info:
+            if p_data["sample_project_name"] not in not_validated_projects:
                 projects_success.append(p_data["sample_project_name"])
+                try:
+                    # save project data
+                    project_record_result = core.utils.samples.save_project_data(
+                        excel_json_data, p_data
+                    )
+                    # Check if there was any error while saving
+                    if (
+                        not project_record_result["success"]
+                        and p_data["sample_project_name"] not in not_validated_info
+                    ):
+                        not_saved_info.append(project_record_result)
+                except Exception as e:
+                    # In case some uncatched error occurs
+                    error_message = (
+                        "There was an unexpected error when recording the project data."
+                        + str(e)
+                    )
+                    return render(
+                        request,
+                        "wetlab/record_sample.html",
+                        {"fields_info": fields_info, "error_message": error_message},
+                    )
 
         # Get recorded samples complete info
         sample_code_ids = [sample["sample_code_id"] for sample in json_data_all]
@@ -2378,6 +2369,7 @@ def record_samples(request):
         ).data
 
         if not_validated_info:
+            print("entrando en not")
             return render(
                 request,
                 "wetlab/record_project_fields.html",
