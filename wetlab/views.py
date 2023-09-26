@@ -2658,7 +2658,7 @@ def record_samples(request):
             {
                 "fields_info": fields_info,
                 "pre_def_samples": pre_def_samples,
-                "template_path": template_path
+                "template_path": template_path,
             },
         )
 
