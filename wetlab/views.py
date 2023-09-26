@@ -2647,10 +2647,19 @@ def record_samples(request):
     # Form to get the new samples
     else:
         pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+        template_path = os.path.join(
+            settings.MEDIA_URL,
+            wetlab.config.TEMPLATE_FILES_DIRECTORY,
+            wetlab.config.SAMPLES_BATCH_TEMPLATE,
+        )
         return render(
             request,
             "wetlab/record_sample.html",
-            {"fields_info": fields_info, "pre_def_samples": pre_def_samples},
+            {
+                "fields_info": fields_info,
+                "pre_def_samples": pre_def_samples,
+                "template_path": template_path
+            },
         )
 
 
