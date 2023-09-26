@@ -41,9 +41,9 @@ class UpdateResolutionStateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.resolution_number = validated_data["resolution_number"]
         instance.resolution_state = validated_data["resolution_state"]
-        if "resolution_inprogress_date" in validated_data:
+        if "resolution_in_progress_date" in validated_data:
             instance.resolution_in_progress_date = validated_data[
-                "resolution_inprogress_date"
+                "resolution_in_progress_date"
             ]
         if "resolution_delivery_date" in validated_data:
             instance.resolution_delivery_date = validated_data[
