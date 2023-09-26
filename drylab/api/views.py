@@ -300,7 +300,9 @@ def update_state(request):
                 data_resolution = {
                     "resolution_number": resolution,
                     "resolution_state": state_res_obj.pk,
-                    "resolution_in_progress_date": datetime.today().strftime("%Y-%m-%d"),
+                    "resolution_in_progress_date": datetime.today().strftime(
+                        "%Y-%m-%d"
+                    ),
                 }
                 data_service = {
                     "service_request_number": service_obj.service_request_number,
