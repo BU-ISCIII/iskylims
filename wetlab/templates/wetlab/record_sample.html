@@ -164,6 +164,13 @@
 									<div class="card-header">Load new Samples in batch</div>
 									<div class="card-body">
 										<p>Upload the excel file to define a batch of samples</p>
+										{% if template_path %}
+										<div class="row pb-2">
+											<div class="col-sm-5">
+												<a class="btn btn-outline-primary" href= "{{ template_path }}" download role="button">Download Template</a>
+											</div>
+										</div>
+										{% endif %}
 										<form method="post" enctype="multipart/form-data" name="defineBatchSamples"
 											id="defineBatchSamples">
 											{% csrf_token %}
@@ -340,6 +347,14 @@
 					});
 			},
 		});
+		
+		$('#download_template').click(function() {
+			window.location = os.path.join(
+                settings.MEDIA_ROOT,
+                wetlab.config.TEMPLATE_FILES_DIRECTORY,
+                wetlab.config.SAMPLE_SHEET_MISEQ_VERSION_4_TEMPLATE_NAME,
+            )
+		})
     });
 </script>
 {% endblock %}
