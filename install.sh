@@ -430,6 +430,8 @@ if [ $upgrade == true ]; then
         # update illumina template files.# Copy illumina sample sheet templates
         mkdir -p $INSTALL_PATH/documents/wetlab/templates/
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
+        cp $INSTALL_PATH/conf/samples_template.xlsx $INSTALL_PATH/documents/wetlab/templates/
+
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
         sed -i "s@INSTALL_PATH@${INSTALL_PATH}@g" $INSTALL_PATH/wetlab/logging_config.ini
@@ -779,6 +781,7 @@ if [ $install == true ]; then
         
         # Copy illumina sample sheet templates
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
+        cp $INSTALL_PATH/conf/samples_template.xlsx $INSTALL_PATH/documents/wetlab/templates/
 
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
