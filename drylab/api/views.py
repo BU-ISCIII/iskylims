@@ -258,7 +258,9 @@ def service_full_data(request):
 @swagger_auto_schema(
     method="put", manual_parameters=[resolution_number_param, resolution_state_param]
 )
+@authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["PUT"])
+@permission_classes([IsAuthenticated])
 def update_state(request):
     def all_resolutions_delivered(service, state):
         if (
