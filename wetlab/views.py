@@ -2181,7 +2181,7 @@ def record_samples(request):
                 return render(
                     request,
                     "wetlab/record_sample.html",
-                    {"error_message": error_message},
+                    {"error_message": error_message, "fields_info": fields_info},
                 )
 
         # If everything goes right, check if we need to add project data

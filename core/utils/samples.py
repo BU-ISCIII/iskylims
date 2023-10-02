@@ -138,7 +138,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
         sample["user"] = req_user
         sample["app_name"] = app_name
 
-        sample["sample_code_id"] = str(req_user + "_" + sample["sample_name"])
+        sample["sample_code_id"] = req_user + "_" + str(sample["sample_name"])
 
         # Set unique ID
         if not core.models.Samples.objects.exclude(
