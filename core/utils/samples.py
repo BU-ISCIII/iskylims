@@ -729,10 +729,8 @@ def create_table_to_select_molecules(samples_list):
             sample.get_info_in_defined_state()
         )
         sample_code_id.append(sample.get_sample_code())
-    sample_information[
-        "sample_heading"
-    ] = core.core_config.HEADING_FOR_DEFINED_SAMPLES_STATE
-    sample_information["sample_code_ids"] = ",".join(sample_code_id)
+    sample_information["sample_heading"] = core.core_config.HEADING_FOR_DEFINED_SAMPLES
+    # sample_information["sample_code_ids"] = ",".join(sample_code_id)
 
     return sample_information
 
@@ -1482,23 +1480,6 @@ def get_sample_states():
     return sample_states
 
 
-def get_selected_recorded_samples(form_data):
-    """
-    Description:    The function get the selected recorded samples to add molecule information.
-    Input:
-        form_data     # form data from user
-    Return:
-        selected_samples
-    """
-    selected_samples = []
-    samples_json_data = json.loads(form_data)
-    for row_index in range(len(samples_json_data)):
-        if samples_json_data[row_index][-1] is True:
-            selected_samples.append(samples_json_data[row_index][-2])
-
-    return selected_samples
-
-
 def get_species():
     """
     Description:
@@ -1553,6 +1534,36 @@ def get_sample_project_field_obj_from_id(sample_project_field_id):
     return sample_project_field_obj
 
 
+def get_selection_from_excel_data(data, heading, check_field, field_id):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+        heading (list): _description_
+        check_field (string_): _description_
+        field_id (_string: _description_
+
+    Returns:
+        list: _description_
+    """
+
+    selected = []
+    selected_row = []
+    excel_data = json.loads(data)
+    # Convert excel list-list to dictionary with field_names
+    excel_json_data = core.utils.common.jspreadsheet_to_dict(heading, excel_data)
+    for row in excel_json_data:
+        if check_field is not None:
+            if row[check_field] == True:
+                selected.append(row[field_id])
+                selected_row.append(row)
+        else:
+            selected.append(row[field_id])
+            selected_row.append(row)
+
+    return selected, selected_row
+
+
 def get_table_record_molecule(samples, apps_name):
     """
     Description:    The function get the sample ids to create the molecule table where
@@ -1567,6 +1578,7 @@ def get_table_record_molecule(samples, apps_name):
     Return:
         molecule_information #
     """
+
     molecule_information = {}
     molecule_information[
         "headings"
@@ -1588,9 +1600,12 @@ def get_table_record_molecule(samples, apps_name):
         sample_obj = get_sample_obj_from_id(sample)
         sample_code_id = sample_obj.get_sample_code()
         sample_code_ids.append(sample_code_id)
-        data = [""] * len(core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
+        data = [""] * (
+            len(core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION) + 1
+        )
         data[0] = sample_code_id
         data[1] = sample_obj.get_sample_type()
+        data[-1] = sample
         molecule_information["data"].append(data)
 
     molecule_information["type_of_molecules"] = get_modules_type()
@@ -1609,7 +1624,6 @@ def get_table_record_molecule(samples, apps_name):
     molecule_information["sample_code_ids"] = ",".join(sample_code_ids)
     for key, value in molecule_information["protocols_dict"].items():
         molecule_information["protocol_filter_selection"].append([key, value])
-
     return molecule_information
 
 
@@ -1843,7 +1857,7 @@ def record_molecule_use(from_data, app_name):
     return molecule_use_information
 
 
-def record_molecules(form_data, user, app_name):
+def record_molecules(samples, excel_data, heading, user, app_name):
     """
     Description:    The function store in database the new molecule and molecule_updated_list
                     the sample state to Extracted molecule.
@@ -1863,9 +1877,38 @@ def record_molecules(form_data, user, app_name):
         molecules_recorded with the list of the recorded molecules and the heading to
         display them
     """
-    molecule_json_data = json.loads(form_data["molecule_data"])
-    samples_ids = form_data["samples"].split(",")
-    samples_code_ids = form_data["samples_code_ids"].split(",")
+
+    incompleted = []
+    for idx in range(len(samples)):
+        if "" in list(excel_data[idx].values()):
+            incompleted.append(samples[idx])
+    if len(incompleted) > 0:
+        # restore user imput data
+        return_data = []
+        for row in excel_data:
+            r_data = []
+            for item in heading:
+                r_data.append(row[item])
+            return_data.append(r_data)
+        type_of_molecules = get_modules_type()
+        protocol_filter_selection = []
+        type_of_molecules = get_modules_type()
+        (protocols_dict, protocol_list) = get_molecule_protocols(app_name)
+        for key, value in protocols_dict.items():
+            protocol_filter_selection.append([key, value])
+        return {
+            "incomplete": True,
+            "data": return_data,
+            "protocol_filter_selection": protocol_filter_selection,
+            "protocol_list": protocol_list,
+            "type_of_molecules": type_of_molecules,
+            "headings": heading[:-1],
+        }
+
+    import pdb
+
+    pdb.set_trace()
+
     molecules_recorded = {}
     molecules_ids, molecules_code_ids = [], []
     molecule_list = []

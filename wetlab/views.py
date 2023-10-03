@@ -18,6 +18,7 @@ from django.shortcuts import redirect, render
 # Local imports
 # import core.fusioncharts.fusioncharts
 import core.models
+import core.core_config
 import core.utils.commercial_kits
 import core.utils.common
 import core.utils.load_batch
@@ -3265,12 +3266,15 @@ def handling_library_preparation(request):
 def handling_molecules(request):
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
-
-        samples = core.utils.samples.get_selected_recorded_samples(
-            request.POST["selected_samples"]
+        heading = core.core_config.HEADING_FOR_DEFINED_SAMPLES.copy()
+        heading.insert(-1, "s_id")
+        samples, _ = core.utils.samples.get_selection_from_excel_data(
+            request.POST["selected_samples"], heading, "To be included", "s_id"
         )
+
         if len(samples) == 0:
             return redirect("handling_molecules")
+
         molecule_protocol = core.utils.samples.get_table_record_molecule(
             samples, __package__
         )
@@ -3280,7 +3284,7 @@ def handling_molecules(request):
                 "wetlab/handling_molecules.html",
                 {"error_message": "There was no valid sample selected "},
             )
-        molecule_protocol["samples"] = ",".join(samples)
+        # molecule_protocol["samples"] = ",".join(samples)
 
         return render(
             request,
@@ -3291,6 +3295,23 @@ def handling_molecules(request):
     elif (
         request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
     ):
+        heading = core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION.copy()
+        heading.append("s_id")
+        samples, excel_data = core.utils.samples.get_selection_from_excel_data(
+            request.POST["molecule_data"], heading, None, "s_id"
+        )
+        molecule_recorded = core.utils.samples.record_molecules(
+            samples, excel_data, heading, request.user, __package__
+        )
+        import pdb
+
+        pdb.set_trace()
+        return render(
+            request,
+            "wetlab/handling_molecules.html",
+            {"molecule_recorded": molecule_recorded},
+        )
+        """
         molecule_recorded = core.utils.samples.record_molecules(
             request.POST, request.user, __package__
         )
@@ -3332,6 +3353,7 @@ def handling_molecules(request):
                 "show_molecule_parameters": show_molecule_parameters,
             },
         )
+        """
 
     elif (
         request.method == "POST" and request.POST["action"] == "selectedOwnerMolecules"
@@ -3434,8 +3456,6 @@ def handling_molecules(request):
                 "pending_to_use": pending_to_use,
             },
         )
-
-    return
 
 
 @login_required
