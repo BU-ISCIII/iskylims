@@ -27,6 +27,9 @@ HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ["Molecule Code ID", "Lot Commercial Ki
 # ########### Headings to confirm the sucessful recorded
 HEADING_CONFIRM_MOLECULE_RECORDED = ["Molecule Code ID", "Used Protocol"]
 
+### Heading values when showing pending samples at handling molecules
+HEADING_FOR_DEFINED_SAMPLES = ['Sample extraction date', 'Sample Code ID', 'Sample','To be included']
+
 # ## Heading values when showing pending samples
 HEADING_FOR_PENDING_MOLECULES = [
     "Sample",
