@@ -2247,7 +2247,7 @@ def record_samples(request):
         and request.POST["action"] == "select_samples_pre_defined"
     ):
         excel_data = json.loads(request.POST["predef_table_data"])
-        
+
         header = json.loads(request.POST["predef_table_header"])
 
         # Change excel header (verbose_name) to field names
@@ -2423,14 +2423,14 @@ def record_samples(request):
         except ValueError:
             error_message = core.core_config.ERROR_INVALID_SAMPLE_BATCH_FILE
             return render(
-            request,
-            "wetlab/record_sample.html",
-            {
-                "error_message" : error_message,
-                "fields_info": fields_info,
-                "pre_def_samples": pre_def_samples,
-                "template_path": template_path,
-            },
+                request,
+                "wetlab/record_sample.html",
+                {
+                    "error_message" : error_message,
+                    "fields_info": fields_info,
+                    "pre_def_samples": pre_def_samples,
+                    "template_path": template_path,
+                },
         )
         sample_batch_df = sample_batch_df.dropna(how="all")
 
