@@ -1603,20 +1603,31 @@ class MoleculePreparation(models.Model):
             molecule_state_name__exact=state_value
         )
         self.save()
+        return self
 
     def set_increase_reuse(self):
         self.reused_number += 1
         self.save()
+        return slf
 
-    def set_user_lot_kit(self, lot_kit_name):
-        self.user_lot_kit_id = UserLotCommercialKits.objects.get(
-            chip_lot__exact=lot_kit_name
-        )
+    def set_user_lot_kit(self, lot_kit_name, update_usage_kit=False):
+        if lot_kit_name == "" :
+            self.user_lot_kit_id = None
+        else:
+            user_lot_obj = UserLotCommercialKits.objects.filter(
+                chip_lot__iexact=lot_kit_name
+            ).last()
+            self.user_lot_kit_id = user_lot_obj
+            if update_usage_kit:
+                user_lot_obj = user_lot_obj.set_increase_use()
+                user_lot_obj.set_latest_use(datetime.datetime.now())
         self.save()
+        return self
 
     def set_user_lot_kit_obj(self, lot_kit_obj):
         self.user_lot_kit_id = lot_kit_obj
         self.save()
+        return self
 
     objects = MoleculePreparationManager()
 
@@ -1624,9 +1635,9 @@ class MoleculePreparation(models.Model):
 class MoleculeParameterValueManager(models.Manager):
     def create_molecule_parameter_value(self, parameter_value):
         new_molecule_parameter_data = self.create(
-            molecule_parameter_id=parameter_value["moleculeParameter_id"],
+            molecule_parameter_id=parameter_value["molecule_parameter_id"],
             molecule_id=parameter_value["molecule_id"],
-            parameter_value=parameter_value["parameterValue"],
+            parameter_value=parameter_value["parameter_value"],
         )
         return new_molecule_parameter_data
 

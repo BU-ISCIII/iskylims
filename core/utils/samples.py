@@ -498,67 +498,29 @@ def create_empty_patient(p_code_id):
     return patient_obj
 
 
-def add_molecule_protocol_parameters(form_data):
-    """The function stores in database the molecule parameters.
-        Return the list of the molecules updated
+def add_molecule_protocol_parameters(data, parameters):
+    """Store molecule parameter values asigned to the molecule
 
-    Parameters:
-    -----------
-        request
-
-    Return:
-    ------
-        molecule_updated_list.
-    """
-
-    molecule_parameter_value = {}
-    molecule_updated_list = []
-
-    molecule_json_data = json.loads(form_data["parameters_data"])
-    molecule_ids = form_data["molecules"].split(",")
-    molecule_code_ids = form_data["molecule_code_ids"].split(",")
-    parameter_heading = form_data["heading_in_excel"].split("::")
-    parameters_length = len(molecule_json_data[0])
-    fixed_heading_length = len(core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
-
-    for row_index in range(len(molecule_json_data)):
-        user_lot_commercial_kit_obj = core.models.UserLotCommercialKits.objects.filter(
-            chip_lot__exact=molecule_json_data[row_index][1]
-        ).last()
-        # increase the number of use and updated the last use date
-        user_lot_commercial_kit_obj.set_increase_use()
-        user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
-        right_id = molecule_ids[
-            molecule_code_ids.index(molecule_json_data[row_index][0])
-        ]
-
-        molecule_obj = get_molecule_obj_from_id(right_id)
-        molecule_obj.set_user_lot_kit_obj(user_lot_commercial_kit_obj)
-        molecule_obj.set_state("Completed")
-        molecule_updated_list.append(molecule_obj.get_molecule_code_id())
-        protocol_used_obj = molecule_obj.get_protocol_obj()
-
-        for p_index in range(fixed_heading_length, parameters_length):
-            molecule_parameter_value[
-                "moleculeParameter_id"
-            ] = core.models.ProtocolParameters.objects.filter(
-                protocol_id=protocol_used_obj,
-                parameter_name__exact=parameter_heading[p_index - fixed_heading_length],
-                parameter_used__exact=True,
-            ).last()
+    Args:
+        data (list): _description_
+        parameters (list): _description_
+    """    
+    for row in data:
+        molecule_obj = get_molecule_obj_from_id(row["m_ids"])
+        prot_obj = molecule_obj.get_protocol_obj()
+        molecule_obj = molecule_obj.set_user_lot_kit(row["Lot Commercial Kit"], update_usage_kit=True)
+        for param in parameters:
+            molecule_parameter_value = {}
+            molecule_parameter_value["molecule_parameter_id"] = core.models.ProtocolParameters.objects.filter(protocol_id=prot_obj, parameter_name__iexact=param).last()
             molecule_parameter_value["molecule_id"] = molecule_obj
-            molecule_parameter_value["parameterValue"] = molecule_json_data[row_index][
-                p_index
-            ]
-            core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
-                molecule_parameter_value
-            )
-
+            molecule_parameter_value["parameter_value"] = row[param]
+            _ = core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(molecule_parameter_value)
+        import pdb; pdb.set_trace()
+        molecule_obj.set_state("Completed")
         # Update sample state
         sample_obj = molecule_obj.get_sample_obj()
         sample_obj.set_state("Pending for use")
-
-    return molecule_updated_list
+    return
 
 
 def check_if_molecule_use_defined(app_name):
@@ -1287,7 +1249,7 @@ def get_molecule_data_and_protocol_parameters(protocol_objs):
             protocol_id=protocol_obj, parameter_used=True).order_by("parameter_order")
         for param in prot_params:
             mol_data_parm[prot_name]["param_heading"].append(param.get_parameter_name())
-
+        mol_data_parm[prot_name]["param_heading_in_string"] = ";".join(mol_data_parm[prot_name]["param_heading"])
         mol_data_parm[prot_name]["m_data"] = list(
             core.models.MoleculePreparation.objects.filter(pk__in=mol_ids).values_list("pk", "sample__sample_name" ,"molecule_code_id")
         )
