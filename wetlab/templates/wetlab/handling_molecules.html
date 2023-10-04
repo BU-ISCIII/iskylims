@@ -3,8 +3,12 @@
 {% block content %}
     {% include "wetlab/menu.html" %}
     {% include 'core/jexcel_functionality.html' %}
-    {% include "core/cdn_table_functionality.html" %}
     {% include "wetlab/menu.html" %}
+    <style>
+        #table_min_heigth {
+            min-height: 800vh;
+        }
+    </style>
     <section class="iskylims d-flex flex-column fill-height">
         <div class="container-md">
             {% include 'registration/login_inline.html' %}
@@ -114,10 +118,13 @@
                                     <input type="hidden" name="action" value="addMoleculeParameters" />
                                     <input type="hidden" name="protocol_list" value="{{ protocol_list }}" />
                                     {% for prot, value_dict in molecule_parameters.items %}
+                                        <input type="hidden"
+                                               name="{{ prot }}_parameters"
+                                               value="{{ value_dict.param_heading_in_string }}" />
                                         <div class="card-body">
                                             <h5>Protocol: {{ prot }}</h5>
                                             <div class="row horizontal-scroll my-3">
-                                                <div id="spreadsheet_{{ prot }}"></div>
+                                                <div style="height:200px;" id="spreadsheet_{{ prot }}"></div>
                                             </div>
                                         </div>
                                     {% endfor %}
@@ -138,24 +145,16 @@
                 <div class="row my-2">
                     <div class="col-sm-12">
                         <div class="card ">
-                            <div class="card-header">
-                                <h3>The following molecules have been updated with quality Parameters.</h3>
+                            <div class="card-header text-center">
+                                <h3>Molecules have been updated with required parameters.</h3>
                             </div>
-                            <div class="card-body">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Molecule Code ID</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for values in molecule_parameters_updated %}
-                                            <tr>
-                                                <td>{{ values }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                            <div class="row my-3">
+                                <div class="col">
+                                    <input type="button"
+                                           class="btn btn-outline-secondary"
+                                           value="Return Home"
+                                           onclick="location.href ='/wetlab' ;" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -364,7 +363,7 @@
             {% endif %}
         </div>
     </section>
-    <script> 
+    <script>
         {% if sample_availables.sample_heading %} // excel table for new samples 
             var data1 = [{% for values in sample_availables.sample_information %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}

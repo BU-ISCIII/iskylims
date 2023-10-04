@@ -3347,32 +3347,22 @@ def handling_molecules(request):
         )
 
     elif request.method == "POST" and request.POST["action"] == "addMoleculeParameters":
-        import pdb; pdb.set_trace()
+        protocols = request.POST["protocol_list"].split(";")
+        for protocol in protocols:
+            heading = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS.copy()
+            parameters = request.POST[protocol + "_parameters"].split(";")
+            heading += parameters
+            heading.insert(0, "m_ids")
+            molecules, param_values = core.utils.samples.get_selection_from_excel_data(
+                request.POST[protocol], heading, None, "m_ids"
+            )
+            core.utils.samples.add_molecule_protocol_parameters(param_values, parameters)
 
-        molecule_parameters_updated = (
-            core.utils.samples.add_molecule_protocol_parameters(request.POST)
+        return render(
+            request,
+            "wetlab/handling_molecules.html",
+            {"molecule_parameters_updated": True},
         )
-        if "pending" in request.POST:
-            molecules = request.POST["pending"].split(",")
-            show_molecule_parameters = (
-                core.utils.samples.display_molecule_protocol_parameters(
-                    molecules, request.user
-                )
-            )
-            return render(
-                request,
-                "wetlab/handling_molecules.html",
-                {
-                    "molecule_parameters_updated": molecule_parameters_updated,
-                    "show_molecule_parameters": show_molecule_parameters,
-                },
-            )
-        else:
-            return render(
-                request,
-                "wetlab/handling_molecules.html",
-                {"molecule_parameters_updated": molecule_parameters_updated},
-            )
 
     elif request.method == "POST" and request.POST["action"] == "requestMoleculeUse":
         molecule_use = core.utils.samples.set_molecule_use(request.POST, __package__)
