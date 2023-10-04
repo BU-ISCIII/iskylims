@@ -181,7 +181,7 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     return samples_data
 
 
-def get_sample_in_project_obj(sample_value):
+def get_sample_in_project_obj(sample_value, value_is_pk=False):
     """Return the sample instance for the request. Two input types are accepted
         sample name or the PK of the sample
 
@@ -194,15 +194,18 @@ def get_sample_in_project_obj(sample_value):
         SamplesInProject: instance of the input value
     """
     sample_in_project_obj = ""
-    try:
-        _ = int(sample_value)
-        if wetlab.models.SamplesInProject.objects.filter(
-            pk__exact=sample_value
-        ).exists():
-            sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
+    if value_is_pk:
+        try:
+            _ = int(sample_value)
+            if wetlab.models.SamplesInProject.objects.filter(
                 pk__exact=sample_value
-            )
-    except ValueError:
+            ).exists():
+                sample_in_project_obj = wetlab.models.SamplesInProject.objects.get(
+                    pk__exact=sample_value
+                )
+        except ValueError:
+            pass
+    else:
         if wetlab.models.SamplesInProject.objects.filter(
             sample_name__exact=sample_value
         ).exists():
