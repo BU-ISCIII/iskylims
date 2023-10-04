@@ -1608,10 +1608,10 @@ class MoleculePreparation(models.Model):
     def set_increase_reuse(self):
         self.reused_number += 1
         self.save()
-        return slf
+        return self
 
     def set_user_lot_kit(self, lot_kit_name, update_usage_kit=False):
-        if lot_kit_name == "" :
+        if lot_kit_name == "":
             self.user_lot_kit_id = None
         else:
             user_lot_obj = UserLotCommercialKits.objects.filter(
