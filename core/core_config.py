@@ -242,6 +242,7 @@ ERROR_SAMPLE_ALREADY_DEFINED = ["Sample", "already exist in the database"]
 ERROR_EMPTY = [
     "The uploaded table or batch file does not have any sample. Upload a valid batch file"
 ]
+ERROR_INVALID_SAMPLE_BATCH_FILE = "Invalid sample batch file"
 ERROR_NO_LAB_REQUESTED = [
     "The Laboratory",
     "from where the samples are received is not defined",
