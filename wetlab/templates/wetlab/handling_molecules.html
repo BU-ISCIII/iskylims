@@ -52,188 +52,88 @@
                         </div>
                     </div>
                 </div>
-            {% elif molecule_recorded %}
-                {% if molecule_recorded.incomplete %}
-                    <div class="row my-3">
-                        <div class="col-sm">
-                            <div class="card border-warning">
-                                <div class="card-header text-center">
-                                    <h3>Information missing</h3>
-                                </div>
-                                <div class="card-body">
-                                    <div class="col">
-                                        <p>Please add the missing information and click on the submit bottom</p>
-                                        <form method="post"
-                                              enctype="multipart/form-data"
-                                              name="updateMoleculeProtocol"
-                                              id="updateMoleculeProtocol"
-                                              class="form-horizontal well">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="updateMoleculeProtocol" />
-                                            <input type="hidden"
-                                                   name="samples"
-                                                   value="{{ molecule_recorded.incomplete_sample_ids }}" />
-                                            <input type="hidden"
-                                                   name="samples_code_ids"
-                                                   value="{{ molecule_recorded.incomplete_sample_code_ids }}" />
-                                            <input type="hidden"
-                                                   name="molecule_code_ids"
-                                                   value="{{ molecule_recorded.molecule_code_ids }}" />
-                                            <input type="hidden"
-                                                   name="molecule_ids"
-                                                   value="{{ molecule_recorded.molecule_ids }}" />
-                                            <div class="horizontal-scroll">
-                                                <div id="missing_data"></div>
-                                            </div>
-                                            <input type="button"
-                                                   class="btn btn-outline-secondary my-3"
-                                                   value="Download Spreadsheet"
-                                                   onclick="$('#spreadsheet').jexcel('download')" />
-                                            <input class="btn float-end btn-outline-primary my-3"
-                                                   id="btnSubmit"
-                                                   type="submit"
-                                                   value="Submit" />
-                                        </form>
-                                    </div>
+            {% elif molecule_recorded.incomplete %}
+                <div class="row my-3">
+                    <div class="col-sm">
+                        <div class="card border-warning">
+                            <div class="card-header text-center">
+                                <h3>Information missing</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="col">
+                                    <p>Please add the missing information and click on the submit bottom</p>
+                                    <form method="post"
+                                          enctype="multipart/form-data"
+                                          name="updateMoleculeProtocol"
+                                          id="updateMoleculeProtocol"
+                                          class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="updateMoleculeProtocol" />
+                                        <input type="hidden"
+                                               name="samples"
+                                               value="{{ molecule_recorded.incomplete_sample_ids }}" />
+                                        <input type="hidden"
+                                               name="samples_code_ids"
+                                               value="{{ molecule_recorded.incomplete_sample_code_ids }}" />
+                                        <input type="hidden"
+                                               name="molecule_code_ids"
+                                               value="{{ molecule_recorded.molecule_code_ids }}" />
+                                        <input type="hidden"
+                                               name="molecule_ids"
+                                               value="{{ molecule_recorded.molecule_ids }}" />
+                                        <div class="horizontal-scroll">
+                                            <div id="missing_data"></div>
+                                        </div>
+                                        <input type="button"
+                                               class="btn btn-outline-secondary my-3"
+                                               value="Download Spreadsheet"
+                                               onclick="$('#spreadsheet').jexcel('download')" />
+                                        <input class="btn float-end btn-outline-primary my-3"
+                                               id="btnSubmit"
+                                               type="submit"
+                                               value="Submit" />
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                {% else %}
-                    {% if show_molecule_parameters %}
-                        {% if not show_molecule_parameters.lot_kit %}
-                            <div class="row my-2">
-                                <div class="col-sm-10 offset-1">
-                                    <div class="card border-danger mb-3">
-                                        <div class="card-header">
-                                            <h3>Not available user Lot Kits.</h3>
-                                        </div>
-                                        <div class="card-body">
-                                            <p>There is not user Lot Kit defined on your name.</p>
-                                            <p class="mb-3">
-                                                Click on the bottom below to define your Lot Kit first. Then return again to assign the molecule parameter
-                                            </p>
-                                            <button type="button"
-                                                    class="btn btn-outline-primary float-end"
-                                                    onclick="location.href = '/wetlab/addUserLotCommercialKit';">
-                                                Define new User Lot Commercial Kit
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                </div>
+            {% elif molecule_parameters %}
+                <div class="row my-2">
+                    <div class="col-md">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h3>Update molecules data with defined parameters</h3>
                             </div>
-                        {% endif %}
-                        <div class="row my-2">
-                            <div class="col-md">
-                                <div class="card ">
-                                    <div class="card-header">
-                                        <h3>Update the following molecules with quality parameters.</h3>
-                                    </div>
-                                    <div class="card-body">
-                                        {% if show_molecule_parameters.pending_id %}
-                                            <p>The selected molecules contain different protocol</p>
-                                            <p>After Clicking the Submit buttom the next molecules will be displayed</p>
-                                        {% endif %}
-                                        <form method="post"
-                                              enctype="multipart/form-data"
-                                              name="addMoleculeParameters"
-                                              id="addMoleculeParameters"
-                                              class="form-horizontal well">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="addMoleculeParameters" />
-                                            <input type="hidden"
-                                                   name="molecules"
-                                                   value="{{ show_molecule_parameters.molecule_id }}" />
-                                            <input type="hidden"
-                                                   name="heading_in_excel"
-                                                   value="{{ show_molecule_parameters.heading_in_excel }}" />
-                                            <input type="hidden"
-                                                   name="molecule_code_ids"
-                                                   value="{{ show_molecule_parameters.molecule_code_ids }}" />
-                                            {% if show_molecule_parameters.pending_id %}
-                                                <input type="hidden"
-                                                       name="pending"
-                                                       value="{{ show_molecule_parameters.pending_id }}" />
-                                            {% endif %}
+                            <div class="card-body">
+                                <form method="post"
+                                      enctype="multipart/form-data"
+                                      name="addMoleculeParameters"
+                                      id="addMoleculeParameters">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="addMoleculeParameters" />
+                                    <input type="hidden" name="protocol_list" value="{{ protocol_list }}" />
+                                    {% for prot, value_dict in molecule_parameters.items %}
+                                        <div class="card-body">
+                                            <h5>Protocol: {{ prot }}</h5>
                                             <div class="row horizontal-scroll my-3">
-                                                <div id="spreadsheet" style="min-height:400px;"></div>
+                                                <div id="spreadsheet_{{ prot }}"></div>
                                             </div>
-                                            <script>
-                                            var data = [{% for values in show_molecule_parameters.data %}
-                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                            ];
-
-                                            mySpreadsheet = $('#spreadsheet').jexcel({
-                                                data:data,
-                                                columns: [
-                                                        { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
-                                                        { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
-
-                                                        {% for name, type, options in show_molecule_parameters.protocol_parameters_heading_type %}
-                                                            {% if type == 'Date' %}
-                                                                { type: 'calendar', title:'{{name}}', width:150 },
-                                                            {% elif type == 'Option List'%}
-                                                                { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
-                                                            {% else %}
-                                                                { type: 'text', title:'{{name}}', width:150 },
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                ],
-                                                allowInsertColumn:false,
-                                                allowDeleteColumn:false,
-                                                allowRenameColumn:false,
-                                                allowInsertRow:false,
-                                                allowDeleteRow:false,
-                                                tableOverflow:false,
-                                                tableHeight:'600px',
-                                                csvFileName:'quality_data',
-                                            });
-                                            </script>
-                                            <input type="button"
-                                                   class="btn btn-outline-secondary"
-                                                   value="Return Home"
-                                                   onclick="location.href ='/wetlab' ;" />
-                                            <input class="btn float-end btn-outline-primary"
-                                                   id="btnSubmit"
-                                                   type="submit"
-                                                   value="Submit" />
-                                        </form>
-                                        <script>
-                                        $(document).ready(function () {
-                                            $("#addMoleculeParameters").submit(function (e) {
-                                                //stop submitting the form to see the disabled button effect
-                                                // e.preventDefault();
-                                                //disable the submit button
-                                                var empty_value = 0
-                                                var table_data = $('#spreadsheet').jexcel('getData')
-                                                table_data.forEach((row, index)=>{
-                                                    if (row[1] == ''){
-                                                        empty_value +=1
-                                                        }
-                                                });
-                                                if (empty_value > 0){
-                                                    window.alert("Please fill the empty Lot Kit ");
-                                                    return false;
-                                                }
-                                                else{
-                                                    var data_json = JSON.stringify(table_data)
-
-                                                    $("<input />").attr("type", "hidden")
-                                                        .attr("name", "parameters_data")
-                                                        .attr("value", data_json)
-                                                        .appendTo("#addMoleculeParameters");
-                                                    $("#btnSubmit").attr("disabled", true);
-                                                    return true;
-                                                }
-                                            });
-                                        });
-                                        </script>
-                                    </div>
-                                </div>
+                                        </div>
+                                    {% endfor %}
+                                    <input type="button"
+                                           class="btn btn-outline-secondary"
+                                           value="Return Home"
+                                           onclick="location.href ='/wetlab' ;" />
+                                    <input class="btn float-end btn-outline-primary"
+                                           id="btnSubmit"
+                                           type="submit"
+                                           value="Submit" />
+                                </form>
                             </div>
                         </div>
-                    {% endif %}
-                {% endif %}
+                    </div>
+                </div>
             {% elif molecule_parameters_updated %}
                 <div class="row my-2">
                     <div class="col-sm-12">
@@ -259,109 +159,7 @@
                             </div>
                         </div>
                     </div>
-                    <!--  end of col-sm-12 -->
                 </div>
-                {% if show_molecule_parameters %}
-                    <div class="row my-2">
-                        <div class="col-sm-12">
-                            <div class="card ">
-                                <div class="card-header">
-                                    <h3>Update the following molecules with Nucleic quality Parameters.</h3>
-                                </div>
-                                <div class="card-body">
-                                    {% if show_molecule_parameters.pending_id %}
-                                        <p>The selected molecules contain different protocol</p>
-                                        <p>After Clicking ----- the Submit buttom the next molecules will be displayed</p>
-                                    {% endif %}
-                                    <form method="post"
-                                          enctype="multipart/form-data"
-                                          name="addMoleculeParameters"
-                                          id="addMoleculeParameters"
-                                          class="form-horizontal well">
-                                        {% csrf_token %}
-                                        <div class="scrolling-wrapper">
-                                            <input type="hidden" name="action" value="addMoleculeParameters" />
-                                            <input type="hidden"
-                                                   name="molecules"
-                                                   value="{{ show_molecule_parameters.molecule_id }}" />
-                                            <input type="hidden"
-                                                   name="heading_in_excel"
-                                                   value="{{ show_molecule_parameters.heading_in_excel }}" />
-                                            <input type="hidden"
-                                                   name="molecule_code_ids"
-                                                   value="{{ show_molecule_parameters.molecule_code_ids }}" />
-                                            {% if show_molecule_parameters.pending_id %}
-                                                <input type="hidden"
-                                                       name="pending"
-                                                       value="{{ show_molecule_parameters.pending_id }}" />
-                                            {% endif %}
-                                            <div id="spreadsheet"></div>
-                                        </div>
-                                        <!--  end of scrolling  -->
-                                        <script>
-                                    var data = [{% for values in show_molecule_parameters.data %}
-                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                    ];
-
-                                    mySpreadsheet = $('#spreadsheet').jexcel({
-                                        data:data,
-                                        columns: [
-                                                    { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
-                                                    { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
-
-                                                    {% for name, type, options in show_molecule_parameters.protocol_parameters_heading_type %}
-                                                        {% if type == 'Date' %}
-                                                            { type: 'calendar', title:'{{name}}', width:150 },
-                                                        {% elif type == 'Option List'%}
-                                                            { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
-                                                        {% else %}
-                                                            { type: 'text', title:'{{name}}', width:150 },
-                                                        {% endif %}
-                                                    {% endfor %}
-                                        ],
-                                        allowInsertColumn:false,
-                                        allowDeleteColumn:false,
-                                        allowRenameColumn:false,
-                                        allowInsertRow:false,
-                                        allowDeleteRow:false,
-                                        tableOverflow:false,
-                                        tableHeight:'200px',
-                                        csvFileName:'quality_data',
-
-                                    });
-                                        </script>
-                                        <input type="button"
-                                               class="btn btn-outline-secondary"
-                                               value="Return Home"
-                                               onclick="location.href ='/wetlab' ;" />
-                                        <input class="btn float-end btn-outline-primary"
-                                               id="btnSubmit"
-                                               type="submit"
-                                               value="Submit" />
-                                    </form>
-                                    <script>
-                                $(document).ready(function () {
-                                    $("#addMoleculeParameters").submit(function (e) {
-                                        //stop submitting the form to see the disabled button effect
-                                        // e.preventDefault();
-                                        //disable the submit button
-                                        var table_data = $('#spreadsheet').jexcel('getData')
-                                        var data_json = JSON.stringify(table_data)
-                                        $("<input />").attr("type", "hidden")
-                                            .attr("name", "parameters_data")
-                                            .attr("value", data_json)
-                                            .appendTo("#addMoleculeParameters");
-                                        $("#btnSubmit").attr("disabled", true);
-                                        return true;
-                                    });
-                                });
-                                    </script>
-                                </div>
-                            </div>
-                        </div>
-                        <!--  end of col-sm-12 -->
-                    </div>
-                {% endif %}
             {% elif molecule_use %}
                 <div class="row my-2">
                     <div class="col-sm-12">
@@ -373,9 +171,7 @@
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            {% for value in molecule_use.heading %}
-                                                <th>{{ value }}</th>
-                                            {% endfor %}
+                                            {% for value in molecule_use.heading %}<th>{{ value }}</th>{% endfor %}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -391,7 +187,6 @@
                             </div>
                         </div>
                     </div>
-                    <!--  end of col-sm-12 -->
                 </div>
             {% else %}
                 <div class="row my-2">
@@ -451,7 +246,7 @@
                                                             {% csrf_token %}
                                                             <input type="hidden" name="action" value="selectedMolecules" />
                                                             <input type="hidden" name="samples_in_list" value="True" />
-                                                            <div class="col-md my-3 horizontal-scroll">
+                                                            <div class="col-md my-3">
                                                                 <div id="select_molecules"></div>
                                                             </div>
                                                             <div class="col">
@@ -482,8 +277,8 @@
                                     <div class="row mt-4">
                                         <div class="col">
                                             <div class="card">
-                                                <div class="card-header">
-                                                    <h3 style="text-align:center">Select the Samples to add Molecule information</h3>
+                                                <div class="card-header text-center">
+                                                    <h3>Select the Samples to add Molecule information</h3>
                                                 </div>
                                                 <div class="card-body">
                                                     {% if molecules_availables %}
@@ -494,27 +289,9 @@
                                                               id="selectedOwnerMolecules">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="action" value="selectedOwnerMolecules" />
-                                                            <input type="hidden" name="samples_in_list" value="True" />
-                                                            <table id="cdn_table" class="table table-striped table-bordered ">
-                                                                <thead>
-                                                                    <tr>
-                                                                        {% for value in molecules_availables.molecule_heading %}<th>{{ value }}</th>{% endfor %}
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {% for s_name , code, protocol,  m_id, date  in molecules_availables.data %}
-                                                                        <tr>
-                                                                            <td>{{ s_name }}</td>
-                                                                            <td>{{ code }}</td>
-                                                                            <td>{{ date }}</td>
-                                                                            <td>{{ protocol }}</td>
-                                                                            <td class="text-center">
-                                                                                <input type="checkbox" name="molecules" value="{{ m_id }}" />
-                                                                            </td>
-                                                                        </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
+                                                            <div class="col-md my-3">
+                                                                <div id="pending_molecules"></div>
+                                                            </div>
                                                             <input type="button"
                                                                    class="btn btn-outline-secondary my-3"
                                                                    value="Return Home"
@@ -587,62 +364,92 @@
             {% endif %}
         </div>
     </section>
-    <script type="text/javascript">
-    $(document).ready(function() {
-        $('#cdn_table').DataTable({
-            responsive: true,
-        });
-    });
-    </script>
-    <script>
-        {% if sample_availables.sample_heading %}    
-            // excel table for new samples
+    <script> 
+        {% if sample_availables.sample_heading %} // excel table for new samples 
             var data1 = [{% for values in sample_availables.sample_information %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-            ];
+            ]; 
             var table1 = jexcel(document.getElementById('select_molecules'), {
-                data:data1,
+                data:data1, 
                 columns: [{% for values in sample_availables.sample_heading  %}
+                    {% if forloop.last %} 
+                        { type: 'hidden' }, 
+                        { type: 'checkbox',  title:'{{values}}', width:150 }, 
+                    {% else %} 
+                        { type: 'text', title:'{{values}}', width:300 , readOnly:true },
+                    {% endif %} 
+                {% endfor %} 
+            ],  
+                allowInsertColumn:false,
+                allowDeleteColumn:false, 
+                allowRenameColumn:false, 
+                allowInsertRow:false, 
+                allowDeleteRow:false, 
+                tableOverflow:false, 
+                search:true, 
+                pagination:20, 
+                csvFileName:'SamplesDefined.csv',  
+            });
+            
+            // send form for new samples 
+            $(document).ready(function () {
+                $("#selectedMolecules").submit(function (e) { 
+                    var table_data = table1.getData()
+                    var data_json = JSON.stringify(table_data)
+                    $("<input />").attr("type", "hidden")
+                        .attr("name", "selected_samples")
+                        .attr("value", data_json)
+                        .appendTo("#selectedMolecules");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+            // excel for pending molecules
+            var data2 = [{% for values in molecules_availables.data %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ];
+            var table2  = jexcel(document.getElementById('pending_molecules'), {
+                data:data2,
+                columns: [{% for values in molecules_availables.molecule_heading  %}
                     {% if forloop.last %}
                         { type: 'hidden' },
                         { type: 'checkbox',  title:'{{values}}', width:150 },
                     {% else %}
-                        { type: 'text', title:'{{values}}', width:300 , readOnly:true },
+                        { type: 'text', title:'{{values}}', width:250 , readOnly:true },
                     {% endif %}
                 {% endfor %}
-                ],
-
+            ],
                 allowInsertColumn:false,
                 allowDeleteColumn:false,
                 allowRenameColumn:false,
                 allowInsertRow:false,
                 allowDeleteRow:false,
-                tableOverflow:false,
+                tableOverflow:true,
                 search:true,
                 pagination:20,
-                csvFileName:'SamplesDefined.csv',
-
+                csvFileName:'molecule_use',
             });
-            // send form for new samples
+
+            // send form for molecule in use
             $(document).ready(function () {
-                $("#selectedMolecules").submit(function (e) {
-                    var table_data = table1.getData()
-                    var data_json = JSON.stringify(table_data)
+                $("#selectedOwnerMolecules").submit(function (e) {
+                    var table_data2 = table2.getData()
+                    var data_json = JSON.stringify(table_data2)
                     $("<input />").attr("type", "hidden")
-                    .attr("name", "selected_samples")
-                    .attr("value", data_json)
-                    .appendTo("#selectedMolecules");
+                        .attr("name", "pending_molecules")
+                        .attr("value", data_json)
+                        .appendTo("#selectedOwnerMolecules");
                     $("#btnSubmit").attr("disabled", true);
                     return true;
                 });
             });
 
             // excel for selecting the molecule use
-            var data2 = [{% for values in pending_to_use.data %}
+            var data3 = [{% for values in pending_to_use.data %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
             ];
-            var table2  = jexcel(document.getElementById('spreadsheet2'), {
-                data:data2,
+            var table3  = jexcel(document.getElementById('spreadsheet2'), {
+                data:data3,
                 columns: [
                         { type: 'text', title:'{{pending_to_use.heading.0}}', width:350 , readOnly:true },
                         { type: 'text', title:'{{pending_to_use.heading.1}}', width:480 , readOnly:true },
@@ -666,8 +473,8 @@
                     //stop submitting the form to see the disabled button effect
                     // e.preventDefault();
                     //disable the submit button
-                    var table_data2 = table2.getData()
-                    var data_json = JSON.stringify(table_data2)
+                    var table_data3 = table2.getData()
+                    var data_json = JSON.stringify(table_data3)
                     $("<input />").attr("type", "hidden")
                         .attr("name", "molecule_used_for")
                         .attr("value", data_json)
@@ -742,8 +549,6 @@
             });
         {% endif %}
 
-
-
         {% if  molecule_recorded.incomplete %}
             var data = [{% for values in molecule_recorded.data %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -802,6 +607,54 @@
                     return true;
                 });
             });
+        {% endif %}
+        {% if molecule_parameters %}
+            $(document).ready(function () {
+                {% for prot , value_dict in  molecule_parameters.items %}
+                    var {{ prot }}_data = [{% for values in value_dict.m_data %}
+                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                    ];
+
+                    var {{ prot }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ prot }}'),{
+                        data:{{ prot }}_data,
+                        columns: [
+                            { type: 'hidden' },
+                            { type: 'text', title:'{{value_dict.fix_heading.0}}', width:180 , readOnly:true },
+                            { type: 'text', title:'{{value_dict.fix_heading.1}}', width:180 , readOnly:true },
+                                { type: 'dropdown', title:'{{value_dict.fix_heading.2}}', width:180 , source:[{% for value in value_dict.lot_kit %}'{{value}}',{% endfor %} ]},
+                                {% for name, type, options in value_dict.params_type %}
+                                    {% if type == 'Date' %}
+                                        { type: 'calendar', title:'{{name}}', width:150 },
+                                    {% elif type == 'Option List'%}
+                                        { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                    {% else %}
+                                        { type: 'text', title:'{{name}}', width:150 },
+                                    {% endif %}
+                                {% endfor %}
+                        ],
+                        allowInsertColumn:false,
+                        allowDeleteColumn:false,
+                        allowRenameColumn:false,
+                        allowInsertRow:false,
+                        allowDeleteRow:false,
+                        tableOverflow:false,
+                        tableHeight:'600px',
+                        csvFileName:'molecule_parameters.csv',
+                    });
+                                    
+                
+                    $("#addMoleculeParameters").submit(function (e) {
+                        var table_data =  {{ prot }}_data_table.getData()
+                        var data_json = JSON.stringify(table_data)
+                        $("<input />").attr("type", "hidden")
+                            .attr("name", "{{ prot }}")
+                            .attr("value", data_json)
+                            .appendTo("#addMoleculeParameters");
+                        $("#button-submit").attr("disabled", true);
+                        return true;
+                    });
+                {% endfor %}
+            });                  
         {% endif %}
     </script>
 {% endblock %}

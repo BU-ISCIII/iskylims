@@ -3271,10 +3271,8 @@ def handling_molecules(request):
         samples, _ = core.utils.samples.get_selection_from_excel_data(
             request.POST["selected_samples"], heading, "To be included", "s_id"
         )
-
         if len(samples) == 0:
             return redirect("handling_molecules")
-
         molecule_protocol = core.utils.samples.get_table_record_molecule(
             samples, __package__
         )
@@ -3284,7 +3282,6 @@ def handling_molecules(request):
                 "wetlab/handling_molecules.html",
                 {"error_message": "There was no valid sample selected "},
             )
-        # molecule_protocol["samples"] = ",".join(samples)
 
         return render(
             request,
@@ -3300,85 +3297,58 @@ def handling_molecules(request):
         samples, excel_data = core.utils.samples.get_selection_from_excel_data(
             request.POST["molecule_data"], heading, None, "s_id"
         )
+        if len(samples) == 0:
+            return redirect("handling_molecules")
         molecule_recorded = core.utils.samples.record_molecules(
             samples, excel_data, heading, request.user, __package__
         )
-        import pdb
-
-        pdb.set_trace()
-        return render(
-            request,
-            "wetlab/handling_molecules.html",
-            {"molecule_recorded": molecule_recorded},
-        )
-        """
-        molecule_recorded = core.utils.samples.record_molecules(
-            request.POST, request.user, __package__
-        )
-
-        if (
-            "molecule_code_ids" in request.POST
-            and request.POST["molecule_code_ids"] != ""
-            and "molecule_code_ids" in molecule_recorded
-        ):
-            # Add the already recorded molecules to the new ones
-            molecule_recorded["molecule_code_ids"] += (
-                "," + request.POST["molecule_code_ids"]
-            )
-            molecule_recorded["molecule_ids"] += "," + request.POST["molecule_ids"]
-        if "incomplete_sample_ids" in molecule_recorded:
-            # collect the information to select in the option fields
-            molecule_recorded.update(
-                core.utils.samples.get_table_record_molecule(
-                    molecule_recorded["incomplete_sample_ids"], __package__
-                )
-            )
-
+        if "incomplete" in molecule_recorded:
             return render(
                 request,
                 "wetlab/handling_molecules.html",
                 {"molecule_recorded": molecule_recorded},
             )
-
-        show_molecule_parameters = (
-            core.utils.samples.display_molecule_protocol_parameters(
-                molecule_recorded["molecule_ids"].split(","), request.user
-            )
+        
+        molecule_parameters = (
+            core.utils.samples.get_molecule_data_and_protocol_parameters(molecule_recorded)
         )
+        protocol_list = ";".join(list(molecule_parameters.keys()))
         return render(
             request,
             "wetlab/handling_molecules.html",
-            {
-                "molecule_recorded": molecule_recorded,
-                "show_molecule_parameters": show_molecule_parameters,
-            },
+            {"molecule_parameters": molecule_parameters,
+             "protocol_list": protocol_list,
+            }
         )
-        """
 
     elif (
         request.method == "POST" and request.POST["action"] == "selectedOwnerMolecules"
     ):
-        # If no samples are selected , call again this function to display again the sample list
-        if "molecules" not in request.POST:
-            return redirect("handling_molecules")
-        molecules = request.POST.getlist("molecules")
-        # Set to true to reuse the html Code
-        molecule_recorded = True
-        show_molecule_parameters = (
-            core.utils.samples.display_molecule_protocol_parameters(
-                molecules, request.user
-            )
+        heading = core.core_config.HEADING_FOR_PENDING_MOLECULES.copy()
+        heading.insert(-1, "s_id")
+        molecules, _ = core.utils.samples.get_selection_from_excel_data(
+            request.POST["pending_molecules"], heading, "Select Molecule", "s_id"
         )
+        if len(molecules) == 0:
+            return redirect("handling_molecules")
+        
+        protocols = core.utils.samples.group_molecules_by_protocol(molecules)
+        molecule_parameters = (
+            core.utils.samples.get_molecule_data_and_protocol_parameters(protocols)
+        )
+        protocol_list = ";".join(list(molecule_parameters.keys()))
         return render(
             request,
             "wetlab/handling_molecules.html",
-            {
-                "molecule_recorded": molecule_recorded,
-                "show_molecule_parameters": show_molecule_parameters,
+            {"molecule_parameters": molecule_parameters,
+             "protocol_list": protocol_list,
             },
+            
         )
 
     elif request.method == "POST" and request.POST["action"] == "addMoleculeParameters":
+        import pdb; pdb.set_trace()
+
         molecule_parameters_updated = (
             core.utils.samples.add_molecule_protocol_parameters(request.POST)
         )
