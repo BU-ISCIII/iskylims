@@ -749,7 +749,7 @@ def create_table_pending_molecules(molecule_list):
     molecule_data = {}
     molecule_data["data"] = list(
         molecule_list.values_list(
-            "sample__sample_name", "molecule_code_id", "protocol_used__name", "pk"
+            "sample__sample_name", "molecule_code_id", "protocol_used__name"
         ).annotate(
             extrac_date=Func(
                 F("molecule_extraction_date"),
@@ -757,7 +757,7 @@ def create_table_pending_molecules(molecule_list):
                 function="DATE_FORMAT",
                 output_field=CharField(),
             )
-        )
+        ).annotate(pk =F("pk"))
     )
     if len(molecule_data["data"]) > 0:
         molecule_data[
@@ -788,87 +788,6 @@ def define_table_for_sample_project_fields(sample_project_id):
     sample_project_data["sample_project_id"] = sample_project_id
     sample_project_data["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
     return sample_project_data
-
-
-def display_molecule_protocol_parameters(molecule_ids, user_obj):
-    """
-    Description:
-        The function return the quality parameters defined for the
-        selected protocol.
-
-    Input:
-        molecule_ids
-    Functions:
-        get_protocol_parameters_and_type
-        get_lot_commercial_kits
-    Return:
-        laboratories.
-    """
-
-    molecule_recorded = {}
-    showed_molecule = []
-    molecule_recorded["data"] = []
-    pending_molecule = []
-    molecule_code_ids = []
-    selected_protocol = ""
-    parameter_list = []
-    for molecule in molecule_ids:
-        if not core.models.MoleculePreparation.objects.filter(
-            pk__exact=int(molecule)
-        ).exists():
-            continue
-        molecule_obj = core.models.MoleculePreparation.objects.get(
-            pk__exact=int(molecule)
-        )
-        protocol_used = molecule_obj.get_protocol()
-        protocol_used_obj = molecule_obj.get_protocol_obj()
-
-        if selected_protocol == "":
-            if core.models.ProtocolParameters.objects.filter(
-                protocol_id__exact=protocol_used_obj
-            ).exists():
-                selected_protocol = protocol_used
-                protocol_parameters = core.models.ProtocolParameters.objects.filter(
-                    protocol_id__exact=protocol_used_obj, parameter_used=True
-                ).order_by("parameter_order")
-
-                for parameter in protocol_parameters:
-                    parameter_list.append(parameter.get_parameter_name())
-                length_heading = len(
-                    core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-                    + parameter_list
-                )
-                molecule_recorded[
-                    "fix_heading"
-                ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-                molecule_recorded["param_heading"] = parameter_list
-                molecule_recorded[
-                    "protocol_parameters_heading_type"
-                ] = core.utils.protocols.get_protocol_parameters_and_type(
-                    protocol_used_obj
-                )
-                molecule_recorded[
-                    "lot_kit"
-                ] = core.utils.commercial_kits.get_lot_commercial_kits(
-                    protocol_used_obj
-                )
-
-        if protocol_used == selected_protocol:
-            showed_molecule.append(molecule)
-            data = [""] * length_heading
-            data[0] = molecule_obj.get_molecule_code_id()
-            # data[1] = protocol_used
-            molecule_recorded["data"].append(data)
-            molecule_code_ids.append(molecule_obj.get_molecule_code_id())
-        else:
-            pending_molecule.append(molecule_obj.get_molecule_id())
-
-    molecule_recorded["molecule_id"] = ",".join(showed_molecule)
-    molecule_recorded["molecule_code_ids"] = ",".join(molecule_code_ids)
-    molecule_recorded["pending_id"] = ",".join(pending_molecule)
-    molecule_recorded["heading_in_excel"] = "::".join(parameter_list)
-
-    return molecule_recorded
 
 
 def display_molecule_use(app_name):
@@ -1355,6 +1274,25 @@ def get_molecule_protocols(apps_name):
 
     return protocols, protocol_list
 
+def get_molecule_data_and_protocol_parameters(protocol_objs):
+    mol_data_parm = {}
+    for protocol_obj, mol_ids in protocol_objs.items():
+        prot_name = protocol_obj.get_name()
+        mol_data_parm[prot_name] = {}
+        mol_data_parm[prot_name]["params_type"] = core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
+        mol_data_parm[prot_name]["fix_heading"] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
+        mol_data_parm[prot_name]["lot_kit"] = core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
+        mol_data_parm[prot_name]["param_heading"] = []
+        prot_params = core.models.ProtocolParameters.objects.filter(
+            protocol_id=protocol_obj, parameter_used=True).order_by("parameter_order")
+        for param in prot_params:
+            mol_data_parm[prot_name]["param_heading"].append(param.get_parameter_name())
+
+        mol_data_parm[prot_name]["m_data"] = list(
+            core.models.MoleculePreparation.objects.filter(pk__in=mol_ids).values_list("pk", "sample__sample_name" ,"molecule_code_id")
+        )
+
+    return mol_data_parm
 
 def get_sample_objs_in_state(s_state, user=None, friend_list=None):
     """Return a list of sample objects that are in the indicate state.
@@ -1680,6 +1618,17 @@ def get_type_of_sample_information(sample_type_id):
     return sample_type_data
 
 
+def group_molecules_by_protocol(molecule_ids):
+    protocols = {}
+    for molecule_id in molecule_ids:
+        mol_obj = get_molecule_obj_from_id(molecule_id)
+        mol_protocol_obj = mol_obj.get_protocol_obj()
+        if mol_protocol_obj not in protocols:
+            protocols[mol_protocol_obj] = []
+        protocols[mol_protocol_obj].append(molecule_id)
+    return protocols
+
+
 def increase_unique_value(old_unique_number):
     """
     Description:
@@ -1858,24 +1807,18 @@ def record_molecule_use(from_data, app_name):
 
 
 def record_molecules(samples, excel_data, heading, user, app_name):
-    """
-    Description:    The function store in database the new molecule and molecule_updated_list
-                    the sample state to Extracted molecule.
-                    When user did not write any of the fields , the sample is added to incomplete_samples
-    Input:
-        form_data   # form from the user
-        user        # logged user
-        app_name    # application name to assign the right protocol
-    Functions:
-        check_empty_fields  : located at this file
-    Constant:
-        HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
-    Variables:
-        molecule_information # dictionary which collects all info
-        molecules_code_ids
-    Return:
-        molecules_recorded with the list of the recorded molecules and the heading to
-        display them
+    """Recored the molecues defined in excel_data.  If information is missing
+        returns the data to display again for correcting.
+        
+    Args:
+        samples (list): _description_
+        excel_data (list): _description_
+        heading (list): _description_
+        user (string): _description_
+        app_name (string): _description_
+
+    Returns:
+        dict: return a dictionary with used protols and the list of molecule ids
     """
 
     incompleted = []
@@ -1890,9 +1833,8 @@ def record_molecules(samples, excel_data, heading, user, app_name):
             for item in heading:
                 r_data.append(row[item])
             return_data.append(r_data)
-        type_of_molecules = get_modules_type()
+        # collect data for dropdown selection
         protocol_filter_selection = []
-        type_of_molecules = get_modules_type()
         (protocols_dict, protocol_list) = get_molecule_protocols(app_name)
         for key, value in protocols_dict.items():
             protocol_filter_selection.append([key, value])
@@ -1901,39 +1843,21 @@ def record_molecules(samples, excel_data, heading, user, app_name):
             "data": return_data,
             "protocol_filter_selection": protocol_filter_selection,
             "protocol_list": protocol_list,
-            "type_of_molecules": type_of_molecules,
+            "type_of_molecules": get_modules_type(),
             "headings": heading[:-1],
         }
-
-    import pdb
-
-    pdb.set_trace()
-
-    molecules_recorded = {}
-    molecules_ids, molecules_code_ids = [], []
-    molecule_list = []
-    incomplete_sample_data = []
-    incomplete_sample_ids = []
-    incomplete_sample_code_ids = []
-
-    heading_in_excel = core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
-    for row_index in range(len(molecule_json_data)):
-        right_id = samples_ids[samples_code_ids.index(molecule_json_data[row_index][0])]
-        if not core.models.Samples.objects.filter(pk__exact=right_id).exists():
-            continue
-        sample_obj = get_sample_obj_from_id(right_id)
-
-        # check_empty_fields does not consider if the optional values are empty
-        if check_empty_fields(molecule_json_data[row_index], [""]):
-            incomplete_sample_data.append(molecule_json_data[row_index])
-            incomplete_sample_ids.append(right_id)
-            incomplete_sample_code_ids.append(molecule_json_data[row_index][0])
-            continue
-
+    
+    prot_in_molecule = {}
+    for row in excel_data:
         molecule_data = {}
-        protocol_used = molecule_json_data[row_index][
-            heading_in_excel.index("Protocol to be used")
-        ]
+        sample_obj = get_sample_obj_from_id(row["s_id"])
+        molecule_data["app_name"] = app_name
+        molecule_data["sample"] = sample_obj
+        molecule_data["user"] = user
+        molecule_data["molecule_type"] = row["Molecule type"]
+        molecule_data["extraction_type"] = row["Type of Extraction"]
+        molecule_data["molecule_extraction_date"] = row["Extraction date"]
+        molecule_data["protocol_used"] = row["Protocol to be used"]
         if core.models.MoleculePreparation.objects.filter(sample=sample_obj).exists():
             last_molecule_code = (
                 core.models.MoleculePreparation.objects.filter(sample=sample_obj)
@@ -1943,54 +1867,23 @@ def record_molecules(samples, excel_data, heading, user, app_name):
             code_split = re.search(r"(.*_E)(\d+)$", last_molecule_code)
             number_code = int(code_split.group(2))
             number_code += 1
-            molecule_code_id = code_split.group(1) + str(number_code)
+            molecule_data["molecule_code_id"] = code_split.group(1) + str(number_code)
         else:
-            molecule_code_id = sample_obj.get_sample_code() + "_E1"
-
-        molecule_used = molecule_json_data[row_index][
-            heading_in_excel.index("Molecule type")
-        ]
-
-        molecule_data["protocolUsed"] = protocol_used
-        molecule_data["app_name"] = app_name
-        molecule_data["sample"] = sample_obj
-        molecule_data["moleculeType"] = molecule_used
-        molecule_data["moleculeCodeId"] = molecule_code_id
-        molecule_data["extractionType"] = molecule_json_data[row_index][
-            heading_in_excel.index("Type of Extraction")
-        ]
-        molecule_data["moleculeExtractionDate"] = molecule_json_data[row_index][
-            heading_in_excel.index("Extraction date")
-        ]
-        molecule_data["user"] = user
-        # molecule_data['usedForMassiveSequencing'] = massive
-        # molecule_data['numberOfReused'] = str(number_code - 1)
-
-        new_molecule = core.models.MoleculePreparation.objects.create_molecule(
+            molecule_data["molecule_code_id"] = sample_obj.get_sample_code() + "_E1"
+        
+        molecule_obj = core.models.MoleculePreparation.objects.create_molecule(
             molecule_data
         )
-
-        molecule_list.append([molecule_code_id, protocol_used])
+        mol_prot_obj = molecule_obj.get_protocol_obj()
         # Update Sample state to "Extracted molecule"
         sample_obj.set_state("Extract molecule")
-        # Include index key to allow adding quality parameter data
-        molecules_ids.append(new_molecule.get_molecule_id())
-        molecules_code_ids.append(molecule_code_id)
-    if len(molecules_ids) > 0:
-        molecules_recorded[
-            "heading"
-        ] = core.core_config.HEADING_CONFIRM_MOLECULE_RECORDED
-        molecules_recorded["molecule_list"] = molecule_list
-        molecules_recorded["molecule_ids"] = ",".join(molecules_ids)
-        molecules_recorded["molecule_code_ids"] = ",".join(molecules_code_ids)
-    if len(incomplete_sample_ids) > 0:
-        molecules_recorded["incomplete_sample_data"] = incomplete_sample_data
-        molecules_recorded["incomplete_sample_ids"] = ",".join(incomplete_sample_ids)
-        molecules_recorded["incomplete_sample_code_ids"] = ",".join(
-            incomplete_sample_code_ids
-        )
-
-    return molecules_recorded
+        # create the list with protocols and molecule ids
+        if mol_prot_obj not in prot_in_molecule:
+            prot_in_molecule[mol_prot_obj] = []
+        
+        prot_in_molecule[mol_prot_obj].append(molecule_obj.get_molecule_id())
+    import pdb; pdb.set_trace()
+    return prot_in_molecule
 
 
 def pending_sample_summary(req_user=None, friend_list=None):

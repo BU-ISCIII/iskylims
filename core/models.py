@@ -1482,23 +1482,23 @@ class MoleculeUsedFor(models.Model):
 class MoleculePreparationManager(models.Manager):
     def create_molecule(self, molecule_data):
         molecule_used_obj = MoleculeType.objects.filter(
-            molecule_type__exact=molecule_data["moleculeType"]
+            molecule_type__exact=molecule_data["molecule_type"]
         ).last()
 
         protocol_type_obj = ProtocolType.objects.filter(
             molecule=molecule_used_obj, apps_name__exact=molecule_data["app_name"]
         ).last()
         protocol_used_obj = Protocols.objects.filter(
-            name__exact=molecule_data["protocolUsed"], type__exact=protocol_type_obj
+            name__exact=molecule_data["protocol_used"], type__exact=protocol_type_obj
         ).last()
         new_molecule = self.create(
             protocol_used=protocol_used_obj,
             sample=molecule_data["sample"],
             molecule_type=molecule_used_obj,
             state=StatesForMolecule.objects.get(molecule_state_name__exact="Defined"),
-            molecule_code_id=molecule_data["moleculeCodeId"],
-            molecule_extraction_date=molecule_data["moleculeExtractionDate"],
-            extraction_type=molecule_data["extractionType"],
+            molecule_code_id=molecule_data["molecule_code_id"],
+            molecule_extraction_date=molecule_data["molecule_extraction_date"],
+            extraction_type=molecule_data["extraction_type"],
             molecule_user=User.objects.get(username__exact=molecule_data["user"]),
         )
 
