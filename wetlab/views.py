@@ -2112,6 +2112,12 @@ def record_samples(request):
 
     # Get Samples model fields with its verbose name, and dropdown lists for each of them
     fields_info = core.utils.samples.sample_table_fields(__package__)
+    pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
+    template_path = os.path.join(
+        settings.MEDIA_URL,
+        wetlab.config.TEMPLATE_FILES_DIRECTORY,
+        wetlab.config.SAMPLES_BATCH_TEMPLATE,
+    )
 
     # Record new samples
     if request.method == "POST" and request.POST["action"] == "record_samples":
@@ -2241,6 +2247,7 @@ def record_samples(request):
         and request.POST["action"] == "select_samples_pre_defined"
     ):
         excel_data = json.loads(request.POST["predef_table_data"])
+        
         header = json.loads(request.POST["predef_table_header"])
 
         # Change excel header (verbose_name) to field names
@@ -2409,8 +2416,21 @@ def record_samples(request):
         req_user = request.user.username
 
         # Read excel file, remove empty rows and rename column names
-        sample_batch_df = pd.read_excel(
-            request.FILES["samplesExcel"], sheet_name=0, parse_dates=False
+        try:
+            sample_batch_df = pd.read_excel(
+                request.FILES["samplesExcel"], sheet_name=0, parse_dates=False
+            )
+        except ValueError:
+            error_message = core.core_config.ERROR_INVALID_SAMPLE_BATCH_FILE
+            return render(
+            request,
+            "wetlab/record_sample.html",
+            {
+                "error_message" : error_message,
+                "fields_info": fields_info,
+                "pre_def_samples": pre_def_samples,
+                "template_path": template_path,
+            },
         )
         sample_batch_df = sample_batch_df.dropna(how="all")
 
@@ -2647,12 +2667,6 @@ def record_samples(request):
                     )
     # Form to get the new samples
     else:
-        pre_def_samples = core.utils.samples.get_sample_objs_in_state("Pre-defined")
-        template_path = os.path.join(
-            settings.MEDIA_URL,
-            wetlab.config.TEMPLATE_FILES_DIRECTORY,
-            wetlab.config.SAMPLES_BATCH_TEMPLATE,
-        )
         return render(
             request,
             "wetlab/record_sample.html",
