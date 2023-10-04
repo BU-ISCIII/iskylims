@@ -2426,12 +2426,12 @@ def record_samples(request):
                 request,
                 "wetlab/record_sample.html",
                 {
-                    "error_message" : error_message,
+                    "error_message": error_message,
                     "fields_info": fields_info,
                     "pre_def_samples": pre_def_samples,
                     "template_path": template_path,
                 },
-        )
+            )
         sample_batch_df = sample_batch_df.dropna(how="all")
 
         # Test if json data is empty
