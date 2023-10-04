@@ -504,18 +504,26 @@ def add_molecule_protocol_parameters(data, parameters):
     Args:
         data (list): _description_
         parameters (list): _description_
-    """    
+    """
     for row in data:
         molecule_obj = get_molecule_obj_from_id(row["m_ids"])
         prot_obj = molecule_obj.get_protocol_obj()
-        molecule_obj = molecule_obj.set_user_lot_kit(row["Lot Commercial Kit"], update_usage_kit=True)
+        molecule_obj = molecule_obj.set_user_lot_kit(
+            row["Lot Commercial Kit"], update_usage_kit=True
+        )
         for param in parameters:
             molecule_parameter_value = {}
-            molecule_parameter_value["molecule_parameter_id"] = core.models.ProtocolParameters.objects.filter(protocol_id=prot_obj, parameter_name__iexact=param).last()
+            molecule_parameter_value[
+                "molecule_parameter_id"
+            ] = core.models.ProtocolParameters.objects.filter(
+                protocol_id=prot_obj, parameter_name__iexact=param
+            ).last()
             molecule_parameter_value["molecule_id"] = molecule_obj
             molecule_parameter_value["parameter_value"] = row[param]
-            _ = core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(molecule_parameter_value)
-        import pdb; pdb.set_trace()
+            _ = core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
+                molecule_parameter_value
+            )
+
         molecule_obj.set_state("Completed")
         # Update sample state
         sample_obj = molecule_obj.get_sample_obj()
@@ -712,14 +720,16 @@ def create_table_pending_molecules(molecule_list):
     molecule_data["data"] = list(
         molecule_list.values_list(
             "sample__sample_name", "molecule_code_id", "protocol_used__name"
-        ).annotate(
+        )
+        .annotate(
             extrac_date=Func(
                 F("molecule_extraction_date"),
                 Value("%Y-%m-%d"),
                 function="DATE_FORMAT",
                 output_field=CharField(),
             )
-        ).annotate(pk =F("pk"))
+        )
+        .annotate(pk=F("pk"))
     )
     if len(molecule_data["data"]) > 0:
         molecule_data[
@@ -1236,25 +1246,38 @@ def get_molecule_protocols(apps_name):
 
     return protocols, protocol_list
 
+
 def get_molecule_data_and_protocol_parameters(protocol_objs):
     mol_data_parm = {}
     for protocol_obj, mol_ids in protocol_objs.items():
         prot_name = protocol_obj.get_name()
         mol_data_parm[prot_name] = {}
-        mol_data_parm[prot_name]["params_type"] = core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
-        mol_data_parm[prot_name]["fix_heading"] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-        mol_data_parm[prot_name]["lot_kit"] = core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
+        mol_data_parm[prot_name][
+            "params_type"
+        ] = core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
+        mol_data_parm[prot_name][
+            "fix_heading"
+        ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
+        mol_data_parm[prot_name][
+            "lot_kit"
+        ] = core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
         mol_data_parm[prot_name]["param_heading"] = []
         prot_params = core.models.ProtocolParameters.objects.filter(
-            protocol_id=protocol_obj, parameter_used=True).order_by("parameter_order")
+            protocol_id=protocol_obj, parameter_used=True
+        ).order_by("parameter_order")
         for param in prot_params:
             mol_data_parm[prot_name]["param_heading"].append(param.get_parameter_name())
-        mol_data_parm[prot_name]["param_heading_in_string"] = ";".join(mol_data_parm[prot_name]["param_heading"])
+        mol_data_parm[prot_name]["param_heading_in_string"] = ";".join(
+            mol_data_parm[prot_name]["param_heading"]
+        )
         mol_data_parm[prot_name]["m_data"] = list(
-            core.models.MoleculePreparation.objects.filter(pk__in=mol_ids).values_list("pk", "sample__sample_name" ,"molecule_code_id")
+            core.models.MoleculePreparation.objects.filter(pk__in=mol_ids).values_list(
+                "pk", "sample__sample_name", "molecule_code_id"
+            )
         )
 
     return mol_data_parm
+
 
 def get_sample_objs_in_state(s_state, user=None, friend_list=None):
     """Return a list of sample objects that are in the indicate state.
@@ -1771,7 +1794,7 @@ def record_molecule_use(from_data, app_name):
 def record_molecules(samples, excel_data, heading, user, app_name):
     """Recored the molecues defined in excel_data.  If information is missing
         returns the data to display again for correcting.
-        
+
     Args:
         samples (list): _description_
         excel_data (list): _description_
@@ -1808,7 +1831,7 @@ def record_molecules(samples, excel_data, heading, user, app_name):
             "type_of_molecules": get_modules_type(),
             "headings": heading[:-1],
         }
-    
+
     prot_in_molecule = {}
     for row in excel_data:
         molecule_data = {}
@@ -1832,7 +1855,7 @@ def record_molecules(samples, excel_data, heading, user, app_name):
             molecule_data["molecule_code_id"] = code_split.group(1) + str(number_code)
         else:
             molecule_data["molecule_code_id"] = sample_obj.get_sample_code() + "_E1"
-        
+
         molecule_obj = core.models.MoleculePreparation.objects.create_molecule(
             molecule_data
         )
@@ -1842,9 +1865,9 @@ def record_molecules(samples, excel_data, heading, user, app_name):
         # create the list with protocols and molecule ids
         if mol_prot_obj not in prot_in_molecule:
             prot_in_molecule[mol_prot_obj] = []
-        
+
         prot_in_molecule[mol_prot_obj].append(molecule_obj.get_molecule_id())
-    import pdb; pdb.set_trace()
+
     return prot_in_molecule
 
 

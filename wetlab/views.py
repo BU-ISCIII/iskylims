@@ -3308,17 +3308,20 @@ def handling_molecules(request):
                 "wetlab/handling_molecules.html",
                 {"molecule_recorded": molecule_recorded},
             )
-        
+
         molecule_parameters = (
-            core.utils.samples.get_molecule_data_and_protocol_parameters(molecule_recorded)
+            core.utils.samples.get_molecule_data_and_protocol_parameters(
+                molecule_recorded
+            )
         )
         protocol_list = ";".join(list(molecule_parameters.keys()))
         return render(
             request,
             "wetlab/handling_molecules.html",
-            {"molecule_parameters": molecule_parameters,
-             "protocol_list": protocol_list,
-            }
+            {
+                "molecule_parameters": molecule_parameters,
+                "protocol_list": protocol_list,
+            },
         )
 
     elif (
@@ -3331,7 +3334,7 @@ def handling_molecules(request):
         )
         if len(molecules) == 0:
             return redirect("handling_molecules")
-        
+
         protocols = core.utils.samples.group_molecules_by_protocol(molecules)
         molecule_parameters = (
             core.utils.samples.get_molecule_data_and_protocol_parameters(protocols)
@@ -3340,10 +3343,10 @@ def handling_molecules(request):
         return render(
             request,
             "wetlab/handling_molecules.html",
-            {"molecule_parameters": molecule_parameters,
-             "protocol_list": protocol_list,
+            {
+                "molecule_parameters": molecule_parameters,
+                "protocol_list": protocol_list,
             },
-            
         )
 
     elif request.method == "POST" and request.POST["action"] == "addMoleculeParameters":
@@ -3356,7 +3359,9 @@ def handling_molecules(request):
             molecules, param_values = core.utils.samples.get_selection_from_excel_data(
                 request.POST[protocol], heading, None, "m_ids"
             )
-            core.utils.samples.add_molecule_protocol_parameters(param_values, parameters)
+            core.utils.samples.add_molecule_protocol_parameters(
+                param_values, parameters
+            )
 
         return render(
             request,
