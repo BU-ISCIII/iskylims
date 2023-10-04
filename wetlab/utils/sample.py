@@ -212,7 +212,6 @@ def get_sample_in_project_obj(sample_value, value_is_pk=False):
             sample_in_project_obj = wetlab.models.SamplesInProject.objects.filter(
                 sample_name__exact=sample_value
             ).last()
-
     return sample_in_project_obj
 
 
