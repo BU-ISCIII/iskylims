@@ -1435,15 +1435,13 @@ def stats_by_services_request(request):
         else:
             return render(
                 request,
-                "drylab/error_page.html",
+                "drylab/stats_services_time.html",
                 {
-                    "content": [
-                        "There are no services created by ",
-                        "For the time of period of between:",
-                        start_date,
-                        "and",
-                        end_date,
-                    ]
+                    "error_message": "There are no services created by "
+                    + "For the time of period of between: "
+                    + start_date
+                    + " and "
+                    + end_date
                 },
             )
     else:
