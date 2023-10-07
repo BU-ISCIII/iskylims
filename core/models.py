@@ -1590,11 +1590,10 @@ class MoleculePreparation(models.Model):
         return self.user_lot_kit_id
 
     def set_molecule_use(self, use_for_molecule, app_name):
-        self.molecule_used_for = MoleculeUsedFor.objects.get(
+        self.molecule_used_for_obj = MoleculeUsedFor.objects.filter(
             used_for__exact=use_for_molecule, apps_name__exact=app_name
-        )
-        self.save()
-        self.used_for_massive_sequencing = self.molecule_used_for.get_massive()
+        ).last()
+        self.used_for_massive_sequencing = self.molecule_used_for_obj.get_massive()
         self.save()
         return self
 

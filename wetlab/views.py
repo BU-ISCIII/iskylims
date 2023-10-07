@@ -3388,7 +3388,14 @@ def handling_molecules(request):
         )
 
     elif request.method == "POST" and request.POST["action"] == "requestMoleculeUse":
-        molecule_use = core.utils.samples.set_molecule_use(request.POST, __package__)
+        heading = core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE.copy()
+        heading.insert(-1, "m_id")
+        molecules, select_use = core.utils.samples.get_selection_from_excel_data(
+            request.POST["molecule_used_for"], heading, "Molecule use for", "m_id"
+        )
+        if len(molecules) == 0:
+            return redirect("handling_molecules")
+        molecule_use = core.utils.samples.set_molecule_use(select_use, __package__)
         return render(
             request,
             "wetlab/handling_molecules.html",
