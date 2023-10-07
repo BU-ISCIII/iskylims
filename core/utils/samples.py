@@ -1477,7 +1477,7 @@ def get_selection_from_excel_data(data, heading, check_field, field_id):
     excel_json_data = core.utils.common.jspreadsheet_to_dict(heading, excel_data)
     for row in excel_json_data:
         if check_field is not None:
-            if row[check_field] is True:
+            if row[check_field] is True or row[check_field] != "":
                 selected.append(row[field_id])
                 selected_row.append(row)
         else:
@@ -2013,38 +2013,35 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date):
     return sample_list
 
 
-def set_molecule_use(form_data, app_name):
-    """
-    Description:    The function get the molecule use decided by user.
-            Sample state is changed to Library preparation, and molecule is updated with the use value.
-    Input:
-        form_data     # form data from user
-    Functions:
-        get_modules_type         # located at this file
-        get_molecule_protocols   # located at this file
-    Variables:
-        molecule_update # dictionary which collects all info
-    Return:
-        molecule_update #
-    """
-    molecule_json_data = json.loads(form_data["molecule_used_for"])
-    molecule_update = {}
-    molecule_update["data"] = []
+def set_molecule_use(molecule_use_data, app_name):
+    """_summary_
 
-    for row_index in range(len(molecule_json_data)):
-        if molecule_json_data[row_index][3] != "":
-            mol_id = molecule_json_data[row_index][2]
-            molecule_obj = get_molecule_obj_from_id(mol_id)
-            molecule_obj.set_molecule_use(molecule_json_data[row_index][3], app_name)
-            sample_obj = molecule_obj.get_sample_obj()
-            if molecule_obj.get_used_for_massive():
-                sample_obj.set_state("Library preparation")
-            else:
-                sample_obj.set_state("Completed")
-            molecule_update["data"].append(molecule_json_data[row_index])
+    Args:
+        molecule_use_data (_type_): _description_
+        app_name (_type_): _description_
 
-    if len(molecule_update["data"]) > 0:
-        molecule_update["heading"] = core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE
+    Returns:
+        _type_: _description_
+    """
+    molecule_update = {
+        "data": [],
+        "heading": core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE,
+    }
+    for molecule in molecule_use_data:
+        molecule_obj = get_molecule_obj_from_id(molecule["m_id"])
+        molecule_obj.set_molecule_use(molecule["Molecule use for"], app_name)
+        sample_obj = molecule_obj.get_sample_obj()
+        if molecule_obj.get_used_for_massive():
+            sample_obj.set_state("Library preparation")
+        else:
+            sample_obj.set_state("Completed")
+        molecule_update["data"].append(
+            [
+                molecule["Sample Name"],
+                molecule["Molecule CodeID"],
+                molecule["Molecule use for"],
+            ]
+        )
     return molecule_update
 
 

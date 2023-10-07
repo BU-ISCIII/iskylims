@@ -3,6 +3,7 @@
 {% block content %}
     {% include "wetlab/menu.html" %}
     {% include 'core/jexcel_functionality.html' %}
+    {% include "core/cdn_table_functionality.html" %}
     {% include "wetlab/menu.html" %}
     <style>
         #table_min_heigth {
@@ -167,14 +168,14 @@
                                 <h3>Molecules are updated with their use.</h3>
                             </div>
                             <div class="card-body">
-                                <table class="table table-hover">
+                                <table class="table table-hover" id="molecule_use_table">
                                     <thead>
                                         <tr>
                                             {% for value in molecule_use.heading %}<th>{{ value }}</th>{% endfor %}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for sample, mol_id, pk, use in molecule_use.data %}
+                                        {% for sample, mol_id, use in molecule_use.data %}
                                             <tr>
                                                 <td>{{ sample }}</td>
                                                 <td>{{ mol_id }}</td>
@@ -183,6 +184,14 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
+                                <div class="row my-3">
+                                    <div class="col">
+                                        <input type="button"
+                                               class="btn btn-outline-secondary"
+                                               value="Go to Library Preparation"
+                                               onclick="location.href ='/wetlab/handlingLibraryPreparation' ;" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -472,7 +481,7 @@
                     //stop submitting the form to see the disabled button effect
                     // e.preventDefault();
                     //disable the submit button
-                    var table_data3 = table2.getData()
+                    var table_data3 = table3.getData()
                     var data_json = JSON.stringify(table_data3)
                     $("<input />").attr("type", "hidden")
                         .attr("name", "molecule_used_for")
@@ -654,6 +663,13 @@
                     });
                 {% endfor %}
             });                  
+        {% endif %}
+        {% if molecule_use %}
+            $(document).ready(function() {
+                $('#molecule_use_table').DataTable({
+                    responsive: true,
+                });
+            });
         {% endif %}
     </script>
 {% endblock %}
