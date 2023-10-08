@@ -13,7 +13,7 @@ import core.models
 import core.utils.samples
 
 
-def get_sample_project_fields(project_names):
+def get_sample_project_fields(project_name):
     """_summary_
 
     Parameters
@@ -27,22 +27,21 @@ def get_sample_project_fields(project_names):
         List of fields of the project
     """
     p_fields = []
-    for p_name in project_names:
-        if p_name == "" or p_name.lower() == "none":
-            continue
-        if core.models.SampleProjects.objects.filter(
-            sample_project_name__iexact=p_name
-        ).exists():
-            s_proj_obj = core.models.SampleProjects.objects.filter(
-                sample_project_name__iexact=p_name
-            ).last()
-            s_pro_field_objs = core.models.SampleProjectsFields.objects.filter(
-                sample_projects_id=s_proj_obj
-            )
-            for s_pro_field_obj in s_pro_field_objs:
-                p_fields.append(s_pro_field_obj.get_field_name())
-        else:
-            return {"ERROR": core.core_config.ERROR_SAMPLE_PROJECT_NO_DEFINED}
+    if project_name == "" or project_name.lower() == "none":
+        return p_fields
+    if core.models.SampleProjects.objects.filter(
+        sample_project_name__iexact=project_name
+    ).exists():
+        s_proj_obj = core.models.SampleProjects.objects.filter(
+            sample_project_name__iexact=project_name
+        ).last()
+        s_pro_field_objs = core.models.SampleProjectsFields.objects.filter(
+            sample_projects_id=s_proj_obj
+        )
+        for s_pro_field_obj in s_pro_field_objs:
+            p_fields.append(s_pro_field_obj.get_field_name())
+    else:
+        return {"ERROR": core.core_config.ERROR_SAMPLE_PROJECT_NO_DEFINED}
     return p_fields
 
 
@@ -76,7 +75,7 @@ def heading_refactor(sample_batch_data):
     return sample_batch_data
 
 
-def validate_header(sample_batch_data):
+def validate_header(columns, project_name):
     """_summary_
 
     Parameters
@@ -89,27 +88,36 @@ def validate_header(sample_batch_data):
     error_cause
         If header was not validated, returns the error.
     """
-    invalid_col_name = []
-    missing_col_name = []
-    columns = list(sample_batch_data.columns.values)
+    fields = {}
+    heading_sample = []
+    for field in core.models.Samples._meta.get_fields():
+        try:
+            fields[field.name] = field.verbose_name
+        except Exception:
+            fields[field.name] = field.name
+    for item in core.core_config.HEADING_BATCH:
+        heading_sample.append(fields[item])
+    validate_result = {"result": "OK"}
+    if project_name == "None":
+        projects_fields = []
+    else:
+        projects_fields = get_sample_project_fields(project_name)
+    right_heading = heading_sample + projects_fields
+    if len(right_heading) != len(columns):
+        validate_result = {"result": "NOK"}
+    else:
+        invalid_col_name = [i for i in right_heading if i not in columns]
+        if invalid_col_name:
+            validate_result = {"result": "NOK"}
+    if validate_result["result"] == "NOK":
+        error_message = core.core_config.ERROR_BATCH_INVALID_HEADER
+        error_message += ", ".join(right_heading)
+        validate_result["error_message"] = error_message
+        return validate_result
+    return validate_result
 
-    invalid_col_name = [i for i in columns if i not in core.core_config.HEADING_BATCH]
-    project_id = sample_batch_data["sample_project"].unique().tolist()
-    projects_fields = get_sample_project_fields(project_id)
-    invalid_col_name = [i for i in invalid_col_name if i not in projects_fields]
-    missing_col_name = [i for i in projects_fields if i not in columns]
 
-    if invalid_col_name:
-        error_cause = core.core_config.ERROR_BATCH_INVALID_HEADER.copy()
-        error_cause.insert(1, ", ".join(invalid_col_name))
-        return " ".join(error_cause)
-    if missing_col_name:
-        error_cause = core.core_config.ERROR_BATCH_MISSING_HEADER.copy()
-        error_cause.insert(1, ", ".join(missing_col_name))
-        return " ".join(error_cause)
-
-
-def check_format_date(sample_batch_data):
+def check_and_format_date(sample_batch_data):
     """_summary_
 
     Description:
@@ -138,42 +146,9 @@ def check_format_date(sample_batch_data):
         try:
             sample_batch_data[column] = pd.to_datetime(
                 sample_batch_data[column]
-            ).dt.strftime("%Y-%m-%d %H:%M:%S")
+            ).dt.strftime("%Y-%m-%d")
         except Exception:  # Unknown string format: string present at position x
-            error_cause = core.core_config.ERROR_DATE_FORMAT_FIELD.copy()
-            return " ".join(error_cause)
-
-
-def format_date(sample_batch_data):
-    """_summary_
-
-    Description:
-    ----------
-        The Function reads the batch dataframe and reformats date colums
-
-    Parameters
-    ----------
-    sample_batch_data
-        Pandas dataframe with the batch excell information
-
-    Returns
-    -------
-    sample_batch_data
-        Pandas dataframe with date columns formatted into date
-    """
-    columns = list(sample_batch_data.columns.values)
-
-    date_columns = []
-
-    for value in columns:
-        if "date" in value or "Date" in value:
-            date_columns.append(value)
-
-    for column in date_columns:
-        sample_batch_data[column] = pd.to_datetime(
-            sample_batch_data[column]
-        ).dt.strftime("%Y-%m-%d %H:%M:%S")
-
+            return core.core_config.ERROR_DATE_FORMAT_FIELD
     return sample_batch_data
 
 
@@ -205,41 +180,33 @@ def read_batch_sample_file(batch_file):
 def project_validation(sample_batch_data, app_name):
     """_summary_
 
-    Parameters
-    ----------
-    sample_batch_data
-        Json object with the samples batch data
-    app_name
-        Aplication name (wetlab, drylab)
+    Args:
+        sample_batch_data (pandas dataframe): data from user input file
+        app_name (string): name of the application
 
-    Returns
-    -------
-    error_cause
-        If date was not validated, returns the error.
+    Returns:
+        dict: Contains the result and optional the error message or the project
+        name
     """
+    validation_result ={"result": "NOK"}
     if sample_batch_data["Sample Project"].isnull().values.any():
-        error_cause = core.core_config.ERROR_EMPTY_PROJECT
-        return " ".join(error_cause)
+        validation_result["error_message"] = core.core_config.ERROR_EMPTY_PROJECT
+        return validation_result, None
 
     project_list = sample_batch_data["Sample Project"].unique().tolist()
 
     if len(project_list) > 1:
-        error_cause = core.core_config.ERROR_TOO_MANY_PROJECTS.copy()
-        return " ".join(error_cause)
+        validation_result["error_message"] = core.core_config.ERROR_TOO_MANY_PROJECTS
+        return validation_result, None
 
     # Check if project exist in the DB
-    if not core.models.SampleProjects.objects.filter(apps_name=app_name).exists():
-        error_cause = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
-        return " ".join(error_cause)
+    if "None" not in project_list:
+        if not core.models.SampleProjects.objects.filter(apps_name=app_name, sample_project_name__iexact=project_list[0]).exists():
+            validation_result["error_message"] = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
+            return validation_result, None
+    validation_result["result"] = "OK"
 
-    if project_list[0] != "None":
-        if not core.models.SampleProjects.objects.filter(
-            sample_project_name__iexact="".join(project_list), apps_name__exact=app_name
-        ).exists():
-            error_cause = core.core_config.ERROR_NO_SAMPLE_PROJECTS.copy()
-            error_cause.insert(1, "".join(project_list))
-            return " ".join(error_cause)
-
+    return validation_result, project_list[0]
 
 def read_json_schema(json_schema):
     """_summary_
