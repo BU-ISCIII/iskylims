@@ -12,7 +12,6 @@ HEADING_BATCH = [
     "sample_location",
     "only_recorded",
 ]
-
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = [
     "Sample ID",
     "Sample Type",
@@ -250,10 +249,8 @@ ERROR_NO_LAB_REQUESTED = [
 ERROR_NO_DEFINED_LAB_REQUESTED = [
     "No Laboratory is defined yet. Check documentation to define the Laboratory"
 ]
-ERROR_BATCH_INVALID_HEADER = ["The following columns don't have correct format:"]
-ERROR_BATCH_MISSING_HEADER = [
-    "The following project columns don't appear in the table:"
-]
+ERROR_BATCH_INVALID_HEADER = "Header is not valid. Check that contains only the followings: "
+ERROR_BATCH_MISSING_HEADER = "The following project columns don't appear in the table:"
 ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet. Check documentation to define them"
 ]
@@ -266,12 +263,8 @@ ERROR_NO_DEFINED_SPECIES = [
     "No Species are defined yet. Check documentation to define them"
 ]
 ERROR_NO_SPECIES = ["The specie", "is not defined"]
-ERROR_NO_DEFINED_SAMPLE_PROJECTS = [
-    "No Sample Projects are defined yet. Check documentation to define them"
-]
-ERROR_EMPTY_PROJECT = [
-    "At least one project value is empty. If there is no project associated write 'None' as the project."
-]
+ERROR_NO_DEFINED_SAMPLE_PROJECTS = "No Sample Project is defined. Check documentation to define it."
+ERROR_EMPTY_PROJECT = "No project name in file. If there is no project associated write 'None' as the project."
 ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",
     "is not defined in the database",
@@ -308,13 +301,13 @@ ERROR_NO_MOLECULE_PROTOCOL_NAME = [
 ERROR_SAMPLE_PROJECT_NO_DEFINED = [
     "Project/Service is not defined",
 ]
-ERROR_TOO_MANY_PROJECTS = ["Only one project must be defined per sample batch file"]
+ERROR_TOO_MANY_PROJECTS = "Only one project must be defined per sample batch file"
 ERROR_INVALID_JSON_SCHEMA = ["Upload schema cannot used because it contains errors "]
 ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]
 ERROR_EMPTY_SAMPLE_NAME = ["Sample name in line", "is empty"]
 ERROR_REPEATED_SAMPLE_NAME = ["Sample name in line", "is repeated in the table"]
 ERROR_ONLY_RECORDED_FIELD = ["Only recorded field must be True, False or empty"]
-ERROR_DATE_FORMAT_FIELD = ["Date must have date format. For example YYYY-MM-DD"]
+ERROR_DATE_FORMAT_FIELD = "Date must have date format. For example YYYY-MM-DD"
 ERROR_MISSING_MANDATORY = [
     "The following columns are empty and are mandatory for the sample type:"
 ]

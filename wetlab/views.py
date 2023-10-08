@@ -2144,21 +2144,20 @@ def record_samples(request):
             )
         else:
             # validate mandatory and redundant samples
-            validation = core.utils.samples.validate_sample_data(
+            sample_validation, validation_result = core.utils.samples.validate_sample_data(
                 excel_json_data, req_user, __package__
             )
 
-            for val in validation:
-                if not val["Validate"]:
-                    return render(
-                        request,
-                        "wetlab/record_sample.html",
-                        {
-                            "fields_info": fields_info,
-                            "validation": validation,
-                            "excel_data": excel_data,
-                        },
-                    )
+            if not validation_result:
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "fields_info": fields_info,
+                        "validation": sample_validation,
+                        "excel_data": excel_data,
+                    },
+                )
 
             # If all samples are validated
             try:
@@ -2414,7 +2413,6 @@ def record_samples(request):
         json_data_all = []
 
         req_user = request.user.username
-
         # Read excel file, remove empty rows and rename column names
         try:
             sample_batch_df = pd.read_excel(
@@ -2441,119 +2439,91 @@ def record_samples(request):
                 "wetlab/record_sample.html",
                 {
                     "fields_info": fields_info,
-                    "error_message": "Excell file is empty",
+                    "error_message": core.core_config.ERROR_EMPTY,
                 },
             )
         else:
             # Check if all samples have same project and if project is in the DB
-            if core.utils.load_batch.project_validation(sample_batch_df, __package__):
+            validation_project, project_name = core.utils.load_batch.project_validation(sample_batch_df, __package__)
+            if validation_project["result"] == "NOK":
                 return render(
                     request,
                     "wetlab/record_sample.html",
                     {
                         "fields_info": fields_info,
-                        "error_message": core.utils.load_batch.project_validation(
-                            sample_batch_df, __package__
-                        ),
+                        "error_message": validation_result["error_message"]
                     },
                 )
-
-            sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
-
             # Test if column names are valid
-            if core.utils.load_batch.validate_header(sample_batch_df):
+            sample_columns = list(sample_batch_df.columns.values)
+            validation_result = core.utils.load_batch.validate_header(sample_columns, project_name)
+            if validation_result["result"] == "NOK":
                 return render(
                     request,
                     "wetlab/record_sample.html",
                     {
                         "fields_info": fields_info,
-                        "error_message": core.utils.load_batch.validate_header(
-                            sample_batch_df
-                        ),
+                        "error_message": validation_result["error_message"],
                     },
                 )
-
-            # Test if date columns have date format
-            if core.utils.load_batch.check_format_date(sample_batch_df):
+            # format date columns 
+            sample_batch_df = core.utils.load_batch.check_and_format_date(sample_batch_df)
+            if not isinstance(sample_batch_df, pd.DataFrame):
                 return render(
                     request,
                     "wetlab/record_sample.html",
                     {
                         "fields_info": fields_info,
-                        "error_message": core.utils.load_batch.check_format_date(
-                            sample_batch_df
-                        ),
+                        "error_message": sample_batch_df,
                     },
                 )
-
-            # Reformat date columns to correct format (mandatory before converting to json)
-            sample_batch_df = core.utils.load_batch.format_date(sample_batch_df)
-
+            import pdb; pdb.set_trace()
+            sample_batch_df = core.utils.load_batch.heading_refactor(sample_batch_df)
             # Convert pandas dataframe to json list of dictionaries
             batch_json_data = core.utils.load_batch.read_batch_sample_file(
                 sample_batch_df
             )
-
+            import pdb; pdb.set_trace()
             # validate mandatory and redundant samples
-            validation = core.utils.samples.validate_sample_data(
+            sample_validation, validation_result = core.utils.samples.validate_sample_data(
                 batch_json_data, req_user, __package__
             )
-
-            # If all samples are validated check if we need to add project data
-            project = []
-            for sample in batch_json_data:
-                if (
-                    sample["sample_project"] not in project
-                    and sample["sample_project"] != "None"
-                ):
-                    project.append(sample["sample_project"])
-            # If no project just add samples
-            if not project:
-                for val in validation:
-                    if not val["Validate"]:
-                        return render(
-                            request,
-                            "wetlab/record_sample.html",
-                            {
-                                "fields_info": fields_info,
-                                "validation": validation,
-                            },
-                        )
-                try:
-                    # Record sample results.
-                    sample_record_result = core.utils.samples.save_recorded_samples(
-                        batch_json_data, req_user, __package__
+            if not validation_result:
+                return render(
+                    request,
+                    "wetlab/record_sample.html",
+                    {
+                        "fields_info": fields_info,
+                        "validation": sample_validation,
+                    },
+                )
+            import pdb; pdb.set_trace()
+            # validate sample project data
+            if project_name != "None":
+                project_validation, validation_result = core.utils.samples.validate_project_data(
+                        batch_json_data, project_name, validation
                     )
-
-                    # If any samples couldn't be recorded for any error.
-                    for sample in sample_record_result:
-                        if not sample["success"]:
-                            # If some samples got an error. Some samples have been recorded and some of them don't.
-                            return render(
-                                request,
-                                "wetlab/record_sample.html",
-                                {
-                                    "fields_info": fields_info,
-                                    "error_message": "Some samples couldn't be recorded.",
-                                    "sample_record_result": sample_record_result,
-                                },
-                            )
-                except Exception as e:
-                    # In case come uncatched error occurs
-                    error_message = (
-                        "There was an unexpected error when recording the samples"
-                        + str(e)
-                    )
+                if not validation_result:
                     return render(
                         request,
                         "wetlab/record_sample.html",
                         {
-                            "error_message": error_message,
                             "fields_info": fields_info,
+                            "validation": project_validation,
                         },
                     )
 
-                # If everything went fine, show results
+            # Record sample results.
+            sample_record_result = core.utils.samples.save_recorded_samples(
+                batch_json_data, req_user, __package__
+            )
+            if project_name != "None":
+                p_data = core.utils.samples.project_table_fields(project_name]
+                # save project data
+                project_record_result = core.utils.samples.save_project_data(
+                    batch_json_data, p_data
+                )
+                # show results
                 return render(
                     request,
                     "wetlab/record_sample.html",
@@ -2563,108 +2533,6 @@ def record_samples(request):
                     },
                 )
 
-            else:
-                # validate types and option lists for projects
-                project_validation = core.utils.samples.validate_project_data(
-                    batch_json_data, project[0], validation
-                )
-
-                # If some of the fields are not validated skip to next. DO NOT SAVE
-                for val in project_validation:
-                    if not val["Validate"]:
-                        return render(
-                            request,
-                            "wetlab/record_sample.html",
-                            {
-                                "fields_info": fields_info,
-                                "validation": project_validation,
-                            },
-                        )
-                try:
-                    # Record sample results.
-                    sample_record_result = core.utils.samples.save_recorded_samples(
-                        batch_json_data, req_user, __package__
-                    )
-
-                    # If any samples couldn't be recorded for any error.
-                    for sample in sample_record_result:
-                        if not sample["success"]:
-                            # If some samples got an error. Some samples have been recorded and some of them don't.
-                            return render(
-                                request,
-                                "wetlab/record_sample.html",
-                                {
-                                    "fields_info": fields_info,
-                                    "error_message": "Some samples couldn't be recorded.",
-                                    "sample_record_result": sample_record_result,
-                                },
-                            )
-                except Exception as e:
-                    # In case come uncatched error occurs
-                    error_message = (
-                        "There was an unexpected error when recording the samples"
-                        + str(e)
-                    )
-                    return render(
-                        request,
-                        "wetlab/record_sample.html",
-                        {
-                            "error_message": error_message,
-                            "fields_info": fields_info,
-                        },
-                    )
-                try:
-                    p_data = core.utils.samples.project_table_fields(project)[0]
-                    # save project data
-                    project_record_result = core.utils.samples.save_project_data(
-                        batch_json_data, p_data
-                    )
-                    # Check if there was any error while saving
-                    if not project_record_result["success"]:
-                        not_saved_info.append(project_record_result)
-
-                except Exception as e:
-                    # In case some uncatched error occurs
-                    error_message = (
-                        "There was an unexpected error when recording the project data."
-                        + str(e)
-                    )
-                    return render(
-                        request,
-                        "wetlab/record_sample.html",
-                        {"fields_info": fields_info, "error_message": error_message},
-                    )
-                # Get recorded samples complete info
-                sample_code_ids = [
-                    sample["sample_code_id"] for sample in batch_json_data
-                ]
-                samples_query = core.models.Samples.objects.filter(
-                    sample_code_id__in=sample_code_ids
-                )
-                recorded_samples_info = wetlab.api.serializers.SampleSerializer(
-                    samples_query, many=True, context={"output_label": "output_label"}
-                ).data
-
-                if not_saved_info:
-                    # If some project data got an error. Some project data have been recorded and some of them don't.
-                    return render(
-                        request,
-                        "wetlab/record_sample.html",
-                        {
-                            "fields_info": fields_info,
-                            "error_message": "Some project data couldn't be recorded.",
-                        },
-                    )
-
-                # No validation nor saving errors. Show record summary.
-                else:
-                    return render(
-                        request,
-                        "wetlab/record_project_fields.html",
-                        {
-                            "recorded_samples_result": recorded_samples_info,
-                        },
-                    )
     # Form to get the new samples
     else:
         return render(

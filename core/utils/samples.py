@@ -221,7 +221,7 @@ def validate_sample_data(sample_data, req_user, app_name):
     validation = []
     sample_name_list = []
     line = 0
-
+    result = True
     for sample in sample_data:
         line += 1
         sample_dict = {}
@@ -318,9 +318,10 @@ def validate_sample_data(sample_data, req_user, app_name):
             sample_dict["Validation error"] = ". ".join(
                 map(str, sample_dict["Validation error"])
             )
+            result = False
         validation.append(sample_dict)
 
-    return validation
+    return validation, result
 
 
 def validate_project_data(project_data, project_name, sample_validation=False):
@@ -345,6 +346,7 @@ def validate_project_data(project_data, project_name, sample_validation=False):
               }]
     """
     validation = []
+    result = True
     for sample in project_data:
         sample_dict = {}
         if sample_validation:
@@ -399,9 +401,10 @@ def validate_project_data(project_data, project_name, sample_validation=False):
             sample_dict["Validation error"] = ". ".join(
                 map(str, sample_dict["Validation error"])
             )
+            result = False
         validation.append(sample_dict)
 
-    return validation
+    return validation, result
 
 
 def save_project_data(excel_data, project_info):
