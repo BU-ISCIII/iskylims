@@ -566,9 +566,9 @@ def search_service(request):
             else:
                 return render(
                     request,
-                    "drylab/error_page.html",
+                    "drylab/search_service.html",
                     {
-                        "content": [
+                        "ERROR": [
                             "No matches have been found for the service number ",
                             service_id,
                         ]
@@ -901,7 +901,7 @@ def add_in_progress(request):
             resolution_id, input="id"
         ):
             error_message = drylab.config.ERROR_RESOLUTION_DOES_NOT_EXISTS
-            return render(request, "drylab/error_page.html", {"content": error_message})
+            return render(request, "drylab/add_in_progress.html", {"ERROR": error_message})
 
         resolution_obj = drylab.utils.resolutions.get_resolution_obj(
             resolution_id, input="id"
@@ -943,9 +943,9 @@ def add_delivery(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "drylab/error_page.html",
+                    "drylab/add_delivery.html",
                     {
-                        "content": [
+                        "ERROR": [
                             "You do have the enough privileges to see this page ",
                             "Contact with your administrator .",
                         ]
@@ -954,9 +954,9 @@ def add_delivery(request):
         except Exception:
             return render(
                 request,
-                "drylab/error_page.html",
+                "drylab/add_delivery.html",
                 {
-                    "content": [
+                    "ERROR": [
                         "You do have the enough privileges to see this page ",
                         "Contact with your administrator .",
                     ]
@@ -1021,9 +1021,9 @@ def add_delivery(request):
 
     return render(
         request,
-        "drylab/error_page.html",
+        "drylab/add_delivery.html",
         {
-            "content": [
+            "ERROR": [
                 "The resolution that you are trying to upadate does not exists ",
                 "Contact with your administrator .",
             ]
@@ -1103,7 +1103,7 @@ def stats_by_services_request(request):
             if groups not in request.user.groups.all():
                 return render(
                     request,
-                    "drylab/error_page.html",
+                    "django_utils/error_page.html",
                     {
                         "content": [
                             "You do have the enough privileges to see this page ",
@@ -1114,7 +1114,7 @@ def stats_by_services_request(request):
         except Exception:
             return render(
                 request,
-                "drylab/error_page.html",
+                "django_utils/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1456,7 +1456,7 @@ def configuration_test(request):
         if not request.user.is_staff or not request.user.is_superuser:
             return render(
                 request,
-                "drylab/error_page.html",
+                "django_utils/error_page.html",
                 {
                     "content": [
                         "You do have the enough privileges to see this page ",
@@ -1554,7 +1554,7 @@ def define_pipeline(request):
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
+                "django_utils/error_page.html",
                 {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
             )
     else:
@@ -1622,7 +1622,7 @@ def manage_pipelines(request):
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
+                "django_utils/error_page.html",
                 {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
             )
     else:
@@ -1642,7 +1642,7 @@ def detail_pipeline(request, pipeline_id):
         if not drylab.utils.common.is_service_manager(request):
             return render(
                 request,
-                "drylab/error_page.html",
+                "django_utils/error_page.html",
                 {"content": drylab.config.ERROR_USER_NOT_ALLOWED},
             )
     else:
