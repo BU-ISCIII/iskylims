@@ -374,14 +374,16 @@ def validate_project_data(project_data, project_name, sample_validation=False):
             field_name = s_pro_field_obj.get_field_name()
             field_type = s_pro_field_obj.get_field_type()
             field_options = s_pro_field_obj.get_field_options_list()
+            """
             if field_type == "String" and type(sample[field_name]) is not str:
                 error_cause = core.core_config.ERROR_PROJECT_FIELD_NOTSTRING.copy()
                 error_cause.insert(1, field_name)
                 sample_dict["Validate"] = False
                 sample_dict["Validation error"].append(" ".join(error_cause))
-            elif field_type == "Date" and sample[field_name] != "":
+            """
+            if field_type == "Date" and sample[field_name] != "":
                 try:
-                    datetime.datetime.strptime(sample[field_name], "%Y-%m-%d %H:%M:%S")
+                    datetime.datetime.strptime(sample[field_name], "%Y-%m-%d")
                 except Exception:
                     # Unknown string format: string present at position x
                     error_cause = core.core_config.ERROR_PROJECT_FIELD_NODATE.copy()
@@ -428,6 +430,7 @@ def save_project_data(excel_data, project_info):
         sample_id = core.models.Samples.objects.get(
             sample_code_id__exact=sample["sample_code_id"]
         )
+
         for field in project_info["sample_project_fields"]:
             field_value = {}
             field_value["sample_id"] = sample_id
