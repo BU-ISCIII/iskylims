@@ -249,7 +249,9 @@ ERROR_NO_LAB_REQUESTED = [
 ERROR_NO_DEFINED_LAB_REQUESTED = [
     "No Laboratory is defined yet. Check documentation to define the Laboratory"
 ]
-ERROR_BATCH_INVALID_HEADER = "Header is not valid. Check that contains only the followings: "
+ERROR_BATCH_INVALID_HEADER = (
+    "Header is not valid. Check that contains only the followings: "
+)
 ERROR_BATCH_MISSING_HEADER = "The following project columns don't appear in the table:"
 ERROR_NO_DEFINED_TYPE_OF_SAMPLES = [
     "No Type of Samples are defined yet. Check documentation to define them"
@@ -263,7 +265,9 @@ ERROR_NO_DEFINED_SPECIES = [
     "No Species are defined yet. Check documentation to define them"
 ]
 ERROR_NO_SPECIES = ["The specie", "is not defined"]
-ERROR_NO_DEFINED_SAMPLE_PROJECTS = "No Sample Project is defined. Check documentation to define it."
+ERROR_NO_DEFINED_SAMPLE_PROJECTS = (
+    "No Sample Project is defined. Check documentation to define it."
+)
 ERROR_EMPTY_PROJECT = "No project name in file. If there is no project associated write 'None' as the project."
 ERROR_NO_SAMPLE_PROJECTS = [
     "The Sample Project",

@@ -188,7 +188,7 @@ def project_validation(sample_batch_data, app_name):
         dict: Contains the result and optional the error message or the project
         name
     """
-    validation_result ={"result": "NOK"}
+    validation_result = {"result": "NOK"}
     if sample_batch_data["Sample Project"].isnull().values.any():
         validation_result["error_message"] = core.core_config.ERROR_EMPTY_PROJECT
         return validation_result, None
@@ -201,12 +201,17 @@ def project_validation(sample_batch_data, app_name):
 
     # Check if project exist in the DB
     if "None" not in project_list:
-        if not core.models.SampleProjects.objects.filter(apps_name=app_name, sample_project_name__iexact=project_list[0]).exists():
-            validation_result["error_message"] = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
+        if not core.models.SampleProjects.objects.filter(
+            apps_name=app_name, sample_project_name__iexact=project_list[0]
+        ).exists():
+            validation_result[
+                "error_message"
+            ] = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
             return validation_result, None
     validation_result["result"] = "OK"
 
     return validation_result, project_list[0]
+
 
 def read_json_schema(json_schema):
     """_summary_
