@@ -901,7 +901,9 @@ def add_in_progress(request):
             resolution_id, input="id"
         ):
             error_message = drylab.config.ERROR_RESOLUTION_DOES_NOT_EXISTS
-            return render(request, "drylab/add_in_progress.html", {"ERROR": error_message})
+            return render(
+                request, "drylab/add_in_progress.html", {"ERROR": error_message}
+            )
 
         resolution_obj = drylab.utils.resolutions.get_resolution_obj(
             resolution_id, input="id"
