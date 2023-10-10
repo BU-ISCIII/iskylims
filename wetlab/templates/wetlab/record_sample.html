@@ -11,7 +11,9 @@
                     <div class="col-md-8">
                         <div class="card border-danger mb-3">
                             <div class="card-header">ERROR: Unable to upload sample batch</div>
-                            <div class="card-body">{{ error_message }}</div>
+                            <div class="card-body">
+                                {% for error in error_message %}<p>{{ error }}</p>{% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>

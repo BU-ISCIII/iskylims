@@ -13,7 +13,7 @@ import core.models
 import core.utils.samples
 
 
-def get_sample_project_fields(project_name):
+def get_sample_project_fields(project_name, app_name):
     """_summary_
 
     Parameters
@@ -33,7 +33,7 @@ def get_sample_project_fields(project_name):
         sample_project_name__iexact=project_name
     ).exists():
         s_proj_obj = core.models.SampleProjects.objects.filter(
-            sample_project_name__iexact=project_name
+            sample_project_name__iexact=project_name, apps_name=app_name
         ).last()
         s_pro_field_objs = core.models.SampleProjectsFields.objects.filter(
             sample_projects_id=s_proj_obj
@@ -75,54 +75,52 @@ def heading_refactor(sample_batch_data):
     return sample_batch_data
 
 
-def validate_header(columns, project_name):
-    """_summary_
+def validate_header(sample_columns, project_name, app_name, fields_info):
+    """Validate if header in batch file is correct
 
     Parameters
     ----------
-    sample_batch_data
-        Pandas dataframe with the batch data
+        sample_columns (list) verbose_name of the Sample class
+        project_name (str) name of the project
+        fields_info (dict)
 
     Returns
     -------
-    error_cause
-        If header was not validated, returns the error.
+    validate_result (dict)
+        {
+            result: (bolean) True/False
+            error_message : (list) reason why is not validate
+        }
     """
-    fields = {}
     heading_sample = []
-    for field in core.models.Samples._meta.get_fields():
-        try:
-            fields[field.name] = field.verbose_name
-        except Exception:
-            fields[field.name] = field.name
+    projects_fields = []
     for item in core.core_config.HEADING_BATCH:
-        heading_sample.append(fields[item])
-    validate_result = {"result": "OK"}
-    if project_name == "None":
-        projects_fields = []
-    else:
-        projects_fields = get_sample_project_fields(project_name)
+        heading_sample.append(fields_info["fields"][item])
+    validate_result = {"result": True, "error_message": []}
+    if project_name != "None":
+        projects_fields = get_sample_project_fields(project_name, app_name)
     right_heading = heading_sample + projects_fields
-    if len(right_heading) != len(columns):
-        validate_result = {"result": "NOK"}
-    else:
-        invalid_col_name = [i for i in right_heading if i not in columns]
-        if invalid_col_name:
-            validate_result = {"result": "NOK"}
-    if validate_result["result"] == "NOK":
-        error_message = core.core_config.ERROR_BATCH_INVALID_HEADER
-        error_message += ", ".join(right_heading)
-        validate_result["error_message"] = error_message
-        return validate_result
+
+    missing_col_name = [i for i in right_heading if i not in sample_columns]
+    invalid_col_name = [i for i in sample_columns if i not in right_heading]
+
+    if invalid_col_name:
+        validate_result["result"] = False
+        error_message = core.core_config.ERROR_BATCH_INVALID_HEADER.copy()
+        error_message += invalid_col_name
+        validate_result["error_message"] = [", ".join(error_message)]
+    if missing_col_name:
+        validate_result["result"] = False
+        error_message = core.core_config.ERROR_BATCH_MISSING_HEADER.copy()
+        error_message += missing_col_name
+        validate_result["error_message"] += [", ".join(error_message)]
+
     return validate_result
 
 
 def check_and_format_date(sample_batch_data):
-    """_summary_
-
-    Description:
-    ----------
-        This function reads the batch dataframe and checks the date format is correct for date colummns
+    """This function reads the batch dataframe, checks the date format and if
+    update the field with de correct format
 
     Parameters
     ----------
@@ -131,12 +129,16 @@ def check_and_format_date(sample_batch_data):
 
     Returns
     -------
-    error_cause
-        If date was not validated, returns the error.
+    formating_result (dict)
+        {
+            result: (bolean) True/False
+            error_message : (list) reason why is not validate
+        }
+    sample_batch_data (pandas dataframe) with the updated values
     """
-    columns = list(sample_batch_data.columns.values)
-
     date_columns = []
+    columns = list(sample_batch_data.columns.values)
+    formating_result = {"result": True, "error_message": []}
 
     for value in columns:
         if "date" in value:
@@ -148,8 +150,12 @@ def check_and_format_date(sample_batch_data):
                 sample_batch_data[column]
             ).dt.strftime("%Y-%m-%d")
         except Exception:  # Unknown string format: string present at position x
-            return core.core_config.ERROR_DATE_FORMAT_FIELD
-    return sample_batch_data
+            formating_result["result"] = False
+            error_message = core.core_config.ERROR_DATE_FORMAT_FIELD.copy()
+            error_message.insert(1, column)
+
+            formating_result["error_message"] = [" ".join(error_message)]
+    return formating_result, sample_batch_data
 
 
 def read_batch_sample_file(batch_file):
@@ -178,39 +184,50 @@ def read_batch_sample_file(batch_file):
 
 
 def project_validation(sample_batch_data, app_name):
-    """_summary_
+    """Validate that only one project is in sample_batch_data and it is already
+        defined
 
     Args:
         sample_batch_data (pandas dataframe): data from user input file
         app_name (string): name of the application
 
     Returns:
-        dict: Contains the result and optional the error message or the project
-        name
+        validate_result (dict)
+        {
+            result: (bolean) True/False
+            error_message : (list) reason why is not validate
+        }
+        project_name (str) Name of the project inside sample_batch_data
     """
-    validation_result = {"result": "NOK"}
+    validation_result = {"result": True, "error_message": []}
+    project_name = ""
     if sample_batch_data["Sample Project"].isnull().values.any():
-        validation_result["error_message"] = core.core_config.ERROR_EMPTY_PROJECT
-        return validation_result, None
+        validation_result["result"] = False
+        validation_result["error_message"] = [
+            " ".join(core.core_config.ERROR_EMPTY_PROJECT)
+        ]
+        return validation_result, project_name
 
     project_list = sample_batch_data["Sample Project"].unique().tolist()
 
     if len(project_list) > 1:
+        validation_result["result"] = False
         validation_result["error_message"] = core.core_config.ERROR_TOO_MANY_PROJECTS
-        return validation_result, None
+        return validation_result, project_name
 
     # Check if project exist in the DB
     if "None" not in project_list:
         if not core.models.SampleProjects.objects.filter(
             apps_name=app_name, sample_project_name__iexact=project_list[0]
         ).exists():
-            validation_result[
-                "error_message"
-            ] = core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
-            return validation_result, None
-    validation_result["result"] = "OK"
+            validation_result["result"] = False
+            validation_result["error_message"] = [
+                core.core_config.ERROR_NO_DEFINED_SAMPLE_PROJECTS
+            ]
+            return validation_result, project_name
+    project_name = project_list[0]
 
-    return validation_result, project_list[0]
+    return validation_result, project_name
 
 
 def read_json_schema(json_schema):
@@ -314,6 +331,7 @@ def store_schema(schema, field, valid_fields, s_project_id):
         except KeyError as e:
             error = core.core_config.ERROR_FIELD_NOT_EXIST_IN_SCHEMA.copy()
             error.append(e)
+            error = " ".join(error)
             return {"ERROR": error}
 
     s_project_obj = core.utils.samples.get_sample_project_obj_from_id(s_project_id)

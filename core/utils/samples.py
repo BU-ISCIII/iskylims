@@ -831,7 +831,7 @@ def get_all_sample_information(sample_id, join_values=False):
     sample_information = {}
     sample_obj = get_sample_obj_from_id(sample_id)
     if not core.models.Samples.objects.filter(pk__exact=sample_id).exists():
-        return {"Error": core.core_config.ERROR_SAMPLE_NOT_FOUND}
+        return {"Error": " ".join(core.core_config.ERROR_SAMPLE_NOT_FOUND)}
     sample_information["sample_id"] = sample_id
     sample_information["sample_name"] = sample_obj.get_sample_name()
 
