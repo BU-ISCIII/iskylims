@@ -116,27 +116,27 @@ root_check(){
 
 update_settings_and_urls(){
     # save SECRET KEY at home user directory
-    grep ^SECRET $INSTALL_PATH/iskylims/settings.py > ~/.secret
+    grep ^SECRET $INSTALL_PATH/*/settings.py > ~/.secret
 
-    # Copying config files and script. TODO CHANGE iSkyLIMS to app name
-    cp conf/template_settings.txt $INSTALL_PATH/iskylims/settings.py
-    cp conf/urls.py $INSTALL_PATH/iskylims
+    # Copying config files and script. TODO CHANGE * to app name
+    cp conf/template_settings.txt $INSTALL_PATH/*/settings.py
+    cp conf/urls.py $INSTALL_PATH/*
     
     # replacing dummy variables with real values
-    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/*/settings.py
+    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/*/settings.py
 
-    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/*/settings.py
 }
 
 upgrade_venv(){
