@@ -376,6 +376,11 @@ if [ $upgrade == true ]; then
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
+        # Copy conf file
+        rsync -rlv conf/ $INSTALL_PATH/conf/
+        # update the settings.py and the main urls
+        echo "Update settings and url file."
+        update_settings_and_urls
         
         # Delete git and no copy files stuff
         if [ $ren_app == true ] ; then
@@ -419,14 +424,10 @@ if [ $upgrade == true ]; then
 
         # update installation by sinchronize folders
         echo "Copying files to installation folder"
-        rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \
               --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
               README.md LICENSE test conf core drylab clinic wetlab django_utils $INSTALL_PATH
         
-        # update the settings.py and the main urls
-        echo "Update settings and url file."
-        update_settings_and_urls
         # update illumina template files.# Copy illumina sample sheet templates
         mkdir -p $INSTALL_PATH/documents/wetlab/templates/
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
