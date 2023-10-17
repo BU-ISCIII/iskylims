@@ -1,0 +1,46 @@
+name: Bug report
+description: Report something that is broken or incorrect
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you post this issue, please check the documentation:
+
+        - [iSkyLIMS documentation](https://iskylims.readthedocs.io/en/latest/)
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: command_used
+    attributes:
+      label: Command used and terminal output
+      description: Steps to reproduce the behaviour. Please paste the picture which describes the error or the command line you executed in your terminal.
+      render: console
+      placeholder: |
+        $ python manage.py ...
+
+        Some output where something broke
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Relevant files
+      description: |
+        Please drag and drop the relevant files here. Create a `.zip` archive if the extension is not allowed.
+
+  - type: textarea
+    id: system
+    attributes:
+      label: System information
+      description: |
+        * iSkyLIMS version _(eg. 2.0.3)_
+        * Hardware _(eg. Desktop, Cloud)_
+        * OS _(eg. CentOS Linux, Ubuntu Linux, macOS, Linux Mint)_
+
