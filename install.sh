@@ -116,27 +116,27 @@ root_check(){
 
 update_settings_and_urls(){
     # save SECRET KEY at home user directory
-    grep ^SECRET $INSTALL_PATH/*/settings.py > ~/.secret
+    grep ^SECRET $INSTALL_PATH/iskylims/settings.py > ~/.secret
 
-    # Copying config files and script. TODO CHANGE * to app name
-    cp conf/template_settings.txt $INSTALL_PATH/*/settings.py
-    cp conf/urls.py $INSTALL_PATH/*
+    # Copying config files and script. TODO CHANGE iSkyLIMS to app name
+    cp conf/template_settings.txt $INSTALL_PATH/iskylims/settings.py
+    cp conf/urls.py $INSTALL_PATH/iskylims
     
     # replacing dummy variables with real values
-    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/*/settings.py
-    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/*/settings.py
+    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iskylims/settings.py
 
-    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/*/settings.py
-    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/*/settings.py
+    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py
 }
 
 upgrade_venv(){
@@ -376,11 +376,6 @@ if [ $upgrade == true ]; then
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
-        # Copy conf file
-        rsync -rlv conf/ $INSTALL_PATH/conf/
-        # update the settings.py and the main urls
-        echo "Update settings and url file."
-        update_settings_and_urls
         
         # Delete git and no copy files stuff
         if [ $ren_app == true ] ; then
@@ -424,10 +419,14 @@ if [ $upgrade == true ]; then
 
         # update installation by sinchronize folders
         echo "Copying files to installation folder"
+        rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \
               --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
               README.md LICENSE test conf core drylab clinic wetlab django_utils $INSTALL_PATH
         
+        # update the settings.py and the main urls
+        echo "Update settings and url file."
+        update_settings_and_urls
         # update illumina template files.# Copy illumina sample sheet templates
         mkdir -p $INSTALL_PATH/documents/wetlab/templates/
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
