@@ -233,6 +233,7 @@ def validate_sample_data(sample_data, req_user, app_name):
             sample_dict["Sample name"] = "Empty_" + str(line)
             sample_dict["Validate"] = False
             sample_dict["Validation error"] = " ".join(error_cause)
+            result = False
             validation.append(sample_dict)
             continue
 
@@ -246,6 +247,7 @@ def validate_sample_data(sample_data, req_user, app_name):
             )
             sample_dict["Validate"] = False
             sample_dict["Validation error"] = " ".join(error_cause)
+            result = False
             validation.append(sample_dict)
             continue
 
