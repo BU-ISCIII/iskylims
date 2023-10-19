@@ -767,6 +767,651 @@
     }
 },
 {
+    "model": "drylab.availableservice",
+    "pk": 1,
+    "fields": {
+        "avail_service_description": "Genomic Data Analysis",
+        "parent": null,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 1,
+        "rght": 68,
+        "tree_id": 2,
+        "level": 0
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 2,
+    "fields": {
+        "avail_service_description": "Bioinformatics consulting and training",
+        "parent": null,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 1,
+        "rght": 8,
+        "tree_id": 4,
+        "level": 0
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 3,
+    "fields": {
+        "avail_service_description": "User support",
+        "parent": null,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 1,
+        "rght": 10,
+        "tree_id": 5,
+        "level": 0
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 4,
+    "fields": {
+        "avail_service_description": "Pre-processing and quality analysis",
+        "parent": 1,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 2,
+        "rght": 9,
+        "tree_id": 2,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 5,
+    "fields": {
+        "avail_service_description": "Next Generation Sequencing data analysis",
+        "parent": 1,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 10,
+        "rght": 67,
+        "tree_id": 2,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 6,
+    "fields": {
+        "avail_service_description": "Bioinformatics analysis consulting",
+        "parent": 2,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 2,
+        "rght": 3,
+        "tree_id": 4,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 7,
+    "fields": {
+        "avail_service_description": "In-house and outer course organization",
+        "parent": 2,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 4,
+        "rght": 5,
+        "tree_id": 4,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 8,
+    "fields": {
+        "avail_service_description": "Student training in colaboration: Master thesis, research visit,...",
+        "parent": 2,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 6,
+        "rght": 7,
+        "tree_id": 4,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 9,
+    "fields": {
+        "avail_service_description": "Installation and support of bioinformatic software on Linux OS (Not available)",
+        "parent": 3,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 2,
+        "rght": 3,
+        "tree_id": 5,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 10,
+    "fields": {
+        "avail_service_description": "Installation and access to Virtual machines in the Unit server",
+        "parent": 3,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 4,
+        "rght": 5,
+        "tree_id": 5,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 11,
+    "fields": {
+        "avail_service_description": "Code snippets development",
+        "parent": 3,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 6,
+        "rght": 7,
+        "tree_id": 5,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 12,
+    "fields": {
+        "avail_service_description": "DNAseq / cDNAseq: Exome sequencing (WES) / Genome sequencing (WGS) / Targeted sequencing",
+        "parent": 5,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 11,
+        "rght": 38,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 13,
+    "fields": {
+        "avail_service_description": "RNAseq: Transcriptome sequencing",
+        "parent": 5,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 39,
+        "rght": 48,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 14,
+    "fields": {
+        "avail_service_description": "Amplicon sequencing (Deep sequencing)",
+        "parent": 5,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 49,
+        "rght": 50,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 15,
+    "fields": {
+        "avail_service_description": "Metagenomics and targeted metagenomics",
+        "parent": 5,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 51,
+        "rght": 62,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 16,
+    "fields": {
+        "avail_service_description": "Data download",
+        "parent": 4,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 3,
+        "rght": 4,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 17,
+    "fields": {
+        "avail_service_description": "Sequence quality analysis",
+        "parent": 4,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 5,
+        "rght": 6,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 18,
+    "fields": {
+        "avail_service_description": "Sequencing quality analysis and host genome removal",
+        "parent": 4,
+        "service_in_use": true,
+        "service_id": "seek_and_destroy",
+        "description": null,
+        "lft": 7,
+        "rght": 8,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 19,
+    "fields": {
+        "avail_service_description": "Human: Exome sequencing for variant calling, annotation and inheritance filtering (e.g. Exome sequencing of a human trio (two parents and one child))",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "exometrio",
+        "description": null,
+        "lft": 16,
+        "rght": 17,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 20,
+    "fields": {
+        "avail_service_description": "Eukaria: Variant calling and annotation for a sequencing panel (e.g. epidermolysis gene panel, mouse or rat gene panel)",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "exomeeb",
+        "description": null,
+        "lft": 14,
+        "rght": 15,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 21,
+    "fields": {
+        "avail_service_description": "Fungal / bacteria / virus : Variant calling, annotation and SNP-based outbreak analysis (e.g. haploid fungal outbreak)",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "snippy",
+        "description": null,
+        "lft": 22,
+        "rght": 23,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 22,
+    "fields": {
+        "avail_service_description": "Bacteria: Core genome or whole genome Multi-Locus Sequence Typing analysis (cg/wgMLST)",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 32,
+        "rght": 33,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 23,
+    "fields": {
+        "avail_service_description": "Bacteria: Multi-Locus Sequence Typing (MLST), analysis of virulence factors, antimicrobial resistance, and plasmids characterization",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 30,
+        "rght": 31,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 24,
+    "fields": {
+        "avail_service_description": "Bacteria: De novo genome assembly and annotation",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "assembly",
+        "description": null,
+        "lft": 24,
+        "rght": 25,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 25,
+    "fields": {
+        "avail_service_description": "Bacteria: Plasmid analysis and characterization",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 28,
+        "rght": 29,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 26,
+    "fields": {
+        "avail_service_description": "Differential miRNA expression (DEM)",
+        "parent": 13,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 44,
+        "rght": 45,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 27,
+    "fields": {
+        "avail_service_description": "Differential Gene Expression (DEG)",
+        "parent": 13,
+        "service_in_use": true,
+        "service_id": "rnaseq",
+        "description": null,
+        "lft": 40,
+        "rght": 41,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 28,
+    "fields": {
+        "avail_service_description": "Low-frequency variants detection and annotation for whole genome or sequencing panel (e.g. retinoblastoma gene panel)",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "lowfreq_panel",
+        "description": null,
+        "lft": 12,
+        "rght": 13,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 29,
+    "fields": {
+        "avail_service_description": "Viral: Genomic reconstruction, variant calling and de novo assembly",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "viralrecon",
+        "description": null,
+        "lft": 34,
+        "rght": 35,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 30,
+    "fields": {
+        "avail_service_description": "Bacteria: 16S rRNA gene analysis to assess bacterial diversity",
+        "parent": 15,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 56,
+        "rght": 57,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 31,
+    "fields": {
+        "avail_service_description": "Taxonomic based Identification and classification of organisms in complex communities",
+        "parent": 15,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 52,
+        "rght": 53,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 32,
+    "fields": {
+        "avail_service_description": "CHIP-SEQ",
+        "parent": 5,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 63,
+        "rght": 66,
+        "tree_id": 2,
+        "level": 2
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 33,
+    "fields": {
+        "avail_service_description": "Peak detection and annotation",
+        "parent": 32,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 64,
+        "rght": 65,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 34,
+    "fields": {
+        "avail_service_description": "Shotgun metagenomics - Virus genome reconstruction",
+        "parent": 15,
+        "service_in_use": false,
+        "service_id": "viralrecon",
+        "description": null,
+        "lft": 60,
+        "rght": 61,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 35,
+    "fields": {
+        "avail_service_description": "OT-2 robots (Not available)",
+        "parent": 3,
+        "service_in_use": false,
+        "service_id": null,
+        "description": null,
+        "lft": 8,
+        "rght": 9,
+        "tree_id": 5,
+        "level": 1
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 38,
+    "fields": {
+        "avail_service_description": "Bacteria: In-depth analysis of Mycobacterium species genomes (e.g. M. tuberculosis. M. bovis)",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "mtbseq",
+        "description": null,
+        "lft": 26,
+        "rght": 27,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 39,
+    "fields": {
+        "avail_service_description": "Human: Whole genome sequencing for SNPs variant calling, annotation and inheritance filtering (e.g.WGS of a human trio )",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "wgstrio",
+        "description": null,
+        "lft": 18,
+        "rght": 19,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 40,
+    "fields": {
+        "avail_service_description": "Eukaria (non-human): Variant calling, annotation and SNP-based outbreak analysis (e.g. diploid fungal outbreak)",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": "snippy",
+        "description": null,
+        "lft": 20,
+        "rght": 21,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 41,
+    "fields": {
+        "avail_service_description": "Viral Flu: Influenza fragment reconstruction and variant detection",
+        "parent": 12,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 36,
+        "rght": 37,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 42,
+    "fields": {
+        "avail_service_description": "Differential transcript expression (DET)",
+        "parent": 13,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 42,
+        "rght": 43,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 43,
+    "fields": {
+        "avail_service_description": "Gene expression changes over a series of time points",
+        "parent": 13,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 46,
+        "rght": 47,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 44,
+    "fields": {
+        "avail_service_description": "De novo assembly contigs' alignment to database",
+        "parent": 15,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 54,
+        "rght": 55,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
+    "model": "drylab.availableservice",
+    "pk": 45,
+    "fields": {
+        "avail_service_description": "Viral: Detection and characterization of viral genomes within metagenomic data",
+        "parent": 15,
+        "service_in_use": true,
+        "service_id": null,
+        "description": null,
+        "lft": 58,
+        "rght": 59,
+        "tree_id": 2,
+        "level": 3
+    }
+},
+{
     "model": "drylab.configsetting",
     "pk": 1,
     "fields": {
