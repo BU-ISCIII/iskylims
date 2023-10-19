@@ -468,6 +468,11 @@ class Migration(migrations.Migration):
             name="upload_file",
             field=models.FileField(upload_to="drylab/service_files"),
         ),
+        migrations.AlterField(
+            model_name="availableservice",
+            name="avail_service_description",
+            field=models.CharField(max_length=200, verbose_name="Available services"),
+        ),
         migrations.AlterModelTable(
             name="availableservice",
             table="drylab_available_service",
