@@ -68,7 +68,7 @@ class ResolutionStates(models.Model):
 
 class AvailableService(MPTTModel):
     avail_service_description = models.CharField(
-        _("Available services"), max_length=100
+        _("Available services"), max_length=200
     )
     parent = TreeForeignKey("self", models.SET_NULL, null=True, blank=True)
     service_in_use = models.BooleanField(default=True)
