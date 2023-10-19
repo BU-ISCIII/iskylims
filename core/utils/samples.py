@@ -166,7 +166,7 @@ def save_recorded_samples(samples_data, req_user, app_name):
         sample["patient_core"] = patient_obj
 
         # Check if sample project exist and generate de appropiate objetct
-        if sample["sample_project"] == "None":
+        if sample["sample_project"] == "None" or sample["sample_project"] == "":
             sample["sample_project"] = None
         else:
             sample["sample_project"] = core.models.SampleProjects.objects.get(
