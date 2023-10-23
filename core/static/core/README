@@ -1,0 +1,3 @@
+- custom: folder including js and css that can be TOUCHED, there are custom styles for relecov_platform
+- main_style: includes css and js from HeroBiz template, this shouldn't be TOUCHED but if not other option..carefully! Always try to create a custom css or js and store it in custom folder.
+- vendor: includes css and js files that CANNOT BE TOUCHED BY ANY REASON. Bootstrap, jquery, and such..

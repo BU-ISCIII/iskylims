@@ -1,0 +1,128 @@
+{% extends 'clinic/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<link href="{% static "clinic/custom/css/collapse.css" %}" rel="stylesheet" type="text/css"/>
+
+<style >
+    .text-large {
+        font-size: 150%;
+    }
+</style>
+<style>
+.table-wrapper {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 610px;
+}
+.table-wrapper-sm-4 {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 370px;
+}
+</style>
+{% if extraction_molecules.extract_molecule %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-7" >
+                <div class="card ">
+                    {% if extraction_molecules.extract_molecule.sample_heading %}
+                    <div class="card-header"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                        <div class="card-body">
+                            <form method="post" action="/clinic/setMoleculeValues" enctype="multipart/form-data" name="continueWithMolecule"  id="continueWithMolecule" class="form-horizontal well">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="continueWithMolecule"/>
+                                <input type="hidden" name="samples_in_list" value="True"/>
+                                <div class="table-wrapper">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                {% for value in extraction_molecules.extract_molecule.sample_heading %}
+                                                    <th> {{ value }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for date, code,  sampletype,  s_id in extraction_molecules.extract_molecule.sample_information  %}
+                                                <tr>
+                                                    <td>{{date}}</td>
+                                                    <td>{{code}}</td>
+                                                    <td>{{sampletype}}</td>
+                                                    <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div> <!--  end of table wrapper  -->
+                                <br><br>
+                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                             </form>
+
+                            {% else %}
+                                <div class="card-header"><h3>Samples to be updated with the Molecule information</h3></div>
+                                    <div class="card-body">
+                                    <p>There is not new samples that requieres to add Molecule Information data </p>
+                            {% endif %}
+                        </div>  
+
+                    </div>
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
+{% endif %}
+{% if continue_with_protocol %}
+
+{% else %}
+<!-- FORM for searching Samples  Information -->
+    <div class="row my-2">
+      <div class="col-sm-7">
+        <div class="card ">
+          <div class="card-header"><h4>Select batch Samples</h4></div>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data" name="selectBatchSample" id="selectBatchSample" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="selectBatchSample"/>
+            <div class="form-control">
+                <label class="col-sm-5  form-label" for="userName" >Fill the User name </label>
+                <div class="col-sm-5"><input class="form-control" type="text" name="userName" id="sample_name" size="80" maxlength="80"></div>
+            </div>  <!-- end from-group   -->
+            <div class="form-control">
+                <label class="col-sm-5 form-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
+            </div>  <!-- end from-group   -->
+            <div class="form-control">
+                <label class="col-sm-5 form-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
+            </div>  <!-- end from-group   -->
+            <br>
+                <input class="btn pull-left btn-outline-primary" type="reset" value="Reset Fields">
+                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+            </form>
+         </div>  
+        </div>
+        </div> <!--// end col-sm-7  -->
+
+        <!-- Insert the help panel -->
+        <BR><BR>
+
+        <div class="col-sm-3 offset-1">
+          <div class="card ">
+             <div class="card-header">Searching information of the RUN</div>
+             <div class="card-body">
+             <p>Searching information can be done on Patients or on Samples: <BR>
+             <p>For extended help click on the button below.</p>
+            <center><button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal">Click for Help</button></center>
+            </div>  
+        </div>
+       </div> <!--  end col-sm-3  -->
+     <!-- Insert the Help window when clicking on the button -->
+        {% include 'clinic/search-sample-help.html' %}
+
+    </div> <!--// end row -->
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'clinic/base.html' %}
+{% load static %}
+{% block content %}
+{% if project_data %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <h3>These are the project fields defined for {{project_data.project_name}}</h3>
+            <div class="card ">
+                <div class="card-body">
+                    <div class="col-sm-11" >
+                        <table class="table table-hover">
+                           <thead>
+                              <tr>
+                                    {% for value in project_data.field_heading %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                              </tr>
+                           </thead>
+                           <tbody>
+                            {% for  values in project_data.fields %}
+                                <tr>
+                                    {% for value  in values %}
+                                        <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--// end col-sm-11  -->
+                </div>  
+            </div>
+
+        </div> <!--// end col-sm-12  -->
+
+    </div> <!--// end row -->
+
+{% endif %}
+
+
+{% endblock %}

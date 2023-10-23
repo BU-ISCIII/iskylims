@@ -1,0 +1,104 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-6 offset-3" >
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3>Unable to process your request</h3></div>
+                        <div class="card-body">
+                            <h5>{{error_message}}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if matched_collection_index %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card ">
+                        <div class="card-header text-align-center">The following list matches with yor search: </div>
+                        <div class="card-body">
+                            <table class="table table-hover" id="index_table">
+                                <thead>
+                                    <tr>
+                                        <th>Collection Index Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for  id, name in matched_collection_index %}
+                                        <tr>
+                                            <td><a href="/wetlab/displayCollectionIndex={{id}}"class="text-decoration-none" >{{ name }}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div> <!--  end of col-sm-6 -->
+            </div>
+
+        {% else %}
+            <div class="row my-2">
+                <div class="col" >
+                    <div class="card ">
+                        <div class="card-header text-align-center"><h3>Collection Index Kit search</h3></div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="searchcollectionindexkit" id="searchcollectionindexkit">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="searchcollectionindexkit"/>
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="collectionindexkitname" id="collectionindexkitname" placeholder="Collection Index Kit name">
+                                    <label for="collectionindexkitname">Collection Index Kit name</label>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="adapter1" name="adapter1" placeholder="Adapter 1" >
+                                            <label for="adapter1">Adapter 1</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="adapter2" name="adapter2" placeholder="Adapter 2" >
+                                            <label for="adapter2">Adapter 2</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="indexname" name="indexname" placeholder="Index name" >
+                                            <label for="indexname">Index name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md ">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="indexbase" name="indexbase" placeholder="Index sequence" >
+                                            <label for="indexbase">Index sequence</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                            </form>
+                        </div>  
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#index_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
+{% endblock %}

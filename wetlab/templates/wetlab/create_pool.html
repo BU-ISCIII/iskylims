@@ -1,0 +1,279 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include 'core/jexcel_functionality.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+        {% if information_for_created_pool %}
+            <div class="row mt-4 justify-content-center">
+                <div class="col-md-10 " >
+                    <div class="card ">
+                        <div class="card-header"><h3>Pool {{information_for_created_pool.pool_name}} has been created</h3></div>
+                        <div class="card-body">
+                            <table class="table ">
+                                <thead>
+                                    <tr>
+                                        {% for value in information_for_created_pool.heading_pool %}
+                                            <th>{{value}}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {% for value in information_for_created_pool.data %}
+                                            <td>{{value}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5 class="text-center my-3">Samples included in pool </h5>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in information_for_created_pool.heading_library_pool%}
+                                        <th>{{value}}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lib_code, sample, user, s_id in information_for_created_pool.lib_prep_data%}
+                                        <tr>
+                                            <td>{{lib_code}}</td>
+                                            <td><a href="/wetlab/displaySample={{s_id}}">{{sample}}</a></td>
+                                            <td>{{ user }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <input type="button" class="btn btn-outline-secondary my-3" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                        </div>  
+                    </div>
+                </div> 
+            </div>
+        {% else %}
+            {% if display_list.ERROR %}
+                <div class="row row-space-4 margin-b-4">
+                    <div class="col-sm-12" >
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><h3>Unable to record your creation Pool request.</h3></div>
+                            <div class="card-body">
+                                {% for value in display_list.ERROR %}
+                                    <p>{{value}}</p>
+                                {% endfor %}
+                            </div>  
+                        </div>
+                    </div> <!--// end col-sm-10  -->
+                </div> <!--// end row -->
+
+            {% endif %}
+            {% if display_list.incompatible_s_p_end %}
+
+                <div class="row row-space-4 margin-b-4">
+                    <div class="col-sm-6 offset-3" >
+                        <div class="panel panel-warning">
+                            <div class="card-header"><h3>Index not compatible found</h3></div>
+                                <div class="card-body">
+                                    <p>The selected samples can not be included in the same pool because they have different "Single Read" / Paired End Values</p>
+                                </div>
+                            </div>
+                        </div> <!--  end of col-sm-6 -->
+                    </div>
+            {% endif %}
+
+            {% if display_list.duplicated_index %}
+                <div class="row row-space-4 margin-b-4">
+                    <div class="col-sm-6 offset-3" >
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><h3>Samples with duplicated Indexes were found</h3></div>
+                            <div class="card-body">
+                                <p>The selected samples can not be included in the same pool because they are using the same indexes</p>
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Sample Name  </th>
+                                            <th>Indexes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s_name, s_index in display_list.incompatible_index  %}
+                                            <tr>
+                                                <td>{{s_name}}</td>
+                                                <td>{{s_index}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div> <!--  end of col-sm-6 -->
+                </div>
+            {% endif %}
+
+            {% if display_list.multiple_adapters %}
+                <div class="row row-space-4 margin-b-4">
+                    <div class="col-sm-6 offset-3" >
+                        <div class="card border-danger mb-3">
+                            <div class="card-header"><h3>Samples have multiple adapters</h3></div>
+                            <div class="card-body">
+                                <p>The selected samples can not be included in the same pool because they have different adapters</p>
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Adapters </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for value in display_list.multiple_adapters  %}
+                                            <tr>
+                                                <td>{{value}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="row my-2">
+                <div class="col" >
+                    {% if  display_list.heading %}
+                        <h3 class="text-center">The following Samples are ready to be included inside a Pool</h3>
+                        <div class="col">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                {% for key, values in display_list.data.items %}
+                                    {% if forloop.first %}
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="{{key}}-tab" data-bs-toggle="tab" data-bs-target="#{{key}}" type="button" role="tab" aria-controls="{{key}}" aria-selected="true">Samples for {{key}} </button>
+                                        </li>
+                                    {% else %}
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="{{key}}-tab" data-bs-toggle="tab" data-bs-target="#{{key}}" type="button" role="tab" aria-controls="{{key}}" aria-selected="false">Samples for {{key}} </button>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                            <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                {% for key, values in display_list.data.items %}
+                                    {% if forloop.first %}
+                                        <div class="tab-pane fade show active" id="{{key}}" role="tabpanel" aria-labelledby="{{key}}-tab">
+                                    {% else %}
+                                        <div class="tab-pane fade" id="{{key}}" role="tabpanel" aria-labelledby="{{key}}-tab">
+                                    {% endif %}
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Sample preparation information </h3></div>
+                                                    <div class="card-body">
+                                                        <form method="post" enctype="multipart/form-data" name="createPool_{{key|lower}}"  id="createPool_{{key|lower}}" class="form-horizontal well">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="createPool"/>
+                                                            <input type="hidden" name="platform" value="{{key}}"/>
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="form-floating mb-3">
+                                                                        <input type="text" class="form-control" name="poolName" id="poolName" required="required" placeholder="Define pool name">
+                                                                        <label class="text-danger" for="poolName">Define pool name</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md">
+                                                                    <div id="{{key|lower}}"  class="my-4"></div>
+                                                                    
+                                                                    <p class="ms-3 mt-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                                    <input type="button" class="btn btn-outline-secondary my-3" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                    <input class="btn float-end btn-outline-primary my-3" name ="{{key}}" type="submit" value="Submit">
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card">
+                        <div class="card-header text-center"><h3>There are not samples available to be included inside a Pool</h3></div>
+                            <div class="card-body">
+                                <h5>There are not any samples that contains the library preparation date to be included in a Pool</h5>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div> 
+        {% endif %}
+    </div>
+</section>
+<script>
+    {% for key, values in display_list.data.items %}
+        var data_{{key}} = [{% for row in values%}
+            [{% for value in row %}
+                {% if forloop.last%}
+                    '', {{value}}
+                {% else %}
+                    '{{value}}',
+                {% endif %}
+            {% endfor %}],
+        {% endfor %}
+        ];
+
+        mySpreadsheet = $('#{{key|lower}}').jexcel({
+            data:data_{{key}},
+            columns: [
+                {% for values in display_list.heading %}
+                    {% if forloop.last %}
+                        { type: 'checkbox', title:'{{values}}', width:150 },
+                    {% else %}
+                        { type: 'text', title:'{{values}}', width:160 , readOnly:true },
+                    {% endif %}
+                {% endfor %}
+                { type: 'hidden'},
+            ],
+            allowInsertColumn:false,
+            allowDeleteColumn:false,
+            allowRenameColumn:false,
+            allowInsertRow:false,
+            allowDeleteRow:false,
+            tableOverflow:true,
+            tableHeight:'200px',
+        });
+        $(document).ready(function () {
+            $("#createPool_{{key|lower}}").submit(function (e) {
+                //stop submitting the form to see the disabled button effect
+                // e.preventDefault();
+                //disable the submit button
+                var table_data = $('#{{key|lower}}').jexcel('getData')
+                var data_json = JSON.stringify(table_data)
+                $("<input />").attr("type", "hidden")
+                .attr("name", "table_data")
+                .attr("value", data_json)
+                .appendTo("#createPool_{{key|lower}}");
+                $("#btnSubmit").attr("disabled", true);
+                return true;
+            });
+        });
+    {% endfor %}
+
+</script>
+{% endblock %}

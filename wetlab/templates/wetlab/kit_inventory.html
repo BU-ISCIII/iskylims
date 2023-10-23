@@ -1,0 +1,151 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if run_out_kits %}
+            <div class="row my-2">
+                <div class="col-sm-6 offset-2">
+                    <div class="card ">
+                        <div class="card-header"><h3>User Lot Commercial Kits are now Run Out</h3></div>
+                        <div class="card-body">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Lot number</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for lot in run_out_kits %}
+                                        <tr>
+                                            <td>{{lot}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>  
+                    </div>
+                </div> 
+            </div> 
+
+        {% else %}
+            <div class="row my-2">
+                <div class="col" >
+                    <h3 class="text-center">User Lot Commercial Kits</h3>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="a_kit-tab" data-bs-toggle="tab" data-bs-target="#a_kit" type="button" role="tab" aria-controls="a_kit" aria-selected="true">Available kits</button>
+                            </li>
+                            {% if expired_kit.heading %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link " id="exp_kit-tab" data-bs-toggle="tab" data-bs-target="#exp_kit" type="button" role="tab" aria-controls="exp_kit" aria-selected="false">Expired/Sold out kits</button>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="a_kit" role="tabpanel" aria-labelledby="a_kit-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>Available lot kits </h3></div>
+                                                <div class="card-body">
+                                                    {% if valid_kit.heading %}
+                                                        <form method="post" enctype="multipart/form-data" name="runOutUserLotKit"  id="runOutUserLotKit" class="form-horizontal well">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="runOutUserLotKit"/>
+                                                            <table class="table table-hover" id="avail_table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for value in valid_kit.heading %}
+                                                                            <th>{{value}}</th>
+                                                                        {% endfor %}
+                                                                        <th>Set to ran out</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {%for pk, name, lot, user, n_uses, last_date, exp_date in valid_kit.data %}
+                                                                        <tr>
+                                                                            <td>{{ name }}</td>
+                                                                            <td>{{ lot }}</td>
+                                                                            <td>{{ user }}</td>
+                                                                            <td>{{ n_uses }}</td>
+                                                                            <td>{{last_date|cut:"None"}}</td>
+                                                                            <td>{{exp_date|cut:"None"}}</td>
+                                                                            <td><input class="text-center" type="checkbox" name="userKit" value="{{pk}}"></td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                            <input class="btn float-end btn-outline-primary my-3" type="submit" id = "btnSubmit" value="Submit">
+                                                        </form>
+                                                    {% else %}
+                                                        <h5>There is not available User Lot Commercial Kits</h5>
+                                                    {% endif %}
+                                                </div>  
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- end a_kit -->
+                            {% if expired_kit.heading %}
+                                <div class="tab-pane fade" id="exp_kit" role="tabpanel" aria-labelledby="exp_kit-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Expired/Sold out kits </h3></div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="exp_table">
+                                                            <thead>
+                                                                <tr>
+                                                                    {% for value in expired_kit.heading %}
+                                                                        <th>{{value}}</th>
+                                                                    {% endfor %}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {%for pk, name, lot, user, n_uses, last_date, exp_date in expired_kit.data %}
+                                                                    <tr>
+                                                                        <td>{{ name }}</td>
+                                                                        <td>{{ lot }}</td>
+                                                                        <td>{{ user }}</td>
+                                                                        <td>{{ n_uses }}</td>
+                                                                        <td>{{last_date|cut:"None"}}</td>
+                                                                        <td>{{exp_date|cut:"None"}}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>  
+                                                </div>
+                                            </div> 
+                                        </div>  
+                                    </div>
+                                </div>  <!-- end exp_kit-->
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        {% endif %}
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#avail_table').DataTable({
+            responsive: true,
+        });
+    });
+
+    $(document).ready(function() {
+        $('#exp_table').DataTable({
+            responsive: true,
+        });
+    });
+</script>
+
+{% endblock %}

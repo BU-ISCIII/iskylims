@@ -1,12 +1,18 @@
-version: '3.3'
+version: '3.4'
 
 services:
-    db1:
+    db:
         image: mysql:8.0
-        container_name: db1
+        container_name: db
         command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        healthcheck:
+          test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="djangopass" --silent']
+          interval: 3s
+          retries: 5
+          start_period: 30s
         environment:
-            MYSQL_DATABASE: iSkyLIMS
+            MYSQL_DATABASE: iskylims_docker
             MYSQL_USER : django
             MYSQL_PASSWORD : djangopass
             MYSQL_ROOT_PASSWORD: root
@@ -14,30 +20,40 @@ services:
         ports:
             - 6606:3306
         networks:
-            - developv2
+            - develop_net
         volumes:
-            - db1:/var/lib/mysql
+            - db_data_vol:/var/lib/mysql
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
-
-    web1:
-        build: .
-        container_name: iskylimsv2_app
-        command: python3 /opt/iSkyLIMS/manage.py runserver 0:8000
-        volumes:
-            - ./:/opt/iSkyLIMS
-        ports:
-            - "8000:8000"
+    
+    samba:
+        image: dperson/samba
+        container_name: samba
         networks:
-            - developv2
-        depends_on:
-            - db1
-
+        - develop_net
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
+            - ngs_data_vol:/mnt
+        command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
+    
+    app:
+        build: .
+        container_name: iskylims_app
+        ports:
+            - "8001:8001"
+        networks:
+            - develop_net
+        depends_on:
+            db:
+              condition: service_healthy
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - /usr/share/zoneinfo:/usr/share/zoneinfo
+
 networks:
-  developv2:
+  develop_net:
 
 volumes:
-  db1:
+  db_data_vol:
+  ngs_data_vol:

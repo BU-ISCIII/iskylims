@@ -1,0 +1,75 @@
+{% load static %}
+{% load user_groups %}
+<header class="header">
+    <nav id="navbar" class="navbar navbar-expand-lg fixed-top navbar-light bg-menu">
+        <div class="container-md">
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'core/custom/img/small_logo_iskylims.png' %}" width="100" alt="iSkyLIMS Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse me-auto me-lg-0" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">HOME</a>
+                    </li>
+                    {% if user.username == "admin" %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">CONFIGURATION</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/drylab/configuration-email">CONFIGURATION EMAIL</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">SERVICES REQUEST</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/drylab/sequencing-request">SEQUENCING REQUEST</a>
+                            </li>
+                            <li><a class="dropdown-item" href="/drylab/counseling-request">COUNSELING REQUEST</a></li>
+                            <li><a class="dropdown-item" href="/drylab/infrastructure-request">INFRASTRUCTURE REQUEST</a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% if user.is_authenticated and request.user|has_group:"ServiceManager" %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">PIPELINES</a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/drylab/define-pipeline">DEFINE PIPELINE SERVICE
+                                </a></li>
+                            <li><a class="dropdown-item" href="/drylab/manage-pipelines">MANAGE PIPELINES</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% if user.is_authenticated and request.user|has_group:"ServiceManager" %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">MANAGE SERVICES</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/drylab/search-service">SEARCH SERVICE</a></li>
+                            <li><a class="dropdown-item" href="/drylab/pending-services">PENDING SERVICES</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/drylab/stats-by-user">STATISTICS BY USER</a></li>
+                            <li><a class="dropdown-item" href="/drylab/stats-services-time">STATISTICS BY SERVICES
+                                    REQUESTED</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-bs-toggle="dropdown"
+                        aria-expanded="false">MANAGE SERVICES</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/drylab/search-service">SEARCH SERVICE</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>

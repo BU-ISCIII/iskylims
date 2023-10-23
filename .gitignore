@@ -2,11 +2,13 @@
 *.xml
 *.bin
 *.gz
-*.csv
+*_BAK
 migrations/
 tmp/
 logs/
-static/
+/static/
+install_settings.txt
+wetlab/logging_config.ini
 #--- updates introduced for iSkyLIMS in submodules packaging ---
 virtualenv/
 iSkyLIMS/
@@ -14,6 +16,7 @@ iSkyLIMS/
 documents/
 manage.py
 logs/
+logs
 
 
 # Byte-compiled / optimized / DLL files

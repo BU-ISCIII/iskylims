@@ -1,0 +1,131 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/graphic_chart_functionality.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2 justify-content-center">
+                <div class="col-sm-7">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+        {% if annual_rep_data %}
+            <div class="row my-2">
+                <div class="col" >
+                    <h3 class="text-center">Report information for year {{annual_rep_data.year}}</h3>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="year-tab" data-bs-toggle="tab" data-bs-target="#year" type="button" role="tab" aria-controls="year" aria-selected="true">Year {{annual_rep_data.year}}</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="other-tab" data-bs-toggle="tab" data-bs-target="#other" type="button" role="tab" aria-controls="other" aria-selected="false">Comparasion previous year</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="year" role="tabpanel" aria-labelledby="year-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card text-center">
+                                                <div class="card-header"><h3>Graphic statistics </h3></div>
+                                                <div class="card-body">
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="rep_state_chart"> </div>
+                                                            {{ annual_rep_data.rep_state_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h5 class="text-center">There are {{annual_rep_data.year_num_runs}} runs in this year</h5>
+                                                            <div id="rep_run_month_chart"> </div>
+                                                            {{ annual_rep_data.rep_run_month_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="rep_researcher_chart"> </div>
+                                                            {{ annual_rep_data.rep_researcher_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h5 class"text-center">There are {{annual_rep_data.year_num_samples}} samples in this year</h5>
+                                                            <div id="rep_sample_month_chart"> </div>
+                                                            {{ annual_rep_data.rep_sample_month_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div>  <!-- end tab year -->
+                            <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="other-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card text-center">
+                                                <div class="card-header"><h3>Comparing with previous years </h3></div>
+                                                <div class="card-body">
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="rep_comp_run_chart"> </div>
+                                                            {{ annual_rep_data.rep_comp_run_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="rep_comp_sample_chart"> </div>
+                                                            {{ annual_rep_data.rep_comp_sample_graphic|safe }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="row ">
+                                                        <div class="col-md-6">
+                                                            <div id="rep_comp_researcher_chart"> </div>
+                                                            {{ annual_rep_data.rep_comp_researcher_graphic|safe }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div id="rep_comp_sample_chart"> </div>
+                                                            {{ annual_rep_data.rep_comp_sample_graphic2|safe }}
+                                                        </div>
+                                                    </div>
+                                                </div> 
+                                            </div> 
+                                        </div>
+                                    </div>
+                                </div>  <!-- end tab other -->
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row my-2 justify-content-center">
+                <div class="col-sm-6" >
+                    <div class="card ">
+                        <div class="card-header text-center"><h3>Annual Report</h3></div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="annualreport" id="annualreport">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="annualreport"/>
+                                <div class="form-floating">
+                                    <input type="number" min="2016" max="2100" step="1" class="form-control" id="yearselected" name="yearselected"required="required" placeholder="Report year" >
+                                    <label class="text-danger"for="yearselected">Select the year to create report</label>
+                                </div>
+                                <p class="ms-3 my-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
+                                <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
+                            </form> 
+                        </div>  
+                    </div>
+                </div> 
+            </div> 
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

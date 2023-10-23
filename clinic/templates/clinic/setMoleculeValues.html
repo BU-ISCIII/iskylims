@@ -1,0 +1,478 @@
+{% extends 'clinic/base.html' %}
+{% load static %}
+{% block content %}
+<script src="{% static "clinic/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
+<script src="{% static "clinic/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
+<script src="{% static "clinic/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
+
+ <link href="{% static "clinic/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
+ <link href="{% static "clinic/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+<style>
+    .scrolling-wrapper {
+        overflow-x: scroll;
+        white-space: nowrap;
+    }
+ </style>
+{% if molecule_protocol %}
+    <div class="row my-2">
+        <div class="col-sm-12">
+            <div class="card ">
+                <div class="card-header"><h3>Assign the Molecule Protocol to following samples.</h3></div>
+                <div class="card-body">
+                    <br>
+                    <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="updateMoleculeProtocol"/>
+                        <input type="hidden" name= "samples" value="{{molecule_protocol.samples}}"/>
+
+                        <div id="spreadsheet"></div>
+                        <br><br><br><br>
+
+                        <script>
+                            var data = [{% for values in molecule_protocol.data %}
+                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                            ];
+
+                            dropdownFilter = function(instance, cell, c, r, source) {
+                                var value = instance.jexcel.getValueFromCoords(c - 3, r);
+                                {% for item, values in molecule_protocol.protocol_filter_selection %}
+                                    if (value == '{{item}}') {
+                                    return [{% for val in values %}'{{val}}',{% endfor %}];
+                                }
+                                {% endfor %}
+
+                                else {
+                                    return source;
+                                }
+                            }
+
+                            mySpreadsheet = $('#spreadsheet').jexcel({
+                                data:data,
+                                columns: [
+                                    { type: 'text', title:'{{molecule_protocol.headings.0}}', width:180 , readOnly:true },
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.1}}', width:150 , source :[ {% for value in molecule_protocol.type_of_molecules %} '{{value}}', {% endfor %}]},
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.2}}', width:150 , source :['Manual', 'Automated']},
+                                    { type: 'calendar' , title: '{{molecule_protocol.headings.3}}', width:150 },
+                                    { type: 'dropdown', title: '{{molecule_protocol.headings.4}}', width:180 , source:[{% for value in molecule_protocol.protocol_list %}'{{value}}',{% endfor %} ],
+                                            filter:dropdownFilter },
+
+                                ],
+                                allowInsertColumn:false,
+                                allowDeleteColumn:false,
+                                allowRenameColumn:false,
+                                allowInsertRow:false,
+                                allowDeleteRow:false,
+                                tableOverflow:true,
+                                tableHeight:'200px',
+                                csvFileName:'Molecule_data',
+                                minDimensions:[{{molecule_protocol.table_length}},{{molecule_protocol.number_of_samples}}],
+                                onchange:function(instance, cell, c, r, value) {
+                                    if (c == 1) {
+                                        var columnName = jexcel.getColumnNameFromId([4, r]);
+                                        instance.jexcel.setValue(columnName, '');
+                                    }
+                                }
+                            });
+                        </script>
+
+                        <br>
+                        <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                        <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#updateMoleculeProtocol").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "molecule_data")
+                                  .attr("value", data_json)
+                                  .appendTo("#updateMoleculeProtocol");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+
+                </div>
+            </div>
+        </div> <!--  end of col-sm-6 -->
+    </div> <!--  end of row -->
+{% elif molecule_recorded %}
+    {% if molecule_recorded.heading %}
+    <div class="row my-2">
+        <div class="col-sm-12">
+            <div class="card ">
+                <div class="card-header"><h3>The following molecules are now assigned to Protocol.</h3></div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                           <tr>
+                               {% for value in molecule_recorded.heading %}
+                                <th>{{value}}</th>
+                                {% endfor %}
+                           </tr>
+                        </thead>
+                        <tbody>
+                          {% for molecule, protocol in molecule_recorded.molecule_list %}
+                              <tr>
+                                <td>{{ molecule }} </td>
+                                <td>{{ protocol }}</td>
+                              </tr>
+                          {%endfor%}
+                        </tbody>
+                    </table>
+                    <form method="post" enctype="multipart/form-data" name="displayMoleculeParameters"  id="displayMoleculeParameters" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="displayMoleculeParameters"/>
+                        <input type="hidden" name= "molecules" value="{{molecule_recorded.molecules}}"/>
+                        <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                        <input type="button" value="Return Pendig Samples" onclick="location.href ='/clinic/pendingToUpdate' ;"/>
+                        <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Continue Adding Extraction Parameters">
+                    </form>
+                </div>
+            </div>
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+    {% endif %}
+    {% if molecule_recorded.incomplete_molecules_ids %}
+        <div class="row my-2">
+            <div class="col-sm-12">
+                <div class="panel panel-warning">
+                    <div class="card-header"><h3>Information missing for these samples.</h3></div>
+                    <div class="card-body">
+                        <br>
+                        <p>Please add the missing information and click on the submit bottom</p>
+                        <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="updateMoleculeProtocol"/>
+                            <input type="hidden" name= "samples" value="{{molecule_recorded.incomplete_molecules_ids}}"/>
+
+                            <div id="spreadsheet"></div>
+                            <br><br><br><br>
+
+                            <script>
+                                var data = [{% for values in molecule_recorded.incomplete_molecules %}
+                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                ];
+
+                                dropdownFilter = function(instance, cell, c, r, source) {
+                                    var value = instance.jexcel.getValueFromCoords(c - 1, r);
+                                    {% for item, values in molecule_recorded.protocol_filter_selection %}
+                                        if (value == '{{item}}') {
+                                        return [{% for val in values %}'{{val}}',{% endfor %}];
+                                    }
+                                    {% endfor %}
+
+                                    else {
+                                        return source;
+                                    }
+                                }
+
+                                mySpreadsheet = $('#spreadsheet').jexcel({
+                                    data:data,
+                                    columns: [
+                                        { type: 'text', title:'{{molecule_recorded.headings.0}}', width:180 , readOnly:true },
+                                        { type: 'dropdown', title:'{{molecule_recorded.headings.1}}', width:150 , source :[ {% for value in molecule_recorded.type_of_molecules %} '{{value}}', {% endfor %}]},
+                                        { type: 'dropdown', title:'{{molecule_recorded.headings.2}}', width:150 , source :['Manual', 'Automated']},
+                                        { type: 'calendar' , title: '{{molecule_recorded.headings.3}}', width:150 },
+                                        { type: 'dropdown', title:'{{molecule_recorded.headings.4}}', width:150 , source :[ {% for value in molecule_recorded.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
+                                        { type: 'dropdown', title: '{{molecule_recorded.headings.5}}', width:180 , source:[{% for value in molecule_recorded.protocol_list %}'{{value}}',{% endfor %} ],
+                                                filter:dropdownFilter },
+
+                                    ],
+                                    allowInsertColumn:false,
+                                    allowDeleteColumn:false,
+                                    allowRenameColumn:false,
+                                    allowInsertRow:false,
+                                    allowDeleteRow:false,
+                                    tableOverflow:true,
+                                    tableHeight:'200px',
+                                    csvFileName:'Molecule_data',
+                                    minDimensions:[{{molecule_recorded.table_length}},{{molecule_recorded.number_of_samples}}],
+                                    onchange:function(instance, cell, c, r, value) {
+                                        if (c == 4) {
+                                            var columnName = jexcel.getColumnNameFromId([5, r]);
+                                            instance.jexcel.setValue(columnName, '');
+                                        }
+                                    }
+                                });
+                            </script>
+
+                            <br>
+                            <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                            <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#updateMoleculeProtocol").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                      .attr("name", "molecule_data")
+                                      .attr("value", data_json)
+                                      .appendTo("#updateMoleculeProtocol");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+
+                    </div>
+                </div>
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of row -->
+    {% endif %}
+{% elif show_molecule_parameters %}
+    {% if show_molecule_parameters.lot_kit == '' %}
+        <div class="row my-2">
+            <div class="col-sm-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header"><h3>Warning. There is not User Lot Commercial kit available for this protocol.</h3></div>
+                    <div class="card-body">
+                        <p>Applying information to this page will make that none of these samples will have linked to the User Commercial Kit</p>
+                    </div>
+                </div>
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+        <br><br>
+    {% endif %}
+            <div class="row my-2">
+                <div class="col-sm-12">
+                <div class="card ">
+                <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
+
+                <div class="card-body">
+                    {% if show_molecule_parameters.pending_id %}
+                          <p>The selected molecules contain different protocol</p>
+                          <p>After Clicking the Submit buttom the next molecules will be displayed</p>
+                    {% endif %}
+                    <form method="post" enctype="multipart/form-data" name="addMoleculeParameters"  id="addMoleculeParameters" class="form-horizontal well">
+                        {% csrf_token %}
+                        <div class="scrolling-wrapper">
+                        <input type="hidden" name="action" value="addMoleculeParameters"/>
+                        <input type="hidden" name= "molecules" value="{{show_molecule_parameters.molecule_id}}"/>
+                        <input type="hidden" name= "heading_in_excel" value="{{show_molecule_parameters.heading_in_excel}}"/>
+                        {% if show_molecule_parameters.pending_id %}
+                             <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
+                        {% endif %}
+                        <p></p>
+
+                            <div id="spreadsheet"></div>
+                            <br>
+                        </div> <!--  end of scrolling  -->
+                        <script>
+                           var data = [{% for values in show_molecule_parameters.data %}
+                               [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                           ];
+
+                           mySpreadsheet = $('#spreadsheet').jexcel({
+                               data:data,
+                               columns: [
+                                   { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
+                                   { type: 'text', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , readOnly:true },
+                                   { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.2}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
+
+                                    {% for value in show_molecule_parameters.param_heading %}
+                                        { type: 'text', title:'{{value}}', width:180 },
+                                   {% endfor %}
+                               ],
+                               allowInsertColumn:false,
+                               allowDeleteColumn:false,
+                               allowRenameColumn:false,
+                               allowInsertRow:false,
+                               allowDeleteRow:false,
+                               tableOverflow:true,
+                               tableHeight:'200px',
+                               csvFileName:'quality_data',
+
+                           });
+                       </script>
+                       <br><br>
+                       <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                       <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
+
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#addMoleculeParameters").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "parameters_data")
+                                  .attr("value", data_json)
+                                  .appendTo("#addMoleculeParameters");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div>
+            </div>
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+{% elif added_molecule_protocol_parameters %}
+    <div class="row my-2">
+        <div class="col-sm-12">
+            <div class="card ">
+                <div class="card-header"><h3>The following molecules have been updated with Extraction Parameters.</h3></div>
+                <div class="card-body">
+                   <table class="table table-hover">
+                       <thead>
+                          <tr>
+                            <th>Molecule Code ID</th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                         {% for values in added_molecule_protocol_parameters %}
+                         <tr>
+                           <td>{{ values }} </td>
+                         </tr>
+                    {%endfor%}
+                        </tbody>
+                   </table>
+               </div>
+           </div>
+
+       </div> <!--  end of col-sm-12 -->
+   </div> <!--  end of row -->
+   {% if added_molecule_protocol_parameters.show_molecule_parameters %}
+        <div class="row my-2">
+           <div class="col-sm-12">
+               <div class="card ">
+                   <div class="card-header"><h3>Update the following molecules with Nucleic quality Parameters.</h3></div>
+                   <div class="card-body">
+                       {% if show_molecule_parameters.pending_id %}
+                             <p>The selected molecules contain different protocol</p>
+                             <p>After Clicking the Submit buttom the next molecules will be displayed</p>
+                       {% endif %}
+                       <form method="post" enctype="multipart/form-data" name="addMoleculeParameters"  id="addMoleculeParameters" class="form-horizontal well">
+                           {% csrf_token %}
+                           <div class="scrolling-wrapper">
+                           <input type="hidden" name="action" value="addMoleculeParameters"/>
+                           <input type="hidden" name= "molecules" value="{{show_molecule_parameters.molecule_id}}"/>
+                           <input type="hidden" name= "heading_in_excel" value="{{show_molecule_parameters.heading_in_excel}}"/>
+                           {% if show_molecule_parameters.pending_id %}
+                                <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
+                           {% endif %}
+                           <p></p>
+
+                               <div id="spreadsheet"></div>
+                               <br>
+                           </div> <!--  end of scrolling  -->
+                           <script>
+                              var data = [{% for values in show_molecule_parameters.data %}
+                                  [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                              ];
+
+                              mySpreadsheet = $('#spreadsheet').jexcel({
+                                  data:data,
+                                  columns: [
+                                            { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
+                                            { type: 'text', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , readOnly:true },
+                                            { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.2}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
+
+                                       {% for value in show_molecule_parameters.param_heading %}
+                                           { type: 'text', title:'{{value}}', width:180 },
+                                      {% endfor %}
+                                  ],
+                                  allowInsertColumn:false,
+                                  allowDeleteColumn:false,
+                                  allowRenameColumn:false,
+                                  allowInsertRow:false,
+                                  allowDeleteRow:false,
+                                  tableOverflow:true,
+                                  tableHeight:'200px',
+                                  csvFileName:'quality_data',
+
+                              });
+                          </script>
+                          <br><br>
+                          <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                          <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
+
+                       </form>
+                       <script>
+                           $(document).ready(function () {
+                               $("#addMoleculeParameters").submit(function (e) {
+                                   //stop submitting the form to see the disabled button effect
+                                   // e.preventDefault();
+                                   //disable the submit button
+                                   var table_data = $('#spreadsheet').jexcel('getData')
+                                   var data_json = JSON.stringify(table_data)
+                                   $("<input />").attr("type", "hidden")
+                                     .attr("name", "parameters_data")
+                                     .attr("value", data_json)
+                                     .appendTo("#addMoleculeParameters");
+                                   $("#btnSubmit").attr("disabled", true);
+                                   return true;
+                               });
+                           });
+                       </script>
+                   </div>
+               </div>
+
+           </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+   {%endif %}
+{% else %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="card ">
+                <div class="card-header"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                    <div class="card-body">
+
+                        <form method="post" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="continueWithDNA"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in display_list.heading %}
+                                            <th> {{ value }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for date, code, patient, lab, labname, sampletype, species, s_id in display_list.sample_information  %}
+                                        <tr>
+                                                <td>{{date}}</td>
+                                                <td>{{code}}</td>
+                                                <td>{{patient}}</td>
+                                                <td>{{lab}}</td>
+                                                <td>{{labname}}</td>
+                                                <td>{{sampletype}}</td>
+                                                <td>{{species}}</td>
+                                                <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                            <input class="btn float-end btn-outline-primary" id = "btnSubmit" type="submit" value="Submit">
+                         </form>
+
+                    </div>  
+
+            </div>
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+{% endif %}
+
+{% endblock %}

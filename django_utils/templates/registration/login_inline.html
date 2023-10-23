@@ -1,24 +1,48 @@
- {% if user.is_authenticated %}                                                                                                    
-<form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">                           
-  	{% csrf_token %}                                                                                                                
-  	<div class="input-group">                                                                                                       
-  		<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                             
-		<input id="id_username" type="text" class="form-control" name="username" value="" placeholder="{{user.get_username}}" readonly>                  
-  	</div>                                                                                                                          
-  	<button type="submit" class="btn btn-primary"> Logout </button>                                                                  
-	<a class="btn btn-primary" href="/utils/user_edit"> My account </a>                                                                   
- </form>                                                                                                                            
- {% else %}                                                                                                                        
- <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
- 	{% csrf_token %}                                                                                                               
- 	<div class="input-group">                                                                                                      
- 		<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>                                            
- 		<input id="id_username" type="text" class="form-control" name="username" value="" placeholder="User name">                 
- 	</div>                                                                                                                         
- 	<div class="input-group">                                                                                                      
- 		<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>                                            
- 		<input id="id_password" type="password" class="form-control" name="password" value="" placeholder="Password">              
- 	</div>                                                                                                                         
- 	<button type="submit" class="btn btn-primary"> Login </button>                                                                 
- </form>                                                                                                                           
+{% if user.is_authenticated %}
+    <div class="row mt-1 justify-content-end">
+        <div class="col-md-auto">
+            <form id="signin"  role="form" method="post" action="{% url 'logout' %}?next={{request.path}}">
+                {% csrf_token %} 
+                <div class="row g-3">
+                    <div class="col-md-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="form-control">{{user.get_username}}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-auto">                                                                                                 
+                        <button type="submit" class="btn btn-outline-primary"> Logout </button>
+                    </div>
+                    <div class="col-md-auto"> 
+                        <a class="btn btn-outline-secondary" href="/utils/user_edit"> My account </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>                                                                                                                          
+{% else %}
+    <div class="row mt-1 justify-content-end">
+        <div class="col-md-auto">                                                                                                               
+            <form id="signin" role="form" method="post" action="{% url 'login' %}">                          
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                            <input type="text" class="form-control" id="id_username" name="username" placeholder="User name">
+                        </div>
+                    </div>
+                    <div class="col-md-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" class="form-control" id="id_password"  name="password" placeholder="Password">
+                        </div>
+                    </div>                                                                                                            
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-outline-primary me-md-2">Login</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>                                                                                                                          
  {% endif %}                                                                                                                       

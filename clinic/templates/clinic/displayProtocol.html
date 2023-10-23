@@ -1,0 +1,42 @@
+{% extends 'clinic/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{% if protocol_data %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <h3>These are the parameters defined for {{protocol_data.protocol_name}}</h3>
+            <div class="card ">
+                <div class="card-header"><h4>{{protocol_data.protocol_name}} </h4></div>
+                <div class="card-body">
+                    <div class="col-sm-11" >
+                        <table class="table table-hover">
+                           <thead>
+                              <tr>
+                                    {% for value in protocol_data.parameter_heading %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                              </tr>
+                           </thead>
+                           <tbody>
+                            {% for  values in protocol_data.parameters %}
+                                <tr>
+                                    {% for value  in values %}
+                                        <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--// end col-sm-11  -->
+                </div>  
+            </div>
+
+        </div> <!--// end col-sm-12  -->
+
+    </div> <!--// end row -->
+
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,333 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include "core/cdn_table_functionality.html"%}
+{% include "core/graphic_chart_functionality.html" %}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if ERROR %}
+            <div class="row justify-content-center pb-2 pt-2">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3> Unable to process your request</h3>
+                        </div>
+                        <div class="card-body">
+                            {% for message in ERROR %}
+                                <p>{{message}}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row justify-content-center pb-2 pt-2">
+                <div class="col-md-12">
+                    <div class="card ">
+                        <div class="card-header">
+                            Ongoing services
+                        </div>
+                        <div class="card-body">
+                            <div class="container-md">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-12">
+                                        <nav>
+                                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                                <button class="nav-link active" id="nav-services-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#nav-services" type="button" role="tab"
+                                                    aria-controls="nav-services" aria-selected="true">Services
+                                                    lists</button>
+                                                <button class="nav-link" id="nav-myservices-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#nav-myservices" type="button" role="tab"
+                                                    aria-controls="nav-myservices" aria-selected="false">My
+                                                    services</button>
+                                            </div>
+                                        </nav>
+                                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                            <!-- div tab 1 -->
+                                            <div class="tab-pane fade show active" id="nav-services" role="tabpanel"
+                                                aria-labelledby="nav-services-tab">
+                                                <!-- SECOND TAB GROUP -->
+                                                <nav>
+                                                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                                        <button class="nav-link active" id="nav-graphs-tab" data-bs-toggle="tab"
+                                                            data-bs-target="#nav-graphs" type="button" role="tab"
+                                                            aria-controls="nav-graphs" aria-selected="false">Graphs</button>
+                                                        {% for key, values in pending_services.data.items %}
+                                                        {% if values != "" %}
+                                                        <button class="nav-link" id="nav-{{ key|cut:' ' }}-tab" data-bs-toggle="tab"
+                                                            data-bs-target="#nav-{{ key|cut:' ' }}" type="button" role="tab"
+                                                            aria-controls="nav-{{ key|cut:' ' }}" aria-selected="false">{{ key }}</button>
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </nav>
+                                                <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                                    <!-- second tab div tabs graphs -->
+                                                    <div class="tab-pane fade show active" id="nav-graphs" role="tabpanel"
+                                                        aria-labelledby="nav-graphs-tab">
+                                                        <div class="container-md">
+                                                            <div class="row justify-content-center pt-2 pb-2">
+                                                                {% if pending_services.graphics.all_state %}
+                                                                <div class="col-md-6">
+                                                                    <div class="card ">
+                                                                        <div class="card-header">
+                                                                            Ongoing services distribution
+                                                                        </div>
+                                                                        <div class="card-body">
+                                                                            <!-- Pie chart for number of pending Services chart will start here-->
+                                                                            <div id="chart-1"> </div>
+                                                                            <!-- dumping JavaScript code here -->
+                                                                            {{ pending_services.graphics.all_state |safe }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {% endif %}
+                                                                {% if pending_services.graphics %}
+                                                                <div class="col-md-6">
+                                                                    <div class="card ">
+                                                                        <div class="card-header">
+                                                                            Services center distribution
+                                                                        </div>
+                                                                        <div class="card-body">
+                                                                            <!-- Pie chart for number of pending Services chart will start here-->
+                                                                            <div id="chart-2"> </div>
+                                                                            <!-- dumping JavaScript code here -->
+                                                                            {{ pending_services.graphics.graphic_pending_unit_services|safe }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- second tab div tabs -->
+                                                    {% for key, values in pending_services.data.items %}
+                                                    <div class="tab-pane fade show" id="nav-{{ key|cut:' ' }}" role="tabpanel"
+                                                        aria-labelledby="nav-{{ key|cut:' ' }}-tab">
+                                                        <div class="container-md">
+                                                            <div class="row justify-content-center pt-2 pb-2">
+                                                                <div class="col-md-12">
+                                                                    {% if values %}
+                                                                    <table id="table_{{ key|cut:' ' }}" class="table table-hover">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Service ID</th>
+                                                                                <th>User</th>
+                                                                                <th>Recorded date</th>
+                                                                                <th>Resolution date</th>
+                                                                                <th>Assigned to</th>
+                                                                                <th>On queue date</th>
+                                                                                <th>Estimated delivery date</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for s_id, serv, user, c_date, res, handle, q_date, e_date in values %}
+                                                                            <tr>
+                                                                                <td><a href="/drylab/display-service={{ s_id }}">{{ serv }}</a> </td>
+                                                                                <td>{{user}}</td>
+                                                                                <td>{{c_date}}</td>
+                                                                                <td>{{res}}</td>
+                                                                                <td>{{handle}}</td>
+                                                                                <td>{{q_date}}</td>
+                                                                                <td>{{e_date}}</td>
+                                                                            </tr>
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                            <tr>
+                                                                                content                                                <th>Service ID</th>
+                                                                                <th>User</th>
+                                                                                <th>Recorded date</th>
+                                                                                <th>Resolution date</th>
+                                                                                <th>Assigned to</th>
+                                                                                <th>On queue date</th>
+                                                                                <th>Estimated delivery date</th>
+                                                                            </tr>
+                                                                        </tfoot>
+                                                                    </table>
+                                                                    {% else %}
+                                                                    There is not pending services in <b>{{ key }}</b> state.
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane fade show" id="nav-myservices" role="tabpanel"
+                                                aria-labelledby="nav-myservices-tab">
+                                                <div class="container-md">
+                                                    {% if not user_pending_services.heading_in_queued and not user_pending_services.heading_in_progress %}
+                                                    <div class="row pt-2 pb-2 justify-content-center">
+                                                        <div class="col-md-12">
+                                                            <h5>You do not have any tasks assigned.</h5>
+                                                        </div>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="row pt-2 pb-2 justify-content-center">
+                                                        <div class="col-md-12">
+                                                            {% if user_pending_services.heading_in_queued %}
+                                                            <table id="table_myservices_queued" class="table table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for column in user_pending_services.heading_in_queued %}
+                                                                        <th>{{column}}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for s_id, s_name, res_name , s_acronym, queued_date, estimated_date in user_pending_services.queued %}
+                                                                    <tr>
+                                                                        <td><a href="/drylab/display-service={{ s_id }}">{{ s_name }}</a> </td>
+                                                                        <td> {{ res_name }}</td>
+                                                                        <td> {{ s_acronym }}</td>
+                                                                        <td> {{ queued_date }}</td>
+                                                                        <td> {{ estimated_date }} </td>
+                                                                    </tr>
+                                                                    {%endfor%}
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr>
+                                                                        {% for column in user_pending_services.heading_in_queued %}
+                                                                        <th>{{column}}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                            {% else %}
+                                                            <h5>You do not have resolutions in queued state</h5>
+                                                            {% endif%}
+                                                        </div>
+                                                    </div>
+                                                    <div class="row pt-2 pb-2 justify-content-center">
+                                                        <div class="col-md-12"> <!-- in progress  pending services -->
+                                                            {% if user_pending_services.heading_in_progress %}
+                                                            <table id="table_myservices_progress" class="table table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for column in user_pending_services.heading_in_progress %}
+                                                                        <th>{{column}}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for s_id, s_name, res_name , s_acronym, queued_date, estimated_date in user_pending_services.in_progress %}
+                                                                    <tr>
+                                                                        <td><a href="/drylab/display-service={{ s_id }}">{{ s_name }}</a> </td>
+                                                                        <td> {{ res_name }}</td>
+                                                                        <td> {{ s_acronym }}</td>
+                                                                        <td> {{ queued_date }}</td>
+                                                                        <td> {{ estimated_date }} </td>
+                                                                    </tr>
+                                                                    {%endfor%}
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr>
+                                                                        {% for column in user_pending_services.heading_in_progress %}
+                                                                        <th>{{column}}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                            {% else %}
+                                                            <h5>You do not have resolutions in progress state</h5>
+                                                            {% endif%}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    {% for key, values in pending_services.data.items %}
+        $("#table_{{ key|cut:' ' }} tfoot th").each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        // DataTable
+        var table = $("#table_{{ key|cut:' ' }} ").DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+    {% endfor %}
+
+    $('#table_myservices_queued tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    {% if user_pending_services.heading_queued %}
+    // DataTable
+    var table = $('#table_myservices_queued').DataTable({
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+    {% endif %}
+
+    $('#table_myservices_progress tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    {% if user_pending_services.heading_in_progress %}
+    // DataTable
+    var table = $('#table_myservices_progress').DataTable({
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+    {% endif %}
+</script>
+{% endblock %}

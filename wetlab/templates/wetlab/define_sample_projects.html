@@ -1,0 +1,113 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to record your Sample Project</h3> </div>
+                        <div class="card-body">
+                            <p>
+                                {% for value in error_message %}
+                                    {{ value }} <br>
+                                {% endfor %}
+                            </p>
+                        </div>  
+                    </div>
+                </div> 
+            </div>
+        {% endif %}
+        {% if new_defined_sample_project %}
+            <div class="container">
+                <div class="row my-2">
+                    <div class="col-sm-6 offset-3" >
+                        <div class="card ">
+                            <div class="card-header"><h3 class="text-center">New sample project has been added</h3> </div>
+                                <div class="card-body">
+                                    <h3 class="text-center">{{ new_defined_sample_project }}</h3>
+                                    <p class="mb-3">Has been added to the defined sample projects</p>
+                                    <p>Click on the "add Sample Project Fields" button  to define the custom fields used when recorded new sample</p>
+                                    <button type="button" class="btn btn-outline-primary my-3" onclick="window.location.href = '/wetlab/defineSampleProjectFields={{new_sample_project_id}}';">Define Sample Project Fields</button>
+                                </div>  
+                            </div>
+                        </div>
+                    </div>  
+                </div>
+            </div>
+        {% else %}
+            <div class="row my-2">
+                <div class="col" >
+                    <div class="card mb-3">
+                        <div class="card-header text-center"><h3>New Sample Project</h3> </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="addNewSampleProject" id="addNewSampleProject" class="form-horizontal">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="addNewSampleProject"/>
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="sampleProyectName" id="sampleProyectName" required="required" placeholder="Sample project name">
+                                    <label for="sampleProyectName" class="text-danger">Sample Project name</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="sampleProyectManager" id="sampleProyectManager" placeholder="Sample project manager">
+                                    <label for="sampleProyectManager">Sample Project manager</label>
+                                </div>
+                                <label class="col form-label mb-3">Project Manager details contact </label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" style="height: 100px" name="sampleProyectManagerContact" id="sampleProyectManagerContact"></textarea>
+                                    <label for="sampleProyectManagerContact">email/movil to contact proyect manager (Max 250 characters) </label>
+                                </div>
+                                <label class="col form-label mb-3">Sample project description</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" style="height: 100px" name="description" id="description" ></textarea>
+                                    <label for="description">Write some lines about this projects(Max 250 characters)</label>
+                                </div>
+                                <p class="ms-3 mb-3"> Fields in <FONT COLOR="Red">Red </FONT> are mandatory</p>
+                                <input class="btn btn-outline-secondary" type="reset" value="Reset values">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
+                            </form>
+                        </div>
+                    </div>
+                </div> 
+                {% if defined_samples_projects %}
+                    <div class="col" >
+                        <div class="card ">
+                        <div class="card-header"><h3>Sample Projects already defined</h3></div>
+                        <div class="card-body">
+                                <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Manager</th>
+                                        <th>Fields</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for  id, s_p_name, manager, add_field in defined_samples_projects %}
+                                        <tr>
+                                            {% if add_field %}
+                                                <td><a href="/wetlab/displaySampleProject={{id}}" class="text-decoration-none">{{s_p_name}}</a></td>
+                                                <td>{{manager}}</td>
+                                                <td>Defined Fields </td>
+                                            {% else %}
+                                                <td>{{ s_p_name }}</td>
+                                                <td>{{manager}}</td>
+                                                <td><button class= "btn btn-outline-secondary" onclick="window.location.href = '/wetlab/defineSampleProjectFields={{id}}';">Define Fields</button></td>
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>  
+                        </div>
+                    </div> 
+                {% endif %}
+            </div> 
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include "core/cdn_table_functionality.html"%}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+
+        {% if ERROR %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3> Result of your request</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for message in ERROR %}
+                        <p>{{message}}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if display_multiple_services %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-12">
+                <div class="card ">
+                    <div class="card-header">
+                        Services search results
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover" id="services_found">
+                            <thead>
+                                <tr>
+                                    <th>Service ID </th>
+                                    <th>Status</th>
+                                    <th>Recorded Date</th>
+                                    <th>Approved Date</th>
+                                    <th>Rejected Date</th>
+                                    <th>Delivered Date</th>
+                                    <th>Center</th>
+                                    <th>Project names</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, values in display_multiple_services.s_list.items %}
+                                <tr>
+                                    {% for serviceID, status, dates ,center, projects  in values %}
+                                    <td><a href="/drylab/display-service={{ key }}">{{ serviceID }}</a> </td>
+                                    <td> {{ status }} </td>
+                                    {% for date in dates %}
+                                    <td>{{date}}</td>
+                                    {% endfor %}
+                                    <td>{{ center }}</td>
+                                    <td> {% for project in projects %}{{ project }} <br> {% endfor %}</td>
+                                    {%endfor%}
+                                </tr>
+                                {%endfor%}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Service Request ID </th>
+                                    <th>Status</th>
+                                    <th>Recorded Date</th>
+                                    <th>Approved Date</th>
+                                    <th>Rejected Date</th>
+                                    <th>Delivered Date</th>
+                                    <th>Center</th>
+                                    <th>Project names</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Search form  -->
+            <div class="row justify-content-center pb-2 pt-2">
+                <div class="col-md-8">
+                    <div class="card ">
+                        <div class="card-header"><strong>Service search</strong></div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="search_service" id="search_service">
+                                <div class="container-md">
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-12">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="search_service" />
+                                            <div class="form-floating mb-1">
+                                                <input type="text" class="form-control" id="service_id"
+                                                    name="service_id" placeholder="Service ID">
+                                                <label for="service_id">Service ID</label>
+                                            </div>
+                                            <div class="form-floating mb-1">
+                                                <select class="form-select" name="service_state" id="service_state"
+                                                    aria-label="Select state">
+                                                    <option value="">Choose a value</option>
+                                                    {% for key, value in services_search_list.states %}
+                                                    <option value="{{ key }}">{{value}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="service_state">Service state</label>
+                                            </div>
+                                            <div class="form-floating mb-1">
+                                                <input type="date" class="form-control" id="start_date"
+                                                    name="start_date" placeholder="From date (DD-MM-YYYY)">
+                                                <label for="start_date">From date (DD-MM-YYYY)</label>
+                                            </div>
+                                            <div class="form-floating mb-1">
+                                                <input type="date" class="form-control" id="end_date" name="end_date"
+                                                    placeholder="From date (DD-MM-YYYY)">
+                                                <label for="end_date">To date (DD-MM-YYYY)</label>
+                                            </div>
+                                            <div class="form-floating mb-1">
+                                                <select class="form-select" name="service_center" id="service_center"
+                                                    aria-label="Select center">
+                                                    <option value="">Choose a value</option>
+                                                    {% for value in services_search_list.centers %}
+                                                    <option value="{{ value }}">{{value}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="service_center">Service center</label>
+                                            </div>
+                                            <div class="form-floating mb-1">
+                                                {% if services_search_list.username %}
+                                                <input type="text" class="form-control" id="service_user"
+                                                    name="service_user" placeholder="User" readonly
+                                                    value={{services_search_list.username}}>
+                                                {% else %}
+                                                <input type="text" class="form-control" id="service_user"
+                                                    name="service_user" placeholder="User">
+                                                {% endif %}
+                                                <label for="service_user">User</label>
+                                            </div>
+                                            <div class="form-floating mb-1">
+                                                {% if services_search_list.username %}
+                                                <input type="text" class="form-control" id="bioinfo_user"
+                                                    name="bioinfo_user" placeholder="User" readonly
+                                                    value={{services_search_list.username}}>
+                                                {% else %}
+                                                <input type="text" class="form-control" id="bioinfo_user"
+                                                    name="bioinfo_user" placeholder="Assigned user">
+                                                {% endif %}
+                                                <label for="bioinfo_user">Assigned user</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-12">
+                                            {% if services_search_list.wetlab_app %}
+                                            <div class="card ">
+                                                <div class="card-header">Search using wetlab information</div>
+                                                <div class="card-body">
+                                                    <div class="form-floating mb-1">
+                                                        <input type="text" class="form-control" id="run_name" name="run_name"
+                                                            placeholder="Run name">
+                                                        <label for="run_name">Run name</label>
+                                                    </div>
+                                                    <div class="form-floating mb-1">
+                                                        <input type="text" class="form-control" id="project_name" name="project_name"
+                                                            placeholder="Project name">
+                                                        <label for="project_name">Project name</label>
+                                                    </div>
+                                                    <div class="form-floating mb-1">
+                                                        <input type="text" class="form-control" id="sample_name" name="sample_name"
+                                                            placeholder="Sample name">
+                                                        <label for="sample_name">Sample name</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-between pt-2 pb-2">
+                                        <div class="col-md-auto">
+                                            <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                        </div>
+                                        <div class="col-md-auto">
+                                            <input class="btn btn-outline-primary" type="submit" value="Submit">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function() {
+        $('#services_found tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        $('#services_found').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+            dom: "Bfltirp",
+            responsive: true,
+            buttons: ['excel', 'csv']
+        });
+    });
+</script>
+{% endblock %}

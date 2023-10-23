@@ -1,0 +1,169 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include "core/cdn_table_functionality.html"%}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <div class="row pb-2 pt-2">
+            <div class="col-md-4">
+                <h1>{{organization_name}}</h1>
+                <h2>iSkyLIMS: DryLab</h2>
+            </div>
+        </div>
+        <div class="row justify-content-between pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card ">
+                    <div class="card-header">
+                        <h3>Welcome</h3>
+                    </div>
+                    <div class="card-body">
+                        This section will allow you to check {{organization_name}} service activity.
+                        Available processes are:
+                        <ul>
+                            <li>Sequencing</li>
+                            <li>Counseling</li>
+                            <li>Infrastructure</li>
+                        </ul>
+                        Email us for requesting detailed information about available services and conditions.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <img class="img-fluid" src="{% static 'drylab/custom/img/support.png' %}" width="75%">
+            </div>
+        </div>
+        <div class="row pb-2 pt-2">
+            <div class="col-md-6">
+                <div class="card ">
+                    <div class="card-header">
+                        Recorded services
+                    </div>
+                    <div class="card-body">
+                        {% if service_list.recorded %}
+                        <div class="scrolling-wrapper">
+                            <table id="table_recorded" name="table_recorded" class="table table-responsive table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service Number</th>
+                                        <th>Requested by</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for values in service_list.recorded %}
+                                    <tr>
+                                        {% for value in values %}
+                                        <td>{{ value }} </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Service Number</th>
+                                        <th>Requested by</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        {% else %}
+                        <h5>There is no new Requested Service </h5>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card ">
+                    <div class="card-header">In progress services</div>
+                    <div class="card-body">
+                        {% if service_list.ongoing %}
+                        <div class="scrolling-wrapper">
+                            <table id="table_inprogress" name="table_inprogress" class="table table-responsive table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service number</th>
+                                        <th>Expected delivery date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for values in service_list.ongoing %}
+                                    <tr>
+                                        {% for value in values %}
+                                        <td>{{ value }} </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Service number</th>
+                                        <th>Expected delivery date</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        {% else %}
+                        <h5>At present all requested services which we were working on, they are delivered.</h5>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // table samples foot search
+    $('#table_recorded tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    // DataTable
+    var table = $('#table_recorded').DataTable({
+        "pageLength": 5,
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+
+    // table samples foot search
+    $('#table_inprogress tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    // DataTable
+    var table = $('#table_inprogress').DataTable({
+        "pageLength": 5,
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+</script>
+{% endblock %}

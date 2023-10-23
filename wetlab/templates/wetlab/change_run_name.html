@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row mt-2 mb-4">
+                <div class="col-md-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger text-center"><h3>Unable to process your request </h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div> 
+                    </div> 
+                </div> 
+            </div> 
+        {% endif %}
+        {% if changed_name %}
+        <div class="container">
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3" >
+                    <div class="card ">
+                        <div class="card-header text-cemter"><h3>Successful change for Run Name</h3>  </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col"> <h3>Old Run name</h3>  </div>
+                                <div class="col"> <h5>{{ changed_name.old_name }}</h5> </div>
+                            </div>
+                            <div class="row">
+                                <div class="col"> <h3>New Run name </h3> </div>
+                                <div class="col"> 
+                                    <h5>{{ changed_name.new_name }}</h5>
+                                    <input type="button" class="btn btn-outline-primary float-end my-3" value="Display run" onclick="location.href ='/wetlab/displayRun={{changed_name.run_id}}' ;"/>
+                                </div>
+                                
+                            </div>
+                                    
+                                    
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif run_data %}
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col">
+                        <div class="card ">
+                            <div class="card-header text-center"><h3>Change the Run Name</h3></div>
+                            <div class="card-body">
+                                    <form method="post" enctype="multipart/form-data" name="change_run_name" id="change_run_name">
+                                        {% csrf_token %}
+                                        <input type="hidden"name="action" value="change_run_name"/>
+                                        
+                                        <div  class="form-control mt-3">
+                                            <label class="pd-3">Present run name</label>
+                                            <input class="form-control" type="text" value="{{run_data.run_name}}" aria-label="old_run_name" disabled readonly>
+                                        </div>
+                                        
+                                        <div class="form-floating my-3">
+                                            <input type="text" class="form-control" name="runName" id="runName" required="required" placeholder="New run name">
+                                            <label for="runName" class="text-danger">Enter the new name for the Run </label>
+                                        </div>                                  
+                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                    </form>
+                                    <p> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                </div>  
+                            </div>
+                        </div>   
+                    </div>
+                </div>
+            </div> 
+        {% endif %} 
+    </div>
+</section> 
+{% endblock %}

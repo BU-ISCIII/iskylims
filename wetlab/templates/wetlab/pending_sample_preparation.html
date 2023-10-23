@@ -1,0 +1,131 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "core/cdn_table_functionality.html" %}
+{% include "core/graphic_chart_functionality.html" %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <div class="row my-2">
+            <div class="col" >
+                <h3 class="text-center">Pending sample preparation</h3>
+                <div class="col">
+                    {% if pending_data.state %}
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            {% for state, values in pending_data.state.items %}
+                                {% if forloop.first %}
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="{{state|cut:" "}}-tab" data-bs-toggle="tab" data-bs-target="#{{state|cut:" "}}" type="button" role="tab" aria-controls="{{state|cut:" "}}" aria-selected="true">{{state}}</button>
+                                    </li>
+                                {% else %}
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="{{state|cut:' '}}-tab" data-bs-toggle="tab" data-bs-target="#{{state|cut:' '}}" type="button" role="tab" aria-controls="{{state|cut:' '}}" aria-selected="false">{{state}}</button>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if pending_data.pending_sample_graphic %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="false">Graphic</button>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            {% for state, samples in pending_data.state.items %}
+                                {% if forloop.first %}
+                                    <div class="tab-pane fade show active" id="{{state|cut:' '}}" role="tabpanel" aria-labelledby="{{state|cut:' '}}-tab">
+                                {% else %}
+                                    <div class="tab-pane fade" id="{{state|cut:' '}}" role="tabpanel" aria-labelledby="{{state|cut:''}}-tab">
+                                {% endif %}
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col-md">
+                                                    <div class="card">
+                                                        <div class="card-header"><h3 style="text-align:center">Samples in {{state}}  state</h3></div>
+                                                        <div class="card-body">
+                                                            <table class="table table-hover" id="{{state|cut:' '}}_table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for value in pending_data.sample_heading %}
+                                                                            <th> {{ value }}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for s_id, s_name, lab, s_type,  project, user in samples %}
+                                                                        <tr>
+                                                                            <td><a href="displaySample={{s_id}}" class="text-decoration-none">{{s_name}}</a></td>
+                                                                            <td>{{lab}}</td>
+                                                                            <td>{{s_type}}</td>
+                                                                            <td>{{project}}</td>
+                                                                            <td>{{user}}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>  
+                                                    </div>
+                                                </div> 
+                                            </div>  
+                                        </div>
+                                    </div>
+                            {% endfor %}
+                            {% if pending_data.pending_sample_graphic %}
+                                <div class="tab-pane fade" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md" >
+                                                <div class="card">
+                                                    {% if pending_data.pending_users_graphic %}
+                                                        <div class="row g-2">
+                                                    {% else %}
+                                                        <div class="justify-content-center">
+                                                    {% endif %}
+                                                            <div class="col-md-6">
+                                                                <div class="card-header"><h3>Sample state</h3></div>
+                                                                <div class="card-body">
+                                                                    <div id="chart-1"> </div>
+                                                                    {{ pending_data.pending_sample_graphic |safe }}
+                                                                </div>  
+                                                            </div>
+                                                            {% if pending_data.pending_users_graphic %}
+                                                                <div class="col-md-6">
+                                                                    <div class="card-header"><h3>Users with pending sample</h3></div>
+                                                                    <div class="card-body">
+                                                                        <div id="chart-2"> </div>
+                                                                        {{ pending_data.pending_users_graphic |safe }}
+                                                                    </div>  
+                                                                </div>
+                                                            {% endif %}
+
+                                                        </div> 
+                                                </div> 
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div> 
+                            {% endif %}
+                        </div>
+                    {% else%}
+                        <div class="col-md" >
+                            <div class="card ">
+                                <div class="card-body">
+                                    <h5>There are not pending samples to process </h5>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div> 
+            </div>  
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    {% for key , value in pending_data.state.items %}
+        $(document).ready(function() {
+            $('#{{key|cut:" "}}_table').DataTable({
+                responsive: true,
+            });
+        });
+    {% endfor %}
+</script>
+{% endblock %}

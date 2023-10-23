@@ -1,0 +1,136 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+
+        {% if ERROR %}
+            <div class="row my-2">
+                <BR>
+                <div class="col-sm-6  offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3> Not match</h3></div>
+                        <div class="card-body">
+                            {% for line in ERROR %}
+                                <p>{{line}}</p>
+                            {% endfor %}
+                        </div>
+                </div>
+                </div> 
+            </div> 
+        {% endif %}
+
+        {% if display_user_kit_list %}
+            <div class="row my-2">
+                <div class="col-sm-9">
+                    <div class="card ">
+                        <div class="card-header"><h3> These following Kits have matched your query :</h3></div>
+                        <div class="card-body">
+                            <table class="table table-hover" id="kit_table">
+                                <thead>
+                                    <tr>
+                                        {%for value in display_user_kit_list.heading %}
+                                            <th>{{value}}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for comm_name ,kit_name , exp_date, protocols, platform, id in display_user_kit_list.kit_data %}
+                                        <tr>
+                                            <td><a href="/wetlab/displayUserLotKit={{id}}">{{ kit_name }}</a> </td>
+                                            <td> {{ comm_name }} </td>
+                                            <td> {{ exp_date }} </td>
+                                            <td>{% for protocol in protocols %}  {{protocol}} <br>{% endfor %}</td>
+                                            <td>{{platform}}</td>
+                                        </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if display_user_kit_list.kit_data|length > 7 %}
+                            <script type="text/javascript">
+                                $(document).ready(function() {
+                                    $('#kit_table').DataTable({
+                                        responsive: true,
+                                    });
+                                });
+                            </script>
+                        {% endif %}
+                </div>
+                </div> 
+            </div>
+        {% else %}
+            <div class="row my-2">
+                <div class="col" >
+                    <div class="card ">
+                        <div class="card-header" class="text-center"><h3>Form for Searching User Lot Kits </h3></div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="searchuserkit" id="searchuserkit">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="searchuserkit"/>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="lotNumber" name="lotNumber" placeholder="kit lot number" >
+                                            <label for="lotNumber">Lot number of the kit<label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="commercial" name="commercial" placeholder="Comercial kit" >
+                                            <label for="commercial">Comercial kit</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" name="protocol" id="protocol" aria-label="Floating label select protcol">
+                                                <option value="">Choose a value</option>
+                                                {% for id, value in protocol_list %}
+                                                    <option value="{{id}}">{{value}}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="protocol">Protocol from which Kit is used</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <select class="form-select" name="platform" id="platform" aria-label="Floating label select protcol">
+                                                <option value="">Choose a value</option>
+                                                {% for id, value in platform_list %}
+                                                    <option value="{{id}}">{{value}}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="platform">Platform from which Kit is used</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md">
+                                        <div class="form-floating">
+                                            <input type="date" class="form-control" id="expired" name="expired" placeholder="Filter run from start date" >
+                                            <label for="expired">End date to be expired (DD-MM-YYYY)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-check form-switch col mb-2">
+                                            <label class="form-check-label  form-label" for="exclude_runout">Exclude Run Out kit </label>
+                                            <input class="form-check-input float-end me-4" type="checkbox" name="exclude_runout" id="exclude_runout" >
+                                        </div>
+                                    </div>
+                                </div>
+                                <input class="btn  btn-outline-secondary" type="reset" value="Reset Fields">
+                                <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                            </form>
+                        </div>  
+                    </div>
+                </div>
+                </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

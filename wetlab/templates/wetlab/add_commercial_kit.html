@@ -1,0 +1,274 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-2">
+                <div class="col-sm-7 offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header"><h3 class="text-center">Unable to process your request</h3> </div>
+                        <div class="card-body">
+                            <h4>{{error_message}}</h4>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+        {% endif %}
+        {% if new_kit_data %}
+            <div class="row my-2">
+                <div class="col">
+                    <div class="card ">
+                        <div class="card-header text-center"><h3>Successful definition for Commercial Kit </h3></div>
+                        <div class="card-body">
+                            <table class="table ">
+                                <thead>
+                                    <tr>
+                                        {% for value in new_kit_data.heading %}
+                                            <th>{{value}}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {% for value in new_kit_data.data %}
+                                            {% if forloop.last  and new_kit_data.protocol_kit %}
+                                                {% for protocol in value %}
+                                                    <td>{{protocol}}<br></td>
+                                                {% endfor %}
+                                            {% else %}
+                                                <td>{{value}}</td>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="my-2">Click on the "Add new commercial kit" button  for adding a new kit</p>
+                        <button type="button" class="btn btn-outline-secondary float-end" onclick="window.location.href = '/wetlab/addCommercialKit';">Add new commercial kit</button>
+                        </div> 
+                    </div>
+                </div> 
+            </div> 
+        {% else %}
+            <div class="row my-2">
+                <div class="col" >
+                    <h3 class="text-center">Add commercial kit</h3>
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="prot_kit-tab" data-bs-toggle="tab" data-bs-target="#prot_kit" type="button" role="tab" aria-controls="prot_kit" aria-selected="true">Add kit used in protocols</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="def_prot_kit-tab" data-bs-toggle="tab" data-bs-target="#def_prot_kit" type="button" role="tab" aria-controls="def_prot_kit" aria-selected="false">Defined kits used on protocols</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="plat_kit-tab" data-bs-toggle="tab" data-bs-target="#plat_kit" type="button" role="tab" aria-controls="plat_kit" aria-selected="false">Add kit used on platforms</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="def_plat_kit-tab" data-bs-toggle="tab" data-bs-target="#def_plat_kit" type="button" role="tab" aria-controls="def_plat_kit" aria-selected="false">Defined kits used on platforms</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="prot_kit" role="tabpanel" aria-labelledby="prot_kit-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>Commercial kit </h3></div>
+                                                <div class="card-body">
+                                                    <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" >
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="addCommercialKit"/>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <select class="form-select" name="protocol" id="protocol" aria-label="Protocol kits" style="height:150px" multiple>
+                                                                        <option selected disabled>Choose a value</option>
+                                                                        {% for value in defined_protocols %}
+                                                                            <option value="{{value}}">{{value}}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                    <label for="protocol" class="text-danger">Select all Protocols used for the Kit</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="provider" id="provider" placeholder="Select the company which provide the kit">
+                                                                    <label class="text-danger" for="provider"> Kit Provider company name</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="catNo" id="catNo" placeholder="SCat No./ID ">
+                                                                    <label class="text-danger" for="catNo">Cat No./ID </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="kitName" id="kitName" placeholder="Kit name">
+                                                                    <label class="text-danger" for="kitName">Kit Name </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <label class="col form-label" for="description" >Description</label>
+                                                        <div class="form-floating mb-3">
+                                                            <textarea class="form-control" name="description" value="" id="description" style="height:100px" maxlength="220"></textarea>
+                                                            <label for="description">Write some lines about this kit(Max 250 characters)</label>
+                                                        </div>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                        <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+                                                    </form>
+                                                </div>  
+                                            </div>
+                                        </div>  
+                                    </div>
+                                </div>  
+                            </div>
+                            <div class="tab-pane fade " id="plat_kit" role="tabpanel" aria-labelledby="plat_kit-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header text-center"><h3>Reagent Commercial kit </h3></div>
+                                                <div class="card-body">
+                                                    <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" >
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="addCommercialKit"/>
+                                                        <input type="hidden" name="typeOfKit" value="platform"/>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <select class="form-select" name="platform" id="platform" aria-label="platform kits">
+                                                                        <option selected disabled>Choose a value</option>
+                                                                        {% for value, name in defined_platforms %}
+                                                                            <option value="{{value}}">{{name}}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                    <label for="platform" class="text-danger">Select the platform used for the Kit</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="provider" id="provider" placeholder="Select the company which provide the kit">
+                                                                    <label class="text-danger" for="provider">Select the Kit Provider company</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="catNo" id="catNo" placeholder="SCat No./ID ">
+                                                                    <label class="text-danger" for="catNo">Cat No./ID </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md">
+                                                                <div class="form-floating mb-3">
+                                                                    <input class="form-control" type="text" required="required" name="kitName" id="kitName" placeholder="Kit name">
+                                                                    <label class="text-danger" for="kitName">Kit Name </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <label class="col form-label" for="description" >Description</label>
+                                                        <div class="form-floating mb-3">
+                                                            <textarea class="form-control" name="description" value="" id="description" style="height:100px" maxlength="220"></textarea>
+                                                            <label for="description">Write some lines about this kit(Max 250 characters)</label>
+                                                    </div>
+                                                    <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                        <input class="btn btn-outline-secondary" type="reset" value="Reset Fields">
+                                                        <input class="btn float-end btn-outline-primary" type="submit" value="Submit">
+
+
+                                                    </form>
+                                                </div>  
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div> <!--  end of tab protocolKit -->
+                            {% if commercial_kits_data.protocol.data %}
+                                <div class="tab-pane fade " id="def_prot_kit" role="tabpanel" aria-labelledby="def_prot_kit-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Kits defined to bu used in protocols</h3></div>
+                                                    <div class="card-body">
+                                                        {% for key , values in commercial_kits_data.protocol.data.items %}
+                                                            <h4>{{key}} </h4>
+                                                            <table class="table ">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for value in commercial_kits_data.protocol.headings %}
+                                                                            <th>{{value}}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {%for protocols, provider, cat_number in values %}
+                                                                        <tr>
+                                                                            <td>{% for protocol in protocols %}{{protocol}} <br>{% endfor %}</td>
+                                                                            <td>{{provider}}</td>
+                                                                            <td>{{cat_number}}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        {% endfor %}
+                                                    </div> 
+                                                </div> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if commercial_kits_data.platform.data %}
+                                <div class="tab-pane fade " id="def_plat_kit" role="tabpanel" aria-labelledby="def_plat_kit-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col">
+                                                <div class="card">
+                                                    <div class="card-header text-center"><h3>Kits defined to bu used in platform</h3></div>
+                                                    <div class="card-body">
+
+                                                        {% for key , values in commercial_kits_data.platform.data.items %}
+                                                        <h4>{{key}} </h4>
+                                                            <table class="table ">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for value in commercial_kits_data.platform.headings %}
+                                                                            <th>{{value}}</th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {%for platform, provider, cat_number in values %}
+                                                                        <tr>
+                                                                            <td>{{platform}}</td>
+                                                                            <td>{{provider}}</td>
+                                                                            <td>{{cat_number}}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                            <br><br>
+                                                        {% endfor %}
+                                                    </div>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+    {% include "core/graphic_chart_functionality.html" %}
+    {% include "drylab/menu.html" %}
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if error_message %}
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-8">
+                        <div class="card border-danger">
+                            <div class="card-header">
+                                <h4>Result of your request</h4>
+                            </div>
+                            <div class="card-body">
+                                <h5>{{ error_message }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if services_stats_info %}
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-6">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Services per user</h4>
+                            </div>
+                            <div class="card-body">
+                                {% if services_stats_info.graphic_requested_services_per_user %}
+                                    <div id="chart-1"></div>
+                                    {{ services_stats_info.graphic_requested_services_per_user |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 ">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Services status</h4>
+                            </div>
+                            <div class="card-body">
+                                {% if services_stats_info.graphic_status_requested_services %}
+                                    <div id="chart-2"></div>
+                                    {{ services_stats_info.graphic_status_requested_services |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-6 ">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Services per classification area</h4>
+                            </div>
+                            <div class="card-body">
+                                {% if services_stats_info.graphic_area_services %}
+                                    <div id="chart-3"></div>
+                                    {{ services_stats_info.graphic_area_services |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 ">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Services per center</h4>
+                            </div>
+                            <div class="card-body">
+                                {% if services_stats_info.graphic_center_services %}
+                                    <div id="chart-4"></div>
+                                    <!-- dumping JavaScript code here -->
+                                    {{ services_stats_info.graphic_center_services |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-6 ">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Service statistics per center</h4>
+                            </div>
+                            <div class="card-body">
+                                <h4>{{ services_stats_info.period_time }}.</h4>
+                                {% if services_stats_info.graphic_center_services_per_time %}
+                                    <div id="chart-5"></div>
+                                    {{ services_stats_info.graphic_center_services_per_time |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 ">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Services Statistics per classification area</h4>
+                            </div>
+                            <div class="card-body">
+                                <h4>{{ services_stats_info.period_time }}.</h4>
+                                {% if services_stats_info.graphic_area_services_per_time %}
+                                    <div id="chart-6"></div>
+                                    <!-- dumping JavaScript code here -->
+                                    {{ services_stats_info.graphic_area_services_per_time |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-auto ">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Level 2 available services</h4>
+                            </div>
+                            <div class="card-body">
+                                <h4>{{ services_stats_info.period_time }}.</h4>
+                                {% if services_stats_info.graphic_req_l2_services %}
+                                    <div id="chart-7"></div>
+                                    {{ services_stats_info.graphic_req_l2_services |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-auto">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Level 3 Available Services</h4>
+                            </div>
+                            <div class="card-body">
+                                <h4>{{ services_stats_info.period_time }}.</h4>
+                                {% if services_stats_info.graphic_req_l3_services %}
+                                    <div id="chart-8"></div>
+                                    {{ services_stats_info.graphic_req_l3_services |safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row justify-content-center pb-2 pt-2">
+                    <div class="col-md-8">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h4>Services statistics</h4>
+                            </div>
+                            <div class="card-body">
+                                <form method="post"
+                                      enctype="multipart/form-data"
+                                      name="service_statistics"
+                                      id="service_statistics"
+                                      class="form-horizontal well">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="service_statistics" />
+                                    <div class="form-floating mb-1">
+                                        <input type="date"
+                                               class="form-control"
+                                               id="start_date"
+                                               name="start_date"
+                                               placeholder="From date (DD-MM-YYYY)" />
+                                        <label for="start_date">From date (DD-MM-YYYY)</label>
+                                    </div>
+                                    <div class="form-floating mb-1">
+                                        <input type="date"
+                                               class="form-control"
+                                               id="end_date"
+                                               name="end_date"
+                                               placeholder="From date (DD-MM-YYYY)" />
+                                        <label for="end_date">To date (DD-MM-YYYY)</label>
+                                    </div>
+                                    <input class="btn pull-left btn-outline-secondary"
+                                           type="reset"
+                                           value="Reset Fields" />
+                                    <input class="btn float-end btn-outline-primary"
+                                           type="submit"
+                                           value="Submit" />
+                                </form>
+                                <p>
+                                    Fields marked with <font COLOR="Red">*</font> are mandatory
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}

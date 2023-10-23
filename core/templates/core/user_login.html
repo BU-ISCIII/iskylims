@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+{% include "core/cdn_table_functionality.html"%}
+
+{% include 'core/menu.html' %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <div class="row justify-content-center pt-2 pb-2">
+            <div class="col-md-10">
+                <div class="card ">
+                    <div class="card-header">User logging information </div>
+                    <div class="card-body">
+                        <table id="user_login_table" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User name</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>email</th>
+                                    <th>Last login</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user, fname, lname, email, login_date in login_data.user_data %}
+                                <tr>
+                                    <td>{{ user }}</td>
+                                    <td>{{ fname }}</td>
+                                    <td>{{ lname }}</td>
+                                    <td>{{ email }}</td>
+                                    <td>{{ login_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>User name</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>email</th>
+                                    <th>Last login</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function() {
+        $('#user_login_table tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
+        $('#user_login_table').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+            dom: "Bfltirp",
+            responsive: true,
+            buttons: ['excel', 'csv']
+        });
+    });
+</script>
+{% endblock %}

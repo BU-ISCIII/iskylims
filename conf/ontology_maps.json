@@ -1,0 +1,50 @@
+[
+{
+    "model": "core.ontologymap",
+    "pk": 1,
+    "fields": {
+        "label": "labRequest",
+        "ontology": "GENEPIO:0001153"
+    }
+},
+{
+    "model": "core.ontologymap",
+    "pk": 2,
+    "fields": {
+        "label": "sampleType",
+        "ontology": "GENEPIO:0001211"
+    }
+},
+{
+    "model": "core.ontologymap",
+    "pk": 3,
+    "fields": {
+        "label": "species",
+        "ontology": "GENEPIO:0001386"
+    }
+},
+{
+    "model": "core.ontologymap",
+    "pk": 4,
+    "fields": {
+        "label": "sample_name",
+        "ontology": "GENEPIO:0001123"
+    }
+},
+{
+    "model": "core.ontologymap",
+    "pk": 6,
+    "fields": {
+        "label": "sampleEntryDate",
+        "ontology": "GENEPIO:0001179"
+    }
+},
+{
+    "model": "core.ontologymap",
+    "pk": 7,
+    "fields": {
+        "label": "collectionSampleDate",
+        "ontology": "GENEPIO:0001174"
+    }
+}
+]

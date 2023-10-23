@@ -1,0 +1,142 @@
+{% extends "core/base.html" %}
+{% block content %}
+    {% include "core/graphic_chart_functionality.html" %}
+    {% include "core/cdn_table_functionality.html" %}
+    {% include "wetlab/menu.html" %}
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if error_message %}
+                <div class="row my-2">
+                    <div class="col-sm-6  offset-3">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header">
+                                <h3>Unable to display sample project information</h3>
+                            </div>
+                            <div class="card-body">
+                                <h5>{{ error_message }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if samples_project_data %}
+                <div class="row my-2">
+                    <div class="col">
+                        <h3 class="text-center">Sample project information for {{ samples_project_data.sample_project_name }}</h3>
+                        <div class="col">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active"
+                                            id="main-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#main"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="main"
+                                            aria-selected="true">Main data</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="field-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#field"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="field"
+                                            aria-selected="false">Field definition</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                <div class="tab-pane fade show active"
+                                     id="main"
+                                     role="tabpanel"
+                                     aria-labelledby="main-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-header text-center">
+                                                        <h3>Main information for {{ samples_project_data.sample_project_name }}</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover">
+                                                            <tbody>
+                                                                {% for field, value in samples_project_data.main_data %}
+                                                                    <tr>
+                                                                        <td>{{ field }}</td>
+                                                                        <td>{{ value }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade"
+                                     id="field"
+                                     role="tabpanel"
+                                     aria-labelledby="field-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center">
+                                                        <h3>Fields definition</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="field_table">
+                                                            <thead>
+                                                                <tr>
+                                                                    {% for value in samples_project_data.heading %}<th>{{ value }}</th>{% endfor %}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for name, order, used, search, type, option, descrp, classif in samples_project_data.fields %}
+                                                                    <tr>
+                                                                        <td>{{ name }}</td>
+                                                                        <td>{{ order }}</td>
+                                                                        <td>{{ used }}</td>
+                                                                        <td>{{ search }}</td>
+                                                                        <td>{{ type }}</td>
+                                                                        <td>
+                                                                            {% if option != "" %}<a href="#" data-toggle="tooltip" title="{{ option }}">See options</a>{% endif %}
+                                                                        </td>
+                                                                        <td>{{ descrp }}</td>
+                                                                        <td>{{ classif }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                        <button class="my-3 btn btn-outline-primary"
+                                                                onclick="window.location.href = '/wetlab/modifySampleProjectFields={{ samples_project_data.sample_project_id }}';">
+                                                            Modify Sample Project Fields
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $(document).ready(function() {
+            $('#field_table').DataTable({
+                responsive: true,
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,27 +1,51 @@
-{% extends 'iSkyLIMS_core/base.html' %}
-{% block content %}
+{% extends 'core/base.html' %}
 {% load static %}
+
+{% block content %}
+{% include 'core/menu.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+  <div class="container-md">
+    {% include 'registration/login_inline.html' %}
+    <div class="row justify-content-center pt-2 pb-2">
+      <div class="col-md-8">
+        <div class="alert alert-success">
+          <strong>SUCCESS!</strong> Your last action request was successful.
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-center pt-2 pb-2">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">INFO</div>
+          <div class="card-body">
+            <div class="row pt-2 pb-2">
+              <div class="col-md-12">
+                {% for c in content %}
+                {{c | safe}}
+                {% endfor%}
+              </div>
+            </div>
+            <div class="row justify-content-between pt-2 pb-2">
+              <div class="col-md-auto">
+                <button class="btn btn-primary" onclick="goBack()">Go Back</button>
+              </div>
+              <div class="col-md-auto align-self-end">
+                <button class="btn btn-secondary" onclick="goToHome()">Go to Home</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <script>
-function goBack() {
+  function goBack() {
     window.history.back();
-}
+  }
+
+  function goToHome() {
+    window.location.href = "/";
+  }
 </script>
-<div class="alert alert-success">
-  <strong>SUCCESS!</strong> Your last action request was successful.
-</div>
-<div class="row row-space-2 margin-b-4">
-        <div class="col-sm-4 col-sm-offset-4">
-        <div class="panel panel-success">
-          <div class="panel-heading">INFO</div>
-          <div class="panel-body text-center">
-                          <div class="glyphicon glyphicon-saved gi-3x" aria-hidden="true"></div>
-              <p>
-                 {% for c in content %}
-                    {{c | safe}}<BR>
-                 {% endfor%}
-              </p>
-            </div> <!--// end panel body -->
-        </div> <!--// end panel -->
-      </div> <!--// end col-sm-4 -->
-</div> <!-- end row  -->
 {% endblock %}

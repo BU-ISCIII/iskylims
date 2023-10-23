@@ -1,0 +1,108 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+
+{% block content %}
+{% include "core/cdn_table_functionality.html"%}
+
+{% include "drylab/menu.html" %}
+
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if pipelines_data.heading %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-sm-8">
+                <div class="card ">
+                    <div class="card-header">
+                        Pipelines defined
+                    </div>
+                    <div class="card-body">
+                        <div class="container-md">
+                            <div class="row justify-content-center">
+                                <div class="col-md-auto">
+                                    <table id="pipelines" class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                {% for value in pipelines_data.heading %}
+                                                {% if not forloop.last %}
+                                                <th>{{value}}</th>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for values in pipelines_data.data %}
+                                            <tr>
+                                                {% for value in values %}
+                                                {% if not forloop.last %}
+                                                {% if forloop.counter == 2 %}
+                                                <td><a href="/drylab/detail-pipeline={{values|last}}">{{value}}</a></td>
+                                                {% else %}
+                                                <td>{{value}}</td>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor%}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                {% for value in pipelines_data.heading %}
+                                                {% if not forloop.last %}
+                                                <th>{{value}}</th>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header">
+                        No Pipelines have been defined so far
+                    </div>
+                    <div class="card-body">
+                        Check the User Guide to define new Pipelines
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    $('#pipelines tfoot th').each(function () {
+        var title = $(this).text();
+        $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+    });
+
+    // DataTable
+    {% if pipelines_data.heading %}
+    var table = $('#pipelines').DataTable({
+        initComplete: function () {
+            // Apply the search
+            this.api()
+                .columns()
+                .every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change clear', function () {
+                        if (that.search() !== this.value) {
+                            that.search(this.value).draw();
+                        }
+                    });
+                });
+        },
+    });
+    {% endif %}
+</script>
+{% endblock %}

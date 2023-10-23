@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+{% include 'core/menu.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+	<div class="container-md">
+		{% include 'registration/login_inline.html' %}
+		<div class="row justify-content-center pt-2 pb-2">
+			<div class="col-md-8">
+				<div class="card ">
+					<div class="card-header">
+						<h2>Thanks for contacting us:</h2>
+					</div>
+					<div class="card-body">
+						We have received your request and we will contact you shortly.
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% include "wetlab/menu.html" %}
+{% include "core/cdn_table_functionality.html" %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        {% if error_message %}
+            <div class="row my-3">
+                <div class="col-sm-6  offset-3">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger text-danger"><h3> Not match</h3></div>
+                        <div class="card-body">
+                                <p class="text-danger text-center">{{error_message}}</p>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        {% else %}
+            <div class="row my-3">
+                <div class="col-sm-6 offset-3">
+                <div class="card text-center">
+                    <div class="card-header "><h3>SUCCESSFUL</h3></div>
+                    <div class="card-body">
+                        {% for values  in detail_description.information %}
+                            <p>{{values}}</p>
+                        {% endfor %}
+                        <button type="button" class="btn btn-outline-primary float-end my-3" onclick="window.location.href = '/wetlab/';">Return wetlab main page</button>
+                    </div> 
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

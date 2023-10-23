@@ -1,0 +1,33 @@
+{% extends 'clinic/base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+    {% csrf_token %}
+
+    <h1><div class="color-heading">BU-ISCIII</div></h1>
+    <h2>iSkyLIMS: Clinic</h2>
+
+    <div class="row my-2">
+        <div class="col-sm-8">
+        <div class="card ">
+            <div class="card-header"><h3>Welcome to iSkyLIMS Clinic module</h3></div>
+            <div class="card-body">
+                <p>This module focus on tracking the samples in a Clinic environment, like a hospital.</p>
+                <p>The workflow of a sample starts by defining it, with the information provided at the time the sample is extracted from the patient. </p>
+                <p>Then adding result information from the sample analysis.</p>
+                <br><br>
+                <p></p>
+                <p>Search menu helps to find the sample or patient information</p>
+                <p>Statistics will help you to create reports</p>
+
+          </div> <!--// end panel body -->
+        </div>
+      </div> <!--// end col-sm-8 -->
+      <div class="col-sm-2 offset-1">
+            <img class="promo-block-img img-responsive" src="{% static "core/custom/img/clinic_ambulance_reduce.jpg" %}" align="Avatar">
+        </div> <!--// end img -->
+      </div> <!--// end col-sm-4 -->
+    </div> <!--// end row -->
+{% endblock %}

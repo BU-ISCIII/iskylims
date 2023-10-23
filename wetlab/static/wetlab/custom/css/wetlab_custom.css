@@ -1,0 +1,253 @@
+
+
+button.accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+}
+
+button.accordion.active, button.accordion:hover {
+    background-color: #ddd;
+}
+
+button.accordion:after {
+    content: '\002B';
+    color: #777;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2212";
+}
+
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 16px;
+    background-color: #e6e6e6;
+    color: white;
+}
+
+.modal-body {padding: 2px 16px;
+    background-color:#f2f2f2;
+    color: white;}
+
+.modal-footer {
+    padding: 2px 16px;
+    background-color: #e6e6e6;
+    color: white;
+}
+
+/*   --- Start the CSS for progress step in the forms --  */
+ol.progtrckr {
+        display: table;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        table-layout: fixed;
+        width: 100%;
+    }
+    ol.progtrckr li {
+        display: table-cell;
+        text-align: center;
+        line-height: 3em;
+    }
+
+    ol.progtrckr[data-progtrckr-steps="2"] li { width: 49%; }
+    ol.progtrckr[data-progtrckr-steps="3"] li { width: 33%; }
+    ol.progtrckr[data-progtrckr-steps="4"] li { width: 24%; }
+    ol.progtrckr[data-progtrckr-steps="5"] li { width: 19%; }
+    ol.progtrckr[data-progtrckr-steps="6"] li { width: 16%; }
+    ol.progtrckr[data-progtrckr-steps="7"] li { width: 14%; }
+    ol.progtrckr[data-progtrckr-steps="8"] li { width: 12%; }
+    ol.progtrckr[data-progtrckr-steps="9"] li { width: 11%; }
+
+    ol.progtrckr li.progtrckr-done {
+        color: black;
+        border-bottom: 4px solid yellowgreen;
+    }
+    ol.progtrckr li.progtrckr-todo {
+        color: silver;
+        border-bottom: 4px solid silver;
+    }
+
+    ol.progtrckr li:after {
+        content: "\00a0\00a0";
+    }
+    ol.progtrckr li:before {
+        position: relative;
+        bottom: -2.5em;
+        float: left;
+        left: 50%;
+        line-height: 1em;
+    }
+    ol.progtrckr li.progtrckr-done:before {
+        content: "\2713";
+        color: white;
+        background-color: yellowgreen;
+        height: 1.2em;
+        width: 1.2em;
+        line-height: 1.2em;
+        border: none;
+        border-radius: 1.2em;
+    }
+    ol.progtrckr li.progtrckr-todo:before {
+        content: "\039F";
+        color: silver;
+        background-color: white;
+        font-size: 1.5em;
+        bottom: -1.6em;
+    }
+/*   --- End the CSS for progress step in the forms --  */
+
+
+/*   --- Start the CSS for track-progress step in the forms --  */
+.track-progress {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.track-progress li {
+  list-style-type: none;
+  display: inline-block;
+
+  position: relative;
+  margin: 0;
+  padding: 0;
+
+  text-align: center;
+  line-height: 30px;
+  height: 30px;
+
+  background-color: #f0f0f0;
+}
+
+.track-progress[data-steps="3"] li { width: 33%; }
+.track-progress[data-steps="4"] li { width: 25%; }
+.track-progress[data-steps="5"] li { width: 20%; }
+
+.track-progress li > span {
+  display: block;
+
+  color: #999;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.track-progress li.done > span {
+  color: #666;
+  background-color: #ccc;
+}
+.track-progress li.active > span {
+  color: #666;
+  background-color: #fc9;
+}
+
+
+.track-progress li > span:after,
+.track-progress li > span:before {
+  content: "";
+  display: block;
+  width: 0px;
+  height: 0px;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border: solid transparent;
+  border-left-color: #f0f0f0;
+  border-width: 15px;
+}
+
+.track-progress li > span:after {
+  top: -5px;
+  z-index: 1;
+  border-left-color: white;
+  border-width: 20px;
+}
+
+.track-progress li > span:before {
+  z-index: 2;
+}
+
+
+.track-progress li.done + li > span:before {
+  border-left-color: #ccc;
+}
+
+.track-progress li:first-child > span:after,
+.track-progress li:first-child > span:before {
+  display: none;
+}
+
+.track-progress li.active + li > span:before {
+  border-left-color: #fc9;
+}
+
+.track-progress li:first-child > span:after,
+.track-progress li:first-child > span:before {
+  display: none;
+}
+
+.track-progress li:first-child i,
+.track-progress li:last-child i {
+  display: block;
+  height: 0;
+  width: 0;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border: solid transparent;
+  border-left-color: white;
+  border-width: 15px;
+}
+
+.track-progress li:last-child i {
+  left: auto;
+  right: -15px;
+
+  border-left-color: transparent;
+  border-top-color: white;
+  border-bottom-color: white;
+}
+
+
+/*   --- End the CSS for track-progress step in the forms --  */

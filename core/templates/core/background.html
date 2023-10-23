@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+{% include 'core/menu.html' %}
+<section class="iskylims d-flex flex-column fill-height">
+    <div class="container-md">
+        {% include 'registration/login_inline.html' %}
+        <h2>Background</h2>
+        <div class="row my-2">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Why a LIMS for next generation sequencing:</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            In the field of genomics, Next-Generation Sequencing has revolutionized DNA and RNA analysis
+                            by enabling the rapid and cost-effective generation of vast amounts of sequencing data.
+                            However, managing and analyzing this data can be a complex and time-consuming task. This is
+                            where a Laboratory Information Management System (LIMS) plays a crucial role.
+                        </p>
+                        <ul>
+                            <li>
+                                <h5>Data Organization and Management:</h5>
+                                <p>
+                                    NGS generates massive volumes of data, including raw sequencing reads, quality
+                                    scores, alignment information, and variant calls. A LIMS provides a centralized
+                                    platform to efficiently organize, track, and manage these data sets, ensuring data
+                                    integrity and facilitating easy access for researchers and clinicians.
+                                </p>
+                            </li>
+                            <li>
+                                <h5>Workflow Optimization:</h5>
+                                <p>
+                                    NGS workflows involve multiple steps, from sample preparation to data analysis. A
+                                    LIMS streamlines these processes by automating sample tracking, ensuring proper
+                                    sample and reagent traceability, and facilitating seamless integration with various
+                                    instruments and bioinformatics tools. This optimization minimizes errors, reduces
+                                    manual labor, and improves overall efficiency.
+                                </p>
+                            </li>
+                            <li>
+                                <h5>Sample and Project Management:</h5>
+                                <p>
+                                    In NGS experiments, researchers handle numerous samples, each associated with
+                                    specific attributes, such as patient information, experimental conditions, and
+                                    metadata. A LIMS allows comprehensive sample and project management, enabling
+                                    researchers to accurately track and link relevant information, avoid sample mix-ups,
+                                    and maintain data integrity throughout the experimental pipeline.
+                                </p>
+                            </li>
+                            <li>
+                                <h5>Quality Control and Assurance:</h5>
+                                <p>
+                                    Accurate and reliable results are paramount in genomics research and clinical
+                                    diagnostics. A LIMS helps implement robust quality control measures by automating
+                                    data validation, flagging potential errors or inconsistencies, and enforcing
+                                    standardized protocols. This ensures the generation of high-quality, trustworthy
+                                    data that can be confidently used for downstream analysis and interpretation.
+                                </p>
+                            </li>
+                            <li>
+                                <h5>Regulatory Compliance:</h5>
+                                <p>
+                                    In clinical and regulated research environments, adherence to guidelines and
+                                    regulations is critical. A LIMS designed for NGS often incorporates features to
+                                    facilitate compliance with regulatory standards, such as data security, audit
+                                    trails, user access controls, and documentation of experimental procedures. These
+                                    functionalities assist in maintaining data integrity, protecting patient privacy,
+                                    and meeting regulatory requirements.
+                                </p>
+                            </li>
+                            <li>
+                                <h5>Collaboration and Data Sharing:</h5>
+                                <p>
+                                    In multi-user and multi-site research environments, effective collaboration and data
+                                    sharing are essential. A LIMS provides a centralized platform where researchers can
+                                    securely access and share data, protocols, and experimental findings. This promotes
+                                    collaboration, accelerates knowledge transfer, and encourages reproducibility of
+                                    research results.
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div> <!--// end col-sm-8 -->
+        </div> <!--// end row -->
+    </div>
+</section>
+{% endblock %}

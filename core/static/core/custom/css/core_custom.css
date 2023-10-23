@@ -1,0 +1,9 @@
+
+.form-control.required .form-label:after {
+  content:"  *";
+  color:red;
+}
+.horizontal-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+}
