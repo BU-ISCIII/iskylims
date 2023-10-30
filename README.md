@@ -163,7 +163,18 @@ Before starting the upgrade procedure is highly recomended to perform the follow
 
 It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
-### Clone github repository
+Because in this upgrade many tables in database are modified it is required that you backup:
+
+- iSkyLIMS database
+- iSkyLIMS folder (complete installation folder, p.e /opt/iSkyLIMS)
+
+It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
+
+#### Executing the upgrade
+
+We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
+
+##### Clone github repository
 
 From it was defined in previous releases the iSkyLIMS code is downloaded in a user folder and then installed elsewhere (p.e /opt/).
 
@@ -184,7 +195,7 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-### Configuration settings
+##### Configuration settings
 
 Copy the initial setting template into a file named install_settings.txt
 
@@ -200,11 +211,9 @@ database ,email settings and the local IP of the server where iSkyLIMS will run.
 sudo nano install_settings.txt
 ```
 
-### Running upgrade script
+##### Running upgrade script
 
 If your organization requires that dependencies / stuff that needs root are installed by a different person that install the application the you can use the install script in several steps as follows.
-
-First you need to rename the folder app name in the installation folder (`/opt/iSkyLIMS`):
 
 #### Steps requiring root
 
@@ -287,7 +296,7 @@ mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/b
 
 Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
-### Verification of the installation
+#### Verification of the installation
 
 Open the navigator and type "localhost" or the "server local IP" and check that iSkyLIMs is running.
 
@@ -298,6 +307,6 @@ You can also check some of the functionality, while also checking samba and data
 - Check all tabs so every connectin is successful.
 - Run the 3 tests for each sequencing machine: MiSeq, NextSeq and NovaSeq.
 
-## iSkyLIMS documentation
+### iSkyLIMS documentation
 
 iSkyLIMS documentation is available at [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
