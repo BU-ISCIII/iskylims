@@ -65,7 +65,7 @@ Antes de comenzar la instalación, asegúrate de lo siguiente:
 - Tienes Python > 3.8 (si lo compilas debes haber instalado previamente las dependecias de arriba)
 - Tienes una conexión a la carpeta compartida de Samba donde se almacenan las carpetas de ejecución (por ejemplo, galera/NGS_Data).
 - Dependencias:
-  
+
 ### Instalación de iSkyLIMS en Docker
 
 Puedes probar iSkyLIMS creando un contenedor Docker en tu máquina local.
