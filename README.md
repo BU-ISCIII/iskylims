@@ -14,29 +14,47 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
 
 - [iSkyLIMS](#iskylims)
   - [Installation](#installation)
-  - [iSkyLIMS docker installation](#iskylims-docker-installation)
-  - [Install iSkyLIMS in your server running ubuntu/CentOS](#install-iskylims-in-your-server-running-ubuntucentos)
     - [Pre-requisites](#pre-requisites)
-    - [Clone github repository](#clone-github-repository)
-    - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
-    - [Configuration settings](#configuration-settings)
-    - [Run installation script](#run-installation-script)
-    - [Configure Apache server](#configure-apache-server)
-    - [Installation verification](#installation-verification)
-  - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
-    - [Pre-requisites](#pre-requisites-1)
-    - [Executing the upgrade](#executing-the-upgrade)
-    - [Clone github repository](#clone-github-repository-1)
-    - [Configuration settings](#configuration-settings-1)
-    - [Runing upgrade script](#runing-upgrade-script)
-    - [Verification installation](#verification-installation)
-  - [iSkyLIMS documentation](#iskylims-documentation)
+    - [iSkyLIMS docker installation](#iskylims-docker-installation)
+    - [Install iSkyLIMS in your server running ubuntu/CentOS](#install-iskylims-in-your-server-running-ubuntucentos)
+      - [Clone github repository](#clone-github-repository)
+      - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
+      - [Configuration settings](#configuration-settings)
+      - [Run installation script](#run-installation-script)
+      - [Configure Apache server](#configure-apache-server)
+      - [Installation verification](#installation-verification)
+    - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
+      - [Pre-requisites](#pre-requisites-1)
+      - [Executing the upgrade](#executing-the-upgrade)
+        - [Clone github repository](#clone-github-repository-1)
+        - [Configuration settings](#configuration-settings-1)
+        - [Running upgrade script](#running-upgrade-script)
+    - [Final configuration steps](#final-configuration-steps)
+      - [SAMBA configurarion](#samba-configurarion)
+      - [Email verification](#email-verification)
+      - [Verification of the installation](#verification-of-the-installation)
+    - [iSkyLIMS documentation](#iskylims-documentation)
 
 ## Installation
 
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
 
-## iSkyLIMS docker installation
+### Pre-requisites
+
+Before starting the installation make sure :
+
+- You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
+- Database MySQL > 8.0 or MariaDB > 10.4
+- Local server configured for sending emails
+- Apache server v2.4
+- Python > 3.8
+- Connection to samba shared folder where run folders are stored (p.e galera/NGS_Data)
+- Dependencies:
+  - lsb_release:
+    - RedHat/CentOS: ```yum install redhat-lsb-core```
+    - Ubuntu: ```apt install lsb-core lsb-release```
+
+### iSkyLIMS docker installation
 
 You can test iSkyLIMS by creating a docker container on your local machine.
 
@@ -59,24 +77,9 @@ Follow the prompt message to create the super user account.
 
 When script ends open your navigator typing **localhost:8001** to access to iSkyLIMS
 
-## Install iSkyLIMS in your server running ubuntu/CentOS
+### Install iSkyLIMS in your server running ubuntu/CentOS
 
-### Pre-requisites
-
-Before starting the installation make sure :
-
-- You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
-- Database (MySQL/MariaDB) > 10.4 is running.
-- Local server configured for sending emails
-- Apache server is running.
-- Python > 3.8 installed
-- Connection to samba dir where run folders are stored.
-*- Dependencies:
-  - lsb_release:
-    - RedHat/CentOS: ```yum install redhat-lsb-core```
-    - Ubuntu: ```apt install lsb-core lsb-release```
-
-### Clone github repository
+#### Clone github repository
 
 Open a linux terminal and move to a directory where iSkyLIMS code will be
 downloaded
@@ -87,13 +90,13 @@ git clone https://github.com/BU-ISCIII/iskylims.git iskylims
 cd iskylims
 ```
 
-### Create iskylims database and grant permissions
+#### Create iskylims database and grant permissions
 
 1. Create a new database named "iskylims" (this is mandatory)
 2. Create a new user with permission to read and modify that database.
 3. Write down user, passwd and db server info.
 
-### Configuration settings
+#### Configuration settings
 
 Copy the initial setting template into a file named install_settings.txt
 
@@ -109,7 +112,7 @@ database ,email settings and the local IP of the server where iSkyLIMS will run.
 sudo nano install_settings.txt
 ```
 
-### Run installation script
+#### Run installation script
 
 iSkyLIMS should be installed on the "/opt" directory.
 
@@ -133,35 +136,34 @@ bash install.sh --install app
 sudo bash install.sh --install full
 ```
 
-### Configure Apache server
+#### Configure Apache server
 
 Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
-### Installation verification
+#### Installation verification
 
 After installation is completed and apache server is up and running open you navigator typing "localhost" or the "server local IP".
 
-## Upgrade to iSkyLIMS version 3.0.0
+### Upgrade to iSkyLIMS version 3.0.0
 
 If you have already iSkyLIMS on version 2.3.0 you can upgrade to the latest stable version 3.0.0.
 
 Version 3.0.0 is a major release with important upgrades in third parties dependencies like bootstrap. Also, we 've done a huge work on refactoring and variables/function renaming that affects the database. For more details about the changes see the release notes.
 
-### Pre-requisites
+#### Pre-requisites
 
 Because in this upgrade many tables in database are modified it is required that you backup:
 
 - iSkyLIMS database
-- iSkyLIMS document folder
+- iSkyLIMS folder (complete installation folder, p.e /opt/iSkyLIMS)
 
-It is highly recomended that you made these backups and keep them safely in case of
-upgrade failure, to recover your system.
+It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
-### Executing the upgrade
+#### Executing the upgrade
 
 We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
 
-### Clone github repository
+##### Clone github repository
 
 Open a linux terminal and move to a directory where iSkyLIMS code will be
 downloaded
@@ -172,7 +174,7 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-### Configuration settings
+##### Configuration settings
 
 Copy the initial setting template into a file named install_settings.txt
 
@@ -184,11 +186,10 @@ Open with your favourite editor the configuration file to set your own values fo
 database ,email settings and the local IP of the server where iSkyLIMS will run.
 
 ```bash
-
 sudo nano install_settings.txt
 ```
 
-### Runing upgrade script
+##### Running upgrade script
 
 If your organization requires that dependencies / stuff that needs root are installed by a different person that install the application the you can use the install script in several steps as follows.
 
@@ -214,7 +215,24 @@ bash install.sh --upgrade app --ren_app --script drylab_service_state_migration 
 sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
-### Verification installation
+### Final configuration steps
+
+#### SAMBA configurarion
+
+- Login with admin account.
+- Go to Massive sequencing
+![go_to_wetlab](img/got_to_wetlab.png){width:50px}
+- Go to Configuration -> Samba configuration
+- Fill the form with the appropiate params for the samba shared folder:
+![samba form](img/samba_form.png)
+
+#### Email verification
+
+- Go to Massive sequencing
+- Go to Configuration -> Email configuration
+- Fill the form with the needed params for your email configuration and try to send a test email.
+
+#### Verification of the installation
 
 Open the navigator and type "localhost" or the "server local IP" and check that iSkyLIMs is running.
 
@@ -225,6 +243,6 @@ You can also check some of the functionality, while also checking samba and data
 - Check all tabs so every connectin is successful.
 - Run the 3 tests for each sequencing machine: MiSeq, NextSeq and NovaSeq.
 
-## iSkyLIMS documentation
+### iSkyLIMS documentation
 
 iSkyLIMS documentation is available at [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
