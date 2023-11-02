@@ -3,7 +3,7 @@ asn1crypto==1.5.0
 bcrypt==4.0.1
 biopython==1.79
 cryptography==38.0.3
-Django==4.2
+Django==4.2.7
 django-crispy-forms==2.0
 crispy-bootstrap5==0.7
 django-crontab==0.7.1
