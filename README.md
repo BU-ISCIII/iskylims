@@ -7,7 +7,7 @@
 
 The introduction of massive sequencing (MS) in genomics facilities has meant an exponential growth in data generation, requiring a precise tracking system, from library preparation to fastq file generation, analysis and delivery to the researcher. Software designed to handle those tasks are called Laboratory Information Management Systems (LIMS), and its software has to be adapted to their own genomics laboratory particular needs. iSkyLIMS is born with the aim of helping with the wet laboratory tasks, and implementing a workflow that guides genomics labs on their activities from library preparation to data production, reducing potential errors associated to high throughput technology, and facilitating the quality control of the sequencing. Also, iSkyLIMS connects the wet lab with dry lab facilitating data analysis by bioinformaticians.
 
-![Image]("https://github.com/BU-ISCIII/iskylims/blob/main/img/iskylims_scheme.png") { width=900 }
+![Image](https://github.com/BU-ISCIII/iskylims/blob/main/img/iskylims_scheme.png)
 
 According to existent infrastructure sequencing is performed on an Illumina NextSeq instrument. Data is stored in NetApp mass storage device and fastq files are generated (bcl2fastq) on a Sun Grid Engine High Performance Computing cluster (SGE-HPC).
 Application servers run web applications for bioinformatics analysis (GALAXY), the iSkyLIMS app, and host the MySQL information tier. iSkyLIMS WetLab workflow deals with sequencing run tracking and statistics. Run tracking passes through five states: "recorded” genomics user record the new sequencing run into the system, the process will wait till run is completed by the machine and data is transferred to the mass storage device; “Sample sheet sent” sample sheet file with the sequencing run information will be copied to the run folder for bcl2fastq process; “Processing data” run parameters files are processed and data is stored in the database; “Running stats” demultiplexing data generated in bcl2fastq process is processed and stored into the database, “Completed” all data is processed and stored successfully. Statistics per sample, per project, per run and per investigation are provided, as well as annual and monthly reports. iSkyLIMS DryLab workflow deals with bioinformatics services request and statistics. User request services that can be associated with a sequencing run. Stats and services tracking is provided.
@@ -21,8 +21,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
       - [Configuration settings](#configuration-settings)
       - [Run installation script](#run-installation-script)
-      - [Configure Apache server](#configure-apache-server)
-      - [Installation verification](#installation-verification)
     - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
       - [Pre-requisites](#pre-requisites-1)
       - [Executing the upgrade](#executing-the-upgrade)
@@ -32,6 +30,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Final configuration steps](#final-configuration-steps)
       - [SAMBA configurarion](#samba-configurarion)
       - [Email verification](#email-verification)
+      - [Configure Apache server](#configure-apache-server)
       - [Verification of the installation](#verification-of-the-installation)
     - [iSkyLIMS documentation](#iskylims-documentation)
 
@@ -108,7 +107,6 @@ Open with your favourite editor the configuration file to set your own values fo
 database ,email settings and the local IP of the server where iSkyLIMS will run.
 
 ```bash
-
 sudo nano install_settings.txt
 ```
 
@@ -135,14 +133,6 @@ bash install.sh --install app
 # to install both software
 sudo bash install.sh --install full
 ```
-
-#### Configure Apache server
-
-Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
-
-#### Installation verification
-
-After installation is completed and apache server is up and running open you navigator typing "localhost" or the "server local IP".
 
 ### Upgrade to iSkyLIMS version 3.0.0
 
@@ -231,6 +221,10 @@ sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_mig
 - Go to Massive sequencing
 - Go to Configuration -> Email configuration
 - Fill the form with the needed params for your email configuration and try to send a test email.
+
+#### Configure Apache server
+
+Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
 #### Verification of the installation
 
