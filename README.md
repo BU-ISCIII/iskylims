@@ -21,8 +21,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
       - [Configuration settings](#configuration-settings)
       - [Run installation script](#run-installation-script)
-      - [Configure Apache server](#configure-apache-server)
-      - [Installation verification](#installation-verification)
     - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
       - [Pre-requisites](#pre-requisites-1)
       - [Executing the upgrade](#executing-the-upgrade)
@@ -32,6 +30,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Final configuration steps](#final-configuration-steps)
       - [SAMBA configurarion](#samba-configurarion)
       - [Email verification](#email-verification)
+      - [Configure Apache server](#configure-apache-server)
       - [Verification of the installation](#verification-of-the-installation)
     - [iSkyLIMS documentation](#iskylims-documentation)
 
@@ -108,7 +107,6 @@ Open with your favourite editor the configuration file to set your own values fo
 database ,email settings and the local IP of the server where iSkyLIMS will run.
 
 ```bash
-
 sudo nano install_settings.txt
 ```
 
@@ -135,14 +133,6 @@ bash install.sh --install app
 # to install both software
 sudo bash install.sh --install full
 ```
-
-#### Configure Apache server
-
-Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
-
-#### Installation verification
-
-After installation is completed and apache server is up and running open you navigator typing "localhost" or the "server local IP".
 
 ### Upgrade to iSkyLIMS version 3.0.0
 
@@ -231,6 +221,10 @@ sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_mig
 - Go to Massive sequencing
 - Go to Configuration -> Email configuration
 - Fill the form with the needed params for your email configuration and try to send a test email.
+
+#### Configure Apache server
+
+Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
 #### Verification of the installation
 
