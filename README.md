@@ -21,6 +21,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
       - [Configuration settings](#configuration-settings)
       - [Run installation script](#run-installation-script)
+<<<<<<< HEAD
     - [Upgrade to iSkyLIMS version 3.1.0](#Upgrade from 3.0.x to iSkyLIMS version 3.1.x)
       - [Pre-requisites](#pre-requisites)
       - [Clone github repository](#clone-github-repository-1)
@@ -29,6 +30,14 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
         - [Steps requiring root](#steps-requiring-root)
         - [Steps not requiring root](#steps-not-requiring-root)
       - [What to do if something fails](#what-to-do-if-something-fails)
+=======
+    - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
+      - [Pre-requisites](#pre-requisites-1)
+      - [Executing the upgrade](#executing-the-upgrade)
+        - [Clone github repository](#clone-github-repository-1)
+        - [Configuration settings](#configuration-settings-1)
+        - [Running upgrade script](#running-upgrade-script)
+>>>>>>> 9b1f70fc (modifying readme and created leame)
     - [Final configuration steps](#final-configuration-steps)
       - [SAMBA configurarion](#samba-configurarion)
       - [Email verification](#email-verification)
@@ -117,7 +126,11 @@ Open with your favourite editor the configuration file to set your own values fo
 database ,email settings and the local IP of the server where iSkyLIMS will run.
 
 ```bash
+<<<<<<< HEAD
 nano install_settings.txt
+=======
+sudo nano install_settings.txt
+>>>>>>> 9b1f70fc (modifying readme and created leame)
 ```
 
 #### Run installation script
@@ -144,6 +157,7 @@ bash install.sh --install app --git_revision main --tables
 sudo bash install.sh --install full --git_revision main --tables
 ```
 
+<<<<<<< HEAD
 ## Upgrade from 3.0.x to iSkyLIMS version 3.1.x
 
 Follow the following steps to upgrade from version 3.0.0 to the latest one 3.1.x
@@ -154,6 +168,9 @@ Before starting the upgrade procedure is highly recomended to perform the follow
 
 - Create a full backup of iSkyLIMS database
 - Backup all iSkyLIMS folders (complete installation folder, p.e /opt/iSkyLIMS)
+=======
+### Upgrade to iSkyLIMS version 3.0.0
+>>>>>>> 9b1f70fc (modifying readme and created leame)
 
 - If in your system you have already defined library pools, then you need to collect this data, before to run the upgrade script. Perform a backup of LibraryPool by running the folowing command.
 
@@ -292,7 +309,11 @@ mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/b
 - Go to Configuration -> Email configuration
 - Fill the form with the needed params for your email configuration and try to send a test email.
 
+<<<<<<< HEAD
 ### Configure Apache server
+=======
+#### Configure Apache server
+>>>>>>> 9b1f70fc (modifying readme and created leame)
 
 Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
