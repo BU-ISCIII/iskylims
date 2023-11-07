@@ -242,9 +242,9 @@ def create_new_resolution(resolution_data_form):
             resolution_data_form["select_available_services"].append(avail_service[0])
 
     # Add selected available services to the new resolution
-    for avail_sarvice in resolution_data_form["select_available_services"]:
+    for avail_service in resolution_data_form["select_available_services"]:
         avail_service_obj = drylab.utils.req_services.get_available_service_obj(
-            avail_sarvice
+            avail_service
         )
         new_resolution.available_services.add(avail_service_obj)
 
@@ -326,8 +326,8 @@ def prepare_form_data_add_resolution(form_data):
     resolution_form_data = {}
     selected_children_services = []
     # pipelines_data = []
-    if "childrenServices" in form_data:
-        list_of_ch_services = form_data.getlist("childrenServices")
+    if "children_services" in form_data:
+        list_of_ch_services = form_data.getlist("children_services")
     else:
         list_of_ch_services = False
     service_obj = drylab.utils.common.get_service_obj(
@@ -349,9 +349,8 @@ def prepare_form_data_add_resolution(form_data):
                     [children, avail_serv_obj.get_service_description()]
                 )
             resolution_form_data[
-                "selected_avail_services_data"
+                "selected_avail_services"
             ] = selected_children_services
-
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
     ).exists():
