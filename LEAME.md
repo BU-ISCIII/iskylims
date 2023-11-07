@@ -169,6 +169,7 @@ git pull
 ```
 
 ### Configuración de opciones
+##### Clonar el repositorio de GitHub
 
 Copia la plantilla de configuración inicial en un archivo llamado install_settings.txt
 
@@ -203,39 +204,11 @@ En la terminal de Linux, ejecuta uno de los siguientes comandos que mejor se ada
 # para actualizar solo las dependencias del software. ES NECESARIO DISPONER DE PERMISOS DE ROOT.
 sudo bash install.sh --upgrade dep
 
-# PARA INSTALAR AMBAS COSAS AL MISMO TIEMPO. REQUIERE DE ROOT. SI SE VA A INSTALAR POR OTRA PERSONA SIN ROOT NO HACER ESTO.
-sudo bash install.sh --upgrade full  --git_revision main  --tables
-```
+# para actualizar la aplicación de iskylims, incluyendo los cambios necesarios para la versión en base de datos. NO ES NECESARIO DISPONER DE PERMISOS ROOT.
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 
-##### Pasos que no necesitan de permisos de administración
-
-Actualiza a la nueva version de la aplicación de iskylims usando el siguiente comando:
-
-```bash
-bash install.sh --upgrade app  --git_revision main --tables
-```
-
-Por último, asegúrate que los permisos de la carpeta son correctos.
-
-```bash
-# En el caso de que tengas un script para esta tarea. En esta versión han cambiado algunas rutas a ficheros, es posible que tengas que ajustar el script en consecuencia.
-sudo /scripts/hardening.sh
-```
-
-#### Qué hacer si algo falla
-
-Cuando actualizamos la aplicación usando el script estamos realizando varios cambios en la base de datos. Si algo falla tenemos que restaurar el estado anterior, antes de que hubiesemos realizado ninguna acción.
-
-Necesitamos copiar de vuelta nuestro backup de carpet ade aplicación a /opt/iSkyLIMS (o la carpeta de instalación de nuestra elección), y restaurar la base de datos realizando algo como lo siguiente:
-
-```bash
-sudo rm -rf /opt/iskylims
-sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
-sudo /scripts/hardening.sh
-mysql -u iskylims -h dmysqlps.isciiides.es -p
-# drop database iskylims;
-# create database iskylims;
-mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+# PARA INSTALAR AMBAS COSAS AL MISMO TIEMPO. REQUIERE DE ROOT.
+sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
 ### Pasos finales de configuración
@@ -265,7 +238,7 @@ Abre el navegador y escribe "localhost" o la "IP local del servidor" para compro
 
 También puedes verificar algunas funcionalidades mientras compruebas las conexiones de SAMBA y la base de datos usando:
 
-- Ve a [configurationTest](https://iskylims.isciii.es/wetlab/configurationTest/)
+- Ve a [prueba de configuración](https://iskylims.isciii.es/wetlab/configurationTest/)
 - Haz clic en Enviar
 - Verifica todas las pestañas para asegurarte de que cada conexión sea exitosa.
 - Ejecuta las 3 pruebas para cada máquina de secuenciación: MiSeq, NextSeq y NovaSeq.
