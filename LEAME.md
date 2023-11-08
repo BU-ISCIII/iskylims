@@ -179,6 +179,10 @@ nano install_settings.txt
 
 Si en tu organización se requiere que las dependencias u otros elementos que necesiten permisos de administrador sean instalados por una persona diferente a la que instala la aplicación, puedes utilizar el script de instalación en varios pasos de la siguiente manera.
 
+El script te irá solicitando confirmación en algun paso, si todo está yendo bien sin errores deberás pulsar `y` o `yes` según te lo solicite.
+
+El error: 
+
 ##### Pasos que necesitan permisos de adminsitración
 
 En primer lugar, debes cambiar el nombre de la carpeta de la aplicación en la carpeta de instalación (`/opt/iSkyLIMS`):
@@ -207,7 +211,7 @@ sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_mig
 
 ##### Pasos que no necesitan de permisos de administración
 
-A continuación instalamos la aplicación de iskylims usando el siguiente comando: 
+A continuación instalamos la aplicación de iskylims usando el siguiente comando:
 
 ```bash
 # para actualizar la aplicación de iskylims, incluyendo los cambios necesarios para la versión en base de datos. NO ES NECESARIO DISPONER DE PERMISOS ROOT.
@@ -231,10 +235,10 @@ Necesitamos copiar de vuelta nuestro backup de carpet ade aplicación a /opt/iSk
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
+mysql -u iskylims -h dmysqlps.isciiides.es
 # drop database iskylims;
 # create database iskylims;
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
 ### Pasos finales de configuración
