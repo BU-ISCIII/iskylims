@@ -348,9 +348,7 @@ def prepare_form_data_add_resolution(form_data):
                 selected_children_services.append(
                     [children, avail_serv_obj.get_service_description()]
                 )
-            resolution_form_data[
-                "selected_avail_services"
-            ] = selected_children_services
+            resolution_form_data["selected_avail_services"] = selected_children_services
     if drylab.models.Resolution.objects.filter(
         resolution_service_id=service_obj
     ).exists():
