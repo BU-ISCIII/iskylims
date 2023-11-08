@@ -1857,6 +1857,14 @@
     }
 },
 {
+    "model": "wetlab.runerrors",
+    "pk": 34,
+    "fields": {
+        "error_code": "34",
+        "error_text": "Run has been cancelled or ended with errors."
+    }
+},
+{
     "model": "wetlab.runconfigurationtest",
     "pk": 1,
     "fields": {
