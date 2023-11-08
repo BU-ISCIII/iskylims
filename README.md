@@ -237,10 +237,10 @@ We need to copy back the full `/opt/iSkyLIMS` folder back to `/opt` (or your ins
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
+mysql -u iskylims -h dmysqlps.isciiides.es
 # drop database iskylims;
 # create database iskylims;
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
 ### Final configuration steps
