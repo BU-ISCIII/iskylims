@@ -20,11 +20,7 @@ De acuerdo con la infraestructura existente, la secuenciación se realiza en un 
       - [Crear la base de datos de iSkyLIMS y otorgar permisos](#crear-la-base-de-datos-de-iskylims-y-otorgar-permisos)
       - [Configuración de ajustes](#configuración-de-ajustes)
       - [Ejecutar el script de instalación](#ejecutar-el-script-de-instalación)
-<<<<<<< HEAD
     - [Actualización a la versión 3.1.0 de iSkyLIMS](#actualización-a-la-versión-310-de-iskylims)
-=======
-    - [Actualización a la versión 3.0.0 de iSkyLIMS](#actualización-a-la-versión-300-de-iskylims)
->>>>>>> feb7fcff (Modifications in readme and leame, addign what to do if something fails and some clarifications)
       - [Prerrequisitos](#prerrequisitos)
       - [Clonar el repositorio de GitHub](#clonar-el-repositorio-de-github-1)
       - [Configuración de opciones](#configuración-de-opciones)
@@ -161,11 +157,7 @@ Por temas de seguridad es recomendado realizar una copia de seguridad de:
 
 Se recomienda encarecidamente que se hagan estas copias de seguridad y se guarden de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
 
-<<<<<<< HEAD
-### Clonar el repositorio de GitHub
-=======
 #### Clonar el repositorio de GitHub
->>>>>>> feb7fcff (Modifications in readme and leame, addign what to do if something fails and some clarifications)
 
 A partir ya de la version anterior, ahora el código de iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
 
@@ -189,7 +181,6 @@ cd iskylims
 ```
 
 #### Configuración de opciones
->>>>>>> feb7fcff (Modifications in readme and leame, addign what to do if something fails and some clarifications)
 
 Copia la plantilla de configuración inicial en un archivo llamado install_settings.txt
 
@@ -204,19 +195,12 @@ Abre el archivo de configuración con tu editor favorito para establecer tus pro
 nano install_settings.txt
 ```
 
-<<<<<<< HEAD
 ### Ejecución del script de actualización
-=======
-#### Ejecución del script de actualización
->>>>>>> feb7fcff (Modifications in readme and leame, addign what to do if something fails and some clarifications)
 
 Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando
 desde la última release es necesario que sean actualizados.
 
-<<<<<<< HEAD
 #### Pasos que necesitan permisos de adminsitración
-=======
-##### Pasos que necesitan permisos de adminsitración
 
 En primer lugar, debes cambiar el nombre de la carpeta de la aplicación en la carpeta de instalación (`/opt/iSkyLIMS`):
 
@@ -224,17 +208,12 @@ En primer lugar, debes cambiar el nombre de la carpeta de la aplicación en la c
 # Necesitas ser usuario root para realizar esta operación
 sudo mv /opt/iSkyLIMS /opt/iskylims
 ```
->>>>>>> feb7fcff (Modifications in readme and leame, addign what to do if something fails and some clarifications)
 
 Asegúrate de que la carpeta de instalación tenga los permisos correctos para que la persona que instala la aplicación pueda escribir en esa carpeta.
 
 ```bash
 # En el caso de que tengas un script para esta tarea. Necesitarás ajustar este script de acuerdo al cambio en el nombre de la ruta: /opt/iSkyLIMS a /opt/iskylims
-<<<<<<< HEAD
 sudo /scripts/hardening.sh
-=======
-/scripts/hardening.sh
->>>>>>> feb7fcff (Modifications in readme and leame, addign what to do if something fails and some clarifications)
 ```
 
 En la terminal de Linux, ejecuta uno de los siguientes comandos que mejor se adapte a ti:
@@ -249,7 +228,7 @@ sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_mig
 
 ##### Pasos que no necesitan de permisos de administración
 
-A continuación instalamos la aplicación de iskylims usando el siguiente comando: 
+A continuación instalamos la aplicación de iskylims usando el siguiente comando:
 
 ```bash
 # para actualizar la aplicación de iskylims, incluyendo los cambios necesarios para la versión en base de datos. NO ES NECESARIO DISPONER DE PERMISOS ROOT.
