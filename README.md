@@ -23,10 +23,12 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Run installation script](#run-installation-script)
     - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
       - [Pre-requisites](#pre-requisites-1)
-      - [Executing the upgrade](#executing-the-upgrade)
-        - [Clone github repository](#clone-github-repository-1)
-        - [Configuration settings](#configuration-settings-1)
-        - [Running upgrade script](#running-upgrade-script)
+      - [Clone github repository](#clone-github-repository-1)
+      - [Configuration settings](#configuration-settings-1)
+      - [Running upgrade script](#running-upgrade-script)
+        - [Steps requiring root](#steps-requiring-root)
+        - [Steps not requiring root](#steps-not-requiring-root)
+      - [What to do if something fails](#what-to-do-if-something-fails)
     - [Final configuration steps](#final-configuration-steps)
       - [SAMBA configurarion](#samba-configurarion)
       - [Email verification](#email-verification)
@@ -46,6 +48,7 @@ Before starting the installation make sure :
 - Database MySQL > 8.0 or MariaDB > 10.4
 - Local server configured for sending emails
 - Apache server v2.4
+- git > 2.34
 - Python > 3.8
 - Connection to samba shared folder where run folders are stored (p.e galera/NGS_Data)
 - Dependencies:
@@ -107,7 +110,7 @@ Open with your favourite editor the configuration file to set your own values fo
 database ,email settings and the local IP of the server where iSkyLIMS will run.
 
 ```bash
-sudo nano install_settings.txt
+nano install_settings.txt
 ```
 
 #### Run installation script
@@ -149,11 +152,9 @@ Because in this upgrade many tables in database are modified it is required that
 
 It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
-#### Executing the upgrade
+#### Clone github repository
 
 We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
-
-##### Clone github repository
 
 Open a linux terminal and move to a directory where iSkyLIMS code will be
 downloaded
@@ -164,7 +165,7 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-##### Configuration settings
+#### Configuration settings
 
 Copy the initial setting template into a file named install_settings.txt
 
@@ -174,23 +175,31 @@ cp conf/template_install_settings.txt install_settings.txt
 
 Open with your favourite editor the configuration file to set your own values for
 database ,email settings and the local IP of the server where iSkyLIMS will run.
+> If you use a windows-based system for modifying the file, make sure the file is saved using a linux-friendly encoding like ASCII or UTF-8
 
 ```bash
 sudo nano install_settings.txt
 ```
 
-##### Running upgrade script
+#### Running upgrade script
 
 If your organization requires that dependencies / stuff that needs root are installed by a different person that install the application the you can use the install script in several steps as follows.
 
 First you need to rename the folder app name in the installation folder (`/opt/iSkyLIMS`):
 
+##### Steps requiring root
+
 ```bash
 # You need root for this operation
-mv /opt/iSkyLIMS /opt/iskylims
+sudo mv /opt/iSkyLIMS /opt/iskylims
 ```
 
 Make sure that the installation folder has the correct permissions so the person installing the app can write in that folder.
+
+```bash
+# In case you have a script for this task. You'll need to adjust this script according to the name changing: /opt/iSkyLIMS to /opt/iskylims
+/scripts/hardening.sh
+```
 
 In the linux terminal execute one of the following command that fit better to you:
 
@@ -198,11 +207,40 @@ In the linux terminal execute one of the following command that fit better to yo
 # to upgrade only software packages dependences. NEEDS ROOT.
 sudo bash install.sh --upgrade dep
 
-# to upgrade only iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
-
 # to install both software. NEEDS ROOT.
 sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
+```
+
+##### Steps not requiring root
+
+Next you need to upgrade iskylims app. Please use the command below:
+
+```bash
+# to upgrade only iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
+```
+
+Make sure that the installation folder has the correct permissions.
+
+```bash
+# In case you have a script for this task. Some paths have changed in this version, so you may need to adjust your hardening script.
+/scripts/hardening.sh
+```
+
+#### What to do if something fails
+
+When we upgrade using the installation script we are performing several changes in the database. If something fails we need to restore the app situation before anything happened and start all over.
+
+We need to copy back the full `/opt/iSkyLIMS` folder back to `/opt` (or your installation path preference), and restore the database doing something like this:
+
+```bash
+sudo rm -rf /opt/iskylims
+sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
+sudo /scripts/hardening.sh
+mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
+# drop database iskylims;
+# create database iskylims;
+mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
 ### Final configuration steps
