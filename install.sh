@@ -668,7 +668,7 @@ if [ $install == true ]; then
                 python3-venv  \
                 libpq-dev \
                 python3-dev python3-pip python3-wheel \
-                apache2-dev\
+                apache2-dev cifs-utils \
                 gnuplot
         fi
 
@@ -678,7 +678,7 @@ if [ $install == true ]; then
             yum install zlib-devel bzip2-devel openssl-devel \
                         wget httpd-devel mysql-libs sqlite sqlite-devel \
                         mariadb-devel libffi-devel \
-                        gnuplot
+                        gnuplot cifs-utils
         fi
 
         ## Create the installation folder
