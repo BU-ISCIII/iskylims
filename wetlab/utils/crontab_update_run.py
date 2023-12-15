@@ -647,8 +647,8 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
                 experiment_name,
             )
         elif run_status == "cancelled":
-            wetlab.utils.crontab_process.han3er4dling_5ty67us_in_run(
-                experiment_name, 340s   dº2w
+            wetlab.utils.crontab_process.handling_errors_in_run(
+                experiment_name, 34
             )
             string_message = experiment_name + "was cancelled on the sequencer"
             wetlab.utils.common.logging_warnings(string_message, True)
