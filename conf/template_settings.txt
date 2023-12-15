@@ -165,10 +165,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = "/"
 
-EMAIL_BACKEND = (
-    "django.core.mail.backends.console.EmailBackend"  # During development only
-)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND = (
+#    "django.core.mail.backends.console.EmailBackend"  # During development only
+#)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL settings
 EMAIL_HOST = "emailhostserver"
@@ -176,7 +177,7 @@ EMAIL_PORT = "emailport"
 EMAIL_HOST_USER = "emailhostuser"
 EMAIL_HOST_PASSWORD = "emailhostpassword"
 EMAIL_USE_TLS = emailhosttls
-ALLOWED_EMAIL_DOMAINS = []
+ALLOWED_EMAIL_DOMAINS = ["isciii.es", "externos.isciii.es"]
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, "logs", "crontab.log")
 LOG_CLEAN_FILE = os.path.join(BASE_DIR, "logs", "crontab_cleanup.log")
