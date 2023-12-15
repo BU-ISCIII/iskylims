@@ -7,7 +7,7 @@
 
 La introducción de la secuenciación masiva (MS) en las instalaciones de genómica ha significado un crecimiento exponencial en la generación de datos, lo que requiere un sistema de seguimiento preciso, desde la preparación de la biblioteca hasta la generación de archivos fastq, el análisis y la entrega al investigador. El software diseñado para manejar esas tareas se llama Sistemas de Gestión de Información de Laboratorio (LIMS), y su software debe adaptarse a las necesidades particulares de su laboratorio de genómica. iSkyLIMS nace con el objetivo de ayudar con las tareas de laboratorio húmedo e implementar un flujo de trabajo que guíe a los laboratorios de genómica en sus actividades, desde la preparación de la biblioteca hasta la producción de datos, reduciendo los posibles errores asociados a la tecnología de alto rendimiento y facilitando el control de calidad de la secuenciación. Además, iSkyLIMS conecta el laboratorio húmedo con el laboratorio seco, facilitando el análisis de datos por parte de bioinformáticos.
 
-![Imagen](https://gitlab.isciii.es/bu-isciii/iSkyLIMS/-/blob/0f535f750035d2407d55a805aef70547d8f7f967/img/iskylims_scheme.png)
+![Imagen](img/iskylims_scheme.png)
 
 De acuerdo con la infraestructura existente, la secuenciación se realiza en un instrumento Illumina NextSeq. Los datos se almacenan en un dispositivo de almacenamiento masivo NetApp y los archivos fastq se generan (bcl2fastq) en un clúster de cómputo de alto rendimiento Sun Grid Engine (SGE-HPC). Los servidores de aplicaciones ejecutan aplicaciones web para el análisis bioinformático (GALAXY), la aplicación iSkyLIMS y alojan la capa de información de MySQL. El flujo de trabajo de iSkyLIMS WetLab se ocupa del seguimiento y las estadísticas de la ejecución de la secuenciación. El seguimiento de la ejecución pasa por cinco estados: "registrado", el usuario de genómica registra la nueva ejecución de la secuenciación en el sistema, el proceso esperará hasta que la ejecución se complete en la máquina y los datos se transfieran al dispositivo de almacenamiento masivo; "Envío de hoja de muestra", el archivo de hoja de muestra con la información de la ejecución de la secuenciación se copiará en la carpeta de ejecución para el proceso de bcl2fastq; "Procesamiento de datos", se procesan los archivos de parámetros de ejecución y los datos se almacenan en la base de datos; "Estadísticas en ejecución", los datos de desmultiplexación generados en el proceso de bcl2fastq se procesan y almacenan en la base de datos, "Completado", todos los datos se procesan y almacenan correctamente. Se proporcionan estadísticas por muestra, por proyecto, por ejecución y por investigación, así como informes anuales y mensuales. El flujo de trabajo de iSkyLIMS DryLab se encarga de la solicitud de servicios de bioinformática y estadísticas. El usuario solicita servicios que pueden estar asociados con una ejecución de secuenciación. Se proporciona seguimiento de estadísticas y servicios.
 
@@ -181,7 +181,7 @@ Si en tu organización se requiere que las dependencias u otros elementos que ne
 
 El script te irá solicitando confirmación en algun paso, si todo está yendo bien sin errores deberás pulsar `y` o `yes` según te lo solicite.
 
-El error: 
+> Nota: Los errores: "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'query' at line 1" son normales ya que se trata del título de las sentencias sql que no deben ejecutarse. Se puede ignorar.
 
 ##### Pasos que necesitan permisos de adminsitración
 
@@ -196,7 +196,7 @@ Asegúrate de que la carpeta de instalación tenga los permisos correctos para q
 
 ```bash
 # En el caso de que tengas un script para esta tarea. Necesitarás ajustar este script de acuerdo al cambio en el nombre de la ruta: /opt/iSkyLIMS a /opt/iskylims
-/scripts/hardening.sh
+sudo /scripts/hardening.sh
 ```
 
 En la terminal de Linux, ejecuta uno de los siguientes comandos que mejor se adapte a ti:
@@ -205,7 +205,7 @@ En la terminal de Linux, ejecuta uno de los siguientes comandos que mejor se ada
 # para actualizar solo las dependencias del software. ES NECESARIO DISPONER DE PERMISOS DE ROOT.
 sudo bash install.sh --upgrade dep
 
-# PARA INSTALAR AMBAS COSAS AL MISMO TIEMPO. REQUIERE DE ROOT.
+# PARA INSTALAR AMBAS COSAS AL MISMO TIEMPO. REQUIERE DE ROOT. SI SE VA A INSTALAR POR OTRA PERSONA SIN ROOT NO HACER ESTO.
 sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
@@ -222,7 +222,7 @@ Por último, asegúrate que los permisos de la carpeta son correctos.
 
 ```bash
 # En el caso de que tengas un script para esta tarea. En esta versión han cambiado algunas rutas a ficheros, es posible que tengas que ajustar el script en consecuencia.
-/scripts/hardening.sh
+sudo /scripts/hardening.sh
 ```
 
 #### Qué hacer si algo falla
@@ -235,7 +235,7 @@ Necesitamos copiar de vuelta nuestro backup de carpet ade aplicación a /opt/iSk
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -h dmysqlps.isciiides.es
+mysql -u iskylims -h dmysqlps.isciiides.es -p
 # drop database iskylims;
 # create database iskylims;
 mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
@@ -260,7 +260,7 @@ mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/b
 
 #### Configurar el servidor Apache
 
-Copia el archivo de configuración de Apache según tu distribución dentro del directorio de configuración de Apache y cambia el nombre a iskylims.conf.
+Copia el archivo de configuración de Apache que se encuentra en la carpeta `conf` según tu distribución dentro del directorio de configuración de Apache y cambia el nombre a iskylims.conf. Revisa cualquier requerimiento de tu sistema, se trata solo de un ejemplo.
 
 #### Verificación de la instalación
 
