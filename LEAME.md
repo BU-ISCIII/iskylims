@@ -146,7 +146,7 @@ Debido a que en esta actualización se modifican muchas tablas en la base de dat
 - La base de datos de iSkyLIMS.
 - La carpeta de iSkyLIMS (carpeta de instalación completa, por ejemplo, /opt/iSkyLIMS).
 
-Se recomienda encarecidamente que hagas estas copias de seguridad y las guardes de manera segura en caso de que la actualización falle, para poder recuperar tu sistema.
+Se recomienda encarecidamente que hagas estas copias de seguridad y las guardes de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
 
 #### Clonar el repositorio de GitHub
 
