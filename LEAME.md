@@ -44,16 +44,26 @@ Si tienes algún problema o deseas informar de algún error, por favor, publíca
 Antes de comenzar la instalación, asegúrate de lo siguiente:
 
 - Tienes privilegios de **sudo** para instalar los paquetes de software adicionales que iSkyLIMS necesita.
+- Dependencias:
+  - Librerías:
+```
+  yum groupinstall "Development tools"
+  yum install zlib-devel bzip2-devel openssl-devel \
+              wget httpd-devel mysql-libs sqlite sqlite-devel \
+              mariadb-devel mysql-client libffi-devel \
+              gnuplot cifs-utils
+```
+  - lsb_relase:
+    - RedHat/CentOS: `yum install redhat-lsb-core`
+    - Ubuntu: `apt install lsb-core lsb-release`
 - Base de datos MySQL > 8.0 o MariaDB > 10.4
 - Tienes configurado un servidor local para enviar correos electrónicos.
 - git > 2.34
 - Tienes Apache servidor v2.4
-- Tienes Python > 3.8
+- Tienes Python > 3.8 (si lo compilas debes haber instalado previamente las dependecias de arriba)
 - Tienes una conexión a la carpeta compartida de Samba donde se almacenan las carpetas de ejecución (por ejemplo, galera/NGS_Data).
 - Dependencias:
-  - lsb_release:
-    - RedHat/CentOS: `yum install redhat-lsb-core`
-    - Ubuntu: `apt install lsb-core lsb-release`
+  
 
 ### Instalación de iSkyLIMS en Docker
 
