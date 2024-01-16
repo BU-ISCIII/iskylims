@@ -192,3 +192,6 @@ CRONTAB_COMMAND_SUFFIX = "2>&1"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 7000000
+
+# Needed when using a proxy for https forwading
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
