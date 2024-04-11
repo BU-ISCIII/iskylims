@@ -165,10 +165,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = "/"
 
-EMAIL_BACKEND = (
-    "django.core.mail.backends.console.EmailBackend"  # During development only
-)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND = (
+#    "django.core.mail.backends.console.EmailBackend"  # During development only
+#)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL settings
 EMAIL_HOST = "emailhostserver"
@@ -176,7 +177,7 @@ EMAIL_PORT = "emailport"
 EMAIL_HOST_USER = "emailhostuser"
 EMAIL_HOST_PASSWORD = "emailhostpassword"
 EMAIL_USE_TLS = emailhosttls
-ALLOWED_EMAIL_DOMAINS = []
+ALLOWED_EMAIL_DOMAINS = ["isciii.es", "externos.isciii.es"]
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, "logs", "crontab.log")
 LOG_CLEAN_FILE = os.path.join(BASE_DIR, "logs", "crontab_cleanup.log")
@@ -185,10 +186,12 @@ LOG_CLEAN_FILE = os.path.join(BASE_DIR, "logs", "crontab_cleanup.log")
 # Crontab settings
 CRONJOBS = [
     ("*/15 * * * *", "wetlab.cron.looking_for_new_runs", ">>" + LOG_CRONTAB_FILE),
-    ("0 0 1 * *", "wetlab.cron.delete_invalid_run", ">>" + LOG_CLEAN_FILE),
 ]
 
 CRONTAB_COMMAND_SUFFIX = "2>&1"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 7000000
+
+# Needed when using a proxy for https forwading
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
