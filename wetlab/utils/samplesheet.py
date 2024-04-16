@@ -47,9 +47,9 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
                     description_index = line.index("Description")
                     continue
                 except Exception:
-                    users[
-                        "ERROR"
-                    ] = wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+                    users["ERROR"] = (
+                        wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+                    )
                     return users
             else:
                 try:
