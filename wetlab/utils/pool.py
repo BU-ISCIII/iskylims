@@ -234,18 +234,18 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool = {}
     information_for_created_pool["data"] = pool_obj.get_info()
     information_for_created_pool["pool_name"] = pool_obj.get_pool_name()
-    information_for_created_pool[
-        "heading_pool"
-    ] = wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
+    information_for_created_pool["heading_pool"] = (
+        wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
+    )
     lib_prep_data = []
     if wetlab.models.LibPrepare.objects.filter(pools=pool_obj).exists():
         lib_prep_ids = wetlab.models.LibPrepare.objects.filter(pools=pool_obj)
         for lib_prep_obj in lib_prep_ids:
             lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
     information_for_created_pool["lib_prep_data"] = lib_prep_data
-    information_for_created_pool[
-        "heading_library_pool"
-    ] = wetlab.config.HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
+    information_for_created_pool["heading_library_pool"] = (
+        wetlab.config.HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
+    )
 
     return information_for_created_pool
 

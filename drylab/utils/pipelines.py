@@ -101,9 +101,9 @@ def get_detail_pipeline_data(pipeline_id):
         pipeline_obj = drylab.models.Pipelines.objects.get(pk__exact=pipeline_id)
         detail_pipelines_data["pipeline_name"] = pipeline_obj.get_pipeline_name()
         detail_pipelines_data["pipeline_basic"] = pipeline_obj.get_pipeline_basic()
-        detail_pipelines_data[
-            "pipeline_basic_heading"
-        ] = drylab.config.DISPLAY_DETAIL_PIPELINE_BASIC_INFO
+        detail_pipelines_data["pipeline_basic_heading"] = (
+            drylab.config.DISPLAY_DETAIL_PIPELINE_BASIC_INFO
+        )
         detail_pipelines_data["pipeline_additional_data"] = zip(
             drylab.config.DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO,
             pipeline_obj.get_pipeline_additional(),
@@ -116,9 +116,9 @@ def get_detail_pipeline_data(pipeline_id):
             parameter_objs = drylab.models.ParameterPipeline.objects.filter(
                 parameter_pipeline=pipeline_obj
             )
-            detail_pipelines_data[
-                "parameter_heading"
-            ] = drylab.config.HEADING_PARAMETER_PIPELINE
+            detail_pipelines_data["parameter_heading"] = (
+                drylab.config.HEADING_PARAMETER_PIPELINE
+            )
             detail_pipelines_data["parameters"] = []
             for parameter_obj in parameter_objs:
                 detail_pipelines_data["parameters"].append(
@@ -187,9 +187,9 @@ def get_pipelines_for_resolution(resolution_obj):
     for pipeline_obj in pipeline_objs:
         pipeline_data["pipelines"].append(pipeline_obj.get_pipeline_info())
     if len(pipeline_data["pipelines"]) > 0:
-        pipeline_data[
-            "heading_pipelines"
-        ] = drylab.config.DISPLAY_PIPELINES_USED_IN_RESOLUTION
+        pipeline_data["heading_pipelines"] = (
+            drylab.config.DISPLAY_PIPELINES_USED_IN_RESOLUTION
+        )
     return pipeline_data
 
 
