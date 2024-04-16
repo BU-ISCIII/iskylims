@@ -76,9 +76,9 @@ def get_all_project_info(proyect_id):
     if core.models.PatientProjectsFields.objects.filter(
         patient_projects_id=project_obj
     ).exists():
-        project_data[
-            "field_heading"
-        ] = core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
+        project_data["field_heading"] = (
+            core.core_config.HEADING_FOR_DEFINING_PROJECT_FIELDS
+        )
         project_data["project_name"] = project_obj.get_project_name()
         project_fields = core.models.PatientProjectsFields.objects.filter(
             patient_projects_id=project_obj
