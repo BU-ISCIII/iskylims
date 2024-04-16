@@ -228,9 +228,9 @@ def collect_data_and_update_library_preparation_samples_for_run(data_form, user)
             ]
         projects.append(json_data[row_index][heading.index("Sample_Project")])
         # keep the old value of the user sample sheet and update the library prepation
-        confirmation_data[
-            "user_sample_sheet"
-        ] = lib_prep_obj.get_user_sample_sheet_obj()
+        confirmation_data["user_sample_sheet"] = (
+            lib_prep_obj.get_user_sample_sheet_obj()
+        )
         lib_prep_obj.update_library_preparation_with_indexes(confirmation_data)
         sample_sheet_data_field.append(json_data[row_index])
     if record_data["platform"] == "NextSeq":
@@ -684,41 +684,29 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     if platform_in_pool == "MiSeq":
         if single_read:
             if iem_version == "4":
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
                 )
             else:
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
                 )
         else:
             if iem_version == "4":
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
                 )
             else:
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
                 )
     else:
         if single_read:
-            lib_data[
-                "heading"
-            ] = (
+            lib_data["heading"] = (
                 wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
             )
         else:
-            lib_data[
-                "heading"
-            ] = (
+            lib_data["heading"] = (
                 wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
             )
     return lib_data
@@ -943,9 +931,9 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
     kit_data = {}
     kit_data["run_kits_from_sample"] = {}
     if wetlab.models.LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
-        kit_data[
-            "heading_run_kits"
-        ] = wetlab.config.HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
+        kit_data["heading_run_kits"] = (
+            wetlab.config.HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
+        )
         library_preparation_items = wetlab.models.LibPrepare.objects.filter(
             sample_id__pk__exact=sample_id
         ).order_by("protocol_id")
