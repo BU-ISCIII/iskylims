@@ -158,10 +158,10 @@ def display_one_patient_info(p_id, app_name):
 
         for pat_project in pat_projects:
             project_name = pat_project.get_project_name()
-            patient_info["project_information"][
-                project_name
-            ] = core.utils.patient_projects.get_project_field_values(
-                pat_project.get_project_id(), patient_core_obj
+            patient_info["project_information"][project_name] = (
+                core.utils.patient_projects.get_project_field_values(
+                    pat_project.get_project_id(), patient_core_obj
+                )
             )
 
     # get other projects that patient could belongs to
@@ -180,9 +180,9 @@ def display_one_patient_info(p_id, app_name):
         clinic_samples = clinic.models.SampleRequest.objects.filter(
             patient_core=patient_core_obj
         )
-        patient_info[
-            "samples_heading"
-        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_DATA_IN_PATIENT_INFO
+        patient_info["samples_heading"] = (
+            clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_DATA_IN_PATIENT_INFO
+        )
         patient_info["samples_data"] = []
         for clinic_sample in clinic_samples:
             sample_obj = clinic_sample.get_core_sample_obj()
@@ -362,20 +362,20 @@ def read_batch_patient_file(batch_file):
     num_rows, num_cols = patient_batch_df.shape
 
     if num_cols != 5:
-        error_data[
-            "ERROR"
-        ] = clinic.clinic_config.ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+        error_data["ERROR"] = (
+            clinic.clinic_config.ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+        )
         return error_data
     for field in patient_batch_heading:
         if field not in patient_batch_df.columns:
-            error_data[
-                "ERROR"
-            ] = clinic.clinic_config.ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+            error_data["ERROR"] = (
+                clinic.clinic_config.ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+            )
             return error_data
     if num_rows == 0:
-        error_data[
-            "ERROR"
-        ] = clinic.clinic_config.ERROR_MESSAGE_FOR_EMPTY_PATIENT_BATCH_FILE
+        error_data["ERROR"] = (
+            clinic.clinic_config.ERROR_MESSAGE_FOR_EMPTY_PATIENT_BATCH_FILE
+        )
         return error_data
     p_projects = set(patient_batch_df["patientProjects"])
     for p_project in p_projects:
@@ -384,19 +384,18 @@ def read_batch_patient_file(batch_file):
         if not core.models.PatientProjects.objects.filter(
             project_name__exact=p_project
         ).exists():
-            error_data[
-                "ERROR"
-            ] = clinic.clinic_config.ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE + [
-                p_project
-            ]
+            error_data["ERROR"] = (
+                clinic.clinic_config.ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE + 
+                [p_project]
+            )
             return error_data
 
     for index, row_data in patient_batch_df.iterrows():
         patient_data = {}
         for index in range(len(clinic.clinic_config.PATIENT_BATCH_FILE_HEADING)):
-            patient_data[
-                clinic.clinic_config.PATIENT_BATCH_FILE_HEADING[index]
-            ] = row_data[patient_batch_heading[index]]
+            patient_data[clinic.clinic_config.PATIENT_BATCH_FILE_HEADING[index]] = (
+                row_data[patient_batch_heading[index]]
+            )
         patient_batch_data.append(patient_data)
 
     return patient_batch_data

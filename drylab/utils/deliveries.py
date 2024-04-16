@@ -29,15 +29,15 @@ def prepare_delivery_form(resolution_id):
         resolution_id, input="id"
     )
     if resolution_obj is not None:
-        delivery_data_form[
-            "available_services"
-        ] = resolution_obj.get_available_services_ids()
+        delivery_data_form["available_services"] = (
+            resolution_obj.get_available_services_ids()
+        )
         delivery_data_form["resolution_id"] = resolution_id
         delivery_data_form["resolution_number"] = resolution_obj.get_resolution_number()
 
-        delivery_data_form[
-            "pipelines_data"
-        ] = drylab.utils.pipelines.get_pipelines_for_resolution(resolution_obj)
+        delivery_data_form["pipelines_data"] = (
+            drylab.utils.pipelines.get_pipelines_for_resolution(resolution_obj)
+        )
 
     return delivery_data_form
 
