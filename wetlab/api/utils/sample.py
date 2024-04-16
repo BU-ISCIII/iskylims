@@ -486,22 +486,22 @@ def summarize_samples(data):
                         .distinct()
                     )
                     for f_value in f_values:
-                        summarize["parameters"][p_name][
-                            f_value
-                        ] = core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_project_field_id=s_project_field_obj,
-                            sample_project_field_value__exact=f_value,
-                            sample_id__sample_name__in=sample_list,
-                        ).count()
+                        summarize["parameters"][p_name][f_value] = (
+                            core.models.SampleProjectsFieldsValue.objects.filter(
+                                sample_project_field_id=s_project_field_obj,
+                                sample_project_field_value__exact=f_value,
+                                sample_id__sample_name__in=sample_list,
+                            ).count()
+                        )
                 else:
                     summarize["parameters"][p_name]["value"] = 0
             else:
-                summarize["parameters"][p_name][
-                    "value"
-                ] = core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id=s_project_field_obj,
-                    sample_id__sample_name__in=sample_list,
-                ).count()
+                summarize["parameters"][p_name]["value"] = (
+                    core.models.SampleProjectsFieldsValue.objects.filter(
+                        sample_project_field_id=s_project_field_obj,
+                        sample_id__sample_name__in=sample_list,
+                    ).count()
+                )
             summarize["parameters"][p_name][
                 "classification"
             ] = s_project_field_obj.get_classification_name()
@@ -571,15 +571,15 @@ def collect_statistics_information(data):
                             stats_data[par1_val][par2_val] = value
             else:
                 for par1_val in par1_values:
-                    stats_data[
-                        par1_val
-                    ] = core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id__sample_projects_id=s_project_obj,
-                        sample_project_field_id__sample_project_field_name__iexact=query_params[
-                            0
-                        ],
-                        sample_project_field_value=par1_val,
-                    ).count()
+                    stats_data[par1_val] = (
+                        core.models.SampleProjectsFieldsValue.objects.filter(
+                            sample_project_field_id__sample_projects_id=s_project_obj,
+                            sample_project_field_id__sample_project_field_name__iexact=query_params[
+                                0
+                            ],
+                            sample_project_field_value=par1_val,
+                        ).count()
+                    )
 
             return stats_data
         else:  # Collect info stats for all fields

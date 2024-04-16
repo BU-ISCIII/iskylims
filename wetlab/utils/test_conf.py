@@ -197,9 +197,9 @@ def execute_test_for_testing_run(run_test_name):
                 conn, [run_obj]
             )
             if run_obj.get_state() == "ERROR":
-                run_result[
-                    "ERROR"
-                ] = "Error when processing run in Processing Run state"
+                run_result["ERROR"] = (
+                    "Error when processing run in Processing Run state"
+                )
                 break
             else:
                 run_result["Processing Run"] = "OK"
@@ -217,9 +217,9 @@ def execute_test_for_testing_run(run_test_name):
                 conn, [run_obj]
             )
             if run_obj.get_state() == "ERROR":
-                run_result[
-                    "ERROR"
-                ] = "Error when processing run in Processing Bcl2fastq state"
+                run_result["ERROR"] = (
+                    "Error when processing run in Processing Bcl2fastq state"
+                )
                 break
             else:
                 run_result["Processing Bcl2fastq"] = "OK"
@@ -228,9 +228,9 @@ def execute_test_for_testing_run(run_test_name):
                 conn, [run_obj]
             )
             if run_obj.get_state() == "ERROR":
-                run_result[
-                    "ERROR"
-                ] = "Error when processing run in Processed Bcl2fastq state"
+                run_result["ERROR"] = (
+                    "Error when processing run in Processed Bcl2fastq state"
+                )
                 break
             else:
                 run_result["Processed Bcl2fastq"] = "OK"
