@@ -357,9 +357,9 @@ def get_pending_services_info():
     graphic_unit_pending_services = core.fusioncharts.fusioncharts.FusionCharts(
         "multilevelpie", "ex2", "535", "435", "chart-2", "json", data_source
     )
-    pending_services_graphics[
-        "graphic_pending_unit_services"
-    ] = graphic_unit_pending_services.render()
+    pending_services_graphics["graphic_pending_unit_services"] = (
+        graphic_unit_pending_services.render()
+    )
 
     pending_services_details["graphics"] = pending_services_graphics
     return pending_services_details
@@ -391,9 +391,9 @@ def get_user_pending_services_info(user_name):
             del resolution_data[4]
             res_in_queued.append(resolution_data)
         user_pending_services_details["queued"] = res_in_queued
-        user_pending_services_details[
-            "heading_in_queued"
-        ] = drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        user_pending_services_details["heading_in_queued"] = (
+            drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        )
     if drylab.models.Resolution.objects.filter(
         resolution_assigned_user__username__exact=user_name,
         resolution_state__state_value__exact="in_progress",
@@ -407,9 +407,9 @@ def get_user_pending_services_info(user_name):
             del resolution_data[4]
             res_in_progress.append(resolution_data)
         user_pending_services_details["in_progress"] = res_in_progress
-        user_pending_services_details[
-            "heading_in_progress"
-        ] = drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        user_pending_services_details["heading_in_progress"] = (
+            drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        )
     return user_pending_services_details
 
 
@@ -492,26 +492,26 @@ def get_service_data(request):
         # get samples which have sequencing data in iSkyLIMS
         user_sharing_list = drylab.utils.common.get_user_sharing_list(request.user)
 
-        service_data[
-            "samples_data"
-        ] = wetlab.utils.api.wetlab_api.get_runs_projects_samples_and_dates(
-            user_sharing_list
+        service_data["samples_data"] = (
+            wetlab.utils.api.wetlab_api.get_runs_projects_samples_and_dates(
+                user_sharing_list
+            )
         )
 
         if len(service_data["samples_data"]) > 0:
-            service_data[
-                "samples_heading"
-            ] = drylab.config.HEADING_SELECT_SAMPLE_IN_SERVICE
+            service_data["samples_heading"] = (
+                drylab.config.HEADING_SELECT_SAMPLE_IN_SERVICE
+            )
 
     # get the samples that are only defined without sequencing data available from iSkyLIMS
 
-    service_data[
-        "sample_only_recorded"
-    ] = core.utils.samples.get_only_recorded_samples_and_dates()
+    service_data["sample_only_recorded"] = (
+        core.utils.samples.get_only_recorded_samples_and_dates()
+    )
     if len(service_data["sample_only_recorded"]) > 0:
-        service_data[
-            "sample_only_recorded_heading"
-        ] = drylab.config.HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
+        service_data["sample_only_recorded_heading"] = (
+            drylab.config.HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
+        )
 
     return service_data
 

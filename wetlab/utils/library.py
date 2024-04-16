@@ -73,13 +73,13 @@ def analyze_and_store_prot_lib_param_values(form_data):
             len(json_data[row_index]),
         ):
             lib_parameter_value = {}
-            lib_parameter_value[
-                "parameter_id"
-            ] = core.models.ProtocolParameters.objects.filter(
-                protocol_id=prot_obj,
-                parameter_name__exact=headings[p_index],
-                parameter_used=True,
-            ).last()
+            lib_parameter_value["parameter_id"] = (
+                core.models.ProtocolParameters.objects.filter(
+                    protocol_id=prot_obj,
+                    parameter_name__exact=headings[p_index],
+                    parameter_used=True,
+                ).last()
+            )
             lib_parameter_value["library_id"] = library_prep_obj
             lib_parameter_value["parameterValue"] = json_data[row_index][p_index]
             wetlab.models.LibParameterValue.objects.create_library_parameter_value(
@@ -202,12 +202,12 @@ def get_protocol_parameters_for_library_preparation(protocol_libs):
                 "sample_id__sample_name", "lib_prep_code_id", "pk"
             )
         )
-        prot_lib_data[
-            "param_heading_type"
-        ] = core.utils.protocols.get_protocol_parameters_and_type(prot_obj)
-        prot_lib_data[
-            "fix_heading"
-        ] = wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+        prot_lib_data["param_heading_type"] = (
+            core.utils.protocols.get_protocol_parameters_and_type(prot_obj)
+        )
+        prot_lib_data["fix_heading"] = (
+            wetlab.config.HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+        )
         protocol_lib_prep_data.append(prot_lib_data)
 
     return protocol_lib_prep_data
@@ -460,9 +460,9 @@ def get_all_library_information(sample_id):
     """
     library_information = {}
     if wetlab.models.LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
-        library_information[
-            "library_definition_heading"
-        ] = wetlab.config.HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
+        library_information["library_definition_heading"] = (
+            wetlab.config.HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
+        )
         library_information["library_definition"] = []
         library_information["pool_information"] = []
         library_preparation_items = wetlab.models.LibPrepare.objects.filter(
@@ -526,9 +526,9 @@ def get_all_library_information(sample_id):
                     )
 
         if library_information["pool_information"]:
-            library_information[
-                "pool_heading"
-            ] = wetlab.config.HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO
+            library_information["pool_heading"] = (
+                wetlab.config.HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO
+            )
 
     return library_information
 
@@ -579,9 +579,9 @@ def get_lib_prep_to_add_parameters():
             lib_prep_info.append(sample.get_id())
             sample_info.append(lib_prep_info)
         lib_prep_parameters["lib_prep_info"] = sample_info
-        lib_prep_parameters[
-            "lib_prep_heading"
-        ] = wetlab.config.HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS
+        lib_prep_parameters["lib_prep_heading"] = (
+            wetlab.config.HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS
+        )
         lib_prep_parameters["length"] = len(sample_info)
     return lib_prep_parameters
 
@@ -645,9 +645,9 @@ def get_samples_in_lib_prep_state():
                 lib_prep_data.append(sample_information + molecule_data)
 
         samples_in_lib_prep["library_information"] = lib_prep_data
-        samples_in_lib_prep[
-            "lib_prep_heading"
-        ] = wetlab.config.HEADING_FOR_LIBRARY_PREPARATION_STATE
+        samples_in_lib_prep["lib_prep_heading"] = (
+            wetlab.config.HEADING_FOR_LIBRARY_PREPARATION_STATE
+        )
         samples_in_lib_prep["length"] = len(lib_prep_data)
 
         return samples_in_lib_prep

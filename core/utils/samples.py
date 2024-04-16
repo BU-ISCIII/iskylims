@@ -436,13 +436,13 @@ def save_project_data(excel_data, project_info):
         for field in project_info["sample_project_fields"]:
             field_value = {}
             field_value["sample_id"] = sample_id
-            field_value[
-                "sample_project_field_id"
-            ] = core.models.SampleProjectsFields.objects.get(
-                sample_projects_id__exact=core.models.SampleProjects.objects.get(
-                    sample_project_name__exact=project_info["sample_project_name"]
-                ),
-                sample_project_field_name__exact=field["sample_project_field_name"],
+            field_value["sample_project_field_id"] = (
+                core.models.SampleProjectsFields.objects.get(
+                    sample_projects_id__exact=core.models.SampleProjects.objects.get(
+                        sample_project_name__exact=project_info["sample_project_name"]
+                    ),
+                    sample_project_field_name__exact=field["sample_project_field_name"],
+                )
             )
             field_value["sample_project_field_value"] = sample[
                 field["sample_project_field_name"]
@@ -521,11 +521,11 @@ def add_molecule_protocol_parameters(data, parameters):
         )
         for param in parameters:
             molecule_parameter_value = {}
-            molecule_parameter_value[
-                "molecule_parameter_id"
-            ] = core.models.ProtocolParameters.objects.filter(
-                protocol_id=prot_obj, parameter_name__iexact=param
-            ).last()
+            molecule_parameter_value["molecule_parameter_id"] = (
+                core.models.ProtocolParameters.objects.filter(
+                    protocol_id=prot_obj, parameter_name__iexact=param
+                ).last()
+            )
             molecule_parameter_value["molecule_id"] = molecule_obj
             molecule_parameter_value["parameter_value"] = row[param]
             _ = core.models.MoleculeParameterValue.objects.create_molecule_parameter_value(
@@ -740,9 +740,9 @@ def create_table_pending_molecules(molecule_list):
         .annotate(pk=F("pk"))
     )
     if len(molecule_data["data"]) > 0:
-        molecule_data[
-            "molecule_heading"
-        ] = core.core_config.HEADING_FOR_PENDING_MOLECULES
+        molecule_data["molecule_heading"] = (
+            core.core_config.HEADING_FOR_PENDING_MOLECULES
+        )
 
     return molecule_data
 
@@ -762,9 +762,9 @@ def define_table_for_sample_project_fields(sample_project_id):
         pk__exact=sample_project_id
     )
 
-    sample_project_data[
-        "sample_project_name"
-    ] = sample_project_obj.get_sample_project_name()
+    sample_project_data["sample_project_name"] = (
+        sample_project_obj.get_sample_project_name()
+    )
     sample_project_data["sample_project_id"] = sample_project_id
     sample_project_data["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
     return sample_project_data
@@ -838,9 +838,9 @@ def get_all_sample_information(sample_id, join_values=False):
     sample_information["sample_name"] = sample_obj.get_sample_name()
 
     sample_information["sample_definition"] = sample_obj.get_info_for_display()
-    sample_information[
-        "sample_definition_heading"
-    ] = core.core_config.HEADING_FOR_SAMPLE_DEFINITION
+    sample_information["sample_definition_heading"] = (
+        core.core_config.HEADING_FOR_SAMPLE_DEFINITION
+    )
     if join_values:
         sample_information["sample_definition_join_value"] = list(
             zip(
@@ -860,9 +860,9 @@ def get_all_sample_information(sample_id, join_values=False):
     # check if molecule information exists for the sample
     if core.models.MoleculePreparation.objects.filter(sample=sample_obj).exists():
         molecules = core.models.MoleculePreparation.objects.filter(sample=sample_obj)
-        sample_information[
-            "molecule_definition_heading"
-        ] = core.core_config.HEADING_FOR_MOLECULE_DEFINITION
+        sample_information["molecule_definition_heading"] = (
+            core.core_config.HEADING_FOR_MOLECULE_DEFINITION
+        )
         sample_information["molecule_definition"] = []
         sample_information["molecule_parameter_values"] = []
         sample_information["molecule_definition_data"] = []
@@ -950,9 +950,9 @@ def get_info_to_display_sample_project(sample_project_id):
         )
         # collect data from project
         info_s_project["sample_project_id"] = sample_project_id
-        info_s_project[
-            "sample_project_name"
-        ] = sample_project_obj.get_sample_project_name()
+        info_s_project["sample_project_name"] = (
+            sample_project_obj.get_sample_project_name()
+        )
         info_s_project["main_data"] = list(
             zip(
                 core.core_config.SAMPLE_PROJECT_MAIN_DATA,
@@ -1058,13 +1058,13 @@ def get_parameters_sample_project(sample_project_id):
                 parameter_data.insert(1, "")
                 s_project_fields_list.append(parameter_data)
             parameters_s_project["fields"] = s_project_fields_list
-        parameters_s_project[
-            "heading"
-        ] = core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+        parameters_s_project["heading"] = (
+            core.core_config.HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+        )
         parameters_s_project["sample_project_id"] = sample_project_id
-        parameters_s_project[
-            "sample_project_name"
-        ] = sample_project_obj.get_sample_project_name()
+        parameters_s_project["sample_project_name"] = (
+            sample_project_obj.get_sample_project_name()
+        )
         # parameters_s_project["parameter_names"] = ",".join(parameter_names)
         # parameters_s_project["parameter_ids"] = ",".join(parameter_ids)
     else:
@@ -1260,15 +1260,15 @@ def get_molecule_data_and_protocol_parameters(protocol_objs):
     for protocol_obj, mol_ids in protocol_objs.items():
         prot_name = protocol_obj.get_name()
         mol_data_parm[prot_name] = {}
-        mol_data_parm[prot_name][
-            "params_type"
-        ] = core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
+        mol_data_parm[prot_name]["params_type"] = (
+            core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
+        )
         mol_data_parm[prot_name][
             "fix_heading"
         ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-        mol_data_parm[prot_name][
-            "lot_kit"
-        ] = core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
+        mol_data_parm[prot_name]["lot_kit"] = (
+            core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
+        )
         mol_data_parm[prot_name]["param_heading"] = []
         prot_params = core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj, parameter_used=True
@@ -1511,9 +1511,9 @@ def get_table_record_molecule(samples, apps_name):
     """
 
     molecule_information = {}
-    molecule_information[
-        "headings"
-    ] = core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
+    molecule_information["headings"] = (
+        core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
+    )
     sample_code_ids = []
     valid_samples = []
     for sample in samples:
@@ -1605,9 +1605,9 @@ def get_type_of_sample_information(sample_type_id):
                         )
                     break
     else:
-        sample_type_data[
-            "ERROR"
-        ] = core.core_config.ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS
+        sample_type_data["ERROR"] = (
+            core.core_config.ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS
+        )
     return sample_type_data
 
 
@@ -1783,9 +1783,9 @@ def record_molecule_use(from_data, app_name):
     if core.models.MoleculeUsedFor.objects.filter(
         used_for__exact=from_data["moleculeUseName"]
     ).exists():
-        molecule_use_information[
-            "ERROR"
-        ] = core.core_config.ERROR_MOLECULE_USE_FOR_EXISTS
+        molecule_use_information["ERROR"] = (
+            core.core_config.ERROR_MOLECULE_USE_FOR_EXISTS
+        )
         return molecule_use_information
     molecule_use_data = {}
     molecule_use_data["usedFor"] = from_data["moleculeUseName"]

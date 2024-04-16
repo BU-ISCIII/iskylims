@@ -1091,9 +1091,9 @@ def parsing_run_info_and_parameter_information(
                     index_number = (
                         int(run_info_read.attrib[wetlab.config.NUMBER_TAG]) - 1
                     )
-                    running_data[
-                        wetlab.config.READ_NUMBER_OF_CYCLES[index_number]
-                    ] = run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
+                    running_data[wetlab.config.READ_NUMBER_OF_CYCLES[index_number]] = (
+                        run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
+                    )
                 except Exception:
                     string_message = (
                         experiment_name

@@ -56,9 +56,9 @@ def configuration_email(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
     email_conf_data = core.utils.common.get_email_data()
-    email_conf_data[
-        "EMAIL_ISKYLIMS"
-    ] = wetlab.utils.common.get_configuration_from_database("EMAIL_FOR_NOTIFICATIONS")
+    email_conf_data["EMAIL_ISKYLIMS"] = (
+        wetlab.utils.common.get_configuration_from_database("EMAIL_FOR_NOTIFICATIONS")
+    )
     if request.method == "POST" and (request.POST["action"] == "emailconfiguration"):
         result_email = core.utils.common.send_test_email(request.POST)
         if result_email != "OK":
@@ -147,9 +147,9 @@ def configuration_test(request):
     if request.method == "POST" and request.POST["action"] == "basicTest":
         test_results = {}
         config_file = os.path.join(settings.BASE_DIR, "wetlab", "config.py")
-        test_results[
-            "iSkyLIMS_settings"
-        ] = wetlab.utils.test_conf.get_iSkyLIMS_settings()
+        test_results["iSkyLIMS_settings"] = (
+            wetlab.utils.test_conf.get_iSkyLIMS_settings()
+        )
         test_results["config_file"] = wetlab.utils.test_conf.get_config_file(
             config_file
         )
@@ -157,9 +157,9 @@ def configuration_test(request):
             os.path.join(settings.MEDIA_ROOT, "wetlab")
         )
         test_results["database_access"] = wetlab.utils.test_conf.check_access_database()
-        test_results[
-            "samba_connection"
-        ] = wetlab.utils.test_conf.check_samba_connection()
+        test_results["samba_connection"] = (
+            wetlab.utils.test_conf.check_samba_connection()
+        )
 
         test_results["basic_checks_ok"] = "OK"
         for result in test_results:
@@ -1131,9 +1131,9 @@ def retry_error_run(request):
             previous_error_state = run_name_found.get_state_before_error()
             run_name_found.set_run_state(previous_error_state)
             detail_description = {}
-            detail_description[
-                "information"
-            ] = wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            detail_description["information"] = (
+                wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            )
             return render(
                 request,
                 "wetlab/display_run.html",
@@ -1168,9 +1168,9 @@ def skip_cancel_situation(request):
             run_name_found.set_run_state("Sample Sent")
             run_name_found.set_forced_continue_on_error()
             detail_description = {}
-            detail_description[
-                "information"
-            ] = wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            detail_description["information"] = (
+                wetlab.config.SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            )
             return render(
                 request,
                 "wetlab/skip_cancel_situation.html",
@@ -3093,9 +3093,9 @@ def handling_library_preparation(request):
                 sample_sheet_data
             )
         )
-        display_sample_sheet[
-            "lib_prep_user_sample_sheet"
-        ] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
+        display_sample_sheet["lib_prep_user_sample_sheet"] = (
+            lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
+        )
         display_sample_sheet["platform"] = platform
         display_sample_sheet["iem_version"] = sample_sheet_data["iem_version"]
         if user_in_description == "TRUE":
@@ -3367,9 +3367,9 @@ def repeat_library_preparation(request):
                 "wetlab/error_page.html",
                 {"detail_description": detail_description},
             )
-        detail_description[
-            "information"
-        ] = wetlab.config.SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
+        detail_description["information"] = (
+            wetlab.config.SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
+        )
         return render(
             request,
             "wetlab/successful_page.html",
@@ -3862,32 +3862,32 @@ def pending_sample_preparation(request):
     pending_data = core.utils.samples.pending_sample_summary(req_user, friend_list)
 
     if len(pending_data["state"]) > 0:
-        pending_data[
-            "sample_heading"
-        ] = wetlab.config.HEADING_FOR_PENDING_PROCESS_SAMPLES
-        pending_data[
-            "pending_sample_graphic"
-        ] = wetlab.utils.statistics.get_pending_graphic_data(
-            pending_data["state_number"],
-            "Pending samples",
-            "flint",
-            "ex1",
-            "500",
-            "500",
-            "chart-1",
+        pending_data["sample_heading"] = (
+            wetlab.config.HEADING_FOR_PENDING_PROCESS_SAMPLES
+        )
+        pending_data["pending_sample_graphic"] = (
+            wetlab.utils.statistics.get_pending_graphic_data(
+                pending_data["state_number"],
+                "Pending samples",
+                "flint",
+                "ex1",
+                "500",
+                "500",
+                "chart-1",
+            )
         )
         # if wetlab manager create graphic for users on pending samples
         if user_is_wetlab_manager:
-            pending_data[
-                "pending_users_graphic"
-            ] = wetlab.utils.statistics.get_pending_graphic_data(
-                pending_data["users"],
-                "Users with pending samples",
-                "flint",
-                "ex2",
-                "500",
-                "500",
-                "chart-2",
+            pending_data["pending_users_graphic"] = (
+                wetlab.utils.statistics.get_pending_graphic_data(
+                    pending_data["users"],
+                    "Users with pending samples",
+                    "flint",
+                    "ex2",
+                    "500",
+                    "500",
+                    "chart-2",
+                )
             )
 
     return render(

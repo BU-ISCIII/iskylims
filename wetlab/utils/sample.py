@@ -121,9 +121,9 @@ def get_comparation_sample_information(sample_objs):
         data.insert(2, sample_obj.get_run_name())
         data.insert(3, stats_fl_obj.get_sample_number())
         compared_data["table_data"].append(data)
-    compared_data[
-        "table_heading"
-    ] = wetlab.config.HEADING_COMPARATION_SAMPLE_INFORMATION
+    compared_data["table_heading"] = (
+        wetlab.config.HEADING_COMPARATION_SAMPLE_INFORMATION
+    )
     return compared_data
 
 

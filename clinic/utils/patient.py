@@ -385,8 +385,8 @@ def read_batch_patient_file(batch_file):
             project_name__exact=p_project
         ).exists():
             error_data["ERROR"] = (
-                clinic.clinic_config.ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE + 
-                [p_project]
+                clinic.clinic_config.ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE
+                + [p_project]
             )
             return error_data
 

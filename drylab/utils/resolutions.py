@@ -216,10 +216,10 @@ def create_new_resolution(resolution_data_form):
             .get_resolution_full_number()
         )
     else:
-        resolution_data_form[
-            "resolution_full_number"
-        ] = get_assign_resolution_full_number(
-            resolution_data_form["service_id"], resolution_data_form["acronym"]
+        resolution_data_form["resolution_full_number"] = (
+            get_assign_resolution_full_number(
+                resolution_data_form["service_id"], resolution_data_form["acronym"]
+            )
         )
     resolution_data_form["resolution_number"] = create_resolution_number(
         resolution_data_form["service_id"]
@@ -355,9 +355,9 @@ def prepare_form_data_add_resolution(form_data):
         existing_resolution = drylab.models.Resolution.objects.filter(
             resolution_service_id=service_obj
         ).last()
-        resolution_form_data[
-            "resolution_full_number"
-        ] = existing_resolution.get_resolution_full_number()
+        resolution_form_data["resolution_full_number"] = (
+            existing_resolution.get_resolution_full_number()
+        )
     users = django.contrib.auth.models.User.objects.filter(
         groups__name=drylab.config.SERVICE_MANAGER
     )
@@ -376,12 +376,12 @@ def prepare_form_data_add_resolution(form_data):
     for req_service in req_available_services_with_desc:
         req_available_services_id.append(req_service[0])
 
-    resolution_form_data[
-        "pipelines_data"
-    ] = drylab.utils.pipelines.get_all_defined_pipelines(True)
-    resolution_form_data[
-        "pipelines_heading"
-    ] = drylab.config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
+    resolution_form_data["pipelines_data"] = (
+        drylab.utils.pipelines.get_all_defined_pipelines(True)
+    )
+    resolution_form_data["pipelines_heading"] = (
+        drylab.config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
+    )
 
     return resolution_form_data
 

@@ -198,9 +198,9 @@ def get_additional_kits_from_lib_prep(lib_prep_ids):
                 for user_lot_kit_obj in user_lot_kit_objs:
                     user_lot.append(user_lot_kit_obj.get_lot_number())
             additional_kits["kit_heading"].append([kit_name, user_lot])
-        additional_kits[
-            "fix_heading"
-        ] = wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS
+        additional_kits["fix_heading"] = (
+            wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS
+        )
         data_length = len(wetlab.config.HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS) + len(
             additional_kits_objs
         )
@@ -273,9 +273,9 @@ def get_all_additional_kit_info(protocol_id):
     if wetlab.models.AdditionaKitsLibPrepare.objects.filter(
         protocol_id=protocol_obj
     ).exists():
-        kit_info[
-            "kit_heading"
-        ] = wetlab.config.HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+        kit_info["kit_heading"] = (
+            wetlab.config.HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+        )
         kit_info["kit_data"] = []
         kits = wetlab.models.AdditionaKitsLibPrepare.objects.filter(
             protocol_id=protocol_obj
@@ -321,9 +321,9 @@ def get_additional_kits_used_in_sample(sample_id):
     kit_data = {}
     kit_data["protocols_add_kits"] = {}
     if wetlab.models.LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
-        kit_data[
-            "heading_add_kits"
-        ] = wetlab.config.HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
+        kit_data["heading_add_kits"] = (
+            wetlab.config.HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
+        )
         library_preparation_items = wetlab.models.LibPrepare.objects.filter(
             sample_id__pk__exact=sample_id
         ).order_by("protocol_id")

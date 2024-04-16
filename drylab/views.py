@@ -79,9 +79,9 @@ def configuration_email(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
     email_conf_data = core.utils.common.get_email_data()
-    email_conf_data[
-        "EMAIL_ISKYLIMS"
-    ] = drylab.utils.common.get_configuration_from_database("EMAIL_FOR_NOTIFICATIONS")
+    email_conf_data["EMAIL_ISKYLIMS"] = (
+        drylab.utils.common.get_configuration_from_database("EMAIL_FOR_NOTIFICATIONS")
+    )
     if request.method == "POST" and (request.POST["action"] == "emailconfiguration"):
         result_email = core.utils.common.send_test_email(request.POST)
         if result_email != "OK":
@@ -488,9 +488,9 @@ def search_service(request):
     for center in center_availables:
         center_list_abbr.append(center.center_abbr)
     services_search_list["centers"] = center_list_abbr
-    services_search_list[
-        "states"
-    ] = drylab.utils.req_services.get_available_service_states(True)
+    services_search_list["states"] = (
+        drylab.utils.req_services.get_available_service_states(True)
+    )
 
     if "wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
@@ -1174,9 +1174,9 @@ def stats_by_services_request(request):
             graphic_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex1", "525", "350", "chart-1", "json", data_source
             )
-            services_stats_info[
-                "graphic_requested_services_per_user"
-            ] = graphic_requested_services.render()
+            services_stats_info["graphic_requested_services_per_user"] = (
+                graphic_requested_services.render()
+            )
 
             # preparing stats for status of the services
             status_services = {}
@@ -1201,9 +1201,9 @@ def stats_by_services_request(request):
                     "pie3d", "ex2", "525", "350", "chart-2", "json", data_source
                 )
             )
-            services_stats_info[
-                "graphic_status_requested_services"
-            ] = graphic_status_requested_services.render()
+            services_stats_info["graphic_status_requested_services"] = (
+                graphic_status_requested_services.render()
+            )
 
             # preparing stats for request by Area
             user_area_dict = {}
@@ -1235,9 +1235,9 @@ def stats_by_services_request(request):
             graphic_area_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex3", "600", "350", "chart-3", "json", data_source
             )
-            services_stats_info[
-                "graphic_area_services"
-            ] = graphic_area_services.render()
+            services_stats_info["graphic_area_services"] = (
+                graphic_area_services.render()
+            )
 
             # preparing stats for services request by Center
             user_center_dict = {}
@@ -1267,9 +1267,9 @@ def stats_by_services_request(request):
             graphic_center_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex4", "600", "350", "chart-4", "json", data_source
             )
-            services_stats_info[
-                "graphic_center_services"
-            ] = graphic_center_services.render()
+            services_stats_info["graphic_center_services"] = (
+                graphic_center_services.render()
+            )
 
             ################################################
             # Preparing the statistics per period of time
@@ -1326,9 +1326,9 @@ def stats_by_services_request(request):
                     "mscolumn3d", "ex5", "525", "350", "chart-5", "json", data_source
                 )
             )
-            services_stats_info[
-                "graphic_center_services_per_time"
-            ] = graphic_center_services_per_time.render()
+            services_stats_info["graphic_center_services_per_time"] = (
+                graphic_center_services_per_time.render()
+            )
 
             # Preparing the statistics for Area on period of time
             user_area_services_period = {}
@@ -1376,9 +1376,9 @@ def stats_by_services_request(request):
                     "mscolumn3d", "ex6", "525", "350", "chart-6", "json", data_source
                 )
             )
-            services_stats_info[
-                "graphic_area_services_per_time"
-            ] = graphic_area_services_per_time.render()
+            services_stats_info["graphic_area_services_per_time"] = (
+                graphic_area_services_per_time.render()
+            )
 
             services_stats_info["period_time"] = period_of_time_selected
 
@@ -1401,9 +1401,9 @@ def stats_by_services_request(request):
             graphic_req_l2_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex7", "800", "375", "chart-7", "json", data_source
             )
-            services_stats_info[
-                "graphic_req_l2_services"
-            ] = graphic_req_l2_services.render()
+            services_stats_info["graphic_req_l2_services"] = (
+                graphic_req_l2_services.render()
+            )
 
             # statistics on Requested Level 3 Services
 
@@ -1424,9 +1424,9 @@ def stats_by_services_request(request):
             graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex8", "800", "375", "chart-8", "json", data_source
             )
-            services_stats_info[
-                "graphic_req_l3_services"
-            ] = graphic_req_l3_services.render()
+            services_stats_info["graphic_req_l3_services"] = (
+                graphic_req_l3_services.render()
+            )
 
             return render(
                 request,
@@ -1489,9 +1489,9 @@ def configuration_test(request):
             test_results["services"] = ("Available services", "NOK")
         else:
             test_results["services"] = ("Available services", "OK")
-        test_results[
-            "iSkyLIMS_settings"
-        ] = drylab.utils.test_conf.get_iSkyLIMS_settings()
+        test_results["iSkyLIMS_settings"] = (
+            drylab.utils.test_conf.get_iSkyLIMS_settings()
+        )
         test_results["config_file"] = drylab.utils.test_conf.get_config_file(
             config_file
         )
@@ -1528,10 +1528,10 @@ def configuration_test(request):
         else:
             resolution_results["create_service_ok"] = "OK"
             resolution_number = "SRVTEST-IIER001.1"
-            resolution_results[
-                "resolution_test"
-            ] = drylab.utils.test_conf.create_resolution_test(
-                resolution_number, service_requested
+            resolution_results["resolution_test"] = (
+                drylab.utils.test_conf.create_resolution_test(
+                    resolution_number, service_requested
+                )
             )
             resolution_results["create_resolution_ok"] = "OK"
 
