@@ -149,30 +149,30 @@
                                                         </select>
                                                         <label for="service_center">Service center</label>
                                                     </div>
-                                                    <div class="form-floating mb-1">
-                                                        {% if services_search_list.username %}
-                                                            <input type="text" class="form-control" id="service_user" name="service_user" placeholder="User" readonly value={{ services_search_list.username }} />
-                                                        {% else %}
+                                                    {% if services_search_list.username %}
+                                                        <input type="hidden"
+                                                               name="service_user"
+                                                               id="service_user"
+                                                               value="{{ services_search_list.username }}" />
+                                                        <input type="hidden" name="bioinfo_user" id="bioinfo_user" value="" />
+                                                    {% else %}
+                                                        <div class="form-floating mb-1">
                                                             <input type="text"
                                                                    class="form-control"
                                                                    id="service_user"
                                                                    name="service_user"
                                                                    placeholder="User" />
-                                                        {% endif %}
-                                                        <label for="service_user">User</label>
-                                                    </div>
-                                                    <div class="form-floating mb-1">
-                                                        {% if services_search_list.username %}
-                                                            <input type="text" class="form-control" id="bioinfo_user" name="bioinfo_user" placeholder="User" readonly value={{ services_search_list.username }} />
-                                                        {% else %}
+                                                            <label for="service_user">User</label>
+                                                        </div>
+                                                        <div class="form-floating mb-1">
                                                             <input type="text"
                                                                    class="form-control"
                                                                    id="bioinfo_user"
                                                                    name="bioinfo_user"
                                                                    placeholder="Assigned user" />
-                                                        {% endif %}
-                                                        <label for="bioinfo_user">Assigned user</label>
-                                                    </div>
+                                                            <label for="bioinfo_user">Assigned user</label>
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center">
