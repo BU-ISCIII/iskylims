@@ -759,7 +759,7 @@ class RawTopUnknowBarcodes(models.Model):
     runprocess_id = models.ForeignKey(RunProcess, on_delete=models.CASCADE)
     lane_number = models.CharField(max_length=4)
     top_number = models.CharField(max_length=4)
-    count = models.CharField(max_length=40)
+    count = models.IntegerField()
     sequence = models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
 
