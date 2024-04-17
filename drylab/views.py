@@ -491,7 +491,9 @@ def search_service(request):
     services_search_list["states"] = (
         drylab.utils.req_services.get_available_service_states(True)
     )
-
+    services_search_list["available_services"] = (
+        drylab.utils.req_services.get_children_services()
+    )
     if "wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
 
@@ -504,6 +506,7 @@ def search_service(request):
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
         center = request.POST["service_center"]
+        available_services = request.POST["available_services"]
 
         service_user = request.POST["service_user"]
         assigned_user = request.POST["bioinfo_user"]
@@ -519,6 +522,7 @@ def search_service(request):
         if (
             service_id == ""
             and service_state == ""
+            and available_services == ""
             and start_date == ""
             and end_date == ""
             and center == ""
@@ -575,9 +579,14 @@ def search_service(request):
                     },
                 )
         else:
-            services_found = drylab.models.Service.objects.prefetch_related(
-                "service_user_id", "service_state"
-            ).all()
+            if available_services != "":
+                services_found = drylab.models.Service.objects.prefetch_related(
+                    "service_user_id", "service_state"
+                ).filter(service_available_service__id__exact=available_services)
+            else:
+                services_found = drylab.models.Service.objects.prefetch_related(
+                    "service_user_id", "service_state"
+                ).all()
 
         if service_state != "":
             services_found = services_found.filter(

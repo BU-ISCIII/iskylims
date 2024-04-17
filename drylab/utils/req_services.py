@@ -183,15 +183,21 @@ def delete_samples_in_service(sample_list):
     return deleted_sample_names
 
 
-def get_children_services(all_tree_services):
+def get_children_services(all_tree_services: list[drylab.models.AvailableService]=None)->list[list]:
+    """The function get a list with the children available services from the
+       requested query of available service. If no query is provided, it will
+       return all the children services from the database
+
+    Args:
+        all_tree_services (list[drylab.models.AvailableService]): Queryset of
+            available service. Defaults to None.
+
+    Returns:
+        list[list]: List with 2 values: the primary key and the description for
+            each children service
     """
-    Description:
-        The function get the children available services from a query of service
-    Input:
-        all_tree_services  # queryset of available service
-    Return:
-        children_service
-    """
+    if all_tree_services is None:
+        all_tree_services = drylab.models.AvailableService.objects.all().order_by("description")
     children_services = []
     for t_services in all_tree_services:
         if t_services.get_children():

@@ -137,9 +137,13 @@ bash install.sh --install app
 sudo bash install.sh --install full
 ```
 
-### Upgrade to iSkyLIMS version 3.0.0
+### Upgrade iSkyLIMS from 3.0.x to version 3.1.x
 
-If you have already iSkyLIMS on version 2.3.0 you can upgrade to the latest stable version 3.0.0.
+**IMPORTANT NOTE**
+
+This installation script only apply for the upgrade from version 3.0.x to 3.1.x.
+
+**If you have already iSkyLIMS on version 2.3.0 you must upgrade first to the stable version 3.0.0, before applying for this upgrade.**
 
 Version 3.0.0 is a major release with important upgrades in third parties dependencies like bootstrap. Also, we 've done a huge work on refactoring and variables/function renaming that affects the database. For more details about the changes see the release notes.
 
@@ -208,7 +212,7 @@ In the linux terminal execute one of the following command that fit better to yo
 sudo bash install.sh --upgrade dep
 
 # to install both software. NEEDS ROOT.
-sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
+sudo bash install.sh --upgrade full
 ```
 
 ##### Steps not requiring root
@@ -217,7 +221,7 @@ Next you need to upgrade iskylims app. Please use the command below:
 
 ```bash
 # to upgrade only iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
+bash install.sh --upgrade app 
 ```
 
 Make sure that the installation folder has the correct permissions.
