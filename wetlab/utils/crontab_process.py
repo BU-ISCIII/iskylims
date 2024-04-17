@@ -3047,7 +3047,7 @@ def process_and_store_unknown_barcode_data(
                     unknow_barcode["runprocess_id"] = run_process_obj
                     unknow_barcode["lane_number"] = str(un_lane + 1)
                     unknow_barcode["top_number"] = str(top_number)
-                    unknow_barcode["count"] = "{0:,}".format(int(barcode_line["count"]))
+                    unknow_barcode["count"] = int(barcode_line["count"])
                     unknow_barcode["sequence"] = barcode_line["sequence"]
                     top_number += 1
                     wetlab.models.RawTopUnknowBarcodes.objects.create_unknow_barcode(
