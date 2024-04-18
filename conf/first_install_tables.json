@@ -20144,16 +20144,6 @@
     }
 },
 {
-    "model": "drylab.servicestate",
-    "pk": 8,
-    "fields": {
-        "state_value": "on_hold",
-        "state_display": "On hold",
-        "description": "Service is on hold, waiting for user provides more information",
-        "show_in_stats": true
-    }
-},
-{
     "model": "drylab.resolutionstates",
     "pk": 1,
     "fields": {
@@ -20166,6 +20156,15 @@
     "model": "drylab.resolutionstates",
     "pk": 2,
     "fields": {
+        "state_value": "archived",
+        "state_display": "Archived",
+        "description": null
+    }
+},
+{
+    "model": "drylab.resolutionstates",
+    "pk": 3,
+    "fields": {
         "state_value": "approved",
         "state_display": "Approved",
         "description": "Resolution request has been accepted"
@@ -20173,29 +20172,20 @@
 },
 {
     "model": "drylab.resolutionstates",
-    "pk": 3,
-    "fields": {
-        "state_value": "rejected",
-        "state_display": "Rejected",
-        "description": "Resolution can not be handle because is not in porfoloio or for any other reason"
-    }
-},
-{
-    "model": "drylab.resolutionstates",
     "pk": 4,
     "fields": {
-        "state_value": "queued",
-        "state_display": "Queued",
-        "description": "Resolution is the the list, waiting for a bioinformatic to be handled"
+        "state_value": "in_progress",
+        "state_display": "In Progress",
+        "description": "Bioinformatic is working on the Resolution"
     }
 },
 {
     "model": "drylab.resolutionstates",
     "pk": 5,
     "fields": {
-        "state_value": "in_progress",
-        "state_display": "In Progress",
-        "description": "Bioinformatic is working on the Resolution"
+        "state_value": "rejected",
+        "state_display": "Rejected",
+        "description": "Resolution can not be handle because is not in porfoloio or for any other reason"
     }
 },
 {
@@ -20211,9 +20201,9 @@
     "model": "drylab.resolutionstates",
     "pk": 7,
     "fields": {
-        "state_value": "archived",
-        "state_display": "Archived",
-        "description": null
+        "state_value": "queued",
+        "state_display": "Queued",
+        "description": "Resolution is the the list, waiting for a bioinformatic to be handled"
     }
 },
 {
@@ -20226,3 +20216,4 @@
     }
 }
 ]
+
