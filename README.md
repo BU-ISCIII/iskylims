@@ -21,7 +21,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
       - [Configuration settings](#configuration-settings)
       - [Run installation script](#run-installation-script)
-<<<<<<< HEAD
     - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
       - [Pre-requisites](#pre-requisites-1)
       - [Clone github repository](#clone-github-repository-1)
@@ -34,19 +33,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [SAMBA configurarion](#samba-configurarion)
       - [Email verification](#email-verification)
       - [Configure Apache server](#configure-apache-server)
-=======
-      - [Configure Apache server](#configure-apache-server)
-      - [Installation verification](#installation-verification)
-    - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
-      - [Pre-requisites](#pre-requisites-1)
-      - [Executing the upgrade](#executing-the-upgrade)
-        - [Clone github repository](#clone-github-repository-1)
-        - [Configuration settings](#configuration-settings-1)
-        - [Running upgrade script](#running-upgrade-script)
-    - [Final configuration steps](#final-configuration-steps)
-      - [SAMBA configurarion](#samba-configurarion)
-      - [Email verification](#email-verification)
->>>>>>> 12e92359 (readme mods)
       - [Verification of the installation](#verification-of-the-installation)
     - [iSkyLIMS documentation](#iskylims-documentation)
 
@@ -62,10 +48,7 @@ Before starting the installation make sure :
 - Database MySQL > 8.0 or MariaDB > 10.4
 - Local server configured for sending emails
 - Apache server v2.4
-<<<<<<< HEAD
 - git > 2.34
-=======
->>>>>>> 12e92359 (readme mods)
 - Python > 3.8
 - Connection to samba shared folder where run folders are stored (p.e galera/NGS_Data)
 - Dependencies:
@@ -154,17 +137,6 @@ bash install.sh --install app
 sudo bash install.sh --install full
 ```
 
-<<<<<<< HEAD
-=======
-#### Configure Apache server
-
-Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
-
-#### Installation verification
-
-After installation is completed and apache server is up and running open you navigator typing "localhost" or the "server local IP".
-
->>>>>>> 12e92359 (readme mods)
 ### Upgrade to iSkyLIMS version 3.0.0
 
 If you have already iSkyLIMS on version 2.3.0 you can upgrade to the latest stable version 3.0.0.
@@ -180,19 +152,10 @@ Because in this upgrade many tables in database are modified it is required that
 
 It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
-<<<<<<< HEAD
 #### Clone github repository
 
 We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
 
-=======
-#### Executing the upgrade
-
-We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
-
-##### Clone github repository
-
->>>>>>> 12e92359 (readme mods)
 Open a linux terminal and move to a directory where iSkyLIMS code will be
 downloaded
 
@@ -202,11 +165,7 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-<<<<<<< HEAD
 #### Configuration settings
-=======
-##### Configuration settings
->>>>>>> 12e92359 (readme mods)
 
 Copy the initial setting template into a file named install_settings.txt
 
@@ -222,11 +181,7 @@ database ,email settings and the local IP of the server where iSkyLIMS will run.
 sudo nano install_settings.txt
 ```
 
-<<<<<<< HEAD
 #### Running upgrade script
-=======
-##### Running upgrade script
->>>>>>> 12e92359 (readme mods)
 
 If your organization requires that dependencies / stuff that needs root are installed by a different person that install the application the you can use the install script in several steps as follows.
 
@@ -256,7 +211,6 @@ sudo bash install.sh --upgrade dep
 sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
-<<<<<<< HEAD
 ##### Steps not requiring root
 
 Next you need to upgrade iskylims app. Please use the command below:
@@ -289,8 +243,6 @@ mysql -u iskylims -h dmysqlps.isciiides.es
 mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
-=======
->>>>>>> 12e92359 (readme mods)
 ### Final configuration steps
 
 #### SAMBA configurarion
@@ -308,13 +260,10 @@ mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/b
 - Go to Configuration -> Email configuration
 - Fill the form with the needed params for your email configuration and try to send a test email.
 
-<<<<<<< HEAD
 #### Configure Apache server
 
 Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
-=======
->>>>>>> 12e92359 (readme mods)
 #### Verification of the installation
 
 Open the navigator and type "localhost" or the "server local IP" and check that iSkyLIMs is running.
