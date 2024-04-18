@@ -404,7 +404,7 @@ def send_resolution_creation_email(email_data):
     subject_tmp = drylab.config.SUBJECT_RESOLUTION_QUEUED.copy()
     subject_tmp.insert(1, email_data["service_number"])
     subject = " ".join(subject_tmp)
-    if email_data["status"] == "Accepted":
+    if email_data["status"] == "accepted":
         date = email_data["date"].strftime("%d %B, %Y")
         body_preparation = list(
             map(
