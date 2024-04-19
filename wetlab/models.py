@@ -1309,10 +1309,10 @@ class LibraryPoolManager(models.Manager):
 class LibraryPool(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
     pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
-    run_process_id = models.ForeignKey(
-        RunProcess, on_delete=models.CASCADE, null=True, blank=True
-    )
-
+    # To be deleted in release 3.2.0 or higher
+    # replace by run_process_id from foreign key to many to many
+    run_process = models.ManyToManyField(RunProcess, blank=True)
+    # rum_proc = models.ManyToManyField(RunProcess, blank=True)
     platform = models.ForeignKey(
         core.models.SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -1385,8 +1385,9 @@ class LibraryPool(models.Model):
         return self
 
     def update_run_name(self, run_name):
-        self.run_process_id = run_name
-        self.save()
+        # changed to manay to many
+        self.run_process.add(run_name)
+        # self.save()
         return self
 
     objects = LibraryPoolManager()

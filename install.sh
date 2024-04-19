@@ -147,6 +147,12 @@ upgrade_venv(){
     python -m pip install -r conf/requirements.txt
 }
 
+upgrade_to_lib_pool_db(){
+    echo "Running migration script: $lib_pool_f_name"
+    python manage.py runscript library_pool_to_many_relation --script-arg $lib_pool_f_name
+    echo "Done migration script: $lib_pool_f_name"
+}
+
 #================================================================
 #SET TEMINAL COLORS
 #================================================================
@@ -195,6 +201,9 @@ install_type="full"
 upgrade=false
 upgrade_type="full"
 docker=false
+
+# STORE DIIRECTORY OF INSTALLATION SCRIPT
+SCRIPT_DIR="$(pwd)"
 
 # PARSE VARIABLE ARGUMENTS WITH getops
 options=":c:s:i:u:dtkvh"
@@ -407,6 +416,12 @@ if [ $upgrade == true ]; then
         echo "activate the virtualenv"
         source virtualenv/bin/activate
         
+        # Fetch the values of LibraryPool for run_process_is
+        mkdir -p $SCRIPT_DIR/tmp
+        lib_pool_f_name=$SCRIPT_DIR/tmp/my_test.csv
+        upgrade_to_lib_pool_db
+
+        # Update the database
         echo "checking for database changes"
         if python manage.py makemigrations | grep -q "No changes"; then
             echo "No migration is required"
@@ -422,10 +437,16 @@ if [ $upgrade == true ]; then
             echo "Done migrate command."
         fi   
         
+        # Restore the values in LibraryPool for run_process on the new structure
+        upgrade_to_lib_pool_db
+        # remove the tmp folder
+        # rm -rf $SCRIPT_DIR/tmp
+
+        # Collect static files
         echo "Running collect statics..."
         python manage.py collectstatic
         echo "Done collect statics"
-        
+         rm -rf $SCRIPT_DIR/tmp
         if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
             python manage.py loaddata conf/first_install_tables.json
