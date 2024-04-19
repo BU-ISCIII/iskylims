@@ -33,11 +33,11 @@ class LibParameterValueAdmin(admin.ModelAdmin):
 
 class LibraryPoolAdmin(admin.ModelAdmin):
     list_display = (
-        "register_user",
-        "pool_state",
         "pool_name",
+        "pool_state",
         "platform",
         "pool_code_id",
+        "register_user",
         "run_process_id",
     )
 
