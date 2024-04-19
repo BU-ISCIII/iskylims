@@ -312,7 +312,7 @@
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        {% for p_name, p_code, p_number in  p_values %}
+                                                                        {% for p_name, p_code, p_number in p_values %}
                                                                             <tr>
                                                                                 <td>{{ p_name }}</td>
                                                                                 <td>{{ p_code }}</td>
@@ -499,6 +499,7 @@
                 </div>
             </section>
             <script>
+        </div>
     $(document).ready(function () {
         $("#storeDataNewRun").submit(function (e) {
             //stop submitting the form to see the disabled button effect
