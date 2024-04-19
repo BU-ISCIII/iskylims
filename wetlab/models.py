@@ -1310,7 +1310,11 @@ class LibraryPool(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
     pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
     # To be deleted in release 3.2.0 or higher
-    # replace by run_process_id from foreign key to many to many
+    # replace by run_process_id
+    """run_process_id = models.ForeignKey(
+        RunProcess, on_delete=models.CASCADE, null=True, blank=True
+    )
+    """
     run_process = models.ManyToManyField(RunProcess, blank=True)
     # rum_proc = models.ManyToManyField(RunProcess, blank=True)
     platform = models.ForeignKey(

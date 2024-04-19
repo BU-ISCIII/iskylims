@@ -382,6 +382,7 @@ if [ $upgrade == true ]; then
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
+        # Fetch the information from LibraryPool for run_process_id, before the migration
 
         # update installation by sinchronize folders
         echo "Copying files to installation folder"
@@ -389,6 +390,11 @@ if [ $upgrade == true ]; then
         rsync -rlv --fuzzy --delay-updates --delete-delay \
               --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
               README.md LICENSE test conf core drylab clinic wetlab django_utils $INSTALL_PATH
+        
+        # Fetch the values of LibraryPool for run_process_is
+        mkdir -p $SCRIPT_DIR/tmp
+        lib_pool_f_name=$SCRIPT_DIR/tmp/library_pool_info.tsv
+        mysql --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT iskylims -e "SELECT * FROM wetlab_library_pool" > $lib_pool_f_name
         
         # update the settings.py and the main urls
         echo "Update settings and url file."
@@ -416,11 +422,6 @@ if [ $upgrade == true ]; then
         echo "activate the virtualenv"
         source virtualenv/bin/activate
         
-        # Fetch the values of LibraryPool for run_process_is
-        mkdir -p $SCRIPT_DIR/tmp
-        lib_pool_f_name=$SCRIPT_DIR/tmp/my_test.csv
-        upgrade_to_lib_pool_db
-
         # Update the database
         echo "checking for database changes"
         if python manage.py makemigrations | grep -q "No changes"; then
@@ -438,15 +439,17 @@ if [ $upgrade == true ]; then
         fi   
         
         # Restore the values in LibraryPool for run_process on the new structure
+        echo "Restore the values in LibraryPool for run_process on the new structure"
         upgrade_to_lib_pool_db
         # remove the tmp folder
-        # rm -rf $SCRIPT_DIR/tmp
+        rm  -f $lib_pool_f_name
+
 
         # Collect static files
         echo "Running collect statics..."
         python manage.py collectstatic
         echo "Done collect statics"
-         rm -rf $SCRIPT_DIR/tmp
+
         if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
             python manage.py loaddata conf/first_install_tables.json
