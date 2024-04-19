@@ -38,7 +38,6 @@ class LibraryPoolAdmin(admin.ModelAdmin):
         "platform",
         "pool_code_id",
         "register_user",
-        "run_process_id",
     )
 
 

@@ -10,17 +10,20 @@ def run(f_name):
         The second part of the script fetch the data from the file and add the
         run_process_pk to the run_process field of the LibraryPool instance
     """
-    if hasattr(wetlab.models.LibraryPool, "run_process_id"):
-        with open (f_name, "w") as fo:
-            for library_pool in wetlab.models.LibraryPool.objects.all():
-                # if library_pool.run_process_id:
-                #    library_pool.run_process.add(library_pool.run_process_id)
-                if library_pool.run_process_id is not None:
-                    fo.write(str(library_pool.id) + "," + str(library_pool.run_process_id.id) + "\n")
     if hasattr(wetlab.models.LibraryPool, "run_process"):
         with open (f_name, "r") as fh:
-            for line in fh:
-                library_pool_pk, run_process_pk = line.strip().split(",")
+            lines = fh.readlines()
+        heading = lines[0].strip().split("\t")
+        if  "run_process_id_id" in heading:
+            r_proc_idx = heading.index("run_process_id_id")
+            pk_idx = 0
+            for line in lines[1:]:
+                l_data = line.strip().split("\t")
+                if l_data[r_proc_idx] == "NULL":
+                    continue
+                library_pool_pk = l_data[pk_idx]
+                run_process_pk = l_data[r_proc_idx]
+
                 try:
                     library_pool = wetlab.models.LibraryPool.objects.get(id=library_pool_pk)
                     run_process = wetlab.models.RunProcess.objects.get(id=run_process_pk)
@@ -29,6 +32,11 @@ def run(f_name):
                     continue
                 if not library_pool.run_process.filter(id=run_process_pk).exists():
                     library_pool.run_process.add(run_process)
+                    print(f"LibraryPool: {library_pool_pk} added run_process: {run_process_pk}")
+        else:
+            print("Data migration for LibraryPool was already done")
+    else:
+        print("LibraryPool model does not have run_process field")
 
             
     
