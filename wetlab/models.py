@@ -62,6 +62,11 @@ class RunProcess(models.Model):
     center_requested_by = models.ForeignKey(
         django_utils.models.Center, on_delete=models.CASCADE, null=True, blank=True
     )
+    lib_pool = models.ForeignKey(
+        core.models.LibraryPool,
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
     reagent_kit = models.ManyToManyField(core.models.UserLotCommercialKits, blank=True)
     run_name = models.CharField(max_length=45)
     sample_sheet = models.FileField(
@@ -1310,7 +1315,7 @@ class LibraryPool(models.Model):
     register_user = models.ForeignKey(User, on_delete=models.CASCADE)
     pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
     # To be deleted in release 3.2.0 or higher
-    # replace by run_process_id
+    # replace by library_pool on RunProcess
     run_process_id = models.ForeignKey(
         RunProcess, on_delete=models.CASCADE, null=True, blank=True
     )
