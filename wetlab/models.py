@@ -1311,12 +1311,10 @@ class LibraryPool(models.Model):
     pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
     # To be deleted in release 3.2.0 or higher
     # replace by run_process_id
-    """run_process_id = models.ForeignKey(
+    run_process_id = models.ForeignKey(
         RunProcess, on_delete=models.CASCADE, null=True, blank=True
     )
-    """
-    run_process = models.ManyToManyField(RunProcess, blank=True)
-    # rum_proc = models.ManyToManyField(RunProcess, blank=True)
+
     platform = models.ForeignKey(
         core.models.SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
     )
