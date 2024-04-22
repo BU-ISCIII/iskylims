@@ -20087,19 +20087,19 @@
     "model": "drylab.servicestate",
     "pk": 2,
     "fields": {
-        "state_value": "approved",
-        "state_display": "Approved",
-        "description": "Service request has been accepted",
-        "show_in_stats": false
+        "state_value": "in_progress",
+        "state_display": "In Progress",
+        "description": "Bioinformatic is working on the service",
+        "show_in_stats": true
     }
 },
 {
     "model": "drylab.servicestate",
     "pk": 3,
     "fields": {
-        "state_value": "rejected",
-        "state_display": "Rejected",
-        "description": "Service can not be handle because is not in porfoloio or for any other reason",
+        "state_value": "delivered",
+        "state_display": "Delivered",
+        "description": "Service wascompleted and results were sent to the user",
         "show_in_stats": false
     }
 },
@@ -20117,19 +20117,19 @@
     "model": "drylab.servicestate",
     "pk": 5,
     "fields": {
-        "state_value": "in_progress",
-        "state_display": "In Progress",
-        "description": "Bioinformatic is working on the service",
-        "show_in_stats": true
+        "state_value": "rejected",
+        "state_display": "Rejected",
+        "description": "Service can not be handle because is not in porfoloio or for any other reason",
+        "show_in_stats": false
     }
 },
 {
     "model": "drylab.servicestate",
     "pk": 6,
     "fields": {
-        "state_value": "delivered",
-        "state_display": "Delivered",
-        "description": "Service wascompleted and results were sent to the user",
+        "state_value": "approved",
+        "state_display": "Approved",
+        "description": "Service request has been accepted",
         "show_in_stats": false
     }
 },
@@ -20141,69 +20141,6 @@
         "state_display": "Archived",
         "description": null,
         "show_in_stats": false
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 1,
-    "fields": {
-        "state_value": "recorded",
-        "state_display": "Recorded",
-        "description": "Resolution has been successful recorded in iSkyLIMS"
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 2,
-    "fields": {
-        "state_value": "archived",
-        "state_display": "Archived",
-        "description": null
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 3,
-    "fields": {
-        "state_value": "approved",
-        "state_display": "Approved",
-        "description": "Resolution request has been accepted"
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 4,
-    "fields": {
-        "state_value": "in_progress",
-        "state_display": "In Progress",
-        "description": "Bioinformatic is working on the Resolution"
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 5,
-    "fields": {
-        "state_value": "rejected",
-        "state_display": "Rejected",
-        "description": "Resolution can not be handle because is not in porfoloio or for any other reason"
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 6,
-    "fields": {
-        "state_value": "delivered",
-        "state_display": "Delivered",
-        "description": "Resolution wascompleted and results were sent to the user"
-    }
-},
-{
-    "model": "drylab.resolutionstates",
-    "pk": 7,
-    "fields": {
-        "state_value": "queued",
-        "state_display": "Queued",
-        "description": "Resolution is the the list, waiting for a bioinformatic to be handled"
     }
 },
 {
