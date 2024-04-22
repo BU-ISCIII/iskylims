@@ -62,11 +62,7 @@ class RunProcess(models.Model):
     center_requested_by = models.ForeignKey(
         django_utils.models.Center, on_delete=models.CASCADE, null=True, blank=True
     )
-    lib_pool = models.ForeignKey(
-        core.models.LibraryPool,
-        on_delete=models.CASCADE,
-        null=True, blank=True
-    )
+    library_pool = models.ManyToManyField(core.models.LibraryPool, blank=True)
     reagent_kit = models.ManyToManyField(core.models.UserLotCommercialKits, blank=True)
     run_name = models.CharField(max_length=45)
     sample_sheet = models.FileField(
@@ -237,6 +233,10 @@ class RunProcess(models.Model):
 
     def update_sample_sheet(self, full_path, file_name):
         self.sample_sheet.save(file_name, open(full_path, "r"), save=True)
+        return self
+
+    def set_library_pool(self, library_pool):
+        self.library_pool.add(library_pool)
         return self
 
     def set_used_space(self, disk_utilization):
@@ -1389,12 +1389,6 @@ class LibraryPool(models.Model):
     def update_number_samples(self, number_s_in_pool):
         self.sample_number = number_s_in_pool
         self.save()
-        return self
-
-    def update_run_name(self, run_name):
-        # changed to manay to many
-        self.run_process.add(run_name)
-        # self.save()
         return self
 
     objects = LibraryPoolManager()
