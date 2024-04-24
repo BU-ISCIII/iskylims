@@ -19,7 +19,6 @@ class ServiceAdmin(admin.ModelAdmin):
         "service_center",
         "service_user_id",
         "service_state",
-        "service_status",
         "service_created_date",
         "service_delivered_date",
     )
