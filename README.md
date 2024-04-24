@@ -150,6 +150,14 @@ Because in this upgrade many tables in database are modified it is required that
 - iSkyLIMS database
 - iSkyLIMS folder (complete installation folder, p.e /opt/iSkyLIMS)
 
+##### Pre-requisites for upgrade from 3.0.x to 3.1.x
+
+- Perform a backup of LibraryPool by running the folowing command
+
+```bash
+ mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims -e "SELECT* FROM wetlab_library_pool" > <your_output_file>
+```
+
 It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
 #### Clone github repository
@@ -278,3 +286,6 @@ You can also check some of the functionality, while also checking samba and data
 ### iSkyLIMS documentation
 
 iSkyLIMS documentation is available at [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
+
+ mysql --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT iskylims -e "SELECT *FROM wetlab_library_pool" > $lib_pool_f_name
+ mysql --user=lchapado --password=Apple@123 --host=localhost iskylims -e "SELECT* FROM wetlab_library_pool" > tmp/library_pool_info.tsv
