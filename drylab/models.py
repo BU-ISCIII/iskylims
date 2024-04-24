@@ -11,17 +11,6 @@ from mptt.models import MPTTModel
 import core.models
 import drylab.config
 
-# STATUS_CHOICES will be deprecated from release 2.4.0 or higher
-STATUS_CHOICES = (
-    ("recorded", _("Recorded")),
-    ("approved", _("Approved")),
-    ("rejected", _("Rejected")),
-    ("queued", _("Queued")),
-    ("in_progress", _("In Progress")),
-    ("delivered", _("Delivered")),
-    ("archived", _("Archived")),
-)
-
 
 class ServiceState(models.Model):
     state_value = models.CharField(max_length=50)
@@ -224,7 +213,6 @@ class ServiceManager(models.Manager):
             service_request_number=data["service_request_number"],
             service_request_int=data["service_request_int"],
             service_state=service_state_obj,
-            service_status="Recorded",
             service_notes=data["service_notes"],
         )
         return new_service
@@ -264,10 +252,6 @@ class Service(models.Model):
     service_request_int = models.CharField(max_length=80, null=True)
     service_run_specs = models.CharField(
         _("Run specifications"), max_length=10, blank=True, null=True
-    )
-    # Not changed in refactorization because it will be deprecated from next release
-    service_status = models.CharField(
-        _("Service status"), max_length=15, choices=STATUS_CHOICES
     )
     service_notes = models.TextField(
         _("Service Notes"), max_length=2048, null=True, blank=True
