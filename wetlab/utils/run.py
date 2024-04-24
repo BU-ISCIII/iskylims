@@ -132,8 +132,8 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
         new_run_obj.reagent_kit.add(reagent_kit_obj)
 
     for pool in pool_ids:
-        pool_obj = get_pool_instance_from_id(pool)
-        pool_obj.update_run_name(new_run_obj)
+        # changed from version 3.1.0 the relation in pools
+        new_run_obj.set_pool(pool)
     display_sample_information["experiment_name"] = form_data["experimentName"]
     display_sample_information["run_process_id"] = new_run_obj.get_run_id()
     return display_sample_information
@@ -1013,5 +1013,5 @@ def link_pool_with_existing_run(exp_name, pool_ids):
     run_obj = wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
     for pool in pool_ids:
         pool_obj = get_pool_instance_from_id(pool)
-        pool_obj.update_run_name(run_obj)
+        run_obj.set_pool(pool_obj)
     return None

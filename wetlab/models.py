@@ -107,6 +107,10 @@ class LibraryPool(models.Model):
     def get_run_obj(self):
         return self.run_process_id
 
+    def set_pool(self, pool_obj):
+        self.pool.add(pool_obj)
+        return self
+
     def set_pool_state(self, state):
         self.pool_state = PoolStates.objects.get(pool_state__exact=state)
         self.save()
