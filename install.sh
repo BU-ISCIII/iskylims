@@ -265,6 +265,7 @@ while getopts $options opt; do
     esac
 done
 shift $((OPTIND-1))
+
 #=============================================================================
 #                     SETTINGS CHECKINGS
 #=============================================================================
@@ -277,7 +278,6 @@ if [ ! -f "$conf" ]; then
     printf "${RED}------------------${NC}\n"
     exit 1
 fi
-
 # Read configuration file
 
 . $conf
@@ -376,7 +376,7 @@ if [ $upgrade == true ]; then
     fi
 
     if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
-        
+
         # Delete git and no copy files stuff
         if [ $ren_app == true ] ; then
             # remove all previous migrations and make a fake initial
@@ -564,9 +564,16 @@ if [ $upgrade == true ]; then
 
         if [ $run_script ]; then
             for val in "${migration_script[@]}"; do
-                echo "Running migration script: $val"
-                python manage.py runscript $val
-                echo "Done migration script: $val"
+                if [[ $val = *","* ]]; then
+                    parameters=(${val//,/ })
+                    echo "Running migration script: ${parameters[0]}"
+                    ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
+                    echo "Done migration script: ${parameters[0]}"
+                else
+                    echo "Running migration script: $val"
+                    ./manage.py runscript $val
+                    echo "Done migration script: $val"
+                fi
             done
         fi
 
