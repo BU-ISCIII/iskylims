@@ -286,6 +286,3 @@ You can also check some of the functionality, while also checking samba and data
 ### iSkyLIMS documentation
 
 iSkyLIMS documentation is available at [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
-
- mysql --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT iskylims -e "SELECT *FROM wetlab_library_pool" > $lib_pool_f_name
- mysql --user=lchapado --password=Apple@123 --host=localhost iskylims -e "SELECT* FROM wetlab_library_pool" > tmp/library_pool_info.tsv
