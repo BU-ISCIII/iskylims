@@ -11,6 +11,114 @@ import django_utils.models
 import wetlab.config
 
 
+class PoolStates(models.Model):
+    pool_state = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "wetlab_pool_states"
+
+    def __str__(self):
+        return "%s" % (self.pool_state)
+
+    def get_pool_state(self):
+        return "%s" % (self.pool_state)
+
+
+class LibraryPoolManager(models.Manager):
+    def create_lib_pool(self, pool_data):
+        platform_obj = core.models.SequencingPlatform.objects.filter(
+            platform_name__exact=pool_data["platform"]
+        ).last()
+        new_library_pool = self.create(
+            register_user=pool_data["registerUser"],
+            pool_state=PoolStates.objects.get(pool_state__exact="Defined"),
+            pool_name=pool_data["poolName"],
+            pool_code_id=pool_data["poolCodeID"],
+            adapter=pool_data["adapter"],
+            paired_end=pool_data["pairedEnd"],
+            sample_number=pool_data["n_samples"],
+            platform=platform_obj,
+        )
+        return new_library_pool
+
+
+class LibraryPool(models.Model):
+    register_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
+    platform = models.ForeignKey(
+        core.models.SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
+    )
+    pool_name = models.CharField(max_length=50)
+    sample_number = models.IntegerField(default=0)
+    pool_code_id = models.CharField(max_length=50, blank=True)
+    adapter = models.CharField(max_length=50, null=True, blank=True)
+    paired_end = models.CharField(max_length=10, null=True, blank=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("pool_name",)
+        db_table = "wetlab_library_pool"
+
+    def __str__(self):
+        return "%s" % (self.pool_name)
+
+    def get_adapter(self):
+        return "%s" % (self.adapter)
+
+    def get_id(self):
+        return "%s" % (self.pk)
+
+    def get_info(self):
+        pool_info = []
+        pool_info.append(self.pool_name)
+        pool_info.append(self.pool_code_id)
+        pool_info.append(self.sample_number)
+        return pool_info
+
+    def get_number_of_samples(self):
+        return "%s" % (self.sample_number)
+
+    def get_pool_name(self):
+        return "%s" % (self.pool_name)
+
+    def get_pool_code_id(self):
+        return "%s" % (self.pool_code_id)
+
+    def get_pool_single_paired(self):
+        return "%s" % (self.paired_end)
+
+    def get_platform_name(self):
+        if self.platform is not None:
+            return "%s" % (self.platform.get_platform_name())
+        else:
+            return "Not defined"
+
+    def get_run_name(self):
+        if self.run_process_id is not None:
+            return "%s" % (self.run_process_id.get_run_name())
+        else:
+            return "Not defined yet"
+
+    def get_run_id(self):
+        if self.run_process_id is not None:
+            return "%s" % (self.run_process_id.get_run_id())
+        return None
+
+    def get_run_obj(self):
+        return self.run_process_id
+
+    def set_pool_state(self, state):
+        self.pool_state = PoolStates.objects.get(pool_state__exact=state)
+        self.save()
+
+    def update_number_samples(self, number_s_in_pool):
+        self.sample_number = number_s_in_pool
+        self.save()
+        return self
+
+    objects = LibraryPoolManager()
+
+
 class RunErrors(models.Model):
     error_code = models.CharField(max_length=10)
     error_text = models.CharField(max_length=255)
@@ -62,7 +170,7 @@ class RunProcess(models.Model):
     center_requested_by = models.ForeignKey(
         django_utils.models.Center, on_delete=models.CASCADE, null=True, blank=True
     )
-    library_pool = models.ManyToManyField(core.models.LibraryPool, blank=True)
+    library_pool = models.ManyToManyField(LibraryPool, blank=True)
     reagent_kit = models.ManyToManyField(core.models.UserLotCommercialKits, blank=True)
     run_name = models.CharField(max_length=45)
     sample_sheet = models.FileField(
@@ -1278,120 +1386,6 @@ class LibUserSampleSheet(models.Model):
         return self
 
     objects = LibPreparationUserSampleSheetManager()
-
-
-class PoolStates(models.Model):
-    pool_state = models.CharField(max_length=50)
-
-    class Meta:
-        db_table = "wetlab_pool_states"
-
-    def __str__(self):
-        return "%s" % (self.pool_state)
-
-    def get_pool_state(self):
-        return "%s" % (self.pool_state)
-
-
-class LibraryPoolManager(models.Manager):
-    def create_lib_pool(self, pool_data):
-        platform_obj = core.models.SequencingPlatform.objects.filter(
-            platform_name__exact=pool_data["platform"]
-        ).last()
-        new_library_pool = self.create(
-            register_user=pool_data["registerUser"],
-            pool_state=PoolStates.objects.get(pool_state__exact="Defined"),
-            pool_name=pool_data["poolName"],
-            pool_code_id=pool_data["poolCodeID"],
-            adapter=pool_data["adapter"],
-            paired_end=pool_data["pairedEnd"],
-            sample_number=pool_data["n_samples"],
-            platform=platform_obj,
-        )
-        return new_library_pool
-
-
-class LibraryPool(models.Model):
-    register_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    pool_state = models.ForeignKey(PoolStates, on_delete=models.CASCADE)
-    # To be deleted in release 3.2.0 or higher
-    # replace by library_pool on RunProcess
-    run_process_id = models.ForeignKey(
-        RunProcess, on_delete=models.CASCADE, null=True, blank=True
-    )
-
-    platform = models.ForeignKey(
-        core.models.SequencingPlatform, on_delete=models.CASCADE, null=True, blank=True
-    )
-    pool_name = models.CharField(max_length=50)
-    sample_number = models.IntegerField(default=0)
-    pool_code_id = models.CharField(max_length=50, blank=True)
-    adapter = models.CharField(max_length=50, null=True, blank=True)
-    paired_end = models.CharField(max_length=10, null=True, blank=True)
-    generated_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ("pool_name",)
-        db_table = "wetlab_library_pool"
-
-    def __str__(self):
-        return "%s" % (self.pool_name)
-
-    def get_adapter(self):
-        return "%s" % (self.adapter)
-
-    def get_id(self):
-        return "%s" % (self.pk)
-
-    def get_info(self):
-        pool_info = []
-        pool_info.append(self.pool_name)
-        pool_info.append(self.pool_code_id)
-        pool_info.append(self.sample_number)
-        return pool_info
-
-    def get_number_of_samples(self):
-        return "%s" % (self.sample_number)
-
-    def get_pool_name(self):
-        return "%s" % (self.pool_name)
-
-    def get_pool_code_id(self):
-        return "%s" % (self.pool_code_id)
-
-    def get_pool_single_paired(self):
-        return "%s" % (self.paired_end)
-
-    def get_platform_name(self):
-        if self.platform is not None:
-            return "%s" % (self.platform.get_platform_name())
-        else:
-            return "Not defined"
-
-    def get_run_name(self):
-        if self.run_process_id is not None:
-            return "%s" % (self.run_process_id.get_run_name())
-        else:
-            return "Not defined yet"
-
-    def get_run_id(self):
-        if self.run_process_id is not None:
-            return "%s" % (self.run_process_id.get_run_id())
-        return None
-
-    def get_run_obj(self):
-        return self.run_process_id
-
-    def set_pool_state(self, state):
-        self.pool_state = PoolStates.objects.get(pool_state__exact=state)
-        self.save()
-
-    def update_number_samples(self, number_s_in_pool):
-        self.sample_number = number_s_in_pool
-        self.save()
-        return self
-
-    objects = LibraryPoolManager()
 
 
 class LibPrepareStates(models.Model):
