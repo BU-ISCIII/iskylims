@@ -780,16 +780,22 @@ if [ $install == true ]; then
 
         if [ $LOG_TYPE == "symbolic_link" ]; then
             if [ -d $LOG_PATH ]; then
-                ln -s $LOG_PATH  $INSTALL_PATH/logs
-                chmod 775 $LOG_PATH
+                if [ ! -d $INSTALL_PATH/logs ]; then
+                    ln -s $LOG_PATH  $INSTALL_PATH/logs
+                    chmod 775 $LOG_PATH
+                fi
             else
                 echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
             exit 1
             fi
         else
-            mkdir -p $INSTALL_PATH/logs
-            chown $user:$apache_group $INSTALL_PATH/logs
-            chmod 775 $INSTALL_PATH/logs
+            if  [ ! -d $INSTALL_PATH/logs ]; then
+                mkdir -p $INSTALL_PATH/logs
+                chown $user:$apache_group $INSTALL_PATH/logs
+                chmod 775 $INSTALL_PATH/logs
+            else
+                echo "Log folder path: $INSTALL_PATH/logs already exist."
+            fi
         fi
 
         rsync -rlv README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
