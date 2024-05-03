@@ -1,0 +1,613 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "iSkyLIMS API",
+        "description": "iSkyLIMS API",
+        "version": "v0.0.1"
+    },
+    "host": "iskylims.isciiides.es",
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "basePath": "/",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "basic": {
+            "type": "basic"
+        }
+    },
+    "security": [
+        {
+            "basic": []
+        }
+    ],
+    "paths": {
+        "/drylab/api/create-delivery": {
+            "post": {
+                "operationId": "drylab_api_create-delivery_create",
+                "description": "Create a new delivery for a selected resolution",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "resolution_number": {
+                                    "description": "resolution_number. pe. SRVCNM123.1",
+                                    "type": "string"
+                                },
+                                "pipelines_in_delivery": {
+                                    "description": "pipelines in delivery. pe. ['viralrecon']",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "delivery_date": {
+                                    "description": "delivery date. pe. 2022-01-01",
+                                    "type": "string"
+                                },
+                                "execution_start_date": {
+                                    "description": "execution start date. pe. 2022-01-01",
+                                    "type": "string"
+                                },
+                                "execution_end_date": {
+                                    "description": "execution end date. pe. 2022-01-01",
+                                    "type": "string"
+                                },
+                                "permanent_used_space": {
+                                    "description": "permanent used space in GB. pe. 134",
+                                    "type": "integer"
+                                },
+                                "temporary_used_space": {
+                                    "description": "temporary used space in GB. pe. SRVCNM123.1",
+                                    "type": "integer"
+                                },
+                                "delivery_notes": {
+                                    "description": "delivery notes with brief results description.",
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful delivery creation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                },
+                "tags": [
+                    "drylab"
+                ]
+            },
+            "parameters": []
+        },
+        "/drylab/api/resolution": {
+            "get": {
+                "operationId": "drylab_api_resolution_list",
+                "description": "Obtain a list of resolutions for a service id.",
+                "parameters": [
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "description": "State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]",
+                        "type": "string",
+                        "enum": [
+                            "recorded",
+                            "in_progress",
+                            "delivered",
+                            "approved",
+                            "rejected",
+                            "archived",
+                            "on_hold"
+                        ]
+                    },
+                    {
+                        "name": "resolution",
+                        "in": "query",
+                        "description": "Resolution parameter resolution is optional. Example SRVCNM123.1",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "drylab"
+                ]
+            },
+            "parameters": []
+        },
+        "/drylab/api/samples_in_service": {
+            "get": {
+                "operationId": "drylab_api_samples_in_service_list",
+                "description": "Obtain samples requested for analysis in a service",
+                "parameters": [
+                    {
+                        "name": "service",
+                        "in": "query",
+                        "description": "Service parameter is mandatory. Example SRVCNM123",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "drylab"
+                ]
+            },
+            "parameters": []
+        },
+        "/drylab/api/service-data": {
+            "get": {
+                "operationId": "drylab_api_service-data_list",
+                "description": "Obtain a complete list of service data associated with a service or resolution id.",
+                "parameters": [
+                    {
+                        "name": "service",
+                        "in": "query",
+                        "description": "Service parameter is mandatory. Example SRVCNM123",
+                        "type": "string"
+                    },
+                    {
+                        "name": "resolution",
+                        "in": "query",
+                        "description": "Resolution parameter resolution is optional. Example SRVCNM123.1",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "drylab"
+                ]
+            },
+            "parameters": []
+        },
+        "/drylab/api/services": {
+            "get": {
+                "operationId": "drylab_api_services_list",
+                "description": "Obtain a list of service ids given a state of a range of dates.",
+                "parameters": [
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "description": "State parameter is optional. The allowed values are: [approved/rejected/queued/in_progress/delivered/archived/recorded]",
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected",
+                            "queued",
+                            "in_progress",
+                            "delivered",
+                            "archived",
+                            "recorded"
+                        ]
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "description": "Date parameter is optional.It will limit the results from the date specified in the parameter.\n                Example 2022-01-01",
+                        "type": "string"
+                    },
+                    {
+                        "name": "date_until",
+                        "in": "query",
+                        "description": "Date parameter is optional.It will limit the results up to the date specified in the parameter.\n                Example 2022-01-01",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "drylab"
+                ]
+            },
+            "parameters": []
+        },
+        "/drylab/api/update-state": {
+            "put": {
+                "operationId": "drylab_api_update-state_update",
+                "description": "Update a resolution/service state",
+                "parameters": [
+                    {
+                        "name": "resolution",
+                        "in": "query",
+                        "description": "Resolution parameter resolution is optional. Example SRVCNM123.1",
+                        "type": "string"
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "description": "State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]",
+                        "type": "string",
+                        "enum": [
+                            "recorded",
+                            "in_progress",
+                            "delivered",
+                            "approved",
+                            "rejected",
+                            "archived",
+                            "on_hold"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "drylab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/create-sample": {
+            "post": {
+                "operationId": "wetlab_api_create-sample_create",
+                "description": "Create a new sample Data in iSkyLIMS",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "sample_name": {
+                                    "description": "Sample name",
+                                    "type": "string"
+                                },
+                                "sample_state": {
+                                    "description": "Sample state",
+                                    "type": "string"
+                                },
+                                "patient_core": {
+                                    "description": "Code assigned to the patient",
+                                    "type": "string"
+                                },
+                                "lab_request": {
+                                    "description": "Laboratory that request the sample",
+                                    "type": "string"
+                                },
+                                "sample_type": {
+                                    "description": "Type of the sample",
+                                    "type": "string"
+                                },
+                                "species": {
+                                    "description": "Specie that the sample belongs to",
+                                    "type": "string"
+                                },
+                                "sample_location": {
+                                    "description": "Location where the sample is stored",
+                                    "type": "string"
+                                },
+                                "sample_entry_date": {
+                                    "description": "Date when sample is received in the lab",
+                                    "type": "string"
+                                },
+                                "collection_sample_date": {
+                                    "description": "Date when the sample is collected from the specimen",
+                                    "type": "string"
+                                },
+                                "only_recorded": {
+                                    "description": "Select if sample is just recorded or if DNA/RNA manipulation will be done in the lab ",
+                                    "type": "string"
+                                },
+                                "sample_project": {
+                                    "description": "Project name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful create information"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/lab-data": {
+            "get": {
+                "operationId": "wetlab_api_lab-data_list",
+                "description": "Obtain a list of laboratories registered in iSkyLIMS",
+                "parameters": [
+                    {
+                        "name": "laboratory",
+                        "in": "query",
+                        "description": "Laboratory name form to fetch contact information. Example Harlem Hospital Center",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/projects-fields": {
+            "get": {
+                "operationId": "wetlab_api_projects-fields_list",
+                "description": "Use this request to get the field' s names that are required for the sample project",
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "query",
+                        "description": "Project name to fetch the sample project fields defined. Example Relecov",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/run-info": {
+            "get": {
+                "operationId": "wetlab_api_run-info_list",
+                "description": "Get the stored Run information available in iSkyLIMS for the list of samples",
+                "parameters": [
+                    {
+                        "name": "samples",
+                        "in": "query",
+                        "description": "Sample name list to fetch run information",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/sample-fields": {
+            "get": {
+                "operationId": "wetlab_api_sample-fields_list",
+                "description": "Send request to gen the fields that are required when storing a new sample using the API",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/sample-info": {
+            "get": {
+                "operationId": "wetlab_api_sample-info_list",
+                "description": "Get the sample/samples belongs to project information, collected when creating in iSkyLIMS",
+                "parameters": [
+                    {
+                        "name": "sample",
+                        "in": "query",
+                        "description": "Select the sample to get information",
+                        "type": "string"
+                    },
+                    {
+                        "name": "sample_project_name",
+                        "in": "query",
+                        "description": "Select the project to get all samples assigned to it",
+                        "type": "string"
+                    },
+                    {
+                        "name": "parameter",
+                        "in": "query",
+                        "description": "Get all samples which have this parameter. If selected project result the project parameter",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/stats-info": {
+            "get": {
+                "operationId": "wetlab_api_stats-info_list",
+                "description": "Otain a list of info statistics for a project.",
+                "parameters": [
+                    {
+                        "name": "sample_project_name",
+                        "in": "query",
+                        "description": "Select the project to get all samples assigned to it",
+                        "type": "string"
+                    },
+                    {
+                        "name": "project_field",
+                        "in": "query",
+                        "description": "Project fields to make the query. Maximum number of fiels are 2",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/summarized-info": {
+            "get": {
+                "operationId": "wetlab_api_summarized-info_list",
+                "description": "Obtain a summarized info list for a list of samples registered in iskylims.",
+                "parameters": [
+                    {
+                        "name": "samples",
+                        "in": "query",
+                        "description": "List of samples to collect information",
+                        "type": "string"
+                    },
+                    {
+                        "name": "sample_state",
+                        "in": "query",
+                        "description": "Filter result to the sample which are in this state",
+                        "type": "string"
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Start date from starting collecting samples",
+                        "type": "string"
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Start date from starting collecting samples",
+                        "type": "string"
+                    },
+                    {
+                        "name": "region",
+                        "in": "query",
+                        "description": "Filter the samples for the selected region",
+                        "type": "string"
+                    },
+                    {
+                        "name": "laboratory",
+                        "in": "query",
+                        "description": "Laboratory name form to fetch contact information. Example Harlem Hospital Center",
+                        "type": "string"
+                    },
+                    {
+                        "name": "sample_project_name",
+                        "in": "query",
+                        "description": "Select the project to get all samples assigned to it",
+                        "type": "string"
+                    },
+                    {
+                        "name": "sample_project_field",
+                        "in": "query",
+                        "description": "Name of the sample project Field. Requires project_name",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        },
+        "/wetlab/api/update-lab": {
+            "put": {
+                "operationId": "wetlab_api_update-lab_update",
+                "description": "Update laboratory contact information",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "lab_name": {
+                                    "description": "Name of the Laboratory",
+                                    "type": "string"
+                                },
+                                "lab_contact_name": {
+                                    "description": "Name for laboratory contact",
+                                    "type": "string"
+                                },
+                                "lab_contact_telephone": {
+                                    "description": "Phone number of contact",
+                                    "type": "string"
+                                },
+                                "lab_contact_email": {
+                                    "description": "Contact email",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful create information"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "406": {
+                        "description": "Request not accepted"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "tags": [
+                    "wetlab"
+                ]
+            },
+            "parameters": []
+        }
+    },
+    "definitions": {}
+}
