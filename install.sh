@@ -563,7 +563,21 @@ if [ $upgrade == true ]; then
         else
             echo "checking for database changes"
             if python manage.py makemigrations | grep -q "No changes"; then
-                echo "No migration is required"
+                # check for pending migrations
+                if ./manage.py showmigrations | grep '\[ \]'; then
+                    echo "There are pending migrations"
+                    read -p "Do you want to update database with the pending migrations? (Y/N) " -n 1 -r
+                    echo    #  move to a new line
+                    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                        echo "Continue running script without running migrate command."
+                    else
+                        echo "Running migrate..."
+                        python manage.py migrate
+                        echo "Done migrate command."
+                    fi
+                else
+                    echo "No migration is required"
+                fi
             else
                 read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
                 echo    # (optional) move to a new line
