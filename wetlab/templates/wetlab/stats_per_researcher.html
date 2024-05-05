@@ -184,31 +184,32 @@
                                 {% if researcher_lab_statistics.rec_table_heading %}
                                     {% if not researcher_lab_statistics.seq_table_heading %}
                                         <div class="tab-pane fade show active"
-                                            id="rec-graphics"
-                                            role="tabpanel"
-                                            aria-labelledby="rec-graphics-tab">
-                                    {% else %}
-                                        <div class="tab-pane fade show"
-                                            id="rec-graphics"
-                                            role="tabpanel"
-                                            aria-labelledby="rec-graphics-tab">
-                                    {% endif %}
-                                        <div class="container">
-                                            <div class="row mt-4">
-                                                <div class="col-md">
-                                                    <div class="card">
-                                                        <div class="card-header text-center">
-                                                            <h3>Statistics from recorded samples</h3>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row ">
-                                                                <div class="col-md-6">
-                                                                    <div id="rec_sample_research_vs_other_chart"></div>
-                                                                    {{ researcher_lab_statistics.rec_sample_research_vs_other_graphic|safe }}
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <div id="rec_sample_states_chart"></div>
-                                                                    {{ researcher_lab_statistics.rec_sample_states_graphic|safe }}
+                                             id="rec-graphics"
+                                             role="tabpanel"
+                                             aria-labelledby="rec-graphics-tab">
+                                        {% else %}
+                                            <div class="tab-pane fade show"
+                                                 id="rec-graphics"
+                                                 role="tabpanel"
+                                                 aria-labelledby="rec-graphics-tab">
+                                            {% endif %}
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center">
+                                                                <h3>Statistics from recorded samples</h3>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div class="row ">
+                                                                    <div class="col-md-6">
+                                                                        <div id="rec_sample_research_vs_other_chart"></div>
+                                                                        {{ researcher_lab_statistics.rec_sample_research_vs_other_graphic|safe }}
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <div id="rec_sample_states_chart"></div>
+                                                                        {{ researcher_lab_statistics.rec_sample_states_graphic|safe }}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -216,47 +217,46 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- end sequenced graphics tab-->
-                                    <div class="tab-pane fade"
-                                         id="rec-table"
-                                         role="tabpanel"
-                                         aria-labelledby="rec-table-tab">
-                                        <div class="container">
-                                            <div class="row mt-4">
-                                                <div class="col-md">
-                                                    <div class="card">
-                                                        <div class="card-header text-center">
-                                                            <h3>Recorded samples</h3>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <table class="table table-hover" id="rec_sample_table">
-                                                                <thead>
-                                                                    <tr>
-                                                                        {% for column in researcher_lab_statistics.rec_table_heading %}<th>{{ column }}</th>{% endfor %}
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {% for sample_data in researcher_lab_statistics.rec_samples %}
+                                        <!-- end sequenced graphics tab-->
+                                        <div class="tab-pane fade"
+                                             id="rec-table"
+                                             role="tabpanel"
+                                             aria-labelledby="rec-table-tab">
+                                            <div class="container">
+                                                <div class="row mt-4">
+                                                    <div class="col-md">
+                                                        <div class="card">
+                                                            <div class="card-header text-center">
+                                                                <h3>Recorded samples</h3>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <table class="table table-hover" id="rec_sample_table">
+                                                                    <thead>
                                                                         <tr>
-                                                                            {% for value in sample_data %}<td>{{ value }}</td>{% endfor %}
+                                                                            {% for column in researcher_lab_statistics.rec_table_heading %}<th>{{ column }}</th>{% endfor %}
                                                                         </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for sample_data in researcher_lab_statistics.rec_samples %}
+                                                                            <tr>
+                                                                                {% for value in sample_data %}<td>{{ value }}</td>{% endfor %}
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- end table tab-->
-                                {% endif %}
+                                        <!-- end table tab-->
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                {% comment %}
+                    {% comment %}
             <div class="row my-2">
                 <div class="col-sm-12">
                     <div class="card ">
@@ -378,97 +378,98 @@
             // Get the element with id="tablinksdefaultOpen" and click on it
             document.getElementById("tablinksdefaultOpen").click();
 </script>
-                {% endcomment %}
-            {% elif researcher_lab_statistics.type == "lab" %}
-            {% else %}
-                <div class="container">
-                    <div class="row my-2">
-                        <div class="col-sm-7 offset-3">
-                            <div class="card ">
-                                {% if request.user|has_group:"WetlabManager" %}
-                                    <div class="card-header">
-                                        <h3 class="text-center">Statistics per Investigator or Laboratory</h3>
-                                    </div>
-                                {% else %}
-                                    <div class="card-header">
-                                        <h3 class="text-center">Statistics per Investigator</h3>
-                                    </div>
-                                {% endif %}
-                                <div class="card-body">
-                                    <form method="post"
-                                          enctype="multipart/form-data"
-                                          name="statsresearcher"
-                                          id="statsresearcher"
-                                          class="form-horizontal well">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="researcher" />
-                                        {% if request.user|has_group:"WetlabManager" %}
-                                            <div class="form-floating mb-3">
-                                                <input type="text"
-                                                       class="form-control"
-                                                       name="researchername"
-                                                       id="researchername"
-                                                       placeholder="Researcher name" />
-                                                <label class="form-control" for="researchername">Researcher name</label>
-                                            </div>
-                                            <div class="form-floating mb-3">
-                                                <input type="text"
-                                                       class="form-control"
-                                                       name="labname"
-                                                       id="labname"
-                                                       placeholder="Laboratory name" />
-                                                <label class="form-control" for="labname">Laboratory name</label>
-                                            </div>
-                                        {% else %}
-                                            <div class="form-floating mb-3">
-                                                <input type="text"
-                                                       class="form-control"
-                                                       name="researchername"
-                                                       id="researchername"
-                                                       placeholder="Researcher name"
-                                                       value="{{ user.get_username }}"
-                                                       readonly />
-                                                <label for="researchername">Researcher name</label>
-                                            </div>
-                                        {% endif %}
-                                        <div class="row g-2">
-                                            <div class="col-md">
-                                                <div class="form-floating">
-                                                    <input type="date"
-                                                           class="form-control"
-                                                           id="start_date"
-                                                           name="startdate"
-                                                           placeholder="Filter run from start date" />
-                                                    <label for="start_date">From Start Date (DD/MM/YYYY)</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md">
-                                                <div class="form-floating">
-                                                    <input type="date"
-                                                           class="form-control"
-                                                           id="end_date"
-                                                           name="enddate"
-                                                           placeholder="Filter run from end date" />
-                                                    <label for="end_date">End Date (DD/MM/YYYY)</label>
-                                                </div>
-                                            </div>
+                    {% endcomment %}
+                {% elif researcher_lab_statistics.type == "lab" %}
+                {% else %}
+                    <div class="container">
+                        <div class="row my-2">
+                            <div class="col-sm-7 offset-3">
+                                <div class="card ">
+                                    {% if request.user|has_group:"WetlabManager" %}
+                                        <div class="card-header">
+                                            <h3 class="text-center">Statistics per Investigator or Laboratory</h3>
                                         </div>
-                                        <input class="btn btn-outline-secondary mt-2"
-                                               type="reset"
-                                               value="Reset Fields" />
-                                        <input class="btn float-end btn-outline-primary mt-2"
-                                               type="submit"
-                                               value="Submit" />
-                                    </form>
+                                    {% else %}
+                                        <div class="card-header">
+                                            <h3 class="text-center">Statistics per Investigator</h3>
+                                        </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <form method="post"
+                                              enctype="multipart/form-data"
+                                              name="statsresearcher"
+                                              id="statsresearcher"
+                                              class="form-horizontal well">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="researcher" />
+                                            {% if request.user|has_group:"WetlabManager" %}
+                                                <div class="form-floating mb-3">
+                                                    <input type="text"
+                                                           class="form-control"
+                                                           name="researchername"
+                                                           id="researchername"
+                                                           placeholder="Researcher name" />
+                                                    <label class="form-control" for="researchername">Researcher name</label>
+                                                </div>
+                                                <div class="form-floating mb-3">
+                                                    <select class="form-select"  name="labname" id="labname" aria-label="labname">
+                                                        <option value="">Choose a value</option>
+                                                        {% for id , value  in lab_list %}
+                                                            <option value="{{ id }}">{{ value }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <label for="labname">Select Laboratory name</label>
+                                                </div>
+                                            {% else %}
+                                                <div class="form-floating mb-3">
+                                                    <input type="text"
+                                                           class="form-control"
+                                                           name="researchername"
+                                                           id="researchername"
+                                                           placeholder="Researcher name"
+                                                           value="{{ user.get_username }}"
+                                                           readonly />
+                                                    <label for="researchername">Researcher name</label>
+                                                </div>
+                                            {% endif %}
+                                            <div class="row g-2">
+                                                <div class="col-md">
+                                                    <div class="form-floating">
+                                                        <input type="date"
+                                                               class="form-control"
+                                                               id="start_date"
+                                                               name="startdate"
+                                                               placeholder="Filter run from start date" />
+                                                        <label for="start_date">From Start Date (DD/MM/YYYY)</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    <div class="form-floating">
+                                                        <input type="date"
+                                                               class="form-control"
+                                                               id="end_date"
+                                                               name="enddate"
+                                                               placeholder="Filter run from end date" />
+                                                        <label for="end_date">End Date (DD/MM/YYYY)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input class="btn btn-outline-secondary mt-2"
+                                                   type="reset"
+                                                   value="Reset Fields" />
+                                            <input class="btn float-end btn-outline-primary mt-2"
+                                                   type="submit"
+                                                   value="Submit" />
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            {% endif %}
-        </div>
-    </section>
-    <script type="text/javascript">
+                {% endif %}
+            </div>
+        </section>
+        <script type="text/javascript">
     $(document).ready(function() {
         $('#researcher_table').DataTable({
             dom: "Bfltirp",
@@ -476,5 +477,5 @@
             buttons: ['excel', 'csv']
         });
     });
-    </script>
-{% endblock %}
+        </script>
+    {% endblock %}

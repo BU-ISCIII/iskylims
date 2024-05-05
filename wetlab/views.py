@@ -1598,6 +1598,7 @@ def change_run_name(request, run_id):
 
 @login_required
 def stats_per_researcher(request):
+    lab_list = list(core.models.LabRequest.objects.all().values_list("pk", "lab_name"))
     if request.method == "POST":
         r_name = request.POST["researchername"]
         start_date = request.POST["startdate"]
@@ -1617,7 +1618,7 @@ def stats_per_researcher(request):
             return render(
                 request,
                 "wetlab/stats_per_researcher.html",
-                {"error_message": error_message},
+                {"error_message": error_message, "lab_list": lab_list},
             )
 
         return render(
@@ -1626,7 +1627,7 @@ def stats_per_researcher(request):
             {"researcher_lab_statistics": researcher_lab_statistics},
         )
     else:
-        return render(request, "wetlab/stats_per_researcher.html")
+        return render(request, "wetlab/stats_per_researcher.html",{ "lab_list": lab_list })
 
 
 @login_required
