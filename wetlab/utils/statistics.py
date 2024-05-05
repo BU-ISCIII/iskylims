@@ -649,6 +649,7 @@ def get_researcher_lab_statistics(
         )
         return research_lab_statistics
 
+<<<<<<< HEAD
     def _recorded_samples_stats(
         user_rec_sample_objs: list,
         other_user_rec_sample_objs: list,
@@ -896,6 +897,8 @@ def get_researcher_lab_statistics(
         return research_lab_statistics
 
     research_lab_statistics = {}
+=======
+>>>>>>> b5af725a (Displayed recorded samples per researcher)
     # validate date format
     if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
         research_lab_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
@@ -933,6 +936,7 @@ def get_researcher_lab_statistics(
         researcher_name = researcher_name.strip()
         # check if the researcher exists
         if not User.objects.filter(username__icontains=researcher_name).exists():
+<<<<<<< HEAD
             research_lab_statistics["ERROR"] = wetlab.config.ERROR_USER_NOT_DEFINED
             return research_lab_statistics
         user_objs = User.objects.filter(username__icontains=researcher_name)
@@ -985,6 +989,66 @@ def get_researcher_lab_statistics(
         )
         research_lab_statistics["type"] = "lab"
 
+=======
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        user_objs = User.objects.filter(username__icontains=researcher_name)
+
+        if len(user_objs) > 1:
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        # get the user name of the researcher
+        research_lab_statistics["researcher_name"] = user_objs[0].username
+
+        # get the sequenced samples for the researcher
+        other_user_seq_sample_objs = seq_sample_objs.exclude(user_id=user_objs[0])
+        user_seq_sample_objs = seq_sample_objs.filter(user_id=user_objs[0])
+
+        # get the library preparation samples for the researcher
+        other_user_rec_sample_objs = rec_sample_objs.exclude(sample_user=user_objs[0])
+        user_rec_sample_objs = rec_sample_objs.filter(sample_user=user_objs[0])
+        import pdb
+
+        pdb.set_trace()
+
+        if len(user_seq_sample_objs) == 0 and len(user_rec_sample_objs) == 0:
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        research_lab_statistics["type"] = "researcher"
+        if len(user_seq_sample_objs) > 0:
+            research_lab_statistics = _sequenced_samples_stats(
+                user_seq_sample_objs,
+                other_user_seq_sample_objs,
+                research_lab_statistics,
+            )
+        if len(user_rec_sample_objs) > 0:
+            research_lab_statistics["rec_samples"] = user_rec_sample_objs.values_list(
+                "sample_name",
+                "unique_sample_id",
+                "sample_type__sample_type",
+                "species__species_name",
+                "sample_state__sample_state_name",
+                "sample_project__sample_project_name",
+            )
+            research_lab_statistics["rec_table_heading"] = (
+                wetlab.config.HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE
+            )
+    else:
+        lab_sample_objs = seq_sample_objs.filter(lab_request_id__exact=lab_name)
+        if len(lab_sample_objs) == 0:
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        research_lab_statistics["type"] = "lab"
+
+>>>>>>> b5af725a (Displayed recorded samples per researcher)
     return research_lab_statistics
 
 
