@@ -94,46 +94,48 @@
                                 {% endif %}
                             </ul>
                             <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
-                                <div class="tab-pane fade show active"
-                                     id="graphics"
-                                     role="tabpanel"
-                                     aria-labelledby="graphics-tab">
-                                    <div class="container">
-                                        <div class="row mt-4">
-                                            <div class="col-md">
-                                                <div class="card">
-                                                    <div class="card-header text-center">
-                                                        <h3>Statistics from sequenced samples</h3>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <div class="row ">
-                                                            <div class="col-md-6">
-                                                                <div id="seq_sample_research_vs_other_chart"></div>
-                                                                {{ researcher_lab_statistics.seq_sample_research_vs_other_graphic|safe }}
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div id="research_usage_sequencer_chart"></div>
-                                                                {{ researcher_lab_statistics.research_usage_sequencer_graphic|safe }}
-                                                            </div>
+                                {% if researcher_lab_statistics.seq_table_heading %}
+                                    <div class="tab-pane fade show active"
+                                         id="graphics"
+                                         role="tabpanel"
+                                         aria-labelledby="graphics-tab">
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col-md">
+                                                    <div class="card">
+                                                        <div class="card-header text-center">
+                                                            <h3>Statistics from sequenced samples</h3>
                                                         </div>
-                                                        <div class="row ">
-                                                            <div class="col-md-6">
-                                                                <div id="research_run_chart"></div>
-                                                                {{ researcher_lab_statistics.research_run_graphic|safe }}
+                                                        <div class="card-body">
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="seq_sample_research_vs_other_chart"></div>
+                                                                    {{ researcher_lab_statistics.seq_sample_research_vs_other_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="research_usage_sequencer_chart"></div>
+                                                                    {{ researcher_lab_statistics.research_usage_sequencer_graphic|safe }}
+                                                                </div>
                                                             </div>
-                                                            <div class="col-md-6">
-                                                                <div id="research_project_chart"></div>
-                                                                {{ researcher_lab_statistics.research_project_graphic|safe }}
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="research_run_chart"></div>
+                                                                    {{ researcher_lab_statistics.research_run_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="research_project_chart"></div>
+                                                                    {{ researcher_lab_statistics.research_project_graphic|safe }}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="row ">
-                                                            <div class="col-md-6">
-                                                                <div id="research_q_30_chart"></div>
-                                                                {{ researcher_lab_statistics.research_q_30_graphic|safe }}
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div id="research_mean_chart"></div>
-                                                                {{ researcher_lab_statistics.research_mean_graphic|safe }}
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="research_q_30_chart"></div>
+                                                                    {{ researcher_lab_statistics.research_q_30_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="research_mean_chart"></div>
+                                                                    {{ researcher_lab_statistics.research_mean_graphic|safe }}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -141,45 +143,81 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <!-- end sequenced graphics tab-->
-                                <div class="tab-pane fade"
-                                     id="table"
-                                     role="tabpanel"
-                                     aria-labelledby="table-tab">
-                                    <div class="container">
-                                        <div class="row mt-4">
-                                            <div class="col-md">
-                                                <div class="card">
-                                                    <div class="card-header text-center">
-                                                        <h3>Researcher statistics</h3>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <table class="table table-hover" id="researcher_table">
-                                                            <thead>
-                                                                <tr>
-                                                                    {% for column in researcher_lab_statistics.seq_table_heading %}<th>{{ column }}</th>{% endfor %}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {% for sample, project, run, platform in researcher_lab_statistics.seq_samples %}
+                                    <!-- end sequenced graphics tab-->
+                                    <div class="tab-pane fade"
+                                         id="table"
+                                         role="tabpanel"
+                                         aria-labelledby="table-tab">
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col-md">
+                                                    <div class="card">
+                                                        <div class="card-header text-center">
+                                                            <h3>Researcher statistics</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <table class="table table-hover" id="researcher_table">
+                                                                <thead>
                                                                     <tr>
-                                                                        <td>{{ sample }}</td>
-                                                                        <td>{{ project }}</td>
-                                                                        <td>{{ run }}</td>
-                                                                        <td>{{ platform }}</td>
+                                                                        {% for column in researcher_lab_statistics.seq_table_heading %}<th>{{ column }}</th>{% endfor %}
                                                                     </tr>
-                                                                {% endfor %}
-                                                            </tbody>
-                                                        </table>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for sample, project, run, platform in researcher_lab_statistics.seq_samples %}
+                                                                        <tr>
+                                                                            <td>{{ sample }}</td>
+                                                                            <td>{{ project }}</td>
+                                                                            <td>{{ run }}</td>
+                                                                            <td>{{ platform }}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <!-- end sequenced table tab-->
+                                    <!-- end sequenced table tab-->
+                                {% endif %}
                                 {% if researcher_lab_statistics.rec_table_heading %}
+                                    {% if not researcher_lab_statistics.seq_table_heading %}
+                                        <div class="tab-pane fade show active"
+                                            id="rec-graphics"
+                                            role="tabpanel"
+                                            aria-labelledby="rec-graphics-tab">
+                                    {% else %}
+                                        <div class="tab-pane fade show"
+                                            id="rec-graphics"
+                                            role="tabpanel"
+                                            aria-labelledby="rec-graphics-tab">
+                                    {% endif %}
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col-md">
+                                                    <div class="card">
+                                                        <div class="card-header text-center">
+                                                            <h3>Statistics from recorded samples</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="rec_sample_research_vs_other_chart"></div>
+                                                                    {{ researcher_lab_statistics.rec_sample_research_vs_other_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="rec_research_sample_states_chart"></div>
+                                                                    {{ researcher_lab_statistics.rec_research_usage_sequencer_graphic|safe }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end sequenced graphics tab-->
                                     <div class="tab-pane fade"
                                          id="rec-table"
                                          role="tabpanel"
