@@ -67,12 +67,38 @@
                                                     type="button"
                                                     role="tab"
                                                     aria-controls="rec-table"
+<<<<<<< HEAD
                                                     HEAD
                                                     aria-selected="false">Recorded samples</button>
                                             =======
                                             aria-selected="false">Recordeed samples
                                         </button>
                                         >>>>>>> b5af725a (Displayed recorded samples per researcher)
+=======
+                                                    aria-selected="false">Recorded samples</button>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active"
+                                                id="rec-graphics-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#rec-graphics"
+                                                type="button"
+                                                role="tab"
+                                                aria-controls="rec-graphics"
+                                                aria-selected="true">Recorded samples graphics</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link "
+                                                id="rec-table-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#rec-table"
+                                                type="button"
+                                                role="tab"
+                                                aria-controls="rec-table"
+                                                aria-selected="false">Recorded samples</button>
+>>>>>>> 40779d07 (Implemented sample states graphic)
                                     </li>
                                 {% endif %}
                             {% else %}
@@ -127,6 +153,7 @@
                                                                 {{ researcher_lab_statistics.research_usage_sequencer_graphic|safe }}
                                                             </div>
                                                         </div>
+<<<<<<< HEAD
                                                         <div class="row ">
                                                             <div class="col-md-6">
                                                                 <div id="research_run_chart"></div>
@@ -135,6 +162,80 @@
                                                             <div class="col-md-6">
                                                                 <div id="research_project_chart"></div>
                                                                 {{ researcher_lab_statistics.research_project_graphic|safe }}
+=======
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end sequenced graphics tab-->
+                                    <div class="tab-pane fade"
+                                         id="table"
+                                         role="tabpanel"
+                                         aria-labelledby="table-tab">
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col-md">
+                                                    <div class="card">
+                                                        <div class="card-header text-center">
+                                                            <h3>Researcher statistics</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <table class="table table-hover" id="researcher_table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for column in researcher_lab_statistics.seq_table_heading %}<th>{{ column }}</th>{% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for sample, project, run, platform in researcher_lab_statistics.seq_samples %}
+                                                                        <tr>
+                                                                            <td>{{ sample }}</td>
+                                                                            <td>{{ project }}</td>
+                                                                            <td>{{ run }}</td>
+                                                                            <td>{{ platform }}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end sequenced table tab-->
+                                {% endif %}
+                                {% if researcher_lab_statistics.rec_table_heading %}
+                                    {% if not researcher_lab_statistics.seq_table_heading %}
+                                        <div class="tab-pane fade show active"
+                                            id="rec-graphics"
+                                            role="tabpanel"
+                                            aria-labelledby="rec-graphics-tab">
+                                    {% else %}
+                                        <div class="tab-pane fade show"
+                                            id="rec-graphics"
+                                            role="tabpanel"
+                                            aria-labelledby="rec-graphics-tab">
+                                    {% endif %}
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col-md">
+                                                    <div class="card">
+                                                        <div class="card-header text-center">
+                                                            <h3>Statistics from recorded samples</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="rec_sample_research_vs_other_chart"></div>
+                                                                    {{ researcher_lab_statistics.rec_sample_research_vs_other_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="rec_sample_states_chart"></div>
+                                                                    {{ researcher_lab_statistics.rec_sample_states_graphic|safe }}
+                                                                </div>
+>>>>>>> 40779d07 (Implemented sample states graphic)
                                                             </div>
                                                         </div>
                                                         <div class="row ">
