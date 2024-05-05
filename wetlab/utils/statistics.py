@@ -599,6 +599,7 @@ def get_researcher_lab_statistics(
 
         return research_lab_statistics
 
+    research_lab_statistics = {}
     # validate date format
     if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
         research_lab_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
