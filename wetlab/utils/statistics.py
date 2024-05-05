@@ -317,246 +317,308 @@ def get_per_time_statistics(start_date, end_date):
     return per_time_statistics
 
 
-def get_researcher_statistics(researcher_name, start_date, end_date):
+def get_researcher_lab_statistics(
+    researcher_name: str, lab_name: str, start_date: str, end_date: str
+) -> dict:
     """_summary_
 
-    Parameters
-    ----------
-    researcher_name : str
-        _description_
-    start_date : str
-        _description_
-    end_date : str,
-        _description_, by default None
+    Args:
+        researcher_name (str): user name of the researcher
+        lab_name (str): laboratory/institution name
+        start_date (str): start date for the statistics
+        end_date (str): end date for the statistics
 
-    Returns
-    -------
-    _type_
-        _description_
+    Returns:
+        dict: _description_
     """
-    researcher_statistics = {}
-    if not User.objects.filter(username__icontains=researcher_name).exists():
-        researcher_statistics["ERROR"] = (
-            wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
-        )
-        return researcher_statistics
 
-    user_objs = User.objects.filter(username__icontains=researcher_name)
+    def _sequenced_samples_stats(
+        user_seq_sample_objs: list,
+        other_user_seq_sample_objs: list,
+        research_lab_statistics: dict,
+    ) -> dict:
+        """_summary_
 
-    if len(user_objs) > 1:
-        researcher_statistics["ERROR"] = (
-            wetlab.config.ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS
+        Args:
+            user_seq_sample_objs (list): list of sequenced samples for the researcher
+            other_user_seq_sample_objs (list): list of sequenced samples for other researchers
+            research_lab_statistics (dict): dictionary with the statistics
+
+        Returns:
+            dict: _description_
+        """
+        # Collect data for the sequenced sample
+        research_lab_statistics["seq_samples"] = user_seq_sample_objs.values_list(
+            "sample_name",
+            "project_id__project_name",
+            "run_process_id__run_name",
+            "run_process_id__used_sequencer__sequencer_name",
         )
-        return researcher_statistics
-    researcher_name = user_objs[0].username
+        research_lab_statistics["seq_table_heading"] = (
+            wetlab.config.HEADING_STATISTICS_FOR_SECUENCED_RESEARCHER_SAMPLE
+        )
+
+        # pie graph sequencing samples percentage researcher vs others
+        seq_sample_count = {
+            researcher_name: user_seq_sample_objs.count(),
+            "all researchers": other_user_seq_sample_objs.count(),
+        }
+        g_data = core.utils.graphics.preparation_3D_pie(
+            "Percentage of samples", "Research vs all", "ocean", seq_sample_count
+        )
+        research_lab_statistics["seq_sample_research_vs_other_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "seq_sample_research_vs_other_graph",
+                "600",
+                "300",
+                "seq_sample_research_vs_other_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+
+        # pie graph for sequencers used for sequencing samples
+        seq_objs = core.models.SequencerInLab.objects.all()
+        sample_per_sequencer = {}
+        for seq_obj in seq_objs:
+            sample_per_sequencer[seq_obj.get_sequencer_name()] = (
+                user_seq_sample_objs.filter(
+                    run_process_id__used_sequencer=seq_obj
+                ).count()
+            )
+        g_data = core.utils.graphics.preparation_3D_pie(
+            "Sequencer usage", "", "ocean", sample_per_sequencer
+        )
+        research_lab_statistics["research_usage_sequencer_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "research_usage_sequencer_graph",
+                "600",
+                "300",
+                "research_usage_sequencer_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+
+        # chart graph for runs
+        researcher_runs = {}
+        runs = list(
+            user_seq_sample_objs.values_list(
+                "run_process_id__run_name", flat=True
+            ).distinct()
+        )
+        for run in runs:
+            researcher_runs[run] = user_seq_sample_objs.filter(
+                run_process_id__run_name__exact=run
+            ).count()
+
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Number of samples per run",
+            "",
+            "Run name",
+            "Number of samples",
+            "ocean",
+            researcher_runs,
+        )
+        research_lab_statistics["research_run_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d",
+                "research_run_graph",
+                "550",
+                "350",
+                "research_run_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+
+        # chart graph for projects
+        researcher_projects = {}
+        projects = list(
+            user_seq_sample_objs.values_list(
+                "project_id__project_name", flat=True
+            ).distinct()
+        )
+        for project in projects:
+            researcher_projects[project] = user_seq_sample_objs.filter(
+                project_id__project_name__exact=project
+            ).count()
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Number of samples per project",
+            "",
+            "Project name",
+            "Number of samples",
+            "ocean",
+            researcher_projects,
+        )
+        research_lab_statistics["research_project_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d",
+                "research_project_graph",
+                "550",
+                "350",
+                "research_project_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+
+        # chart graph for Q > 30 on runs
+        researcher_q_30 = list(
+            user_seq_sample_objs.values(run_name=F("run_process_id__run_name"))
+            .annotate(q_30_value=Avg("quality_q30"))
+            .order_by("run_process_id__run_name")
+        )
+
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Percentage of samples with Q > 30",
+            "",
+            "Run name",
+            "Percentage of Q>30",
+            "ocean",
+            researcher_q_30,
+            "run_name",
+            "q_30_value",
+        )
+        research_lab_statistics["research_q_30_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d",
+                "research_q_30_graph",
+                "550",
+                "350",
+                "research_q_30_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+
+        # chart graph for mean
+        researcher_mean = list(
+            user_seq_sample_objs.values(run_name=F("run_process_id__run_name"))
+            .annotate(mean_value=Avg("mean_quality"))
+            .order_by("run_process_id__run_name")
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Qualiy mean of samples per run",
+            "",
+            "Run name",
+            "Quality mean",
+            "ocean",
+            researcher_mean,
+            "run_name",
+            "mean_value",
+        )
+        research_lab_statistics["research_mean_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d",
+                "research_mean_graph",
+                "550",
+                "350",
+                "research_mean_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+        return research_lab_statistics
+
     # validate date format
     if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
-        researcher_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
-        return researcher_statistics
+        research_lab_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
+        return research_lab_statistics
     if end_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
-        researcher_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
-        return researcher_statistics
+        research_lab_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
+        return research_lab_statistics
 
-    # check if start and end date are present in the form
+    # Filter samples used for sequencing and for preparing library, based on the dates
     if start_date != "" and end_date != "":
-        sample_objs = wetlab.models.SamplesInProject.objects.filter(
+        seq_sample_objs = wetlab.models.SamplesInProject.objects.filter(
             run_process_id__run_date__range=(start_date, end_date)
         )
+        rec_sample_objs = core.models.Samples.objects.filter(
+            generated_at__range=(start_date, end_date)
+        )
     elif start_date != "":
-        sample_objs = wetlab.models.SamplesInProject.objects.filter(
+        seq_sample_objs = wetlab.models.SamplesInProject.objects.filter(
             run_process_id__run_date__gte=start_date
         )
+        rec_sample_objs = core.models.Samples.objects.filter(
+            generated_at__gte=start_date
+        )
     elif end_date != "":
-        sample_objs = wetlab.models.SamplesInProject.objects.filter(
+        seq_sample_objs = wetlab.models.SamplesInProject.objects.filter(
             run_process_id__run_date__lte=end_date
         )
+        rec_sample_objs = core.models.Samples.objects.filter(generated_at__lte=end_date)
     else:
-        sample_objs = wetlab.models.SamplesInProject.objects.all()
+        seq_sample_objs = wetlab.models.SamplesInProject.objects.all()
+        rec_sample_objs = core.models.Samples.objects.all()
 
-    other_user_sample_objs = sample_objs.exclude(user_id=user_objs[0])
-    user_sample_objs = sample_objs.filter(user_id=user_objs[0])
-    if len(user_sample_objs) == 0:
-        researcher_statistics["ERROR"] = (
-            wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
-        )
-        return researcher_statistics
-    # sample table
-    researcher_statistics["samples"] = user_sample_objs.values_list(
-        "sample_name",
-        "project_id__project_name",
-        "run_process_id__run_name",
-        "run_process_id__used_sequencer__sequencer_name",
-    )
-    researcher_statistics["table_heading"] = (
-        wetlab.config.HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE
-    )
+    research_lab_statistics = {}
+    if researcher_name != "":
+        researcher_name = researcher_name.strip()
+        # check if the researcher exists
+        if not User.objects.filter(username__icontains=researcher_name).exists():
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        user_objs = User.objects.filter(username__icontains=researcher_name)
 
-    # pie graph percentage researcher vs others
-    per_data_user = {}
-    per_data_user[researcher_name] = user_sample_objs.count()
-    per_data_user["all researchers"] = other_user_sample_objs.count()
-    # heading, sub_title, axis_x_description, axis_y_description, theme, source_data
-    g_data = core.utils.graphics.preparation_3D_pie(
-        "Percentage of samples", "Research vs all", "ocean", per_data_user
-    )
+        if len(user_objs) > 1:
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        # get the user name of the researcher
+        research_lab_statistics["researcher_name"] = user_objs[0].username
 
-    researcher_statistics["research_vs_other_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d",
-            "research_vs_other_graph",
-            "600",
-            "300",
-            "research_vs_other_chart",
-            "json",
-            g_data,
-        ).render()
-    )
+        # get the sequenced samples for the researcher
+        other_user_seq_sample_objs = seq_sample_objs.exclude(user_id=user_objs[0])
+        user_seq_sample_objs = seq_sample_objs.filter(user_id=user_objs[0])
 
-    # pie graph for sequencers used
-    # #############################
-    seq_objs = core.models.SequencerInLab.objects.all()
-    sample_per_sequencer = {}
-    for seq_obj in seq_objs:
-        sample_per_sequencer[seq_obj.get_sequencer_name()] = user_sample_objs.filter(
-            run_process_id__used_sequencer=seq_obj
-        ).count()
-    g_data = core.utils.graphics.preparation_3D_pie(
-        "Sequencer usage", "", "ocean", sample_per_sequencer
-    )
-    researcher_statistics["research_usage_sequencer_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d",
-            "research_usage_sequencer_graph",
-            "600",
-            "300",
-            "research_usage_sequencer_chart",
-            "json",
-            g_data,
-        ).render()
-    )
+        # get the library preparation samples for the researcher
+        other_user_rec_sample_objs = rec_sample_objs.exclude(sample_user=user_objs[0])
+        user_rec_sample_objs = rec_sample_objs.filter(sample_user=user_objs[0])
+        import pdb
 
-    # chart graph for runs
-    # ####################
-    researcher_runs = {}
-    runs = list(
-        user_sample_objs.values_list("run_process_id__run_name", flat=True).distinct()
-    )
-    for run in runs:
-        researcher_runs[run] = user_sample_objs.filter(
-            run_process_id__run_name__exact=run
-        ).count()
+        pdb.set_trace()
 
-    g_data = core.utils.graphics.preparation_graphic_data(
-        "Number of samples per run",
-        "",
-        "Run name",
-        "Number of samples",
-        "ocean",
-        researcher_runs,
-    )
-    researcher_statistics["research_run_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "research_run_graph",
-            "550",
-            "350",
-            "research_run_chart",
-            "json",
-            g_data,
-        ).render()
-    )
+        if len(user_seq_sample_objs) == 0 and len(user_rec_sample_objs) == 0:
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        research_lab_statistics["type"] = "researcher"
+        if len(user_seq_sample_objs) > 0:
+            research_lab_statistics = _sequenced_samples_stats(
+                user_seq_sample_objs,
+                other_user_seq_sample_objs,
+                research_lab_statistics,
+            )
+        if len(user_rec_sample_objs) > 0:
+            research_lab_statistics["rec_samples"] = user_rec_sample_objs.values_list(
+                "sample_name",
+                "unique_sample_id",
+                "sample_type__sample_type",
+                "species__species_name",
+                "sample_state__sample_state_name",
+                "sample_project__sample_project_name",
+            )
+            research_lab_statistics["rec_table_heading"] = (
+                wetlab.config.HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE
+            )
+    else:
+        lab_sample_objs = seq_sample_objs.filter(lab_request_id__exact=lab_name)
+        if len(lab_sample_objs) == 0:
+            research_lab_statistics["ERROR"] = (
+                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
+            )
+            return research_lab_statistics
+        research_lab_statistics["type"] = "lab"
 
-    # chart graph for projects
-    # ########################
-    researcher_projects = {}
-    projects = list(
-        user_sample_objs.values_list("project_id__project_name", flat=True).distinct()
-    )
-    for project in projects:
-        researcher_projects[project] = user_sample_objs.filter(
-            project_id__project_name__exact=project
-        ).count()
-    g_data = core.utils.graphics.preparation_graphic_data(
-        "Number of samples per project",
-        "",
-        "Project name",
-        "Number of samples",
-        "ocean",
-        researcher_projects,
-    )
-    researcher_statistics["research_project_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "research_project_graph",
-            "550",
-            "350",
-            "research_project_chart",
-            "json",
-            g_data,
-        ).render()
-    )
-
-    # chart graph for Q > 30 on runs
-    # ##############################
-    researcher_q_30 = list(
-        user_sample_objs.values(run_name=F("run_process_id__run_name"))
-        .annotate(q_30_value=Avg("quality_q30"))
-        .order_by("run_process_id__run_name")
-    )
-
-    g_data = core.utils.graphics.preparation_graphic_data(
-        "Percentage of samples with Q > 30",
-        "",
-        "Run name",
-        "Percentage of Q>30",
-        "ocean",
-        researcher_q_30,
-        "run_name",
-        "q_30_value",
-    )
-    researcher_statistics["research_q_30_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "research_q_30_graph",
-            "550",
-            "350",
-            "research_q_30_chart",
-            "json",
-            g_data,
-        ).render()
-    )
-
-    # chart graph for mean
-    # ####################
-    researcher_mean = list(
-        user_sample_objs.values(run_name=F("run_process_id__run_name"))
-        .annotate(mean_value=Avg("mean_quality"))
-        .order_by("run_process_id__run_name")
-    )
-    g_data = core.utils.graphics.preparation_graphic_data(
-        "Qualiy mean of samples per run",
-        "",
-        "Run name",
-        "Quality mean",
-        "ocean",
-        researcher_mean,
-        "run_name",
-        "mean_value",
-    )
-    researcher_statistics["research_mean_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "research_mean_graph",
-            "550",
-            "350",
-            "research_mean_chart",
-            "json",
-            g_data,
-        ).render()
-    )
-    researcher_statistics["researcher_name"] = researcher_name
-
-    return researcher_statistics
+    return research_lab_statistics
 
 
 def get_pending_graphic_data(
