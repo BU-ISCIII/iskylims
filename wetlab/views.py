@@ -1603,6 +1603,7 @@ def change_run_name(request, run_id):
 @login_required
 def stats_per_researcher(request):
     lab_list = list(core.models.LabRequest.objects.all().values_list("pk", "lab_name"))
+    lab_list = list(core.models.LabRequest.objects.all().values_list("pk", "lab_name"))
     if request.method == "POST":
         r_name = request.POST["researchername"]
         start_date = request.POST["startdate"]
