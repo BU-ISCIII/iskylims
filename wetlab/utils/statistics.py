@@ -523,6 +523,82 @@ def get_researcher_lab_statistics(
         )
         return research_lab_statistics
 
+    def _recorded_samples_stats(
+        user_rec_sample_objs: list,
+        other_user_rec_sample_objs: list,
+        research_lab_statistics: dict,
+    ) -> dict:
+        """_summary_
+
+        Args:
+            user_rec_sample_objs (list): list of recorded samples for the researcher
+            other_user_rec_sample_objs (list): list of recorded samples for other researchers
+            research_lab_statistics (dict): dictionary with the statistics
+
+        Returns:
+            dict: _description_
+        """
+        # Collect data for the recorded sample
+        research_lab_statistics["rec_samples"] = user_rec_sample_objs.values_list(
+            "sample_name",
+            "unique_sample_id",
+            "sample_type__sample_type",
+            "species__species_name",
+            "sample_state__sample_state_name",
+            "sample_project__sample_project_name",
+        )
+        research_lab_statistics["rec_table_heading"] = (
+            wetlab.config.HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE
+        )
+
+        # pie graph sequencing samples percentage researcher vs others
+        rec_sample_count = {
+            researcher_name: user_rec_sample_objs.count(),
+            "all researchers": other_user_rec_sample_objs.count(),
+        }
+        g_data = core.utils.graphics.preparation_3D_pie(
+            "Percentage of samples", "Research vs all", "ocean", rec_sample_count
+        )
+        research_lab_statistics["rec_sample_research_vs_other_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "rec_sample_research_vs_other_graph",
+                "600",
+                "300",
+                "rec_sample_research_vs_other_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+        rec_sample_states = list(
+            user_rec_sample_objs.values(
+                sum_state=F("sample_state__sample_state_name")
+            ).annotate(value=Count("sample_name"))
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Samples state",
+            "",
+            "",
+            "",
+            "ocean",
+            rec_sample_states,
+            "sum_state",
+            "value",
+        )
+        research_lab_statistics["rec_sample_states_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "rec_sample_states_graph",
+                "600",
+                "300",
+                "rec_sample_states_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+
+        return research_lab_statistics
+
     # validate date format
     if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
         research_lab_statistics["ERROR"] = wetlab.config.ERROR_INVALID_FORMAT_FOR_DATES
@@ -581,9 +657,6 @@ def get_researcher_lab_statistics(
         # get the library preparation samples for the researcher
         other_user_rec_sample_objs = rec_sample_objs.exclude(sample_user=user_objs[0])
         user_rec_sample_objs = rec_sample_objs.filter(sample_user=user_objs[0])
-        import pdb
-
-        pdb.set_trace()
 
         if len(user_seq_sample_objs) == 0 and len(user_rec_sample_objs) == 0:
             research_lab_statistics["ERROR"] = (
@@ -598,36 +671,12 @@ def get_researcher_lab_statistics(
                 research_lab_statistics,
             )
         if len(user_rec_sample_objs) > 0:
-            research_lab_statistics["rec_samples"] = user_rec_sample_objs.values_list(
-                "sample_name",
-                "unique_sample_id",
-                "sample_type__sample_type",
-                "species__species_name",
-                "sample_state__sample_state_name",
-                "sample_project__sample_project_name",
+            research_lab_statistics = _recorded_samples_stats(
+                user_rec_sample_objs,
+                other_user_rec_sample_objs,
+                research_lab_statistics,
             )
-            research_lab_statistics["rec_table_heading"] = (
-                wetlab.config.HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE
-            )
-             # pie graph sequencing samples percentage researcher vs others
-            rec_sample_count = {
-                researcher_name: user_rec_sample_objs.count(),
-                "all researchers": other_user_rec_sample_objs.count(),
-            }
-            g_data = core.utils.graphics.preparation_3D_pie(
-                "Percentage of samples", "Research vs all", "ocean", rec_sample_count
-            )
-            research_lab_statistics["rec_sample_research_vs_other_graphic"] = (
-                core.fusioncharts.fusioncharts.FusionCharts(
-                    "pie3d",
-                    "rec_sample_research_vs_other_graph",
-                    "600",
-                    "300",
-                    "rec_sample_research_vs_other_chart",
-                    "json",
-                    g_data,
-                ).render()
-            )
+
     else:
         lab_sample_objs = seq_sample_objs.filter(lab_request_id__exact=lab_name)
         if len(lab_sample_objs) == 0:

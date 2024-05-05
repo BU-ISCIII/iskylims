@@ -1,25 +1,18 @@
-def preparation_3D_pie(heading, sub_title, theme, source_data):
-    """_summary_
+def preparation_3D_pie(
+    heading: str, sub_title: str, theme: str, source_data: dict
+) -> dict:
+    """Join the parameters to create a dictionary with two keys: chart and data.
+    The chart key contains the heading, sub_title, theme, numberPrefix, showlegend, placevaluesInside, showpercentvalues, rotatevalues, showCanvasBg, showCanvasBase, canvasBaseDepth, canvasBgDepth, canvasBaseColor, canvasBgColor, exportEnabled.
+    The data key contains a list of dictionaries with the keys label and value.
 
-    Parameters
-    ----------
-    heading : str
-        text to insert on top of graphic
-    sub_title : str
-        additional text to include in graphic
-    axis_x_description : str
-        description of x axis
-    axis_y_description : str
-        description
-    theme : str
-        name of the available themes to be used for the graphic
-    source_data : dict
-        Dictionary containing value for the graphic
+    Args:
+        heading (str): title of the chart
+        sub_title (str): additional information
+        theme (str): theme of the chart
+        source_data (dict): dictionary with the data to be displayed
 
-    Returns
-    -------
-    _type_
-        _description_
+    Returns:
+        dict: dictionary with the keys chart and data
     """
     data_source = {}
     data_source["chart"] = {
