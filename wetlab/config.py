@@ -567,12 +567,21 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5 = [
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 
-HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE = [
-    "Samples",
+HEADING_STATISTICS_FOR_SECUENCED_RESEARCHER_SAMPLE = [
+    "Sample name",
     "Project name",
     "Run name",
     "Platform",
 ]
+HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE = [
+    "sample name",
+    "unique sample ID",
+    "sample type",
+    "specimen type",
+    "sample state",
+    "project name",
+]
+
 HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
 HEADING_STATISTICS_FOR_TIME_SAMPLE = [
     "Sample name",
@@ -742,9 +751,9 @@ ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YY
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
     "There are many user names that matches your request"
 ]
-ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = (
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = [
     "There is not any match for your input conditions"
-)
+]
 ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = (
     "There is not any Index Library Kit that mathes your input conditions"
 )

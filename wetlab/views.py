@@ -1602,12 +1602,18 @@ def stats_per_researcher(request):
         r_name = request.POST["researchername"]
         start_date = request.POST["startdate"]
         end_date = request.POST["enddate"]
+        lab_name = request.POST["labname"] if "labname" in request.POST else None
+        # return the form if empty values
+        if lab_name == "" and lab_name is None:
+            return render(request, "wetlab/stats_per_researcher.html")
 
-        researcher_statistics = wetlab.utils.statistics.get_researcher_statistics(
-            r_name, start_date, end_date
+        researcher_lab_statistics = (
+            wetlab.utils.statistics.get_researcher_lab_statistics(
+                r_name, lab_name, start_date, end_date
+            )
         )
-        if "ERROR" in researcher_statistics:
-            error_message = researcher_statistics["ERROR"]
+        if "ERROR" in researcher_lab_statistics:
+            error_message = researcher_lab_statistics["ERROR"]
             return render(
                 request,
                 "wetlab/stats_per_researcher.html",
@@ -1617,7 +1623,7 @@ def stats_per_researcher(request):
         return render(
             request,
             "wetlab/stats_per_researcher.html",
-            {"researcher_statistics": researcher_statistics},
+            {"researcher_lab_statistics": researcher_lab_statistics},
         )
     else:
         return render(request, "wetlab/stats_per_researcher.html")
