@@ -725,6 +725,26 @@ def get_researcher_lab_statistics(
 
         return research_lab_statistics
 
+    def _lab_statistics(
+        lab_sample_objs: list,
+        other_lab_sample_objs: list,
+        research_lab_statistics: dict,
+    ) -> dict:
+        # Collect data for the recorded sample
+        research_lab_statistics["lab_samples"] = lab_sample_objs.values_list(
+            "sample_name",
+            "unique_sample_id",
+            "sample_type__sample_type",
+            "species__species_name",
+            "sample_state__sample_state_name",
+            "sample_project__sample_project_name",
+            "sample_user__username",
+        )
+        research_lab_statistics["lab_table_heading"] = (
+            wetlab.config.HEADING_STATISTICS_FOR_RECORDED_LAB_SAMPLE
+        )
+        return research_lab_statistics
+
     research_lab_statistics = {}
     # validate date format
     if start_date != "" and not wetlab.utils.common.check_valid_date_format(start_date):
