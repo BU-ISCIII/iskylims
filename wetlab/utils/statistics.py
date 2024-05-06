@@ -617,6 +617,32 @@ def get_researcher_lab_statistics(
         research_lab_statistics["lab_table_heading"] = (
             wetlab.config.HEADING_STATISTICS_FOR_RECORDED_LAB_SAMPLE
         )
+        lab_sample_states = list(
+            lab_sample_objs.values(
+                sum_state=F("sample_state__sample_state_name")
+            ).annotate(value=Count("sample_name"))
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Samples state",
+            "",
+            "",
+            "",
+            "ocean",
+            lab_sample_states,
+            "sum_state",
+            "value",
+        )
+        research_lab_statistics["lab_sample_states_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "lab_sample_states_graph",
+                "600",
+                "300",
+                "lab_sample_states_chart",
+                "json",
+                g_data,
+            ).render()
+        )
         return research_lab_statistics
 
     research_lab_statistics = {}
