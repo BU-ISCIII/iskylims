@@ -617,6 +617,25 @@ def get_researcher_lab_statistics(
         research_lab_statistics["lab_table_heading"] = (
             wetlab.config.HEADING_STATISTICS_FOR_RECORDED_LAB_SAMPLE
         )
+        # pie graph sequencing samples percentage in lab vs others
+        lab_sample_count = {
+            researcher_name: lab_sample_objs.count(),
+            "all researchers": other_lab_sample_objs.count(),
+        }
+        g_data = core.utils.graphics.preparation_3D_pie(
+            "Percentage of samples", "Research vs all", "ocean", lab_sample_count
+        )
+        research_lab_statistics["lab_sample_vs_others_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "lab_sample_vs_others_graph",
+                "600",
+                "300",
+                "lab_sample_vs_others_chart",
+                "json",
+                g_data,
+            ).render()
+        )
         lab_sample_states = list(
             lab_sample_objs.values(
                 sum_state=F("sample_state__sample_state_name")
@@ -725,9 +744,6 @@ def get_researcher_lab_statistics(
             )
 
     else:
-        import pdb
-
-        pdb.set_trace()
         lab_sample_objs = rec_sample_objs.filter(lab_request__id__exact=lab_name)
         other_lab_sample_objs = rec_sample_objs.exclude(lab_request__id__exact=lab_name)
         if len(lab_sample_objs) == 0:
