@@ -581,7 +581,15 @@ HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE = [
     "sample state",
     "project name",
 ]
-
+HEADING_STATISTICS_FOR_RECORDED_LAB_SAMPLE = [
+    "sample name",
+    "unique ID",
+    "sample type",
+    "specimen type",
+    "sample state",
+    "project name",
+    "user name",
+]
 HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
 HEADING_STATISTICS_FOR_TIME_SAMPLE = [
     "Sample name",
