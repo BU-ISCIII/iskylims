@@ -1627,7 +1627,9 @@ def stats_per_researcher(request):
             {"researcher_lab_statistics": researcher_lab_statistics},
         )
     else:
-        return render(request, "wetlab/stats_per_researcher.html",{ "lab_list": lab_list })
+        return render(
+            request, "wetlab/stats_per_researcher.html", {"lab_list": lab_list}
+        )
 
 
 @login_required
