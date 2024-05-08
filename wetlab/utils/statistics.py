@@ -662,6 +662,111 @@ def get_researcher_lab_statistics(
                 g_data,
             ).render()
         )
+        lab_sample_type = list(
+            lab_sample_objs.values(sum_state=F("sample_type__sample_type")).annotate(
+                value=Count("sample_name")
+            )
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Samples type",
+            "",
+            "",
+            "",
+            "ocean",
+            lab_sample_type,
+            "sum_state",
+            "value",
+        )
+        research_lab_statistics["lab_sample_type_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "lab_sample_type_graph",
+                "600",
+                "300",
+                "lab_sample_type_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+        other_lab_sample_type = list(
+            other_lab_sample_objs.values(
+                sum_state=F("sample_type__sample_type")
+            ).annotate(value=Count("sample_name"))
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Samples type in other labs",
+            "",
+            "",
+            "",
+            "ocean",
+            other_lab_sample_type,
+            "sum_state",
+            "value",
+        )
+        research_lab_statistics["lab_sample_type_vs_all_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "lab_sample_type_vs_all_graph",
+                "600",
+                "300",
+                "lab_sample_type_vs_all_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+        lab_species = list(
+            lab_sample_objs.values(sum_state=F("species__species_name")).annotate(
+                value=Count("sample_name")
+            )
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Samples species",
+            "",
+            "",
+            "",
+            "ocean",
+            lab_species,
+            "sum_state",
+            "value",
+        )
+        research_lab_statistics["lab_samples_species_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "lab_samples_species_graph",
+                "600",
+                "300",
+                "lab_samples_species_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+        lab_species_vs_all = list(
+            other_lab_sample_objs.values(sum_state=F("species__species_name")).annotate(
+                value=Count("sample_name")
+            )
+        )
+        g_data = core.utils.graphics.preparation_graphic_data(
+            "Samples species in other labs",
+            "",
+            "",
+            "",
+            "ocean",
+            lab_species_vs_all,
+            "sum_state",
+            "value",
+        )
+        research_lab_statistics["lab_samples_species_vs_all_graphic"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d",
+                "lab_samples_species_vs_all_graph",
+                "600",
+                "300",
+                "lab_samples_species_vs_all_chart",
+                "json",
+                g_data,
+            ).render()
+        )
+        # import pdb; pdb.set_trace()
         return research_lab_statistics
 
     research_lab_statistics = {}
