@@ -136,6 +136,9 @@ class RunErrors(models.Model):
 
 class RunStates(models.Model):
     run_state_name = models.CharField(max_length=50)
+    state_display = models.CharField(max_length=80, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    show_in_stats = models.BooleanField(default=False)
 
     class Meta:
         db_table = "wetlab_run_states"
