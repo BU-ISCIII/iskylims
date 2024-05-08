@@ -7,6 +7,7 @@ import traceback
 from datetime import datetime
 from logging.config import fileConfig
 
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from smb.SMBConnection import SMBConnection
@@ -430,8 +431,6 @@ def logging_errors(string_text, showing_traceback, print_on_screen):
         logger.error("################################")
     logger.error("-----------------    END ERROR   --------------")
     if print_on_screen:
-        from datetime import datetime
-
         print("********* ERROR **********")
         print(string_text)
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -454,8 +453,6 @@ def logging_warnings(string_text, print_on_screen):
     logger.warning(string_text)
     logger.warning("-----------------    END WARNING   --------------")
     if print_on_screen:
-        from datetime import datetime
-
         print("******* WARNING ********")
         print(string_text)
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

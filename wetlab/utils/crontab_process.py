@@ -649,7 +649,7 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
             string_message = (
                 "Unable to fetch the " + local_file + " file on folder : " + run_dir
             )
-            wetlab.utils.common.logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_warnings(string_message, True, False)
             os.remove(local_file)
             logger.debug(
                 "%s : End function for fetching remote file with Exception", run_dir
@@ -811,7 +811,7 @@ def get_remote_sample_sheet(conn, new_run, experiment_name):
         logger.info("%s : Sucessfully fetch of Sample Sheet file", experiment_name)
     except Exception:
         error_message = "Unable to fetch Sample Sheet file for folder :" + new_run
-        wetlab.utils.common.logging_errors(error_message, True, False)
+        wetlab.utils.common.logging_warnings(error_message, False)
         logger.debug("%s  : End function get_remote_sample_sheet", experiment_name)
         return None
 
