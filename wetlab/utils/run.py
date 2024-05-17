@@ -767,8 +767,6 @@ def get_available_pools_for_run():
         pools_to_update
     """
     pools_to_update = {}
-
-    # get the pools that were selected
     if wetlab.models.LibraryPool.objects.filter(
         pool_state__pool_state__exact="Selected"
     ).exists():
