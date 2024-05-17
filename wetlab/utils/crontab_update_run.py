@@ -228,7 +228,7 @@ def search_update_new_runs(request_reason):
             logger.debug(
                 "%s : Found the experiment name called : %s", new_run, experiment_name
             )
-            exclude_states = ["Error", "Recorded"]
+            exclude_states = ["Error", "recorded"]
             if (
                 wetlab.models.RunProcess.objects.filter(run_name__exact=experiment_name)
                 .exclude(state__run_state_name__in=exclude_states)
@@ -417,9 +417,9 @@ def handle_not_completed_run():
     runs_to_handle = {}
 
     # state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
-    #                                'Processed Bcl2fastq', 'Recorded']
+    #                                'Processed Bcl2fastq', 'recorded']
     state_list_be_processed = [
-        "Recorded",
+        "recorded",
         "Sample Sent",
         "Processing Run",
         "Processed Run",
@@ -442,7 +442,7 @@ def handle_not_completed_run():
 
     for state in runs_to_handle.keys():
         logger.info("Start processing the run found for state %s", state)
-        if state == "Recorded":
+        if state == "recorded":
             manage_run_in_recorded_state(conn, runs_to_handle[state])
 
         elif state == "Sample Sent":

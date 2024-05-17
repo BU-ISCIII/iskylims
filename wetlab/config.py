@@ -164,6 +164,7 @@ COLLECTION_INDEX_HEADING = [
     "[Settings]",
     "[I7]",
 ]
+ERROR_NO_LIBRARY_KIT_DEFINED = ["Library Kits are not defined yet"]
 ##############################################################
 
 MIGRATION_DIRECTORY_FILES = "wetlab/BaseSpaceMigrationFiles/"

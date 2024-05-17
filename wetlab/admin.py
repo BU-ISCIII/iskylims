@@ -60,6 +60,12 @@ class AdditionaKitsLibraryPreparationAdmin(admin.ModelAdmin):
     list_display = ["kit_name", "protocol_id", "commercial_kit_id"]
 
 
+class LibraryKitAdmin(admin.ModelAdmin):
+    list_display = [
+        "library_name",
+    ]
+
+
 class AdditionalUserLotKitAdmin(admin.ModelAdmin):
     list_display = ["lib_prep_id", "additional_lot_kits", "user_lot_kit_id"]
 
@@ -290,6 +296,7 @@ admin.site.register(wetlab.models.Projects, ProjectsAdmin)
 admin.site.register(wetlab.models.RunErrors, RunErrorsAdmin)
 admin.site.register(wetlab.models.RunStates, RunStatesAdmin)
 admin.site.register(wetlab.models.LibPrepareStates, StatesForLibraryPreparationAdmin)
+admin.site.register(wetlab.models.LibraryKit, LibraryKitAdmin)
 admin.site.register(wetlab.models.PoolStates, StatesForPoolAdmin)
 admin.site.register(wetlab.models.SamplesInProject, SamplesInProjectAdmin)
 admin.site.register(wetlab.models.StatsRunSummary, StatsRunSummaryAdmin)
