@@ -9158,7 +9158,7 @@
         "model": "wetlab.runstates",
         "pk": 1,
         "fields": {
-            "run_state_name": "Pre-Recorded"
+            "run_state_name": "pre_recorded"
         }
     },
     {

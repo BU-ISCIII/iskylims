@@ -124,7 +124,7 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
     new_run_obj = wetlab.models.RunProcess(
         run_name=form_data["experimentName"],
         sample_sheet="",
-        state=wetlab.models.RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
+        state=wetlab.models.RunStates.objects.get(run_state_name__exact="pre_recorded"),
         center_requested_by=center_requested_by,
     )
     new_run_obj.save()

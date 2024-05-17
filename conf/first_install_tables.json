@@ -1512,7 +1512,10 @@
     "model": "wetlab.runstates",
     "pk": 1,
     "fields": {
-        "run_state_name": "Pre-Recorded"
+        "run_state_name": "pre_recorded",
+        "state_display": "Pre Recorded",
+        "description": "Run name is defined but pending for input data.",
+        "show_in_stats": false
     }
 },
 {
