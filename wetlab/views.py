@@ -427,7 +427,6 @@ def create_nextseq_run(request):
 
         # Check if the projects are already defined on database.
         # Error page is showed if projects are already defined on database
-
         project_already_defined = []
         project_in_several_runs = wetlab.utils.common.get_configuration_value(
             "PROJECTS_ALLOWED_IN_MULTIPLE_RUNS"
@@ -448,7 +447,7 @@ def create_nextseq_run(request):
             return render(
                 request,
                 "wetlab/create_next_seq_run.html",
-                {"error_message": display_project + " already defined"},
+                {"error_message": [display_project, " already defined"]},
             )
 
         # Once the information looks good. it will be stores in runProcess and projects table
@@ -607,7 +606,16 @@ def create_nextseq_run(request):
             "wetlab/create_next_seq_run.html",
             {"completed_form": results},
         )
-
+    # check if library kit is already defined
+    if len(wetlab.models.LibraryKit.objects.all()) == 0:
+        return render(
+            request,
+            "wetlab/create_next_seq_run.html",
+            {
+                "error_message": wetlab.config.ERROR_NO_LIBRARY_KIT_DEFINED,
+                "disable_submit_form": True,
+            },
+        )
     return render(request, "wetlab/create_next_seq_run.html")
 
 

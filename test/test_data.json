@@ -9165,7 +9165,7 @@
         "model": "wetlab.runstates",
         "pk": 2,
         "fields": {
-            "run_state_name": "Recorded"
+            "run_state_name": "recorded"
         }
     },
     {

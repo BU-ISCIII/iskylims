@@ -207,7 +207,7 @@ def graphics_state(state):
     """
     state_list = [
         "Error",
-        "Recorded",
+        "recorded",
         "Sample Sent",
         "Processing Run",
         "Processed Run",
@@ -512,7 +512,7 @@ def get_information_for_incompleted_run():
     """
     Description:
         The function will get the information from the runs that are incompleted.
-        It creates a 4 groups. Recorded, Error, Canceled and rest of the states.
+        It creates a 4 groups. recorded, Error, Canceled and rest of the states.
         Creates a pie graphic
     Functions:
         graphic_3D_pie      # located at wetlab/utils/stats_graphics
@@ -522,11 +522,11 @@ def get_information_for_incompleted_run():
     run_information = {}
     today = datetime.today().date()
     if wetlab.models.RunProcess.objects.filter(
-        state__run_state_name="Recorded"
+        state__run_state_name="recorded"
     ).exists():
         run_information["recorded"] = []
         run_objs = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name="Recorded"
+            state__run_state_name="recorded"
         ).order_by("run_name")
         for run_obj in run_objs:
             data = []
@@ -577,7 +577,7 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["cancelled"].append(data)
 
-    exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "pre_recorded"]
+    exclude_state = ["recorded", "Error", "Cancelled", "Completed", "pre_recorded"]
 
     if (
         wetlab.models.RunProcess.objects.all()
@@ -685,7 +685,7 @@ def get_information_run(run_object):
         return info_dict
 
     # allow to change the run name in case that run state was recorded or Sample Sent
-    if run_state == "Recorded" or run_state == "Sample Sent":
+    if run_state == "recorded" or run_state == "Sample Sent":
         info_dict["change_run_name"] = [
             [run_object.get_run_name(), run_object.get_run_id()]
         ]

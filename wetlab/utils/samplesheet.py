@@ -373,35 +373,37 @@ def get_projects_in_run(in_file: str) -> dict:
     """
     header_found = False
     projects = {}
-    fh = open(in_file, "r")
-    for line in fh:
-        line = line.rstrip()
-        if line == "":
-            continue
-        found_header = re.search("^Sample_ID,Sample_Name", line)
-        if found_header:
-            # found the index for projects and description
-            if not "Sample_Project" and "Description" not in line:
-                break
-            split_line = line.split(",")
-            p_index = split_line.index("Sample_Project")
-            description_index = split_line(",").index("Description")
-            header_found = True
-            continue
-        if header_found:
-            # ignore the empty lines separated by commas
-            valid_line = re.search("^\w+", line)
-            if not valid_line:
+    with open(in_file, "r") as fh:
+        for line in fh:
+            line = line.rstrip()
+            if line == "":
                 continue
-            # store the project name and the user name (Description) inside projects dict
-            projects[line.split(",")[p_index]] = line.split(",")[description_index]
-    fh.close()
-    if not found_header:
+            if not header_found:
+                header = re.search("^Sample_ID,Sample_Name", line)
+                if header:
+                    # match line with the header
+                    # look for projects and description indexes
+                    if not "Sample_Project" and "Description" not in line:
+                        break
+                    split_line = line.split(",")
+                    p_index = split_line.index("Sample_Project")
+                    description_index = split_line.index("Description")
+                    header_found = True
+                    continue
+            else:
+                # ignore the empty lines separated by commas
+                valid_line = re.search("^\w+", line)
+                if not valid_line:
+                    continue
+                # store the project name and the user name (Description) inside projects dict
+                projects[line.split(",")[p_index]] = line.split(",")[description_index]
+
+    if not header_found:
         return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING}
     if not projects:
         return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_PROJECTS}
 
-    return {"projects": projects}
+    return projects
 
 
 def get_index_library_name(in_file):
