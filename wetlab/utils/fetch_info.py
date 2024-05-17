@@ -577,7 +577,7 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["cancelled"].append(data)
 
-    exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "Pre-Recorded"]
+    exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "pre_recorded"]
 
     if (
         wetlab.models.RunProcess.objects.all()
@@ -677,7 +677,7 @@ def get_information_run(run_object):
         "Processing Demultiplexing",
         "Processing test",
         "None",
-        "Pre-Recorded",
+        "pre_recorded",
         "Processing Metrics",
     ]
     if run_state in no_valid_information:

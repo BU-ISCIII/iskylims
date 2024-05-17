@@ -377,12 +377,12 @@ def create_nextseq_run(request):
             wetlab.models.RunProcess.objects.filter(run_name__iexact=run_name)
         ).exists():
             if wetlab.models.RunProcess.objects.filter(
-                run_name__iexact=run_name, state__run_state_name__exact="Pre-Recorded"
+                run_name__iexact=run_name, state__run_state_name__exact="pre_recorded"
             ).exists():
                 # Delete the Sample Sheet file and the row in database
                 delete_run_objs = wetlab.models.RunProcess.objects.filter(
                     run_name__iexact=run_name,
-                    state__run_state_name__exact="Pre-Recorded",
+                    state__run_state_name__exact="pre_recorded",
                 )
                 for delete_run in delete_run_objs:
                     # sample_sheet_file = delete_run.get_sample_file()
@@ -456,7 +456,7 @@ def create_nextseq_run(request):
 
         # Once the information looks good. it will be stores in runProcess and projects table
 
-        # store data in runProcess table, run is in pre-recorded state
+        # store data in runProcess table, run is in pre_recorded state
         center_requested_id = django_utils.models.Profile.objects.get(
             profile_user_id=request.user
         ).profile_center.id
@@ -467,7 +467,7 @@ def create_nextseq_run(request):
             run_name=run_name,
             sample_sheet=file_name,
             state=wetlab.models.RunStates.objects.get(
-                run_state_name__exact="Pre-Recorded"
+                run_state_name__exact="pre_recorded"
             ),
             center_requested_by=center_requested_by,
         )
@@ -3800,7 +3800,7 @@ def create_new_run(request):
 
     elif request.method == "POST" and request.POST["action"] == "storeDataNewRun":
         run_obj = wetlab.utils.run.get_run_obj_from_id(request.POST["run_process_id"])
-        if run_obj.get_state() != "Pre-Recorded":
+        if run_obj.get_state() != "pre_recorded":
             exp_name = run_obj.get_run_name()
             error_message = str(exp_name + wetlab.config.ERROR_RUN_NAME_CREATED_ALREADY)
             display_pools_for_run = wetlab.utils.run.display_available_pools()
