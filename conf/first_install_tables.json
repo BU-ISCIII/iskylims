@@ -1522,77 +1522,110 @@
     "model": "wetlab.runstates",
     "pk": 2,
     "fields": {
-        "run_state_name": "Recorded"
+        "run_state_name": "recorded",
+        "state_display": "Recorded",
+        "description": "Run name is defined.",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 3,
     "fields": {
-        "run_state_name": "Sample Sent"
+        "run_state_name": "sample_sent",
+        "state_display": "Sample Sent",
+        "description": "Run has copied sample sheet on remote server.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 4,
     "fields": {
-        "run_state_name": "Processing Run"
+        "run_state_name": "processing_run",
+        "state_display": "Processing Run",
+        "description": "Run is handled on the sequencer.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 5,
     "fields": {
-        "run_state_name": "Processed Run"
+        "run_state_name": "processed_run",
+        "state_display": "Processed Run",
+        "description": "Run is already processed on sequencer.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 6,
     "fields": {
-        "run_state_name": "Processing Bcl2fastq"
+        "run_state_name": "processing_bcl2fastq",
+        "state_display": "Processing Bcl2fastq",
+        "description": "Bcl2fastq is running",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 7,
     "fields": {
-        "run_state_name": "Processed Bcl2fastq"
+        "run_state_name": "processed_bcl2fastq",
+        "state_display": "Processed Bcl2fastq",
+        "description": "Bcl2fastq already completed",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 8,
     "fields": {
-        "run_state_name": "Completed"
+        "run_state_name": "completed",
+        "state_display": "Completed",
+        "description": "Run is completed and all processes are finished.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 9,
     "fields": {
-        "run_state_name": "Cancelled"
+        "run_state_name": "cancelled",
+        "state_display": "Cancelled",
+        "description": "Run was manually cancelled while running on sequencer.",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 10,
     "fields": {
-        "run_state_name": "Error"
+        "run_state_name": "error",
+        "state_display": "Error",
+        "description": "There was an issue while processing the run",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 11,
     "fields": {
-        "run_state_name": "Processing Metrics"
+        "run_state_name": "spare_1",
+        "state_display": "",
+        "description": "",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 12,
     "fields": {
-        "run_state_name": "Processing Demultiplexing"
+        "run_state_name": "spare_2",
+        "state_display": "",
+        "description": "",
+        "show_in_stats": false
     }
 },
 {

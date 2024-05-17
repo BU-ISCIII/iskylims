@@ -69,7 +69,7 @@ class RunErrorsAdmin(admin.ModelAdmin):
 
 
 class RunStatesAdmin(admin.ModelAdmin):
-    list_display = ("run_state_name",)
+    list_display = ["run_state_name", "state_display", "description"]
 
 
 class RunningParametersAdmin(admin.ModelAdmin):
