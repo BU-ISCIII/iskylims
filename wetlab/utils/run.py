@@ -767,11 +767,15 @@ def get_available_pools_for_run():
         pools_to_update
     """
     pools_to_update = {}
+    import pdb
+
+    pdb.set_trace()
+    # get the pools that were selected
     if wetlab.models.LibraryPool.objects.filter(
-        pool_state__pool_state__exact="Selected", run_process_id=None
+        pool_state__pool_state__exact="Selected"
     ).exists():
         pool_objs = wetlab.models.LibraryPool.objects.filter(
-            pool_state__pool_state__exact="Selected", run_process_id=None
+            pool_state__pool_state__exact="Selected"
         ).order_by("platform")
         pools_to_update["pools_available"] = {}
         for pool_obj in pool_objs:
@@ -784,14 +788,14 @@ def get_available_pools_for_run():
         wetlab.models.LibraryPool.objects.filter(
             pool_state__pool_state__exact="Selected"
         )
-        .exclude(run_process_id=None)
+        .exclude(runprocess=None)
         .exists()
     ):
         pools_to_update["defined_runs"] = (
             wetlab.models.LibraryPool.objects.filter(
                 pool_state__pool_state__exact="Selected"
             )
-            .exclude(run_process_id=None)
+            .exclude(runprocess=None)
             .order_by("run_process_id")
         )
 
