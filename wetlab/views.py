@@ -408,7 +408,7 @@ def create_nextseq_run(request):
                 return render(
                     request,
                     "wetlab/create_next_seq_run.html",
-                    {"error_message": "Run Name is already used. "},
+                    {"error_message": ["Run Name is already used. "]},
                 )
 
         # Fetch from the Sample Sheet file the projects included in
@@ -416,16 +416,13 @@ def create_nextseq_run(request):
         # colunms are found
 
         project_list = wetlab.utils.samplesheet.get_projects_in_run(stored_file)
-
-        if len(project_list) == 0:
+        if "ERROR" in project_list:
             # delete sample sheet file
             fs.delete(file_name)
             return render(
                 request,
                 "wetlab/create_next_seq_run.html",
-                {
-                    "error_message": "Sample Sheet does not contain Sample project and/or Description fields"
-                },
+                {"error_message": project_list["ERROR"]},
             )
 
         # Check if the projects are already defined on database.
@@ -476,7 +473,6 @@ def create_nextseq_run(request):
 
         # create new project tables based on the project involved in the run and
         # include the project information in projects variable to build the new FORM
-
         run_info_values = {}
         run_info_values["experiment_name"] = experiment_name
         run_info_values["index_library_name"] = index_library_name
@@ -595,7 +591,7 @@ def create_nextseq_run(request):
             )
             update_info_proj.save()
         results.append(["runname", experiment_name])
-        run_p.set_run_state("Recorded")
+        run_p.set_run_state("recorded")
         sample_sheet_lines = wetlab.utils.samplesheet.read_all_lines_in_sample_sheet(
             in_file
         )
@@ -3830,7 +3826,7 @@ def create_new_run(request):
                 },
             )
 
-        run_obj.set_run_state("Recorded")
+        run_obj.set_run_state("recorded")
 
         wetlab.utils.run.store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
