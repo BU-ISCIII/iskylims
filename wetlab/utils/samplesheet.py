@@ -405,7 +405,7 @@ def get_projects_in_run(in_file: str) -> dict:
     if not projects:
         return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_PROJECTS}
 
-    return {"projects": projects}
+    return projects
 
 
 def get_index_library_name(in_file):

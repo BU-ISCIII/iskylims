@@ -2,97 +2,118 @@
 {% load static %}
 {% block content %}
     {% include "wetlab/menu.html" %}
+    {% include 'registration/login_inline.html' %}
     <link href="{% static "wetlab/custom/css/wetlab_custom.css" %}" rel="stylesheet" type="text/css" />
-    <section class="iskylims d-flex flex-column fill-height">
-        <div class="container-md">
-            {% include 'registration/login_inline.html' %}
-            {% if error_message %}
+    <section class="iskylims">
+        {% if error_message %}
+            <div class="row my-2 justify-content-center">
+                <div class="col-md-8">
+                    <div class="card border-danger mb-3">
+                        <div class="card-header border-danger">
+                            <h3 class="text-center">Unable to accept your request</h3>
+                        </div>
+                        <div class="card-body">
+                            {% for error in error_message %}<p class="text-center">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if get_user_names %}
+            <div class="container">
                 <div class="row my-2">
-                    <div class="col-sm-7 offset-3">
-                        <div class="card border-danger mb-3">
-                            <div class="card-header border-danger">
-                                <h3 class="text-center">Unable to process your request</h3>
+                    <div class="col-sm-10 offset-1">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h3 class="text-center">Run creation progress</h3>
                             </div>
                             <div class="card-body">
-                                {% for message in error_message %}<h4 class="text-center">{{ message }}</h4>{% endfor %}
+                                <p>
+                                    Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }}
+                                </p>
+                                <p>This is the second, and the last, FORM that user need to fill down to have the information about the run</p>
+                                <p>
+                                    Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the successful run creation
+                                </p>
                             </div>
+                        </div>
+                        <div class="card-body my-2">
+                            <ol class="track-progress" data-steps="3">
+                                <li class="done">
+                                    <span>Upload Sample Sheet</span><i></i>
+                                </li>
+                                <!--
+                            -->
+                                <li class="active">
+                                    <span>Assign Library Kit</span>
+                                </li>
+                                <!--
+                            -->
+                                <li>
+                                    <span>Show Results</span><i></i>
+                                </li>
+                            </ol>
                         </div>
                     </div>
                 </div>
-            {% endif %}
-            {% if get_user_names %}
-                <div class="container">
-                    <div class="row my-2">
-                        <div class="col-sm-10 offset-1">
-                            <div class="card ">
-                                <div class="card-header">
-                                    <h3 class="text-center">Run creation progress</h3>
-                                </div>
-                                <div class="card-body">
-                                    <p>
-                                        Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }}
-                                    </p>
-                                    <p>This is the second, and the last, FORM that user need to fill down to have the information about the run</p>
-                                    <p>
-                                        Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the successful run creation
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="card-body my-2">
-                                <ol class="track-progress" data-steps="3">
-                                    <li class="done">
-                                        <span>Upload Sample Sheet</span><i></i>
-                                    </li>
-                                    <!--
-                            -->
-                                    <li class="active">
-                                        <span>Assign Library Kit</span>
-                                    </li>
-                                    <!--
-                            -->
-                                    <li>
-                                        <span>Show Results</span><i></i>
-                                    </li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Prepare the FORM for step 2 -->
-                <div class="container">
-                    <div class="row my-2">
-                        <div class="col-sm-6">
-                            <div class="card ">
-                                <div class="card-header">Form to upload the Sample Sheet file. Run Parameters definition</div>
-                                <div class="card-body">
-                                    <form method="post"
-                                          required
-                                          name="getSample2"
-                                          id="getSample2"
-                                          class="form-horizontal">
-                                        {% csrf_token %}
-                                        <input type="hidden"name="action" value="displayResult" />
-                                        <input type="hidden" name="runname" value="{{ get_user_names.runname }}" />
-                                        <div class="form-control required">
-                                            <label class="form-label" for="experimentname">Run Name :</label>
+            </div>
+            <!-- Prepare the FORM for step 2 -->
+            <div class="container">
+                <div class="row my-2">
+                    <div class="col-sm-6">
+                        <div class="card ">
+                            <div class="card-header">Form to upload the Sample Sheet file. Run Parameters definition</div>
+                            <div class="card-body">
+                                <form method="post"
+                                      required
+                                      name="getSample2"
+                                      id="getSample2"
+                                      class="form-horizontal">
+                                    {% csrf_token %}
+                                    <input type="hidden"name="action" value="displayResult" />
+                                    <input type="hidden" name="runname" value="{{ get_user_names.runname }}" />
+                                    <div class="form-control required">
+                                        <label class="form-label" for="experimentname">Run Name :</label>
+                                        <div class="col">
+                                            <input class="form-control"
+                                                   required="required"
+                                                   type="text"
+                                                   name="experimentname"
+                                                   size="60"
+                                                   maxlength="50"
+                                                   value="{{ get_user_names.experiment_name }}" />
+                                        </div>
+                                        <label class="form-label" for="runindexlibraryname">Index Library Name :</label>
+                                        <div class="col">
+                                            <input class="form-control"
+                                                   required="required"
+                                                   type="text"
+                                                   name="runindexlibraryname"
+                                                   size="60"
+                                                   maxlength="50"
+                                                   value="{{ get_user_names.index_library_name }}" />
+                                        </div>
+                                        {% for key, values in get_user_names.projects_user %}
+                                            <p class="mt-3">Project name assigned to run :</p>
+                                            <p class="text-center text-primary">{{ key }}</p>
+                                            <input type="hidden" name="project" value="{{ key }}" />
+                                            <hr />
+                                            <label class="form-label" for="username">User name :</label>
                                             <div class="col">
-                                                <input class="form-control"
+                                                <input id="users"
+                                                       class="form-control mb-3"
                                                        required="required"
                                                        type="text"
-                                                       name="experimentname"
+                                                       name="username"
                                                        size="60"
                                                        maxlength="50"
-                                                       value="{{ get_user_names.experiment_name }}" />
+                                                       value="{{ values }}" />
                                             </div>
-                                            <label class="form-label" for="runindexlibraryname">Index Library Name :</label>
+                                            <label class="form-label" for="libkit">UsedLibrary Kit :</label>
                                             <div class="col">
-                                                <input class="form-control"
-                                                       required="required"
-                                                       type="text"
-                                                       name="runindexlibraryname"
-                                                       size="60"
-                                                       maxlength="50"
-                                                       value="{{ get_user_names.index_library_name }}" />
+                                                <select class="form-select mb-3" name="libraryKit">
+                                                    {% for value in get_user_names.used_libraryKit %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
+                                                </select>
                                             </div>
                                             {% for key, values in get_user_names.projects_user %}
                                                 <p class="mt-3">Project name assigned to run :</p>
@@ -233,7 +254,7 @@
             {% else %}
                 <!--    Progress Step bar for the Form -->
                 <div class="row my-2">
-                    <div class="col-sm-10 offset-2">
+                    <div class="col-sm-8 offset-2">
                         <ol class="track-progress" data-steps="3">
                             <li class="active">
                                 <span>Upload Sample Sheet</span><i></i>
