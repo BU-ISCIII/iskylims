@@ -5,6 +5,20 @@
 {% include 'registration/login_inline.html' %}
 <link href="{% static "wetlab/custom/css/wetlab_custom.css" %}" rel="stylesheet" type="text/css"/>
 <section class="iskylims">
+    {% if error_message %}
+        <div class="row my-2 justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header border-danger">
+                        <h3>Unable to accept your request</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for error in error_message %}<p class="text-center">{{ error }}</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     {% if get_user_names %}
         <div class="container">
             <div class="row my-2">

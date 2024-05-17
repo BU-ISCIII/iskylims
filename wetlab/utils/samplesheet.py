@@ -361,8 +361,17 @@ def get_sample_with_user_owner(sample_sheet_path):
     return sample_user
 
 
-def get_projects_in_run(in_file):
-    header_found = 0
+def get_projects_in_run(in_file: str)-> dict:
+    """Funtion to check if the sample sheet has a valid heading. On valid file
+    get project names and the user names from description column
+
+    Args:
+        in_file (str): path to the sample sheet
+
+    Returns:
+        dict: dictionary with the projects or error message
+    """    
+    header_found = False
     projects = {}
     fh = open(in_file, "r")
     for line in fh:
@@ -371,10 +380,13 @@ def get_projects_in_run(in_file):
             continue
         found_header = re.search("^Sample_ID,Sample_Name", line)
         if found_header:
-            header_found = 1
-            # found the index for projects
-            p_index = line.split(",").index("Sample_Project")
-            description_index = line.split(",").index("Description")
+            # found the index for projects and description
+            if not "Sample_Project" and not "Description" in line:
+                break
+            split_line = line.split(",")
+            p_index = split_line.index("Sample_Project")
+            description_index = split_line(",").index("Description")
+            header_found = True
             continue
         if header_found:
             # ignore the empty lines separated by commas
@@ -384,7 +396,12 @@ def get_projects_in_run(in_file):
             # store the project name and the user name (Description) inside projects dict
             projects[line.split(",")[p_index]] = line.split(",")[description_index]
     fh.close()
-    return projects
+    if not found_header:
+        return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING}
+    if not projects:
+        return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_PROJECTS}
+
+    return {"projects" : projects}
 
 
 def get_index_library_name(in_file):
