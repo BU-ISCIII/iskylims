@@ -662,7 +662,9 @@ ERROR_SAMPLE_SHEET_INSTRUMENT_TYPE_NOT_INCLUDED = [
 ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED = [
     "Sample Sheet does not have Instrument type neither Index Adapters"
 ]
-ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING = ["Sample sheet does not have a valid sample heading"]
+ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING = [
+    "Sample sheet does not have a valid sample heading"
+]
 ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_PROJECTS = ["Sample sheet does not have Projects"]
 ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED = ["User in sample sheet is not defined"]
 ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = [
