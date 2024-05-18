@@ -206,15 +206,15 @@ def graphics_state(state):
         the index value of g_value and g_color [index]
     """
     state_list = [
-        "Error",
+        "error",
         "recorded",
-        "Sample Sent",
-        "Processing Run",
-        "Processed Run",
-        "Processing Bcl2fastq",
-        "Processed Bcl2fastq",
-        "Completed",
-        "Cancelled",
+        "sample_sent",
+        "processing_run",
+        "processed_run",
+        "processing_bcl2fastq",
+        "processed_bcl2fastq",
+        "completed",
+        "cancelled",
     ]
     g_value = [10, 15, 30, 45, 60, 75, 90, 100, 10]
     g_color = [
@@ -557,11 +557,11 @@ def get_information_for_incompleted_run():
             run_information["error"].append(data)
 
     if wetlab.models.RunProcess.objects.filter(
-        state__run_state_name="Cancelled"
+        state__run_state_name="cancelled"
     ).exists():
         run_information["cancelled"] = []
         run_objs = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name="Cancelled"
+            state__run_state_name="cancelled"
         ).order_by("run_name")
         for run_obj in run_objs:
             data = []
@@ -577,7 +577,7 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["cancelled"].append(data)
 
-    exclude_state = ["recorded", "Error", "Cancelled", "Completed", "pre_recorded"]
+    exclude_state = ["recorded", "error", "cancelled", "completed", "pre_recorded"]
 
     if (
         wetlab.models.RunProcess.objects.all()
@@ -728,8 +728,8 @@ def get_information_run(run_object):
             run_object.get_run_id(),
         ]
 
-    if run_state == "Cancelled":
-        run_state = "Sample Sent"
+    if run_state == "cancelled":
+        run_state = "sample_sent"
         info_dict["cancel_run"] = [
             run_object.get_run_name(),
             run_state,

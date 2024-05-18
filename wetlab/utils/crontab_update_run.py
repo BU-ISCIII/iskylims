@@ -416,15 +416,13 @@ def handle_not_completed_run():
 
     runs_to_handle = {}
 
-    # state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
-    #                                'Processed Bcl2fastq', 'recorded']
     state_list_be_processed = [
         "recorded",
-        "Sample Sent",
-        "Processing Run",
-        "Processed Run",
-        "Processing Bcl2fastq",
-        "Processed Bcl2fastq",
+        "sample_sent",
+        "processing_run",
+        "processed_run",
+        "processing_bcl2fastq",
+        "processed_bcl2fastq",
     ]
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
@@ -445,15 +443,15 @@ def handle_not_completed_run():
         if state == "recorded":
             manage_run_in_recorded_state(conn, runs_to_handle[state])
 
-        elif state == "Sample Sent":
+        elif state == "sample_sent":
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
-        elif state == "Processing Run":
+        elif state == "processing_run":
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
-        elif state == "Processed Run":
+        elif state == "processed_run":
             manage_run_in_processed_run_state(conn, runs_to_handle[state])
-        elif state == "Processing Bcl2fastq":
+        elif state == "processing_bcl2fastq":
             manage_run_in_processing_bcl2fastq_state(conn, runs_to_handle[state])
-        elif state == "Processed Bcl2fastq":
+        elif state == "processed_bcl2fastq":
             manage_run_in_processed_bcl2fastq_state(conn, runs_to_handle[state])
         else:
             for run_obj in runs_to_handle[state]:
@@ -639,7 +637,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
         )
 
         if run_status == "completed":
-            run_process_obj.set_run_state("Processed Run")
+            run_process_obj.set_run_state("processed_run")
             run_process_obj.set_run_completion_date(run_completion_date)
             logger.info("%s changed to Processed Run state", experiment_name)
             logger.debug(
@@ -694,7 +692,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
                     "%s : Waiting more time to get Sequencer completion",
                     experiment_name,
                 )
-                run_process_obj.set_run_state("Processing Run")
+                run_process_obj.set_run_state("processing_run")
                 logger.info("%s : changed to Processing Run state", experiment_name)
                 logger.debug(
                     "%s  : End manage_run_in_sample_sent_processing_state function",
@@ -850,7 +848,7 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
         # deleting temporary run metrics files
         wetlab.utils.crontab_process.delete_run_metric_files(experiment_name)
         # return the state to Processed Run
-        run_process_obj.set_run_state("Processing Bcl2fastq")
+        run_process_obj.set_run_state("processing_bcl2fastq")
 
     logger.debug(" End function manage_run_in_processed_run_state")
     return
@@ -951,7 +949,7 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
                 )
                 continue
         run_process_obj.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
-        run_process_obj.set_run_state("Processed Bcl2fastq")
+        run_process_obj.set_run_state("processed_bcl2fastq")
         logger.info("%s : Updated to Processed Bcl2Fastq state", experiment_name)
         logger.info(
             "%s : End handling in manage_run_in_processing_bcl2fastq_state function",
