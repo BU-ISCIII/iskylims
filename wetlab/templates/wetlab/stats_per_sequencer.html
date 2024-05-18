@@ -1,53 +1,74 @@
-
 {% extends "core/base.html" %}
 {% block content %}
-{% include "wetlab/menu.html" %}
-{% include "core/cdn_table_functionality.html" %}
-{% include "core/graphic_chart_functionality.html" %}
-<section class="iskylims d-flex flex-column fill-height">
-    <div class="container-md">
-        {% include 'registration/login_inline.html' %}
-        {% if error_message %}
-            <div class="row my-2">
-                <div class="col-sm-7 offset-3">
-                    <div class="card border-danger mb-3">
-                        <div class="card-header border-danger"><h3 class="text-center">Unable to process your request</h3> </div>
-                        <div class="card-body">
-                            <h4>{{error_message}}</h4>
+    {% include "wetlab/menu.html" %}
+    {% include "core/cdn_table_functionality.html" %}
+    {% include "core/graphic_chart_functionality.html" %}
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if error_message %}
+                <div class="row my-2">
+                    <div class="col-sm-7 offset-3">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header border-danger">
+                                <h3 class="text-center">Unable to process your request</h3>
+                            </div>
+                            <div class="card-body">
+                                {% for message in error_message %}<h4 class="text-center">{{ message }}</h4>{% endfor %}
+                            </div>
                         </div>
                     </div>
-                </div> 
-            </div> 
-        {% endif %}
-        {% if  sequencer_statistics %}
-            <div class="row my-2">
-                <div class="col" >
-                    <h3 class="text-center">Statistics information for {{sequencer_statistics.sequencer_name}}</h3>
+                </div>
+            {% endif %}
+            {% if  sequencer_statistics %}
+                <div class="row my-2">
                     <div class="col">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="true">Graphic</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link " id="runs-tab" data-bs-toggle="tab" data-bs-target="#runs" type="button" role="tab" aria-controls="runs" aria-selected="false">Runs handled</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
-                                <div class="container">
-                                    <div class="row mt-4">
-                                        <div class="col-md">
-                                            <div class="card text-center">
-                                                <div class="card-header"><h3>Graphic statistics </h3></div>
-                                                <div class="card-body">
-                                                    <div class="row ">
-                                                        <div class="col-md-6">
-                                                            <div id="sequencer_state_chart"> </div>
-                                                            {{ sequencer_statistics.sequencer_state_graphic|safe }}
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div id="sequencer_usage_chart"> </div>
-                                                            {{ sequencer_statistics.sequencer_usage_graphic|safe }}
+                        <h3 class="text-center">Statistics information for {{ sequencer_statistics.sequencer_name }}</h3>
+                        <div class="col">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active"
+                                            id="graphic-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#graphic"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="graphic"
+                                            aria-selected="true">Graphic</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="runs-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#runs"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="runs"
+                                            aria-selected="false">Runs handled</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                <div class="tab-pane fade show active"
+                                     id="graphic"
+                                     role="tabpanel"
+                                     aria-labelledby="graphic-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card text-center">
+                                                    <div class="card-header">
+                                                        <h3>Graphic statistics</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row ">
+                                                            <div class="col-md-6">
+                                                                <div id="sequencer_state_chart"></div>
+                                                                {{ sequencer_statistics.sequencer_state_graphic|safe }}
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div id="sequencer_usage_chart"></div>
+                                                                {{ sequencer_statistics.sequencer_usage_graphic|safe }}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -55,94 +76,118 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div> <!-- end graphics tab-->
-
-                            <div class="tab-pane fade" id="runs" role="tabpanel" aria-labelledby="runs-tab">
-                                <div class="container">
-                                    <div class="row mt-4">
-                                        <div class="col-md">
-                                            <div class="card">
-                                                <div class="card-header"><h3>Run handled by sequencer </h3></div>
-                                                <div class="card-body">
-                                                    <table class="table table-hover" id="run_table">
-                                                        <thead>
-                                                            <tr>
-                                                                {% for column in sequencer_statistics.run_table_heading %}
-                                                                    <th>{{column}}</th>
-                                                                {% endfor %}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for pk, run, state, seq, date in sequencer_statistics.run_table_data %}
+                                <!-- end graphics tab-->
+                                <div class="tab-pane fade"
+                                     id="runs"
+                                     role="tabpanel"
+                                     aria-labelledby="runs-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h3>Run handled by sequencer</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="run_table">
+                                                            <thead>
                                                                 <tr>
-                                                                    <td><a href="/wetlab/displayRun={{pk}}" class="text-decoration-none">{{run}}</a> </td>
-                                                                    <td>{{state}}</td>
-                                                                    <td>{{seq}}</td>
-                                                                    <td>{{date}}</td>
+                                                                    {% for column in sequencer_statistics.run_table_heading %}<th>{{ column }}</th>{% endfor %}
                                                                 </tr>
-                                                            {%endfor%}
-                                                        </tbody>
-                                                    </table>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for pk, run, state, seq, date in sequencer_statistics.run_table_data %}
+                                                                    <tr>
+                                                                        <td>
+                                                                            <a href="/wetlab/displayRun={{ pk }}" class="text-decoration-none">{{ run }}</a>
+                                                                        </td>
+                                                                        <td>{{ state }}</td>
+                                                                        <td>{{ seq }}</td>
+                                                                        <td>{{ date }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
-                                            </div> 
-                                        </div> 
-                                    </div>
-                                </div>                     
-                            </div>  <!-- end runs tab-->
-                        </div> 
-                    </div>
-                </div>
-            </div>
-
-        {% else %}
-            <div class="container">
-                <div class="row my-2">
-                    <div class="col-sm-7 offset-3" >
-                        <div class="card ">
-                            <div class="card-header"><h3 class="text-center">Statistics per sequencer</h3></div>
-                            <div class="card-body">
-                                <form method="post" enctype="multipart/form-data" name="statsmachine" id="statsmachine">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="machine"/>
-                                    <div class="row">
-                                        <div class="form-floating mb-3">
-                                            <select class="form-select" name="sequencer" id="floatingSequencer" required="required" aria-label="Floating label sequencer">
-                                                <option value="">Choose a value</option>
-                                                {% for value in sequencer_names %}
-                                                    <option value="{{value}}">{{value}}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <label class="text-danger" for="floatingSequencer">Select the sequencer</label>
-                                        </div>
-
-                                    </div>
-                                    <div class="row g-2">
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="date" class="form-control" id="start_date" name="startdate" placeholder="Filter run from start date" >
-                                                <label for="start-date">From Start Date (DD-MM-YYYY)</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="date" class="form-control" id="end_date" name="enddate" placeholder="Filter run from end date" >
-                                                <label  for="start-date">End Date (DD-MM-YYYY)</label>
                                             </div>
                                         </div>
                                     </div>
-                                    <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
-                                    <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
-                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
-                                </form>
-                            </div>  
+                                </div>
+                                <!-- end runs tab-->
+                            </div>
                         </div>
                     </div>
-                </div>  
-            </div>
-        {% endif %}
-    </div>
-</section>
-<script type="text/javascript">
+                </div>
+            {% else %}
+                <div class="container">
+                    <div class="row my-2">
+                        <div class="col-sm-7 offset-3">
+                            <div class="card ">
+                                <div class="card-header">
+                                    <h3 class="text-center">Statistics per sequencer</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post"
+                                          enctype="multipart/form-data"
+                                          name="statsmachine"
+                                          id="statsmachine">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="machine" />
+                                        <div class="row">
+                                            <div class="form-floating mb-3">
+                                                <select class="form-select"
+                                                        name="sequencer"
+                                                        id="floatingSequencer"
+                                                        required="required"
+                                                        aria-label="Floating label sequencer">
+                                                    <option value="">Choose a value</option>
+                                                    {% for value in sequencer_names %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
+                                                </select>
+                                                <label class="text-danger" for="floatingSequencer">Select the sequencer</label>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2">
+                                            <div class="col-md">
+                                                <div class="form-floating">
+                                                    <input type="date"
+                                                           class="form-control"
+                                                           id="start_date"
+                                                           name="startdate"
+                                                           placeholder="Filter run from start date" />
+                                                    <label for="start-date">From Start Date (DD-MM-YYYY)</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md">
+                                                <div class="form-floating">
+                                                    <input type="date"
+                                                           class="form-control"
+                                                           id="end_date"
+                                                           name="enddate"
+                                                           placeholder="Filter run from end date" />
+                                                    <label for="start-date">End Date (DD-MM-YYYY)</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="ms-3 mb-3">
+                                            Fields marked in <font COLOR="Red">Red</font> are mandatory
+                                        </p>
+                                        <input class="btn btn-outline-secondary mt-2"
+                                               type="reset"
+                                               value="Reset Fields" />
+                                        <input class="btn float-end btn-outline-primary mt-2"
+                                               type="submit"
+                                               value="Submit" />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    <script type="text/javascript">
     $(document).ready(function() {
         $('#run_table').DataTable({
             dom: "Bfltirp",
@@ -150,5 +195,5 @@
             buttons: ['excel', 'csv']
         });
     });
-</script>
+    </script>
 {% endblock %}

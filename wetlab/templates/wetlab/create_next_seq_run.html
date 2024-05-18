@@ -2,156 +2,157 @@
 {% load static %}
 {% block content %}
     {% include "wetlab/menu.html" %}
-    {% include 'registration/login_inline.html' %}
     <link href="{% static "wetlab/custom/css/wetlab_custom.css" %}" rel="stylesheet" type="text/css" />
-    <section class="iskylims">
-        {% if error_message %}
-            <div class="row my-2 justify-content-center">
-                <div class="col-md-8">
-                    <div class="card border-danger mb-3">
-                        <div class="card-header border-danger">
-                            <h3 class="text-center">Unable to accept your request</h3>
-                        </div>
-                        <div class="card-body">
-                            {% for error in error_message %}<p class="text-center">{{ error }}</p>{% endfor %}
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if error_message %}
+                <div class="row my-2">
+                    <div class="col-sm-7 offset-3">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header border-danger">
+                                <h3 class="text-center">Unable to process your request</h3>
+                            </div>
+                            <div class="card-body">
+                                {% for message in error_message %}<h4 class="text-center">{{ message }}</h4>{% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endif %}
-        {% if get_user_names %}
-            <div class="container">
-                <div class="row my-2">
-                    <div class="col-sm-10 offset-1">
-                        <div class="card ">
-                            <div class="card-header">
-                                <h3 class="text-center">Run creation progress</h3>
+            {% endif %}
+            {% if get_user_names %}
+                <div class="container">
+                    <div class="row my-2">
+                        <div class="col-sm-10 offset-1">
+                            <div class="card ">
+                                <div class="card-header">
+                                    <h3 class="text-center">Run creation progress</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p>
+                                        Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }}
+                                    </p>
+                                    <p>This is the second, and the last, FORM that user need to fill down to have the information about the run</p>
+                                    <p>
+                                        Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the successful run creation
+                                    </p>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <p>
-                                    Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }}
-                                </p>
-                                <p>This is the second, and the last, FORM that user need to fill down to have the information about the run</p>
-                                <p>
-                                    Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the successful run creation
-                                </p>
+                            <div class="card-body my-2">
+                                <ol class="track-progress" data-steps="3">
+                                    <li class="done">
+                                        <span>Upload Sample Sheet</span><i></i>
+                                    </li>
+                                    <!--
+                            -->
+                                    <li class="active">
+                                        <span>Assign Library Kit</span>
+                                    </li>
+                                    <!--
+                            -->
+                                    <li>
+                                        <span>Show Results</span><i></i>
+                                    </li>
+                                </ol>
                             </div>
-                        </div>
-                        <div class="card-body my-2">
-                            <ol class="track-progress" data-steps="3">
-                                <li class="done">
-                                    <span>Upload Sample Sheet</span><i></i>
-                                </li>
-                                <!--
-                            -->
-                                <li class="active">
-                                    <span>Assign Library Kit</span>
-                                </li>
-                                <!--
-                            -->
-                                <li>
-                                    <span>Show Results</span><i></i>
-                                </li>
-                            </ol>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- Prepare the FORM for step 2 -->
-            <div class="container">
-                <div class="row my-2">
-                    <div class="col-sm-6">
-                        <div class="card ">
-                            <div class="card-header">Form to upload the Sample Sheet file. Run Parameters definition</div>
-                            <div class="card-body">
-                                <form method="post"
-                                      required
-                                      name="getSample2"
-                                      id="getSample2"
-                                      class="form-horizontal">
-                                    {% csrf_token %}
-                                    <input type="hidden"name="action" value="displayResult" />
-                                    <input type="hidden" name="runname" value="{{ get_user_names.runname }}" />
-                                    <div class="form-control required">
-                                        <label class="form-label" for="experimentname">Run Name :</label>
-                                        <div class="col">
-                                            <input class="form-control"
-                                                   required="required"
-                                                   type="text"
-                                                   name="experimentname"
-                                                   size="60"
-                                                   maxlength="50"
-                                                   value="{{ get_user_names.experiment_name }}" />
-                                        </div>
-                                        <label class="form-label" for="runindexlibraryname">Index Library Name :</label>
-                                        <div class="col">
-                                            <input class="form-control"
-                                                   required="required"
-                                                   type="text"
-                                                   name="runindexlibraryname"
-                                                   size="60"
-                                                   maxlength="50"
-                                                   value="{{ get_user_names.index_library_name }}" />
-                                        </div>
-                                        {% for key, values in get_user_names.projects_user %}
-                                            <p class="mt-3">Project name assigned to run :</p>
-                                            <p class="text-center text-primary">{{ key }}</p>
-                                            <input type="hidden" name="project" value="{{ key }}" />
-                                            <hr />
-                                            <label class="form-label" for="username">User name :</label>
+                <!-- Prepare the FORM for step 2 -->
+                <div class="container">
+                    <div class="row my-2">
+                        <div class="col-sm-6">
+                            <div class="card ">
+                                <div class="card-header">Form to upload the Sample Sheet file. Run Parameters definition</div>
+                                <div class="card-body">
+                                    <form method="post"
+                                          required
+                                          name="getSample2"
+                                          id="getSample2"
+                                          class="form-horizontal">
+                                        {% csrf_token %}
+                                        <input type="hidden"name="action" value="displayResult" />
+                                        <input type="hidden" name="runname" value="{{ get_user_names.runname }}" />
+                                        <div class="form-control required">
+                                            <label class="form-label" for="experimentname">Run Name :</label>
                                             <div class="col">
-                                                <input id="users"
-                                                       class="form-control mb-3"
+                                                <input class="form-control"
                                                        required="required"
                                                        type="text"
-                                                       name="username"
+                                                       name="experimentname"
                                                        size="60"
                                                        maxlength="50"
-                                                       value="{{ values }}" />
+                                                       value="{{ get_user_names.experiment_name }}" />
                                             </div>
-                                            <label class="form-label" for="libkit">UsedLibrary Kit :</label>
+                                            <label class="form-label" for="runindexlibraryname">Index Library Name :</label>
                                             <div class="col">
-                                                <select class="form-select mb-3" name="libraryKit">
-                                                    {% for value in get_user_names.used_libraryKit %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
-                                                </select>
-                                            </div>
-                                            <label class="form-label" for="projectindexlibraryname">Index Library Name :</label>
-                                            <div class="col">
-                                                <input class="form-control mb-3"
+                                                <input class="form-control"
                                                        required="required"
                                                        type="text"
-                                                       name="projectindexlibraryname"
+                                                       name="runindexlibraryname"
                                                        size="60"
                                                        maxlength="50"
                                                        value="{{ get_user_names.index_library_name }}" />
                                             </div>
-                                        {% endfor %}
-                                    </div>
-                                    <input id="btnSubmit"
-                                           class="btn float-end btn-outline-primary mt-2 me-2"
-                                           type="submit"
-                                           value="Submit" />
-                                </form>
+                                            {% for key, values in get_user_names.projects_user %}
+                                                <p class="mt-3">Project name assigned to run :</p>
+                                                <p class="text-center text-primary">{{ key }}</p>
+                                                <input type="hidden" name="project" value="{{ key }}" />
+                                                <hr />
+                                                <label class="form-label" for="username">User name :</label>
+                                                <div class="col">
+                                                    <input id="users"
+                                                           class="form-control mb-3"
+                                                           required="required"
+                                                           type="text"
+                                                           name="username"
+                                                           size="60"
+                                                           maxlength="50"
+                                                           value="{{ values }}" />
+                                                </div>
+                                                <label class="form-label" for="libkit">UsedLibrary Kit :</label>
+                                                <div class="col">
+                                                    <select class="form-select mb-3" name="libraryKit">
+                                                        {% for value in get_user_names.used_libraryKit %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
+                                                    </select>
+                                                </div>
+                                                <label class="form-label" for="projectindexlibraryname">Index Library Name :</label>
+                                                <div class="col">
+                                                    <input class="form-control mb-3"
+                                                           required="required"
+                                                           type="text"
+                                                           name="projectindexlibraryname"
+                                                           size="60"
+                                                           maxlength="50"
+                                                           value="{{ get_user_names.index_library_name }}" />
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <input id="btnSubmit"
+                                               class="btn float-end btn-outline-primary mt-2 me-2"
+                                               type="submit"
+                                               value="Submit" />
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="card ">
-                            <div class="card-header">Notes for user validation</div>
-                            <div class="card-body">
-                                <p>The following information have been collected from the Sample Sheet uploaded previously.</p>
-                                <p>It contains the userid information. Correct in the user name field if this information need to be changed</p>
-                                <p>Write down the Library kit used for each project</p>
-                                <p>
-                                    <strong>Submit button is disabled</strong> if any of the user names is not previoulsy defined in database
-                                </p>
+                        <div class="col-sm-6">
+                            <div class="card ">
+                                <div class="card-header">Notes for user validation</div>
+                                <div class="card-body">
+                                    <p>The following information have been collected from the Sample Sheet uploaded previously.</p>
+                                    <p>It contains the userid information. Correct in the user name field if this information need to be changed</p>
+                                    <p>Write down the Library kit used for each project</p>
+                                    <p>
+                                        <strong>Submit button is disabled</strong> if any of the user names is not previoulsy defined in database
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!--script to validate the user name. submit button is disabled until valid input -->
-            <script>
+                <!--script to validate the user name. submit button is disabled until valid input -->
+                <script>
                 var arr = {{ get_user_names.aval_users |safe }}
 
                 function checkInputs() {
@@ -177,9 +178,9 @@
                 })
 
                 checkInputs()
-            </script>
-            <!--script to disable the submit button -->
-            <script>
+                </script>
+                <!--script to disable the submit button -->
+                <script>
                         $(document).ready(function () {
                             $("#getSample").submit(function (e) {
                                 //stop submitting the form to see the disabled button effect
@@ -189,133 +190,133 @@
                                 return true;
                             });
                         });
-            </script>
-        {% elif completed_form %}
-            {% for key, val in completed_form %}
-                {% if key == "runname" %}
-                    <div class="row my-2">
-                        <div class="col-sm-8 offset-2">
-                            <ol class="track-progress" data-steps="3">
-                                <li class="done">
-                                    <span>Upload Sample Sheet</span><i></i>
-                                </li>
-                                <!--
+                </script>
+            {% elif completed_form %}
+                {% for key, val in completed_form %}
+                    {% if key == "runname" %}
+                        <div class="row my-2">
+                            <div class="col-sm-8 offset-2">
+                                <ol class="track-progress" data-steps="3">
+                                    <li class="done">
+                                        <span>Upload Sample Sheet</span><i></i>
+                                    </li>
+                                    <!--
                                     -->
-                                <li class="done">
-                                    <span>Assign Library Kit</span>
-                                </li>
-                                <!--
+                                    <li class="done">
+                                        <span>Assign Library Kit</span>
+                                    </li>
+                                    <!--
                                     -->
-                                <li class="active">
-                                    <span>Show Results</span><i></i>
-                                </li>
-                            </ol>
-                        </div>
-                    </div>
-                    <div class="row my-2">
-                        <div class="col-sm-8 offset-2">
-                            <div class="card ">
-                                <div class="card-header">
-                                    <h5>Run configuration have been sucessfully stored</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p>All the required information is stored now on database.</p>
-                                    <p>
-                                        For the run name : <b>{{ val }}</b>
-                                    </p>
-                                </div>
+                                    <li class="active">
+                                        <span>Show Results</span><i></i>
+                                    </li>
+                                </ol>
                             </div>
                         </div>
-                    </div>
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            <!--    Progress Step bar for the Form -->
-            <div class="row my-2">
-                <div class="col-sm-8 offset-2">
-                    <ol class="track-progress" data-steps="3">
-                        <li class="active">
-                            <span>Upload Sample Sheet</span><i></i>
-                        </li>
-                        <!--
-                        -->
-                        <li>
-                            <span>Assign Library Kit</span>
-                        </li>
-                        <!--
-                        -->
-                        <li>
-                            <span>Show Results</span><i></i>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-            <div class="row my-2">
-                <div class="col-sm-8 offset-1">
-                    <p>
-                        This FORM will be used to generated the input file that <a href="https://basespace.illumina.com/home/index">BaseSpace</a> requires to execute the run
-                    </p>
-                </div>
-            </div>
-            <div class="container">
-                <div class="row my-2">
-                    <div class="col-sm-7">
-                        <div class="card ">
-                            <div class="card-header">Form to upload the Sample Sheet file</div>
-                            <div class="card-body">
-                                <form method="post"
-                                      enctype="multipart/form-data"
-                                      name="getSample"
-                                      id="getSample"
-                                      class="form-horizontal">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="uploadFile" />
-                                    <div class="form-control required">
-                                        <label class="col-sm-4 form-label" for="filecsv">Upload Sample Sheet file</label>
-                                        <div class="col">
-                                            <input class="form-control"
-                                                   type="file"
-                                                   required="required"
-                                                   accept="text/csv"
-                                                   name="myfile" />
-                                        </div>
+                        <div class="row my-2">
+                            <div class="col-sm-8 offset-2">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h5>Run configuration have been sucessfully stored</h5>
                                     </div>
-                                    <p>
-                                        Fields marked with <font COLOR="Red">*</font> are mandatory
-                                    </p>
-                                    <input class="btn float-end btn-outline-primary"
-                                           type="submit"
-                                           value="Submit"
-                                           id="btnSubmit"
-                                           {% if disable_submit_form %}disabled{% endif %} />
-                                </form>
+                                    <div class="card-body">
+                                        <p>All the required information is stored now on database.</p>
+                                        <p>
+                                            For the run name : <b>{{ val }}</b>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-5">
-                        <div class="card ">
-                            <div class="card-header">Form to upload the Sample Sheet file</div>
-                            <div class="card-body">
-                                <p>This Form is used to upload the Sample Sheet generated by Illumina Experience Manager tool.</p>
-                                <p>Guide for Sample Sheet creation and download the IEM tool can be found at illumina Web page.</p>
-                                <p>
-                                    Click <a href="https://www.illumina.com/informatics/research/experimental-design/illumina-experiment-manager.html"
-    target="_blank">here</a> for getting this information.
-                                </p>
-                            </div>
-                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <!--    Progress Step bar for the Form -->
+                <div class="row my-2">
+                    <div class="col-sm-10 offset-2">
+                        <ol class="track-progress" data-steps="3">
+                            <li class="active">
+                                <span>Upload Sample Sheet</span><i></i>
+                            </li>
+                            <!--
+                        -->
+                            <li>
+                                <span>Assign Library Kit</span>
+                            </li>
+                            <!--
+                        -->
+                            <li>
+                                <span>Show Results</span><i></i>
+                            </li>
+                        </ol>
                     </div>
                 </div>
-                <!--script to disable the submit button -->
-                <script>
+                <div class="row my-2">
+                    <div class="col-sm-8 offset-1">
+                        <p>
+                            This FORM will be used to generated the input file that <a href="https://basespace.illumina.com/home/index">BaseSpace</a> requires to execute the run
+                        </p>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row my-2">
+                        <div class="col-sm-7">
+                            <div class="card ">
+                                <div class="card-header">Form to upload the Sample Sheet file</div>
+                                <div class="card-body">
+                                    <form method="post"
+                                          enctype="multipart/form-data"
+                                          name="getSample"
+                                          id="getSample"
+                                          class="form-horizontal">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="uploadFile" />
+                                        <div class="form-control required">
+                                            <label class="col-sm-4 form-label" for="filecsv">Upload Sample Sheet file</label>
+                                            <div class="col">
+                                                <input class="form-control"
+                                                       type="file"
+                                                       required="required"
+                                                       accept="text/csv"
+                                                       name="myfile" />
+                                            </div>
+                                        </div>
+                                        <p>
+                                            Fields marked with <font COLOR="Red">*</font> are mandatory
+                                        </p>
+                                        <input class="btn float-end btn-outline-primary"
+                                               type="submit"
+                                               value="Submit"
+                                               id="btnSubmit"
+                                               {% if disable_submit_form %}disabled{% endif %} />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-5">
+                            <div class="card ">
+                                <div class="card-header">Form to upload the Sample Sheet file</div>
+                                <div class="card-body">
+                                    <p>This Form is used to upload the Sample Sheet generated by Illumina Experience Manager tool.</p>
+                                    <p>Guide for Sample Sheet creation and download the IEM tool can be found at illumina Web page.</p>
+                                    <p>
+                                        Click <a href="https://www.illumina.com/informatics/research/experimental-design/illumina-experiment-manager.html"
+    target="_blank">here</a> for getting this information.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--script to disable the submit button -->
+                    <script>
                 $(document).ready(function () {
                     $("#getSample").submit(function (e) {
                         $("#btnSubmit").attr("disabled", true);
                         return true;
                     });
                 });
-                </script>
-            </div>
-        {% endif %}
-    </section>
-{% endblock %}
+                    </script>
+                </div>
+            {% endif %}
+        </section>
+    {% endblock %}

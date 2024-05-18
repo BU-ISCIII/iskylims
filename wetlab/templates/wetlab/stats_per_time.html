@@ -1,220 +1,303 @@
 {% extends "core/base.html" %}
 {% block content %}
-{% include "wetlab/menu.html" %}
-{% include "core/cdn_table_functionality.html" %}
-{% include "core/graphic_chart_functionality.html" %}
-<section class="iskylims d-flex flex-column fill-height">
-    <div class="container-md">
-        {% include 'registration/login_inline.html' %}
-        {% if error_message %}
-            <div class="row my-2 justify-content-center">
-                <div class="col-sm-7">
-                    <div class="card border-danger mb-3">
-                        <div class="card-header border-danger"><h3 class="text-center">Unable to process your request</h3> </div>
-                        <div class="card-body">
-                            <h4>{{error_messages}}</h4>
-                        </div>
-                    </div>
-                </div> 
-            </div> 
-        {% endif %}
-        {% if  per_time_statistics %}
-        <div class="row my-2">
-            <div class="col" >
-                <h3 class="text-center">Statistics information from {{per_time_statistics.start_date}}  to {{per_time_statistics.end_date}}</h3>
-                <div class="col">
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="graphic-tab" data-bs-toggle="tab" data-bs-target="#graphic" type="button" role="tab" aria-controls="graphic" aria-selected="true">Graphic</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="quality-tab" data-bs-toggle="tab" data-bs-target="#quality" type="button" role="tab" aria-controls="quality" aria-selected="false">Quality</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="runs-tab" data-bs-toggle="tab" data-bs-target="#runs" type="button" role="tab" aria-controls="runs" aria-selected="false">Runs</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="samples-tab" data-bs-toggle="tab" data-bs-target="#samples" type="button" role="tab" aria-controls="samples" aria-selected="false">Samples</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link " id="barcode-tab" data-bs-toggle="tab" data-bs-target="#barcode" type="button" role="tab" aria-controls="barcode" aria-selected="false">Unknown barcodes</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
-                        <div class="tab-pane fade show active" id="graphic" role="tabpanel" aria-labelledby="graphic-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col-md">
-                                        <div class="card text-center">
-                                            <div class="card-header"><h3>Graphic statistics </h3></div>
-                                            <div class="card-body">
-                                                <div class="row ">
-                                                    <div class="col-md-6">
-                                                        <div id="time_state_chart"> </div>
-                                                        {{ per_time_statistics.time_state_graphic|safe }}
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <h5 class="text-center">There are {{per_time_statistics.num_runs}} runs in this period</h5>
-                                                        <div id="time_run_weeks_chart"> </div>
-                                                        {{ per_time_statistics.time_run_weeks_graphic|safe }}
-                                                    </div>
-                                                    <div class="row ">
-                                                        <div class="col-md-6">
-                                                            <div id="time_researcher_chart"> </div>
-                                                            {{ per_time_statistics.time_researcher_graphic|safe }}
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <h5 class"text-center">There are {{per_time_statistics.num_projects}} projects in this period</h5>
-                                                            <div id="time_project_weeks_chart"> </div>
-                                                            {{ per_time_statistics.time_project_weeks_graphic|safe }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> 
-                        </div> <!-- end graphics tab-->
-                        <div class="tab-pane fade " id="quality" role="tabpanel" aria-labelledby="quality-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col-md">
-                                        <div class="card text-center">
-                                            <div class="card-header"><h3>Quality statistics </h3></div>
-                                            <div class="card-body">
-                                                <div class="row ">
-                                                    <div class="col-md-6">
-                                                        <div id="time_q_30_chart"> </div>
-                                                        {{ per_time_statistics.time_q_30_graphic|safe }}
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div id="time_mean_chart"> </div>
-                                                        {{ per_time_statistics.time_mean_graphic|safe }}
-                                                    </div>
-                                                    <div class="row ">
-                                                        <div class="col-md-6">
-                                                            <div id="time_researcher_q_30_chart"> </div>
-                                                            {{ per_time_statistics.time_researcher_q_30_graphic|safe }}
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div id="time_researcher_mean_chart"> </div>
-                                                            {{ per_time_statistics.time_researcher_mean_graphic|safe }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> 
-                        </div> <!-- end quality tab-->
-                        <div class="tab-pane fade" id="runs" role="tabpanel" aria-labelledby="runs-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col-md">
-                                        <div class="card">
-                                            <div class="card-header text-center"><h3>Run data for this period</h3></div>
-                                            <div class="card-body">
-                                                <table class="table table-hover" id="run_table">
-                                                    <thead>
-                                                        <tr>
-                                                            {% for column in per_time_statistics.run_table_heading %}
-                                                                <th>{{column}}</th>
-                                                            {% endfor %}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for pk, run, state, seq, date in per_time_statistics.run_data %}
-                                                            <tr>
-                                                                <td><a href="/wetlab/displayRun={{pk}}" class="text-decoration-none">{{run}}</a> </td>
-                                                                <td>{{state}}</td>
-                                                                <td>{{seq}}</td>
-                                                                <td>{{date}}</td>
-                                                            </tr>
-                                                        {%endfor%}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div> 
-                                    </div> 
-                                </div>
-                            </div>                     
-                        </div>  <!-- end runs tab-->
-                        <div class="tab-pane fade" id="samples" role="tabpanel" aria-labelledby="samples-tab">
-                            <div class="container">
-                                <div class="row mt-4">
-                                    <div class="col-md">
-                                        <div class="card">
-                                            <div class="card-header text-center"><h3>Sample data for this period</h3></div>
-                                            <div class="card-body">
-                                                <table class="table table-hover" id="sample_table">
-                                                    <thead>
-                                                        <tr>
-                                                            {% for column in per_time_statistics.sample_table_heading %}
-                                                                <th>{{column}}</th>
-                                                            {% endfor %}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for pk, sample, researcher, project, run, barcode in per_time_statistics.sample_data %}
-                                                            <tr>
-                                                                <td><a href="/wetlab/displaySampleInRun={{pk}}" class="text-decoration-none">{{sample}}</a> </td>
-                                                                <td>{{researcher}}</td>
-                                                                <td>{{project}}</td>
-                                                                <td>{{run}}</td>
-                                                                <td>{{barcode}}</td>
-                                                            </tr>
-                                                        {%endfor%}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div> 
-                                    </div> 
-                                </div>
-                            </div>                     
-                        </div>  <!-- end samples tab-->   
-                    </div> 
-
-                </div>
-            </div> 
-        {% else %}
-            <div class="container">
-                <div class="row my-2">
-                    <div class="col-sm-7 offset-3" >
-                        <div class="card ">
-                            <div class="card-header"><h3 class="text-center">Statistics for a time period</h3></div>
+    {% include "wetlab/menu.html" %}
+    {% include "core/cdn_table_functionality.html" %}
+    {% include "core/graphic_chart_functionality.html" %}
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if error_message %}
+                <div class="row my-2 justify-content-center">
+                    <div class="col-sm-7 offset-3">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header border-danger">
+                                <h3 class="text-center">Unable to process your request</h3>
+                            </div>
                             <div class="card-body">
-                                <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod">
-                                    {% csrf_token %}
-                                    <div class="row g-2">
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="date" class="form-control" id="start_date" name="startdate"required="required" placeholder="Filter run from start date" >
-                                                <label class="text-danger"for="start-date">From Start Date (DD-MM-YYYY)</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="date" class="form-control" id="end_date" name="enddate" required="required" placeholder="Filter run from end date" >
-                                                <label class="text-danger" for="start-date">End Date (DD-MM-YYYY)</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
-                                    <input class="btn btn-outline-secondary mt-2" type="reset" value="Reset Fields">
-                                    <input class="btn float-end btn-outline-primary mt-2" type="submit" value="Submit">
-                                </form>
-                            </div>  
+                                {% for message in error_message %}<h4 class="text-center">{{ message }}</h4>{% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
+            {% endif %}
+            {% if  per_time_statistics %}
+                <div class="row my-2">
+                    <div class="col">
+                        <h3 class="text-center">
+                            Statistics information from {{ per_time_statistics.start_date }}  to {{ per_time_statistics.end_date }}
+                        </h3>
+                        <div class="col">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active"
+                                            id="graphic-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#graphic"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="graphic"
+                                            aria-selected="true">Graphic</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="quality-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#quality"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="quality"
+                                            aria-selected="false">Quality</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="runs-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#runs"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="runs"
+                                            aria-selected="false">Runs</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="samples-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#samples"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="samples"
+                                            aria-selected="false">Samples</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="barcode-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#barcode"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="barcode"
+                                            aria-selected="false">Unknown barcodes</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                                <div class="tab-pane fade show active"
+                                     id="graphic"
+                                     role="tabpanel"
+                                     aria-labelledby="graphic-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card text-center">
+                                                    <div class="card-header">
+                                                        <h3>Graphic statistics</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row ">
+                                                            <div class="col-md-6">
+                                                                <div id="time_state_chart"></div>
+                                                                {{ per_time_statistics.time_state_graphic|safe }}
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h5 class="text-center">There are {{ per_time_statistics.num_runs }} runs in this period</h5>
+                                                                <div id="time_run_weeks_chart"></div>
+                                                                {{ per_time_statistics.time_run_weeks_graphic|safe }}
+                                                            </div>
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="time_researcher_chart"></div>
+                                                                    {{ per_time_statistics.time_researcher_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <h5 class"text-center">There are {{ per_time_statistics.num_projects }} projects in this period</h5>
+                                                                    <div id="time_project_weeks_chart"></div>
+                                                                    {{ per_time_statistics.time_project_weeks_graphic|safe }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end graphics tab-->
+                                <div class="tab-pane fade "
+                                     id="quality"
+                                     role="tabpanel"
+                                     aria-labelledby="quality-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card text-center">
+                                                    <div class="card-header">
+                                                        <h3>Quality statistics</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row ">
+                                                            <div class="col-md-6">
+                                                                <div id="time_q_30_chart"></div>
+                                                                {{ per_time_statistics.time_q_30_graphic|safe }}
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div id="time_mean_chart"></div>
+                                                                {{ per_time_statistics.time_mean_graphic|safe }}
+                                                            </div>
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="time_researcher_q_30_chart"></div>
+                                                                    {{ per_time_statistics.time_researcher_q_30_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="time_researcher_mean_chart"></div>
+                                                                    {{ per_time_statistics.time_researcher_mean_graphic|safe }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end quality tab-->
+                                <div class="tab-pane fade"
+                                     id="runs"
+                                     role="tabpanel"
+                                     aria-labelledby="runs-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center">
+                                                        <h3>Run data for this period</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="run_table">
+                                                            <thead>
+                                                                <tr>
+                                                                    {% for column in per_time_statistics.run_table_heading %}<th>{{ column }}</th>{% endfor %}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for pk, run, state, seq, date in per_time_statistics.run_data %}
+                                                                    <tr>
+                                                                        <td>
+                                                                            <a href="/wetlab/displayRun={{ pk }}" class="text-decoration-none">{{ run }}</a>
+                                                                        </td>
+                                                                        <td>{{ state }}</td>
+                                                                        <td>{{ seq }}</td>
+                                                                        <td>{{ date }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end runs tab-->
+                                <div class="tab-pane fade"
+                                     id="samples"
+                                     role="tabpanel"
+                                     aria-labelledby="samples-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center">
+                                                        <h3>Sample data for this period</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="sample_table">
+                                                            <thead>
+                                                                <tr>
+                                                                    {% for column in per_time_statistics.sample_table_heading %}<th>{{ column }}</th>{% endfor %}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for pk, sample, researcher, project, run, barcode in per_time_statistics.sample_data %}
+                                                                    <tr>
+                                                                        <td>
+                                                                            <a href="/wetlab/displaySampleInRun={{ pk }}"
+                                                                               class="text-decoration-none">{{ sample }}</a>
+                                                                        </td>
+                                                                        <td>{{ researcher }}</td>
+                                                                        <td>{{ project }}</td>
+                                                                        <td>{{ run }}</td>
+                                                                        <td>{{ barcode }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end samples tab-->
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="container">
+                        <div class="row my-2">
+                            <div class="col-sm-7 offset-3">
+                                <div class="card ">
+                                    <div class="card-header">
+                                        <h3 class="text-center">Statistics for a time period</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <form method="post"
+                                              enctype="multipart/form-data"
+                                              name="statisticsPerPeriod"
+                                              id="statisticsPerPeriod">
+                                            {% csrf_token %}
+                                            <div class="row g-2">
+                                                <div class="col-md">
+                                                    <div class="form-floating">
+                                                        <input type="date"
+                                                               class="form-control"
+                                                               id="start_date"
+                                                               name="startdate"
+                                                               required="required"
+                                                               placeholder="Filter run from start date" />
+                                                        <label class="text-danger"for="start-date">From Start Date (DD-MM-YYYY)</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    <div class="form-floating">
+                                                        <input type="date"
+                                                               class="form-control"
+                                                               id="end_date"
+                                                               name="enddate"
+                                                               required="required"
+                                                               placeholder="Filter run from end date" />
+                                                        <label class="text-danger" for="start-date">End Date (DD-MM-YYYY)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="ms-3 mb-3">
+                                                Fields marked in <font COLOR="Red">Red</font> are mandatory
+                                            </p>
+                                            <input class="btn btn-outline-secondary mt-2"
+                                                   type="reset"
+                                                   value="Reset Fields" />
+                                            <input class="btn float-end btn-outline-primary mt-2"
+                                                   type="submit"
+                                                   value="Submit" />
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-
-        {% endif %}
-    </div>
-</section>
-<script type="text/javascript">
+        </section>
+        <script type="text/javascript">
     $(document).ready(function() {
         $('#run_table').DataTable({
             dom: "Bfltirp",
@@ -230,5 +313,5 @@
             buttons: ['excel', 'csv']
         });
     });
-</script>
-{% endblock %}
+        </script>
+    {% endblock %}
