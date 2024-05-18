@@ -167,7 +167,7 @@ def execute_test_for_testing_run(run_test_name):
     conn = wetlab.utils.common.open_samba_connection()
 
     # Execute 6 times to be sure it has completed all steps
-    state_run_test = ["Sample Sent", "Processed Run", "Processed Bcl2fastq"]
+    state_run_test = ["sample_sent", "processed_run", "processed_bcl2fastq"]
     for state_run in state_run_test:
         run_result[state_run] = "NOK"
     if not wetlab.models.RunProcess.objects.filter(
@@ -180,61 +180,61 @@ def execute_test_for_testing_run(run_test_name):
     ).last()
     for step in range(6):
         state = run_obj.get_state()
-        if state == "ERROR":
+        if state == "error":
             run_result["ERROR"] = "error"
             return run_result
-        elif state == "Sample Sent":
+        elif state == "sample_sent":
             wetlab.utils.crontab_update_run.manage_run_in_sample_sent_processing_state(
                 conn, [run_obj]
             )
-            if run_obj.get_state() == "ERROR":
+            if run_obj.get_state() == "error":
                 run_result["ERROR"] = "Error when processing run in Sample Sent state"
                 break
             else:
-                run_result["Sample Sent"] = "OK"
-        elif state == "Processing Run":
+                run_result["sample_sent"] = "OK"
+        elif state == "processing_run":
             wetlab.utils.crontab_update_run.manage_run_in_sample_sent_processing_state(
                 conn, [run_obj]
             )
-            if run_obj.get_state() == "ERROR":
+            if run_obj.get_state() == "error":
                 run_result["ERROR"] = (
                     "Error when processing run in Processing Run state"
                 )
                 break
             else:
                 run_result["Processing Run"] = "OK"
-        elif state == "Processed Run":
+        elif state == "processed_run":
             wetlab.utils.crontab_update_run.manage_run_in_processed_run_state(
                 conn, [run_obj]
             )
-            if run_obj.get_state() == "ERROR":
+            if run_obj.get_state() == "errorR":
                 run_result["ERROR"] = "Error when processing run in Processed Run state"
                 break
             else:
                 run_result["Processed Run"] = "OK"
-        elif state == "Processing Bcl2fastq":
+        elif state == "processing_bcl2fastq":
             wetlab.utils.crontab_update_run.manage_run_in_processing_bcl2fastq_state(
                 conn, [run_obj]
             )
-            if run_obj.get_state() == "ERROR":
+            if run_obj.get_state() == "error":
                 run_result["ERROR"] = (
                     "Error when processing run in Processing Bcl2fastq state"
                 )
                 break
             else:
                 run_result["Processing Bcl2fastq"] = "OK"
-        elif state == "Processed Bcl2fastq":
+        elif state == "processed_bcl2fastq":
             wetlab.utils.crontab_update_run.manage_run_in_processed_bcl2fastq_state(
                 conn, [run_obj]
             )
-            if run_obj.get_state() == "ERROR":
+            if run_obj.get_state() == "error":
                 run_result["ERROR"] = (
                     "Error when processing run in Processed Bcl2fastq state"
                 )
                 break
             else:
                 run_result["Processed Bcl2fastq"] = "OK"
-        elif state == "Completed":
+        elif state == "completed":
             run_result["Completed"] = "OK"
             break
         logger.info("----------------------------------")
