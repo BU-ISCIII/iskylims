@@ -577,11 +577,7 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["cancelled"].append(data)
 
-<<<<<<< HEAD
     exclude_state = ["recorded", "error", "cancelled", "completed", "pre_recorded"]
-=======
-    exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "pre_recorded"]
->>>>>>> a3687246 (change Pre-Recorded state to snake style)
 
     if (
         wetlab.models.RunProcess.objects.all()
