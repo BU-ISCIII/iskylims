@@ -793,9 +793,9 @@ ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
 ]
 ERROR_NO_SAMPLES_SELECTED = "They were not selected any Sample on your request"
 
-ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = (
-    ["There are not runs for the selected period of time"]
-)
+ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = [
+    "There are not runs for the selected period of time"
+]
 ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
     "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
 ]
