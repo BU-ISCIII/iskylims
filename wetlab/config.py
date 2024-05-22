@@ -592,12 +592,21 @@ HEADING_STATISTICS_FOR_RECORDED_LAB_SAMPLE = [
     "user name",
 ]
 HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
-HEADING_STATISTICS_FOR_TIME_SAMPLE = [
+HEADING_STATISTICS_FOR_TIME_SEQUENCED_SAMPLE = [
     "Sample name",
     "Researcher",
     "Project name",
     "Run name",
     "Barcode",
+]
+HEADING_STATISTICS_FOR_TIME_DEFINED_SAMPLE = [
+    "Sample name",
+    "Unique ID",
+    "State",
+    "Recorded date",
+    "Species",
+    "Sample type",
+    "lab code",
 ]
 HEADING_STATISTICS_FOR_SEQUENCER_RUNS = [
     "Run name",
@@ -758,7 +767,7 @@ ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS = [
 ]
 
 # ERROR TEXT FOR SEACHING #############################################
-ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YYYY)"
+ERROR_INVALID_FORMAT_FOR_DATES = ["Invalid date format. Use the format  (DD-MM-YYYY)"]
 
 
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
@@ -785,7 +794,7 @@ ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
 ERROR_NO_SAMPLES_SELECTED = "They were not selected any Sample on your request"
 
 ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = (
-    "There are not runs for the selected period of time"
+    ["There are not runs for the selected period of time"]
 )
 ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
     "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
@@ -806,6 +815,7 @@ ERROR_USER_NAME_TOO_SHORT = "User name must contains at least 5 characters"
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = (
     "Unsuccessful configuration settings for Samba connection"
 )
+ERROR_USER_NOT_DEFINED = ["User is not defined"]
 ERROR_WRONG_SAMBA_FOLDER_SETTINGS = (
     "Unsuccessful configuration. Samba folder not reachable"
 )

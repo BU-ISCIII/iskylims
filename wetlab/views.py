@@ -1678,6 +1678,13 @@ def stats_per_time(request):
         per_time_statistics = wetlab.utils.statistics.get_per_time_statistics(
             start_date, end_date
         )
+        if "ERROR" in per_time_statistics:
+            error_message = per_time_statistics["ERROR"]
+            return render(
+                request,
+                "wetlab/stats_per_time.html",
+                {"error_message": error_message},
+            )
         return render(
             request,
             "wetlab/stats_per_time.html",

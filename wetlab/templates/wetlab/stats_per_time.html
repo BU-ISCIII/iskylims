@@ -30,13 +30,13 @@
                             <ul class="nav nav-tabs" id="myTab" role="tablist">
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link active"
-                                            id="graphic-tab"
+                                            id="overview-tab"
                                             data-bs-toggle="tab"
-                                            data-bs-target="#graphic"
+                                            data-bs-target="#overview"
                                             type="button"
                                             role="tab"
-                                            aria-controls="graphic"
-                                            aria-selected="true">Graphic</button>
+                                            aria-controls="overview"
+                                            aria-selected="true">Overview</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link "
@@ -46,7 +46,7 @@
                                             type="button"
                                             role="tab"
                                             aria-controls="quality"
-                                            aria-selected="false">Quality</button>
+                                            aria-selected="false">Sequence quality</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link "
@@ -60,16 +60,6 @@
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link "
-                                            id="samples-tab"
-                                            data-bs-toggle="tab"
-                                            data-bs-target="#samples"
-                                            type="button"
-                                            role="tab"
-                                            aria-controls="samples"
-                                            aria-selected="false">Samples</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link "
                                             id="barcode-tab"
                                             data-bs-toggle="tab"
                                             data-bs-target="#barcode"
@@ -78,10 +68,40 @@
                                             aria-controls="barcode"
                                             aria-selected="false">Unknown barcodes</button>
                                 </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="samples-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#samples"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="samples"
+                                            aria-selected="false">Sequenced samples</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="def-samples-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#def-samples"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="def-samples"
+                                            aria-selected="false">Defined samples</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link "
+                                            id="other-graphic-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#other-graphic"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="other-graphic"
+                                            aria-selected="false">Comparison graphics</button>
+                                </li>
                             </ul>
                             <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
                                 <div class="tab-pane fade show active"
-                                     id="graphic"
+                                     id="overview"
                                      role="tabpanel"
                                      aria-labelledby="graphic-tab">
                                     <div class="container">
@@ -89,7 +109,7 @@
                                             <div class="col-md">
                                                 <div class="card text-center">
                                                     <div class="card-header">
-                                                        <h3>Graphic statistics</h3>
+                                                        <h3>Overview statistics</h3>
                                                     </div>
                                                     <div class="card-body">
                                                         <div class="row ">
@@ -108,7 +128,7 @@
                                                                     {{ per_time_statistics.time_researcher_graphic|safe }}
                                                                 </div>
                                                                 <div class="col-md-6">
-                                                                    <h5 class"text-center">There are {{ per_time_statistics.num_projects }} projects in this period</h5>
+                                                                    <h5 class="text-center">There are {{ per_time_statistics.num_projects }} projects in this period</h5>
                                                                     <div id="time_project_weeks_chart"></div>
                                                                     {{ per_time_statistics.time_project_weeks_graphic|safe }}
                                                                 </div>
@@ -169,7 +189,7 @@
                                             <div class="col-md">
                                                 <div class="card">
                                                     <div class="card-header text-center">
-                                                        <h3>Run data for this period</h3>
+                                                        <h3>Runs for this period</h3>
                                                     </div>
                                                     <div class="card-body">
                                                         <table class="table table-hover" id="run_table">
@@ -207,17 +227,17 @@
                                             <div class="col-md">
                                                 <div class="card">
                                                     <div class="card-header text-center">
-                                                        <h3>Sample data for this period</h3>
+                                                        <h3>Sequenced samples for this period</h3>
                                                     </div>
                                                     <div class="card-body">
                                                         <table class="table table-hover" id="sample_table">
                                                             <thead>
                                                                 <tr>
-                                                                    {% for column in per_time_statistics.sample_table_heading %}<th>{{ column }}</th>{% endfor %}
+                                                                    {% for column in per_time_statistics.seq_sample_table_heading %}<th>{{ column }}</th>{% endfor %}
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% for pk, sample, researcher, project, run, barcode in per_time_statistics.sample_data %}
+                                                                {% for pk, sample, researcher, project, run, barcode in per_time_statistics.seq_sample_data %}
                                                                     <tr>
                                                                         <td>
                                                                             <a href="/wetlab/displaySampleInRun={{ pk }}"
@@ -238,80 +258,189 @@
                                     </div>
                                 </div>
                                 <!-- end samples tab-->
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="container">
-                        <div class="row my-2">
-                            <div class="col-sm-7 offset-3">
-                                <div class="card ">
-                                    <div class="card-header">
-                                        <h3 class="text-center">Statistics for a time period</h3>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="post"
-                                              enctype="multipart/form-data"
-                                              name="statisticsPerPeriod"
-                                              id="statisticsPerPeriod">
-                                            {% csrf_token %}
-                                            <div class="row g-2">
-                                                <div class="col-md">
-                                                    <div class="form-floating">
-                                                        <input type="date"
-                                                               class="form-control"
-                                                               id="start_date"
-                                                               name="startdate"
-                                                               required="required"
-                                                               placeholder="Filter run from start date" />
-                                                        <label class="text-danger"for="start-date">From Start Date (DD-MM-YYYY)</label>
+                                <div class="tab-pane fade"
+                                     id="def-samples"
+                                     role="tabpanel"
+                                     aria-labelledby="def-samples-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center">
+                                                        <h3>Samples defined during this period</h3>
                                                     </div>
-                                                </div>
-                                                <div class="col-md">
-                                                    <div class="form-floating">
-                                                        <input type="date"
-                                                               class="form-control"
-                                                               id="end_date"
-                                                               name="enddate"
-                                                               required="required"
-                                                               placeholder="Filter run from end date" />
-                                                        <label class="text-danger" for="start-date">End Date (DD-MM-YYYY)</label>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover" id="def_sample_table">
+                                                            <thead>
+                                                                <tr>
+                                                                    {% for column in per_time_statistics.defined_sample_table_heading %}<th>{{ column }}</th>{% endfor %}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for pk, sample, unique_id, state, species, type_sample, lab, rec_date  in per_time_statistics.defined_sample_data %}
+                                                                    <tr>
+                                                                        <td>
+                                                                            <a href="/wetlab/displaySample={{ pk }}" class="text-decoration-none">{{ sample }}</a>
+                                                                        </td>
+                                                                        <td>{{ unique_id }}</td>
+                                                                        <td>{{ state }}</td>
+                                                                        <td>{{ rec_date }}</td>
+                                                                        <td>{{ species }}</td>
+                                                                        <td>{{ type_sample }}</td>
+                                                                        <td>{{ lab }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <p class="ms-3 mb-3">
-                                                Fields marked in <font COLOR="Red">Red</font> are mandatory
-                                            </p>
-                                            <input class="btn btn-outline-secondary mt-2"
-                                                   type="reset"
-                                                   value="Reset Fields" />
-                                            <input class="btn float-end btn-outline-primary mt-2"
-                                                   type="submit"
-                                                   value="Submit" />
-                                        </form>
+                                        </div>
                                     </div>
+                                </div>
+                                <!-- end samples tab-->
+                                <div class="tab-pane fade"
+                                     id="barcode"
+                                     role="tabpanel"
+                                     aria-labelledby="barcode-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card">
+                                                    <div class="card-header text-center">
+                                                        <h3>Unkwonw Barcodes in runs during this period</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row ">
+                                                            <div class="col-md">
+                                                                <div id="time_unknown_barcodes_chart"></div>
+                                                                {{ per_time_statistics.time_unknown_barcodes_graphic|safe }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end barcodes tab-->
+                                <div class="tab-pane fade "
+                                     id="other-graphic"
+                                     role="tabpanel"
+                                     aria-labelledby="other-graphic-tab">
+                                    <div class="container">
+                                        <div class="row mt-4">
+                                            <div class="col-md">
+                                                <div class="card text-center">
+                                                    <div class="card-header">
+                                                        <h3>Comparison statistics</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row ">
+                                                            <div class="col-md">
+                                                                <div id="time_num_sample_per_run_chart"></div>
+                                                                {{ per_time_statistics.time_num_sample_per_run_graphic|safe }}
+                                                            </div>
+                                                            <div class="row ">
+                                                                <div class="col-md-6">
+                                                                    <div id="time_num_sample_per_lab_chart"></div>
+                                                                    {{ per_time_statistics.time_num_sample_per_lab_graphic|safe }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div id="time_num_seq_sample_vs_def_sample_chart"></div>
+                                                                    {{ per_time_statistics.time_num_seq_sample_vs_def_sample_graphic|safe }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- end other-graphic tab-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="container">
+                    <div class="row my-2">
+                        <div class="col-sm-7 offset-3">
+                            <div class="card ">
+                                <div class="card-header">
+                                    <h3 class="text-center">Statistics for a time period</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post"
+                                          enctype="multipart/form-data"
+                                          name="statisticsPerPeriod"
+                                          id="statisticsPerPeriod">
+                                        {% csrf_token %}
+                                        <div class="row g-2">
+                                            <div class="col-md">
+                                                <div class="form-floating">
+                                                    <input type="date"
+                                                           class="form-control"
+                                                           id="start_date"
+                                                           name="startdate"
+                                                           required="required"
+                                                           placeholder="Filter run from start date" />
+                                                    <label class="text-danger"for="start-date">From Start Date (DD-MM-YYYY)</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md">
+                                                <div class="form-floating">
+                                                    <input type="date"
+                                                           class="form-control"
+                                                           id="end_date"
+                                                           name="enddate"
+                                                           required="required"
+                                                           placeholder="Filter run from end date" />
+                                                    <label class="text-danger" for="start-date">End Date (DD-MM-YYYY)</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="ms-3 mb-3">
+                                            Fields marked in <font COLOR="Red">Red</font> are mandatory
+                                        </p>
+                                        <input class="btn btn-outline-secondary mt-2"
+                                               type="reset"
+                                               value="Reset Fields" />
+                                        <input class="btn float-end btn-outline-primary mt-2"
+                                               type="submit"
+                                               value="Submit" />
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                {% endif %}
-            </div>
-        </section>
-        <script type="text/javascript">
-    $(document).ready(function() {
-        $('#run_table').DataTable({
-            dom: "Bfltirp",
-            responsive: true,
-            buttons: ['excel', 'csv']
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#run_table').DataTable({
+                dom: "Bfltirp",
+                responsive: true,
+                buttons: ['excel', 'csv']
+            });
         });
-    });
 
-    $(document).ready(function() {
-        $('#sample_table').DataTable({
-            dom: "Bfltirp",
-            responsive: true,
-            buttons: ['excel', 'csv']
+        $(document).ready(function() {
+            $('#sample_table').DataTable({
+                dom: "Bfltirp",
+                responsive: true,
+                buttons: ['excel', 'csv']
+            });
         });
-    });
-        </script>
-    {% endblock %}
+        $(document).ready(function() {
+            $('#def_sample_table').DataTable({
+                dom: "Bfltirp",
+                responsive: true,
+                buttons: ['excel', 'csv']
+            });
+        });
+    </script>
+{% endblock %}
