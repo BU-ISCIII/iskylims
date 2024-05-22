@@ -51,15 +51,30 @@ def preparation_3D_pie(
 
 
 def preparation_graphic_data(
-    heading,
-    sub_caption,
-    x_axis_name,
-    y_axis_name,
-    theme,
-    input_data,
-    label_key=None,
-    label_value=None,
-):
+    heading: str,
+    sub_caption: str,
+    x_axis_name: str,
+    y_axis_name: str,
+    theme: str,
+    input_data: dict,
+    label_key:str =None,
+    label_value: str =None,
+) -> dict:
+    """Join the parameters to create a dictionary with two keys: chart and data.
+
+    Args:
+        heading (str): heading of the chart
+        sub_caption (str): sub_caption of the chart
+        x_axis_name (str): name of the x axis
+        y_axis_name (str): name of the y axis
+        theme (str): theme of the chart
+        input_data (dict): data to be displayed
+        label_key (str, optional): key name from the input dict. Defaults to None.
+        label_value (str, optional): value field in the innput dict. Defaults to None.
+
+    Returns:
+        dict: dictionary with the keys chart and data
+    """    
     data_source = {}
     data_source["chart"] = {
         "caption": heading,

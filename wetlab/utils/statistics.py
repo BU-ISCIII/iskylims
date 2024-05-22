@@ -1,6 +1,6 @@
 # Generic imports
 from django.contrib.auth.models import User
-from django.db.models import Avg, F, Count, Func, Value, CharField
+from django.db.models import Avg, F, Count, Func, Value, CharField, Sum
 from django.db.models.functions import ExtractWeek, ExtractYear
 
 # Local imports
@@ -13,20 +13,15 @@ import core.utils.common
 import wetlab.config
 
 
-def get_per_time_statistics(start_date, end_date):
-    """_summary_
+def get_per_time_statistics(start_date: str, end_date: str) -> dict:
+    """Collects the statistics for the time period defined by the start and end date
 
-    Parameters
-    ----------
-    start_date : str
-        Date from starting the statistics
-    end_date : str
-        Date from the statistics ends
+    Args:
+        start_date (str): start date for the statistics
+        end_date(str):end date for the statistics
 
-    Returns
-    -------
-    dict
-
+    Returns:
+        dict: dictionary with the statistics
     """
     per_time_statistics = {}
     # validate date format
@@ -39,6 +34,8 @@ def get_per_time_statistics(start_date, end_date):
     run_objs = wetlab.models.RunProcess.objects.filter(
         run_date__range=(start_date, end_date)
     )
+    import pdb
+
     if len(run_objs) == 0:
         per_time_statistics["ERROR"] = (
             wetlab.config.ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD
@@ -156,10 +153,33 @@ def get_per_time_statistics(start_date, end_date):
     )
 
     # Graphic chart for unknown barcodes
-    # pening to fix issue 158
-    # barcode_objs = wetlab.models.RawTopUnknowBarcodes.objects.filter(
-    #    runprocess_id__in=run_objs
-    # )
+    barcode_in_run = (
+        wetlab.models.RawTopUnknowBarcodes.objects.filter(runprocess_id__in=run_objs)
+        .values("sequence")
+        .annotate(value=Sum("count"))
+        .order_by("sequence")
+    )
+    g_data = core.utils.graphics.preparation_graphic_data(
+        "Unknown bar codes in runs",
+        "",
+        "",
+        "",
+        "flint",
+        barcode_in_run,
+        "sequence",
+        "value",
+    )
+    per_time_statistics["time_unknown_barcodes_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "pie3d",
+            "time_unknown_barcodes_graph",
+            "900",
+            "600",
+            "time_unknown_barcodes_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     # chart graph for Q > 30 based on runs
     # ##############################
@@ -296,8 +316,8 @@ def get_per_time_statistics(start_date, end_date):
         wetlab.config.HEADING_STATISTICS_FOR_TIME_RUN
     )
 
-    # Table information for sample data
-    per_time_statistics["sample_data"] = list(
+    # Table information for sequenced sample data
+    per_time_statistics["seq_sample_data"] = list(
         sample_objs.values_list(
             "pk",
             "sample_name",
@@ -307,9 +327,66 @@ def get_per_time_statistics(start_date, end_date):
             "barcode_name",
         )
     )
-    per_time_statistics["sample_table_heading"] = (
-        wetlab.config.HEADING_STATISTICS_FOR_TIME_SAMPLE
+    per_time_statistics["seq_sample_table_heading"] = (
+        wetlab.config.HEADING_STATISTICS_FOR_TIME_SEQUENCED_SAMPLE
     )
+
+    # Table information for defined samples
+    per_time_statistics["defined_sample_data"] = list(
+        core.models.Samples.objects.filter(
+            sample_entry_date__range=(start_date, end_date)
+        )
+        .values_list(
+            "pk",
+            "sample_name",
+            "unique_sample_id",
+            "sample_state__sample_state_name",
+            "species__species_name",
+            "sample_type__sample_type",
+            "lab_request__lab_name_coding",
+        )
+        .annotate(
+            formated_date=Func(
+                F("sample_entry_date"),
+                Value("%Y-%m-%d"),
+                function="DATE_FORMAT",
+                output_field=CharField(),
+            )
+        )
+    )
+    per_time_statistics["defined_sample_table_heading"] = (
+        wetlab.config.HEADING_STATISTICS_FOR_TIME_DEFINED_SAMPLE
+    )
+    samples_in_run = list(
+        sample_objs.values("run_process_id__run_name").annotate(
+            num_of_samples=Count("run_process_id__run_name")
+        )
+    )
+    g_data = core.utils.graphics.preparation_graphic_data(
+        "Number of samples per run",
+        "",
+        "Run name",
+        "Number of samples",
+        "zune",
+        samples_in_run,
+        "run_process_id__run_name",
+        "num_of_samples",
+    )
+    per_time_statistics["time_num_sample_per_run_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "column3d",
+            "time_num_sample_per_run_graph",
+            "550",
+            "350",
+            "time_num_sample_per_run_chart",
+            "json",
+            g_data,
+        ).render()
+    )
+
+    pdb.set_trace()
+    # number of samples per run
+    sample_objs.values_list()
     per_time_statistics["start_date"] = start_date
     per_time_statistics["end_date"] = end_date
     per_time_statistics["num_runs"] = len(run_objs)
@@ -807,9 +884,7 @@ def get_researcher_lab_statistics(
         researcher_name = researcher_name.strip()
         # check if the researcher exists
         if not User.objects.filter(username__icontains=researcher_name).exists():
-            research_lab_statistics["ERROR"] = (
-                wetlab.config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
-            )
+            research_lab_statistics["ERROR"] = wetlab.config.ERROR_USER_NOT_DEFINED
             return research_lab_statistics
         user_objs = User.objects.filter(username__icontains=researcher_name)
 
