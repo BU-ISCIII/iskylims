@@ -57,8 +57,8 @@ def preparation_graphic_data(
     y_axis_name: str,
     theme: str,
     input_data: dict,
-    label_key:str =None,
-    label_value: str =None,
+    label_key: str = None,
+    label_value: str = None,
 ) -> dict:
     """Join the parameters to create a dictionary with two keys: chart and data.
 
@@ -74,7 +74,7 @@ def preparation_graphic_data(
 
     Returns:
         dict: dictionary with the keys chart and data
-    """    
+    """
     data_source = {}
     data_source["chart"] = {
         "caption": heading,
