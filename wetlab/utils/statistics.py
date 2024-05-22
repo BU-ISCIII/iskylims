@@ -329,12 +329,13 @@ def get_per_time_statistics(start_date: str, end_date: str) -> dict:
     per_time_statistics["seq_sample_table_heading"] = (
         wetlab.config.HEADING_STATISTICS_FOR_TIME_SEQUENCED_SAMPLE
     )
-    defined_sample_objs = core.models.Samples.objects.filter(
-        sample_entry_date__range=(start_date, end_date)
-    )
+
     # Table information for defined samples
     per_time_statistics["defined_sample_data"] = list(
-        defined_sample_objs.values_list(
+        core.models.Samples.objects.filter(
+            sample_entry_date__range=(start_date, end_date)
+        )
+        .values_list(
             "pk",
             "sample_name",
             "unique_sample_id",
@@ -342,7 +343,8 @@ def get_per_time_statistics(start_date: str, end_date: str) -> dict:
             "species__species_name",
             "sample_type__sample_type",
             "lab_request__lab_name_coding",
-        ).annotate(
+        )
+        .annotate(
             formated_date=Func(
                 F("sample_entry_date"),
                 Value("%Y-%m-%d"),
@@ -354,7 +356,6 @@ def get_per_time_statistics(start_date: str, end_date: str) -> dict:
     per_time_statistics["defined_sample_table_heading"] = (
         wetlab.config.HEADING_STATISTICS_FOR_TIME_DEFINED_SAMPLE
     )
-    # graphic chart for number of samples per run
     samples_in_run = list(
         sample_objs.values("run_process_id__run_name").annotate(
             num_of_samples=Count("run_process_id__run_name")
@@ -381,60 +382,9 @@ def get_per_time_statistics(start_date: str, end_date: str) -> dict:
             g_data,
         ).render()
     )
-    # graphic chart for number of seq samples vs defined samples
-    defined_sample_objs
-    g_data = core.utils.graphics.preparation_graphic_data(
-        "Sequence vs defined samples",
-        "",
-        "",
-        "",
-        "ocean",
-        {
-            "seqenced samples": sample_objs.count(),
-            "defined samples": defined_sample_objs.count(),
-        },
-        "",
-        "",
-    )
-    per_time_statistics["time_num_seq_sample_vs_def_sample_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "pie3d",
-            "time_num_seq_sample_vs_def_sample_graph",
-            "600",
-            "300",
-            "time_num_seq_sample_vs_def_sample_chart",
-            "json",
-            g_data,
-        ).render()
-    )
-    # graphic chart for number of defined samples per lab
-    samples_per_lab = list(
-        defined_sample_objs.values("lab_request__lab_name_coding").annotate(
-            num_of_samples=Count("lab_request__lab_name_coding")
-        )
-    )
-    g_data = core.utils.graphics.preparation_graphic_data(
-        "Number of samples per laboratory",
-        "",
-        "Laboratory name",
-        "Number of samples",
-        "zune",
-        samples_per_lab,
-        "lab_request__lab_name_coding",
-        "num_of_samples",
-    )
-    per_time_statistics["time_num_sample_per_lab_graphic"] = (
-        core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "time_num_sample_per_lab_graph",
-            "550",
-            "350",
-            "time_num_sample_per_lab_chart",
-            "json",
-            g_data,
-        ).render()
-    )
 
+    pdb.set_trace()
+    # number of samples per run
     sample_objs.values_list()
     per_time_statistics["start_date"] = start_date
     per_time_statistics["end_date"] = end_date
