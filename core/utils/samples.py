@@ -264,8 +264,8 @@ def validate_sample_data(
             continue
 
         if repeat_allowed or (
-            sample["sample_name"].lower() not in sample_name_list
-            and sample["sample_name"].lower() not in not_allowed_sample_names
+            sample["sample_name"] not in sample_name_list
+            and sample["sample_name"] not in not_allowed_sample_names
         ):
             sample_name_list.append(sample["sample_name"])
         else:
