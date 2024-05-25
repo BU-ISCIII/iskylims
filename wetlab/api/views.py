@@ -17,6 +17,7 @@ import wetlab.api.utils.lab
 import wetlab.api.utils.sample
 import wetlab.models
 import wetlab.config
+import wetlab.utils.common
 
 sample_project_fields = openapi.Parameter(
     "project",
@@ -181,9 +182,32 @@ def create_sample_data(request):
             data = data.dict()
         if "sample_name" not in data or "sample_project" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if core.models.Samples.objects.filter(
-            sample_name__iexact=data["sample_name"]
-        ).exists():
+        not_allowed_sample_names = []
+        allowed_sample_repeat = (
+            False
+            if wetlab.utils.common.get_configuration_from_database(
+                "ALLOW_REPEAT_SAMPLE_NAMES"
+            )
+            == "FALSE"
+            else True
+        )
+        if not allowed_sample_repeat:
+            if (
+                wetlab.utils.common.get_configuration_from_database(
+                    "ALLOW_REPEAT_USER_SAMPLE_NAMES"
+                )
+                == "FALSE"
+            ):
+                not_allowed_sample_names = list(
+                    core.models.Samples.objects.filter(
+                        sample_user__username__iexact=request.user.username
+                    ).values_list("sample_name", flat=True)
+                )
+            else:
+                not_allowed_sample_names = list(
+                    core.models.Samples.objects.values_list("sample_name", flat=True)
+                )
+        if data["sample_name"] in not_allowed_sample_names:
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = wetlab.api.utils.sample.split_sample_data(data)
