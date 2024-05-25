@@ -193,20 +193,24 @@ def save_recorded_samples(samples_data, req_user, app_name):
     return samples_data
 
 
-def validate_sample_data(sample_data, req_user, app_name):
-    """Sample data validation
+def validate_sample_data(
+    sample_data: json,
+    req_user: str,
+    app_name: str,
+    repeat_allowed: bool = False,
+    allow_user__repeat: bool = False,
+)-> tuple:
+    """sample data validation
 
-    Parameters
-    ----------
-    sample_data
-        sample data formatted in json obtained from jspreadsheet
-    req_user
-        requesting user
-    app_name
-        application name (wetlab, drylab, core, etc.)
+    Args:
+        sample_data (json): sample data formatted in json obtained from jspreadsheet
+        req_user (str): requested user name
+        app_name (str): application name (wetlab, drylab, core, etc.)
+        repeat_allowed (bool, optional): allow or not that sample can be repeated. Defaults to False.
+        allow_user__repeat (bool, optional): if allowed to be repeated check if same request user is allowed have repeated sample names. Defaults to False.
 
-    Returns
-    -------
+    Returns:
+        tuple: returns result as boolean and a dictionary with the following keys
         validation
             list with validation info for each sample with format:
             [{"Sample Name": "test 01",
@@ -222,6 +226,25 @@ def validate_sample_data(sample_data, req_user, app_name):
     sample_name_list = []
     line = 0
     result = True
+    not_allowed_sample_names = {}
+    # collect the sample names already in the database in case that the user
+    #  is not allowed to repeat
+    if not repeat_allowed:
+        if not allow_user__repeat:
+            if core.models.Samples.objects.filter(
+                sample_user__username__exact=req_user
+            ).exists():
+                existing_sample_name_list = list(
+                    core.models.Samples.objects.filter(
+                        sample_user__username__exact=req_user
+                    ).values_list("sample_name", flat=True)
+                )
+        else:
+            existing_sample_name_list = list(
+                core.models.Samples.objects.all().values_list("sample_name", flat=True)
+            )
+        # convert to dict to speed up the search
+        not_allowed_sample_names = dict.fromkeys(existing_sample_name_list, 0)
     for sample in sample_data:
         line += 1
         sample_dict = {}
@@ -237,7 +260,10 @@ def validate_sample_data(sample_data, req_user, app_name):
             validation.append(sample_dict)
             continue
 
-        if sample["sample_name"] not in sample_name_list:
+        if (
+            sample["sample_name"] not in sample_name_list
+            and sample["sample_name"] not in not_allowed_sample_names
+        ):
             sample_name_list.append(sample["sample_name"])
         else:
             error_cause = core.core_config.ERROR_REPEATED_SAMPLE_NAME.copy()
