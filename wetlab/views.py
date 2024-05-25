@@ -2163,8 +2163,24 @@ def record_samples(request):
                 {"fields_info": fields_info},
             )
         # validate mandatory and redundant samples
+        rep_sample = (
+            False
+            if wetlab.utils.common.get_configuration_from_database(
+                "ALLOW_REPEAT_SAMPLE_NAMES"
+            )
+            == "FALSE"
+            else True
+        )
+        rep_user = (
+            False
+            if wetlab.utils.common.get_configuration_from_database(
+                "ALLOW_REPEAT_USER_SAMPLE_NAMES"
+            )
+            == "FALSE"
+            else True
+        )
         sample_validation, validation_result = core.utils.samples.validate_sample_data(
-            excel_json_data, req_user, __package__
+            excel_json_data, req_user, __package__, rep_sample, rep_user
         )
 
         if not validation_result:
