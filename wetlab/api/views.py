@@ -1,4 +1,5 @@
 from django.http import QueryDict
+from django.db.models.functions import Lower
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -201,13 +202,15 @@ def create_sample_data(request):
                 not_allowed_sample_names = list(
                     core.models.Samples.objects.filter(
                         sample_user__username__iexact=request.user.username
-                    ).values_list("sample_name", flat=True)
+                    ).values_list(Lower("sample_name", flat=True))
                 )
             else:
                 not_allowed_sample_names = list(
-                    core.models.Samples.objects.values_list("sample_name", flat=True)
+                    core.models.Samples.objects.values_list(
+                        Lower("sample_name", flat=True)
+                    )
                 )
-        if data["sample_name"] in not_allowed_sample_names:
+        if data["sample_name"].lower() in not_allowed_sample_names:
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = wetlab.api.utils.sample.split_sample_data(data)

@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
-from django.db.models import CharField, Count, F, Func, Prefetch, Value
+from django.db.models import CharField, Count, F, Func, Prefetch, Value, Lower
 
 # Local imports
 import core.core_config
@@ -241,7 +241,9 @@ def validate_sample_data(
                 )
         else:
             existing_sample_name_list = list(
-                core.models.Samples.objects.all().values_list("sample_name", flat=True)
+                core.models.Samples.objects.all().values_list(
+                    Lower("sample_name", flat=True)
+                )
             )
         # convert to dict to speed up the search
         not_allowed_sample_names = dict.fromkeys(existing_sample_name_list, 0)
@@ -261,8 +263,8 @@ def validate_sample_data(
             continue
 
         if repeat_allowed or (
-            sample["sample_name"] not in sample_name_list
-            and sample["sample_name"] not in not_allowed_sample_names
+            sample["sample_name"].lower() not in sample_name_list
+            and sample["sample_name"].lower() not in not_allowed_sample_names
         ):
             sample_name_list.append(sample["sample_name"])
         else:
