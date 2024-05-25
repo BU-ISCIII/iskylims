@@ -5,7 +5,8 @@ import re
 from collections import OrderedDict
 
 from django.contrib.auth.models import User
-from django.db.models import CharField, Count, F, Func, Prefetch, Value, Lower
+from django.db.models import CharField, Count, F, Func, Prefetch, Value
+from django.db.models.functions import Lower
 
 # Local imports
 import core.core_config
