@@ -236,7 +236,7 @@ def validate_sample_data(
             ).exists():
                 existing_sample_name_list = list(
                     core.models.Samples.objects.filter(
-                        sample_user__username__exact=req_user
+                        sample_user__username__iexact=req_user
                     ).values_list("sample_name", flat=True)
                 )
         else:
@@ -260,7 +260,7 @@ def validate_sample_data(
             validation.append(sample_dict)
             continue
 
-        if (
+        if repeat_allowed or (
             sample["sample_name"] not in sample_name_list
             and sample["sample_name"] not in not_allowed_sample_names
         ):
