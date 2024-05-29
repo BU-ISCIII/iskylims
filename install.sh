@@ -394,8 +394,7 @@ if [ $upgrade == true ]; then
             source virtualenv/bin/activate
 
             echo "Create a fake initial"
-            python manage.py makemigrations django_utils iSkyLIMS_core \
-                iSkyLIMS_wetlab iSkyLIMS_drylab
+            python manage.py makemigrations $FAKEINITIAL_MODULES
             python manage.py migrate --fake-initial
 
             if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
@@ -422,7 +421,7 @@ if [ $upgrade == true ]; then
         rsync -rlv conf/ $INSTALL_PATH/conf/
         rsync -rlv --fuzzy --delay-updates --delete-delay \
               --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
-              README.md LICENSE test conf core drylab clinic wetlab django_utils $INSTALL_PATH
+              README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
         
         # update the settings.py and the main urls
         echo "Update settings and url file."
@@ -767,8 +766,7 @@ if [ $install == true ]; then
             chmod 775 $INSTALL_PATH/logs
         fi
 
-        rsync -rlv README.md LICENSE test conf core drylab \
-                wetlab clinic django_utils $INSTALL_PATH
+        rsync -rlv README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
 
         cd $INSTALL_PATH
 
@@ -807,7 +805,7 @@ if [ $install == true ]; then
         if [ $docker == false ]; then
             echo "Creating the database structure for iSkyLIMS"
             python manage.py migrate
-            python manage.py makemigrations django_utils core wetlab drylab
+            python manage.py makemigrations $MIGRATION_MODULES
             python manage.py migrate
             echo "Loading in database initial data"
             python manage.py loaddata conf/first_install_tables.json
