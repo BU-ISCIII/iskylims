@@ -6,7 +6,7 @@ usage() {
 cat << EOF
 This script install and upgrade the iskylims app.
 
-usage : $0 --upgrade --dev --conf
+usage : $0 --upgrade --git_revision --conf
     Optional input data:
     --install       | Install iskylims full/dep/app
     --upgrade       | Upgrade iskylims full/dep/app
