@@ -10,7 +10,7 @@ usage : $0 --upgrade --dev --conf
     Optional input data:
     --install | Install iskylims full/dep/app
     --upgrade | Upgrade iskylims full/dep/app
-    --dev     | Use the develop version instead of main release
+    --revision| Revision name to run (it can be git branch, git version tag or commit SHA)
     --conf    | Select custom configuration file. Default: ./install_settings.txt
     --tables  | Load the first inital tables for upgrades in conf folder
     --script  | Run a migration script.
@@ -26,7 +26,7 @@ Examples:
     $0 --install app
 
     Upgrade using develop code
-    $0 --upgrade full --dev
+    $0 --upgrade full -r develop
 
     Upgrade running migration script and update initial tables
     $0 --upgrade full --script <migration_script> --tables
@@ -147,6 +147,15 @@ upgrade_venv(){
     python -m pip install -r conf/requirements.txt
 }
 
+restore_git_ref() {
+    echo "Restoring to initial git reference: $initial_git_ref"
+    git checkout "$initial_git_ref" --quiet
+}
+
+# Ensure to recover current git branch/tag/SHA on script exit
+initial_git_ref=$(git rev-parse --abbrev-ref HEAD || git rev-parse HEAD)
+trap restore_git_ref EXIT
+
 #================================================================
 #SET TEMINAL COLORS
 #================================================================
@@ -172,7 +181,7 @@ do
         --upgrade)  set -- "$@" -u ;;
         --script)   set -- "$@" -s ;;
         --tables)   set -- "$@" -t ;;
-        --dev)      set -- "$@" -d ;;
+        --revision) set -- "$@" -r ;;
         --conf)     set -- "$@" -c ;;
         --ren_app)  set -- "$@" -r ;;
         --docker)  set -- "$@" -k ;;
@@ -188,7 +197,7 @@ done
 # SETTING DEFAULT VALUES
 ren_app=false
 tables=false
-git_branch="main"
+git_branch=$initial_git_ref
 conf="./install_settings.txt"
 install=true
 install_type="full"
@@ -197,7 +206,7 @@ upgrade_type="full"
 docker=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:drtkvh"
+options=":c:s:i:u:r:tdkvh"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -232,8 +241,8 @@ while getopts $options opt; do
         r )
             ren_app=true
             ;;
-        d )
-            git_branch="develop"
+		r )
+			git_branch=$OPTARG
             ;;
         c )
             conf=$OPTARG
@@ -282,18 +291,33 @@ fi
 
 . $conf
 
-# check if branch master/develop is defined and checkout
-if [ "`git branch --list $git_branch`" ]; then
-    git checkout $git_branch
+# Check if git reference (branch, SHA, or tag) exists and checkout
+if git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
+    if [[ $git_branch != $(git rev-parse --abbrev-ref HEAD) ]]; then
+        # Check for local changes
+        if [[ -n $(git status --porcelain) ]]; then
+            printf "\n\n%s"
+            printf "${RED}------------------${NC}\n"
+            printf "${RED}Unable to switch to $git_branch.${NC}\n"
+            printf "${RED}You have local changes that would be overwritten by checkout.${NC}\n"
+            printf "${RED}Please commit or stash your changes before switching.${NC}\n"
+            printf "${RED}------------------${NC}\n"
+            exit 1
+        else
+            echo "Switching to revision $git_branch"
+            git checkout "$git_branch" --quiet
+        fi
+    else
+        echo "Using current revision: '$git_branch'"
+    fi
 else
     printf "\n\n%s"
     printf "${RED}------------------${NC}\n"
     printf "${RED}Unable to start.${NC}\n"
-    printf "${RED}Git branch $git_branch is not define in ${PWD}.${NC}\n"
+    printf "${RED}Git reference $git_branch is not defined in ${PWD}.${NC}\n"
     printf "${RED}------------------${NC}\n"
     exit 1
 fi
-
 #================================================================
 # CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
 #================================================================
