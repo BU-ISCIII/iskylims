@@ -8,14 +8,14 @@ This script install and upgrade the iskylims app.
 
 usage : $0 --upgrade --dev --conf
     Optional input data:
-    --install | Install iskylims full/dep/app
-    --upgrade | Upgrade iskylims full/dep/app
-    --revision| Revision name to run (it can be git branch, git version tag or commit SHA)
-    --conf    | Select custom configuration file. Default: ./install_settings.txt
-    --tables  | Load the first inital tables for upgrades in conf folder
-    --script  | Run a migration script.
-    --ren_app | Rename apps required for the upgrade migration to 3.0.0
-    --docker  | Specific installation for docker compose configuration.
+    --install       | Install iskylims full/dep/app
+    --upgrade       | Upgrade iskylims full/dep/app
+    --git_revision  | Git revision name to run (it can be git branch, git version tag or commit SHA)
+    --conf          | Select custom configuration file. Default: ./install_settings.txt
+    --tables        | Load the first inital tables for upgrades in conf folder
+    --script        | Run a migration script.
+    --ren_app       | Rename apps required for the upgrade migration to 3.0.0
+    --docker        | Specific installation for docker compose configuration.
 
 
 Examples:
@@ -26,7 +26,7 @@ Examples:
     $0 --install app
 
     Upgrade using develop code
-    $0 --upgrade full -r develop
+    $0 --upgrade full --git_revision develop
 
     Upgrade running migration script and update initial tables
     $0 --upgrade full --script <migration_script> --tables
@@ -177,14 +177,14 @@ do
     fi
     case "$arg" in
     # OPTIONAL
-        --install)  set -- "$@" -i ;;
-        --upgrade)  set -- "$@" -u ;;
-        --script)   set -- "$@" -s ;;
-        --tables)   set -- "$@" -t ;;
-        --revision) set -- "$@" -r ;;
-        --conf)     set -- "$@" -c ;;
-        --ren_app)  set -- "$@" -r ;;
-        --docker)  set -- "$@" -k ;;
+        --install)      set -- "$@" -i ;;
+        --upgrade)      set -- "$@" -u ;;
+        --script)       set -- "$@" -s ;;
+        --tables)       set -- "$@" -t ;;
+        --git_revision) set -- "$@" -g ;;
+        --conf)         set -- "$@" -c ;;
+        --ren_app)      set -- "$@" -r ;;
+        --docker)       set -- "$@" -k ;;
 
     # ADITIONAL
         --help)     set -- "$@" -h ;;
@@ -206,7 +206,7 @@ upgrade_type="full"
 docker=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:r:tdkvh"
+options=":c:s:i:u:r:g:tdkvh"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -241,7 +241,7 @@ while getopts $options opt; do
         r )
             ren_app=true
             ;;
-		r )
+		g )
 			git_branch=$OPTARG
             ;;
         c )
@@ -293,22 +293,24 @@ fi
 
 # Check if git reference (branch, SHA, or tag) exists and checkout
 if git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
-    if [[ $git_branch != $(git rev-parse --abbrev-ref HEAD) ]]; then
+    if [[ $git_branch != $initial_git_ref ]]; then
         # Check for local changes
-        if [[ -n $(git status --porcelain) ]]; then
+        local_changes=$(git status --porcelain)
+        if [[ -n $local_changes ]]; then
             printf "\n\n%s"
             printf "${RED}------------------${NC}\n"
             printf "${RED}Unable to switch to $git_branch.${NC}\n"
-            printf "${RED}You have local changes that would be overwritten by checkout.${NC}\n"
+            printf "${RED}You have local changes that would be overwritten by checkout:${NC}\n"
+            printf "${RED}\t'$local_changes'.${NC}\n"
             printf "${RED}Please commit or stash your changes before switching.${NC}\n"
             printf "${RED}------------------${NC}\n"
             exit 1
         else
-            echo "Switching to revision $git_branch"
+            printf "${YELLOW}Switching to revision $git_branch.${NC}\n"
             git checkout "$git_branch" --quiet
         fi
     else
-        echo "Using current revision: '$git_branch'"
+        printf "${YELLOW}Using current revision: '$git_branch'.${NC}\n"
     fi
 else
     printf "\n\n%s"
