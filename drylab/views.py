@@ -8,7 +8,7 @@ import django.contrib.auth.models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Prefetch, Count
+from django.db.models import Prefetch, Count, F
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
@@ -1171,7 +1171,9 @@ def stats_by_services_request(request):
                 else:
                     user_services[user] = 1
 
-            period_of_time_selected = str(" From " + start_date + " to " + end_date)
+            period_of_time_selected = str(
+                " From " + start_date + " to " + end_date
+            )
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services from users",
