@@ -1171,9 +1171,7 @@ def stats_by_services_request(request):
                 else:
                     user_services[user] = 1
 
-            period_of_time_selected = str(
-                " From " + start_date + " to " + end_date
-            )
+            period_of_time_selected = str(" From " + start_date + " to " + end_date)
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services from users",
@@ -1442,10 +1440,18 @@ def stats_by_services_request(request):
 
             # Samples handled by requested services
 
-            sample_in_services_objs = drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service__in=services_found)
-            ana_sample_in_runs = sample_in_services_objs.exclude(run_name=None).values("run_name").annotate(sample_count=Count("sample_name"), sample_name=F("run_name"))
+            sample_in_services_objs = (
+                drylab.models.RequestedSamplesInServices.objects.filter(
+                    samples_in_service__in=services_found
+                )
+            )
+            ana_sample_in_runs = (
+                sample_in_services_objs.exclude(run_name=None)
+                .values("run_name")
+                .annotate(sample_count=Count("sample_name"))
+            )
             g_data = core.utils.graphics.preparation_graphic_data(
-                "Samples state",
+                "Analyzed Samples from Runs",
                 "",
                 "",
                 "",
@@ -1454,12 +1460,80 @@ def stats_by_services_request(request):
                 "run_name",
                 "sample_count",
             )
-            import pdb; pdb.set_trace()
-            graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
+            graphic_req_samples_run = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex9", "600", "375", "chart-9", "json", g_data
             )
             services_stats_info["graphic_samples_per_run"] = (
-                graphic_req_l3_services.render()
+                graphic_req_samples_run.render()
+            )
+            ana_sample_in_proj = (
+                sample_in_services_objs.exclude(project_name=None)
+                .values("project_name")
+                .annotate(sample_count=Count("sample_name"))
+            )
+            g_data = core.utils.graphics.preparation_graphic_data(
+                "Analyzed Samples per projects",
+                "",
+                "",
+                "",
+                "ocean",
+                ana_sample_in_proj,
+                "project_name",
+                "sample_count",
+            )
+            graphic_req_samples_proj = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex10", "600", "375", "chart-10", "json", g_data
+            )
+            services_stats_info["graphic_samples_per_project"] = (
+                graphic_req_samples_proj.render()
+            )
+            ana_sample_in_user = sample_in_services_objs.values(
+                "samples_in_service__service_user_id__username"
+            ).annotate(sample_count=Count("sample_name"))
+            g_data = core.utils.graphics.preparation_graphic_data(
+                "Analyzed Samples per user",
+                "",
+                "",
+                "",
+                "ocean",
+                ana_sample_in_user,
+                "samples_in_service__service_user_id__username",
+                "sample_count",
+            )
+
+            graphic_req_samples_user = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex11", "600", "375", "chart-11", "json", g_data
+            )
+            services_stats_info["graphic_samples_per_user"] = (
+                graphic_req_samples_user.render()
+            )
+            analyzed_samples = {}
+            analyzed_samples["Sequenced samples"] = sample_in_services_objs.exclude(
+                only_recorded_sample=False
+            ).count()
+            analyzed_samples["Only recorded samples"] = sample_in_services_objs.exclude(
+                only_recorded_sample=True
+            ).count()
+            data_source = drylab.utils.graphics.graphic_3D_pie(
+                "Analyzed Samples",
+                period_of_time_selected,
+                "",
+                "",
+                "fint",
+                analyzed_samples,
+            )
+            graphic_analyzed_samples = core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d", "ex12", "600", "400", "chart-12", "json", data_source
+            )
+            services_stats_info["graphic_analyzed_samples"] = (
+                graphic_analyzed_samples.render()
+            )
+            services_stats_info["table_samples"] = sample_in_services_objs.values_list(
+                "sample_name",
+                "samples_in_service__service_request_number",
+                "samples_in_service__pk",
+                "samples_in_service__service_user_id__username",
+                "samples_in_service__service_state__state_display",
             )
             return render(
                 request,

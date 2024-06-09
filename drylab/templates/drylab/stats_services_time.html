@@ -1,6 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block content %}
+    {% include "core/cdn_table_functionality.html" %}
     {% include "core/graphic_chart_functionality.html" %}
     {% include "drylab/menu.html" %}
     <section class="iskylims d-flex flex-column fill-height">
@@ -47,15 +48,15 @@
                                     type="button"
                                     role="tab"
                                     aria-controls="nav-samples"
-                                    aria-selected="false">Analized Samples</button>
+                                    aria-selected="false">Analyzed Samples</button>
                             <button class="nav-link"
-                                    id="nav-samples-tab"
+                                    id="nav-samples-table-tab"
                                     data-bs-toggle="tab"
-                                    data-bs-target="#nav-samples"
+                                    data-bs-target="#nav-samples-table"
                                     type="button"
                                     role="tab"
-                                    aria-controls="nav-samples2"
-                                    aria-selected="false">Analized Samples2</button>
+                                    aria-controls="nav-samples-table"
+                                    aria-selected="false">Analyzed Samples table</button>
                         </div>
                     </nav>
                     <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
@@ -194,10 +195,38 @@
                              role="tabpanel"
                              aria-labelledby="nav-samples-tab">
                             <div class="row justify-content-center pb-2 pt-2">
-                                <div class="col-md-auto">
+                                <div class="col-md-6">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Analyzed Samples in Runs</h4>
+                                            <h4>Analyzed Samples per user</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if services_stats_info.graphic_samples_per_user %}
+                                                <div id="chart-11"></div>
+                                                {{ services_stats_info.graphic_samples_per_user |safe }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header">
+                                            <h4>Analyzed Samples</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if services_stats_info.graphic_analyzed_samples %}
+                                                <div id="chart-12"></div>
+                                                {{ services_stats_info.graphic_analyzed_samples |safe }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center pb-2 pt-2">
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header">
+                                            <h4>Analyzed Samples from sequenced in runs</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_samples_per_run %}
@@ -207,6 +236,56 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="card ">
+                                        <div class="card-header">
+                                            <h4>Analyzed Samples grouped in projects</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if services_stats_info.graphic_samples_per_project %}
+                                                <div id="chart-10"></div>
+                                                {{ services_stats_info.graphic_samples_per_project |safe }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade show"
+                             id="nav-samples-table"
+                             role="tabpanel"
+                             aria-labelledby="nav-samples-table-tab">
+                            <div class="row justify-content-center pb-2 pt-2">
+                                <table id="table_samples" class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Sample Name</th>
+                                            <th>Service ID</th>
+                                            <th>User</th>
+                                            <th>Service State</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s_name, serv_name, serv_id, user, serv_state in services_stats_info.table_samples %}
+                                            <tr>
+                                                <td>{{ s_name }}</td>
+                                                <td>
+                                                    <a href="/drylab/display-service={{ serv_id }}">{{ serv_name }}</a>
+                                                </td>
+                                                <td>{{ user }}</td>
+                                                <td>{{ serv_state }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Sample Name</th>
+                                            <th>Service ID</th>
+                                            <th>User</th>
+                                            <th>Service state</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -259,4 +338,28 @@
             </div>
         </section>
     {% endif %}
+    <script>
+        $("#table_samples tfoot th").each(function () {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+            });
+
+        // DataTable
+        var table = $('#table_samples').DataTable({
+            initComplete: function () {
+                // Apply the search
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var that = this;
+                        $('input', this.footer()).on('keyup change clear', function () {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+            },
+        });
+    
+    </script>
 {% endblock %}
