@@ -8,13 +8,14 @@ import django.contrib.auth.models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count, F
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 # Local imports
 import core.fusioncharts.fusioncharts
 import core.utils.common
+import core.utils.graphics
 import django_utils.models
 import drylab.config
 import drylab.models
@@ -1139,6 +1140,8 @@ def stats_by_services_request(request):
     if request.method == "POST" and request.POST["action"] == "service_statistics":
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
+        if start_date == "" and end_date == "":
+            return render(request, "drylab/stats_services_time.html")
         if start_date != "" and not drylab.utils.common.check_valid_date_format(
             start_date
         ):
@@ -1169,11 +1172,11 @@ def stats_by_services_request(request):
                     user_services[user] = 1
 
             period_of_time_selected = str(
-                " For the period between " + start_date + " and " + end_date
+                " From " + start_date + " to " + end_date
             )
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Requested Services by:",
+                "Requested Services from users",
                 period_of_time_selected,
                 "User names",
                 "Number of Services",
@@ -1181,7 +1184,7 @@ def stats_by_services_request(request):
                 user_services,
             )
             graphic_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex1", "525", "350", "chart-1", "json", data_source
+                "column3d", "ex1", "900", "350", "chart-1", "json", data_source
             )
             services_stats_info["graphic_requested_services_per_user"] = (
                 graphic_requested_services.render()
@@ -1207,7 +1210,7 @@ def stats_by_services_request(request):
             )
             graphic_status_requested_services = (
                 core.fusioncharts.fusioncharts.FusionCharts(
-                    "pie3d", "ex2", "525", "350", "chart-2", "json", data_source
+                    "pie3d", "ex2", "500", "400", "chart-2", "json", data_source
                 )
             )
             services_stats_info["graphic_status_requested_services"] = (
@@ -1323,7 +1326,7 @@ def stats_by_services_request(request):
                     if d_period not in user_services_period[center]:
                         user_services_period[center][d_period] = 0
             data_source = drylab.utils.graphics.column_graphic_per_time(
-                "Services requested by center ",
+                "Services requested by center and period of time",
                 period_of_time_selected,
                 "date",
                 "number of services",
@@ -1408,7 +1411,7 @@ def stats_by_services_request(request):
                 "Requested Services:", "level 2 ", "", "", "fint", service_dict
             )
             graphic_req_l2_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex7", "800", "375", "chart-7", "json", data_source
+                "column3d", "ex7", "600", "375", "chart-7", "json", data_source
             )
             services_stats_info["graphic_req_l2_services"] = (
                 graphic_req_l2_services.render()
@@ -1431,12 +1434,33 @@ def stats_by_services_request(request):
                 "Requested Services:", "level 3 ", "", "", "fint", service_dict
             )
             graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex8", "800", "375", "chart-8", "json", data_source
+                "column3d", "ex8", "900", "375", "chart-8", "json", data_source
             )
             services_stats_info["graphic_req_l3_services"] = (
                 graphic_req_l3_services.render()
             )
 
+            # Samples handled by requested services
+
+            sample_in_services_objs = drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service__in=services_found)
+            ana_sample_in_runs = sample_in_services_objs.exclude(run_name=None).values("run_name").annotate(sample_count=Count("sample_name"), sample_name=F("run_name"))
+            g_data = core.utils.graphics.preparation_graphic_data(
+                "Samples state",
+                "",
+                "",
+                "",
+                "ocean",
+                ana_sample_in_runs,
+                "run_name",
+                "sample_count",
+            )
+            import pdb; pdb.set_trace()
+            graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex9", "600", "375", "chart-9", "json", g_data
+            )
+            services_stats_info["graphic_samples_per_run"] = (
+                graphic_req_l3_services.render()
+            )
             return render(
                 request,
                 "drylab/stats_services_time.html",
