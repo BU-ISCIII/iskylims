@@ -1171,9 +1171,7 @@ def stats_by_services_request(request):
                 else:
                     user_services[user] = 1
 
-            period_of_time_selected = str(
-                " From " + start_date + " to " + end_date
-            )
+            period_of_time_selected = str(" From " + start_date + " to " + end_date)
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services from users",
