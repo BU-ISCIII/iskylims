@@ -210,9 +210,22 @@ def create_sample_data(request):
                         Lower("sample_name", flat=True)
                     )
                 )
+        # get information it underscore is allowed in sample name
+        allow_underscore = (
+            False
+            if wetlab.utils.common.get_configuration_from_database(
+                "ALLOW_UNDERSCORE_SAMPLE_NAMES"
+            )
+            == "FALSE"
+            else True
+        )
         if data["sample_name"].lower() in not_allowed_sample_names:
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        if not allow_underscore:
+            if "_" in data["sample_name"]:
+                error = {"ERROR": "sample name cannot have underscore"}
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = wetlab.api.utils.sample.split_sample_data(data)
         if not isinstance(split_data, dict):
             return Response(split_data, status=status.HTTP_400_BAD_REQUEST)
