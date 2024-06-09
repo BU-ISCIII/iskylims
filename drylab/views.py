@@ -8,7 +8,7 @@ import django.contrib.auth.models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Prefetch, Count, F
+from django.db.models import Prefetch, Count
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
