@@ -228,7 +228,7 @@ def search_update_new_runs(request_reason):
             logger.debug(
                 "%s : Found the experiment name called : %s", new_run, experiment_name
             )
-            exclude_states = ["Error", "recorded"]
+            exclude_states = ["error", "recorded"]
             if (
                 wetlab.models.RunProcess.objects.filter(run_name__exact=experiment_name)
                 .exclude(state__run_state_name__in=exclude_states)
