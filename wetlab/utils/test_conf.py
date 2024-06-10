@@ -207,7 +207,7 @@ def execute_test_for_testing_run(run_test_name):
             wetlab.utils.crontab_update_run.manage_run_in_processed_run_state(
                 conn, [run_obj]
             )
-            if run_obj.get_state() == "errorR":
+            if run_obj.get_state() == "error":
                 run_result["ERROR"] = "Error when processing run in Processed Run state"
                 break
             else:

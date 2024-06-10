@@ -199,7 +199,7 @@ def validate_sample_data(
     req_user: str,
     app_name: str,
     repeat_allowed: bool = False,
-    allow_user__repeat: bool = False,
+    allow_user_repeat: bool = False,
 ) -> tuple:
     """sample data validation
 
@@ -208,7 +208,7 @@ def validate_sample_data(
         req_user (str): requested user name
         app_name (str): application name (wetlab, drylab, core, etc.)
         repeat_allowed (bool, optional): allow or not that sample can be repeated. Defaults to False.
-        allow_user__repeat (bool, optional): if allowed to be repeated check if same request user is allowed have repeated sample names. Defaults to False.
+        allow_user_repeat (bool, optional): if allowed to be repeated check if same request user is allowed have repeated sample names. Defaults to False.
 
     Returns:
         tuple: returns result as boolean and a dictionary with the following keys
@@ -231,7 +231,7 @@ def validate_sample_data(
     # collect the sample names already in the database in case that the user
     #  is not allowed to repeat
     if not repeat_allowed:
-        if not allow_user__repeat:
+        if not allow_user_repeat:
             if core.models.Samples.objects.filter(
                 sample_user__username__exact=req_user
             ).exists():
