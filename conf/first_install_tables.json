@@ -1609,26 +1609,6 @@
     }
 },
 {
-    "model": "wetlab.runstates",
-    "pk": 11,
-    "fields": {
-        "run_state_name": "spare_1",
-        "state_display": "",
-        "description": "",
-        "show_in_stats": false
-    }
-},
-{
-    "model": "wetlab.runstates",
-    "pk": 12,
-    "fields": {
-        "run_state_name": "spare_2",
-        "state_display": "",
-        "description": "",
-        "show_in_stats": false
-    }
-},
-{
     "model": "wetlab.runerrors",
     "pk": 1,
     "fields": {
