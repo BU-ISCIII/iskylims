@@ -561,6 +561,10 @@ if [ $upgrade == true ]; then
             echo "Done migrate command."
 
         else
+            # change required only during the upgrade to 3.1.0
+            echo "Convert the count column in wetlab RawTopUnknowBarcodes to integer"
+            python manage.py runscript convert_rawtop_counter_to_int
+            # checking for database changes
             echo "checking for database changes"
             if python manage.py makemigrations | grep -q "No changes"; then
                 # check for pending migrations

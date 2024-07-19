@@ -86,6 +86,11 @@
                                             </div>
                                             <label class="form-label" for="runindexlibraryname">Index Library Name :</label>
                                             <div class="col">
+<<<<<<< HEAD
+                                                <select class="form-select mb-3" name="libraryKit">
+                                                    {% for value in get_user_names.used_libraryKit %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
+                                                </select>
+=======
                                                 <input class="form-control"
                                                        required="required"
                                                        type="text"
@@ -93,6 +98,7 @@
                                                        size="60"
                                                        maxlength="50"
                                                        value="{{ get_user_names.index_library_name }}" />
+>>>>>>> 85461c1d (Fixed error messages display)
                                             </div>
                                             {% for key, values in get_user_names.projects_user %}
                                                 <p class="mt-3">Project name assigned to run :</p>
@@ -233,7 +239,11 @@
             {% else %}
                 <!--    Progress Step bar for the Form -->
                 <div class="row my-2">
+<<<<<<< HEAD
+                    <div class="col-sm-8 offset-2">
+=======
                     <div class="col-sm-10 offset-2">
+>>>>>>> 85461c1d (Fixed error messages display)
                         <ol class="track-progress" data-steps="3">
                             <li class="active">
                                 <span>Upload Sample Sheet</span><i></i>

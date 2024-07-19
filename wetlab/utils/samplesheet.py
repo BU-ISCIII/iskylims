@@ -362,6 +362,7 @@ def get_sample_with_user_owner(sample_sheet_path):
 
 
 def get_projects_in_run(in_file: str) -> dict:
+def get_projects_in_run(in_file: str) -> dict:
     """Funtion to check if the sample sheet has a valid heading. On valid file
     get project names and the user names from description column
 
@@ -370,6 +371,7 @@ def get_projects_in_run(in_file: str) -> dict:
 
     Returns:
         dict: dictionary with the projects or error message
+    """
     """
     header_found = False
     projects = {}

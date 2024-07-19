@@ -200,7 +200,7 @@ def validate_sample_data(
     app_name: str,
     repeat_allowed: bool = False,
     allow_user_repeat: bool = False,
-) -> tuple:
+)  -> tuple:
     """sample data validation
 
     Args:

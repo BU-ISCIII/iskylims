@@ -767,7 +767,7 @@ ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS = [
 ]
 
 # ERROR TEXT FOR SEACHING #############################################
-ERROR_INVALID_FORMAT_FOR_DATES = ["Invalid date format. Use the format  (DD-MM-YYYY)"]
+ERROR_INVALID_FORMAT_FOR_DATES = [["Invalid date format. Use the format  (DD-MM-YYYY)"]]
 
 
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
