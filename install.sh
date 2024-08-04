@@ -563,7 +563,7 @@ if [ $upgrade == true ]; then
         else
             # execute the script to remove the comma in RawTopUnknowBarcodes table
             echo "Running migration script: remove_comma_rawtopunknownbarcodes"
-            ./manage.py runscript remove_comma_rawtopunknownbarcodes
+            ./manage.py runscript convert_rawtop_counter_to_int
             echo "checking for database changes"
             if python manage.py makemigrations | grep -q "No changes"; then
                 # check for pending migrations
