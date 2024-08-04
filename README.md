@@ -143,6 +143,8 @@ If you have already iSkyLIMS on version 2.3.0 you can upgrade to the latest stab
 
 Version 3.0.0 is a major release with important upgrades in third parties dependencies like bootstrap. Also, we 've done a huge work on refactoring and variables/function renaming that affects the database. For more details about the changes see the release notes.
 
+If you requires to upgrade from version 3.0.0 to the latest one 3.1.x and in your system you have already defined library pools, then you need to collect this data, before to run the upgrade script. For more information read [Pre-requisites for upgrade from 3.0.0 to 3.1.x](#pre-requisites-for-upgrade-from-30x-to-31x)
+
 #### Pre-requisites
 
 Because in this upgrade many tables in database are modified it is required that you backup:
