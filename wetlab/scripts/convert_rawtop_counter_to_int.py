@@ -8,7 +8,8 @@ def run():
     """
     top_bar_objs = wetlab.models.RawTopUnknowBarcodes.objects.all()
     for top_bar_obj in top_bar_objs:
-        if "," in top_bar_obj.count:
+        # Check if table has been updated to int
+        if isinstance(top_bar_obj.count, int) is False:
             try:
                 top_bar_obj.count = int(top_bar_obj.count.replace(",", ""))
                 top_bar_obj.save()
