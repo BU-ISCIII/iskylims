@@ -20,7 +20,7 @@ RUN git checkout develop
 
 RUN pip install -r conf/requirements.txt 
 
-RUN bash install.sh --install app --dev --conf conf/docker_install_settings.txt --docker
+RUN bash install.sh --install app --git_revision main --conf conf/docker_install_settings.txt --docker
 
 WORKDIR /opt/iskylims
 
