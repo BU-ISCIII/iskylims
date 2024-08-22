@@ -20,16 +20,12 @@ De acuerdo con la infraestructura existente, la secuenciación se realiza en un 
       - [Crear la base de datos de iSkyLIMS y otorgar permisos](#crear-la-base-de-datos-de-iskylims-y-otorgar-permisos)
       - [Configuración de ajustes](#configuración-de-ajustes)
       - [Ejecutar el script de instalación](#ejecutar-el-script-de-instalación)
-  - [Actualización a la versión 3.1.0 de iSkyLIMS](#actualización-a-la-versión-310-de-iskylims)
-  - [Actualización a la versión 3.1.0 de iSkyLIMS](#actualización-a-la-versión-310-de-iskylims-1)
-    - [Prerrequisitos](#prerrequisitos)
-    - [Prerrequisitos](#prerrequisitos-1)
-    - [Clonar el repositorio de GitHub](#clonar-el-repositorio-de-github-1)
-    - [Configuración de opciones](#configuración-de-opciones)
-    - [Ejecución del script de actualización](#ejecución-del-script-de-actualización)
-    - [Ejecución del script de actualización](#ejecución-del-script-de-actualización-1)
-      - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración)
-      - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración-1)
+    - [Actualización a la versión 3.0.0 de iSkyLIMS](#actualización-a-la-versión-300-de-iskylims)
+      - [Prerrequisitos](#prerrequisitos)
+      - [Clonar el repositorio de GitHub](#clonar-el-repositorio-de-github-1)
+      - [Configuración de opciones](#configuración-de-opciones)
+      - [Ejecución del script de actualización](#ejecución-del-script-de-actualización)
+        - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración)
         - [Pasos que no necesitan de permisos de administración](#pasos-que-no-necesitan-de-permisos-de-administración)
       - [Qué hacer si algo falla](#qué-hacer-si-algo-falla)
     - [Pasos finales de configuración](#pasos-finales-de-configuración)
@@ -50,24 +46,16 @@ Antes de comenzar la instalación, asegúrate de lo siguiente:
 - Tienes privilegios de **sudo** para instalar los paquetes de software adicionales que iSkyLIMS necesita.
 - Dependencias:
   - Librerías:
-
-```bash
-
-```bash
+```
   yum groupinstall "Development tools"
   yum install zlib-devel bzip2-devel openssl-devel \
               wget httpd-devel mysql-libs sqlite sqlite-devel \
               mariadb-devel mysql-client libffi-devel \
               gnuplot cifs-utils
 ```
-
-- lsb_relase:
-  - RedHat/CentOS: `yum install redhat-lsb-core`
-  - Ubuntu: `apt install lsb-core lsb-release`
-
-- lsb_relase:
-  - RedHat/CentOS: `yum install redhat-lsb-core`
-  - Ubuntu: `apt install lsb-core lsb-release`
+  - lsb_relase:
+    - RedHat/CentOS: `yum install redhat-lsb-core`
+    - Ubuntu: `apt install lsb-core lsb-release`
 - Base de datos MySQL > 8.0 o MariaDB > 10.4
 - Tienes configurado un servidor local para enviar correos electrónicos.
 - git > 2.34
@@ -75,6 +63,7 @@ Antes de comenzar la instalación, asegúrate de lo siguiente:
 - Tienes Python > 3.8 (si lo compilas debes haber instalado previamente las dependecias de arriba)
 - Tienes una conexión a la carpeta compartida de Samba donde se almacenan las carpetas de ejecución (por ejemplo, galera/NGS_Data).
 - Dependencias:
+  
 
 ### Instalación de iSkyLIMS en Docker
 
@@ -154,36 +143,34 @@ bash install.sh --install app
 sudo bash install.sh --install full
 ```
 
-## Actualización a la versión 3.1.0 de iSkyLIMS
-## Actualización a la versión 3.1.0 de iSkyLIMS
+### Actualización a la versión 3.0.0 de iSkyLIMS
 
-En esta version se han implementado fallos de código y mejoras en las gráficas. Para obtener más detalles sobre los cambios, consulta las notas de la versión.
+Si ya tienes iSkyLIMS en la versión 2.3.0, puedes actualizar a la última versión estable, la 3.0.0.
 
-### Prerrequisitos
-### Prerrequisitos
+La versión 3.0.0 es una versión importante con actualizaciones significativas en dependencias de terceros como Bootstrap. También hemos realizado un gran trabajo en la refactorización y el cambio de nombres de variables/funciones que afectan a la base de datos. Para obtener más detalles sobre los cambios, consulta las notas de la versión.
 
-Por temas de seguridad es recomendado realizar una copia de seguridad de:
-Por temas de seguridad es recomendado realizar una copia de seguridad de:
+#### Prerrequisitos
+
+Debido a que en esta actualización se modifican muchas tablas en la base de datos, es necesario que hagas una copia de seguridad de:
 
 - La base de datos de iSkyLIMS.
 - La carpeta de iSkyLIMS (carpeta de instalación completa, por ejemplo, /opt/iSkyLIMS).
 
-Se recomienda encarecidamente que se hagan estas copias de seguridad y se guarden de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
-Se recomienda encarecidamente que se hagan estas copias de seguridad y se guarden de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
+Se recomienda encarecidamente que hagas estas copias de seguridad y las guardes de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
 
-### Clonar el repositorio de GitHub
+#### Clonar el repositorio de GitHub
 
-A partir ya de la version anterior, ahora el código de iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
-A partir ya de la version anterior, ahora el código de iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
+También hemos cambiado la forma en que se instala y actualiza iSkyLIMS. A partir de ahora, iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
 
-Abre una terminal de Linux y dirígete a un directorio donde estaba descargado el código de iSkyLIMS. Actualiza el codigo
+Abre una terminal de Linux y dirígete a un directorio donde se descargará el código de iSkyLIMS.
 
 ```bash
-cd < directorio donde esta el codigo anterior de iskylims de instalación >
-git pull
+cd < directorio distinto al directorio de instalación >
+git clone https://gitlab.isciii.es/BU-ISCIII/iskylims.git iskylims
+cd iskylims
 ```
 
-### Configuración de opciones
+#### Configuración de opciones
 
 Copia la plantilla de configuración inicial en un archivo llamado install_settings.txt
 
@@ -198,16 +185,15 @@ Abre el archivo de configuración con tu editor favorito para establecer tus pro
 nano install_settings.txt
 ```
 
-### Ejecución del script de actualización
-### Ejecución del script de actualización
+#### Ejecución del script de actualización
 
-Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando
-desde la última release es necesario que sean actualizados.
-Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando
-desde la última release es necesario que sean actualizados.
+Si en tu organización se requiere que las dependencias u otros elementos que necesiten permisos de administrador sean instalados por una persona diferente a la que instala la aplicación, puedes utilizar el script de instalación en varios pasos de la siguiente manera.
 
-#### Pasos que necesitan permisos de adminsitración
-#### Pasos que necesitan permisos de adminsitración
+El script te irá solicitando confirmación en algun paso, si todo está yendo bien sin errores deberás pulsar `y` o `yes` según te lo solicite.
+
+> Nota: Los errores: "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'query' at line 1" son normales ya que se trata del título de las sentencias sql que no deben ejecutarse. Se puede ignorar.
+
+##### Pasos que necesitan permisos de adminsitración
 
 En primer lugar, debes cambiar el nombre de la carpeta de la aplicación en la carpeta de instalación (`/opt/iSkyLIMS`):
 
@@ -230,22 +216,23 @@ En la terminal de Linux, ejecuta uno de los siguientes comandos que mejor se ada
 sudo bash install.sh --upgrade dep
 
 # PARA INSTALAR AMBAS COSAS AL MISMO TIEMPO. REQUIERE DE ROOT. SI SE VA A INSTALAR POR OTRA PERSONA SIN ROOT NO HACER ESTO.
-sudo bash install.sh --upgrade full  --git_revision main  --tables
+sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
 ##### Pasos que no necesitan de permisos de administración
 
-Actualiza a la nueva version de la aplicación de iskylims usando el siguiente comando:
+A continuación instalamos la aplicación de iskylims usando el siguiente comando:
 
 ```bash
-bash install.sh --upgrade app  --git_revision main --tables
+# para actualizar la aplicación de iskylims, incluyendo los cambios necesarios para la versión en base de datos. NO ES NECESARIO DISPONER DE PERMISOS ROOT.
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
 Por último, asegúrate que los permisos de la carpeta son correctos.
 
 ```bash
 # En el caso de que tengas un script para esta tarea. En esta versión han cambiado algunas rutas a ficheros, es posible que tengas que ajustar el script en consecuencia.
-/scripts/hardening.sh
+sudo /scripts/hardening.sh
 ```
 
 #### Qué hacer si algo falla
@@ -258,10 +245,10 @@ Necesitamos copiar de vuelta nuestro backup de carpet ade aplicación a /opt/iSk
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
+mysql -u iskylims -h dmysqlps.isciiides.es -p
 # drop database iskylims;
 # create database iskylims;
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
 ### Pasos finales de configuración
