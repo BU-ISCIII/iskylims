@@ -39,8 +39,15 @@ ENV PATH="/usr/sbin/cron:$PATH"
 =======
 RUN pip install -r conf/requirements.txt 
 
+<<<<<<< HEAD
 RUN bash install.sh --install app --conf conf/docker_install_settings.txt --docker
+<<<<<<< HEAD
 >>>>>>> ff357111 (hotfix numpy dependency and docker fixes)
+=======
+=======
+RUN bash install.sh --install app --git_revision main --conf conf/docker_install_settings.txt --docker
+>>>>>>> 1f1de18d (Solved issue #274. Docker installation fails)
+>>>>>>> 8f943a0e (Solved issue #274. Docker installation fails)
 
 # Install dependencies within the virtual environment
 RUN /srv/iskylims/venv/bin/pip install -r conf/requirements.txt
