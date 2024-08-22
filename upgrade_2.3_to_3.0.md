@@ -21,23 +21,20 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
       - [Configuration settings](#configuration-settings)
       - [Run installation script](#run-installation-script)
-  - [Upgrade from 3.0.x to iSkyLIMS version 3.1.x](#upgrade-from-30x-to-iskylims-version-31x)
-    - [Pre-requisites for upgrade](#pre-requisites-for-upgrade)
-    - [Clone github repository](#clone-github-repository-1)
-        - [Clone github repository](#clone-github-repository-2)
-    - [Configuration settings](#configuration-settings-1)
-    - [Running upgrade script](#running-upgrade-script)
-      - [Steps requiring root](#steps-requiring-root)
-      - [Steps not requiring root](#steps-not-requiring-root)
-  - [What to do if something fails](#what-to-do-if-something-fails)
-  - [Final configuration steps](#final-configuration-steps)
-  - [What to do if something fails](#what-to-do-if-something-fails-1)
-  - [Final configuration steps](#final-configuration-steps-1)
-    - [SAMBA configurarion](#samba-configurarion)
-    - [Email verification](#email-verification)
-    - [Configure Apache server](#configure-apache-server)
-    - [Verification of the installation](#verification-of-the-installation)
-  - [iSkyLIMS documentation](#iskylims-documentation)
+    - [Upgrade to iSkyLIMS version 3.0.0](#upgrade-to-iskylims-version-300)
+      - [Pre-requisites](#pre-requisites-1)
+      - [Clone github repository](#clone-github-repository-1)
+      - [Configuration settings](#configuration-settings-1)
+      - [Running upgrade script](#running-upgrade-script)
+        - [Steps requiring root](#steps-requiring-root)
+        - [Steps not requiring root](#steps-not-requiring-root)
+      - [What to do if something fails](#what-to-do-if-something-fails)
+    - [Final configuration steps](#final-configuration-steps)
+      - [SAMBA configurarion](#samba-configurarion)
+      - [Email verification](#email-verification)
+      - [Configure Apache server](#configure-apache-server)
+      - [Verification of the installation](#verification-of-the-installation)
+    - [iSkyLIMS documentation](#iskylims-documentation)
 
 ## Installation
 
@@ -68,13 +65,6 @@ Clone the iSkyLIMS github repository and run the docker script to create the doc
 ```bash
 git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
 sudo bash docker_install.sh
-```
-
-Or you can specify installation type and/or git revision:
-```bash
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-# To perform full installation from iskylims using git revision/branch 'develop'
-sudo bash docker_install.sh --install_type full --git_revision develop
 ```
 
 The script creates a docker compose container with 3 services:
@@ -141,64 +131,43 @@ above description.
 sudo bash install.sh --install dep
 
 # to install only iSkyLIMS application
-bash install.sh --install app --git_revision main --tables
+bash install.sh --install app
 
 # to install both software
-sudo bash install.sh --install full --git_revision main --tables
+sudo bash install.sh --install full
 ```
 
-## Upgrade from 3.0.x to iSkyLIMS version 3.1.x
+### Upgrade to iSkyLIMS version 3.0.0
 
-Follow the following steps to upgrade from version 3.0.0 to the latest one 3.1.x
+If you have already iSkyLIMS on version 2.3.0 you can upgrade to the latest stable version 3.0.0.
 
-### Pre-requisites for upgrade
+Version 3.0.0 is a major release with important upgrades in third parties dependencies like bootstrap. Also, we 've done a huge work on refactoring and variables/function renaming that affects the database. For more details about the changes see the release notes.
 
-Before starting the upgrade procedure is highly recomended to perform the following steps:
+If you requires to upgrade from version 3.0.0 to the latest one 3.1.x and in your system you have already defined library pools, then you need to collect this data, before to run the upgrade script. For more information read [Pre-requisites for upgrade from 3.0.0 to 3.1.x](#pre-requisites-for-upgrade-from-30x-to-31x)
 
-- Create a full backup of iSkyLIMS database
-- Backup all iSkyLIMS folders (complete installation folder, p.e /opt/iSkyLIMS)
-
-- If in your system you have already defined library pools, then you need to collect this data, before to run the upgrade script. Perform a backup of LibraryPool by running the folowing command.
-
-```bash
- mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims -e "SELECT* FROM wetlab_library_pool" > <your_selected_folder/backup_lib_pool.sql>
-```
-
-It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
+#### Pre-requisites
 
 Because in this upgrade many tables in database are modified it is required that you backup:
 
 - iSkyLIMS database
 - iSkyLIMS folder (complete installation folder, p.e /opt/iSkyLIMS)
 
+##### Pre-requisites for upgrade from 3.0.x to 3.1.x
+
+- Perform a backup of LibraryPool by running the folowing command
+
+```bash
+ mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims -e "SELECT* FROM wetlab_library_pool" > <your_output_file>
+```
+
 It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
-### Clone github repository
+#### Clone github repository
 
 We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
 
-##### Clone github repository
-
-From it was defined in previous releases the iSkyLIMS code is downloaded in a user folder and then installed elsewhere (p.e /opt/).
-
-If you have already clone the repository from the previous 3.0.0 release open a
-linux terminal and move towards the directory of iSkyLIMS repository.
-
-```bash
-cd < your personal folder/iskylims >
-git pull
-```
-
-If you have already clone the repository from the previous 3.0.0 release open a
-linux terminal and move towards the directory of iSkyLIMS repository.
-
-```bash
-cd < your personal folder/iskylims >
-git pull
-```
-
-If the repository was not created then open a linux terminal and move to a directory
-where iSkyLIMS code will be downloaded
+Open a linux terminal and move to a directory where iSkyLIMS code will be
+downloaded
 
 ```bash
 cd < your personal folder >
@@ -206,7 +175,7 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-### Configuration settings
+#### Configuration settings
 
 Copy the initial setting template into a file named install_settings.txt
 
@@ -222,11 +191,13 @@ database ,email settings and the local IP of the server where iSkyLIMS will run.
 sudo nano install_settings.txt
 ```
 
-### Running upgrade script
+#### Running upgrade script
 
 If your organization requires that dependencies / stuff that needs root are installed by a different person that install the application the you can use the install script in several steps as follows.
 
-#### Steps requiring root
+First you need to rename the folder app name in the installation folder (`/opt/iSkyLIMS`):
+
+##### Steps requiring root
 
 ```bash
 # You need root for this operation
@@ -240,32 +211,23 @@ Make sure that the installation folder has the correct permissions so the person
 /scripts/hardening.sh
 ```
 
-From the previous release software dependences (Python packages) must be updated to the releases defined in the requirement.txt file.
-
-In the linux terminal execute the following command-
+In the linux terminal execute one of the following command that fit better to you:
 
 ```bash
 # to upgrade only software packages dependences. NEEDS ROOT.
 sudo bash install.sh --upgrade dep
+
+# to install both software. NEEDS ROOT.
+sudo bash install.sh --upgrade full  --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
-#### Steps not requiring root
+##### Steps not requiring root
 
-Next you need to upgrade iskylims app. Please use one of the commands below:
-
-If you are using the library pool, you must indicate in the installation script the file
-you already backup and execute the following command.
+Next you need to upgrade iskylims app. Please use the command below:
 
 ```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --script <your_selected_folder/backup_lib_pool.sql>  --git_revision main --tables
-```
-
-If restauration of libary preparation is not required then execute the following command
-
-```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app ---git_revision main  -tables
+# to upgrade only iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
+bash install.sh --upgrade app --ren_app --script drylab_service_state_migration --script rename_app_name --script rename_sample_sheet_folder --script migrate_sample_type --script  migrate_optional_values --tables
 ```
 
 Make sure that the installation folder has the correct permissions.
@@ -275,53 +237,11 @@ Make sure that the installation folder has the correct permissions.
 /scripts/hardening.sh
 ```
 
-## What to do if something fails
+#### What to do if something fails
 
 When we upgrade using the installation script we are performing several changes in the database. If something fails we need to restore the app situation before anything happened and start all over.
 
-We need to copy back the full `/opt/iskylims` folder back to `/opt/iskylims` (or your installation path preference), and restore the database doing something like this:
-
-```bash
-sudo rm -rf /opt/iskylims
-sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
-sudo /scripts/hardening.sh
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
-# drop database iskylims;
-# create database iskylims;
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
-```
-
-## Final configuration steps
-
-Next you need to upgrade iskylims app. Please use one of the commands below:
-
-If you are using the library pool, you must indicate in the installation script the file
-you already backup and execute the following command.
-
-```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --script <your_selected_folder/backup_lib_pool.sql>  --git_revision main --tables
-```
-
-If restauration of libary preparation is not required then execute the following command
-
-```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app ---git_revision main  -tables
-```
-
-Make sure that the installation folder has the correct permissions.
-
-```bash
-# In case you have a script for this task. Some paths have changed in this version, so you may need to adjust your hardening script.
-/scripts/hardening.sh
-```
-
-## What to do if something fails
-
-When we upgrade using the installation script we are performing several changes in the database. If something fails we need to restore the app situation before anything happened and start all over.
-
-We need to copy back the full `/opt/iskylims` folder back to `/opt/iskylims` (or your installation path preference), and restore the database doing something like this:
+We need to copy back the full `/opt/iSkyLIMS` folder back to `/opt` (or your installation path preference), and restore the database doing something like this:
 
 ```bash
 sudo rm -rf /opt/iskylims
@@ -333,9 +253,9 @@ mysql -u iskylims -h dmysqlps.isciiides.es
 mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
-## Final configuration steps
+### Final configuration steps
 
-### SAMBA configurarion
+#### SAMBA configurarion
 
 - Login with admin account.
 - Go to Massive sequencing
@@ -344,17 +264,17 @@ mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/b
 - Fill the form with the appropiate params for the samba shared folder:
 ![samba form](img/samba_form.png)
 
-### Email verification
+#### Email verification
 
 - Go to Massive sequencing
 - Go to Configuration -> Email configuration
 - Fill the form with the needed params for your email configuration and try to send a test email.
 
-### Configure Apache server
+#### Configure Apache server
 
 Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
 
-### Verification of the installation
+#### Verification of the installation
 
 Open the navigator and type "localhost" or the "server local IP" and check that iSkyLIMs is running.
 
@@ -365,6 +285,6 @@ You can also check some of the functionality, while also checking samba and data
 - Check all tabs so every connectin is successful.
 - Run the 3 tests for each sequencing machine: MiSeq, NextSeq and NovaSeq.
 
-## iSkyLIMS documentation
+### iSkyLIMS documentation
 
 iSkyLIMS documentation is available at [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
