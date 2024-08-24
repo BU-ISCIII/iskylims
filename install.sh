@@ -593,7 +593,9 @@ if [ $upgrade == true ]; then
                 echo "Done migrate command."
             fi
         fi     
-        
+        # update static files
+        echo "Deleting static files..."
+        rm -rf $INSTALL_PATH/static
         echo "Running collect statics..."
         python manage.py collectstatic
         echo "Done collect statics"
