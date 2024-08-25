@@ -1509,10 +1509,10 @@ def stats_by_services_request(request):
             )
             analyzed_samples = {}
             analyzed_samples["Sequenced samples"] = sample_in_services_objs.exclude(
-                only_recorded_sample=False
+                only_recorded_sample=True
             ).count()
             analyzed_samples["Only recorded samples"] = sample_in_services_objs.exclude(
-                only_recorded_sample=True
+                only_recorded_sample=False
             ).count()
             data_source = drylab.utils.graphics.graphic_3D_pie(
                 "Analyzed Samples",
