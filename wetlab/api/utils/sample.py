@@ -6,7 +6,12 @@ import wetlab.api.serializers
 import wetlab.config
 
 
-def create_state(state, apps_name):
+def create_state_if_not_exists(state, apps_name):
+    # Check if state is defined in database
+    if core.models.StateInCountry.objects.filter(state_name__iexact=state).exists():
+        return core.models.StateInCountry.objects.filter(
+            state_name__iexact=state
+        ).last()
     """Create state instance"""
     data = {"state": state, "apps_name": apps_name}
     return core.models.StateInCountry.objects.create_new_state(data)
@@ -14,7 +19,9 @@ def create_state(state, apps_name):
 
 def create_city(data, apps_name):
     """Create a City instance"""
-    data["state"] = create_state(data["geo_loc_state"], apps_name).get_state_id()
+    data["state"] = create_state_if_not_exists(
+        data["geo_loc_state"], apps_name
+    ).get_state_id()
     data["city_name"] = data["geo_loc_city"]
     data["latitude"] = data["geo_loc_latitude"]
     data["longitude"] = data["geo_loc_longitude"]
@@ -25,7 +32,7 @@ def create_city(data, apps_name):
 def create_new_laboratory(lab_data):
     """Create new laboratory instance with the data collected in the request"""
     if core.models.City.objects.filter(
-        city_name__exact=lab_data["geo_loc_city"]
+        city_name__iexact=lab_data["geo_loc_city"]
     ).exists():
         city_id = (
             core.models.City.objects.filter(city_name__exact=lab_data["geo_loc_city"])
@@ -34,17 +41,17 @@ def create_new_laboratory(lab_data):
         )
     else:
         if core.models.StateInCountry.objects.filter(
-            state_name__exact=lab_data["geo_loc_state"]
+            state_name__iexact=lab_data["geo_loc_state"]
         ).exists():
             lab_data["state"] = (
                 core.models.StateInCountry.objects.filter(
-                    state_name__exact=lab_data["geo_loc_state"]
+                    state_name__iexact=lab_data["geo_loc_state"]
                 )
                 .last()
                 .get_state_id()
             )
         else:
-            lab_data["state"] = create_state(
+            lab_data["state"] = create_state_if_not_exists(
                 lab_data["geo_loc_state"], lab_data["apps_name"]
             ).get_state_id()
         city_id = create_city(lab_data, lab_data["apps_name"]).get_city_id()
@@ -60,7 +67,9 @@ def create_new_sample_type(sample_type, apps_name):
     data["optional_fields"] = "0,8"
     data["apps_name"] = apps_name
     data["sample_type"] = sample_type
-    sample_type_serializers = core.models.CreateSampleTypeSerializer(data=data)
+    sample_type_serializers = wetlab.api.serializers.CreateSampleTypeSerializer(
+        data=data
+    )
     if sample_type_serializers.is_valid():
         sample_type_obj = sample_type_serializers.save()
         return sample_type_obj
@@ -136,7 +145,7 @@ def get_sample_project_obj(project_name):
 
 def include_instances_in_sample(data, lab_data, apps_name):
     """Collect the instances before creating the sample instance
-    If laboratory will be created if it is not defined
+    Define laboratory if not defined yet
     """
     if core.models.LabRequest.objects.filter(
         lab_name__iexact=data["lab_request"]

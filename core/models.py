@@ -55,7 +55,7 @@ class CityManager(models.Manager):
             state_obj = None
         new_city = self.create(
             belongs_to_state=state_obj,
-            city_name=data["cityName"],
+            city_name=data["city_name"],
             geo_loc_latitude=data["latitude"],
             geo_loc_longitude=data["longitude"],
             apps_name=data["apps_name"],
@@ -99,12 +99,12 @@ class LabRequestManager(models.Manager):
     def create_lab_request(self, data):
         city_obj = City.objects.filter(pk__exact=data["city"]).last()
         new_lab_request = self.create(
-            lab_name=data["labName"],
-            lab_name_coding=data["labNameCoding"],
-            lab_unit=data["labUnit"],
-            lab_contact_name=data["labContactName"],
-            lab_phone=data["labPhone"],
-            lab_email=data["labEmail"],
+            lab_name=data["lab_name"],
+            lab_name_coding=data["lab_name_coding"],
+            lab_unit=data["lab_unit"],
+            lab_contact_name=data["lab_contact_name"],
+            lab_phone=data["lab_phone"],
+            lab_email=data["lab_email"],
             address=data["address"],
             apps_name=data["apps_name"],
             lab_city=city_obj,
