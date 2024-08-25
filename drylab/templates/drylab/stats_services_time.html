@@ -32,7 +32,7 @@
                                     type="button"
                                     role="tab"
                                     aria-controls="nav-req-services"
-                                    aria-selected="true">Requested services</button>
+                                    aria-selected="true">Services requests</button>
                             <button class="nav-link"
                                     id="nav-req-from-tab"
                                     data-bs-toggle="tab"
@@ -40,7 +40,7 @@
                                     type="button"
                                     role="tab"
                                     aria-controls="nav-req-from"
-                                    aria-selected="false">Requested from</button>
+                                    aria-selected="false">Requested by</button>
                             <button class="nav-link"
                                     id="nav-samples-tab"
                                     data-bs-toggle="tab"
@@ -48,7 +48,7 @@
                                     type="button"
                                     role="tab"
                                     aria-controls="nav-samples"
-                                    aria-selected="false">Analyzed Samples</button>
+                                    aria-selected="false">Sample analysis</button>
                             <button class="nav-link"
                                     id="nav-samples-table-tab"
                                     data-bs-toggle="tab"
@@ -56,7 +56,7 @@
                                     type="button"
                                     role="tab"
                                     aria-controls="nav-samples-table"
-                                    aria-selected="false">Analyzed Samples table</button>
+                                    aria-selected="false">Sample analysis table</button>
                         </div>
                     </nav>
                     <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
@@ -82,7 +82,7 @@
                                 <div class="col-md-5 ">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Services status</h4>
+                                            <h4>Service status</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_status_requested_services %}
@@ -118,7 +118,7 @@
                                 <div class="col-md-auto">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Requested Services per user</h4>
+                                            <h4>Service Requests by User</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_requested_services_per_user %}
@@ -133,7 +133,7 @@
                                 <div class="col-md-6 ">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Requested Services per center</h4>
+                                            <h4>Service Requests by center</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_center_services %}
@@ -147,7 +147,7 @@
                                 <div class="col-md-6 ">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Services per classification area</h4>
+                                            <h4>Service Requests by Classification Area</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_area_services %}
@@ -162,7 +162,7 @@
                                 <div class="col-md-6 ">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Service statistics per center</h4>
+                                            <h4>Service Request Statistics by Center</h4>
                                         </div>
                                         <div class="card-body">
                                             <h4>{{ services_stats_info.period_time }}.</h4>
@@ -176,7 +176,7 @@
                                 <div class="col-sm-6 ">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Services Statistics per classification area</h4>
+                                            <h4>Service Request Statistics by Classification Area</h4>
                                         </div>
                                         <div class="card-body">
                                             <h4>{{ services_stats_info.period_time }}.</h4>
@@ -198,7 +198,7 @@
                                 <div class="col-md-6">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Analyzed Samples per user</h4>
+                                            <h4>Analyzed Samples by User</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_samples_per_user %}
@@ -211,7 +211,7 @@
                                 <div class="col-md-6">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Analyzed Samples</h4>
+                                            <h4>Sample Analysis</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_analyzed_samples %}
@@ -226,7 +226,7 @@
                                 <div class="col-md-6">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Analyzed Samples from sequenced in runs</h4>
+                                            <h4>Analyzed Samples from Sequencing Runs</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_samples_per_run %}
@@ -239,7 +239,7 @@
                                 <div class="col-md-6">
                                     <div class="card ">
                                         <div class="card-header">
-                                            <h4>Analyzed Samples grouped in projects</h4>
+                                            <h4>Analyzed Samples by Project</h4>
                                         </div>
                                         <div class="card-body">
                                             {% if services_stats_info.graphic_samples_per_project %}

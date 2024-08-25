@@ -1174,7 +1174,7 @@ def stats_by_services_request(request):
             period_of_time_selected = str(" From " + start_date + " to " + end_date)
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Requested Services from users",
+                "Service request by user",
                 period_of_time_selected,
                 "User names",
                 "Number of Services",
@@ -1199,7 +1199,7 @@ def stats_by_services_request(request):
 
             # creating the graphic for status services
             data_source = drylab.utils.graphics.graphic_3D_pie(
-                "Status of Requested Services",
+                "Service request status",
                 period_of_time_selected,
                 "",
                 "",
@@ -1235,7 +1235,7 @@ def stats_by_services_request(request):
 
             # creating the graphic for areas
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Services requested per Area",
+                "Service requests by area",
                 period_of_time_selected,
                 "Area ",
                 "Number of Services",
@@ -1267,7 +1267,7 @@ def stats_by_services_request(request):
                     user_center_dict[user_center] = 1
             # creating the graphic for areas
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Services requested per Center",
+                "Services requests by center",
                 period_of_time_selected,
                 "Center ",
                 "Number of Services",
@@ -1324,7 +1324,7 @@ def stats_by_services_request(request):
                     if d_period not in user_services_period[center]:
                         user_services_period[center][d_period] = 0
             data_source = drylab.utils.graphics.column_graphic_per_time(
-                "Services requested by center and period of time",
+                "Service requests by center and period of time",
                 period_of_time_selected,
                 "date",
                 "number of services",
@@ -1374,7 +1374,7 @@ def stats_by_services_request(request):
                         user_area_services_period[area][d_period] = 0
 
             data_source = drylab.utils.graphics.column_graphic_per_time(
-                "Services requested by Area ",
+                "Service requests by Area ",
                 period_of_time_selected,
                 "date",
                 "number of services",
@@ -1451,7 +1451,7 @@ def stats_by_services_request(request):
                 .annotate(sample_count=Count("sample_name"))
             )
             g_data = core.utils.graphics.preparation_graphic_data(
-                "Analyzed Samples from Runs",
+                "Analyzed Samples from sequencing runs",
                 "",
                 "",
                 "",
@@ -1472,7 +1472,7 @@ def stats_by_services_request(request):
                 .annotate(sample_count=Count("sample_name"))
             )
             g_data = core.utils.graphics.preparation_graphic_data(
-                "Analyzed Samples per projects",
+                "Analyzed samples by project",
                 "",
                 "",
                 "",
@@ -1491,7 +1491,7 @@ def stats_by_services_request(request):
                 "samples_in_service__service_user_id__username"
             ).annotate(sample_count=Count("sample_name"))
             g_data = core.utils.graphics.preparation_graphic_data(
-                "Analyzed Samples per user",
+                "Analyzed samples bu user",
                 "",
                 "",
                 "",
@@ -1515,7 +1515,7 @@ def stats_by_services_request(request):
                 only_recorded_sample=False
             ).count()
             data_source = drylab.utils.graphics.graphic_3D_pie(
-                "Analyzed Samples",
+                "Sample Analysis",
                 period_of_time_selected,
                 "",
                 "",
