@@ -1351,9 +1351,9 @@ def stats_by_services_request(request):
                 ).exists():
                     user_area = django_utils.models.Profile.objects.get(
                         profile_user_id=user_id
-                    ).profile_area
+                    ).get_clasification_area()
                 else:
-                    user_center = "Not defined"
+                    user_area = "Not defined"
                 if date_service not in time_values_dict:
                     time_values_dict[date_service] = 1
                 if user_area in user_area_services_period:
