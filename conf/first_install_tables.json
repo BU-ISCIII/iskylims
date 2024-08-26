@@ -20130,19 +20130,19 @@
     "model": "drylab.servicestate",
     "pk": 2,
     "fields": {
-        "state_value": "in_progress",
-        "state_display": "In Progress",
-        "description": "Bioinformatic is working on the service",
-        "show_in_stats": true
+        "state_value": "archived",
+        "state_display": "Archived",
+        "description": null,
+        "show_in_stats": false
     }
 },
 {
     "model": "drylab.servicestate",
     "pk": 3,
     "fields": {
-        "state_value": "delivered",
-        "state_display": "Delivered",
-        "description": "Service wascompleted and results were sent to the user",
+        "state_value": "approved",
+        "state_display": "Approved",
+        "description": "Service request has been accepted",
         "show_in_stats": false
     }
 },
@@ -20150,9 +20150,9 @@
     "model": "drylab.servicestate",
     "pk": 4,
     "fields": {
-        "state_value": "queued",
-        "state_display": "Queued",
-        "description": "Service is the the list, waiting for a bioinformatic to be handled",
+        "state_value": "in_progress",
+        "state_display": "In Progress",
+        "description": "Bioinformatic is working on the service",
         "show_in_stats": true
     }
 },
@@ -20170,9 +20170,9 @@
     "model": "drylab.servicestate",
     "pk": 6,
     "fields": {
-        "state_value": "approved",
-        "state_display": "Approved",
-        "description": "Service request has been accepted",
+        "state_value": "delivered",
+        "state_display": "Delivered",
+        "description": "Service wascompleted and results were sent to the user",
         "show_in_stats": false
     }
 },
@@ -20180,10 +20180,10 @@
     "model": "drylab.servicestate",
     "pk": 7,
     "fields": {
-        "state_value": "archived",
-        "state_display": "Archived",
-        "description": null,
-        "show_in_stats": false
+        "state_value": "queued",
+        "state_display": "Queued",
+        "description": "Service is the the list, waiting for a bioinformatic to be handled",
+        "show_in_stats": true
     }
 },
 {
