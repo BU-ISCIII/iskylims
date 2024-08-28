@@ -1403,8 +1403,12 @@ def stats_by_services_request(request):
                     service_dict[service_name] = service_dict.get(service_name, 0) + 1
 
                     # count the number of samples handled on level 2 services
-                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service=service).count()
-                    sample_in_l2[service_name] = sample_in_l2.get(service_name, 0) + s_count
+                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(
+                        samples_in_service=service
+                    ).count()
+                    sample_in_l2[service_name] = (
+                        sample_in_l2.get(service_name, 0) + s_count
+                    )
 
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
@@ -1440,8 +1444,12 @@ def stats_by_services_request(request):
                     else:
                         service_dict[service_name] = 1
                     # count the number of samples handled on level 3 services
-                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service=service).count()
-                    sample_in_l3[service_name] = sample_in_l3.get(service_name, 0) + s_count
+                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(
+                        samples_in_service=service
+                    ).count()
+                    sample_in_l3[service_name] = (
+                        sample_in_l3.get(service_name, 0) + s_count
+                    )
 
             # creating the graphic for requested services on level 3
             data_source = drylab.utils.graphics.column_graphic_dict(
@@ -1464,7 +1472,7 @@ def stats_by_services_request(request):
                 graphic_sample_service_l3.render()
             )
 
-           # Samples handled by requested services
+            # Samples handled by requested services
             sample_in_services_objs = (
                 drylab.models.RequestedSamplesInServices.objects.filter(
                     samples_in_service__in=services_found
