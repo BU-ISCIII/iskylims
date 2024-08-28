@@ -84,7 +84,7 @@ def get_sample_fields(apps_name):
         "Type of Sample": {"field_name": "sample_type"},
         "Species": {"field_name": "species"},
         "Project/Service": {"field_name": "sample_project"},
-        "Date sample reception": {"field_name": "smple_entry_date"},
+        "Date sample reception": {"field_name": "sample_entry_date"},
         "Collection Sample Date": {"field_name": "collection_sample_date"},
         "Sample Storage": {"field_name": "sample_location"},
         "Only recorded": {"field_name": "only_recorded"},

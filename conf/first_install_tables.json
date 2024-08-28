@@ -20267,6 +20267,48 @@
         "state_display": "On hold",
         "description": "Resolution is on hold, waiting for user provides more information"
     }
+},
+{   "model": "core.ontologymap",
+    "pk": 1,
+    "fields": {
+        "label": "collection_sample_date",
+        "ontology": "GENEPIO:0001174"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 2,
+    "fields": {
+        "label": "sample_entry_date",
+        "ontology": "NCIT:C93644"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 3,
+    "fields": {
+        "label": "sample_name",
+        "ontology": "GENEPIO:0001123"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 4,
+    "fields": {
+        "label": "species",
+        "ontology": "GENEPIO:0001386"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 5,
+    "fields": {
+        "label": "lab_request",
+        "ontology": "GENEPIO:0001153"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 6,
+    "fields": {
+        "label": "sequencing_date",
+        "ontology": "GENEPIO:0001447"
+    }
 }
 ]
 
