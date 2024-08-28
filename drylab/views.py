@@ -925,7 +925,7 @@ def add_in_progress(request):
         if drylab.utils.resolutions.check_allow_service_update(
             resolution_obj, "in_progress"
         ):
-            # update the service status and in_porgress date
+            # update the service status and in_progress date
             service_obj = service_obj.update_state("in_progress")
 
         email_data = {}
@@ -1395,14 +1395,16 @@ def stats_by_services_request(request):
             # statistics on Requested Level 2 Services
 
             service_dict = {}
+            sample_in_l2 = {}
             for service in services_found:
                 service_request_list = service.service_available_service.filter(level=2)
                 for service_requested in service_request_list:
                     service_name = service_requested.avail_service_description
-                    if service_name in service_dict:
-                        service_dict[service_name] += 1
-                    else:
-                        service_dict[service_name] = 1
+                    service_dict[service_name] = service_dict.get(service_name, 0) + 1
+
+                    # count the number of samples handled on level 2 services
+                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service=service).count()
+                    sample_in_l2[service_name] = sample_in_l2.get(service_name, 0) + s_count
 
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
@@ -1414,10 +1416,21 @@ def stats_by_services_request(request):
             services_stats_info["graphic_req_l2_services"] = (
                 graphic_req_l2_services.render()
             )
+            # creating graphic for samples handled on level 2 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Sample per Services:", "level 2 ", "", "", "ocean", sample_in_l2
+            )
+            graphic_sample_service_l2 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex13", "1100", "375", "chart-13", "json", data_source
+            )
+            services_stats_info["graphic_sample_per_service_l2"] = (
+                graphic_sample_service_l2.render()
+            )
 
             # statistics on Requested Level 3 Services
-
+            # getting also the number of samples handled on level 3 services
             service_dict = {}
+            sample_in_l3 = {}
             for service in services_found:
                 service_request_list = service.service_available_service.filter(level=3)
                 for service_requested in service_request_list:
@@ -1426,20 +1439,32 @@ def stats_by_services_request(request):
                         service_dict[service_name] += 1
                     else:
                         service_dict[service_name] = 1
+                    # count the number of samples handled on level 3 services
+                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service=service).count()
+                    sample_in_l3[service_name] = sample_in_l3.get(service_name, 0) + s_count
 
-            # creating the graphic for requested services
+            # creating the graphic for requested services on level 3
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services:", "level 3 ", "", "", "fint", service_dict
             )
             graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex8", "900", "375", "chart-8", "json", data_source
+                "column3d", "ex8", "1200", "375", "chart-8", "json", data_source
             )
             services_stats_info["graphic_req_l3_services"] = (
                 graphic_req_l3_services.render()
             )
+            # creating graphic for samples handled on level 3 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Sample per Services:", "level 3 ", "", "", "fint", sample_in_l3
+            )
+            graphic_sample_service_l3 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex14", "1100", "375", "chart-14", "json", data_source
+            )
+            services_stats_info["graphic_sample_per_service_l3"] = (
+                graphic_sample_service_l3.render()
+            )
 
-            # Samples handled by requested services
-
+           # Samples handled by requested services
             sample_in_services_objs = (
                 drylab.models.RequestedSamplesInServices.objects.filter(
                     samples_in_service__in=services_found
@@ -1491,7 +1516,7 @@ def stats_by_services_request(request):
                 "samples_in_service__service_user_id__username"
             ).annotate(sample_count=Count("sample_name"))
             g_data = core.utils.graphics.preparation_graphic_data(
-                "Analyzed samples bu user",
+                "Analyzed samples by user",
                 "",
                 "",
                 "",

@@ -42,6 +42,14 @@
                                     aria-controls="nav-req-from"
                                     aria-selected="false">Requested by</button>
                             <button class="nav-link"
+                                    id="nav-sample-services-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#nav-sample-services"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="nav-sample-services"
+                                    aria-selected="false">Sample per services</button>
+                            <button class="nav-link"
                                     id="nav-samples-tab"
                                     data-bs-toggle="tab"
                                     data-bs-target="#nav-samples"
@@ -184,6 +192,41 @@
                                                 <div id="chart-6"></div>
                                                 <!-- dumping JavaScript code here -->
                                                 {{ services_stats_info.graphic_area_services_per_time |safe }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade show"
+                             id="nav-sample-services"
+                             role="tabpanel"
+                             aria-labelledby="nav-sample-services-tab">
+                            <div class="row justify-content-center pb-2 pt-2">
+                                <div class="col-md ">
+                                    <div class="card ">
+                                        <div class="card-header">
+                                            <h4>Sample per Services Level 2</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if services_stats_info.graphic_sample_per_service_l2 %}
+                                                <div id="chart-13"></div>
+                                                {{ services_stats_info.graphic_sample_per_service_l2 |safe }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center pb-2 pt-2">
+                                <div class="col-md ">
+                                    <div class="card ">
+                                        <div class="card-header">
+                                            <h4>Sample per Services Level 3</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if services_stats_info.graphic_sample_per_service_l3 %}
+                                                <div id="chart-14"></div>
+                                                {{ services_stats_info.graphic_sample_per_service_l3 |safe }}
                                             {% endif %}
                                         </div>
                                     </div>
