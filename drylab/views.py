@@ -1392,10 +1392,13 @@ def stats_by_services_request(request):
 
             services_stats_info["period_time"] = period_of_time_selected
 
+            # collecting services, samples and re-analysis data for creating
             # statistics on Requested Level 2 Services
-
+            #
             service_dict = {}
             sample_in_l2 = {}
+            re_analysis_l2 = {}
+            sample_re_analysis_l2 = {}
             for service in services_found:
                 service_request_list = service.service_available_service.filter(level=2)
                 for service_requested in service_request_list:
@@ -1409,6 +1412,25 @@ def stats_by_services_request(request):
                     sample_in_l2[service_name] = (
                         sample_in_l2.get(service_name, 0) + s_count
                     )
+                    # check if there are more than one resolution for the same
+                    # service, to be included as re-analysis
+                    resolution_count = drylab.models.Resolution.objects.filter(
+                        resolution_service_id=service
+                    ).count()
+                    if resolution_count > 1:
+                        # reduce the number of services requested because the
+                        # first resolution is the requested service
+                        resolution_count -= 1
+                        # increase the number of re-analysis services
+                        re_analysis_l2[service_name] = (
+                            re_analysis_l2.get(service_name, 0) + resolution_count
+                        )
+                        # count the number of samples handled on re-analysis services
+                        # these number is multiplied by the number of resolutions
+                        sample_re_analysis_l2[service_name] = (
+                            sample_re_analysis_l2.get(service_name, 0)
+                            + s_count * resolution_count
+                        )
 
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
@@ -1430,11 +1452,35 @@ def stats_by_services_request(request):
             services_stats_info["graphic_sample_per_service_l2"] = (
                 graphic_sample_service_l2.render()
             )
+            # creating the graphic for requested re-analysis services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Re Analysis Services:", "level 2 ", "", "", "fint", re_analysis_l2
+            )
+            graphic_re_analysis_l2_services = (
+                core.fusioncharts.fusioncharts.FusionCharts(
+                    "column3d", "ex15", "550", "375", "chart-15", "json", data_source
+                )
+            )
+            services_stats_info["graphic_re_analysis_l2_services"] = (
+                graphic_re_analysis_l2_services.render()
+            )
+            # creating the graphic for re-analysis sample services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Samples Re Analysis", "level 2 ", "", "", "fint", sample_re_analysis_l2
+            )
+            graphic_sample_re_analysis_l2 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex16", "550", "375", "chart-16", "json", data_source
+            )
+            services_stats_info["graphic_sample_re_analysis_service_l2"] = (
+                graphic_sample_re_analysis_l2.render()
+            )
 
             # statistics on Requested Level 3 Services
             # getting also the number of samples handled on level 3 services
             service_dict = {}
             sample_in_l3 = {}
+            re_analysis_l3 = {}
+            sample_re_analysis_l3 = {}
             for service in services_found:
                 service_request_list = service.service_available_service.filter(level=3)
                 for service_requested in service_request_list:
@@ -1450,6 +1496,25 @@ def stats_by_services_request(request):
                     sample_in_l3[service_name] = (
                         sample_in_l3.get(service_name, 0) + s_count
                     )
+                    # check if there are more than one resolution for the same
+                    # service, to be included as re-analysis
+                    resolution_count = drylab.models.Resolution.objects.filter(
+                        resolution_service_id=service
+                    ).count()
+                    if resolution_count > 1:
+                        # reduce the number of services requested because the
+                        # first resolution is the requested service
+                        resolution_count -= 1
+                        # increase the number of re-analysis services
+                        re_analysis_l3[service_name] = (
+                            re_analysis_l3.get(service_name, 0) + resolution_count
+                        )
+                        # count the number of samples handled on re-analysis services
+                        # these number is multiplied by the number of resolutions
+                        sample_re_analysis_l3[service_name] = (
+                            sample_re_analysis_l3.get(service_name, 0)
+                            + s_count * resolution_count
+                        )
 
             # creating the graphic for requested services on level 3
             data_source = drylab.utils.graphics.column_graphic_dict(
@@ -1470,6 +1535,33 @@ def stats_by_services_request(request):
             )
             services_stats_info["graphic_sample_per_service_l3"] = (
                 graphic_sample_service_l3.render()
+            )
+            # creating the graphic for requested re-analysis l3 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Re Analysis Services:", "level 3 ", "", "", "ocean", re_analysis_l3
+            )
+            graphic_re_analysis_l3_services = (
+                core.fusioncharts.fusioncharts.FusionCharts(
+                    "column3d", "ex17", "550", "375", "chart-17", "json", data_source
+                )
+            )
+            services_stats_info["graphic_re_analysis_l3_services"] = (
+                graphic_re_analysis_l3_services.render()
+            )
+            # creating the graphic for re-analysis sample l3 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Samples Re Analysis",
+                "level 2 ",
+                "",
+                "",
+                "ocean",
+                sample_re_analysis_l3,
+            )
+            graphic_sample_re_analysis_l3 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex18", "550", "375", "chart-18", "json", data_source
+            )
+            services_stats_info["graphic_sample_re_analysis_service_l3"] = (
+                graphic_sample_re_analysis_l3.render()
             )
 
             # Samples handled by requested services
