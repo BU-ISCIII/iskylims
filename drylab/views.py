@@ -1454,7 +1454,7 @@ def stats_by_services_request(request):
             )
             # creating the graphic for requested re-analysis services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Re Analysis Services:", "level 2 ", "", "", "fint", re_analysis_l2
+                "Reanalysis Services:", "level 2 ", "", "", "fint", re_analysis_l2
             )
             graphic_re_analysis_l2_services = (
                 core.fusioncharts.fusioncharts.FusionCharts(
@@ -1466,7 +1466,7 @@ def stats_by_services_request(request):
             )
             # creating the graphic for re-analysis sample services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Samples Re Analysis", "level 2 ", "", "", "fint", sample_re_analysis_l2
+                "Reanalysis Samples", "level 2 ", "", "", "fint", sample_re_analysis_l2
             )
             graphic_sample_re_analysis_l2 = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex16", "550", "375", "chart-16", "json", data_source
@@ -1538,7 +1538,7 @@ def stats_by_services_request(request):
             )
             # creating the graphic for requested re-analysis l3 services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Re Analysis Services:", "level 3 ", "", "", "ocean", re_analysis_l3
+                "Reanalysis Services:", "level 3 ", "", "", "ocean", re_analysis_l3
             )
             graphic_re_analysis_l3_services = (
                 core.fusioncharts.fusioncharts.FusionCharts(
@@ -1550,8 +1550,8 @@ def stats_by_services_request(request):
             )
             # creating the graphic for re-analysis sample l3 services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Samples Re Analysis",
-                "level 2 ",
+                "Reanalysis Samples",
+                "level 3 ",
                 "",
                 "",
                 "ocean",
