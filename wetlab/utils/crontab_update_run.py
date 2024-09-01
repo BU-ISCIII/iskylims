@@ -117,9 +117,9 @@ def search_update_new_runs(request_reason):
                 error_message = (
                     "Unable to fetch RunParameter file for folder :" + new_run
                 )
-                wetlab.utils.common.logging_errors(error_message, True, False)
+                wetlab.utils.common.logging_warnings(error_message, True)
                 experiment_name = "Experiment name NOT FOUND"
-                wetlab.utils.common.logging_errors(error_message, True, False)
+                wetlab.utils.common.logging_warnings(error_message, True)
                 # check the run folder creation date to allow more time before
                 # setting the run to error
                 f_created_date = wetlab.utils.common.get_samba_atribute_data(
@@ -174,6 +174,9 @@ def search_update_new_runs(request_reason):
                             new_run + " : Experiment name field was not found in file"
                         )
                         wetlab.utils.common.logging_errors(string_message, False, False)
+                        wetlab.utils.crontab_process.handling_errors_in_run(
+                            new_run, "7"
+                        )
                     else:
                         string_message = (
                             new_run + " : Ignoring test folder " + experiment_name
