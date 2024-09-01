@@ -649,7 +649,7 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
             string_message = (
                 "Unable to fetch the " + local_file + " file on folder : " + run_dir
             )
-            wetlab.utils.common.logging_warnings(string_message, True, False)
+            wetlab.utils.common.logging_warnings(string_message, False)
             os.remove(local_file)
             logger.debug(
                 "%s : End function for fetching remote file with Exception", run_dir
