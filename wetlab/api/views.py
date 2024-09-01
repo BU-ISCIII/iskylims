@@ -202,12 +202,12 @@ def create_sample_data(request):
                 not_allowed_sample_names = list(
                     core.models.Samples.objects.filter(
                         sample_user__username__iexact=request.user.username
-                    ).values_list(Lower("sample_name", flat=True))
+                    ).values_list(Lower("sample_name"), flat=True)
                 )
             else:
                 not_allowed_sample_names = list(
                     core.models.Samples.objects.values_list(
-                        Lower("sample_name", flat=True)
+                        Lower("sample_name"), flat=True
                     )
                 )
         # get information it underscore is allowed in sample name
