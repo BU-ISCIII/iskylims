@@ -268,44 +268,35 @@ def create_sample_data(request):
 
 @swagger_auto_schema(
     method="get",
-    operation_description="Get the stored Run information available in iSkyLIMS for the list of samples",
-    manual_parameters=[sample_in_run],
-)
-@api_view(["GET"])
-def fetch_run_information(request):
-    if "samples" in request.GET:
-        samples = request.GET["samples"]
-        # sample_run_info = get_run_info_for_sample(apps_name, samples)
-        s_list = samples.strip().split(",")
-        s_data = []
-        for sample in s_list:
-            sample = sample.strip()
-            if wetlab.models.SamplesInProject.objects.filter(
-                sample_name__iexact=sample
-            ).exists():
-                s_found_objs = wetlab.models.SamplesInProject.objects.filter(
-                    sample_name__iexact=sample
-                )
-                for s_found_obj in s_found_objs:
-                    s_data.append(
-                        wetlab.api.serializers.SampleRunInfoSerializers(
-                            s_found_obj, many=False
-                        ).data
-                    )
-            else:
-                s_data.append({"sample_name": sample, "Run data": "Not found"})
-        return Response(s_data, status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-@swagger_auto_schema(
-    method="get",
     operation_description="Get the sample/samples belongs to project information, collected when creating in iSkyLIMS",
     manual_parameters=[sample_information, sample_project_name, sample_parameter],
 )
 @api_view(["GET"])
 def fetch_sample_information(request):
+    """This request is used to get the sample information from the database. If
+    sequencing is received in the request, the request will return the run
+    information for this sample.
+    If not then all infromation is related to the sample creation, which means
+    sample project, project fields.
+    """
     sample_data = {}
+    if "sequencing" in request.GET and "sample" in request.GET:
+        sample = request.GET["sample"].strip()
+        s_data = []
+        if wetlab.models.SamplesInProject.objects.filter(
+            sample_name__iexact=sample
+        ).exists():
+            sample_obj = wetlab.models.SamplesInProject.objects.filter(
+                sample_name__iexact=sample
+            )
+            s_data.append(
+                wetlab.api.serializers.SampleRunInfoSerializers(
+                    sample_obj, many=False
+                ).data
+            )
+        else:
+            s_data.append({"sample_name": sample, "Run data": "Not found"})
+        return Response(s_data, status=status.HTTP_200_OK)
     if "sample" in request.GET:
         sample = request.GET["sample"]
         if not core.models.Samples.objects.filter(sample_name__iexact=sample).exists():
