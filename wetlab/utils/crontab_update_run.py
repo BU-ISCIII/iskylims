@@ -119,17 +119,18 @@ def search_update_new_runs(request_reason):
                 )
                 wetlab.utils.common.logging_warnings(error_message, True)
                 experiment_name = "Experiment name NOT FOUND"
-                wetlab.utils.common.logging_warnings(error_message, True)
                 # check the run folder creation date to allow more time before
                 # setting the run to error
-                f_created_date = wetlab.utils.common.get_samba_atribute_data(
-                    conn,
-                    wetlab.utils.crontab_process.get_samba_shared_folder(),
-                    new_run,
-                    "create_time",
+                f_created_date = int(
+                    wetlab.utils.common.get_samba_atribute_data(
+                        conn,
+                        wetlab.utils.crontab_process.get_samba_shared_folder(),
+                        new_run,
+                        "create_time",
+                    ).timestamp()
                 )
-                time_to_check = datetime.datetime.utcfromtimestamp(
-                    f_created_date
+                time_to_check = datetime.datetime.fromtimestamp(
+                    f_created_date, tz=datetime.timezone.utc
                 ).date()
                 max_time_for_run_parameters = (
                     wetlab.models.ConfigSetting.objects.filter(
