@@ -325,7 +325,7 @@ def create_nextseq_run(request):
 
         # CHECK if file contains the extension.
         # Error page is showed if file does not contain any extension
-        split_filename = re.search("(.*)(\.\w+$)", myfile.name)
+        split_filename = re.search(r"(.*)(\.\w+$)", myfile.name)
         if split_filename is None:
             return render(
                 request,
