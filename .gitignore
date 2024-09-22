@@ -17,6 +17,7 @@ documents/
 manage.py
 logs/
 logs
+.vscode/
 
 
 # Byte-compiled / optimized / DLL files
