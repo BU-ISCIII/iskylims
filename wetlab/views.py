@@ -3303,7 +3303,9 @@ def handling_molecules(request):
             },
         )
 
-    elif request.method == "POST" and request.POST["action"] == "addExtractionParameters":
+    elif (
+        request.method == "POST" and request.POST["action"] == "addExtractionParameters"
+    ):
         protocols = request.POST["protocol_list"].split(";")
         for protocol in protocols:
             heading = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS.copy()
