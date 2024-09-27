@@ -412,6 +412,8 @@
                     return true;
                 });
             });
+        {% endif %}
+        {% if molecules_availables.molecule_heading %}
             // excel for pending molecules
             var data2 = [{% for values in molecules_availables.data %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -437,7 +439,6 @@
                 pagination:20,
                 csvFileName:'molecule_use',
             });
-
             // send form for molecule in use
             $(document).ready(function () {
                 $("#selectedOwnerMolecules").submit(function (e) {
@@ -451,7 +452,8 @@
                     return true;
                 });
             });
-
+        {% endif %}
+        {% if pending_to_use.heading %}
             // excel for selecting the molecule use
             var data3 = [{% for values in pending_to_use.data %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
