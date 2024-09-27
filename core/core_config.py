@@ -237,6 +237,8 @@ ERROR_SAMPLE_NOT_FOUND = ["Sample was not found"]
 
 ERROR_SAMPLE_ALREADY_DEFINED = ["Sample", "already exist in the database"]
 
+ERROR_NO_USED_FIELD_ARE_ARE_SET = ["No field is set as used"]
+
 # ######################  Batch file ###############################################
 ERROR_EMPTY = [
     "The uploaded table or batch file does not have any sample. Upload a valid batch file"
