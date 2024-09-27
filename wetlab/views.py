@@ -2614,6 +2614,9 @@ def define_sample_projects_fields(request, sample_project_id):
             "wetlab/define_sample_projects_fields.html",
             {"error_message": "You do not have enough privileges to see this page "},
         )
+    sample_project_data = core.utils.samples.define_table_for_sample_project_fields(
+        sample_project_id
+    )
     # get the list of defined sample Projects
     if (
         request.method == "POST"
@@ -2622,10 +2625,19 @@ def define_sample_projects_fields(request, sample_project_id):
         sample_project_field_data = core.utils.samples.set_sample_project_fields(
             request.POST
         )
+        if "ERROR" in sample_project_field_data:
+            return render(
+                request,
+                "wetlab/define_sample_project_fields.html",
+                {"error_message": sample_project_field_data["ERROR"]},
+            )
         return render(
             request,
             "wetlab/define_sample_project_fields.html",
-            {"sample_project_field_data": sample_project_field_data},
+            {
+                "sample_project_field_data": sample_project_field_data,
+                "sample_project_data": sample_project_data,
+            },
         )
 
     elif request.method == "POST" and request.POST["action"] == "defineBatchFields":
@@ -2678,10 +2690,6 @@ def define_sample_projects_fields(request, sample_project_id):
                     "error_message": "The requested Sample project does not exist",
                 },
             )
-
-        sample_project_data = core.utils.samples.define_table_for_sample_project_fields(
-            sample_project_id
-        )
         return render(
             request,
             "wetlab/define_sample_project_fields.html",

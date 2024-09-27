@@ -116,7 +116,7 @@
             { type: 'text', title:'{{sample_project_field.heading.1}}', width:160 },
             { type: 'numeric', title:'{{sample_project_field.heading.2}}', width:50, mask:' #.##' },
             { type: 'checkbox', title:'{{sample_project_field.heading.3}}', width:50 },
-            { type: 'checkbox', title:'{{sample_project_field.heading.4}}', width:100 },
+            { type: 'checkbox', title:'{{sample_project_field.heading.4}}', width:120 },
             { type: 'dropdown' , title: '{{sample_project_field.heading.5}}', width:150 , source: ["String", "Date" , "Options List"] },
             { type: 'text', title:'{{sample_project_field.heading.6}}', width:240, wordWrap:true },
             { type: 'text', title:'{{sample_project_field.heading.7}}', width:400 , wordWrap:true },
@@ -131,13 +131,26 @@
         tableOverflow: false,
         tableWidth: "1100px",
     });
-
+    // Function to check if at least one checkbox in the "Used" column is set to true
+    function isAnyUsedColumnChecked() {
+        var table_data1 = table1.getData();
+        // Assuming the "Used" column is the third column (index 2)
+        for (var i = 0; i < table_data1.length; i++) {
+            if (table_data1[i][2] === true) { // Check if "Used" column (index 2) is true
+                return true;
+            }
+        }
+        return false;
+    }
     // append table to form
     $(document).ready(function () {
         $("#modifySampleProjectFields").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            //e.preventDefault();
-            //disable the submit button
+                        // Check if at least one "Used" checkbox is checked
+            if (!isAnyUsedColumnChecked()) {
+                e.preventDefault(); // Prevent form submission
+                alert('You must select at least one "Used" checkbox before submitting.');
+                return false;
+            }
             var table_data1 = table1.getData()
             var data1_json = JSON.stringify(table_data1)
             $("<input />").attr("type", "hidden")
