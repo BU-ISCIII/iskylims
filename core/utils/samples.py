@@ -2093,6 +2093,19 @@ def set_sample_project_fields(data_form):
 
     saved_fields = []
     stored_fields = {}
+    valid_data = False
+    import pdb
+
+    pdb.set_trace()
+    # check if there is at least one field to be used
+    for row_line in excel_json_data:
+        if row_line["Used"] == True:
+            valid_data = True
+            break
+    if not valid_data:
+        stored_fields["ERROR"] = core.core_config.ERROR_NO_USED_FIELD_ARE_ARE_SET
+        return stored_fields
+
     for row_line in excel_json_data:
         if row_line["Field name"] == "":
             continue
