@@ -324,21 +324,32 @@
     "model": "core.statesformolecule",
     "pk": 3,
     "fields": {
-        "molecule_state_name": "Defined"
+        "molecule_state_name": "defined",
+        "molecule_state_display": "Defined"
     }
 },
 {
     "model": "core.statesformolecule",
     "pk": 4,
     "fields": {
-        "molecule_state_name": "Assigned Protocol"
+        "molecule_state_name": "assigned_parameters",
+        "molecule_state_display": "Assigned Parameters"
     }
 },
 {
     "model": "core.statesformolecule",
     "pk": 5,
     "fields": {
-        "molecule_state_name": "Completed"
+        "molecule_state_name": "completed",
+        "molecule_state_display": "Completed"
+    }
+},
+{
+    "model": "core.statesformolecule",
+    "pk": 6,
+    "fields": {
+        "molecule_state_name": "sent_external",
+        "molecule_state_display": "Sent to external service"
     }
 },
 {

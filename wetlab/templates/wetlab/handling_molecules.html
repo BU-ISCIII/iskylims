@@ -108,15 +108,15 @@
                     <div class="col-md">
                         <div class="card ">
                             <div class="card-header">
-                                <h3>Update molecules data with defined parameters</h3>
+                                <h3>Update sample extraction data with defined parameters</h3>
                             </div>
                             <div class="card-body">
                                 <form method="post"
                                       enctype="multipart/form-data"
-                                      name="addMoleculeParameters"
-                                      id="addMoleculeParameters">
+                                      name="addExtractionParameters"
+                                      id="addExtractionParameters">
                                     {% csrf_token %}
-                                    <input type="hidden" name="action" value="addMoleculeParameters" />
+                                    <input type="hidden" name="action" value="addExtractionParameters" />
                                     <input type="hidden" name="protocol_list" value="{{ protocol_list }}" />
                                     {% for prot, value_dict in molecule_parameters.items %}
                                         <input type="hidden"
@@ -147,13 +147,13 @@
                     <div class="col-sm-12">
                         <div class="card ">
                             <div class="card-header text-center">
-                                <h3>Molecules have been updated with required parameters.</h3>
+                                <h3>Samples have been updated with Extraction required parameters.</h3>
                             </div>
                             <div class="row my-3  justify-content-center">
                                 <div class="col-md-3">
                                     <input type="button"
                                            class="btn btn-outline-secondary"
-                                           value="Return to handling molecules"
+                                           value="Return to handling extraction samples"
                                            onclick="location.href ='/wetlab/handlingMolecules' ;" />
                                 </div>
                             </div>
@@ -208,7 +208,7 @@
                                         type="button"
                                         role="tab"
                                         aria-controls="n_samples"
-                                        aria-selected="true">New Samples</button>
+                                        aria-selected="true">Recorded Samples</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link"
@@ -218,7 +218,7 @@
                                         type="button"
                                         role="tab"
                                         aria-controls="molecule"
-                                        aria-selected="false">Pending molecules</button>
+                                        aria-selected="false">Pending Extraction data</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link"
@@ -228,7 +228,7 @@
                                         type="button"
                                         role="tab"
                                         aria-controls="mol_use"
-                                        aria-selected="false">Molecules use specification</button>
+                                        aria-selected="false">Next action after extraction</button>
                             </li>
                         </ul>
                         <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
@@ -669,13 +669,13 @@
                     });
                                     
                 
-                    $("#addMoleculeParameters").submit(function (e) {
+                    $("#addExtractionParameters").submit(function (e) {
                         var table_data =  {{ prot }}_data_table.getData()
                         var data_json = JSON.stringify(table_data)
                         $("<input />").attr("type", "hidden")
                             .attr("name", "{{ prot }}")
                             .attr("value", data_json)
-                            .appendTo("#addMoleculeParameters");
+                            .appendTo("#addExtractionParameters");
                         $("#button-submit").attr("disabled", true);
                         return true;
                     });

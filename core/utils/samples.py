@@ -565,7 +565,7 @@ def add_molecule_protocol_parameters(data, parameters):
                 molecule_parameter_value
             )
 
-        molecule_obj.set_state("Completed")
+        molecule_obj.set_state("assigned_parameters")
         # Update sample state
         sample_obj = molecule_obj.get_sample_obj()
         sample_obj.set_state("Pending for use")
@@ -701,10 +701,10 @@ def create_table_molecule_pending_use(sample_list, app_name):
     use_type = {}
     use_type["data"] = list(
         core.models.MoleculePreparation.objects.filter(
-            molecule_used_for=None, sample__in=sample_list
-        )
-        .exclude(state__molecule_state_name="Completed")
-        .values_list("sample__sample_name", "molecule_code_id", "pk")
+            molecule_used_for=None,
+            sample__in=sample_list,
+            state__molecule_state_name="assigned_parameters",
+        ).values_list("sample__sample_name", "molecule_code_id", "pk")
     )
     if len(use_type["data"]) > 0:
         if core.models.MoleculeUsedFor.objects.filter(
