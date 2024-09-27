@@ -3371,7 +3371,6 @@ def handling_molecules(request):
         molecule_use_defined = core.utils.samples.check_if_molecule_use_defined(
             __package__
         )
-
         return render(
             request,
             "wetlab/handling_molecules.html",
