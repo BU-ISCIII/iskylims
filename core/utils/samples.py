@@ -702,7 +702,9 @@ def create_table_molecule_pending_use(sample_list, app_name):
     use_type["data"] = list(
         core.models.MoleculePreparation.objects.filter(
             molecule_used_for=None, sample__in=sample_list
-        ).values_list("sample__sample_name", "molecule_code_id", "pk")
+        )
+        .exclude(state__molecule_state_name="Completed")
+        .values_list("sample__sample_name", "molecule_code_id", "pk")
     )
     if len(use_type["data"]) > 0:
         if core.models.MoleculeUsedFor.objects.filter(
