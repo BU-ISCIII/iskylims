@@ -250,26 +250,26 @@ def save_inital_sample_setting_value(apps_name, data):
     if "lab_request" in data:
         lab_request_data = {}
         lab_request_data["apps_name"] = apps_name
-        lab_request_data["labName"] = data["lab_request"]["labRequestName"]
-        lab_request_data["labNameCoding"] = data["lab_request"]["labRequesCoding"]
-        lab_request_data["labUnit"] = data["lab_request"]["department"]
-        lab_request_data["labContactName"] = data["lab_request"]["contact"]
-        lab_request_data["labPhone"] = data["lab_request"]["phone"]
-        lab_request_data["labEmail"] = data["lab_request"]["email"]
+        lab_request_data["lab_name"] = data["lab_request"]["labRequestName"]
+        lab_request_data["lab_name_coding"] = data["lab_request"]["labRequesCoding"]
+        lab_request_data["lab_unit"] = data["lab_request"]["department"]
+        lab_request_data["lab_contact_name"] = data["lab_request"]["contact"]
+        lab_request_data["lab_phone"] = data["lab_request"]["phone"]
+        lab_request_data["lab_email"] = data["lab_request"]["email"]
         lab_request_data["address"] = data["lab_request"]["address"]
         lab_request_data["city"] = data["lab_request"]["city"]
         if core.models.LabRequest.objects.filter(
-            lab_name_coding__iexact=lab_request_data["labNameCoding"],
+            lab_name_coding__iexact=lab_request_data["lab_name_coding"],
             apps_name__exact=lab_request_data["apps_name"],
         ).exists():
             setting_defined["ERROR"] = [
                 core.core_config.ERROR_LABORATORY_REQUEST_ALREADY_DEFINED,
-                lab_request_data["labNameCoding"],
+                lab_request_data["lab_name_coding"],
             ]
             return setting_defined
         core.models.LabRequest.objects.create_lab_request(lab_request_data)
         setting_defined["settings"] = "Lab Request"
-        setting_defined["value"] = lab_request_data["labName"]
+        setting_defined["value"] = lab_request_data["lab_name"]
     if "molecule_type" in data:
         molecule_type_data = {}
         molecule_type_data["apps_name"] = apps_name
