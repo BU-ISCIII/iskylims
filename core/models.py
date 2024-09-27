@@ -372,6 +372,7 @@ class StatesForSample(models.Model):
 
 class StatesForMolecule(models.Model):
     molecule_state_name = models.CharField(max_length=50)
+    molecule_state_display = models.CharField(max_length=80, null=True, blank=True)
 
     class Meta:
         db_table = "core_states_for_molecule"
@@ -1495,7 +1496,7 @@ class MoleculePreparationManager(models.Manager):
             protocol_used=protocol_used_obj,
             sample=molecule_data["sample"],
             molecule_type=molecule_used_obj,
-            state=StatesForMolecule.objects.get(molecule_state_name__exact="Defined"),
+            state=StatesForMolecule.objects.get(molecule_state_name__exact="defined"),
             molecule_code_id=molecule_data["molecule_code_id"],
             molecule_extraction_date=molecule_data["molecule_extraction_date"],
             extraction_type=molecule_data["extraction_type"],

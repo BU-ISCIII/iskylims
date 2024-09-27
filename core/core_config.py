@@ -22,7 +22,7 @@ HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = [
 ]
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = [
     "Sample",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Lot Commercial Kit",
 ]
 
@@ -74,8 +74,8 @@ HEADING_FOR_MOLECULE_DEFINITION = [
 
 HEADING_FOR_SELECTING_MOLECULE_USE = [
     "Sample Name",
-    "Molecule CodeID",
-    "Molecule use for",
+    "Extraction CodeID",
+    "Sample continue on",
 ]
 
 # ################ PROTOCOL PARAMETER SETTINGS ##############################
