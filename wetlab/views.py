@@ -3284,7 +3284,7 @@ def handling_molecules(request):
         heading = core.core_config.HEADING_FOR_PENDING_MOLECULES.copy()
         heading.insert(-1, "s_id")
         molecules, _ = core.utils.samples.get_selection_from_excel_data(
-            request.POST["pending_molecules"], heading, "Select Molecule", "s_id"
+            request.POST["pending_extraction"], heading, "Select Molecule", "s_id"
         )
         if len(molecules) == 0:
             return redirect("handling_molecules")

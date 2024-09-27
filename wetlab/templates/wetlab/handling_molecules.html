@@ -268,7 +268,7 @@
                                                             </div>
                                                         </form>
                                                     {% else %}
-                                                        <h4>There is no samples to add Molecule Extraction information</h4>
+                                                        <h4>There is no samples to add Extraction information</h4>
                                                     {% endif %}
                                                 </div>
                                             </div>
@@ -286,7 +286,7 @@
                                         <div class="col">
                                             <div class="card">
                                                 <div class="card-header text-center">
-                                                    <h3>Select the Samples to add Molecule information</h3>
+                                                    <h3>Select the Samples to add Pending extraction information</h3>
                                                 </div>
                                                 <div class="card-body">
                                                     {% if molecules_availables %}
@@ -298,7 +298,7 @@
                                                             {% csrf_token %}
                                                             <input type="hidden" name="action" value="selectedOwnerMolecules" />
                                                             <div class="col-md my-3">
-                                                                <div id="pending_molecules"></div>
+                                                                <div id="pending_extraction"></div>
                                                             </div>
                                                             <input type="button"
                                                                    class="btn btn-outline-secondary my-3"
@@ -414,11 +414,11 @@
             });
         {% endif %}
         {% if molecules_availables.molecule_heading %}
-            // excel for pending molecules
+            // excel for pending Extraction data 
             var data2 = [{% for values in molecules_availables.data %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
             ];
-            var table2  = jexcel(document.getElementById('pending_molecules'), {
+            var table2  = jexcel(document.getElementById('pending_extraction'), {
                 data:data2,
                 columns: [{% for values in molecules_availables.molecule_heading  %}
                     {% if forloop.last %}
@@ -439,13 +439,29 @@
                 pagination:20,
                 csvFileName:'molecule_use',
             });
+                // Function to check if at least one checkbox in the "select sample" column is set to true
+            function isAnySelectedColumnChecked() {
+                var table_data2 = table2.getData();
+                // Assuming the "Select sample" column is the third column (index 5)
+                for (var i = 0; i < table_data2.length; i++) {
+                    if (table_data2[i][5] === true) { // Check if "Select sample" column (index 5) is true
+                        return true;
+                    }
+                }
+                return false;
+            }
             // send form for molecule in use
             $(document).ready(function () {
                 $("#selectedOwnerMolecules").submit(function (e) {
+                    if (!isAnySelectedColumnChecked()) {
+                        e.preventDefault(); // Prevent form submission
+                        alert('You must select at least one sample before submitting.');
+                        return false;
+                    }
                     var table_data2 = table2.getData()
                     var data_json = JSON.stringify(table_data2)
                     $("<input />").attr("type", "hidden")
-                        .attr("name", "pending_molecules")
+                        .attr("name", "pending_extraction")
                         .attr("value", data_json)
                         .appendTo("#selectedOwnerMolecules");
                     $("#btnSubmit").attr("disabled", true);

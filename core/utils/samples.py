@@ -1514,7 +1514,7 @@ def get_selection_from_excel_data(data, heading, check_field, field_id):
     excel_json_data = core.utils.common.jspreadsheet_to_dict(heading, excel_data)
     for row in excel_json_data:
         if check_field is not None:
-            if row[check_field] is True or row[check_field] != "":
+            if row[check_field] is True:
                 selected.append(row[field_id])
                 selected_row.append(row)
         else:
