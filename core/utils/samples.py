@@ -2099,7 +2099,7 @@ def set_sample_project_fields(data_form):
     pdb.set_trace()
     # check if there is at least one field to be used
     for row_line in excel_json_data:
-        if row_line["Used"] == True:
+        if row_line["Used"] is True:
             valid_data = True
             break
     if not valid_data:
