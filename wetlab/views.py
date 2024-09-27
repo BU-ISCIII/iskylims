@@ -3303,7 +3303,7 @@ def handling_molecules(request):
             },
         )
 
-    elif request.method == "POST" and request.POST["action"] == "addMoleculeParameters":
+    elif request.method == "POST" and request.POST["action"] == "addExtractionParameters":
         protocols = request.POST["protocol_list"].split(";")
         for protocol in protocols:
             heading = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS.copy()
@@ -3371,6 +3371,7 @@ def handling_molecules(request):
         molecule_use_defined = core.utils.samples.check_if_molecule_use_defined(
             __package__
         )
+
         return render(
             request,
             "wetlab/handling_molecules.html",
