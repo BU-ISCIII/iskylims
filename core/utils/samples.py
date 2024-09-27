@@ -413,6 +413,10 @@ def validate_project_data(project_data, project_name, sample_validation=False):
                 sample_dict["Validation error"].append(" ".join(error_cause))
             """
             if field_type == "Date" and sample[field_name] != "":
+                # if field contains also time, then removed it
+                sample[field_name] = re.sub(
+                    r"\s\d{2}:\d{2}:\d{2}", "", sample[field_name]
+                )
                 try:
                     datetime.datetime.strptime(sample[field_name], "%Y-%m-%d")
                 except Exception:
