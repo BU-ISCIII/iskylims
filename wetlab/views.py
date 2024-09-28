@@ -3594,7 +3594,7 @@ def search_sample(request):
         )
 
 
-""" 
+"""
 @login_required
 def set_molecule_values(request):
     if request.method == "POST" and request.POST["action"] == "continueWithMolecule":
