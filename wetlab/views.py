@@ -3244,7 +3244,8 @@ def handling_molecules(request):
         )
 
     elif (
-        request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
+        request.method == "POST"
+        and request.POST["action"] == "updateExtractionProtocol"
     ):
         heading = core.core_config.HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION.copy()
         heading.append("s_id")
@@ -3253,7 +3254,7 @@ def handling_molecules(request):
         )
         if len(samples) == 0:
             return redirect("handling_molecules")
-        molecule_recorded = core.utils.samples.record_molecules(
+        molecule_recorded = core.utils.samples.record_extract_protocol(
             samples, excel_data, heading, request.user, __package__
         )
         if "incomplete" in molecule_recorded:
@@ -3268,6 +3269,12 @@ def handling_molecules(request):
                 molecule_recorded
             )
         )
+        if len(molecule_parameters) == 0:
+            return render(
+                request,
+                "wetlab/handling_molecules.html",
+                {"molecule_parameters_updated": True},
+            )
         protocol_list = ";".join(list(molecule_parameters.keys()))
         return render(
             request,
@@ -3587,6 +3594,7 @@ def search_sample(request):
         )
 
 
+""" 
 @login_required
 def set_molecule_values(request):
     if request.method == "POST" and request.POST["action"] == "continueWithMolecule":
@@ -3622,7 +3630,7 @@ def set_molecule_values(request):
     elif (
         request.method == "POST" and request.POST["action"] == "updateMoleculeProtocol"
     ):
-        molecule_recorded = core.utils.samples.record_molecules(request)
+        molecule_recorded = core.utils.samples.record_extract_protocol(request)
 
         if "heading" not in molecule_recorded:
             samples = request.POST["samples"].split(",")
@@ -3707,6 +3715,7 @@ def set_molecule_values(request):
             {"display_list": display_list},
         )
     return render(request, "wetlab/setMoleculeValues.html", {})
+ """
 
 
 @login_required

@@ -204,11 +204,6 @@ urlpatterns = [
         name="sequencer_inventory",
     ),
     path(
-        "setMoleculeValues",
-        wetlab.views.set_molecule_values,
-        name="set_molecule_values",
-    ),
-    path(
         "sequencerConfiguration",
         wetlab.views.sequencer_configuration,
         name="sequencer_configuration",
