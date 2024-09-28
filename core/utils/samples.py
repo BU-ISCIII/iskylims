@@ -1293,32 +1293,37 @@ def get_molecule_protocols(apps_name):
 def get_molecule_data_and_protocol_parameters(protocol_objs):
     mol_data_parm = {}
     for protocol_obj, mol_ids in protocol_objs.items():
-        prot_name = protocol_obj.get_name()
-        mol_data_parm[prot_name] = {}
-        mol_data_parm[prot_name]["params_type"] = (
-            core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
-        )
-        mol_data_parm[prot_name][
-            "fix_heading"
-        ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
-        mol_data_parm[prot_name]["lot_kit"] = (
-            core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
-        )
-        mol_data_parm[prot_name]["param_heading"] = []
-        prot_params = core.models.ProtocolParameters.objects.filter(
+        # check if the protocol has parameters
+        if core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj, parameter_used=True
-        ).order_by("parameter_order")
-        for param in prot_params:
-            mol_data_parm[prot_name]["param_heading"].append(param.get_parameter_name())
-        mol_data_parm[prot_name]["param_heading_in_string"] = ";".join(
-            mol_data_parm[prot_name]["param_heading"]
-        )
-        mol_data_parm[prot_name]["m_data"] = list(
-            core.models.MoleculePreparation.objects.filter(pk__in=mol_ids).values_list(
-                "pk", "sample__sample_name", "molecule_code_id"
+        ).exists():
+            prot_name = protocol_obj.get_name()
+            mol_data_parm[prot_name] = {}
+            mol_data_parm[prot_name]["params_type"] = (
+                core.utils.protocols.get_protocol_parameters_and_type(protocol_obj)
             )
-        )
-
+            mol_data_parm[prot_name][
+                "fix_heading"
+            ] = core.core_config.HEADING_FOR_MOLECULE_ADDING_PARAMETERS
+            mol_data_parm[prot_name]["lot_kit"] = (
+                core.utils.commercial_kits.get_lot_commercial_kits(protocol_obj)
+            )
+            mol_data_parm[prot_name]["param_heading"] = []
+            prot_params = core.models.ProtocolParameters.objects.filter(
+                protocol_id=protocol_obj, parameter_used=True
+            ).order_by("parameter_order")
+            for param in prot_params:
+                mol_data_parm[prot_name]["param_heading"].append(
+                    param.get_parameter_name()
+                )
+            mol_data_parm[prot_name]["param_heading_in_string"] = ";".join(
+                mol_data_parm[prot_name]["param_heading"]
+            )
+            mol_data_parm[prot_name]["m_data"] = list(
+                core.models.MoleculePreparation.objects.filter(
+                    pk__in=mol_ids
+                ).values_list("pk", "sample__sample_name", "molecule_code_id")
+            )
     return mol_data_parm
 
 
@@ -1834,7 +1839,7 @@ def record_molecule_use(from_data, app_name):
     return molecule_use_information
 
 
-def record_molecules(samples, excel_data, heading, user, app_name):
+def record_extract_protocol(samples, excel_data, heading, user, app_name):
     """Recored the molecues defined in excel_data.  If information is missing
         returns the data to display again for correcting.
 
@@ -1898,7 +1903,6 @@ def record_molecules(samples, excel_data, heading, user, app_name):
             molecule_data["molecule_code_id"] = code_split.group(1) + str(number_code)
         else:
             molecule_data["molecule_code_id"] = sample_obj.get_sample_code() + "_E1"
-
         molecule_obj = core.models.MoleculePreparation.objects.create_molecule(
             molecule_data
         )

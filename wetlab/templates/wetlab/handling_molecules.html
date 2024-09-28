@@ -38,10 +38,10 @@
                                 <form method="post"
                                       action="/wetlab/handlingMolecules"
                                       enctype="multipart/form-data"
-                                      name="updateMoleculeProtocol"
-                                      id="updateMoleculeProtocol">
+                                      name="updateExtractionProtocol"
+                                      id="updateExtractionProtocol">
                                     {% csrf_token %}
-                                    <input type="hidden" name="action" value="updateMoleculeProtocol" />
+                                    <input type="hidden" name="action" value="updateExtractionProtocol" />
                                     <div id="assing_molecule" class="my-3"></div>
                                     <input type="button"
                                            class="btn btn-outline-secondary my-3"
@@ -69,11 +69,11 @@
                                     <p>Please add the missing information and click on the submit bottom</p>
                                     <form method="post"
                                           enctype="multipart/form-data"
-                                          name="updateMoleculeProtocol"
-                                          id="updateMoleculeProtocol"
+                                          name="updateExtractionProtocol"
+                                          id="updateExtractionProtocol"
                                           class="form-horizontal well">
                                         {% csrf_token %}
-                                        <input type="hidden" name="action" value="updateMoleculeProtocol" />
+                                        <input type="hidden" name="action" value="updateExtractionProtocol" />
                                         <input type="hidden"
                                                name="samples"
                                                value="{{ molecule_recorded.incomplete_sample_ids }}" />
@@ -559,7 +559,7 @@
             });
 
             $(document).ready(function () {
-                $("#updateMoleculeProtocol").submit(function (e) {
+                $("#updateExtractionProtocol").submit(function (e) {
                     //stop submitting the form to see the disabled button effect
                     // e.preventDefault();
                     //disable the submit button
@@ -568,7 +568,7 @@
                     $("<input />").attr("type", "hidden")
                     .attr("name", "molecule_data")
                     .attr("value", data_json)
-                    .appendTo("#updateMoleculeProtocol");
+                    .appendTo("#updateExtractionProtocol");
                     $("#btnSubmit").attr("disabled", true);
                     return true;
                 });
@@ -622,13 +622,13 @@
                 }
             });
             $(document).ready(function () {
-                $("#updateMoleculeProtocol").submit(function (e) {
+                $("#updateExtractionProtocol").submit(function (e) {
                     var table_data = $('#missing_data').jexcel('getData')
                     var data_json = JSON.stringify(table_data)
                     $("<input />").attr("type", "hidden")
                     .attr("name", "molecule_data")
                     .attr("value", data_json)
-                    .appendTo("#updateMoleculeProtocol");
+                    .appendTo("#updateExtractionProtocol");
                     $("#btnSubmit").attr("disabled", true);
                     return true;
                 });
