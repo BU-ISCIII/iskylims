@@ -925,10 +925,14 @@ def get_all_sample_information(sample_id, join_values=False):
                         molecule_id=molecule
                     ).exists():
                         try:
+                            # use the last value to avoid errors for incorrect
+                            # used.
                             mol_param_value.append(
-                                core.models.MoleculeParameterValue.objects.get(
+                                core.models.MoleculeParameterValue.objects.filter(
                                     molecule_id=molecule, molecule_parameter_id=p_name
-                                ).get_param_value()
+                                )
+                                .last()
+                                .get_param_value()
                             )
                         except core.models.MoleculeParameterValue.DoesNotExist:
                             # if the parameter was not set at the time the molecule was handeled
