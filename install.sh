@@ -488,6 +488,10 @@ if [ $upgrade == true ]; then
         cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
         cp $INSTALL_PATH/conf/samples_template.xlsx $INSTALL_PATH/documents/wetlab/templates/
 
+        # Copy the illumina collection index kits
+        mkdir -p $INSTALL_PATH/documents/wetlab/collection_index_kits/
+        cp $INSTALL_PATH/conf/collection_index_kits/*.txt $INSTALL_PATH/documents/wetlab/collection_index_kits/
+
         # update logging configuration file
         cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
         sed -i "s@INSTALL_PATH@${INSTALL_PATH}@g" $INSTALL_PATH/wetlab/logging_config.ini
