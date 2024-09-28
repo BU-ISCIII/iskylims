@@ -1482,6 +1482,7 @@ class MoleculeUsedFor(models.Model):
 
 class MoleculePreparationManager(models.Manager):
     def create_molecule(self, molecule_data):
+        req_upd_sample_state = False
         molecule_used_obj = MoleculeType.objects.filter(
             molecule_type__exact=molecule_data["molecule_type"]
         ).last()
@@ -1492,17 +1493,27 @@ class MoleculePreparationManager(models.Manager):
         protocol_used_obj = Protocols.objects.filter(
             name__exact=molecule_data["protocol_used"], type__exact=protocol_type_obj
         ).last()
+        if ProtocolParameters.objects.filter(protocol_id=protocol_used_obj).exists():
+            m_state = StatesForMolecule.objects.get(
+                molecule_state_name__exact="defined"
+            )
+        else:
+            m_state = StatesForMolecule.objects.get(
+                molecule_state_name__exact="assigned_parameters"
+            )
+            req_upd_sample_state = True
         new_molecule = self.create(
             protocol_used=protocol_used_obj,
             sample=molecule_data["sample"],
             molecule_type=molecule_used_obj,
-            state=StatesForMolecule.objects.get(molecule_state_name__exact="defined"),
+            state=m_state,
             molecule_code_id=molecule_data["molecule_code_id"],
             molecule_extraction_date=molecule_data["molecule_extraction_date"],
             extraction_type=molecule_data["extraction_type"],
             molecule_user=User.objects.get(username__exact=molecule_data["user"]),
         )
-
+        if req_upd_sample_state is True:
+            new_molecule.sample.set_state("Pending for use")
         return new_molecule
 
 
