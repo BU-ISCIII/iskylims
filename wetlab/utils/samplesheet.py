@@ -106,7 +106,7 @@ def get_adapters(file_lines):
             else:
                 adapter2 = adapter_code
                 break
-        data_found = re.search("^\[Data]", line)
+        data_found = re.search(r"^\[Data]", line)
         if data_found:
             break
 
@@ -205,7 +205,7 @@ def get_reads(file_lines):
             continue
         if "[Settings]" in line:
             break
-        if read_found and re.search("^\w+", line):
+        if read_found and re.search(r"^\w+", line):
             reads.append(line.split(",")[0])
     return reads
 
@@ -392,7 +392,7 @@ def get_projects_in_run(in_file: str) -> dict:
                     continue
             else:
                 # ignore the empty lines separated by commas
-                valid_line = re.search("^\w+", line)
+                valid_line = re.search(r"^\w+", line)
                 if not valid_line:
                     continue
                 # store the project name and the user name (Description) inside projects dict
@@ -442,7 +442,7 @@ def get_index_library_name(in_file):
 def update_library_kit_field(library_file_name, library_kit_name, library_name):
     # result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    tmp = re.search("(.*)\d{8}-\d+.*\.csv", library_file_name)
+    tmp = re.search(r"(.*)\d{8}-\d+.*\.csv", library_file_name)
     absolute_path = str(settings.BASE_DIR + "/")
     out_file = str(
         absolute_path
@@ -517,7 +517,7 @@ def create_unique_sample_id_values(infile, index_file):
             continue
         if found_sample_line:
             # discard the empty lines or the lines that contains empty lines separated by comma
-            if line == "\n" or re.search("^\W", line):
+            if line == "\n" or re.search(r"^\W", line):
                 continue
 
             data_line = line.split(",")
@@ -592,7 +592,7 @@ def set_user_names_in_sample_sheet(in_file, user_names):
             continue
         if found_sample_line:
             # discard the empty lines or the lines that contains empty lines separated by comma
-            if line == "\n" or re.search("^\W", line):
+            if line == "\n" or re.search(r"^\W", line):
                 continue
 
             data_line = line.split(",")

@@ -186,7 +186,7 @@ def find_xml_tag_text(input_file, search_tag):
     fh = open(input_file, "r")
     search_line = "<" + search_tag + ">(.*)</" + search_tag + ">"
     for line in fh:
-        found_tag = re.search("^\s+ %s" % search_line, line)
+        found_tag = re.search(r"^\s+ %s" % search_line, line)
         if found_tag:
             fh.close()
             return found_tag.group(1)
