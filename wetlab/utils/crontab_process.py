@@ -720,7 +720,7 @@ def get_latest_run_procesing_log(conn, log_folder, experiment_name):
             continue
         file_remote = sfh.filename
         if file_remote.endswith(".log"):
-            log_file = re.search(".*_Cycle(\d+)_.*", file_remote)
+            log_file = re.search(r".*_Cycle(\d+)_.*", file_remote)
 
             cycle_number = int(log_file.group(1))
             if cycle_number > max_cycle:

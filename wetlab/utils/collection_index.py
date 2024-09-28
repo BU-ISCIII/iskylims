@@ -73,7 +73,7 @@ def get_collection_index_name(input_file):
     collection_name = ""
     with open(input_file, encoding="utf-8") as fh:
         for line in fh:
-            found_collection_name = re.search("^\[Name\]", line)
+            found_collection_name = re.search(r"^\[Name\]", line)
             if found_collection_name:
                 found_name = True
                 continue
@@ -305,7 +305,7 @@ def store_collection_kits_file(collection_file):
     # fetch the file from user form and  build the file name  including
     # the date and time on now to store in database
 
-    split_filename = re.search("(.*)(\.\w+$)", collection_file.name)
+    split_filename = re.search(r"(.*)(\.\w+$)", collection_file.name)
     f_name = split_filename[1]
     f_extension = split_filename[2]
     fs_index_lib = FileSystemStorage()

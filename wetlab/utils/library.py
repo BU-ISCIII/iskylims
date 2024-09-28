@@ -804,7 +804,7 @@ def get_library_code_and_unique_id(sample_id, molecule_id):
             sample_id=sample_obj, molecule_id=molecule_obj
         ).last()
         last_lib_prep_code_id = lib_prep_obj.get_lib_prep_code()
-        split_code = re.search("(.*_)(\d+)$", last_lib_prep_code_id)
+        split_code = re.search(r"(.*_)(\d+)$", last_lib_prep_code_id)
         index_val = int(split_code.group(2))
         new_index = str(index_val + 1).zfill(2)
         lib_prep_code_id = split_code.group(1) + new_index
