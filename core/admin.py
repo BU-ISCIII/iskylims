@@ -81,7 +81,7 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
         "reused_number",
     )
     list_filter = ("generated_at",)
-    search_fields = ("sample__startswith",)
+    search_fields = ("sample__sample_name__startswith",)
 
 
 class MoleculeUsedForAdmin(admin.ModelAdmin):
