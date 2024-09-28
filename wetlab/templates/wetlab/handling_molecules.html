@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load replace_spaces %}
 {% block content %}
     {% include "wetlab/menu.html" %}
     {% include 'core/jexcel_functionality.html' %}
@@ -125,7 +126,7 @@
                                         <div class="card-body">
                                             <h5>Protocol: {{ prot }}</h5>
                                             <div class="row horizontal-scroll my-3">
-                                                <div style="height:200px;" id="spreadsheet_{{ prot }}"></div>
+                                                <div style="height:200px;" id="spreadsheet_{{ prot|replace_spaces_with_underscores }}"></div>
                                             </div>
                                         </div>
                                     {% endfor %}
@@ -637,12 +638,12 @@
         {% if molecule_parameters %}
             $(document).ready(function () {
                 {% for prot , value_dict in  molecule_parameters.items %}
-                    var {{ prot }}_data = [{% for values in value_dict.m_data %}
+                    var {{ prot|replace_spaces_with_underscores }}_data = [{% for values in value_dict.m_data %}
                             [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                     ];
 
-                    var {{ prot }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ prot }}'),{
-                        data:{{ prot }}_data,
+                    var {{ prot|replace_spaces_with_underscores }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ prot|replace_spaces_with_underscores }}'),{
+                        data:{{ prot|replace_spaces_with_underscores }}_data,
                         columns: [
                             { type: 'hidden' },
                             { type: 'text', title:'{{value_dict.fix_heading.0}}', width:180 , readOnly:true },
@@ -670,7 +671,7 @@
                                     
                 
                     $("#addExtractionParameters").submit(function (e) {
-                        var table_data =  {{ prot }}_data_table.getData()
+                        var table_data =  {{ prot|replace_spaces_with_underscores }}_data_table.getData()
                         var data_json = JSON.stringify(table_data)
                         $("<input />").attr("type", "hidden")
                             .attr("name", "{{ prot }}")

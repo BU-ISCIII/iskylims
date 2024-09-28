@@ -892,7 +892,6 @@ def get_researcher_lab_statistics(
                 g_data,
             ).render()
         )
-        # import pdb; pdb.set_trace()
         return research_lab_statistics
 
     research_lab_statistics = {}
