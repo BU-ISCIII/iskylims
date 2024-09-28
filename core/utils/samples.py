@@ -173,13 +173,18 @@ def save_recorded_samples(samples_data, req_user, app_name):
             sample["sample_project"] = core.models.SampleProjects.objects.get(
                 sample_project_name__exact=sample["sample_project"]
             )
-
         # If only recorded set sample to completed state
         if sample["only_recorded"] and sample["sample_project"] is None:
             sample["sample_state"] = "Completed"
             sample["completed_date"] = datetime.datetime.now()
-        # If no sample project data needed set to defined
-        elif sample["sample_project"] is None:
+        # If no sample project data needed  or sample projects has no parameters
+        # then set the sample state to defined
+        elif (
+            sample["sample_project"] is None
+            or core.models.SampleProjects.objects.filter(
+                sample_project_name__exact=sample["sample_project"]
+            ).exists()
+        ):
             sample["sample_state"] = "Defined"
         else:
             sample["sample_state"] = "Pre-Defined"

@@ -2225,7 +2225,13 @@ def record_samples(request):
                 sample["sample_project"] not in project_ids
                 and sample["sample_project"] is not None
             ):
-                project_ids.append(sample["sample_project"])
+                # check if sample project has defined parameters
+                if core.models.SampleProjectsFields.objects.filter(
+                    sample_projects_id__sample_project_name__exact=sample[
+                        "sample_project"
+                    ]
+                ).exists():
+                    project_ids.append(sample["sample_project"])
         # If no sample Pre-Defined just show result
         if not project_ids:
             return render(
