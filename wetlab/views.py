@@ -3443,7 +3443,8 @@ def repeat_molecule_extraction(request):
     if request.method == "POST" and request.POST["action"] == "repeat_extraction":
         sample_id = request.POST["sample_id"]
         if wetlab.utils.sample.analyze_reprocess_data(
-            ["New Extraction"], sample_id, request.user
+            ["New Extraction"],
+            sample_id,
         ):
             molecule_protocol = core.utils.samples.get_table_record_molecule(
                 [sample_id], __package__
@@ -3452,7 +3453,7 @@ def repeat_molecule_extraction(request):
 
             return render(
                 request,
-                "wetlab/handlingMolecules.html",
+                "wetlab/handling_molecules.html",
                 {"molecule_protocol": molecule_protocol},
             )
     # return to the main page because the page was not requested for the right page
