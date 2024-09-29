@@ -278,6 +278,7 @@ class ProtocolParametersManager(models.Manager):
             parameter_min_value=prot_param_data["Min Value"],
             parameter_option_values=prot_param_data["Option Values"],
             parameter_type=prot_param_data["Parameter Type"],
+            parameter_download=prot_param_data["Downloadable"],
         )
         return new_prot_parameter
 
@@ -292,6 +293,7 @@ class ProtocolParameters(models.Model):
     parameter_option_values = models.CharField(max_length=400, null=True, blank=True)
     parameter_max_value = models.CharField(max_length=50, null=True, blank=True)
     parameter_min_value = models.CharField(max_length=50, null=True, blank=True)
+    parameter_download = models.BooleanField(default=False, null=True, blank=True)
 
     class Meta:
         db_table = "core_protocol_parameters"
@@ -316,6 +318,7 @@ class ProtocolParameters(models.Model):
         param_info.append(self.parameter_name)
         param_info.append(self.parameter_order)
         param_info.append(self.parameter_used)
+        param_info.append(self.parameter_download)
         param_info.append(self.parameter_type)
         param_info.append(self.parameter_option_values)
         param_info.append(self.parameter_min_value)
@@ -328,17 +331,23 @@ class ProtocolParameters(models.Model):
             used = "true"
         else:
             used = "false"
+        if self.parameter_download:
+            download = "true"
+        else:
+            download = "false"
         if self.parameter_option_values is None:
             parameter_option_values = ""
         else:
             parameter_option_values = self.parameter_option_values
         field_data = []
         field_data.append(self.parameter_name)
-
         field_data.append(self.parameter_order)
         field_data.append(used)
+        field_data.append(download)
         field_data.append(self.parameter_type)
         field_data.append(parameter_option_values)
+        field_data.append(self.parameter_min_value)
+        field_data.append(self.parameter_max_value)
         field_data.append(self.parameter_description)
         return field_data
 
@@ -347,8 +356,11 @@ class ProtocolParameters(models.Model):
         self.parameter_description = prot_param_data["Description"]
         self.parameter_order = prot_param_data["Order"]
         self.parameter_used = prot_param_data["Used"]
+        self.parameter_download = prot_param_data["Downloadable"]
         self.parameter_option_values = prot_param_data["Option Values"]
         self.parameter_type = prot_param_data["Parameter Type"]
+        self.parameter_max_value = prot_param_data["Max Value"]
+        self.parameter_min_value = prot_param_data["Min Value"]
         self.save()
 
     objects = ProtocolParametersManager()
@@ -929,7 +941,7 @@ class SampleProjectsFieldsManager(models.Manager):
             sample_project_field_order=project_field_data["Order"],
             sample_project_field_used=project_field_data["Used"],
             sample_project_field_type=project_field_data["Field type"],
-            sample_project_searchable=project_field_data["Searchable"],
+            sample_project_downloadable=project_field_data["Downloadable"],
             # do not include optional values. Set to empty
             sample_project_option_list="",
         )
@@ -958,7 +970,7 @@ class SampleProjectsFields(models.Model):
     sample_project_field_used = models.BooleanField()
     sample_project_field_type = models.CharField(max_length=20)
     sample_project_option_list = models.CharField(max_length=255, null=True, blank=True)
-    sample_project_searchable = models.BooleanField(default=False)
+    sample_project_downloadable = models.BooleanField(default=False)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1006,7 +1018,7 @@ class SampleProjectsFields(models.Model):
             used = "true"
         else:
             used = "false"
-        if self.sample_project_searchable:
+        if self.sample_project_downloadable:
             searchable = "true"
         else:
             searchable = "false"
@@ -1036,7 +1048,7 @@ class SampleProjectsFields(models.Model):
         self.sample_project_field_order = project_field_data["Order"]
         self.sample_project_field_used = project_field_data["Used"]
         self.sample_project_field_type = project_field_data["Field type"]
-        self.sample_project_searchable = project_field_data["Searchable"]
+        self.sample_project_downloadable = project_field_data["Downloadable"]
         self.sample_project_field_classification_id = project_field_data[
             "SampleProjectFieldClassificationID"
         ]
