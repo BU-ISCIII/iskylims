@@ -24,25 +24,35 @@
                     <div class="card ">
                         <div class="card-header"><h4>{{protocol_data.protocol_name}}</h4></div>
                         <div class="card-body">
-                            <div class="col-sm-11" >
-                                <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                            {% for value in protocol_data.parameter_heading %}
-                                                <th>{{value}}</th>
-                                            {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for  values in protocol_data.parameters %}
+                            <div class="row mt-2 horizontal-scroll">
+                                <div class="col-sm-11" >
+                                    <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            {% for value  in values %}
-                                                <td>{{ value }}</td>
-                                            {% endfor %}
+                                                {% for value in protocol_data.parameter_heading %}
+                                                    <th>{{value}}</th>
+                                                {% endfor %}
                                         </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
+                                    </thead>
+                                    <tbody>
+                                        {% for  values in protocol_data.parameters %}
+                                            <tr>
+                                                {% for value  in values %}
+                                                    <td>
+                                                        {% if value == 'Yes' or value == True %}
+                                                            <i class="bi bi-check2-circle" style="font-size:20px;color:green"></i>
+                                                        {% elif value == 'No' or value == False %}
+                                                            <i class="bi bi-stop-circle" style="font-size:20px;color:red"></i>
+                                                        {% else %}
+                                                            {{ value }}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <input class="btn btn-outline-primary float-end my-3" type="submit" value="Modify Protocol Fields" onclick="window.location.href = '/wetlab/modifyProtocolFields={{protocol_data.protocol_id}}';">
                         </div>  
