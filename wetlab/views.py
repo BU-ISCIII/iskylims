@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 # Local imports
 # import core.fusioncharts.fusioncharts
@@ -1988,6 +1989,11 @@ def display_protocol(request, protocol_id):
             },
         )
     protocol_data = core.utils.protocols.get_all_protocol_info(protocol_id)
+    # if there are no parameters defined for the protocol,
+    # redirect to define_protocol_parameters
+    if len(protocol_data) == 0:
+        url = reverse("define_protocol_parameters", kwargs={"protocol_id": protocol_id})
+        return redirect(url)
     kit_data = wetlab.utils.additional_kits.get_all_additional_kit_info(protocol_id)
 
     return render(
