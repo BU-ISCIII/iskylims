@@ -84,6 +84,7 @@ HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = [
     "Parameter name",
     "Order",
     "Used",
+    "Downloadable",
     "Parameter Type",
     "Option Values",
     "Min Value",
@@ -95,8 +96,11 @@ HEADING_FOR_MODIFY_PROTOCOL_FIELDS = [
     "New field name",
     "Order",
     "Used",
+    "Downloadable",
     "Parameter Type",
     "Option Values",
+    "Min Value",
+    "Max Value",
     "Description",
 ]
 

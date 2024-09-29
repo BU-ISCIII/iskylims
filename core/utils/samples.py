@@ -2113,9 +2113,6 @@ def set_sample_project_fields(data_form):
     saved_fields = []
     stored_fields = {}
     valid_data = False
-    import pdb
-
-    pdb.set_trace()
     # check if there is at least one field to be used
     for row_line in excel_json_data:
         if row_line["Used"] is True:

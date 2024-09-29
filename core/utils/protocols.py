@@ -237,7 +237,6 @@ def get_protocol_fields(protocol_id):
         parameters_protocol["protocol_id"] = protocol_id
         parameters_protocol["protocol_name"] = protocol_obj.get_name()
         parameters_protocol["fields"] = parameter_list
-
     return parameters_protocol
 
 
@@ -365,13 +364,12 @@ def modify_fields_in_protocol(form_data):
 
 def set_protocol_parameters(request):
     protocol_id = request.POST["protocol_id"]
-    json_data = json.loads(request.POST["table_data1"])
     parameters = core.core_config.HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
     protocol_id_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
 
     saved_parameters = []
     stored_parameters = {}
-    for row_data in json_data:
+    for row_data in json.loads(request.POST["table_data1"]):
         if row_data[0] == "":
             continue
         prot_parameters = {}

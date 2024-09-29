@@ -569,7 +569,7 @@ if [ $upgrade == true ]; then
             echo "Running migration script: remove_comma_rawtopunknownbarcodes"
             ./manage.py runscript convert_rawtop_counter_to_int
             echo "checking for database changes"
-            if python manage.py makemigrations | grep -q "No changes"; then
+            if python manage.py makemigrations --noinput | grep -q "No changes"; then
                 # check for pending migrations
                 if ./manage.py showmigrations | grep '\[ \]'; then
                     echo "There are pending migrations"
