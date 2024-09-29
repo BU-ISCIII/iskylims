@@ -131,51 +131,55 @@
                                     <div class="container">
                                         <div class="row mt-4">
                                             {% for molecule_values, molecule_param_heading , molecule_param_values in sample_information.molecule_definition_data %}
+                                                <div class="row mt-4">
                                                 <div class="col">
                                                     <div class="card">
-                                                        <div class="card-header text-center"><h3>Molecule extraction information</h3tyle=></div>
-                                                        <div class="card-body">
-                                                            <table class="table table-hover">
-                                                                <thead>
-                                                                    <tr>
-                                                                        {% for values in sample_information.molecule_definition_heading %}
-                                                                            <th>{{ values }} </th>
-                                                                        {%endfor%}
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        {% for mol_values in molecule_values %}
-                                                                            <td>{{ mol_values }} </td>
-                                                                        {%endfor%}
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
+                                                        <div class="card-header text-center"><h3>Extraction information</h3></div>
+                                                            <div class="card-body">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            {% for values in sample_information.molecule_definition_heading %}
+                                                                                <th>{{ values }} </th>
+                                                                            {%endfor%}
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            {% for mol_values in molecule_values %}
+                                                                                <td>{{ mol_values }} </td>
+                                                                            {%endfor%}
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 {% if molecule_param_heading is not None %}
-                                                    <div class="col">
-                                                        <div class="card ">
-                                                            <div class="card-header text-align-center"><h4>Quality Parameter Molecule Information</h4></div>
-                                                            <div class="card-body">
-                                                                <div class="row horizontal-scroll">
-                                                                    <table class="table table-hover">
-                                                                        <thead>
-                                                                            <tr>
-                                                                                {% for mol_par_head in molecule_param_heading %}
-                                                                                    <th>{{ mol_par_head }} </th>
-                                                                                {%endfor%}
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <tr>
-                                                                                {% for value in molecule_param_values %}
-                                                                                    <td>{{ value }} </td>
-                                                                                {%endfor%}
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
+                                                    <div class="row mt-4">
+                                                        <div class="col">
+                                                            <div class="card ">
+                                                                <div class="card-header text-align-center"><h4>Protocol Extraction Information</h4></div>
+                                                                <div class="card-body">
+                                                                    <div class="row horizontal-scroll">
+                                                                        <table class="table table-hover">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    {% for mol_par_head in molecule_param_heading %}
+                                                                                        <th>{{ mol_par_head }} </th>
+                                                                                    {%endfor%}
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    {% for value in molecule_param_values %}
+                                                                                        <td>{{ value }} </td>
+                                                                                    {%endfor%}
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -186,7 +190,7 @@
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="repeat_extraction">
                                                 <input type="hidden" name="sample_id" value="{{sample_information.sample_id}}">
-                                                <input class="btn btn-outline-primary float-end my-3" type="submit" value="Repeat Molecule Extraction">
+                                                <input class="btn btn-outline-primary float-end my-3" type="submit" value="Repeat Extraction">
                                             </form>
                                         </div>
                                     </div>
