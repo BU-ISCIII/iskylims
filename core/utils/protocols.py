@@ -176,7 +176,6 @@ def get_all_protocol_info(protocol_id):
         protocol_data.
     """
     protocol_data = {}
-    protocol_data["parameters"] = []
     protocol_obj = core.models.Protocols.objects.get(pk__exact=protocol_id)
 
     if core.models.ProtocolParameters.objects.filter(protocol_id=protocol_obj).exists():
@@ -187,6 +186,7 @@ def get_all_protocol_info(protocol_id):
         protocol_parameters = core.models.ProtocolParameters.objects.filter(
             protocol_id=protocol_obj
         ).order_by("parameter_order")
+        protocol_data["parameters"] = []
         for parameter in protocol_parameters:
             protocol_data["parameters"].append(parameter.get_all_parameter_info())
         protocol_data["protocol_id"] = protocol_id
