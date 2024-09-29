@@ -39,9 +39,9 @@
                                             <tr>
                                                 {% for value  in values %}
                                                     <td>
-                                                        {% if value == 'Yes' or value == True %}
+                                                        {% if value == 'Yes' or  value == "true" %}
                                                             <i class="bi bi-check2-circle" style="font-size:20px;color:green"></i>
-                                                        {% elif value == 'No' or value == False %}
+                                                        {% elif value == 'No' or value == "false" %}
                                                             <i class="bi bi-stop-circle" style="font-size:20px;color:red"></i>
                                                         {% else %}
                                                             {{ value }}
