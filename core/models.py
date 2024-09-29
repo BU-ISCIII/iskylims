@@ -314,11 +314,19 @@ class ProtocolParameters(models.Model):
         return "%s" % (self.parameter_type)
 
     def get_all_parameter_info(self):
+        if self.parameter_used:
+            used = "true"
+        else:
+            used = "false"
+        if self.parameter_download:
+            download = "true"
+        else:
+            download = "false"
         param_info = []
         param_info.append(self.parameter_name)
         param_info.append(self.parameter_order)
-        param_info.append(self.parameter_used)
-        param_info.append(self.parameter_download)
+        param_info.append(used)
+        param_info.append(download)
         param_info.append(self.parameter_type)
         param_info.append(self.parameter_option_values)
         param_info.append(self.parameter_min_value)
