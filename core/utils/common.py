@@ -105,7 +105,16 @@ def get_inital_sample_settings_values(apps_name):
             initial_data["cities_data"].append(
                 [city_obj.get_city_name(), city_obj.get_city_id()]
             )
-
+    initial_data["state_list"] = list(
+        core.models.StatesForSample.objects.filter(
+            next_action_allowed=True
+        ).values_list("sample_state_display", "pk")
+    )
+    initial_data["next_action_defined_data"] = []
+    for item in core.models.NextStepDefinition.objects.filter(
+        apps_name__exact=apps_name
+    ):
+        initial_data["next_action_defined_data"].append(item.get_all_data())
     return initial_data
 
 
@@ -258,6 +267,10 @@ def save_inital_sample_setting_value(apps_name, data):
         lab_request_data["lab_email"] = data["lab_request"]["email"]
         lab_request_data["address"] = data["lab_request"]["address"]
         lab_request_data["city"] = data["lab_request"]["city"]
+        if not "received_only" in data["lab_request"]:
+            lab_request_data["received_only"] = False
+        else:
+            lab_request_data["received_only"] = True
         if core.models.LabRequest.objects.filter(
             lab_name_coding__iexact=lab_request_data["lab_name_coding"],
             apps_name__exact=lab_request_data["apps_name"],
@@ -343,6 +356,23 @@ def save_inital_sample_setting_value(apps_name, data):
         core.models.City.objects.create_new_city(city_data)
         setting_defined["settings"] = "core.models.City"
         setting_defined["value"] = data["city"]["cityName"]
+
+    if "steps" in data:
+        step_data = {}
+        step_data["next_action"] = data["steps"]["actionNext"]
+        step_data["apps_name"] = apps_name
+        step_data["protocol_id"] = data["steps"]["actionType"]
+        step_data["external"] = "external" in data["steps"]
+        if core.models.NextStepDefinition.objects.filter(
+            protocol_type__pk__exact=step_data["protocol_id"],
+            apps_name__exact=step_data["apps_name"],
+            moving_to_state__pk__exact=step_data["next_action"],
+        ).exists():
+            setting_defined["ERROR"] = [
+                core.core_config.ERROR_NEXT_ACTION_ALREADY_DEFINED,
+            ]
+            return setting_defined
+        core.models.NextStepDefinition.objects.create_next_step(step_data)
     return setting_defined
 
 

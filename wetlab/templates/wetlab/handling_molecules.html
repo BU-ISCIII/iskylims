@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% load static %}
 {% load replace_spaces %}
+{% load join_list_of_tuples %}
 {% block content %}
     {% include "wetlab/menu.html" %}
     {% include 'core/jexcel_functionality.html' %}
@@ -161,7 +162,7 @@
                         </div>
                     </div>
                 </div>
-            {% elif molecule_use %}
+            {% elif extraction_use %}
                 <div class="row my-2">
                     <div class="col-sm-12">
                         <div class="card ">
@@ -169,18 +170,18 @@
                                 <h3>Molecules are updated with their use.</h3>
                             </div>
                             <div class="card-body">
-                                <table class="table table-hover" id="molecule_use_table">
+                                <table class="table table-hover" id="extraction_use_table">
                                     <thead>
                                         <tr>
-                                            {% for value in molecule_use.heading %}<th>{{ value }}</th>{% endfor %}
+                                            {% for value in extraction_use.heading %}<th>{{ value }}</th>{% endfor %}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for sample, mol_id, use in molecule_use.data %}
+                                        {% for sample, _id, action in extraction_use.data %}
                                             <tr>
                                                 <td>{{ sample }}</td>
-                                                <td>{{ mol_id }}</td>
-                                                <td>{{ use }}</td>
+                                                <td>{{ id }}</td>
+                                                <td>{{ action }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -328,12 +329,12 @@
                                         <div class="col">
                                             <div class="card">
                                                 <div class="card-header text-center">
-                                                    <h3>Select the use that will be given for the sample</h3>
+                                                    <h3>Select the next action for the sample</h3>
                                                 </div>
                                                 <div class="card-body">
                                                     <div class="container">
                                                         {% if molecule_use_defined %}
-                                                            {% if pending_to_use.heading %}
+                                                            {% if next_action.heading %}
                                                                 <form method="post"
                                                                       action="/wetlab/handlingMolecules"
                                                                       enctype="multipart/form-data"
@@ -341,6 +342,7 @@
                                                                       id="requestMoleculeUse">
                                                                     {% csrf_token %}
                                                                     <input type="hidden" name="action" value="requestMoleculeUse" />
+                                                                    <input type="hidden" name="next_action_values" value={{next_action.types|join_tuples}}/>
                                                                     <div class="horizontal-scroll">
                                                                         <div id="spreadsheet2" class="mb-4 col-md"></div>
                                                                     </div>
@@ -352,6 +354,7 @@
                                                                            id="btnSubmit"
                                                                            type="submit"
                                                                            value="Submit" />
+                                                                    
                                                                 </form>
                                                             {% else %}
                                                                 <h4>Ther are not Molecule extraction to assign to an use</h4>
@@ -470,18 +473,18 @@
                 });
             });
         {% endif %}
-        {% if pending_to_use.heading %}
+        {% if next_action.heading %}
             // excel for selecting the molecule use
-            var data3 = [{% for values in pending_to_use.data %}
+            var data3 = [{% for values in next_action.data %}
                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
             ];
             var table3  = jexcel(document.getElementById('spreadsheet2'), {
                 data:data3,
                 columns: [
-                        { type: 'text', title:'{{pending_to_use.heading.0}}', width:350 , readOnly:true },
-                        { type: 'text', title:'{{pending_to_use.heading.1}}', width:480 , readOnly:true },
+                        { type: 'text', title:'{{next_action.heading.0}}', width:350 , readOnly:true },
+                        { type: 'text', title:'{{next_action.heading.1}}', width:480 , readOnly:true },
                         { type: 'hidden'},
-                        { type: 'dropdown', title:'{{pending_to_use.heading.2}}', width:200 , source:[{% for value in pending_to_use.types %}'{{value}}',{% endfor %} ]},
+                        { type: 'dropdown', title:'{{next_action.heading.2}}', width:200 , source:[{% for value in next_action.types %}'{{value.0}}',{% endfor %} ]},
             ],
                 allowInsertColumn:false,
                 allowDeleteColumn:false,

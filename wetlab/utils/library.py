@@ -796,7 +796,7 @@ def get_library_code_and_unique_id(sample_id, molecule_id):
         uniqueID .
     """
     sample_obj = core.utils.samples.get_sample_obj_from_id(sample_id)
-    molecule_obj = core.utils.samples.get_molecule_obj_from_id(molecule_id)
+    molecule_obj = core.utils.samples.get_extraction_obj_from_id(molecule_id)
     if wetlab.models.LibPrepare.objects.filter(
         sample_id=sample_obj, molecule_id=molecule_obj
     ).exists():

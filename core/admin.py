@@ -8,7 +8,7 @@ from core.models import (
     MoleculeParameterValue,
     MoleculePreparation,
     MoleculeType,
-    MoleculeUsedFor,
+    NextStepDefinition,
     OntologyMap,
     PatientCore,
     PatientProjects,
@@ -77,15 +77,14 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
         "extraction_type",
         "protocol_used",
         "molecule_extraction_date",
-        "molecule_used_for",
         "reused_number",
     )
     list_filter = ("generated_at",)
     search_fields = ("sample__sample_name__startswith",)
 
 
-class MoleculeUsedForAdmin(admin.ModelAdmin):
-    list_display = ["used_for", "apps_name", "massive_use"]
+class NextStepDefinitionAdmin(admin.ModelAdmin):
+    list_display = ["protocol_type", "moving_to_state",  "external_processing"]
 
 
 class OntologyMapAdmin(admin.ModelAdmin):
@@ -228,7 +227,7 @@ class StatesForMoleculeAdmin(admin.ModelAdmin):
 
 
 class StatesForSampleAdmin(admin.ModelAdmin):
-    list_display = ("sample_state_name",)
+    list_display = ["sample_state_name", "sample_state_display", "has_external_action"]
 
 
 class UserLotCommercialKitsAdmin(admin.ModelAdmin):
@@ -248,8 +247,8 @@ admin.site.register(City, CityAdmin)
 admin.site.register(CommercialKits, CommercialKitsAdmin)
 admin.site.register(LabRequest, LabRequestAdmin)
 admin.site.register(MoleculeType, MoleculeTypeAdmin)
-admin.site.register(MoleculeUsedFor, MoleculeUsedForAdmin)
 admin.site.register(MoleculePreparation, MoleculePreparationAdmin)
+admin.site.register(NextStepDefinition, NextStepDefinitionAdmin),
 admin.site.register(OntologyMap, OntologyMapAdmin)
 admin.site.register(PatientCore, PatientCoreAdmin)
 admin.site.register(PatientSex, PatientSexAdmin)
