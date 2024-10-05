@@ -284,7 +284,8 @@ def initial_settings(request):
             request.POST["protocolName"],
             request.POST["moleculeType"],
         ]
-
+    if request.method == "POST" and request.POST["action"] == "defineSteps":
+        form_data["steps"] = request.POST
     if form_data:
         new_inital_data = core.utils.common.save_inital_sample_setting_value(
             __package__, form_data
@@ -2827,32 +2828,6 @@ def modify_sample_project_fields(request, sample_project_id):
 
 
 @login_required
-def define_molecule_uses(request):
-    if not wetlab.utils.common.is_wetlab_manager(request):
-        return render(
-            request,
-            "wetlab/define_molecule_uses.html",
-            {
-                "content": [
-                    "You do not have enough privileges to see this page ",
-                    "Contact with your administrator .",
-                ]
-            },
-        )
-    molecule_use_data = core.utils.samples.display_molecule_use(__package__)
-    if request.method == "POST" and request.POST["action"] == "record_molecule_use":
-        molecule_use_data.update(
-            core.utils.samples.record_molecule_use(request.POST, __package__)
-        )
-
-    return render(
-        request,
-        "wetlab/define_molecule_uses.html",
-        {"molecule_use_data": molecule_use_data},
-    )
-
-
-@login_required
 def define_type_of_samples(request):
     if not wetlab.utils.common.is_wetlab_manager(request):
         return render(
@@ -3229,6 +3204,36 @@ def handling_library_preparation(request):
         )
 
 
+def external_file_preparation(request):
+    if request.method == "POST" and request.POST["action"] == "externalFilePreparation":
+        import pdb
+
+        pdb.set_trace()
+
+    search_data = {}
+    if core.models.SampleProjects.objects.filter(
+        apps_name__iexact=__package__
+    ).exists():
+        search_data["s_projects"] = list(
+            core.models.SampleProjects.objects.filter(
+                apps_name__iexact=__package__
+            ).values_list("sample_project_name", "id")
+        )
+    if core.models.Protocols.objects.filter(
+        type__apps_name__iexact=__package__
+    ).exists():
+        search_data["protocols"] = list(
+            core.models.Protocols.objects.filter(
+                type__apps_name__iexact=__package__
+            ).values_list("name", "id")
+        )
+    return render(
+        request,
+        "wetlab/external_file_preparation.html",
+        {"search_data": search_data},
+    )
+
+
 def handling_molecules(request):
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
@@ -3345,22 +3350,28 @@ def handling_molecules(request):
         )
 
     elif request.method == "POST" and request.POST["action"] == "requestMoleculeUse":
-        heading = core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE.copy()
+        heading = core.core_config.HEADING_FOR_EXTRACTION_ACTION.copy()
         heading.insert(-1, "m_id")
-        molecules, select_use = core.utils.samples.get_selection_from_excel_data(
-            request.POST["molecule_used_for"], heading, "Molecule use for", "m_id"
+        samples, select_use = core.utils.samples.get_selection_from_excel_data(
+            request.POST["molecule_used_for"], heading, "Extraction continue on", "m_id"
         )
-        if len(molecules) == 0:
+        import pdb
+
+        pdb.set_trace()
+        if len(samples) == 0:
             return redirect("handling_molecules")
-        molecule_use = core.utils.samples.set_molecule_use(select_use, __package__)
+
+        extraction_use = core.utils.samples.set_extraction_action(
+            select_use, __package__
+        )
         return render(
             request,
             "wetlab/handling_molecules.html",
-            {"molecule_use": molecule_use},
+            {"extraction_use": extraction_use},
         )
 
     else:
-        sample_availables, molecules_availables, pending_to_use = "", "", ""
+        sample_availables, molecules_availables, next_action = "", "", ""
         if wetlab.utils.common.is_wetlab_manager(request):
             samples_list = core.utils.samples.get_sample_objs_in_state("Defined")
             samples_pending_use = core.utils.samples.get_sample_objs_in_state(
@@ -3386,7 +3397,7 @@ def handling_molecules(request):
                 molecule_list
             )
         if samples_pending_use:
-            pending_to_use = core.utils.samples.create_table_molecule_pending_use(
+            next_action = core.utils.samples.extraction_next_action(
                 samples_pending_use, __package__
             )
         molecule_use_defined = core.utils.samples.check_if_molecule_use_defined(
@@ -3400,7 +3411,7 @@ def handling_molecules(request):
                 "sample_availables": sample_availables,
                 "molecules_availables": molecules_availables,
                 "molecule_use_defined": molecule_use_defined,
-                "pending_to_use": pending_to_use,
+                "next_action": next_action,
             },
         )
 

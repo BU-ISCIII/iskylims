@@ -174,6 +174,9 @@ def save_recorded_samples(samples_data, req_user, app_name):
                 sample_project_name__exact=sample["sample_project"]
             )
         # If only recorded set sample to completed state
+        import pdb
+
+        pdb.set_trace()
         if sample["only_recorded"] and sample["sample_project"] is None:
             sample["sample_state"] = "Completed"
             sample["completed_date"] = datetime.datetime.now()
@@ -181,14 +184,19 @@ def save_recorded_samples(samples_data, req_user, app_name):
         # then set the sample state to defined
         elif (
             sample["sample_project"] is None
-            or core.models.SampleProjects.objects.filter(
-                sample_project_name__exact=sample["sample_project"]
+            or not core.models.SampleProjectsFields.objects.filter(
+                sample_projects_id__sample_project_name__iexact=sample[
+                    "sample_project"
+                ],
+                sample_project_field_used=True,
             ).exists()
         ):
             sample["sample_state"] = "Defined"
         else:
             sample["sample_state"] = "Pre-Defined"
+        import pdb
 
+        pdb.set_trace()
         try:
             core.models.Samples.objects.create_sample(sample)
             sample["success"] = True
@@ -552,7 +560,7 @@ def add_molecule_protocol_parameters(data, parameters):
         parameters (list): _description_
     """
     for row in data:
-        molecule_obj = get_molecule_obj_from_id(row["m_ids"])
+        molecule_obj = get_extraction_obj_from_id(row["m_ids"])
         prot_obj = molecule_obj.get_protocol_obj()
         molecule_obj = molecule_obj.set_user_lot_kit(
             row["Lot Commercial Kit"], update_usage_kit=True
@@ -586,7 +594,9 @@ def check_if_molecule_use_defined(app_name):
     Return:
         True or False #
     """
-    if core.models.MoleculeUsedFor.objects.filter(apps_name__exact=app_name).exists():
+    if core.models.NextStepDefinition.objects.filter(
+        apps_name__exact=app_name
+    ).exists():
         return True
     return False
 
@@ -693,7 +703,7 @@ def create_new_sample_project(form_data, app_name):
     return new_sample_project_id
 
 
-def create_table_molecule_pending_use(sample_list, app_name):
+def extraction_next_action(sample_list, app_name):
     """
     Description:
         The function get the type of use that the molecule can have to assign it.
@@ -704,24 +714,30 @@ def create_table_molecule_pending_use(sample_list, app_name):
         use_type
     """
     use_type = {}
+
     use_type["data"] = list(
         core.models.MoleculePreparation.objects.filter(
-            molecule_used_for=None,
             sample__in=sample_list,
             state__molecule_state_name="assigned_parameters",
         ).values_list("sample__sample_name", "molecule_code_id", "pk")
     )
+
     if len(use_type["data"]) > 0:
-        if core.models.MoleculeUsedFor.objects.filter(
-            apps_name__exact=app_name
+        prot_type = core.models.MoleculePreparation.objects.get(
+            pk__exact=use_type["data"][0][2]
+        ).get_protocol_type()
+        if core.models.NextStepDefinition.objects.filter(
+            apps_name__exact=app_name, protocol_type__protocol_type=prot_type
         ).exists():
             use_type["types"] = list(
-                core.models.MoleculeUsedFor.objects.filter(
-                    apps_name__exact=app_name
-                ).values_list("used_for", flat=True)
+                core.models.NextStepDefinition.objects.filter(
+                    apps_name__exact=app_name, protocol_type__protocol_type=prot_type
+                ).values_list("moving_to_state__sample_state_display", "pk")
             )
-
-        use_type["heading"] = core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE
+            text = ""
+            for item in use_type["types"]:
+                text += item[0] + "," + str(item[1]) + ";;"
+            use_type["heading"] = core.core_config.HEADING_FOR_EXTRACTION_ACTION
     return use_type
 
 
@@ -808,34 +824,6 @@ def define_table_for_sample_project_fields(sample_project_id):
     sample_project_data["sample_project_id"] = sample_project_id
     sample_project_data["heading"] = core.core_config.HEADING_FOR_SAMPLE_PROJECT_FIELDS
     return sample_project_data
-
-
-def display_molecule_use(app_name):
-    """
-    Description:    The function collect the defined molecule use
-
-    Input:
-        app_name    # application name to assign the right molecule use
-    Return:
-        molecule_use_data #
-    """
-    molecule_use_data = {}
-    molecule_use_data["defined_molecule_use"] = []
-    if core.models.MoleculeUsedFor.objects.filter(apps_name__exact=app_name).exists():
-        molecule_uses = core.models.MoleculeUsedFor.objects.filter(
-            apps_name__exact=app_name
-        )
-        for molecule in molecule_uses:
-            massive = molecule.get_massive()
-            if massive == "True":
-                molecule_use_data["defined_molecule_use"].append(
-                    [molecule.get_molecule_use_name(), "YES"]
-                )
-            else:
-                molecule_use_data["defined_molecule_use"].append(
-                    [molecule.get_molecule_use_name(), "NO"]
-                )
-    return molecule_use_data
 
 
 def display_sample_types(app_name):
@@ -1172,7 +1160,7 @@ def get_molecule_codeid_from_object(molecule_obj):
     return molecule_obj.get_molecule_code_id()
 
 
-def get_molecule_obj_from_id(molecule_id):
+def get_extraction_obj_from_id(molecule_id):
     """
     Description:
         The function will return the molecule object that are assigned to the id.
@@ -1534,13 +1522,15 @@ def get_selection_from_excel_data(data, heading, check_field, field_id):
     excel_json_data = core.utils.common.jspreadsheet_to_dict(heading, excel_data)
     for row in excel_json_data:
         if check_field is not None:
-            if row[check_field] is True:
+            if row[check_field] is True or row[check_field] != "":
                 selected.append(row[field_id])
                 selected_row.append(row)
         else:
             selected.append(row[field_id])
             selected_row.append(row)
+    import pdb
 
+    pdb.set_trace()
     return selected, selected_row
 
 
@@ -1663,7 +1653,7 @@ def get_type_of_sample_information(sample_type_id):
 def group_molecules_by_protocol(molecule_ids):
     protocols = {}
     for molecule_id in molecule_ids:
-        mol_obj = get_molecule_obj_from_id(molecule_id)
+        mol_obj = get_extraction_obj_from_id(molecule_id)
         mol_protocol_obj = mol_obj.get_protocol_obj()
         if mol_protocol_obj not in protocols:
             protocols[mol_protocol_obj] = []
@@ -1829,7 +1819,7 @@ def record_molecule_use(from_data, app_name):
         molecule_use_information #
     """
     molecule_use_information = {}
-    if core.models.MoleculeUsedFor.objects.filter(
+    if core.models.NextStepDefinition.objects.filter(
         used_for__exact=from_data["moleculeUseName"]
     ).exists():
         molecule_use_information["ERROR"] = (
@@ -1843,7 +1833,7 @@ def record_molecule_use(from_data, app_name):
         molecule_use_data["massiveUse"] = True
     else:
         molecule_use_data["massiveUse"] = False
-    core.models.MoleculeUsedFor.objects.create_molecule_use_for(molecule_use_data)
+    core.models.NextStepDefinition.objects.create_molecule_use_for(molecule_use_data)
     molecule_use_information["new_defined_molecule_use"] = from_data["moleculeUseName"]
     return molecule_use_information
 
@@ -2069,7 +2059,7 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date):
     return sample_list
 
 
-def set_molecule_use(molecule_use_data, app_name):
+def set_extraction_action(data, app_name):
     """_summary_
 
     Args:
@@ -2079,26 +2069,26 @@ def set_molecule_use(molecule_use_data, app_name):
     Returns:
         _type_: _description_
     """
-    molecule_update = {
+    extraction_result = {
         "data": [],
-        "heading": core.core_config.HEADING_FOR_SELECTING_MOLECULE_USE,
+        "heading": core.core_config.HEADING_FOR_EXTRACTION_ACTION,
     }
-    for molecule in molecule_use_data:
-        molecule_obj = get_molecule_obj_from_id(molecule["m_id"])
-        molecule_obj.set_molecule_use(molecule["Molecule use for"], app_name)
-        sample_obj = molecule_obj.get_sample_obj()
-        if molecule_obj.get_used_for_massive():
-            sample_obj.set_state("Library preparation")
-        else:
-            sample_obj.set_state("Completed")
-        molecule_update["data"].append(
+    extraction_result = []
+    for item in data:
+        import pdb
+
+        pdb.set_trace()
+        extract_obj = get_extraction_obj_from_id(item["m_id"])
+        extract_obj.set_next_action(item["Extraction continue on"], app_name)
+
+        extraction_result["data"].append(
             [
-                molecule["Sample Name"],
-                molecule["Molecule CodeID"],
-                molecule["Molecule use for"],
+                data["Sample Name"],
+                data["Molecule CodeID"],
+                data["Next Action"],
             ]
         )
-    return molecule_update
+    return extraction_result
 
 
 def set_sample_project_fields(data_form):

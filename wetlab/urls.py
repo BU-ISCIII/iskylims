@@ -54,11 +54,6 @@ urlpatterns = [
         name="define_additional_kits",
     ),
     path(
-        "defineMoleculeUses",
-        wetlab.views.define_molecule_uses,
-        name="define_molecule_uses",
-    ),
-    path(
         "defineProtocolParameters=<int:protocol_id>",
         wetlab.views.define_protocol_parameters,
         name="define_protocol_parameters",
@@ -133,6 +128,11 @@ urlpatterns = [
         "handlingLibraryPreparation",
         wetlab.views.handling_library_preparation,
         name="handling_library_preparation",
+    ),
+    path(
+        "externalFilePreparation",
+        wetlab.views.external_file_preparation,
+        name="external_file_preparation",
     ),
     path(
         "handlingMolecules", wetlab.views.handling_molecules, name="handling_molecules"

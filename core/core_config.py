@@ -72,10 +72,10 @@ HEADING_FOR_MOLECULE_DEFINITION = [
     "Number of reused",
 ]
 
-HEADING_FOR_SELECTING_MOLECULE_USE = [
+HEADING_FOR_EXTRACTION_ACTION = [
     "Sample Name",
     "Extraction CodeID",
-    "Sample continue on",
+    "Extraction continue on",
 ]
 
 # ################ PROTOCOL PARAMETER SETTINGS ##############################
@@ -236,6 +236,7 @@ ERROR_PROTOCOL_TYPE_ALREADY_DEFINED = ["Protocol Type is already defined"]
 
 ERROR_STATE_ALREADY_DEFINED = ["State is already defined"]
 ERROR_CITY_ALREADY_DEFINED = ["City is already defined"]
+ERROR_NEXT_ACTION_ALREADY_DEFINED = ["Next Action for the protocol type is already defined"]
 
 ERROR_SAMPLE_NOT_FOUND = ["Sample was not found"]
 

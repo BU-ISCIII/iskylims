@@ -291,7 +291,7 @@ def fetch_sample_information(request):
             )
             s_data.append(
                 wetlab.api.serializers.SampleRunInfoSerializers(
-                    sample_obj, many=False
+                    sample_obj[0], many=False
                 ).data
             )
         else:

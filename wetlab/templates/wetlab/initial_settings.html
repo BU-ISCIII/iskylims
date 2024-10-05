@@ -50,6 +50,9 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link " id="protocol-tab" data-bs-toggle="tab" data-bs-target="#protocol" type="button" role="tab" aria-controls="protocol" aria-selected="false">Protocol Type</button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link " id="steps-tab" data-bs-toggle="tab" data-bs-target="#steps" type="button" role="tab" aria-controls="steps" aria-selected="false">Define Next Actions</button>
+                            </li>
                         </ul>
                         <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="species" role="tabpanel" aria-labelledby="species-tab">
@@ -281,9 +284,19 @@
                                                         </div>
                                                         <div class="row g-2">
                                                             <div class="col-md">
-                                                                <div class="form-floating mb-3">
-                                                                    <input class="form-control" type="email" required="required" name="email" id="email" size="80" placeholder="contact email">
-                                                                    <label class="text-danger" for="email">Email Contact</label>
+                                                                <div class="row">
+                                                                    <div class="col-md-12">
+                                                                        <div class="form-floating mb-3">
+                                                                            <input class="form-control" type="email" required="required" name="email" id="email" size="80" placeholder="contact email">
+                                                                            <label class="text-danger" for="email">Email Contact</label>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-12">
+                                                                        <div class="form-check form-switch col mb-2">
+                                                                            <label class="form-check-label  form-label" for="received_only">Check if only receiving samples for this laboratory. </label>
+                                                                            <input class="form-check-input" type="checkbox" name="received_only" id="received_only" />
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md">
@@ -453,6 +466,81 @@
                                     </div>  
                                 </div> 
                             </div> <!--  end of protocol -->
+                            <div class="tab-pane fade" id="steps" role="tabpanel" aria-labelledby="steps-tab">
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card ">
+                                                <div class="card-header"><h3 style="text-align_center">Define next action allowed for each protocol type</h3></div>
+                                                <div class="card-body">
+                                                    <form method="post" enctype="multipart/form-data" name="defineSteps" id="defineSteps" >
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="defineSteps"/>
+                                                        
+                                                        <div class="form-floating mb-3">
+                                                            <select class="form-select"   name="actionType" id="actionType" aria-label="Platform">
+                                                                <option value="">Choose a value</option>
+                                                                {% for value , id , junk in initial_data.protocol_type_data %}
+                                                                    <option value="{{id}}">{{value}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                            <label for="actionType">Select the protocol type used for the action </label>
+                                                        </div>
+                                                        <div class="form-floating mb-3">
+                                                            <select class="form-select"   name="actionNext" id="actionNext" aria-label="Platform">
+                                                                <option value="">Choose a value</option>
+                                                                {% for value , id  in initial_data.state_list %}
+                                                                    <option value="{{id}}">{{value}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                            <label class="text-danger" for="protocolName">Define next Action for the Protocol Type</label>
+                                                        </div>
+                                                        <div class="form-check form-switch  mb-3">
+                                                            <label class="form-check-label  form-label" for="external">Check if this action is for sending sample to external laboratory. </label>
+                                                            <input class="form-check-input" type="checkbox" name="external" id="external" />
+                                                        </div>
+                                                        <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                        <input class="btn float-end btn-outline-primary me-2" type="submit" value="Submit" id="btnSubmit">
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                        <div class="col-md-6">
+                                            <div class="card ">
+                                                <div class="card-header"><h3 style="text-align_center">Defined next actions after protocol is completed</h3></div>
+                                                <div class="card-body">
+                                                    {% if initial_data.protocol_type_data %}
+                                                        <table class="table table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Protocol Type</th>
+                                                                <th>Next action</th>
+                                                                <th>Sent to external</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for name , action, ext in initial_data.next_action_defined_data %}
+                                                                <tr>
+                                                                    <td>{{name}}</td>
+                                                                    <td>{{action}}</td>
+                                                                    {% if ext == "true" %}
+                                                                        <td><i class="bi bi-arrow-down-circle-fill" style="font-size:20px;color:green"></i></td>
+                                                                    {% else %}
+                                                                        <td><i class="bi bi-three-dots" style="font-size:20px;color:red"></i></td>
+                                                                    {% endif %}
+                                                                </tr>
+                                                            {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    {% else %}
+                                                        <h5>No Protocol type have been defined yet</h5>
+                                                    {% endif %}
+                                                </div> 
+                                            </div>
+                                        </div>
+                                    </div>  
+                                </div> 
+                            </div> <!--  end of steps -->
                         </div>
                     </div> 
                 </div> 

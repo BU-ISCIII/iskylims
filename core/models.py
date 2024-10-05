@@ -107,6 +107,7 @@ class LabRequestManager(models.Manager):
             lab_email=data["lab_email"],
             address=data["address"],
             apps_name=data["apps_name"],
+            receive_only=data["received_only"],
             lab_city=city_obj,
         )
         return new_lab_request
@@ -122,6 +123,7 @@ class LabRequest(models.Model):
     lab_email = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
     apps_name = models.CharField(max_length=40, null=True)
+    receive_only = models.BooleanField(default=True, null=True, blank=True)
 
     class Meta:
         db_table = "core_lab_request"
@@ -376,6 +378,9 @@ class ProtocolParameters(models.Model):
 
 class StatesForSample(models.Model):
     sample_state_name = models.CharField(max_length=50)
+    sample_state_display = models.CharField(max_length=80, null=True, blank=True)
+    has_external_action = models.BooleanField(default=False, null=True, blank=True)
+    next_action_allowed = models.BooleanField(default=False, null=True, blank=True)
 
     class Meta:
         db_table = "core_states_for_sample"
@@ -383,8 +388,11 @@ class StatesForSample(models.Model):
     def __str__(self):
         return "%s" % (self.sample_state_name)
 
-    def get_sample_state(self):
-        return "%s" % (self.sample_state_name)
+    def get_sample_state(self, display=False):
+        if display:
+            return "%s" % (self.sample_state_display)
+        else:
+            return "%s" % (self.sample_state_name)
 
     def get_id(self):
         return "%s" % (self.pk)
@@ -1470,34 +1478,45 @@ class SampleProjectsFieldsValue(models.Model):
     objects = SampleProjectsFieldsValueManager()
 
 
-class MoleculeUsedForManager(models.Manager):
-    def create_molecule_use_for(self, molecule_use_data):
-        new_molecule_use = self.create(
-            used_for=molecule_use_data["usedFor"],
-            apps_name=molecule_use_data["apps_name"],
-            massive_use=molecule_use_data["massiveUse"],
+class NextStepDefinitionManager(models.Manager):
+    def create_next_step(self, data):
+        protocol_type_obj = ProtocolType.objects.get(pk__exact=data["protocol_id"])
+        state_obj = StatesForSample.objects.get(pk__exact=data["next_action"])
+        new_nex_step = self.create(
+            protocol_type=protocol_type_obj,
+            moving_to_state=state_obj,
+            external_processing=data["external"],
+            apps_name=data["apps_name"],
         )
-        return new_molecule_use
+        return new_nex_step
 
 
-class MoleculeUsedFor(models.Model):
-    used_for = models.CharField(max_length=50)
+class NextStepDefinition(models.Model):
+    protocol_type = models.ForeignKey(ProtocolType, on_delete=models.CASCADE)
+    moving_to_state = models.ForeignKey(StatesForSample, on_delete=models.CASCADE)
+    external_processing = models.BooleanField(default=False)
     apps_name = models.CharField(max_length=50)
-    massive_use = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "core_molecule_used_for"
+        db_table = "core_next_step_definition"
 
     def __str__(self):
-        return "%s" % (self.used_for)
+        return "%s" % (self.protocol_type)
 
-    def get_molecule_use_name(self):
-        return "%s" % (self.used_for)
+    def get_all_data(self):
+        data = []
+        data.append(self.protocol_type.get_name())
+        data.append(self.moving_to_state.get_sample_state(display=True))
+        if self.external_processing:
+            data.append("True")
+        else:
+            data.append("False")
+        return data
 
-    def get_massive(self):
-        return "%s" % (self.massive_use)
+    def get_external_processing(self):
+        return self.external_processing
 
-    objects = MoleculeUsedForManager()
+    objects = NextStepDefinitionManager()
 
 
 class MoleculePreparationManager(models.Manager):
@@ -1538,7 +1557,9 @@ class MoleculePreparationManager(models.Manager):
 
 
 class MoleculePreparation(models.Model):
-    protocol_used = models.ForeignKey(Protocols, on_delete=models.CASCADE)
+    protocol_used = models.ForeignKey(
+        Protocols, on_delete=models.CASCADE, related_name="extractions"
+    )
     sample = models.ForeignKey(Samples, on_delete=models.CASCADE)
     molecule_type = models.ForeignKey(MoleculeType, on_delete=models.CASCADE)
     state = models.ForeignKey(StatesForMolecule, on_delete=models.CASCADE, null=True)
@@ -1550,15 +1571,15 @@ class MoleculePreparation(models.Model):
         UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    molecule_used_for = models.ForeignKey(
-        MoleculeUsedFor, on_delete=models.CASCADE, null=True, blank=True
+    continue_on = models.ForeignKey(
+        NextStepDefinition, on_delete=models.CASCADE, null=True, blank=True
     )
 
     molecule_code_id = models.CharField(max_length=255)
     extraction_type = models.CharField(max_length=50)
     molecule_extraction_date = models.DateTimeField(auto_now_add=False, null=True)
     reused_number = models.IntegerField(default=0)
-    used_for_massive_sequencing = models.BooleanField(null=True, blank=True)
+    external_use = models.BooleanField(default=False, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1575,10 +1596,12 @@ class MoleculePreparation(models.Model):
         molecule_info.append(extraction_date)
         molecule_info.append(self.extraction_type)
         molecule_info.append(self.molecule_type.get_name())
-        if self.molecule_used_for is None:
+        if self.continue_on is None:
             molecule_info.append("Not defined yet")
         else:
-            molecule_info.append(self.molecule_used_for.get_molecule_use_name())
+            molecule_info.append(
+                self.continue_on.moving_to_state.get_sample_state(display=True)
+            )
         molecule_info.append(self.protocol_used.get_name())
         molecule_info.append(self.reused_number)
         return molecule_info
@@ -1612,21 +1635,35 @@ class MoleculePreparation(models.Model):
     def get_protocol_obj(self):
         return self.protocol_used
 
+    def get_protocol_type(self):
+        return "%s" % (self.protocol_used.get_type())
+
     def get_state(self):
         return "%s" % (self.state)
-
-    def get_used_for_massive(self):
-        return self.used_for_massive_sequencing
 
     def get_user_lot_kit_obj(self):
         return self.user_lot_kit_id
 
-    def set_molecule_use(self, use_for_molecule, app_name):
-        self.molecule_used_for_obj = MoleculeUsedFor.objects.filter(
-            used_for__exact=use_for_molecule, apps_name__exact=app_name
+    def set_next_action(self, continue_on, app_name):
+        import pdb
+
+        pdb.set_trace()
+        continue_on_obj = NextStepDefinition.objects.filter(
+            moving_to_state__sample_state_display=continue_on, apps_name=app_name
         ).last()
-        self.used_for_massive_sequencing = self.molecule_used_for_obj.get_massive()
+        if continue_on_obj.external_processing:
+            self.external_use = True
+        self.state = StatesForMolecule.objects.get(
+            molecule_state_name__exact="completed"
+        )
+        self.continue_on = continue_on_obj
+        self.reused_number += 1
         self.save()
+        sample_state_obj = StatesForSample.objects.filter(
+            sample_state_display=continue_on
+        ).last()
+        # update sample state to
+        self.sample.set_state(sample_state_obj)
         return self
 
     def set_state(self, state_value):

@@ -7,3 +7,8 @@
     overflow-x: auto;
     white-space: nowrap;
 }
+
+.btn-primary {
+  background-color: #6db23d !important;
+  border-color: #6db23d !important;
+}
