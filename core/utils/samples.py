@@ -1528,9 +1528,6 @@ def get_selection_from_excel_data(data, heading, check_field, field_id):
         else:
             selected.append(row[field_id])
             selected_row.append(row)
-    import pdb
-
-    pdb.set_trace()
     return selected, selected_row
 
 

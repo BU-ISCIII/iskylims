@@ -401,6 +401,7 @@ class StatesForSample(models.Model):
 class StatesForMolecule(models.Model):
     molecule_state_name = models.CharField(max_length=50)
     molecule_state_display = models.CharField(max_length=80, null=True, blank=True)
+    external_action = models.BooleanField(default=False, null=True, blank=True)
 
     class Meta:
         db_table = "core_states_for_molecule"

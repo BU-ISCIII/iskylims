@@ -78,6 +78,16 @@ HEADING_FOR_EXTRACTION_ACTION = [
     "Extraction continue on",
 ]
 
+HEADING_FOR_SELECTING_SAMPLE_EXTRACTION_ON_EXTRACTION = [
+    "Sample Name",
+    "Extraction CodeID",
+    "Select extraction",
+]
+
+ERROR_TOO_MANY_SAMPLE_PROJECTS = [
+    "The number of sample projects is too large to be presented"
+]
+
 # ################ PROTOCOL PARAMETER SETTINGS ##############################
 # ## Headings used when defining the custom protocol parameters
 HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = [
@@ -236,7 +246,9 @@ ERROR_PROTOCOL_TYPE_ALREADY_DEFINED = ["Protocol Type is already defined"]
 
 ERROR_STATE_ALREADY_DEFINED = ["State is already defined"]
 ERROR_CITY_ALREADY_DEFINED = ["City is already defined"]
-ERROR_NEXT_ACTION_ALREADY_DEFINED = ["Next Action for the protocol type is already defined"]
+ERROR_NEXT_ACTION_ALREADY_DEFINED = [
+    "Next Action for the protocol type is already defined"
+]
 
 ERROR_SAMPLE_NOT_FOUND = ["Sample was not found"]
 

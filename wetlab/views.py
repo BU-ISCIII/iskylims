@@ -3204,36 +3204,6 @@ def handling_library_preparation(request):
         )
 
 
-def external_file_preparation(request):
-    if request.method == "POST" and request.POST["action"] == "externalFilePreparation":
-        import pdb
-
-        pdb.set_trace()
-
-    search_data = {}
-    if core.models.SampleProjects.objects.filter(
-        apps_name__iexact=__package__
-    ).exists():
-        search_data["s_projects"] = list(
-            core.models.SampleProjects.objects.filter(
-                apps_name__iexact=__package__
-            ).values_list("sample_project_name", "id")
-        )
-    if core.models.Protocols.objects.filter(
-        type__apps_name__iexact=__package__
-    ).exists():
-        search_data["protocols"] = list(
-            core.models.Protocols.objects.filter(
-                type__apps_name__iexact=__package__
-            ).values_list("name", "id")
-        )
-    return render(
-        request,
-        "wetlab/external_file_preparation.html",
-        {"search_data": search_data},
-    )
-
-
 def handling_molecules(request):
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
