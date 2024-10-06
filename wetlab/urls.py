@@ -5,6 +5,7 @@ from django.urls import path
 
 # Local imports
 import wetlab.views
+import wetlab.class_views.external_file_preparation
 
 urlpatterns = [
     path("", wetlab.views.index, name="index"),
@@ -131,7 +132,7 @@ urlpatterns = [
     ),
     path(
         "externalFilePreparation",
-        wetlab.views.external_file_preparation,
+        wetlab.class_views.external_file_preparation.ExternalFilePreparationView.as_view(),
         name="external_file_preparation",
     ),
     path(

@@ -2,6 +2,7 @@
 {% block content %}
 {% include "wetlab/menu.html" %}
 {% include "core/cdn_table_functionality.html" %}
+{% include 'core/jexcel_functionality.html' %}
 <section class="iskylims d-flex flex-column fill-height">
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
@@ -17,7 +18,105 @@
                 </div> 
             </div>
         {% endif %}
-        {% if selecting %}
+        {% if selecting_samples.heading %}
+            <div class="row my-2">
+                <div class="col" >
+                    <div class="card ">
+                        <div class="card-header"><h3>Select the samples for preparing output data</h3> </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" name="selectSamples" id="selectSamples" class="form-horizontal">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="selectSamples"/>
+                                <input type="hidden" name="protocolID" value="{{ selecting_samples.protocol }}"/>
+                                <input type="hidden" name="protocolType" value="{{ selecting_samples.protocol_type }}"/>
+                                <input type="hidden" name="heading" value="{{ selecting_samples.heading_string }}"/>
+                                 <div class="horizontal-scroll">
+                                    <div id="samplesheet1" class="mb-4 col-md"></div>
+                                </div>
+                                <input class="btn float-end btn-outline-primary"
+                                    id="btnSubmit"
+                                    type="submit"
+                                    value="Submit" />
+                            
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif  data_for_download %}
+            <div class="row my-2">
+                <div class="col">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        {% for proj in project_list %}
+                            {% if forloop.first %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active"
+                                            id="download_samples-tab{{forloop.counter}}"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#d_samples{{forloop.counter}}"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="d_samples"
+                                            aria-selected="true">{{proj}} Project </button>
+                                </li>
+                            {% else %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link"
+                                        id="download_samples-tab{{forloop.counter}}"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#d_samples{{forloop.counter}}"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="d_samples"
+                                        aria-selected="false">{{proj}} Project</button>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% for project_name, project_data in data_for_download.items %}
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            {% if forloop.first %}
+                                <div class="tab-pane fade show active"
+                                        id="download_samples-tab{{forloop.counter}}"
+                                        role="tabpanel"
+                                        aria-labelledby="d_samples-tab{{forloop.counter}}">
+                            {% else %}
+                                <div class="tab-pane fade show"
+                                        id="download_samples-tab{{forloop.counter}}"
+                                        role="tabpanel"
+                                        aria-labelledby="d_samples-tab{{forloop.counter}}">
+                            {% endif %}
+                            <div class="container">
+                                <div class="row mt-4">
+                                    <div class="col-md">
+                                        <div class="card">
+                                            <div class="card-header text-center">
+                                                <h3>Samples selected to download </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-hover" id="sample_download{{forloop.counter}}">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for value in project_data.heading %}<th>{{ value }}</th>{% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for s_values in project_data.values %}
+                                                            <tr>
+                                                                {% for value in s_values %}<td>{{ value }}</td>{% endfor %}
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         {% else %}
             <div class="row my-2">
                 <div class="col" >
@@ -45,11 +144,12 @@
                                             <select class="form-select"
                                                     name="protocol"
                                                     id="protocol"
+                                                    required 
                                                     aria-label="Floating label state">
                                                 <option value="">Choose a value</option>
                                                 {% for value, id in search_data.protocols %}<option value="{{ id }}">{{ value }}</option>{% endfor %}
                                             </select>
-                                            <label for="project">Select the Protocol</label>
+                                            <label class="text-danger" for="protocol">Select the Protocol</label>
                                         </div>
                                     </div>
                                 </div>
@@ -75,41 +175,68 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-control required">
-                                    <label class="col form-label">Upload External File</label>
-                                    <div class="col"><input class="form-control" required = "required" type="file" id="upfile" name="newExternalFile" size="80"></div>
-                                    <BR> <BR> <BR>
-                                </div>
+                                <p class="ms-3 mb-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
                                 <input class="btn float-end btn-outline-primary" type="submit" value="Submit" id="btnSubmit">
                             </form>
                         </div>  
-                        <p class="ms-3"> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
-                        <SCRIPT>
-                            //gets the element by its id
-                            var myFile = document.getElementById('upfile');
-                            //binds to onchange event of the input field
-                            myFile.addEventListener('change', function() {
-                                var max_size = 20480 // 20 KB
-                                //this.files[0].size gets the size of your file.
-                                if (this.files[0].size > max_size) {
-                                    alert("Maximun size of the file is 20 KB ");
-                                }
-                            });
-                        </SCRIPT>
                     </div>
                 </div>
             </div>
         {% endif %}
-        {% if external_file_information %}
-            <div class="row my-2">
-                <div class="col-sm-6 offset-3" >
-                <div class="card ">
-                    <div class="card-header">New External File has been added </div>
-                    <div class="card-body">
-                        <p class="text-center mb-3">{{ external_file_information.external_file_name }}  has been succesfully stored</p>
-                        <p class="mb-2">Click on the "Add new external file" button  for adding a new file</p>
-                        <button type="button" class="btn btn
-        {% endif %}
+        
     </div>
 </section>
+<script>
+        {% if selecting_samples.heading %} // excel table for new samples 
+            var data1 = [{% for values in selecting_samples.samples %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ]; 
+            var table1 = jexcel(document.getElementById('samplesheet1'), {
+                data:data1, 
+                columns: [{% for values in selecting_samples.heading  %}
+                    {% if forloop.last %} 
+                        { type: 'hidden' }, 
+                        { type: 'checkbox',  title:'{{values}}', width:150 }, 
+                    {% else %} 
+                        { type: 'text', title:'{{values}}', width:300 , readOnly:true },
+                    {% endif %} 
+                {% endfor %} 
+            ],  
+                allowInsertColumn:false,
+                allowDeleteColumn:false, 
+                allowRenameColumn:false, 
+                allowInsertRow:false, 
+                allowDeleteRow:false, 
+                tableOverflow:false, 
+                search:true, 
+                csvFileName:'SamplesDefined.csv',  
+            });
+            
+            // send form for selected samples 
+            $(document).ready(function () {
+                $("#selectSamples").submit(function (e) { 
+                    var table_data = table1.getData()
+                    var data_json = JSON.stringify(table_data)
+                    $("<input />").attr("type", "hidden")
+                        .attr("name", "selected_samples")
+                        .attr("value", data_json)
+                        .appendTo("#selectSamples");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        {% endif %}
+        {% if data_for_download %}
+            // table to download samples 
+            {% for project_name, project_data in data_for_download.items %}
+                $(document).ready(function() {
+                    $('#sample_download{{forloop.counter}}').DataTable({
+                        dom: 'Bfrtip',
+                        responsive: true,
+                        buttons: ['copy' , "excel"]
+                    });
+                });
+            {% endfor %}
+        {% endif %}
+</script>
 {% endblock %}
