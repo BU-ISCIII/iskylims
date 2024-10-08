@@ -225,26 +225,28 @@
                                                     </div>
                                                 </div>
                                                 {% if lib_param_heading is not None %}
-                                                    <div class="col">
-                                                        <div class="card ">
-                                                            <div class="card-header"><h4>Quality Parameter Library Preparation Information</h4></div>
-                                                            <div class="card-body">
-                                                                <table class="table table-hover">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            {% for lib_par_head in lib_param_heading %}
-                                                                                <th>{{ lib_par_head }} </th>
-                                                                            {%endfor%}
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            {% for value in lib_param_values %}
-                                                                                <td>{{ value }} </td>
-                                                                            {%endfor%}
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
+                                                    <div class="row horizontal-scroll">
+                                                        <div class="col">
+                                                            <div class="card ">
+                                                                <div class="card-header"><h4>Quality Parameter Library Preparation Information</h4></div>
+                                                                <div class="card-body">
+                                                                    <table class="table table-hover">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                {% for lib_par_head in lib_param_heading %}
+                                                                                    <th>{{ lib_par_head }} </th>
+                                                                                {%endfor%}
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                {% for value in lib_param_values %}
+                                                                                    <td>{{ value }} </td>
+                                                                                {%endfor%}
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>

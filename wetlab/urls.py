@@ -6,6 +6,7 @@ from django.urls import path
 # Local imports
 import wetlab.views
 import wetlab.class_views.external_file_preparation
+import wetlab.class_views.handling_fragmentation
 
 urlpatterns = [
     path("", wetlab.views.index, name="index"),
@@ -124,6 +125,11 @@ urlpatterns = [
         "displayUserLotKit=<int:user_kit_id>/",
         wetlab.views.display_user_lot_kit,
         name="display_user_lot_kit",
+    ),
+    path(
+        "handlingFragmentation",
+        wetlab.class_views.handling_fragmentation.HandlingFragmentation.as_view(),
+        name="external_file_preparation",
     ),
     path(
         "handlingLibraryPreparation",

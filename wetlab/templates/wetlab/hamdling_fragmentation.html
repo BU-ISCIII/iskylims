@@ -1,0 +1,697 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load replace_spaces %}
+{% load join_list_of_tuples %}
+{% block content %}
+    {% include "wetlab/menu.html" %}
+    {% include 'core/jexcel_functionality.html' %}
+    {% include "core/cdn_table_functionality.html" %}
+    {% include "wetlab/menu.html" %}
+    <style>
+        #table_min_heigth {
+            min-height: 800vh;
+        }
+    </style>
+    <section class="iskylims d-flex flex-column fill-height">
+        <div class="container-md">
+            {% include 'registration/login_inline.html' %}
+            {% if error_message %}
+                <div class="row mt-2 mb-4">
+                    <div class="col-md-7 offset-3">
+                        <div class="card border-danger mb-3">
+                            <div class="card-header border-danger text-canter">
+                                <h3>Unable to process your request</h3>
+                            </div>
+                            <div class="card-body">
+                                <h4>{{ error_message }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fragmentation_protocol %}
+                <div class="row my-2">
+                    <div class="col">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h3>Assign the fragmentation Protocol to following samples.</h3>
+                            </div>
+                            <div class="card-body">
+                                <form method="post"
+                                      action="/wetlab/handlingfragmentations"
+                                      enctype="multipart/form-data"
+                                      name="updateExtractionProtocol"
+                                      id="updateExtractionProtocol">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="updateExtractionProtocol" />
+                                    <div id="assing_fragmentation" class="my-3"></div>
+                                    <input type="button"
+                                           class="btn btn-outline-secondary my-3"
+                                           value="Download Spreadsheet"
+                                           onclick="$('#assing_fragmentation').jexcel('download')" />
+                                    <input class="btn float-end btn-outline-primary my-3"
+                                           id="btnSubmit"
+                                           type="submit"
+                                           value="Submit" />
+                                </form>
+                            </div>
+                            <script></script>
+                        </div>
+                    </div>
+                </div>
+            {% elif fragmentation_recorded.incomplete %}
+                <div class="row my-3">
+                    <div class="col-sm">
+                        <div class="card border-warning">
+                            <div class="card-header text-center">
+                                <h3>Information missing</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="col">
+                                    <p>Please add the missing information and click on the submit bottom</p>
+                                    <form method="post"
+                                          enctype="multipart/form-data"
+                                          name="updateExtractionProtocol"
+                                          id="updateExtractionProtocol"
+                                          class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="updateExtractionProtocol" />
+                                        <input type="hidden"
+                                               name="samples"
+                                               value="{{ fragmentation_recorded.incomplete_sample_ids }}" />
+                                        <input type="hidden"
+                                               name="samples_code_ids"
+                                               value="{{ fragmentation_recorded.incomplete_sample_code_ids }}" />
+                                        <input type="hidden"
+                                               name="fragmentation_code_ids"
+                                               value="{{ fragmentation_recorded.fragmentation_code_ids }}" />
+                                        <input type="hidden"
+                                               name="fragmentation_ids"
+                                               value="{{ fragmentation_recorded.fragmentation_ids }}" />
+                                        <div class="horizontal-scroll">
+                                            <div id="missing_data"></div>
+                                        </div>
+                                        <input type="button"
+                                               class="btn btn-outline-secondary my-3"
+                                               value="Download Spreadsheet"
+                                               onclick="$('#spreadsheet').jexcel('download')" />
+                                        <input class="btn float-end btn-outline-primary my-3"
+                                               id="btnSubmit"
+                                               type="submit"
+                                               value="Submit" />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif fragmentation_parameters %}
+                <div class="row my-2">
+                    <div class="col-md">
+                        <div class="card ">
+                            <div class="card-header">
+                                <h3>Update sample extraction data with defined parameters</h3>
+                            </div>
+                            <div class="card-body">
+                                <form method="post"
+                                      enctype="multipart/form-data"
+                                      name="addExtractionParameters"
+                                      id="addExtractionParameters">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="addExtractionParameters" />
+                                    <input type="hidden" name="protocol_list" value="{{ protocol_list }}" />
+                                    {% for prot, value_dict in fragmentation_parameters.items %}
+                                        <input type="hidden"
+                                               name="{{ prot }}_parameters"
+                                               value="{{ value_dict.param_heading_in_string }}" />
+                                        <div class="card-body">
+                                            <h5>Protocol: {{ prot }}</h5>
+                                            <div class="row horizontal-scroll my-3">
+                                                <div style="height:200px;" id="spreadsheet_{{ prot|replace_spaces_with_underscores }}"></div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    <input type="button"
+                                           class="btn btn-outline-secondary"
+                                           value="Return Home"
+                                           onclick="location.href ='/wetlab' ;" />
+                                    <input class="btn float-end btn-outline-primary"
+                                           id="btnSubmit"
+                                           type="submit"
+                                           value="Submit" />
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif fragmentation_parameters_updated %}
+                <div class="row my-2">
+                    <div class="col-sm-12">
+                        <div class="card ">
+                            <div class="card-header text-center">
+                                <h3>Samples have been updated with Extraction required parameters.</h3>
+                            </div>
+                            <div class="row my-3  justify-content-center">
+                                <div class="col-md-3">
+                                    <input type="button"
+                                           class="btn btn-outline-secondary"
+                                           value="Return to handling extraction samples"
+                                           onclick="location.href ='/wetlab/handlingfragmentations' ;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif extraction_use %}
+                <div class="row my-2">
+                    <div class="col-sm-12">
+                        <div class="card ">
+                            <div class="card-header text-center">
+                                <h3>fragmentations are updated with their use.</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-hover" id="extraction_use_table">
+                                    <thead>
+                                        <tr>
+                                            {% for value in extraction_use.heading %}<th>{{ value }}</th>{% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sample, _id, action in extraction_use.data %}
+                                            <tr>
+                                                <td>{{ sample }}</td>
+                                                <td>{{ id }}</td>
+                                                <td>{{ action }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <div class="row my-3">
+                                    <div class="col">
+                                        <input type="button"
+                                               class="btn btn-outline-secondary"
+                                               value="Go to Library Preparation"
+                                               onclick="location.href ='/wetlab/handlingLibraryPreparation' ;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row my-2">
+                    <div class="col">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active"
+                                        id="n_samples-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#n_samples"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="n_samples"
+                                        aria-selected="true">Samples</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link"
+                                        id="fragmentation-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#fragmentation"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="fragmentation"
+                                        aria-selected="false">Pending Fragmentation data</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link"
+                                        id="mol_use-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#mol_use"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="mol_use"
+                                        aria-selected="false">Next action after Fragmentation</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
+                            <div class="tab-pane fade show active"
+                                 id="n_samples"
+                                 role="tabpanel"
+                                 aria-labelledby="n_samples-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col-md">
+                                            <div class="card">
+                                                <div class="card-header text-center">
+                                                    <h3>Select the samples to add fragmentation information</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    {% if sample_availables.sample_heading %}
+                                                        <form method="post"
+                                                              action="/wetlab/handlingfragmentations"
+                                                              enctype="multipart/form-data"
+                                                              name="selectedfragmentations"
+                                                              id="selectedfragmentations"
+                                                              class="form-horizontal well">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="selectedfragmentations" />
+                                                            <input type="hidden" name="samples_in_list" value="True" />
+                                                            <div class="col-md my-3">
+                                                                <div id="select_fragmentations"></div>
+                                                            </div>
+                                                            <div class="col">
+                                                                <input class="btn btn-outline-secondary"
+                                                                       type="button"
+                                                                       value="Return Home"
+                                                                       onclick="location.href ='/wetlab' ;" />
+                                                                <input class="btn float-end btn-outline-primary"
+                                                                       type="submit"
+                                                                       value="Submit" />
+                                                            </div>
+                                                        </form>
+                                                    {% else %}
+                                                        <h4>There is no samples to add Fragmentation information</h4>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- // end of tab n_samples -->
+                            <div class="tab-pane fade"
+                                 id="fragmentation"
+                                 role="tabpanel"
+                                 aria-labelledby="fragmentation-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header text-center">
+                                                    <h3>Select the Samples to add Pending fragmentation information</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    {% if fragmentations_availables %}
+                                                        <form method="post"
+                                                              action="/wetlab/handlingfragmentations"
+                                                              enctype="multipart/form-data"
+                                                              name="selectedOwnerfragmentations"
+                                                              id="selectedOwnerfragmentations">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="selectedOwnerfragmentations" />
+                                                            <div class="col-md my-3">
+                                                                <div id="pending_extraction"></div>
+                                                            </div>
+                                                            <input type="button"
+                                                                   class="btn btn-outline-secondary my-3"
+                                                                   value="Return Home"
+                                                                   onclick="location.href ='/wetlab' ;" />
+                                                            <input class="btn float-end btn-outline-primary my-3"
+                                                                   type="submit"
+                                                                   value="Submit" />
+                                                        </form>
+                                                    {% else %}
+                                                        <h4>Pending  fragmentation list is empty</h4>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end of tab fragmentation -->
+                            <div class="tab-pane fade"
+                                 id="mol_use"
+                                 role="tabpanel"
+                                 aria-labelledby="mol_use-tab">
+                                <div class="container">
+                                    <div class="row mt-4">
+                                        <div class="col">
+                                            <div class="card">
+                                                <div class="card-header text-center">
+                                                    <h3>Select the next action for the sample</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="container">
+                                                        {% if fragmentation_use_defined %}
+                                                            {% if next_action.heading %}
+                                                                <form method="post"
+                                                                      action="/wetlab/handlingfragmentations"
+                                                                      enctype="multipart/form-data"
+                                                                      name="requestfragmentationUse"
+                                                                      id="requestfragmentationUse">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="action" value="requestfragmentationUse" />
+                                                                    <input type="hidden" name="next_action_values" value={{next_action.types|join_tuples}}/>
+                                                                    <div class="horizontal-scroll">
+                                                                        <div id="spreadsheet2" class="mb-4 col-md"></div>
+                                                                    </div>
+                                                                    <input type="button"
+                                                                           class="btn btn-outline-secondary"
+                                                                           value="Return Home"
+                                                                           onclick="location.href ='/wetlab' ;" />
+                                                                    <input class="btn float-end btn-outline-primary"
+                                                                           id="btnSubmit"
+                                                                           type="submit"
+                                                                           value="Submit" />
+                                                                    
+                                                                </form>
+                                                            {% else %}
+                                                                <h4>Ther are not fragmentation extraction to assign to an use</h4>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <h4>Not fragmentation uses have been defined yet</h4>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- // end of tab mole_use -->
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    <script>
+        {% if sample_availables.sample_heading %} // excel table for new samples 
+            var data1 = [{% for values in sample_availables.sample_information %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ]; 
+            var table1 = jexcel(document.getElementById('select_fragmentations'), {
+                data:data1, 
+                columns: [{% for values in sample_availables.sample_heading  %}
+                    {% if forloop.last %} 
+                        { type: 'hidden' }, 
+                        { type: 'checkbox',  title:'{{values}}', width:150 }, 
+                    {% else %} 
+                        { type: 'text', title:'{{values}}', width:300 , readOnly:true },
+                    {% endif %} 
+                {% endfor %} 
+            ],  
+                allowInsertColumn:false,
+                allowDeleteColumn:false, 
+                allowRenameColumn:false, 
+                allowInsertRow:false, 
+                allowDeleteRow:false, 
+                tableOverflow:false, 
+                search:true, 
+                pagination:20, 
+                csvFileName:'SamplesDefined.csv',  
+            });
+            
+            // send form for new samples 
+            $(document).ready(function () {
+                $("#selectedfragmentations").submit(function (e) { 
+                    var table_data = table1.getData()
+                    var data_json = JSON.stringify(table_data)
+                    $("<input />").attr("type", "hidden")
+                        .attr("name", "selected_samples")
+                        .attr("value", data_json)
+                        .appendTo("#selectedfragmentations");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        {% endif %}
+        {% if fragmentations_availables.fragmentation_heading %}
+            // excel for pending Extraction data 
+            var data2 = [{% for values in fragmentations_availables.data %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ];
+            var table2  = jexcel(document.getElementById('pending_extraction'), {
+                data:data2,
+                columns: [{% for values in fragmentations_availables.fragmentation_heading  %}
+                    {% if forloop.last %}
+                        { type: 'hidden' },
+                        { type: 'checkbox',  title:'{{values}}', width:150 },
+                    {% else %}
+                        { type: 'text', title:'{{values}}', width:250 , readOnly:true },
+                    {% endif %}
+                {% endfor %}
+            ],
+                allowInsertColumn:false,
+                allowDeleteColumn:false,
+                allowRenameColumn:false,
+                allowInsertRow:false,
+                allowDeleteRow:false,
+                tableOverflow:true,
+                search:true,
+                pagination:20,
+                csvFileName:'fragmentation_use',
+            });
+                // Function to check if at least one checkbox in the "select sample" column is set to true
+            function isAnySelectedColumnChecked() {
+                var table_data2 = table2.getData();
+                // Assuming the "Select sample" column is the third column (index 5)
+                for (var i = 0; i < table_data2.length; i++) {
+                    if (table_data2[i][5] === true) { // Check if "Select sample" column (index 5) is true
+                        return true;
+                    }
+                }
+                return false;
+            }
+            // send form for fragmentation in use
+            $(document).ready(function () {
+                $("#selectedOwnerfragmentations").submit(function (e) {
+                    if (!isAnySelectedColumnChecked()) {
+                        e.preventDefault(); // Prevent form submission
+                        alert('You must select at least one sample before submitting.');
+                        return false;
+                    }
+                    var table_data2 = table2.getData()
+                    var data_json = JSON.stringify(table_data2)
+                    $("<input />").attr("type", "hidden")
+                        .attr("name", "pending_extraction")
+                        .attr("value", data_json)
+                        .appendTo("#selectedOwnerfragmentations");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        {% endif %}
+        {% if next_action.heading %}
+            // excel for selecting the fragmentation use
+            var data3 = [{% for values in next_action.data %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ];
+            var table3  = jexcel(document.getElementById('spreadsheet2'), {
+                data:data3,
+                columns: [
+                        { type: 'text', title:'{{next_action.heading.0}}', width:350 , readOnly:true },
+                        { type: 'text', title:'{{next_action.heading.1}}', width:480 , readOnly:true },
+                        { type: 'hidden'},
+                        { type: 'dropdown', title:'{{next_action.heading.2}}', width:200 , source:[{% for value in next_action.types %}'{{value.0}}',{% endfor %} ]},
+            ],
+                allowInsertColumn:false,
+                allowDeleteColumn:false,
+                allowRenameColumn:false,
+                allowInsertRow:false,
+                allowDeleteRow:false,
+                tableOverflow:true,
+                search:true,
+                pagination:20,
+                csvFileName:'fragmentation_use',
+            });
+
+            // send form for fragmentation in use
+            $(document).ready(function () {
+                $("#requestfragmentationUse").submit(function (e) {
+                    //stop submitting the form to see the disabled button effect
+                    // e.preventDefault();
+                    //disable the submit button
+                    var table_data3 = table3.getData()
+                    var data_json = JSON.stringify(table_data3)
+                    $("<input />").attr("type", "hidden")
+                        .attr("name", "fragmentation_used_for")
+                        .attr("value", data_json)
+                        .appendTo("#requestfragmentationUse");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+
+        {% endif %}
+        {% if fragmentation_protocol %}
+            var data = [{% for values in fragmentation_protocol.data %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ];
+            dropdownFilter = function(instance, cell, c, r, source) {
+                var value = instance.jexcel.getValueFromCoords(c - 3, r);
+                {% for item, values in fragmentation_protocol.protocol_filter_selection %}
+                    if (value == '{{item}}') {
+                    return [{% for val in values %}'{{val}}',{% endfor %}];
+                }
+                {% endfor %}
+
+                else {
+                    return source;
+                }
+            }
+
+            mySpreadsheet = $('#assing_fragmentation').jexcel({
+                data:data,
+                columns: [
+                    { type: 'text', title:'{{fragmentation_protocol.headings.0}}', width:250 , readOnly:true },
+                    { type: 'text', title:'{{fragmentation_protocol.headings.1}}', width:200 , readOnly:true },
+                    { type: 'dropdown', title:'{{fragmentation_protocol.headings.2}}', width:150 , source :[ {% for value in fragmentation_protocol.type_of_fragmentations %} '{{value}}', {% endfor %}]},
+                    { type: 'dropdown', title:'{{fragmentation_protocol.headings.3}}', width:150 , source :['Manual', 'Automated']},
+                    { type: 'calendar' , title: '{{fragmentation_protocol.headings.4}}', width:150 },
+                    { type: 'dropdown', title: '{{fragmentation_protocol.headings.5}}', width:240 , source:[{% for value in fragmentation_protocol.protocol_list %}'{{value}}',{% endfor %} ],
+                            filter:dropdownFilter },
+                    { type: 'hidden'},
+
+                ],
+                allowInsertColumn:false,
+                allowDeleteColumn:false,
+                allowRenameColumn:false,
+                allowInsertRow:false,
+                allowDeleteRow:false,
+                tableOverflow:true,
+                tableHeight:'200px',
+                csvFileName:'fragmentation_data',
+                minDimensions:[{{fragmentation_protocol.table_length}},{{fragmentation_protocol.number_of_samples}}],
+                onchange:function(instance, cell, c, r, value) {
+                    if (c == 2) {
+                        var columnName = jexcel.getColumnNameFromId([5, r]);
+                        instance.jexcel.setValue(columnName, '');
+                    }
+                }
+            });
+
+            $(document).ready(function () {
+                $("#updateExtractionProtocol").submit(function (e) {
+                    //stop submitting the form to see the disabled button effect
+                    // e.preventDefault();
+                    //disable the submit button
+                    var table_data = $('#assing_fragmentation').jexcel('getData')
+                    var data_json = JSON.stringify(table_data)
+                    $("<input />").attr("type", "hidden")
+                    .attr("name", "fragmentation_data")
+                    .attr("value", data_json)
+                    .appendTo("#updateExtractionProtocol");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        {% endif %}
+
+        {% if  fragmentation_recorded.incomplete %}
+            var data = [{% for values in fragmentation_recorded.data %}
+                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+            ];
+
+            dropdownFilter = function(instance, cell, c, r, source) {
+                var value = instance.jexcel.getValueFromCoords(c - 3, r);
+                {% for item, values in fragmentation_recorded.protocol_filter_selection %}
+                    if (value == '{{item}}') {
+                        return [{% for val in values %}'{{val}}',{% endfor %}];
+                    }
+                {% endfor %}
+
+                else {
+                    return source;
+                }
+            }
+
+            mySpreadsheet = $('#missing_data').jexcel({
+                data:data,
+                columns: [
+                    { type: 'text', title:'{{fragmentation_recorded.headings.0}}', width:220 , readOnly:true },
+                    { type: 'text', title:'{{fragmentation_recorded.headings.1}}', width:180,  readOnly:true },
+                    { type: 'dropdown', title:'{{fragmentation_recorded.headings.2}}', width:150 , source :[ {% for value in fragmentation_recorded.type_of_fragmentations %}'{{value}}',{% endfor %}]},
+                    { type: 'dropdown', title:'{{fragmentation_recorded.headings.3}}', width:150 , source :['Manual', 'Automated']},
+                    { type: 'calendar' , title: '{{fragmentation_recorded.headings.4}}', width:150 },
+                    { type: 'dropdown', title: '{{fragmentation_recorded.headings.5}}', width:200 , source:[{% for value in fragmentation_recorded.protocol_list %}'{{value}}',{% endfor %} ],
+                            filter:dropdownFilter },
+                    { type: 'hidden' },
+                ],
+                allowInsertColumn:false,
+                allowDeleteColumn:false,
+                allowRenameColumn:false,
+                allowInsertRow:false,
+                allowDeleteRow:false,
+                tableOverflow:true,
+                tableHeight:'200px',
+                csvFileName:'fragmentation_data',
+                minDimensions:[{{fragmentation_recorded.table_length}},{{fragmentation_recorded.number_of_samples}}],
+                onchange:function(instance, cell, c, r, value) {
+                    if (c == 4) {
+                        var columnName = jexcel.getColumnNameFromId([5, r]);
+                        instance.jexcel.setValue(columnName, '');
+                    }
+                }
+            });
+            $(document).ready(function () {
+                $("#updateExtractionProtocol").submit(function (e) {
+                    var table_data = $('#missing_data').jexcel('getData')
+                    var data_json = JSON.stringify(table_data)
+                    $("<input />").attr("type", "hidden")
+                    .attr("name", "fragmentation_data")
+                    .attr("value", data_json)
+                    .appendTo("#updateExtractionProtocol");
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        {% endif %}
+        {% if fragmentation_parameters %}
+            $(document).ready(function () {
+                {% for prot , value_dict in  fragmentation_parameters.items %}
+                    var {{ prot|replace_spaces_with_underscores }}_data = [{% for values in value_dict.m_data %}
+                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                    ];
+
+                    var {{ prot|replace_spaces_with_underscores }}_data_table = jspreadsheet(document.getElementById('spreadsheet_{{ prot|replace_spaces_with_underscores }}'),{
+                        data:{{ prot|replace_spaces_with_underscores }}_data,
+                        columns: [
+                            { type: 'hidden' },
+                            { type: 'text', title:'{{value_dict.fix_heading.0}}', width:180 , readOnly:true },
+                            { type: 'text', title:'{{value_dict.fix_heading.1}}', width:180 , readOnly:true },
+                                { type: 'dropdown', title:'{{value_dict.fix_heading.2}}', width:180 , source:[{% for value in value_dict.lot_kit %}'{{value}}',{% endfor %} ]},
+                                {% for name, type, options in value_dict.params_type %}
+                                    {% if type == 'Date' %}
+                                        { type: 'calendar', title:'{{name}}', width:150 },
+                                    {% elif type == 'Option List'%}
+                                        { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                    {% else %}
+                                        { type: 'text', title:'{{name}}', width:150 },
+                                    {% endif %}
+                                {% endfor %}
+                        ],
+                        allowInsertColumn:false,
+                        allowDeleteColumn:false,
+                        allowRenameColumn:false,
+                        allowInsertRow:false,
+                        allowDeleteRow:false,
+                        tableOverflow:false,
+                        tableHeight:'600px',
+                        csvFileName:'fragmentation_parameters.csv',
+                    });
+                                    
+                
+                    $("#addExtractionParameters").submit(function (e) {
+                        var table_data =  {{ prot|replace_spaces_with_underscores }}_data_table.getData()
+                        var data_json = JSON.stringify(table_data)
+                        $("<input />").attr("type", "hidden")
+                            .attr("name", "{{ prot }}")
+                            .attr("value", data_json)
+                            .appendTo("#addExtractionParameters");
+                        $("#button-submit").attr("disabled", true);
+                        return true;
+                    });
+                {% endfor %}
+            });                  
+        {% endif %}
+        {% if fragmentation_use %}
+            $(document).ready(function() {
+                $('#fragmentation_use_table').DataTable({
+                    responsive: true,
+                });
+            });
+        {% endif %}
+    </script>
+{% endblock %}
