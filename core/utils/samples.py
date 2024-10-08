@@ -922,7 +922,7 @@ def get_all_sample_information(sample_id, join_values=False):
                                 .last()
                                 .get_param_value()
                             )
-                        except core.models.MoleculeParameterValue.DoesNotExist:
+                        except (core.models.MoleculeParameterValue.DoesNotExist, AttributeError):
                             # if the parameter was not set at the time the molecule was handeled
                             mol_param_value.append("")
 
