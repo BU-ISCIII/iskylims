@@ -10,9 +10,15 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y \
     git wget lsb-release \
     libmysqlclient-dev \
+<<<<<<< HEAD
     python3-pip libpq-dev python3-venv python3-wheel \
     apache2-dev cron \
     gnuplot pkg-config rsync
+=======
+    python3-pip libpq-dev \
+    python3-wheel apache2-dev \
+    gnuplot pkg-config
+>>>>>>> ff357111 (hotfix numpy dependency and docker fixes)
 
 # Set MYSQLCLIENT_CFLAGS and MYSQLCLIENT_LDFLAGS using pkg-config
 RUN export MYSQLCLIENT_CFLAGS="$(pkg-config --libs mysqlclient)" && \
@@ -21,6 +27,7 @@ RUN export MYSQLCLIENT_CFLAGS="$(pkg-config --libs mysqlclient)" && \
 # Set git repository
 RUN mkdir /srv/iskylims 
 WORKDIR /srv/iskylims
+<<<<<<< HEAD
 
 # Copy the local git repository to docker image directory
 COPY . /srv/iskylims
@@ -29,6 +36,11 @@ COPY . /srv/iskylims
 RUN python3 -m venv /srv/iskylims/venv
 ENV PATH="/srv/iskylims/venv/bin:$PATH"
 ENV PATH="/usr/sbin/cron:$PATH"
+=======
+RUN pip install -r conf/requirements.txt 
+
+RUN bash install.sh --install app --conf conf/docker_install_settings.txt --docker
+>>>>>>> ff357111 (hotfix numpy dependency and docker fixes)
 
 # Install dependencies within the virtual environment
 RUN /srv/iskylims/venv/bin/pip install -r conf/requirements.txt
