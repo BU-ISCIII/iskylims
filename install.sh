@@ -799,7 +799,7 @@ if [ $install == true ]; then
 
         cd -
 
-        if [ "$install_type" == "full" ] || [ "$install_type" == "app" ]; then
+        if [ "$install_type" == "full" ]; then
             printf "\n\n%s"
             printf "${BLUE}------------------${NC}\n"
             printf "%s"
