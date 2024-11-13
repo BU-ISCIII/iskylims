@@ -152,6 +152,36 @@ restore_git_ref() {
     git checkout "$initial_git_ref" --quiet
 }
 
+load_tables() {
+    # Function parameters
+    local data_file="${1:-conf/first_install_tables.json}"
+    local verbose="${2:-false}"
+
+    # Check if the file exists
+    if [[ ! -f "$data_file" ]]; then
+        echo "Error: The data file '$data_file' does not exist."
+        return 1
+    fi
+
+    # Conditional message based on verbose mode
+    if [[ "$verbose" == true ]]; then
+        echo "Loading pre-filled tables from file: $data_file"
+    fi
+
+    # Load pre-filled tables
+    python manage.py loaddata "$data_file"
+    if [[ $? -eq 0 ]]; then
+        echo "Tables loaded successfully from '$data_file'."
+    else
+        echo "Error loading tables from '$data_file'."
+        return 1
+    fi
+
+    if [[ "$verbose" == true ]]; then
+        echo "Table loading process completed."
+    fi
+}
+
 # Ensure to recover current git branch/tag/SHA on script exit
 initial_git_ref=$(git rev-parse --abbrev-ref HEAD || git rev-parse HEAD)
 trap restore_git_ref EXIT
@@ -204,6 +234,7 @@ install_type="full"
 upgrade=false
 upgrade_type="full"
 docker=false
+prefilled_tables="conf/first_install_tables.json"
 
 # PARSE VARIABLE ARGUMENTS WITH getops
 options=":c:s:i:u:r:g:tdkvh"
@@ -602,7 +633,8 @@ if [ $upgrade == true ]; then
         
         if [ $tables == true ] ; then
             echo "Loading pre-filled tables..."
-            python manage.py loaddata conf/first_install_tables.json
+            echo "Loading in database initial data"
+            load_tables $prefilled_tables true
             echo "Done loading pre-filled tables..."
         fi
 
@@ -856,16 +888,15 @@ if [ $install == true ]; then
         # update the settings.py and the main urls
         update_settings_and_urls
 
-        if [ $docker == false ]; then
-            echo "Creating the database structure for iSkyLIMS"
-            python manage.py migrate
-            python manage.py makemigrations $MIGRATION_MODULES
-            python manage.py migrate
-            echo "Loading in database initial data"
-            python manage.py loaddata conf/first_install_tables.json
-            echo "Creating super user "
-            python manage.py createsuperuser --username admin
-        fi
+        # Creating data base structure and load prefilled tables
+        echo "Creating the database structure for iSkyLIMS"
+        python manage.py migrate
+        python manage.py makemigrations $MIGRATION_MODULES
+        python manage.py migrate
+        echo "Loading in database initial data"
+        load_tables $prefilled_tables true
+        echo "Creating super user "
+        python manage.py createsuperuser --username admin
 
         # copy static files 
         echo "Run collectstatic"
