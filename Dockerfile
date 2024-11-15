@@ -27,6 +27,7 @@ COPY . /srv/iskylims
 
 # Create and activate a virtual environment
 RUN python3 -m venv /srv/iskylims/venv
+ENV PATH="/srv/iskylims/venv/bin:$PATH"
 
 # Install dependencies within the virtual environment
 RUN /srv/iskylims/venv/bin/pip install -r conf/requirements.txt
