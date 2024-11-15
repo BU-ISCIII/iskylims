@@ -67,6 +67,13 @@ git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
 sudo bash docker_install.sh
 ```
 
+Or you can specify installation type and/or git revision:
+```bash
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+# To perform full installation from iskylims using git revision/branch 'develop'
+sudo bash docker_install.sh --install_type full --git_revision develop
+```
+
 The script creates a docker compose container with 3 services:
 
 - web1: contains the iSkyLIMS web application
