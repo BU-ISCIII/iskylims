@@ -10103,7 +10103,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "1",
-            "count": "4,776,660",
+            "count": "4776660",
             "sequence": "GGGGGGGG+AGATCTCG",
             "generated_at": "2023-07-25T18:00:02.714"
         }
@@ -10115,7 +10115,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "2",
-            "count": "315,920",
+            "count": "315920",
             "sequence": "GGGGGGGG+CGATCTCG",
             "generated_at": "2023-07-25T18:00:02.716"
         }
@@ -10127,7 +10127,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "3",
-            "count": "240,860",
+            "count": "240860",
             "sequence": "CGCAACTA+GGGGGGGG",
             "generated_at": "2023-07-25T18:00:02.719"
         }
@@ -10139,7 +10139,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "4",
-            "count": "232,220",
+            "count": "232220",
             "sequence": "GGGGGGGG+CAAGGTCT",
             "generated_at": "2023-07-25T18:00:02.721"
         }
@@ -10151,7 +10151,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "5",
-            "count": "229,500",
+            "count": "229500",
             "sequence": "GGGGGGGG+GTACTCTC",
             "generated_at": "2023-07-25T18:00:02.723"
         }
@@ -10163,7 +10163,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "6",
-            "count": "189,220",
+            "count": "189220",
             "sequence": "GGGGGGGG+CTTCGTTC",
             "generated_at": "2023-07-25T18:00:02.726"
         }
@@ -10175,7 +10175,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "7",
-            "count": "180,020",
+            "count": "180020",
             "sequence": "GGGGGGGG+GCAATTCG",
             "generated_at": "2023-07-25T18:00:02.728"
         }
@@ -10187,7 +10187,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "8",
-            "count": "162,120",
+            "count": "162120",
             "sequence": "GGGGGGGG+GAATCCGA",
             "generated_at": "2023-07-25T18:00:02.731"
         }
@@ -10199,7 +10199,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "9",
-            "count": "161,920",
+            "count": "161920",
             "sequence": "GGGGGGGG+CTTCTGAG",
             "generated_at": "2023-07-25T18:00:02.733"
         }
@@ -10211,7 +10211,7 @@
             "runprocess_id": 21,
             "lane_number": "1",
             "top_number": "10",
-            "count": "122,580",
+            "count": "122580",
             "sequence": "GAATCACC+GGGGGGGG",
             "generated_at": "2023-07-25T18:00:02.737"
         }
@@ -10223,7 +10223,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "1",
-            "count": "4,860,760",
+            "count": "4860760",
             "sequence": "GGGGGGGG+AGATCTCG",
             "generated_at": "2023-07-25T18:00:02.741"
         }
@@ -10235,7 +10235,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "2",
-            "count": "257,000",
+            "count": "257000",
             "sequence": "GGGGGGGG+CGATCTCG",
             "generated_at": "2023-07-25T18:00:02.743"
         }
@@ -10247,7 +10247,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "3",
-            "count": "241,140",
+            "count": "241140",
             "sequence": "CGCAACTA+GGGGGGGG",
             "generated_at": "2023-07-25T18:00:02.746"
         }
@@ -10259,7 +10259,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "4",
-            "count": "232,080",
+            "count": "232080",
             "sequence": "GGGGGGGG+GTACTCTC",
             "generated_at": "2023-07-25T18:00:02.748"
         }
@@ -10271,7 +10271,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "5",
-            "count": "230,140",
+            "count": "230140",
             "sequence": "GGGGGGGG+CAAGGTCT",
             "generated_at": "2023-07-25T18:00:02.750"
         }
@@ -10283,7 +10283,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "6",
-            "count": "189,940",
+            "count": "189940",
             "sequence": "GGGGGGGG+CTTCGTTC",
             "generated_at": "2023-07-25T18:00:02.752"
         }
@@ -10295,7 +10295,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "7",
-            "count": "179,300",
+            "count": "179300",
             "sequence": "GGGGGGGG+GCAATTCG",
             "generated_at": "2023-07-25T18:00:02.755"
         }
@@ -10307,7 +10307,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "8",
-            "count": "163,740",
+            "count": "163740",
             "sequence": "GGGGGGGG+GAATCCGA",
             "generated_at": "2023-07-25T18:00:02.757"
         }
@@ -10319,7 +10319,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "9",
-            "count": "160,260",
+            "count": "160260",
             "sequence": "GGGGGGGG+CTTCTGAG",
             "generated_at": "2023-07-25T18:00:02.759"
         }
@@ -10331,7 +10331,7 @@
             "runprocess_id": 21,
             "lane_number": "2",
             "top_number": "10",
-            "count": "120,120",
+            "count": "120120",
             "sequence": "GAATCACC+GGGGGGGG",
             "generated_at": "2023-07-25T18:00:02.761"
         }
@@ -10343,7 +10343,7 @@
             "runprocess_id": 22,
             "lane_number": "1",
             "top_number": "1",
-            "count": "2,020",
+            "count": "2020",
             "sequence": "GCTCATGA+TCTCTATT",
             "generated_at": "2023-07-25T18:00:03.700"
         }
@@ -10355,7 +10355,7 @@
             "runprocess_id": 22,
             "lane_number": "1",
             "top_number": "2",
-            "count": "1,380",
+            "count": "1380",
             "sequence": "GCTCATGA+CTCTTATT",
             "generated_at": "2023-07-25T18:00:03.702"
         }
@@ -10367,7 +10367,7 @@
             "runprocess_id": 22,
             "lane_number": "1",
             "top_number": "3",
-            "count": "1,080",
+            "count": "1080",
             "sequence": "GCTCAGAA+CTCTCTAT",
             "generated_at": "2023-07-25T18:00:03.704"
         }
@@ -10379,7 +10379,7 @@
             "runprocess_id": 22,
             "lane_number": "1",
             "top_number": "4",
-            "count": "1,000",
+            "count": "1000",
             "sequence": "AAGAGGCA+GTAATGAT",
             "generated_at": "2023-07-25T18:00:03.706"
         }
@@ -11153,7 +11153,6 @@
         "fields": {
             "register_user": 1,
             "pool_state": 3,
-            "run_process_id": 20,
             "platform": 10,
             "pool_name": "20230725_pool",
             "sample_number": 77,
