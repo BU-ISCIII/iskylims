@@ -753,6 +753,7 @@ if [ $install == true ]; then
                 python3-dev python3-pip python3-wheel \
                 apache2-dev cifs-utils \
                 gnuplot
+
         fi
 
         if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
@@ -889,14 +890,16 @@ if [ $install == true ]; then
         update_settings_and_urls
 
         # Creating data base structure and load prefilled tables
-        echo "Creating the database structure for iSkyLIMS"
-        python manage.py migrate
-        python manage.py makemigrations $MIGRATION_MODULES
-        python manage.py migrate
-        echo "Loading in database initial data"
-        load_tables $prefilled_tables true
-        echo "Creating super user "
-        python manage.py createsuperuser --username admin
+        if [ $docker == false ]; then
+            echo "Creating the database structure for iSkyLIMS"
+            python manage.py migrate
+            python manage.py makemigrations $MIGRATION_MODULES
+            python manage.py migrate
+            echo "Loading in database initial data"
+            load_tables $prefilled_tables true
+            echo "Creating super user "
+            python manage.py createsuperuser --username admin
+        fi
 
         # copy static files 
         echo "Run collectstatic"
