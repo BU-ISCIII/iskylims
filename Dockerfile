@@ -58,11 +58,19 @@ RUN bash install.sh --install app --git_revision main --conf conf/docker_install
 =======
 RUN mkdir /srv/iskylims
 WORKDIR /srv/iskylims
-RUN pip install -r conf/requirements.txt
 
+<<<<<<< HEAD
 RUN bash install.sh --install app --git_revision main --conf conf/docker_install_settings.txt --docker
 >>>>>>> 5a7fbaef (update ubuntu version to 24.04)
 
+=======
+# Copy the local git repository to docker image directory
+COPY . /srv/iskylims
+
+# Create and activate a virtual environment
+RUN python3 -m venv /srv/iskylims/venv
+
+>>>>>>> 8b387c6c (implement new installation features in iskylims installation via docker_install)
 # Install dependencies within the virtual environment
 RUN /srv/iskylims/venv/bin/pip install -r conf/requirements.txt
 
@@ -79,7 +87,11 @@ EXPOSE 8001
 
 # Start the application
 <<<<<<< HEAD
+<<<<<<< HEAD
 CMD ["python", "/opt/iskylims/manage.py", "runserver", "0:8001"]
 =======
 CMD ["python3", "/opt/iskylims/manage.py", "runserver", "0:8001"]
 >>>>>>> 5a7fbaef (update ubuntu version to 24.04)
+=======
+CMD ["python", "/opt/iskylims/manage.py", "runserver", "0:8001"]
+>>>>>>> 8b387c6c (implement new installation features in iskylims installation via docker_install)
