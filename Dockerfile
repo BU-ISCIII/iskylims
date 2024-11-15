@@ -21,15 +21,26 @@ RUN export MYSQLCLIENT_CFLAGS="$(pkg-config --libs mysqlclient)" && \
 # Set git repository
 RUN mkdir /srv/iskylims 
 WORKDIR /srv/iskylims
-RUN git checkout develop
 
-RUN pip install -r conf/requirements.txt 
+# Copy the local git repository to docker image directory
+COPY . /srv/iskylims
 
-RUN bash install.sh --install app --git_revision main --conf conf/docker_install_settings.txt --docker
+# Create and activate a virtual environment
+RUN python3 -m venv /srv/iskylims/venv
 
+# Install dependencies within the virtual environment
+RUN /srv/iskylims/venv/bin/pip install -r conf/requirements.txt
+
+# Set default install type
+ARG INSTALL_TYPE=app
+ARG GIT_REVISION=main
+
+# Execute the installation script
+RUN /bin/bash install.sh --install $INSTALL_TYPE --git_revision $GIT_REVISION --conf conf/docker_install_settings.txt --docker
 WORKDIR /opt/iskylims
 
 # Expose
 EXPOSE 8001
+
 # Start the application
-CMD ["python3", "/opt/iskylims/manage.py", "runserver", "0:8001"]
+CMD ["python", "/opt/iskylims/manage.py", "runserver", "0:8001"]
