@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ENV TZ=Europe/Madrid
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
@@ -8,13 +8,18 @@ RUN apt-get update && apt-get upgrade -y
 
 # Essential software
 RUN apt-get install -y \
-    git wget lsb-core lsb-release \
+    git wget lsb-release \
     libmysqlclient-dev \
-    python3-pip libpq-dev \
-    python3-wheel apache2-dev \
-    gnuplot
+    python3-pip libpq-dev python3-venv python3-wheel \
+    apache2-dev \
+    gnuplot pkg-config rsync
 
-RUN git clone https://github.com/bu-isciii/iskylims.git /srv/iskylims
+# Set MYSQLCLIENT_CFLAGS and MYSQLCLIENT_LDFLAGS using pkg-config
+RUN export MYSQLCLIENT_CFLAGS="$(pkg-config --libs mysqlclient)" && \
+    export MYSQLCLIENT_LDFLAGS="$(pkg-config --cflags mysqlclient)"
+
+# Set git repository
+RUN mkdir /srv/iskylims 
 WORKDIR /srv/iskylims
 RUN git checkout develop
 
