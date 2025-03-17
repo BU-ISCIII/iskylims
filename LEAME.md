@@ -26,7 +26,7 @@ De acuerdo con la infraestructura existente, la secuenciación se realiza en un 
     - [Configuración de opciones](#configuración-de-opciones)
     - [Ejecución del script de actualización](#ejecución-del-script-de-actualización)
       - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración)
-        - [Pasos que no necesitan de permisos de administración](#pasos-que-no-necesitan-de-permisos-de-administración)
+      - [Pasos que no necesitan de permisos de administración](#pasos-que-no-necesitan-de-permisos-de-administración)
       - [Qué hacer si algo falla](#qué-hacer-si-algo-falla)
     - [Pasos finales de configuración](#pasos-finales-de-configuración)
       - [Configuración de SAMBA](#configuración-de-samba)
@@ -194,13 +194,6 @@ Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actua
 
 #### Pasos que necesitan permisos de adminsitración
 
-En primer lugar, debes cambiar el nombre de la carpeta de la aplicación en la carpeta de instalación (`/opt/iSkyLIMS`):
-
-```bash
-# Necesitas ser usuario root para realizar esta operación
-sudo mv /opt/iSkyLIMS /opt/iskylims
-```
-
 Asegúrate de que la carpeta de instalación tenga los permisos correctos para que la persona que instala la aplicación pueda escribir en esa carpeta.
 
 ```bash
@@ -218,7 +211,7 @@ sudo bash install.sh --upgrade dep
 sudo bash install.sh --upgrade full  --git_revision main  --tables
 ```
 
-##### Pasos que no necesitan de permisos de administración
+#### Pasos que no necesitan de permisos de administración
 
 Actualiza a la nueva version de la aplicación de iskylims usando el siguiente comando:
 
@@ -243,10 +236,10 @@ Necesitamos copiar de vuelta nuestro backup de carpet ade aplicación a /opt/iSk
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
+mysql -u iskylims -p -h dmysqlps.isciiides.es
 # drop database iskylims;
 # create database iskylims;
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
 ### Pasos finales de configuración
