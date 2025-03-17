@@ -24,7 +24,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
   - [Upgrade from 3.0.x to iSkyLIMS version 3.1.x](#upgrade-from-30x-to-iskylims-version-31x)
     - [Pre-requisites for upgrade](#pre-requisites-for-upgrade)
     - [Clone github repository](#clone-github-repository-1)
-        - [Clone github repository](#clone-github-repository-2)
     - [Configuration settings](#configuration-settings-1)
     - [Running upgrade script](#running-upgrade-script)
       - [Steps requiring root](#steps-requiring-root)
@@ -175,11 +174,7 @@ It is highly recomended that you made these backups and keep them safely in case
 
 ### Clone github repository
 
-We've also change the way that iSkyLIMS is installed and upgraded. From now on iskylims is downloaded in a user folder and installed elsewhere (p.e /opt/).
-
-##### Clone github repository
-
-From it was defined in previous releases the iSkyLIMS code is downloaded in a user folder and then installed elsewhere (p.e /opt/).
+As it was defined in previous releases the iSkyLIMS code is downloaded in a user folder and then installed elsewhere (p.e /opt/).
 
 If you have already clone the repository from the previous 3.0.0 release open a
 linux terminal and move towards the directory of iSkyLIMS repository.
