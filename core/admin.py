@@ -84,7 +84,7 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
 
 
 class NextStepDefinitionAdmin(admin.ModelAdmin):
-    list_display = ["protocol_type", "moving_to_state",  "external_processing"]
+    list_display = ["protocol_type", "moving_to_state", "external_processing"]
 
 
 class OntologyMapAdmin(admin.ModelAdmin):
