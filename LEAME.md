@@ -21,15 +21,11 @@ De acuerdo con la infraestructura existente, la secuenciación se realiza en un 
       - [Configuración de ajustes](#configuración-de-ajustes)
       - [Ejecutar el script de instalación](#ejecutar-el-script-de-instalación)
   - [Actualización a la versión 3.1.0 de iSkyLIMS](#actualización-a-la-versión-310-de-iskylims)
-  - [Actualización a la versión 3.1.0 de iSkyLIMS](#actualización-a-la-versión-310-de-iskylims-1)
     - [Prerrequisitos](#prerrequisitos)
-    - [Prerrequisitos](#prerrequisitos-1)
     - [Clonar el repositorio de GitHub](#clonar-el-repositorio-de-github-1)
     - [Configuración de opciones](#configuración-de-opciones)
     - [Ejecución del script de actualización](#ejecución-del-script-de-actualización)
-    - [Ejecución del script de actualización](#ejecución-del-script-de-actualización-1)
       - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración)
-      - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración-1)
         - [Pasos que no necesitan de permisos de administración](#pasos-que-no-necesitan-de-permisos-de-administración)
       - [Qué hacer si algo falla](#qué-hacer-si-algo-falla)
     - [Pasos finales de configuración](#pasos-finales-de-configuración)
@@ -51,7 +47,6 @@ Antes de comenzar la instalación, asegúrate de lo siguiente:
 - Dependencias:
   - Librerías:
 
-```bash
 
 ```bash
   yum groupinstall "Development tools"
@@ -155,25 +150,20 @@ sudo bash install.sh --install full
 ```
 
 ## Actualización a la versión 3.1.0 de iSkyLIMS
-## Actualización a la versión 3.1.0 de iSkyLIMS
 
 En esta version se han implementado fallos de código y mejoras en las gráficas. Para obtener más detalles sobre los cambios, consulta las notas de la versión.
 
 ### Prerrequisitos
-### Prerrequisitos
 
-Por temas de seguridad es recomendado realizar una copia de seguridad de:
 Por temas de seguridad es recomendado realizar una copia de seguridad de:
 
 - La base de datos de iSkyLIMS.
 - La carpeta de iSkyLIMS (carpeta de instalación completa, por ejemplo, /opt/iSkyLIMS).
 
 Se recomienda encarecidamente que se hagan estas copias de seguridad y se guarden de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
-Se recomienda encarecidamente que se hagan estas copias de seguridad y se guarden de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
 
 ### Clonar el repositorio de GitHub
 
-A partir ya de la version anterior, ahora el código de iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
 A partir ya de la version anterior, ahora el código de iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
 
 Abre una terminal de Linux y dirígete a un directorio donde estaba descargado el código de iSkyLIMS. Actualiza el codigo
@@ -199,14 +189,9 @@ nano install_settings.txt
 ```
 
 ### Ejecución del script de actualización
-### Ejecución del script de actualización
 
-Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando
-desde la última release es necesario que sean actualizados.
-Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando
-desde la última release es necesario que sean actualizados.
+Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando desde la última release es necesario que sean actualizados.
 
-#### Pasos que necesitan permisos de adminsitración
 #### Pasos que necesitan permisos de adminsitración
 
 En primer lugar, debes cambiar el nombre de la carpeta de la aplicación en la carpeta de instalación (`/opt/iSkyLIMS`):
