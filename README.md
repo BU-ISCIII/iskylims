@@ -30,8 +30,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Steps not requiring root](#steps-not-requiring-root)
   - [What to do if something fails](#what-to-do-if-something-fails)
   - [Final configuration steps](#final-configuration-steps)
-  - [What to do if something fails](#what-to-do-if-something-fails-1)
-  - [Final configuration steps](#final-configuration-steps-1)
     - [SAMBA configurarion](#samba-configurarion)
     - [Email verification](#email-verification)
     - [Configure Apache server](#configure-apache-server)
@@ -165,13 +163,6 @@ Before starting the upgrade procedure is highly recomended to perform the follow
 
 It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
 
-Because in this upgrade many tables in database are modified it is required that you backup:
-
-- iSkyLIMS database
-- iSkyLIMS folder (complete installation folder, p.e /opt/iSkyLIMS)
-
-It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
-
 ### Clone github repository
 
 As it was defined in previous releases the iSkyLIMS code is downloaded in a user folder and then installed elsewhere (p.e /opt/).
@@ -184,16 +175,7 @@ cd < your personal folder/iskylims >
 git pull
 ```
 
-If you have already clone the repository from the previous 3.0.0 release open a
-linux terminal and move towards the directory of iSkyLIMS repository.
-
-```bash
-cd < your personal folder/iskylims >
-git pull
-```
-
-If the repository was not created then open a linux terminal and move to a directory
-where iSkyLIMS code will be downloaded
+If the repository was not created then open a linux terminal and move to a directory where iSkyLIMS code will be downloaded
 
 ```bash
 cd < your personal folder >
@@ -223,11 +205,6 @@ If your organization requires that dependencies / stuff that needs root are inst
 
 #### Steps requiring root
 
-```bash
-# You need root for this operation
-sudo mv /opt/iSkyLIMS /opt/iskylims
-```
-
 Make sure that the installation folder has the correct permissions so the person installing the app can write in that folder.
 
 ```bash
@@ -248,8 +225,7 @@ sudo bash install.sh --upgrade dep
 
 Next you need to upgrade iskylims app. Please use one of the commands below:
 
-If you are using the library pool, you must indicate in the installation script the file
-you already backup and execute the following command.
+If you are using the library pool, you must indicate in the installation script the file you already backup and execute the following command.
 
 ```bash
 # to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
@@ -280,52 +256,10 @@ We need to copy back the full `/opt/iskylims` folder back to `/opt/iskylims` (or
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es
+mysql -u iskylims -p -h dmysqlps.isciiides.es
 # drop database iskylims;
 # create database iskylims;
-mysql -u iskylims -p'1s1yL3ms$1$1' -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
-```
-
-## Final configuration steps
-
-Next you need to upgrade iskylims app. Please use one of the commands below:
-
-If you are using the library pool, you must indicate in the installation script the file
-you already backup and execute the following command.
-
-```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --script <your_selected_folder/backup_lib_pool.sql>  --git_revision main --tables
-```
-
-If restauration of libary preparation is not required then execute the following command
-
-```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app ---git_revision main  -tables
-```
-
-Make sure that the installation folder has the correct permissions.
-
-```bash
-# In case you have a script for this task. Some paths have changed in this version, so you may need to adjust your hardening script.
-/scripts/hardening.sh
-```
-
-## What to do if something fails
-
-When we upgrade using the installation script we are performing several changes in the database. If something fails we need to restore the app situation before anything happened and start all over.
-
-We need to copy back the full `/opt/iskylims` folder back to `/opt/iskylims` (or your installation path preference), and restore the database doing something like this:
-
-```bash
-sudo rm -rf /opt/iskylims
-sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
-sudo /scripts/hardening.sh
-mysql -u iskylims -h dmysqlps.isciiides.es
-# drop database iskylims;
-# create database iskylims;
-mysql -u iskylims -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
 ## Final configuration steps
