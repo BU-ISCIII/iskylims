@@ -64,7 +64,7 @@ def index(request):
         for ongoing_services_obj in ongoing_services_objs:
             s_info = []
             s_info.append(ongoing_services_obj.get_identifier())
-            s_info.append(ongoing_services_obj.get_delivery_date())
+            s_info.append(ongoing_services_obj.get_delivered_date())
             service_list["ongoing"].append(s_info)
     org_name = drylab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
 
