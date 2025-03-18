@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed deletion issue where removing a run also deleted pools and library preparations (#180) [#267](https://github.com/BU-ISCIII/iskylims/pull/267)
 - Fixed deprecated `STATUS_CHOICES` usage in Django versions higher than 3.1.x (#263) [#267](https://github.com/BU-ISCIII/iskylims/pull/267)
 - Fixed issue where services could not be searched by service type (#78) [#267](https://github.com/BU-ISCIII/iskylims/pull/267)
+- Fixed issue [#338](https://github.com/BU-ISCIII/iskylims/issues/338): Removed unnecessary hidden input passing a large JSON object, now using session storage [#344](https://github.com/BU-ISCIII/iskylims/pull/344)
 
 #### Changed
 
