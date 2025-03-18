@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed deprecated `STATUS_CHOICES` usage in Django versions higher than 3.1.x (#263) [#267](https://github.com/BU-ISCIII/iskylims/pull/267)
 - Fixed issue where services could not be searched by service type (#78) [#267](https://github.com/BU-ISCIII/iskylims/pull/267)
 - Fixed issue [#338](https://github.com/BU-ISCIII/iskylims/issues/338): Removed unnecessary hidden input passing a large JSON object, now using session storage [#344](https://github.com/BU-ISCIII/iskylims/pull/344)
+- Fixed email error handling for multiple notification types. [#346](https://github.com/BU-ISCIII/iskylims/pull/346)
 
 #### Changed
 
@@ -45,6 +46,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Updated installation script to remove commas in values of `rawtobunbarcode` table [#277](https://github.com/BU-ISCIII/iskylims/pull/277)
 - Updated installation documentation and script, fixing small issues [#284](https://github.com/BU-ISCIII/iskylims/pull/284)
 - Unify main and develop branches [#334](https://github.com/BU-ISCIII/iskylims/pull/334)
+- Increased max upload memory size. (#328)
+- Renamed method `get_delivery_date` to `get_delivered_date` for clarity.
+- Improved query performance and excluded rejected/archived services from ongoing list. (#299)
 
 #### Removed
 
