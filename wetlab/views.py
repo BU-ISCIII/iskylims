@@ -2335,9 +2335,7 @@ def record_samples(request):
         projects_fields = request.session.get("projects_fields")
 
         if not projects_fields:
-            error_message = [
-                "Project fields not found."
-            ]
+            error_message = ["Project fields not found."]
             return render(
                 request,
                 "wetlab/record_project_fields.html",
