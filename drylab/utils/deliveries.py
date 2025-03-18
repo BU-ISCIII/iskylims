@@ -1,5 +1,6 @@
 # Generic imports
 import datetime
+from smtplib import SMTPException
 
 import django.core.mail
 
@@ -133,6 +134,6 @@ def send_delivery_service_email(email_data):
     to_users = [email_data["user_email"], email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except Exception:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
