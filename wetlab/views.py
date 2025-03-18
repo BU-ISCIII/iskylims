@@ -2252,6 +2252,7 @@ def record_samples(request):
         try:
             # if we have projects, get the fields for each projects associated with the recorded samples
             projects_fields = core.utils.samples.project_table_fields(project_ids)
+            request.session["projects_fields"] = projects_fields
             # Render the project data form
             return render(
                 request,
@@ -2301,6 +2302,8 @@ def record_samples(request):
         try:
             # if we have projects, get the fields for each projects associated with the recorded samples
             projects_fields = core.utils.samples.project_table_fields(project_ids)
+            request.session["projects_fields"] = projects_fields
+
             # Render the project data form
             return render(
                 request,
@@ -2329,7 +2332,7 @@ def record_samples(request):
         projects_success = []
         json_data_all = []
 
-        projects_fields = eval(request.POST["projects_fields"])
+        projects_fields = request.session.get("projects_fields")
 
         for p_data in projects_fields:
             # Check if for any case there is no excel data sent for a project
