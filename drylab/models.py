@@ -307,7 +307,7 @@ class Service(models.Model):
         else:
             return self.service_created_date
 
-    def get_delivery_date(self, format=True):
+    def get_delivered_date(self, format=True):
         if self.service_delivered_date:
             if format:
                 return self.service_delivered_date.strftime("%Y-%m-%d")
