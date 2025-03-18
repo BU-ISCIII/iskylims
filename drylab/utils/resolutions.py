@@ -466,8 +466,8 @@ def send_resolution_creation_email(email_data):
     ]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except SMTPException:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
 
 
@@ -514,8 +514,8 @@ def send_resolution_in_progress_email(email_data):
     to_users = [email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except SMTPException:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
 
 
@@ -562,8 +562,8 @@ def send_resolution_on_hold_email(email_data):
     to_users = [email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except SMTPException:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
 
 
