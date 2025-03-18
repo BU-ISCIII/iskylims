@@ -1307,7 +1307,7 @@ class Samples(models.Model):
         sample_info.append(self.sample_type.get_name())
         try:
             sample_info.append(self.species.get_name())
-        except KeyError:
+        except (KeyError, AttributeError):
             sample_info.append("Not defined")
         return sample_info
 
@@ -1328,7 +1328,10 @@ class Samples(models.Model):
         sample_info.append(collection_sample_date)
         sample_info.append(sample_entry_date)
         sample_info.append(self.sample_type.get_name())
-        sample_info.append(self.species.get_name())
+        try:
+            sample_info.append(self.species.get_name())
+        except (KeyError, AttributeError):
+            sample_info.append("Not defined")
         sample_info.append(self.reused_number)
         sample_info.append(self.sample_user.username)
         return sample_info
@@ -1397,7 +1400,11 @@ class Samples(models.Model):
         return "%s" % (self.sample_type.get_name())
 
     def get_species(self):
-        return "%s" % (self.species.get_name())
+        try:
+            species = self.species.get_name()
+        except (KeyError, AttributeError):
+            species = "Not defined"
+        return "%s" % (species)
 
     def get_register_user(self):
         if self.sample_user is None:
