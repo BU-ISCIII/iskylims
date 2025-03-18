@@ -964,9 +964,22 @@ def add_in_progress(request):
         email_data["user_email"] = service_obj.get_user_email()
         email_data["user_name"] = service_obj.get_user_name()
         email_data["resolution_number"] = resolution_number
-        drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
+
         in_progress_resolution = {}
         in_progress_resolution["resolution_number"] = resolution_number
+
+        try:
+            drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
+        except (SMTPException, ConnectionRefusedError):
+            return render(
+                request,
+                "drylab/add_in_progress.html",
+                {
+                    "in_progress_resolution": in_progress_resolution,
+                    "error_message": ["Unable to send confirmation email."],
+                },
+            )
+
         return render(
             request,
             "drylab/add_in_progress.html",
