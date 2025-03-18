@@ -65,7 +65,6 @@
 							id="project_data_form">
 							{% csrf_token %}
 							<input type="hidden" name="action" value="record_project_fields" />
-							<input type="hidden" name="projects_fields" value="{{ projects_fields|safe }}" />
 							{% for project in projects_fields %}
 							<h5 class="border-bottom d-inline-block">Project form: {{ project.sample_project_name }}
 							</h5>
