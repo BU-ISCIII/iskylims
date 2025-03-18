@@ -863,12 +863,23 @@ def add_resolution(request):
         email_data["date"] = resolution_data_form["resolution_estimated_date"]
         # include the email for the user who requested the service
         email_data["service_owner_email"] = new_resolution.get_service_owner_email()
-        drylab.utils.resolutions.send_resolution_creation_email(email_data)
+
         created_resolution = {}
         created_resolution["resolution_number"] = resolution_data_form[
             "resolution_number"
         ]
-        # Display pipeline parameters
+
+        try:
+            drylab.utils.resolutions.send_resolution_creation_email(email_data)
+        except (SMTPException, ConnectionRefusedError):
+            return render(
+                request,
+                "drylab/add_resolution.html",
+                {
+                    "created_resolution": created_resolution,
+                    "error_message": ["Unable to send confirmation email."],
+                },
+            )
 
         return render(
             request,
