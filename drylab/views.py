@@ -47,25 +47,33 @@ def index(request):
             s_info.append(r_service_obj.get_user_name())
             service_list["recorded"].append(s_info)
 
-    if (
-        drylab.models.Service.objects.all()
-        .exclude(service_state__state_value__exact="delivered")
-        .exclude(service_approved_date=None)
-        .exists()
-    ):
-        ongoing_services_objs = (
-            drylab.models.Service.objects.all()
-            .exclude(service_state__state_value__exact="delivered")
-            .exclude(service_approved_date=None)
-            .order_by("service_approved_date")
+    # Fetch the excluded states
+    excluded_states = ["delivered", "rejected", "archived"]
+
+    # Check if there are ongoing resolutions
+    if drylab.models.Resolution.objects.exclude(
+        resolution_state__state_value__in=excluded_states
+    ).exists():
+        # Get resolutions excluding delivered, rejected, and archived
+        ongoing_resolutions = (
+            drylab.models.Resolution.objects.exclude(
+                resolution_state__state_value__in=excluded_states
+            )
+            .select_related(
+                "resolution_state", "resolution_service_id"
+            )  # Optimize DB joins
+            .order_by("resolution_estimated_date")  # Order by estimated delivery date
         )
+
         service_list["ongoing"] = []
 
-        for ongoing_services_obj in ongoing_services_objs:
-            s_info = []
-            s_info.append(ongoing_services_obj.get_identifier())
-            s_info.append(ongoing_services_obj.get_delivered_date())
+        for resolution in ongoing_resolutions:
+            s_info = [
+                resolution.get_identifier(),  # Keep service identifier from resolution
+                resolution.get_resolution_estimated_date(),  # Use estimated delivery date
+            ]
             service_list["ongoing"].append(s_info)
+
     org_name = drylab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
 
     return render(
