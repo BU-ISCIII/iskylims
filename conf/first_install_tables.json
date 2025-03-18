@@ -20184,7 +20184,7 @@
         "state_value": "delivered",
         "state_display": "Delivered",
         "description": "Service wascompleted and results were sent to the user",
-        "show_in_stats": false
+        "show_in_stats": true
     }
 },
 {
@@ -20203,7 +20203,8 @@
     "fields": {
         "state_value": "on_hold",
         "state_display": "On hold",
-        "description": "Resolution is on hold, waiting for user provides more information"
+        "description": "Resolution is on hold, waiting for user provides more information",
+        "show_in_stats": true
     }
 }
 ,
