@@ -1063,13 +1063,25 @@ def add_delivery(request):
             email_data["user_name"] = request.user.username
             email_data["resolution_number"] = delivery_recorded["resolution_number"]
             email_data["service_owner_email"] = resolution_obj.get_service_owner_email()
-            drylab.utils.deliveries.send_delivery_service_email(email_data)
+
             if drylab.utils.resolutions.check_allow_service_update(
                 resolution_obj, "delivered"
             ):
                 service_obj = resolution_obj.get_service_obj()
                 service_obj = service_obj.update_state("delivered")
                 service_obj.update_delivered_date(date.today())
+
+            try:
+                drylab.utils.deliveries.send_delivery_service_email(email_data)
+            except (SMTPException, ConnectionRefusedError):
+                return render(
+                    request,
+                    "drylab/add_delivery.html",
+                    {
+                        "delivery_recorded": delivery_recorded,
+                        "error_message": ["Unable to send confirmation email."],
+                    },
+                )
             return render(
                 request,
                 "drylab/add_delivery.html",

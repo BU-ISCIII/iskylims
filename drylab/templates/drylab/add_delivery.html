@@ -9,16 +9,14 @@
 <section class="iskylims d-flex flex-column fill-height">
 	<div class="container-md">
 		{% include 'registration/login_inline.html' %}
-		{% if ERROR %}
+		{% if error_message %}
         <div class="row justify-content-center pb-2 pt-2">
             <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h3> Result of your request</h3>
-                    </div>
+                <div class="card border-danger mb-3">
+                    <div class="card-header">ERROR</div>
                     <div class="card-body">
-                        {% for message in ERROR %}
-                        <p>{{message}}</p>
+                        {% for values in error_message %}
+                        <h4>{{values}}</h4>
                         {% endfor %}
                     </div>
                 </div>
