@@ -2334,6 +2334,16 @@ def record_samples(request):
 
         projects_fields = request.session.get("projects_fields")
 
+        if not projects_fields:
+            error_message = [
+                "Project fields not found."
+            ]
+            return render(
+                request,
+                "wetlab/record_project_fields.html",
+                {"error_message": error_message},
+            )
+
         for p_data in projects_fields:
             # Check if for any case there is no excel data sent for a project
             if p_data["sample_project_name"] not in request.POST:
