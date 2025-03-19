@@ -7,16 +7,18 @@
     <div class="container-md">
         {% include 'registration/login_inline.html' %}
         {% if error_message %}
-            <div class="row my-2 justify-content-md-center">
-                <div class="col-sm-8">
-                    <div class="card border-danger mb-3">
-                        <div class="card-header border-danger"><h3>Unable to record your request.</h3></div>
-                        <div class="card-body">
-                            <h4>{{error_message}}</h4>
-                        </div>
+        <div class="row justify-content-center pb-2 pt-2">
+            <div class="col-md-8">
+                <div class="card border-danger mb-3">
+                    <div class="card-header">ERROR</div>
+                    <div class="card-body">
+                        {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                        {% endfor %}
                     </div>
-                </div> 
-            </div> 
+                </div>
+            </div>
+        </div>
         {% endif %}
         {% if lib_prep_protocol_parameters %}
             <div class="container">

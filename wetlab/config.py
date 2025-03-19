@@ -692,8 +692,7 @@ ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = [
 ]
 
 ERROR_EMPTY_VALUES = [
-    "Your request cannot be recorded because ",
-    "it contains empty values",
+    "Your request cannot be recorded because it contains empty values",
 ]
 
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ["Sample Project is already defined"]
