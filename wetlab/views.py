@@ -3041,6 +3041,7 @@ def handling_library_preparation(request):
                 lib_prep_sep_protocol
             )
         )
+        request.session["lib_prep_protocol_parameters"] = lib_prep_protocol_parameters
         return render(
             request,
             "wetlab/handling_library_preparation.html",
@@ -3052,25 +3053,10 @@ def handling_library_preparation(request):
         stored_params = wetlab.utils.library.analyze_and_store_prot_lib_param_values(
             request.POST
         )
+
         if "ERROR" in stored_params:
             error_message = stored_params["ERROR"]
-            # TO DO in previoous form add lib_prep_ids
-            lib_prep_ids = request.POST["lib_prep_ids"].split(",")
-
-            library_preparation_objs = []
-            for lib_prep_id in lib_prep_ids:
-                library_preparation_objs.append(
-                    wetlab.utils.library.get_lib_prep_obj_from_id(lib_prep_id)
-                )
-            lib_prep_protocol_parameters = (
-                wetlab.utils.library.get_protocol_parameters_for_library_preparation(
-                    library_preparation_objs
-                )
-            )
-            # restore the user data
-            lib_prep_protocol_parameters["data"] = json.loads(
-                request.POST["protocol_data"]
-            )
+            lib_prep_protocol_parameters = request.session.get("lib_prep_protocol_parameters")
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
