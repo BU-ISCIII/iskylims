@@ -706,7 +706,7 @@ def create_table_molecule_pending_use(sample_list, app_name):
     use_type = {}
     use_type["data"] = list(
         core.models.MoleculePreparation.objects.filter(
-            molecule_used_for=None,
+            sample_continues_on=None,
             sample__in=sample_list,
             state__molecule_state_name="assigned_parameters",
         ).values_list("sample__sample_name", "molecule_code_id", "pk")
@@ -1532,9 +1532,10 @@ def get_selection_from_excel_data(data, heading, check_field, field_id):
     excel_data = json.loads(data)
     # Convert excel list-list to dictionary with field_names
     excel_json_data = core.utils.common.jspreadsheet_to_dict(heading, excel_data)
+
     for row in excel_json_data:
         if check_field is not None:
-            if row[check_field] is True:
+            if row[check_field] is not False and row[check_field] != "":
                 selected.append(row[field_id])
                 selected_row.append(row)
         else:
@@ -2085,7 +2086,7 @@ def set_molecule_use(molecule_use_data, app_name):
     }
     for molecule in molecule_use_data:
         molecule_obj = get_molecule_obj_from_id(molecule["m_id"])
-        molecule_obj.set_molecule_use(molecule["Molecule use for"], app_name)
+        molecule_obj.set_molecule_use(molecule["Sample continues on"], app_name)
         sample_obj = molecule_obj.get_sample_obj()
         if molecule_obj.get_used_for_massive():
             sample_obj.set_state("Library preparation")
@@ -2095,7 +2096,7 @@ def set_molecule_use(molecule_use_data, app_name):
             [
                 molecule["Sample Name"],
                 molecule["Extraction Code ID"],
-                molecule["Molecule use for"],
+                molecule["Sample continues on"],
             ]
         )
     return molecule_update

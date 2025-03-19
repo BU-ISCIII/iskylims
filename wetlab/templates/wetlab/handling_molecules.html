@@ -503,7 +503,7 @@
                     var table_data3 = table3.getData()
                     var data_json = JSON.stringify(table_data3)
                     $("<input />").attr("type", "hidden")
-                        .attr("name", "molecule_used_for")
+                        .attr("name", "sample_continues_on")
                         .attr("value", data_json)
                         .appendTo("#requestMoleculeUse");
                     $("#btnSubmit").attr("disabled", true);

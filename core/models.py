@@ -1493,7 +1493,7 @@ class MoleculeUsedFor(models.Model):
     massive_use = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "core_molecule_used_for"
+        db_table = "core_sample_continues_on"
 
     def __str__(self):
         return "%s" % (self.used_for)
@@ -1557,7 +1557,7 @@ class MoleculePreparation(models.Model):
         UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    molecule_used_for = models.ForeignKey(
+    sample_continues_on = models.ForeignKey(
         MoleculeUsedFor, on_delete=models.CASCADE, null=True, blank=True
     )
 
@@ -1582,10 +1582,10 @@ class MoleculePreparation(models.Model):
         molecule_info.append(extraction_date)
         molecule_info.append(self.extraction_type)
         molecule_info.append(self.molecule_type.get_name())
-        if self.molecule_used_for is None:
+        if self.sample_continues_on is None:
             molecule_info.append("Not defined yet")
         else:
-            molecule_info.append(self.molecule_used_for.get_molecule_use_name())
+            molecule_info.append(self.sample_continues_on.get_molecule_use_name())
         molecule_info.append(self.protocol_used.get_name())
         molecule_info.append(self.reused_number)
         return molecule_info
@@ -1629,10 +1629,10 @@ class MoleculePreparation(models.Model):
         return self.user_lot_kit_id
 
     def set_molecule_use(self, use_for_molecule, app_name):
-        self.molecule_used_for_obj = MoleculeUsedFor.objects.filter(
+        self.sample_continues_on_obj = MoleculeUsedFor.objects.filter(
             used_for__exact=use_for_molecule, apps_name__exact=app_name
         ).last()
-        self.used_for_massive_sequencing = self.molecule_used_for_obj.get_massive()
+        self.used_for_massive_sequencing = self.sample_continues_on_obj.get_massive()
         self.save()
         return self
 
