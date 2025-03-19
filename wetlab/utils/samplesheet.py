@@ -275,7 +275,7 @@ def get_sample_sheet_data(file_read):
 
     file_lines = file_read.split("\n")
     for line in file_lines:
-        if "IEMFileVersion" in line:
+        if "iemfileversion" in line.lower():
             sample_sheet_data["iem_version"] = line.split(",")[1]
             break
     # get assay information
