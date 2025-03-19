@@ -44,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed incomplete code execution when storing protocol values. (#349) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
 - Increased maximum length for `prefix_protocol` to prevent data errors. (#350) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
 - Corrected exception handling, replacing incorrect exception type with `AttributeError`. (#351) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
+- Fixed DataError - Value Too Long for prefix_protocol #350: Increased lenght for field prefix_protocol [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
 
 #### Changed
 
