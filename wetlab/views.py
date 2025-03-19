@@ -3056,7 +3056,9 @@ def handling_library_preparation(request):
 
         if "ERROR" in stored_params:
             error_message = stored_params["ERROR"]
-            lib_prep_protocol_parameters = request.session.get("lib_prep_protocol_parameters")
+            lib_prep_protocol_parameters = request.session.get(
+                "lib_prep_protocol_parameters"
+            )
             return render(
                 request,
                 "wetlab/handling_library_preparation.html",
