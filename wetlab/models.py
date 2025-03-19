@@ -1479,7 +1479,7 @@ class LibPrepare(models.Model):
     unique_id = models.CharField(max_length=16, null=True, blank=True)
     user_in_samplesheet = models.CharField(max_length=255, null=True, blank=True)
     samplename_in_samplesheet = models.CharField(max_length=255, null=True, blank=True)
-    prefix_protocol = models.CharField(max_length=25, null=True, blank=True)
+    prefix_protocol = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
         db_table = "wetlab_lib_prepare"
