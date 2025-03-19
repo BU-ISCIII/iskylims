@@ -2991,7 +2991,7 @@ def handling_library_preparation(request):
         samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation(
             request.user, True
         )
-
+    request.session["samples_in_lib_prep"] = samples_in_lib_prep
     if request.method == "POST" and request.POST["action"] == "assignProtocol":
         samples_in_lib_prep_protocol = (
             wetlab.utils.library.extract_protocol_library_preparation_form(request.POST)
@@ -3090,7 +3090,7 @@ def handling_library_preparation(request):
                 "wetlab/handling_library_preparation.html",
                 {
                     "error_message": data["ERROR"],
-                    "samples_in_lib_prep": samples_in_lib_prep,
+                    "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
                 },
             )
         user_in_description = wetlab.utils.common.get_configuration_value(
@@ -3112,7 +3112,7 @@ def handling_library_preparation(request):
                     "wetlab/handling_library_preparation.html",
                     {
                         "error_message": user_id_in_s_sheet["ERROR"],
-                        "samples_in_lib_prep": samples_in_lib_prep,
+                        "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
                     },
                 )
         else:
@@ -3130,7 +3130,7 @@ def handling_library_preparation(request):
                 "wetlab/handling_library_preparation.html",
                 {
                     "error_message": valid_data["ERROR"],
-                    "samples_in_lib_prep": samples_in_lib_prep,
+                    "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
                 },
             )
 
@@ -3172,8 +3172,8 @@ def handling_library_preparation(request):
                 request,
                 "wetlab/handling_library_preparation.html",
                 {
-                    "error_message": valid_data["ERROR"],
-                    "samples_in_lib_prep": samples_in_lib_prep,
+                    "error_message": store_data_result["ERROR"],
+                    "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
                 },
             )
         stored_index = "True"
