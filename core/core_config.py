@@ -32,7 +32,7 @@ HEADING_CONFIRM_MOLECULE_RECORDED = ["Extraction Code ID", "Used Protocol"]
 
 # ## Heading values when showing pending samples at handling molecules
 HEADING_FOR_DEFINED_SAMPLES = [
-    "Sample extraction date",
+    "Sample defined date",
     "Sample Code ID",
     "Sample",
     "To be included",
