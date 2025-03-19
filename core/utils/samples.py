@@ -917,7 +917,7 @@ def get_all_sample_information(sample_id, join_values=False):
                 parameter_names = core.models.ProtocolParameters.objects.filter(
                     protocol_id=protocol_used_obj
                 ).order_by("parameter_order")
-                molecule_param_heading = ["Molecule CodeID"]
+                molecule_param_heading = ["Extraction Code ID"]
                 mol_param_value = [molecule.get_molecule_code_id()]
                 for p_name in parameter_names:
                     molecule_param_heading.append(p_name.get_parameter_name())
@@ -2094,7 +2094,7 @@ def set_molecule_use(molecule_use_data, app_name):
         molecule_update["data"].append(
             [
                 molecule["Sample Name"],
-                molecule["Molecule CodeID"],
+                molecule["Extraction Code ID"],
                 molecule["Molecule use for"],
             ]
         )

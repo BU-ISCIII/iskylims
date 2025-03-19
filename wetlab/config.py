@@ -355,20 +355,20 @@ FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
 
 HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL = [
     "Sample Name",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Library Preparation Protocol",
 ]
 
 HEADING_FOR_LIBRARY_PREPARATION_STATE = [
     "Sample extraction date",
     "Sample",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Molecule Extraction Date",
     "Used Protocol",
     "UserID",
 ]
 
-# ######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol', 'Extraction Date', 'To be included']
+# ######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Extraction Code ID', 'Protocol', 'Extraction Date', 'To be included']
 HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS = [
     "Library Preparation Code ID",
     "Sample Name",
@@ -382,7 +382,7 @@ HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS = [
 ]
 HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS = ["Sample Name", "Library Preparation Code ID"]
 HEADING_FOR_CREATION_LIBRARY_PREPARATION = [
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Protocol used",
     "Single/Paired end",
     "Length read",
@@ -402,7 +402,7 @@ HEADING_SUMMARY_DATA_SAMPLE_SHEET = ["Number of Samples", "Projects Name", "User
 # ## Heading for display information on library Preparation definition
 HEADING_FOR_LIBRARY_PREPARATION_DEFINITION = [
     "Library CodeID",
-    "Molecule CodeID ",
+    "Extraction Code ID ",
     "Lib Preparation State",
     "Protocol name",
     "Project Name",
