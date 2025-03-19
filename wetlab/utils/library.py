@@ -495,7 +495,7 @@ def get_all_library_information(sample_id):
                                 .last()
                                 .get_parameter_information()
                             )
-                        except wetlab.models.LibParameterValue.DoesNotExist:
+                        except AttributeError:
                             lib_prep_param_value.append("")
                 lib_prep_data.append(lib_prep_param_heading)
                 lib_prep_data.append(lib_prep_param_value)
