@@ -3349,7 +3349,6 @@ def handling_molecules(request):
         molecules, select_use = core.utils.samples.get_selection_from_excel_data(
             request.POST["sample_continues_on"], heading, "Sample continues on", "m_id"
         )
-        import pdb; pdb.set_trace()
         if len(molecules) == 0:
             return redirect("handling_molecules")
         molecule_use = core.utils.samples.set_molecule_use(select_use, __package__)
