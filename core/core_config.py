@@ -75,7 +75,7 @@ HEADING_FOR_MOLECULE_DEFINITION = [
 HEADING_FOR_SELECTING_MOLECULE_USE = [
     "Sample Name",
     "Extraction Code ID",
-    "Sample continue on",
+    "Sample continues on",
 ]
 
 # ################ PROTOCOL PARAMETER SETTINGS ##############################
