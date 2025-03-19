@@ -28,7 +28,7 @@ HEADING_FOR_MOLECULE_ADDING_PARAMETERS = [
 
 
 # ########### Headings to confirm the sucessful recorded
-HEADING_CONFIRM_MOLECULE_RECORDED = ["Molecule Code ID", "Used Protocol"]
+HEADING_CONFIRM_MOLECULE_RECORDED = ["Extraction Code ID", "Used Protocol"]
 
 # ## Heading values when showing pending samples at handling molecules
 HEADING_FOR_DEFINED_SAMPLES = [
@@ -41,7 +41,7 @@ HEADING_FOR_DEFINED_SAMPLES = [
 # ## Heading values when showing pending samples
 HEADING_FOR_PENDING_MOLECULES = [
     "Sample",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Used Protocol",
     "Molecule Extraction Date",
     "Select Molecule",
@@ -62,7 +62,7 @@ HEADING_FOR_SAMPLE_DEFINITION = [
 ]
 # ## Heading for display information on molecule definition
 HEADING_FOR_MOLECULE_DEFINITION = [
-    "Molecule CodeID",
+    "Extraction Code ID",
     "Molecule State",
     "Extraction Date",
     "Extraction Type",
@@ -74,7 +74,7 @@ HEADING_FOR_MOLECULE_DEFINITION = [
 
 HEADING_FOR_SELECTING_MOLECULE_USE = [
     "Sample Name",
-    "Extraction CodeID",
+    "Extraction Code ID",
     "Sample continue on",
 ]
 
@@ -192,7 +192,7 @@ HEADING_FOR_USER_LOT_SEARCH_RESULTS = [
 ]
 
 HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA = [
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Lot number",
     "Commercial kit name",
     "Expiration Date",
