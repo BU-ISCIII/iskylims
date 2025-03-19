@@ -39,6 +39,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed issue where services could not be searched by service type (#78) [#267](https://github.com/BU-ISCIII/iskylims/pull/267)
 - Fixed issue [#338](https://github.com/BU-ISCIII/iskylims/issues/338): Removed unnecessary hidden input passing a large JSON object, now using session storage [#344](https://github.com/BU-ISCIII/iskylims/pull/344)
 - Fixed email error handling for multiple notification types. [#346](https://github.com/BU-ISCIII/iskylims/pull/346)
+- Replaced all references to `Molecule Code ID` with `Extraction Code ID` for consistency.
+- Improved message display in Handling Library Preparation.
+- Fixed incomplete code execution when storing protocol values. (#349) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
+- Increased maximum length for `prefix_protocol` to prevent data errors. (#350) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
+- Corrected exception handling, replacing incorrect exception type with `AttributeError`. (#351) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
 
 #### Changed
 
