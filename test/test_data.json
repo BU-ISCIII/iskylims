@@ -252,7 +252,6 @@
             "sample_project_field_used": true,
             "sample_project_field_type": "String",
             "sample_project_option_list": "",
-            "sample_project_searchable": true,
             "generated_at": "2023-07-25T16:19:01.096"
         }
     },
@@ -268,7 +267,6 @@
             "sample_project_field_used": true,
             "sample_project_field_type": "String",
             "sample_project_option_list": "",
-            "sample_project_searchable": true,
             "generated_at": "2023-07-25T16:19:01.104"
         }
     },
@@ -284,7 +282,6 @@
             "sample_project_field_used": true,
             "sample_project_field_type": "String",
             "sample_project_option_list": "",
-            "sample_project_searchable": true,
             "generated_at": "2023-07-25T16:19:01.108"
         }
     },
