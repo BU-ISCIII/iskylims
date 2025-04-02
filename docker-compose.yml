@@ -13,8 +13,8 @@ services:
           start_period: 30s
         environment:
             MYSQL_DATABASE: iskylims_docker
-            MYSQL_USER : django
-            MYSQL_PASSWORD : djangopass
+            MYSQL_USER: django
+            MYSQL_PASSWORD: djangopass
             MYSQL_ROOT_PASSWORD: root
 
         ports:
@@ -46,7 +46,7 @@ services:
             - develop_net
         depends_on:
             db:
-              condition: service_healthy
+                condition: service_healthy
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
