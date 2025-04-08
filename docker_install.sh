@@ -92,7 +92,7 @@ done
 shift $((OPTIND-1))
 
 echo "Deploying test containers with INSTALL_TYPE=$install_type and GIT_REVISION=$git_revision..."
-docker compose build --build-arg INSTALL_TYPE=$install_type --build-arg GIT_REVISION=$git_revision
+docker compose build --no-cache --build-arg INSTALL_TYPE=$install_type --build-arg GIT_REVISION=$git_revision
 docker compose up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
