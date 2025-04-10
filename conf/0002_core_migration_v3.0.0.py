@@ -366,6 +366,11 @@ class Migration(migrations.Migration):
         ),
         migrations.RenameField(
             model_name="sampleprojectsfields",
+            old_name="sampleProjectSearchable",
+            new_name="sample_project_searchable",
+        ),
+        migrations.RenameField(
+            model_name="sampleprojectsfields",
             old_name="sampleProjects_id",
             new_name="sample_projects_id",
         ),
