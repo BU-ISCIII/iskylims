@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [Luis Chapado](https://github.com/luissian)
 - [Daniel Valle](https://github.com/Daniel-VM)
 - [Pablo Mata](https://github.com/Shettland)
+- [Sergio Olmos]()
 
 #### Added Enhancements
 
@@ -55,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Increased max upload memory size. (#328)
 - Renamed method `get_delivery_date` to `get_delivered_date` for clarity.
 - Improved query performance and excluded rejected/archived services from ongoing list. (#299)
+- Updated sample metadata fields with standardized ontology mappings and schema alignment.[#358](https://github.com/BU-ISCIII/iskylims/pull/358)
 
 #### Removed
 
