@@ -20,7 +20,7 @@
     "pk": 3,
     "fields": {
         "label": "species",
-        "ontology": "GENEPIO:0001386"
+        "ontology": "SNOMED:410607006"
     }
 },
 {
@@ -28,7 +28,7 @@
     "pk": 4,
     "fields": {
         "label": "sample_name",
-        "ontology": "GENEPIO:0001123"
+        "ontology": "GENEPIO:0000079"
     }
 },
 {
@@ -36,7 +36,7 @@
     "pk": 6,
     "fields": {
         "label": "sampleEntryDate",
-        "ontology": "GENEPIO:0001179"
+        "ontology": "SNOMED:281271004"
     }
 },
 {
@@ -44,7 +44,7 @@
     "pk": 7,
     "fields": {
         "label": "collectionSampleDate",
-        "ontology": "GENEPIO:0001174"
+        "ontology": "SNOMED:399445004"
     }
 }
 ]
