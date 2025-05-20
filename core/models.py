@@ -949,7 +949,7 @@ class SampleProjectsFieldsManager(models.Manager):
             sample_project_field_order=project_field_data["Order"],
             sample_project_field_used=project_field_data["Used"],
             sample_project_field_type=project_field_data["Field type"],
-            sample_project_downloadable=project_field_data["Downloadable"],
+            sample_project_downloadable=project_field_data.get("Downloadable", False),
             # do not include optional values. Set to empty
             sample_project_option_list="",
         )
