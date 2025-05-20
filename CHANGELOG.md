@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [Luis Chapado](https://github.com/luissian)
 - [Daniel Valle](https://github.com/Daniel-VM)
 - [Pablo Mata](https://github.com/Shettland)
-- [Sergio Olmos]()
+- [Sergio Olmos](https://github.com/OPSergio)
 
 #### Added Enhancements
 
