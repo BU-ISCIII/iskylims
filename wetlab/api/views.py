@@ -233,6 +233,19 @@ def create_sample_data(request):
         inst_req_sample = wetlab.api.utils.sample.include_instances_in_sample(
             split_data["s_data"], split_data["lab_data"], apps_name
         )
+        required_submit_inst_fieldmap = {
+            "submitting_institution": "lab_name",
+            "submitting_institution_email": "lab_email",
+            "submitting_institution_address": "address",
+        }
+        if all(k in data for k in required_submit_inst_fieldmap.keys()):
+            submit_inst_data = split_data["lab_data"].copy()
+            for field, keymap in required_submit_inst_fieldmap.items():
+                submit_inst_data[keymap] = data[field]
+            submit_inst_data["lab_name_coding"] = "".join(
+                [x[0] for x in data["lab_name"].strip().split(" ")]
+            )
+            wetlab.api.utils.sample.create_new_laboratory(submit_inst_data)
         if not isinstance(inst_req_sample, dict):
             return Response(inst_req_sample, status=status.HTTP_400_BAD_REQUEST)
         split_data["s_data"] = inst_req_sample
