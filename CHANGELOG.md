@@ -47,6 +47,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Corrected exception handling, replacing incorrect exception type with `AttributeError`. (#351) [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
 - Fixed DataError - Value Too Long for prefix_protocol #350: Increased lenght for field prefix_protocol [#352](https://github.com/BU-ISCIII/iskylims/pull/352)
 - Fixed KeyError in project schema loading by using default value for missing 'Downloadable' field.[#358](https://github.com/BU-ISCIII/iskylims/pull/358)
+- Wetlab api create_sample_data() also creates lab based on submitting_institution data if present [#360](https://github.com/BU-ISCIII/iskylims/pull/360)
+- Wetlab api update_lab() now creates new lab if 'create_if_missing' in request.data [#360](https://github.com/BU-ISCIII/iskylims/pull/360)
 
 #### Changed
 
