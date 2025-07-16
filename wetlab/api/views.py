@@ -524,8 +524,13 @@ def update_lab(request):
         if "lab_name" in data:
             lab_obj = wetlab.api.utils.lab.get_laboratory_instance(data["lab_name"])
             if lab_obj is None:
-                error_message = wetlab.config.ERROR_LABORATORY_NOT_FOUND
-                return Response(error_message, status=status.HTTP_406_NOT_ACCEPTABLE)
+                if data.get("create_if_missing"):
+                    wetlab.api.utils.sample.create_new_laboratory(data)
+                else:
+                    error_message = wetlab.config.ERROR_LABORATORY_NOT_FOUND
+                    return Response(
+                        error_message, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
             wetlab.api.serializers.LabRequestSerializer.update(lab_obj, data)
 
             return Response(
