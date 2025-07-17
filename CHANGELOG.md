@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Allow switching to Git SHA or Version Tag and restore initial state [#270](https://github.com/BU-ISCIII/iskylims/pull/270)
 - Created graphics for the services that were re-analyzed [#290](https://github.com/BU-ISCIII/iskylims/pull/290)
 - Enhance both `install.sh` and `docker_install.sh`, fix data loading issues [#327](https://github.com/BU-ISCIII/iskylims/pull/327)
+- Included thorough description for wetlab API's update_lab() method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 
 #### Fixes
 
@@ -49,6 +50,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed KeyError in project schema loading by using default value for missing 'Downloadable' field.[#358](https://github.com/BU-ISCIII/iskylims/pull/358)
 - Wetlab api create_sample_data() also creates lab based on submitting_institution data if present [#360](https://github.com/BU-ISCIII/iskylims/pull/360)
 - Wetlab api update_lab() now creates new lab if 'create_if_missing' in request.data [#360](https://github.com/BU-ISCIII/iskylims/pull/360)
+- Fixed wetlab API's labrequest.serializer update method to work properly [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
+- Adapted update_lab serializer call to new serializer update method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 
 #### Changed
 
