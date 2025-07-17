@@ -241,12 +241,12 @@ class LabRequestSerializer(serializers.ModelSerializer):
             "lab_city",
         ]
 
-    def update(self, data):
-        self.labContactName = data["lab_contact_name"]
-        self.labPhone = data["lab_contact_telephone"]
-        self.labEmail = data["lab_contact_email"]
-        self.save()
-        return self
+    def update(self, instance, validated_data):
+        instance.lab_contact_name = validated_data.get("lab_contact_name", instance.lab_contact_name)
+        instance.lab_phone = validated_data.get("lab_phone", instance.lab_phone)
+        instance.lab_email = validated_data.get("lab_email", instance.lab_email)
+        instance.save()
+        return instance
 
 
 class SampleFields(object):
