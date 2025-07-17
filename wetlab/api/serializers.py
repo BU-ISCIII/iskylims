@@ -242,7 +242,9 @@ class LabRequestSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        instance.lab_contact_name = validated_data.get("lab_contact_name", instance.lab_contact_name)
+        instance.lab_contact_name = validated_data.get(
+            "lab_contact_name", instance.lab_contact_name
+        )
         instance.lab_phone = validated_data.get("lab_phone", instance.lab_phone)
         instance.lab_email = validated_data.get("lab_email", instance.lab_email)
         instance.save()
