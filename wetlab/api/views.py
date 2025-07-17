@@ -517,6 +517,35 @@ def statistic_information(request):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_lab(request):
+    """
+    Handles updating or creating a laboratory instance based on incoming PUT request data.
+
+    If a lab with the provided `lab_name` exists, it updates the existing record.
+    If the lab does not exist and the `create_if_missing` flag is set in request.data,
+    it attempts to create a new lab using the provided information.
+
+    Required key in request.data:
+        - lab_name (str): The name of the laboratory to update or create.
+
+    Optional required keys (if lab does not exist and `create_if_missing` is True):
+        - lab_contact_name (str) <- updates data if lab exists
+        - lab_phone (str) <- updates data if lab exists
+        - lab_email (str) <- updates data if lab exists
+        - apps_name (str)
+        - geo_loc_city (str)
+        - geo_loc_state (str)
+        - lab_name_coding (str)
+        - lab_unit (str)
+
+    Args:
+        request (HttpRequest): The incoming HTTP request containing PUT data.
+
+    Returns:
+        Response:
+            - 201 Created: If the lab is successfully created or updated.
+            - 406 Not Acceptable: If the lab is not found or cannot be created, or if the data is invalid.
+            - 400 Bad Request: If the HTTP method is not PUT.
+    """
     if request.method == "PUT":
         data = request.data
         if isinstance(data, QueryDict):
@@ -536,9 +565,21 @@ def update_lab(request):
                         error_message, status=status.HTTP_406_NOT_ACCEPTABLE
                     )
             else:
-                wetlab.api.serializers.LabRequestSerializer.update(lab_obj, data)
-
+                serializer = wetlab.api.serializers.LabRequestSerializer(
+                    lab_obj, data=data, partial=True
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(
+                        "Successful Update information", status=status.HTTP_201_CREATED
+                    )
+                else:
+                    return Response(
+                        serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+        else:
             return Response(
-                "Successful Update information", status=status.HTTP_201_CREATED
+                "Missing 'lab_name' field in request data",
+                status=status.HTTP_406_NOT_ACCEPTABLE,
             )
     return Response(status=status.HTTP_400_BAD_REQUEST)
