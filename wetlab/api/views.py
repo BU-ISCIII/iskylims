@@ -241,7 +241,7 @@ def create_sample_data(request):
         if all(k in data for k in required_submit_inst_fieldmap.keys()):
             submit_inst_data = split_data["lab_data"].copy()
             for field, keymap in required_submit_inst_fieldmap.items():
-                submit_inst_data[keymap] = data[field]
+                submit_inst_data[keymap] = data.get(field, "")
             submit_inst_data["lab_name_coding"] = "".join(
                 [x[0] for x in data["lab_name"].strip().split(" ")]
             )
