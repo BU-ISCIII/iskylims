@@ -52,6 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Wetlab api update_lab() now creates new lab if 'create_if_missing' in request.data [#360](https://github.com/BU-ISCIII/iskylims/pull/360)
 - Fixed wetlab API's labrequest.serializer update method to work properly [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 - Adapted update_lab serializer call to new serializer update method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
+- Leave missing submitting_fields as empty string instead of crashing in wetlab.api.create_sample_data [#363](https://github.com/BU-ISCIII/iskylims/pull/363)
 
 #### Changed
 
