@@ -20298,7 +20298,7 @@
     "pk": 3,
     "fields": {
         "label": "sample_name",
-        "ontology": "GENEPIO:0001123"
+        "ontology": "NCIT:C70663"
     }
 },
 {   "model": "core.ontologymap",
