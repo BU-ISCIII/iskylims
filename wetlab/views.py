@@ -3112,7 +3112,9 @@ def handling_library_preparation(request):
                     "wetlab/handling_library_preparation.html",
                     {
                         "error_message": user_id_in_s_sheet["ERROR"],
-                        "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
+                        "samples_in_lib_prep": request.session.get(
+                            "samples_in_lib_prep"
+                        ),
                     },
                 )
         else:

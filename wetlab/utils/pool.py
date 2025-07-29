@@ -67,11 +67,9 @@ def check_if_duplicated_index(lib_prep_ids):
         for key, values in index_values.items():
             if len(values) > 1:
                 for value in values:
-                    s_name = (
-                        wetlab.models.LibPrepare.objects.get(
-                            pk__exact=value
-                        ).get_sample_name()
-                    )
+                    s_name = wetlab.models.LibPrepare.objects.get(
+                        pk__exact=value
+                    ).get_sample_name()
                     incompatible_index.append([s_name, key])
         incompatible_samples["incompatible_index"] = incompatible_index
         return False, incompatible_samples
