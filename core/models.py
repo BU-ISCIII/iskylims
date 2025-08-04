@@ -10,9 +10,18 @@ class StateInCountryManager(models.Manager):
         new_state = self.create(state_name=data["state"], apps_name=data["apps_name"])
         return new_state
 
+    def get_by_geo_code(self, code):
+        """
+        StateInCountry.objects.get_by_geo_code("ES-AN")
+        """
+        return self.get(geo_loc_state_cod=code)
+
 
 class StateInCountry(models.Model):
     state_name = models.CharField(max_length=80)
+    geo_loc_state_cod = models.CharField(
+        max_length=10, null=True, blank=True, help_text="Geographic code of the CCAA"
+    )
     apps_name = models.CharField(max_length=40, null=True)
 
     class Meta:
@@ -23,6 +32,9 @@ class StateInCountry(models.Model):
 
     def get_state_name(self):
         return "%s" % (self.state_name)
+
+    def get_geo_loc_state_cod(self):
+        return "%s" % (self.geo_loc_state_cod)
 
     def get_state_id(self):
         return "%s" % (self.pk)
@@ -56,6 +68,7 @@ class CityManager(models.Manager):
         new_city = self.create(
             belongs_to_state=state_obj,
             city_name=data["city_name"],
+            geo_loc_city_cod=data.get("geo_loc_city_cod"),
             geo_loc_latitude=data["latitude"],
             geo_loc_longitude=data["longitude"],
             apps_name=data["apps_name"],
@@ -68,6 +81,7 @@ class City(models.Model):
         StateInCountry, on_delete=models.CASCADE, null=True, blank=True
     )
     city_name = models.CharField(max_length=80)
+    geo_loc_city_cod = models.CharField(max_length=10, null=True, blank=True)
     geo_loc_latitude = models.CharField(max_length=80)
     geo_loc_longitude = models.CharField(max_length=80)
     apps_name = models.CharField(max_length=40, null=True)
@@ -83,6 +97,9 @@ class City(models.Model):
 
     def get_city_id(self):
         return "%s" % (self.pk)
+
+    def get_geo_loc_city_cod(self):
+        return self.geo_loc_city_cod or ""
 
     def get_coordenates(self):
         return {"latitude": self.geo_loc_latitude, "longitude": self.geo_loc_longitude}
@@ -101,7 +118,16 @@ class LabRequestManager(models.Manager):
         new_lab_request = self.create(
             lab_name=data["lab_name"],
             lab_name_coding=data["lab_name_coding"],
+            collecting_institution_code_1=data.get("collecting_institution_code_1"),
+            collecting_institution_code_2=data.get("collecting_institution_code_2"),
+            lab_geo_loc_latitude=data.get("lab_geo_loc_latitude"),
+            lab_geo_loc_longitude=data.get("lab_geo_loc_longitude"),
             lab_unit=data["lab_unit"],
+            autonom_cod=data.get("autonom_cod"),
+            post_code=data.get("post_code"),
+            dep_func=data.get("dep_func"),
+            center_class_code=data.get("center_class_code"),
+            collecting_institution_function=data.get("collecting_institution_function"),
             lab_contact_name=data["lab_contact_name"],
             lab_phone=data["lab_phone"],
             lab_email=data["lab_email"],
@@ -121,6 +147,22 @@ class LabRequest(models.Model):
     lab_phone = models.CharField(max_length=20)
     lab_email = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
+    collecting_institution_code_1 = models.CharField(
+        max_length=20, null=True, blank=True
+    )
+    collecting_institution_code_2 = models.CharField(
+        max_length=20, null=True, blank=True
+    )
+    autonom_cod = models.CharField(max_length=10, null=True, blank=True)
+    post_code = models.CharField(max_length=10, null=True, blank=True)
+    dep_func = models.CharField(max_length=80, null=True, blank=True)
+    center_class_code = models.CharField(max_length=20, null=True, blank=True)
+    collecting_institution_function = models.CharField(
+        max_length=120, null=True, blank=True
+    )
+    lab_geo_loc_latitude = models.CharField(max_length=30, null=True, blank=True)
+    lab_geo_loc_longitude = models.CharField(max_length=30, null=True, blank=True)
+
     apps_name = models.CharField(max_length=40, null=True)
 
     class Meta:
@@ -138,6 +180,12 @@ class LabRequest(models.Model):
     def get_lab_request_code(self):
         return "%s" % (self.lab_name_coding)
 
+    def get_collecting_institution_code_1(self):
+        return self.collecting_institution_code_1 or ""
+
+    def get_collecting_institution_code_2(self):
+        return self.collecting_institution_code_2 or ""
+
     def get_all_data(self):
         data = []
         data.append(self.lab_name)
@@ -147,6 +195,8 @@ class LabRequest(models.Model):
         data.append(self.lab_phone)
         data.append(self.lab_email)
         data.append(self.address)
+        data.append(self.collecting_institution_code_1)
+        data.append(self.collecting_institution_code_2)
         return data
 
     def get_fields_and_data(self):
