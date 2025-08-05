@@ -118,8 +118,8 @@ class LabRequestManager(models.Manager):
         new_lab_request = self.create(
             lab_name=data["lab_name"],
             lab_name_coding=data["lab_name_coding"],
-            collecting_institution_code_1=data.get("collecting_institution_code_1"),
-            collecting_institution_code_2=data.get("collecting_institution_code_2"),
+            lab_code_1=data.get("lab_code_1"),
+            lab_code_2=data.get("lab_code_2"),
             lab_geo_loc_latitude=data.get("lab_geo_loc_latitude"),
             lab_geo_loc_longitude=data.get("lab_geo_loc_longitude"),
             lab_unit=data["lab_unit"],
@@ -127,7 +127,7 @@ class LabRequestManager(models.Manager):
             post_code=data.get("post_code"),
             dep_func=data.get("dep_func"),
             center_class_code=data.get("center_class_code"),
-            collecting_institution_function=data.get("collecting_institution_function"),
+            lab_function=data.get("lab_function"),
             lab_contact_name=data["lab_contact_name"],
             lab_phone=data["lab_phone"],
             lab_email=data["lab_email"],
@@ -147,19 +147,13 @@ class LabRequest(models.Model):
     lab_phone = models.CharField(max_length=20)
     lab_email = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
-    collecting_institution_code_1 = models.CharField(
-        max_length=20, null=True, blank=True
-    )
-    collecting_institution_code_2 = models.CharField(
-        max_length=20, null=True, blank=True
-    )
+    lab_code_1 = models.CharField(max_length=20, null=True, blank=True)
+    lab_code_2 = models.CharField(max_length=20, null=True, blank=True)
     autonom_cod = models.CharField(max_length=10, null=True, blank=True)
     post_code = models.CharField(max_length=10, null=True, blank=True)
     dep_func = models.CharField(max_length=80, null=True, blank=True)
     center_class_code = models.CharField(max_length=20, null=True, blank=True)
-    collecting_institution_function = models.CharField(
-        max_length=120, null=True, blank=True
-    )
+    lab_function = models.CharField(max_length=120, null=True, blank=True)
     lab_geo_loc_latitude = models.CharField(max_length=30, null=True, blank=True)
     lab_geo_loc_longitude = models.CharField(max_length=30, null=True, blank=True)
 
@@ -180,11 +174,11 @@ class LabRequest(models.Model):
     def get_lab_request_code(self):
         return "%s" % (self.lab_name_coding)
 
-    def get_collecting_institution_code_1(self):
-        return self.collecting_institution_code_1 or ""
+    def get_lab_code_1(self):
+        return self.lab_code_1 or ""
 
-    def get_collecting_institution_code_2(self):
-        return self.collecting_institution_code_2 or ""
+    def get_lab_code_2(self):
+        return self.lab_code_2 or ""
 
     def get_all_data(self):
         data = []
@@ -195,8 +189,8 @@ class LabRequest(models.Model):
         data.append(self.lab_phone)
         data.append(self.lab_email)
         data.append(self.address)
-        data.append(self.collecting_institution_code_1)
-        data.append(self.collecting_institution_code_2)
+        data.append(self.lab_code_1)
+        data.append(self.lab_code_2)
         return data
 
     def get_fields_and_data(self):
