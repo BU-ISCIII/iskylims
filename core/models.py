@@ -140,7 +140,7 @@ class LabRequestManager(models.Manager):
 
 class LabRequest(models.Model):
     lab_city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
-    lab_name = models.CharField(max_length=80)
+    lab_name = models.CharField(max_length=100)
     lab_name_coding = models.CharField(max_length=50)
     lab_unit = models.CharField(max_length=50)
     lab_contact_name = models.CharField(max_length=50)
@@ -149,7 +149,7 @@ class LabRequest(models.Model):
     address = models.CharField(max_length=255)
     lab_code_1 = models.CharField(max_length=20, null=True, blank=True)
     lab_code_2 = models.CharField(max_length=20, null=True, blank=True)
-    autonom_cod = models.CharField(max_length=10, null=True, blank=True)
+    autonom_cod = models.CharField(max_length=20, null=True, blank=True)
     post_code = models.CharField(max_length=10, null=True, blank=True)
     dep_func = models.CharField(max_length=80, null=True, blank=True)
     center_class_code = models.CharField(max_length=20, null=True, blank=True)
