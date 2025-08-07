@@ -147,7 +147,12 @@ class LabRequest(models.Model):
     lab_phone = models.CharField(max_length=20)
     lab_email = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
-    lab_code_1 = models.CharField(max_length=20, null=True, blank=True)
+    lab_code_1 = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        unique=True,
+    )
     lab_code_2 = models.CharField(max_length=20, null=True, blank=True)
     autonom_cod = models.CharField(max_length=20, null=True, blank=True)
     post_code = models.CharField(max_length=10, null=True, blank=True)
