@@ -29,4 +29,9 @@ urlpatterns = [
         name="summarize_data_information",
     ),
     path("update-lab", views.update_lab, name="update_lab"),
+    path(
+        "lab-request-mapping",
+        views.get_lab_request_mapping,
+        name="get_lab_request_mapping",
+    ),
 ]
