@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 import core.models
+import core.core_config
 import wetlab.api.serializers
 import wetlab.api.utils.lab
 import wetlab.api.utils.sample
@@ -417,6 +418,18 @@ def sample_project_fields(request):
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_description="Use this request to get the fields used to fill lab_request model",
+    manual_parameters=[laboratory],
+)
+@api_view(["GET"])
+def get_lab_request_mapping(request):
+    return Response(
+        {"data": core.core_config.LAB_REQUEST_ONTOLOGY_MAP}, status=status.HTTP_200_OK
+    )
 
 
 @swagger_auto_schema(method="get", manual_parameters=[laboratory])
