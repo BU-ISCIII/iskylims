@@ -183,7 +183,7 @@ def create_sample_data(request):
         if isinstance(data, QueryDict):
             data = data.dict()
         if "sample_name" not in data or "sample_project" not in data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"ERROR": "Missing fields `sample_name` or `sample_project` in data", "data": data}, status=status.HTTP_400_BAD_REQUEST)
         not_allowed_sample_names = []
         allowed_sample_repeat = (
             False
@@ -229,26 +229,19 @@ def create_sample_data(request):
                 return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = wetlab.api.utils.sample.split_sample_data(data)
         if not isinstance(split_data, dict):
-            return Response(split_data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"ERROR": "Error splitting data", "data": split_data},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         apps_name = __package__.split(".")[0]
         inst_req_sample = wetlab.api.utils.sample.include_instances_in_sample(
             split_data["s_data"], split_data["lab_data"], apps_name
         )
-        required_submit_inst_fieldmap = {
-            "submitting_institution": "lab_name",
-            "submitting_institution_email": "lab_email",
-            "submitting_institution_address": "address",
-        }
-        if all(k in data for k in required_submit_inst_fieldmap.keys()):
-            submit_inst_data = split_data["lab_data"].copy()
-            for field, keymap in required_submit_inst_fieldmap.items():
-                submit_inst_data[keymap] = data.get(field, "")
-            submit_inst_data["lab_name_coding"] = "".join(
-                [x[0] for x in data["lab_name"].strip().split(" ")]
-            )
-            wetlab.api.utils.sample.create_new_laboratory(submit_inst_data)
         if not isinstance(inst_req_sample, dict):
-            return Response(inst_req_sample, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"ERROR": "Error including data", "data": inst_req_sample},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         split_data["s_data"] = inst_req_sample
         split_data["s_data"]["sample_user"] = request.user.pk
         # Adding coding for sample
@@ -262,7 +255,11 @@ def create_sample_data(request):
         )
         if not sample_serializer.is_valid():
             return Response(
-                sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                {
+                    "ERROR": f"Error serializing sample {data['sample_name']}",
+                    "data": sample_serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
         new_sample_id = sample_serializer.save().get_sample_id()
         for d_field in split_data["p_data"]:
@@ -272,12 +269,20 @@ def create_sample_data(request):
             )
             if not s_project_serializer.is_valid():
                 return Response(
-                    s_project_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    {
+                        "ERROR": f"Error serializing project",
+                        "data": s_project_serializer.errors,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             s_project_serializer.save()
 
-        return Response("Successful upload information", status=status.HTTP_201_CREATED)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": "Successful upload information", "data": split_data["s_data"]},
+            status=status.HTTP_201_CREATED,
+        )
+    else:
+        return Response({"ERROR": f"Request method must be POST, received {request.method}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
