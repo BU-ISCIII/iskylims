@@ -2,6 +2,7 @@ from datetime import datetime
 
 import core.models
 import core.utils.samples
+import core.core_config
 import wetlab.api.serializers
 import wetlab.config
 
@@ -353,31 +354,15 @@ def split_sample_data(data):
     lab_data["lab_unit"] = ""
     lab_data["lab_contact_name"] = ""
     lab_data["lab_phone"] = ""
-    lab_data_fields = [
-        ("lab_email", "collecting_institution_email"),
-        ("address", "collecting_institution_address"),
-        ("geo_loc_city", "geo_loc_city"),
-        ("geo_loc_state", "geo_loc_state"),
-        ("geo_loc_latitude", "geo_loc_latitude"),
-        ("geo_loc_longitude", "geo_loc_longitude"),
-    ]
+    lab_req_mapping = core.core_config.LAB_REQUEST_ONTOLOGY_MAP
+    lab_data_fields = lab_req_mapping.values()
     for l_data, i_data in lab_data_fields:
         try:
             lab_data[l_data] = data[i_data]
         except KeyError:
-            lab_data[l_data] = ""
-
-    """
-    lab_data["lab_email"] = data["collecting_institution_email"]
-    lab_data["address"] = data["collecting_institution_address"]
-    lab_data["geo_loc_city"] = data["geo_loc_city"]
-    lab_data["geo_loc_state"] = data["geo_loc_state"]
-    lab_data["geo_loc_latitude"] = data["geo_loc_latitude"]
-    lab_data["geo_loc_longitude"] = data["geo_loc_longitude"]
-    """
+            lab_data[l_data] = data.get(l_data, "")
 
     split_data["lab_data"] = lab_data
-
     return split_data
 
 

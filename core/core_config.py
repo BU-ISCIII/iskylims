@@ -334,3 +334,23 @@ ERROR_PROJECT_FIELD_NODATE = [
 ]
 ERROR_PROJECT_FIELD_NOOPTION = ["Project field", "only has the following options:"]
 ERROR_PROJECT_FIELD_EMPTY = ["Project field", "is empty"]
+
+LAB_REQUEST_ONTOLOGY_MAP = {
+    "GENEPIO:0001153": ("lab_name", "collecting_institution"),
+    "SNOMED:423901009": ("lab_code_1", "collecting_institution_code_1"),
+    "NCIT:C101703": ("lab_code_2", "collecting_institution_code_2"),
+    "OBI:0001890": ("lab_email", "collecting_institution_email"),
+    "NCIT:C40978": ("lab_phone", "collecting_institution_phone"),
+    "GENEPIO:0001158": ("address", "collecting_institution_address"),
+    "GENEPIO:0001803": ("autonom_cod", "autonom_cod"),
+    "GENEPIO:0001185": ("geo_loc_state", "geo_loc_state"),
+    "GENEPIO:0001189": ("geo_loc_city", "geo_loc_city"),
+    "NCIT:C25621": ("post_code", "post_code"),
+    "mesh:D009935": ("dep_func", "dep_func"),
+    "NCIT:C93878": ("center_class_code", "center_class_code"),
+    "NCIT:C188820": ("lab_function", "collecting_institution_function"),
+    "EFO:0005020": ("lab_geo_loc_latitude", "lab_geo_loc_latitude"),
+    "EFO:0005021": ("lab_geo_loc_longitude", "lab_geo_loc_longitude"),
+    "OBI:0001620": ("geo_loc_latitude", "geo_loc_latitude"),
+    "OBI:0001621": ("geo_loc_longitude", "geo_loc_longitude"),
+}
