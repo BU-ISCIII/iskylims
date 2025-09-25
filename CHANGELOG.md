@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Created graphics for the services that were re-analyzed [#290](https://github.com/BU-ISCIII/iskylims/pull/290)
 - Enhance both `install.sh` and `docker_install.sh`, fix data loading issues [#327](https://github.com/BU-ISCIII/iskylims/pull/327)
 - Included thorough description for wetlab API's update_lab() method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
+- Included new API function lab-request-mapping to get LabRequest fields ontology map [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
+- Improved responses in API create-sample-data by adding ERROR messages and data [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
 
 #### Fixes
 
@@ -56,8 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed wetlab API's labrequest.serializer update method to work properly [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 - Adapted update_lab serializer call to new serializer update method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 - Leave missing submitting_fields as empty string instead of crashing in wetlab.api.create_sample_data [#363](https://github.com/BU-ISCIII/iskylims/pull/363)
-
-
+- Fixed wetlab API create-sample-data error when submitting_institution fields were not provided [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
 
 #### Changed
 
@@ -69,6 +70,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Renamed method `get_delivery_date` to `get_delivered_date` for clarity.
 - Improved query performance and excluded rejected/archived services from ongoing list. (#299)
 - Updated sample metadata fields with standardized ontology mappings and schema alignment.[#358](https://github.com/BU-ISCIII/iskylims/pull/358)
+- API create-sample-data Lab data mapping moved to core_config.LAB_REQUEST_ONTOLOGY_MAP [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
 
 #### Removed
 
