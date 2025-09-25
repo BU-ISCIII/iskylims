@@ -183,7 +183,13 @@ def create_sample_data(request):
         if isinstance(data, QueryDict):
             data = data.dict()
         if "sample_name" not in data or "sample_project" not in data:
-            return Response({"ERROR": "Missing fields `sample_name` or `sample_project` in data", "data": data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "ERROR": "Missing fields `sample_name` or `sample_project` in data",
+                    "data": data,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         not_allowed_sample_names = []
         allowed_sample_repeat = (
             False
@@ -270,7 +276,7 @@ def create_sample_data(request):
             if not s_project_serializer.is_valid():
                 return Response(
                     {
-                        "ERROR": f"Error serializing project",
+                        "ERROR": "Error serializing project",
                         "data": s_project_serializer.errors,
                     },
                     status=status.HTTP_400_BAD_REQUEST,
@@ -282,7 +288,10 @@ def create_sample_data(request):
             status=status.HTTP_201_CREATED,
         )
     else:
-        return Response({"ERROR": f"Request method must be POST, received {request.method}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"ERROR": f"Request method must be POST, received {request.method}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 @swagger_auto_schema(
