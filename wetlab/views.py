@@ -3430,7 +3430,7 @@ def repeat_library_preparation(request):
             ]
             return render(
                 request,
-                "wetlab/error_page.html",
+                "django_utils/error_page.html",
                 {"detail_description": detail_description},
             )
         detail_description["information"] = (
@@ -3438,7 +3438,7 @@ def repeat_library_preparation(request):
         )
         return render(
             request,
-            "wetlab/successful_page.html",
+            "django_utils/info_page.html",
             {"detail_description": detail_description},
         )
     # return to the main page because the page was not requested for the right page
