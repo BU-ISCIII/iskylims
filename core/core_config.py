@@ -30,7 +30,7 @@ HEADING_FOR_MOLECULE_ADDING_PARAMETERS = [
 # ########### Headings to confirm the sucessful recorded
 HEADING_CONFIRM_MOLECULE_RECORDED = ["Extraction Code ID", "Used Protocol"]
 
-# ## Heading values when showing pending samples at handling molecules
+# ## Heading values when showing pending samples at manage molecules
 HEADING_FOR_DEFINED_SAMPLES = [
     "Sample defined date",
     "Sample Code ID",

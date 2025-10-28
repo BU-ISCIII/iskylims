@@ -130,12 +130,12 @@ urlpatterns = [
         name="display_user_lot_kit",
     ),
     path(
-        "handlingLibraryPreparation",
-        wetlab.views.handling_library_preparation,
-        name="handling_library_preparation",
+        "manageLibraryPreparation",
+        wetlab.views.manage_library_preparation,
+        name="manage_library_preparation",
     ),
     path(
-        "handlingMolecules", wetlab.views.handling_molecules, name="handling_molecules"
+        "manageMolecules", wetlab.views.manage_molecules, name="manage_molecules"
     ),
     path("initialSettings", wetlab.views.initial_settings, name="initial_settings"),
     path(

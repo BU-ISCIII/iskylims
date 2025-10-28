@@ -435,7 +435,7 @@ def check_sequencer_run_is_completed(
                 int(conversion_attributes.create_time)
             ).strftime("%Y-%m-%d %H:%M:%S")
             logger.debug(
-                "%s : End function for handling NextSeq run with exception",
+                "%s : End function for manage NextSeq run with exception",
                 experiment_name,
             )
             return "completed", run_completion_date
@@ -540,7 +540,7 @@ def copy_sample_sheet_to_remote_folder(
             + run_folder
         )
         wetlab.utils.common.logging_errors(string_message, True, False)
-        handling_errors_in_run(experiment_name, "23")
+        manage_errors_in_run(experiment_name, "23")
         logger.debug(
             "%s : End function for copy_sample_sheet_to_remote_folder with exception",
             experiment_name,
@@ -915,7 +915,7 @@ def get_samba_shared_folder():
     )
 
 
-def handling_errors_in_run(experiment_name, error_code):
+def manage_errors_in_run(experiment_name, error_code):
     """
     Description:
         Function will manage the error situation where the run must be
@@ -927,7 +927,7 @@ def handling_errors_in_run(experiment_name, error_code):
         True
     """
     logger = logging.getLogger(__name__)
-    logger.debug("%s : Starting function handling_errors_in_run", experiment_name)
+    logger.debug("%s : Starting function manage_errors_in_run", experiment_name)
     logger.info("%s : Set run to ERROR state", experiment_name)
     if wetlab.models.RunProcess.objects.filter(
         run_name__exact=experiment_name
@@ -941,7 +941,7 @@ def handling_errors_in_run(experiment_name, error_code):
         logger.info(
             "%s : experiment name is not defined yet in database", experiment_name
         )
-    logger.debug("%s : End function handling_errors_in_run", experiment_name)
+    logger.debug("%s : End function manage_errors_in_run", experiment_name)
     return True
 
 

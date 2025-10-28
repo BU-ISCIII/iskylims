@@ -37,7 +37,7 @@
                             </div>
                             <div class="card-body">
                                 <form method="post"
-                                      action="/wetlab/handlingMolecules"
+                                      action="/wetlab/manageMolecules"
                                       enctype="multipart/form-data"
                                       name="updateExtractionProtocol"
                                       id="updateExtractionProtocol">
@@ -154,8 +154,8 @@
                                 <div class="col-md-3">
                                     <input type="button"
                                            class="btn btn-outline-secondary"
-                                           value="Return to handling extraction samples"
-                                           onclick="location.href ='/wetlab/handlingMolecules' ;" />
+                                           value="Return to manage extraction samples"
+                                           onclick="location.href ='/wetlab/manageMolecules' ;" />
                                 </div>
                             </div>
                         </div>
@@ -190,7 +190,7 @@
                                         <input type="button"
                                                class="btn btn-outline-secondary"
                                                value="Go to Library Preparation"
-                                               onclick="location.href ='/wetlab/handlingLibraryPreparation' ;" />
+                                               onclick="location.href ='/wetlab/manageLibraryPreparation' ;" />
                                     </div>
                                 </div>
                             </div>
@@ -247,7 +247,7 @@
                                                 <div class="card-body">
                                                     {% if sample_availables.sample_heading %}
                                                         <form method="post"
-                                                              action="/wetlab/handlingMolecules"
+                                                              action="/wetlab/manageMolecules"
                                                               enctype="multipart/form-data"
                                                               name="selectedMolecules"
                                                               id="selectedMolecules"
@@ -292,7 +292,7 @@
                                                 <div class="card-body">
                                                     {% if molecules_availables %}
                                                         <form method="post"
-                                                              action="/wetlab/handlingMolecules"
+                                                              action="/wetlab/manageMolecules"
                                                               enctype="multipart/form-data"
                                                               name="selectedOwnerMolecules"
                                                               id="selectedOwnerMolecules">
@@ -335,7 +335,7 @@
                                                         {% if molecule_use_defined %}
                                                             {% if pending_to_use.heading %}
                                                                 <form method="post"
-                                                                      action="/wetlab/handlingMolecules"
+                                                                      action="/wetlab/manageMolecules"
                                                                       enctype="multipart/form-data"
                                                                       name="requestMoleculeUse"
                                                                       id="requestMoleculeUse">

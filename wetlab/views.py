@@ -2984,7 +2984,7 @@ def display_type_of_sample(request, sample_type_id):
 
 
 @login_required
-def handling_library_preparation(request):
+def manage_library_preparation(request):
     if wetlab.utils.common.is_wetlab_manager(request):
         samples_in_lib_prep = wetlab.utils.library.get_samples_for_library_preparation()
     else:
@@ -2999,7 +2999,7 @@ def handling_library_preparation(request):
         if len(samples_in_lib_prep_protocol) == 0:
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {"stored_lib_prep": samples_in_lib_prep},
             )
         library_preparation_objs = (
@@ -3014,7 +3014,7 @@ def handling_library_preparation(request):
         )
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"lib_prep_protocol_parameters": lib_prep_protocol_parameters},
         )
 
@@ -3025,7 +3025,7 @@ def handling_library_preparation(request):
             error_message = "No selected library preparation was chosen"
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {
                     "samples_in_lib_prep": samples_in_lib_prep,
                     "error_message": error_message,
@@ -3044,7 +3044,7 @@ def handling_library_preparation(request):
         request.session["lib_prep_protocol_parameters"] = lib_prep_protocol_parameters
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"lib_prep_protocol_parameters": lib_prep_protocol_parameters},
         )
 
@@ -3061,7 +3061,7 @@ def handling_library_preparation(request):
             )
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {
                     "error_message": error_message,
                     "lib_prep_protocol_parameters": lib_prep_protocol_parameters,
@@ -3069,7 +3069,7 @@ def handling_library_preparation(request):
             )
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"stored_params": stored_params},
         )
 
@@ -3087,7 +3087,7 @@ def handling_library_preparation(request):
                 data["ERROR"].append(wetlab.config.ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {
                     "error_message": data["ERROR"],
                     "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
@@ -3109,7 +3109,7 @@ def handling_library_preparation(request):
                     )
                 return render(
                     request,
-                    "wetlab/handling_library_preparation.html",
+                    "wetlab/manage_library_preparation.html",
                     {
                         "error_message": user_id_in_s_sheet["ERROR"],
                         "samples_in_lib_prep": request.session.get(
@@ -3129,7 +3129,7 @@ def handling_library_preparation(request):
                 )
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {
                     "error_message": valid_data["ERROR"],
                     "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
@@ -3159,7 +3159,7 @@ def handling_library_preparation(request):
             display_sample_sheet["user_list"] = wetlab.utils.common.get_userid_list()
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"display_sample_sheet": display_sample_sheet},
         )
 
@@ -3172,7 +3172,7 @@ def handling_library_preparation(request):
         if "ERROR" in store_data_result:
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {
                     "error_message": store_data_result["ERROR"],
                     "samples_in_lib_prep": request.session.get("samples_in_lib_prep"),
@@ -3181,7 +3181,7 @@ def handling_library_preparation(request):
         stored_index = "True"
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"stored_index": stored_index},
         )
 
@@ -3192,7 +3192,7 @@ def handling_library_preparation(request):
         )
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"additional_kits": additional_kits},
         )
 
@@ -3213,24 +3213,24 @@ def handling_library_preparation(request):
             additional_kits["data"] = json.loads(request.POST["protocol_data"])
             return render(
                 request,
-                "wetlab/handling_library_preparation.html",
+                "wetlab/manage_library_preparation.html",
                 {"error_message": error_message, "additional_kits": additional_kits},
             )
 
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"stored_additional_kits": stored_additional_kits},
         )
     else:
         return render(
             request,
-            "wetlab/handling_library_preparation.html",
+            "wetlab/manage_library_preparation.html",
             {"samples_in_lib_prep": samples_in_lib_prep},
         )
 
 
-def handling_molecules(request):
+def manage_molecules(request):
     if request.method == "POST" and request.POST["action"] == "selectedMolecules":
         # If no samples are selected , call again this function to display again the sample list
         heading = core.core_config.HEADING_FOR_DEFINED_SAMPLES.copy()
@@ -3239,20 +3239,20 @@ def handling_molecules(request):
             request.POST["selected_samples"], heading, "To be included", "s_id"
         )
         if len(samples) == 0:
-            return redirect("handling_molecules")
+            return redirect("manage_molecules")
         molecule_protocol = core.utils.samples.get_table_record_molecule(
             samples, __package__
         )
         if "ERROR" in molecule_protocol:
             return render(
                 request,
-                "wetlab/handling_molecules.html",
+                "wetlab/manage_molecules.html",
                 {"error_message": "There was no valid sample selected "},
             )
 
         return render(
             request,
-            "wetlab/handling_molecules.html",
+            "wetlab/manage_molecules.html",
             {"molecule_protocol": molecule_protocol},
         )
 
@@ -3266,14 +3266,14 @@ def handling_molecules(request):
             request.POST["molecule_data"], heading, None, "s_id"
         )
         if len(samples) == 0:
-            return redirect("handling_molecules")
+            return redirect("manage_molecules")
         molecule_recorded = core.utils.samples.record_extract_protocol(
             samples, excel_data, heading, request.user, __package__
         )
         if "incomplete" in molecule_recorded:
             return render(
                 request,
-                "wetlab/handling_molecules.html",
+                "wetlab/manage_molecules.html",
                 {"molecule_recorded": molecule_recorded},
             )
 
@@ -3285,13 +3285,13 @@ def handling_molecules(request):
         if len(molecule_parameters) == 0:
             return render(
                 request,
-                "wetlab/handling_molecules.html",
+                "wetlab/manage_molecules.html",
                 {"molecule_parameters_updated": True},
             )
         protocol_list = ";".join(list(molecule_parameters.keys()))
         return render(
             request,
-            "wetlab/handling_molecules.html",
+            "wetlab/manage_molecules.html",
             {
                 "molecule_parameters": molecule_parameters,
                 "protocol_list": protocol_list,
@@ -3307,7 +3307,7 @@ def handling_molecules(request):
             request.POST["pending_extraction"], heading, "Select Molecule", "s_id"
         )
         if len(molecules) == 0:
-            return redirect("handling_molecules")
+            return redirect("manage_molecules")
 
         protocols = core.utils.samples.group_molecules_by_protocol(molecules)
         molecule_parameters = (
@@ -3316,7 +3316,7 @@ def handling_molecules(request):
         protocol_list = ";".join(list(molecule_parameters.keys()))
         return render(
             request,
-            "wetlab/handling_molecules.html",
+            "wetlab/manage_molecules.html",
             {
                 "molecule_parameters": molecule_parameters,
                 "protocol_list": protocol_list,
@@ -3341,7 +3341,7 @@ def handling_molecules(request):
 
         return render(
             request,
-            "wetlab/handling_molecules.html",
+            "wetlab/manage_molecules.html",
             {"molecule_parameters_updated": True},
         )
 
@@ -3352,11 +3352,11 @@ def handling_molecules(request):
             request.POST["sample_continues_on"], heading, "Sample continues on", "m_id"
         )
         if len(molecules) == 0:
-            return redirect("handling_molecules")
+            return redirect("manage_molecules")
         molecule_use = core.utils.samples.set_molecule_use(select_use, __package__)
         return render(
             request,
-            "wetlab/handling_molecules.html",
+            "wetlab/manage_molecules.html",
             {"molecule_use": molecule_use},
         )
 
@@ -3396,7 +3396,7 @@ def handling_molecules(request):
 
         return render(
             request,
-            "wetlab/handling_molecules.html",
+            "wetlab/manage_molecules.html",
             {
                 "sample_availables": sample_availables,
                 "molecules_availables": molecules_availables,
@@ -3460,7 +3460,7 @@ def repeat_molecule_extraction(request):
 
             return render(
                 request,
-                "wetlab/handling_molecules.html",
+                "wetlab/manage_molecules.html",
                 {"molecule_protocol": molecule_protocol},
             )
     # return to the main page because the page was not requested for the right page

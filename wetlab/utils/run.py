@@ -813,7 +813,7 @@ def get_pool_info(pools_to_update):
         HEADING_FOR_SELECTING_POOLS
         HEADING_FOR_INCOMPLETED_SELECTION_POOLS
     Functions:
-        get_lot_reagent_commercial_kits # located at core/utils/handling_commercial_kits
+        get_lot_reagent_commercial_kits # located at core/utils/manage_commercial_kits
     Return:
         pool_info
     """
