@@ -3420,7 +3420,7 @@ def repeat_library_preparation(request):
         molecule_code_id = request.POST["molecule_code_id"]
         sample_id = request.POST["sample_id"]
         result = wetlab.utils.sample.analyze_reprocess_data(
-            [molecule_code_id, "New Library Preparation"], sample_id, request.user
+            [molecule_code_id, "New Library Preparation"], sample_id
         )
         detail_description = {}
         if result == "Invalid options":
@@ -3478,7 +3478,7 @@ def repeat_pool(request):
         sample_id = lib_prep_obj.get_sample_id()
 
         result = wetlab.utils.sample.analyze_reprocess_data(
-            [molecule_code_id, lib_prep_code_id, "New Pool"], sample_id, request.user
+            [molecule_code_id, lib_prep_code_id, "New Pool"], sample_id
         )
         detail_description = {}
         if result == "Invalid options":
@@ -3488,13 +3488,13 @@ def repeat_pool(request):
             ]
             return render(
                 request,
-                "wetlab/error_page.html",
+                "django_utils/error_page.html",
                 {"detail_description": detail_description},
             )
         detail_description["information"] = wetlab.config.SUCCESSFUL_REUSE_LIB_PREP
         return render(
             request,
-            "wetlab/successful_page.html",
+            "django_utils/info_page.html",
             {"detail_description": detail_description},
         )
     # return to the main page because the page was not requested for the right page
@@ -3837,7 +3837,7 @@ def create_new_run(request):
         run_id = request.POST["run_ids"]
         experiment_name = wetlab.utils.run.get_experiment_name(run_id)
         pool_objs = wetlab.models.LibraryPool.objects.filter(
-            run_process_id__exact=run_id
+            runprocess__exact=run_id
         )
         pool_ids = []
         for pool in pool_objs:

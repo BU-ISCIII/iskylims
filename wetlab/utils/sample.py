@@ -21,7 +21,6 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id):
     Input:
         reprocess_data           # data for creating the reuse
         reprocess_sample_id      # sample id to reprocess
-        req_user                 # register user
     Functions:
         update_sample_reused
         update_molecule_reused
