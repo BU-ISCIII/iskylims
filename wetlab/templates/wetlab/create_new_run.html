@@ -177,7 +177,7 @@
                                                    type="submit"
                                                    id="btnSubmit"
                                                    value="Submit" />
-                                        </form>
+                                        
                                         <script>
                                         var data = [{% for values in display_sample_information.data %}
                                             [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -203,7 +203,23 @@
                                             csvFileName:'sample_sheet',
 
                                         });
+                                        $(document).ready(function () {
+                                            $("#storeDataNewRun").submit(function (e) {
+                                                //stop submitting the form to see the disabled button effect
+                                                // e.preventDefault();
+                                                //disable the submit button
+                                                var table_data = $('#spreadsheet').jexcel('getData')
+                                                var data_json = JSON.stringify(table_data)
+                                                $("<input />").attr("type", "hidden")
+                                                .attr("name", "s_sheet_data")
+                                                .attr("value", data_json)
+                                                .appendTo("#storeDataNewRun");
+                                                $("#btnSubmit").attr("disabled", true);
+                                                return true;
+                                            });
+                                        });
                                         </script>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -497,23 +513,6 @@
                         {% endif %}
                     {% endif %}
                 </div>
-            </section>
-            <script>
         </div>
-    $(document).ready(function () {
-        $("#storeDataNewRun").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            // e.preventDefault();
-            //disable the submit button
-            var table_data = $('#spreadsheet').jexcel('getData')
-            var data_json = JSON.stringify(table_data)
-            $("<input />").attr("type", "hidden")
-            .attr("name", "s_sheet_data")
-            .attr("value", data_json)
-            .appendTo("#storeDataNewRun");
-            $("#btnSubmit").attr("disabled", true);
-            return true;
-        });
-    });
-            </script>
-        {% endblock %}
+    </section>
+{% endblock %}
