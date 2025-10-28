@@ -13,6 +13,29 @@ import wetlab.utils.crontab_process
 import wetlab.utils.samplesheet
 
 
+def _as_utc_datetime(value):
+    """
+    Normalize Samba timestamps into timezone-aware UTC datetimes.
+
+    Args:
+        value (datetime.datetime | int | float | None): Timestamp or datetime obtained
+            from Samba metadata.
+
+    Returns:
+        datetime.datetime | None: Timezone-aware UTC datetime when conversion succeeds,
+        otherwise None.
+    """
+    if isinstance(value, datetime.datetime):
+        return (
+            value.astimezone(datetime.timezone.utc)
+            if value.tzinfo is not None
+            else value.replace(tzinfo=datetime.timezone.utc)
+        )
+    if isinstance(value, (int, float)):
+        return datetime.datetime.fromtimestamp(value, tz=datetime.timezone.utc)
+    return None
+
+
 def get_list_processed_runs():
     """
     Description:
@@ -121,17 +144,22 @@ def search_update_new_runs(request_reason):
                 experiment_name = "Experiment name NOT FOUND"
                 # check the run folder creation date to allow more time before
                 # setting the run to error
-                f_created_date = int(
+                created_time = _as_utc_datetime(
                     wetlab.utils.common.get_samba_atribute_data(
                         conn,
                         wetlab.utils.crontab_process.get_samba_shared_folder(),
                         new_run,
                         "create_time",
-                    ).timestamp()
+                    )
                 )
-                time_to_check = datetime.datetime.fromtimestamp(
-                    f_created_date, tz=datetime.timezone.utc
-                ).date()
+                if created_time is None:
+                    logger.warning(
+                        "%s : Unable to determine creation time for run folder %s",
+                        experiment_name,
+                        new_run,
+                    )
+                    created_time = datetime.datetime.now(datetime.timezone.utc)
+                time_to_check = created_time.date()
                 max_time_for_run_parameters = (
                     wetlab.models.ConfigSetting.objects.filter(
                         configuration_name__exact="MAXIMUM_TIME_WAIT_RUN_PARAMETERS"
@@ -175,9 +203,7 @@ def search_update_new_runs(request_reason):
                             new_run + " : Experiment name field was not found in file"
                         )
                         wetlab.utils.common.logging_errors(string_message, False, False)
-                        wetlab.utils.crontab_process.manage_errors_in_run(
-                            new_run, "7"
-                        )
+                        wetlab.utils.crontab_process.manage_errors_in_run(new_run, "7")
                     else:
                         string_message = (
                             new_run + " : Ignoring test folder " + experiment_name
@@ -217,9 +243,7 @@ def search_update_new_runs(request_reason):
                 run_process_obj = wetlab.utils.crontab_process.get_run_process_obj_or_create_if_not_exists(
                     experiment_name
                 )
-                wetlab.utils.crontab_process.manage_errors_in_run(
-                    experiment_name, "20"
-                )
+                wetlab.utils.crontab_process.manage_errors_in_run(experiment_name, "20")
                 # cleaning up the RunParameter in local temporaty file
                 logger.debug("%s : Deleting RunParameter file", experiment_name)
                 os.remove(l_run_parameter)
@@ -757,13 +781,22 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             run_process_obj, experiment_name
         )
         # Check run_folder time creation
-        f_created_date = wetlab.utils.common.get_samba_atribute_data(
-            conn,
-            wetlab.utils.crontab_process.get_samba_shared_folder(),
-            run_folder,
-            "create_time",
+        created_time = _as_utc_datetime(
+            wetlab.utils.common.get_samba_atribute_data(
+                conn,
+                wetlab.utils.crontab_process.get_samba_shared_folder(),
+                run_folder,
+                "create_time",
+            )
         )
-        time_to_check = datetime.datetime.utcfromtimestamp(f_created_date).date()
+        if created_time is None:
+            logger.warning(
+                "%s : Unable to determine creation time for run folder %s",
+                experiment_name,
+                run_folder,
+            )
+            created_time = datetime.datetime.now(datetime.timezone.utc)
+        time_to_check = created_time.date()
         # Check maximum time for waiting run metric files
         max_time_for_run_parameters = (
             wetlab.models.ConfigSetting.objects.filter(
@@ -1096,9 +1129,7 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
             )
             wetlab.utils.common.logging_errors(string_message, True, False)
             if key_error.args[0] == 33:
-                wetlab.utils.crontab_process.manage_errors_in_run(
-                    experiment_name, "33"
-                )
+                wetlab.utils.crontab_process.manage_errors_in_run(experiment_name, "33")
             else:
                 string_message = (
                     experiment_name
