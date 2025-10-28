@@ -133,7 +133,7 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
 
     for pool in pool_ids:
         # changed from version 3.1.0 the relation in pools
-        new_run_obj.set_pool(pool)
+        new_run_obj.set_library_pool(pool)
     display_sample_information["experiment_name"] = form_data["experimentName"]
     display_sample_information["run_process_id"] = new_run_obj.get_run_id()
     return display_sample_information
@@ -794,7 +794,7 @@ def get_available_pools_for_run():
                 pool_state__pool_state__exact="Selected"
             )
             .exclude(runprocess=None)
-            .order_by("run_process_id")
+            .order_by("runprocess")
         )
 
     return pools_to_update

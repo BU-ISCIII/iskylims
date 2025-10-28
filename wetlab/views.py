@@ -3894,7 +3894,7 @@ def create_new_run(request):
 
         wetlab.utils.run.store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
-        pools_obj = wetlab.models.LibraryPool.objects.filter(run_process_id=run_obj)
+        pools_obj = wetlab.models.LibraryPool.objects.filter(runprocess=run_obj)
 
         for pool_obj in pools_obj:
             pool_obj.set_pool_state("Used")

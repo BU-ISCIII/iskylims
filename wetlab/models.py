@@ -93,19 +93,32 @@ class LibraryPool(models.Model):
         else:
             return "Not defined"
 
+    def _get_run_processes(self):
+        return self.runprocess_set.order_by("-generated_at")
+
+    def _get_latest_run_process(self):
+        return self._get_run_processes().first()
+
+    def get_run_names(self):
+        return [
+            "%s" % (run_process.get_run_name())
+            for run_process in self._get_run_processes()
+        ]
+
     def get_run_name(self):
-        if self.run_process_id is not None:
-            return "%s" % (self.run_process_id.get_run_name())
-        else:
-            return "Not defined yet"
+        run_process = self._get_latest_run_process()
+        if run_process is not None:
+            return "%s" % (run_process.get_run_name())
+        return "Not defined yet"
 
     def get_run_id(self):
-        if self.run_process_id is not None:
-            return "%s" % (self.run_process_id.get_run_id())
+        run_process = self._get_latest_run_process()
+        if run_process is not None:
+            return "%s" % (run_process.get_run_id())
         return None
 
     def get_run_obj(self):
-        return self.run_process_id
+        return self._get_latest_run_process()
 
     def set_pool(self, pool_obj):
         self.pool.add(pool_obj)
