@@ -104,3 +104,15 @@ class UserCreationForm(UserCreationForm):
                 ),
             ),
         )
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if self.instance and self.instance.pk and username:
+            if User.objects.exclude(pk=self.instance.pk).filter(
+                username__exact=username
+            ).exists():
+                raise forms.ValidationError(
+                    self.error_messages["duplicate_username"], code="duplicate_username"
+                )
+            return username
+        return super().clean_username()
