@@ -307,7 +307,6 @@ def search_update_new_runs(request_reason):
             if isinstance(running_parameters["run_date"], datetime.datetime):
                 run_process_obj.set_run_date(running_parameters["run_date"])
             logger.info("%s : Sequencer  stored on database", experiment_name)
-
             if run_process_obj.get_sample_file() == "":
                 # Fetch sample Sheet from remote server
                 l_sample_sheet_path = (
@@ -396,7 +395,7 @@ def search_update_new_runs(request_reason):
             logger.info(
                 "%s : RunParameters information  stored on database", experiment_name
             )
-            run_process_obj.set_run_state("Sample Sent")
+            run_process_obj.set_run_state("sample_sent")
 
     logger.info("Clossing SAMBA connection")
     conn.close()
