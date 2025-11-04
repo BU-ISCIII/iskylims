@@ -106,9 +106,11 @@ def get_samba_atribute_data(conn, shared_folder, remote_path, attribute=None):
                 if attr_value.tzinfo is not None
                 else attr_value.replace(tzinfo=timezone.utc)
             )
-        if attribute in {"create_time", "last_access_time", "last_write_time"} and isinstance(
-            attr_value, (int, float)
-        ):
+        if attribute in {
+            "create_time",
+            "last_access_time",
+            "last_write_time",
+        } and isinstance(attr_value, (int, float)):
             return datetime.fromtimestamp(attr_value, tz=timezone.utc)
         return attr_value
     return attributes

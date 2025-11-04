@@ -134,9 +134,7 @@ urlpatterns = [
         wetlab.views.manage_library_preparation,
         name="manage_library_preparation",
     ),
-    path(
-        "manageMolecules", wetlab.views.manage_molecules, name="manage_molecules"
-    ),
+    path("manageMolecules", wetlab.views.manage_molecules, name="manage_molecules"),
     path("initialSettings", wetlab.views.initial_settings, name="initial_settings"),
     path(
         "kitInventory/",

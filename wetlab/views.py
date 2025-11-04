@@ -3836,9 +3836,7 @@ def create_new_run(request):
     elif request.method == "POST" and request.POST["action"] == "continueWithRun":
         run_id = request.POST["run_ids"]
         experiment_name = wetlab.utils.run.get_experiment_name(run_id)
-        pool_objs = wetlab.models.LibraryPool.objects.filter(
-            runprocess__exact=run_id
-        )
+        pool_objs = wetlab.models.LibraryPool.objects.filter(runprocess__exact=run_id)
         pool_ids = []
         for pool in pool_objs:
             pool_ids.append(pool.get_id())

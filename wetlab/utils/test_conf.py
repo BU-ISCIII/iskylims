@@ -167,7 +167,12 @@ def execute_test_for_testing_run(run_test_name):
     conn = wetlab.utils.common.open_samba_connection()
 
     # Execute 6 times to be sure it has completed all steps
-    state_run_test = ["Sample sent", "Processed run", "Processed Bcl2fastq", "Completed"]
+    state_run_test = [
+        "Sample sent",
+        "Processed run",
+        "Processed Bcl2fastq",
+        "Completed",
+    ]
     for state_run in state_run_test:
         run_result[state_run] = "NOK"
     if not wetlab.models.RunProcess.objects.filter(

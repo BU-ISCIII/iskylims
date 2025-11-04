@@ -515,7 +515,9 @@ def get_all_library_information(sample_id):
                     pool_name = pool.get_pool_name()
                     pool_code = pool.get_pool_code_id()
                     run_names = pool.get_run_names()
-                    run_name = ", ".join(run_names) if run_names else pool.get_run_name()
+                    run_name = (
+                        ", ".join(run_names) if run_names else pool.get_run_name()
+                    )
                     library_information["pool_information"].append(
                         [
                             lib_prep_code_id,
