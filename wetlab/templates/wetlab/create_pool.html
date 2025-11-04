@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load replace_spaces %}
 {% block content %}
 {% include "wetlab/menu.html" %}
 {% include 'core/jexcel_functionality.html' %}
@@ -157,57 +158,61 @@
                         <div class="col">
                             <ul class="nav nav-tabs" id="myTab" role="tablist">
                                 {% for key, values in display_list.data.items %}
-                                    {% if forloop.first %}
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="{{key}}-tab" data-bs-toggle="tab" data-bs-target="#{{key}}" type="button" role="tab" aria-controls="{{key}}" aria-selected="true">Samples for {{key}} </button>
-                                        </li>
-                                    {% else %}
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="{{key}}-tab" data-bs-toggle="tab" data-bs-target="#{{key}}" type="button" role="tab" aria-controls="{{key}}" aria-selected="false">Samples for {{key}} </button>
-                                        </li>
-                                    {% endif %}
+                                    {% with key_slug=key|replace_spaces_with_underscores %}
+                                        {% if forloop.first %}
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="{{key_slug}}-tab" data-bs-toggle="tab" data-bs-target="#{{key_slug}}" type="button" role="tab" aria-controls="{{key_slug}}" aria-selected="true">Samples for {{key}} </button>
+                                            </li>
+                                        {% else %}
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="{{key_slug}}-tab" data-bs-toggle="tab" data-bs-target="#{{key_slug}}" type="button" role="tab" aria-controls="{{key_slug}}" aria-selected="false">Samples for {{key}} </button>
+                                            </li>
+                                        {% endif %}
+                                    {% endwith %}
                                 {% endfor %}
                             </ul>
                             <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
                                 {% for key, values in display_list.data.items %}
-                                    {% if forloop.first %}
-                                        <div class="tab-pane fade show active" id="{{key}}" role="tabpanel" aria-labelledby="{{key}}-tab">
-                                    {% else %}
-                                        <div class="tab-pane fade" id="{{key}}" role="tabpanel" aria-labelledby="{{key}}-tab">
-                                    {% endif %}
-                                    <div class="container">
-                                        <div class="row mt-4">
-                                            <div class="col">
-                                                <div class="card">
-                                                    <div class="card-header text-center"><h3>Sample preparation information </h3></div>
-                                                    <div class="card-body">
-                                                        <form method="post" enctype="multipart/form-data" name="createPool_{{key|lower}}"  id="createPool_{{key|lower}}" class="form-horizontal well">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="action" value="createPool"/>
-                                                            <input type="hidden" name="platform" value="{{key}}"/>
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <div class="form-floating mb-3">
-                                                                        <input type="text" class="form-control" name="poolName" id="poolName" required="required" placeholder="Define pool name">
-                                                                        <label class="text-danger" for="poolName">Define pool name</label>
+                                    {% with key_slug=key|replace_spaces_with_underscores key_slug_lower=key|replace_spaces_with_underscores|lower %}
+                                        {% if forloop.first %}
+                                            <div class="tab-pane fade show active" id="{{key_slug}}" role="tabpanel" aria-labelledby="{{key_slug}}-tab">
+                                        {% else %}
+                                            <div class="tab-pane fade" id="{{key_slug}}" role="tabpanel" aria-labelledby="{{key_slug}}-tab">
+                                        {% endif %}
+                                        <div class="container">
+                                            <div class="row mt-4">
+                                                <div class="col">
+                                                    <div class="card">
+                                                        <div class="card-header text-center"><h3>Sample preparation information </h3></div>
+                                                        <div class="card-body">
+                                                            <form method="post" enctype="multipart/form-data" name="createPool_{{key_slug_lower}}"  id="createPool_{{key_slug_lower}}" class="form-horizontal well">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="action" value="createPool"/>
+                                                                <input type="hidden" name="platform" value="{{key}}"/>
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <div class="form-floating mb-3">
+                                                                            <input type="text" class="form-control" name="poolName" id="poolName" required="required" placeholder="Define pool name">
+                                                                            <label class="text-danger" for="poolName">Define pool name</label>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="row">
-                                                                <div class="col-md">
-                                                                    <div id="{{key|lower}}"  class="my-4"></div>
-                                                                    
-                                                                    <p class="ms-3 mt-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
-                                                                    <input type="button" class="btn btn-outline-secondary my-3" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                                                    <input class="btn float-end btn-outline-primary my-3" name ="{{key}}" type="submit" value="Submit">
+                                                                <div class="row">
+                                                                    <div class="col-md">
+                                                                        <div id="{{key_slug_lower}}"  class="my-4"></div>
+                                                                        
+                                                                        <p class="ms-3 mt-3"> Fields marked in <FONT COLOR="Red">Red</FONT> are mandatory</p>
+                                                                        <input type="button" class="btn btn-outline-secondary my-3" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                                        <input class="btn float-end btn-outline-primary my-3" name ="{{key}}" type="submit" value="Submit">
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </form>
-                                                    </div>  
+                                                            </form>
+                                                        </div>  
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div> 
-                                    </div>
+                                            </div> 
+                                        </div>
+                                    {% endwith %}
                                 {% endfor %}
                             </div>
                         </div>
@@ -227,7 +232,8 @@
 </section>
 <script>
     {% for key, values in display_list.data.items %}
-        var data_{{key}} = [{% for row in values%}
+        {% with key_slug=key|replace_spaces_with_underscores key_slug_lower=key|replace_spaces_with_underscores|lower %}
+        var data_{{key_slug_lower}} = [{% for row in values%}
             [{% for value in row %}
                 {% if forloop.last%}
                     '', {{value}}
@@ -238,8 +244,8 @@
         {% endfor %}
         ];
 
-        mySpreadsheet = $('#{{key|lower}}').jexcel({
-            data:data_{{key}},
+        mySpreadsheet = $('#{{key_slug_lower}}').jexcel({
+            data:data_{{key_slug_lower}},
             columns: [
                 {% for values in display_list.heading %}
                     {% if forloop.last %}
@@ -259,20 +265,21 @@
             tableHeight:'200px',
         });
         $(document).ready(function () {
-            $("#createPool_{{key|lower}}").submit(function (e) {
+            $("#createPool_{{key_slug_lower}}").submit(function (e) {
                 //stop submitting the form to see the disabled button effect
                 // e.preventDefault();
                 //disable the submit button
-                var table_data = $('#{{key|lower}}').jexcel('getData')
+                var table_data = $('#{{key_slug_lower}}').jexcel('getData')
                 var data_json = JSON.stringify(table_data)
                 $("<input />").attr("type", "hidden")
                 .attr("name", "table_data")
                 .attr("value", data_json)
-                .appendTo("#createPool_{{key|lower}}");
+                .appendTo("#createPool_{{key_slug_lower}}");
                 $("#btnSubmit").attr("disabled", true);
                 return true;
             });
         });
+        {% endwith %}
     {% endfor %}
 
 </script>
