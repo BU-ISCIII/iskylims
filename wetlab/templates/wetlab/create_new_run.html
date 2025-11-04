@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load replace_spaces %}
 {% block content %}
     {% include 'core/jexcel_functionality.html' %}
     {% include "wetlab/menu.html" %}
@@ -362,44 +363,47 @@
                             <div class="col">
                                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                                     {% for key, values in display_pools_for_run.pool_data.platform.items %}
-                                        {% if forloop.first %}
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link active"
-                                                        id="{{ key }}-tab"
-                                                        data-bs-toggle="tab"
-                                                        data-bs-target="#{{ key }}"
-                                                        type="button"
-                                                        role="tab"
-                                                        aria-controls="{{ key }}"
-                                                        aria-selected="true">Samples for {{ key }}</button>
-                                            </li>
-                                        {% else %}
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link active"
-                                                        id="{{ key }}-tab"
-                                                        data-bs-toggle="tab"
-                                                        data-bs-target="#{{ key }}"
-                                                        type="button"
-                                                        role="tab"
-                                                        aria-controls="{{ key }}"
-                                                        aria-selected="false">Samples for {{ key }}</button>
-                                            </li>
-                                        {% endif %}
+                                        {% with key_slug=key|replace_spaces_with_underscores %}
+                                            {% if forloop.first %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link active"
+                                                            id="{{ key_slug }}-tab"
+                                                            data-bs-toggle="tab"
+                                                            data-bs-target="#{{ key_slug }}"
+                                                            type="button"
+                                                            role="tab"
+                                                            aria-controls="{{ key_slug }}"
+                                                            aria-selected="true">Samples for {{ key }}</button>
+                                                </li>
+                                            {% else %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link"
+                                                            id="{{ key_slug }}-tab"
+                                                            data-bs-toggle="tab"
+                                                            data-bs-target="#{{ key_slug }}"
+                                                            type="button"
+                                                            role="tab"
+                                                            aria-controls="{{ key_slug }}"
+                                                            aria-selected="false">Samples for {{ key }}</button>
+                                                </li>
+                                            {% endif %}
+                                        {% endwith %}
                                     {% endfor %}
                                 </ul>
                                 <div class="tab-content bg-white border-tab p-2" id="nav-tabContent">
                                     {% for key, values in display_pools_for_run.pool_data.platform.items %}
-                                        {% if forloop.first %}
-                                            <div class="tab-pane fade show active"
-                                                 id="{{ key }}"
-                                                 role="tabpanel"
-                                                 aria-labelledby="{{ key }}-tab">
+                                        {% with key_slug=key|replace_spaces_with_underscores key_slug_lower=key|replace_spaces_with_underscores|lower %}
+                                            {% if forloop.first %}
+                                                <div class="tab-pane fade show active"
+                                                     id="{{ key_slug }}"
+                                                     role="tabpanel"
+                                                     aria-labelledby="{{ key_slug }}-tab">
                                             {% else %}
                                                 <div class="tab-pane fade"
-                                                     id="{{ key }}"
+                                                     id="{{ key_slug }}"
                                                      role="tabpanel"
-                                                     aria-labelledby="{{ key }}-tab">
-                                                {% endif %}
+                                                     aria-labelledby="{{ key_slug }}-tab">
+                                            {% endif %}
                                                 <div class="container">
                                                     <div class="row mt-4">
                                                         <div class="col">
@@ -407,8 +411,8 @@
                                                                 <div class="card-body">
                                                                     <form method="post"
                                                                           enctype="multipart/form-data"
-                                                                          name="createNewRun"
-                                                                          id="createNewRun">
+                                                                          name="createNewRun_{{ key_slug_lower }}"
+                                                                          id="createNewRun_{{ key_slug_lower }}">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" name="action" value="createNewRun" />
                                                                         <input type="hidden" name="platform" value="{{ key }}" />
@@ -488,7 +492,9 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            {% endfor %}
+                                            </div>
+                                            {% endwith %}
+                                        {% endfor %}
                                         </div>
                                     </div>
                                 </div>
