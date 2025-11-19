@@ -86,6 +86,47 @@ Follow the prompt message to create the super user account.
 
 When script ends open your navigator typing **localhost:8001** to access to iSkyLIMS
 
+#### Production docker deployment
+
+When your MySQL database and Samba share run on dedicated machines, you can
+deploy only the iSkyLIMS application container and connect it to those external
+services.
+
+1. Copy the production settings template and adjust it with the real database
+   credentials/host:
+
+    ```bash
+    cp conf/docker_production_settings.txt conf/my_prod_settings.txt
+    # edit conf/my_prod_settings.txt to point to your DB server
+    ```
+
+2. Build and run the application container (production mode is the default, so
+   passing the settings file is enough):
+
+    ```bash
+    bash docker_install.sh --install_conf conf/my_prod_settings.txt
+    ```
+
+   The installer automatically uses `docker-compose.prod.yml`, which only starts
+   the `iskylims_app` container while pointing to external services. You can
+   still override the compose file or skip behaviours through extra flags (see
+   `docker_install.sh --help`).
+
+3. Once the container is up, create the Django superuser and configure the Samba
+   connection details through the UI if this is a fresh installation.
+
+#### Local testing deployment
+
+To spin up the full stack (database + samba + app) with demo data and fixtures,
+just add the `--test` flag:
+
+```bash
+bash docker_install.sh --test
+```
+
+You can reuse the existing options (`--demo_data`, `--install_type`, etc.) to
+customise the behaviour if needed.
+
 ### Install iSkyLIMS in your server running ubuntu/CentOS
 
 #### Clone github repository
