@@ -115,6 +115,12 @@ services.
 3. Once the container is up, create the Django superuser and configure the Samba
    connection details through the UI if this is a fresh installation.
 
+If you already have a populated production database and only need to roll out a
+new application version, reuse the same command but add `--action upgrade`. The
+script will rebuild/restart the container, regenerate the Django migrations,
+apply them using `--fake-initial` so existing tables are respected, and skip the
+superuser/fixture loading steps so your data remains untouched.
+
 #### Local testing deployment
 
 To spin up the full stack (database + samba + app) with demo data and fixtures,

@@ -6,13 +6,14 @@ usage() {
 cat << EOF
 This script installs and upgrades the iskylims app.
 
-Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--test]
+Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--action] [--test]
     Optional input data:
     --demo_data         | Provide already downloaded demo data from Zenodo
     --install_type      | Specify the installation type for iSkyLIMS (default: full)
     --git_revision      | Specify the Git revision to install (default: main)
     --compose_file      | docker compose file to use (overrides default)
     --install_conf      | Settings file consumed during docker image build (mandatory for production)
+    --action            | install (default) or upgrade, to control DB initialisation steps
     --skip_demo_data    | Skip downloading/copying demo data to samba container
     --skip_test_data    | Skip loading test fixtures (test/test_data.json)
     --test              | Use development/test compose file and sample data
@@ -20,6 +21,9 @@ Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--i
 Examples:
     Deploy production container pointing to an external DB/Samba:
     bash $0 --install_conf conf/my_prod_settings.txt
+
+    Upgrade an existing production deployment using the same database:
+    bash $0 --install_conf conf/my_prod_settings.txt --action upgrade
 
     Install demo docker system with local services
     bash $0 --test
@@ -49,6 +53,7 @@ do
         --git_revision)      set -- "$@" -g ;;
         --compose_file)      set -- "$@" -c ;;
         --install_conf)      set -- "$@" -s ;;
+        --action)            set -- "$@" -a ;;
         --skip_demo_data)    set -- "$@" -n ;;
         --skip_test_data)    set -- "$@" -t ;;
         --test)              set -- "$@" -p ;;
@@ -70,9 +75,12 @@ install_conf=""
 skip_demo_data=""
 skip_test_data=""
 mode="production"
+action="install"
+run_superuser=true
+load_initial_data=true
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:i:g:c:s:vhntp"
+options=":d:i:g:c:s:a:vhntp"
 while getopts $options opt; do
     case $opt in
         d)
@@ -89,6 +97,13 @@ while getopts $options opt; do
             ;;
         s)
             install_conf=$OPTARG
+            ;;
+        a)
+            action=$OPTARG
+            if [[ "$action" != "install" && "$action" != "upgrade" ]]; then
+                echo "Invalid action '$action'. Use install or upgrade."
+                exit 1
+            fi
             ;;
         n)
             skip_demo_data=true
@@ -158,6 +173,16 @@ if [ -z "$skip_test_data" ]; then
     fi
 fi
 
+if [ "$action" = "upgrade" ]; then
+    run_superuser=false
+    load_initial_data=false
+    skip_demo_data=true
+    skip_test_data=true
+else
+    run_superuser=true
+    load_initial_data=true
+fi
+
 if [ ! -f "$compose_file" ]; then
     echo "Compose file '$compose_file' not found"
     exit 1
@@ -179,16 +204,31 @@ docker compose -f "$compose_file" up -d
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
 
-echo "Creating the database structure for iSkyLIMS"
-docker exec -it iskylims_app python3 manage.py migrate
+echo "Generating Django migrations for iSkyLIMS apps"
 docker exec -it iskylims_app python3 manage.py makemigrations django_utils core wetlab drylab
-docker exec -it iskylims_app python3 manage.py migrate
 
-echo "Creating super user"
-docker exec -it iskylims_app python3 manage.py createsuperuser
+if [ "$action" = "upgrade" ]; then
+    echo "Applying migrations in fake-initial mode (existing tables will be kept)"
+    docker exec -it iskylims_app python3 manage.py migrate --noinput --fake-initial
+else
+    echo "Applying migrations"
+    docker exec -it iskylims_app python3 manage.py migrate --noinput
+fi
 
-echo "Loading initial data into the database"
-docker exec -it iskylims_app python3 manage.py loaddata conf/first_install_tables.json
+if [ "$run_superuser" = true ]; then
+    echo "Creating super user"
+    docker exec -it iskylims_app python3 manage.py createsuperuser
+else
+    echo "Skipping super user creation (--action upgrade)"
+fi
+
+if [ "$load_initial_data" = true ]; then
+    echo "Loading initial data into the database"
+    docker exec -it iskylims_app python3 manage.py loaddata conf/first_install_tables.json
+else
+    echo "Skipping initial fixture load (--action upgrade)"
+fi
+
 if [ "$skip_test_data" = false ]; then
     docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
 else
