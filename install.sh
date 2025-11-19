@@ -1,7 +1,9 @@
 #!/bin/bash
 
-ISKYLIMS_VERSION="3.x.x"
+APP_VERSION="3.x.x"
+LOG_FILE="/var/log/iskylims_install.log"
 
+# usage: prints the command line help and usage examples.
 usage() {
 cat << EOF
 This script install and upgrade the iskylims app.
@@ -36,93 +38,96 @@ Examples:
 EOF
 }
 
+# log: write timestamped log entries to stdout and LOG_FILE.
+log() {
+    local level="$1"; shift
+    local message="$*"
+    local timestamp
+    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+    printf "%s [%s] %s\n" "$timestamp" "$level" "$message" | tee -a "$LOG_FILE"
+}
+
+# db_check: verifies connectivity to the configured MySQL instance using mysqladmin/mysqlshow.
 db_check(){
-    # user should have mysql permission on remote server.
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null
+    log "INFO" "Checking database connectivity against $DB_SERVER_IP:$DB_PORT"
+    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null 2>>"$LOG_FILE"
 
     if ! [ $? -eq 0 ]; then
-        echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
+        log "ERROR" "Unable to connect to database. Check if your database is running and accessible"
         exit 1
     fi
     RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
 
     if  ! [ "$RESULT" == "$DB_NAME" ] ; then
-        echo -e "${RED}ERROR : iskylims database is not defined yet ${NC}"
-        echo -e "${RED}ERROR : Create iskylims database on your mysql server and run again the installation script ${NC}"
+        log "ERROR" "iskylims database is not defined yet"
+        log "ERROR" "Create iskylims database on your mysql server and run again the installation script"
         exit 1
     fi
 }
 
+# apache_check: ensures apache/httpd service is running depending on distribution.
 apache_check(){
     if [[ $linux_distribution == "Ubuntu" ]]; then
         if ! pidof apache2 > /dev/null ; then
-            # web server down, restart the server
-            echo "Apache Server is down... Trying to restart Apache"
+            log "WARN" "Apache Server is down... Trying to restart Apache"
             systemctl restart apache2.service
             sleep 10
             if pidof apache2 > /dev/null ; then
-                echo "Apache Server is up"
+                log "INFO" "Apache Server is up"
             else
-                echo -e "${RED}ERROR : Unable to start Apache ${NC}"
-                echo -e "${RED}ERROR : Solve the issue with Apache server and run again the installation script ${NC}"
+                log "ERROR" "Unable to start Apache"
+                log "ERROR" "Solve the issue with Apache server and run again the installation script"
                 exit 1
             fi
         fi
     elif [[ $linux_distribution == "CentOs" || $linux_distribution == "RedHatEnterprise" ]]; then
         if ! pidof httpd > /dev/null ; then
-            # web server down, restart the server
-            echo "Apache Server is down... Trying to restart Apache"
+            log "WARN" "Apache Server is down... Trying to restart Apache"
             systemctl restart httpd
             sleep 10
             if pidof httpd > /dev/null ; then
-                echo "Apache Server is up"
+                log "INFO" "Apache Server is up"
             else
-                echo -e "${RED}ERROR : Unable to start Apache ${NC}"
-                echo -e "${RED}ERROR : Solve the issue with Apache server and run again the installation script ${NC}"
+                log "ERROR" "Unable to start Apache"
+                log "ERROR" "Solve the issue with Apache server and run again the installation script"
                 exit 1
             fi
         fi
     fi
 }
 
+# python_check: confirm required Python version is available in PYTHON_BIN_PATH.
 python_check(){
-
-    python_version=$(su -c $PYTHON_BIN_PATH --version $user)
+    python_version=$(su -c $PYTHON_BIN_PATH --version $user 2>>"$LOG_FILE")
     if [[ $python_version == "" ]]; then
-        echo -e "${RED}ERROR : Python3 is not found in your system ${NC}"
-        echo -e "${RED}ERROR : Solve the issue with Python and run again the installation script ${NC}"
+        log "ERROR" "Python3 is not found in your system"
+        log "ERROR" "Solve the issue with Python and run again the installation script"
         exit 1
     fi
     p_version=$(echo $python_version | cut -d"." -f2)
     if (( $p_version < 7 )); then
-        echo -e "${RED}ERROR : Application requieres at least the version 3.7.x of Python3  ${NC}"
-        echo -e "${RED}ERROR : Solve the issue with python and run again the installation script ${NC}"
+        log "ERROR" "Application requires at least version 3.7.x of Python3"
+        log "ERROR" "Solve the issue with python and run again the installation script"
         exit 1
     fi
 }
 
+# root_check: enforce running privileged sections as root.
 root_check(){
     if [[ $EUID -ne 0 ]]; then
-        printf "\n\n%s"
-        printf "${RED}------------------${NC}\n"
-        printf "%s"
-        printf "${RED}Exiting installation. This script must be run as root ${NC}\n"
-        printf "\n\n%s"
-        printf "${RED}------------------${NC}\n"
-        printf "%s"
+        log "ERROR" "Exiting installation. This script must be run as root"
         exit 1
     fi
 }
 
+# update_settings_and_urls: rewrite Django settings and urls with deployment values.
 update_settings_and_urls(){
-    # save SECRET KEY at home user directory
+    log "INFO" "Updating settings.py and urls.py with deployment values"
     grep ^SECRET $INSTALL_PATH/iskylims/settings.py > ~/.secret
 
-    # Copying config files and script. TODO CHANGE iSkyLIMS to app name
     cp conf/template_settings.txt $INSTALL_PATH/iskylims/settings.py
     cp conf/urls.py $INSTALL_PATH/iskylims
     
-    # replacing dummy variables with real values
     sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iskylims/settings.py
     sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iskylims/settings.py
     sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iskylims/settings.py
@@ -139,19 +144,13 @@ update_settings_and_urls(){
     sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py
 }
 
-upgrade_venv(){
-    echo "activate the virtualenv"
-    source virtualenv/bin/activate
-    echo "Installing required python packages"
-    python -m pip install --upgrade pip
-    python -m pip install -r conf/requirements.txt
-}
-
+# restore_git_ref: reset repository to branch/tag/commit active before script ran.
 restore_git_ref() {
     echo "Restoring to initial git reference: $initial_git_ref"
     git checkout "$initial_git_ref" --quiet
 }
 
+# load_tables: wrapper to call Django loaddata with optional verbosity.
 load_tables() {
     # Function parameters
     local data_file="${1:-conf/first_install_tables.json}"
@@ -196,6 +195,544 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+ORANGE='\033[0;33m'
+
+# log_section: print a visually separated header in both console and log.
+log_section() {
+    local message="$1"
+    printf "\n\n%s\n" "${YELLOW}------------------${NC}"
+    printf "%b\n" "${YELLOW}${message}${NC}"
+    printf "%s\n\n" "${YELLOW}------------------${NC}"
+}
+
+# log_info: convenience helper for blue info messages (console only).
+log_info() {
+    printf "%b\n" "${BLUE}$1${NC}"
+}
+
+# log_warn: emit warning text in cyan for terminal visibility.
+log_warn() {
+    printf "%b\n" "${CYAN}$1${NC}"
+}
+
+# log_error: emit error text in red for terminal visibility.
+log_error() {
+    printf "%b\n" "${RED}$1${NC}"
+}
+
+# abort_install: log an error and exit with optional status.
+abort_install() {
+    log_error "$1"
+    exit "${2:-1}"
+}
+
+ensure_file_exists() {
+    local file_path="$1"
+    local friendly_name="${2:-$1}"
+    if [ ! -f "$file_path" ]; then
+        abort_install "Required file '$friendly_name' not found."
+    fi
+}
+
+# load_install_config: source the selected install_settings file.
+load_install_config() {
+    ensure_file_exists "$conf" "$conf"
+    # shellcheck disable=SC1090
+    . "$conf"
+}
+
+# checkout_git_revision: ensure desired git revision exists and check it out safely.
+checkout_git_revision() {
+    if git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
+        if [[ $git_branch != $initial_git_ref ]]; then
+            local local_changes
+            local_changes=$(git status --porcelain)
+            if [[ -n $local_changes ]]; then
+                abort_install "Unable to switch to $git_branch. Commit or stash local changes first."
+            fi
+            printf "${YELLOW}Switching to revision %s.${NC}\n" "$git_branch"
+            git checkout "$git_branch" --quiet
+        else
+            printf "${YELLOW}Using current revision: '%s'.${NC}\n" "$git_branch"
+        fi
+    else
+        abort_install "Git reference $git_branch is not defined in ${PWD}."
+    fi
+}
+
+# check_requirements: run Python/DB/Apache/root validations before install/upgrade.
+check_requirements() {
+    log_section "Checking main requirements"
+    python_check
+    log_info "Valid version of Python"
+    if [ $docker == false ]; then
+        db_check
+        log_info "Successful check for database"
+        apache_check
+        log_info "Successful check for apache"
+    fi
+
+    if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ] || [ "$upgrade_type" == "full" ] || [ "$upgrade_type" == "dep" ]; then
+        log_warn "Checking requirement of root user when installation is full or dep"
+        root_check
+        log_info "Successful checking of root user"
+    fi
+}
+
+# rename_apps_if_needed: handles legacy app renaming and DB/migration adjustments when --ren_app is provided.
+rename_apps_if_needed() {
+    if [ $ren_app != true ]; then
+        return 0
+    fi
+
+    rm -rf $INSTALL_PATH/django_utils/migrations/*
+    rm -rf $INSTALL_PATH/iSkyLIMS_core/migrations/*
+    rm -rf $INSTALL_PATH/iSkyLIMS_wetlab/migrations/*
+    rm -rf $INSTALL_PATH/iSkyLIMS_drylab/migrations/*
+
+    cd $INSTALL_PATH
+    sed -i "s/ugettext/gettext/g" iSkyLIMS_wetlab/models.py
+    sed -i "s/ugettext/gettext/g" iSkyLIMS_core/forms.py
+    sed -i "s/ugettext/gettext/g" django_utils/forms.py
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+
+    echo "Create a fake initial"
+    python manage.py makemigrations $FAKEINITIAL_MODULES
+    python manage.py migrate --fake-initial
+
+    if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
+        echo "Changing app dir names in $INSTALL_PATH..."
+        rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
+            $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
+            $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt
+        mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core
+        mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
+        mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
+        mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
+        echo "Done changing app dir names in $INSTALL_PATH..."
+    fi
+    if [ -d "iSkyLIMS" ]; then
+        mv iSkyLIMS/ iskylims/
+        sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/iskylims/wsgi.py
+        sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/manage.py
+    fi
+
+    echo "Modifying database names and constraints..."
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_drylab", "drylab") WHERE app_label like ("iSkyLIMS_%");'
+
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
+    mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
+        -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_drylab", "drylab") WHERE app like ("iSkyLIMS_%");'
+
+    echo "Renaming tables"
+    query_rename_table="SELECT CONCAT('RENAME TABLE ', TABLE_SCHEMA, '.', TABLE_NAME, \
+                        ' TO ', TABLE_SCHEMA, '.', REPLACE(TABLE_NAME, 'iSkyLIMS_', ''), ';') \
+                        AS query FROM information_schema.tables WHERE TABLE_SCHEMA = \"$DB_NAME\" AND TABLE_NAME LIKE 'iSkyLIMS_%';"
+    mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
+        | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+
+    echo "Renaming index"
+    query_rename_unique_indexes="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
+                         ' RENAME INDEX ', rcu.CONSTRAINT_NAME, \
+                         ' TO ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
+                         AS query FROM information_schema.key_column_usage rcu \
+                         JOIN information_schema.table_constraints tc \
+                         ON tc.CONSTRAINT_NAME = rcu.CONSTRAINT_NAME WHERE rcu.TABLE_SCHEMA = \"$DB_NAME\" \
+                         AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' AND tc.CONSTRAINT_TYPE = 'UNIQUE' \
+                         GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, \
+                         rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME;"
+    mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_unique_indexes"  \
+        | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+
+    echo "Renaming constraints"
+    query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
+            ' DROP FOREIGN KEY ' , rcu.CONSTRAINT_NAME, ';', \
+            ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
+            ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
+            tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
+            IF(tc.CONSTRAINT_TYPE = 'FOREIGN KEY', \
+            CONCAT(' REFERENCES ', rcu.REFERENCED_TABLE_SCHEMA, '.', REPLACE(rcu.REFERENCED_TABLE_NAME, 'iSkyLIMS_', ''), ' (', \
+                    GROUP_CONCAT(rcu.REFERENCED_COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ') ON DELETE ', rc.DELETE_RULE), \
+            ''), ';') AS query \
+            FROM information_schema.key_column_usage rcu \
+            LEFT JOIN information_schema.table_constraints tc ON rcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME \
+            LEFT JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
+            WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
+            GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
+    mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
+
+    echo "Done modifying database names and constraints..."
+
+    echo "Modifying names in migration files..."
+    sed -i 's/iSkyLIMS_core/core/g' */migrations/*.py
+    sed -i 's/iSkyLIMS_drylab/drylab/g' */migrations/*.py
+    sed -i 's/iSkyLIMS_wetlab/wetlab/g' */migrations/*.py
+    echo "Done modifying names in migration files..."
+
+    echo "Copying custom migration files from conf."
+    cp $INSTALL_PATH/conf/0002_core_migration_v3.0.0.py $INSTALL_PATH/core/migrations/0002_migration_v3_0_0.py
+    cp $INSTALL_PATH/conf/0002_drylab_migration_v3.0.0.py $INSTALL_PATH/drylab/migrations/0002_migration_v3_0_0.py
+    cp $INSTALL_PATH/conf/0002_wetlab_migration_v3.0.0.py $INSTALL_PATH/wetlab/migrations/0002_migration_v3_0_0.py
+    cp $INSTALL_PATH/conf/0002_django_utils_migration_v3.0.0.py $INSTALL_PATH/django_utils/migrations/0002_migration_v3_0_0.py
+
+    read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+        log "WARN" "Exiting without running migrate command."
+        exit 1
+    fi
+
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+    echo "Running migrate..."
+    python manage.py migrate
+    echo "Done migrate command."
+
+    cd -
+}
+
+# install_system_packages: install InterOp and distro-specific OS packages required by iSkyLIMS.
+install_system_packages() {
+    echo "Installing Interop"
+    if [ -d /opt/interop ]; then
+        echo "There is already an interop installation"
+        echo "Skipping Interop installation"
+    else
+        cd /opt
+        echo "Downloading interop software"
+        wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
+        tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
+        ln -s InterOp-1.1.15-Linux-GNU interop
+        rm InterOp-1.1.15-Linux-GNU.tar.gz
+        echo "Interop is now installed"
+        cd -
+    fi
+
+    linux_distribution=$(lsb_release -i | cut -f 2-)
+
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        echo "Software installation for Ubuntu"
+        apt-get update && apt-get upgrade -y
+        apt-get install -y \
+            apt-utils wget \
+            libmysqlclient-dev \
+            python3-venv  \
+            libpq-dev \
+            python3-dev python3-pip python3-wheel \
+            apache2-dev cifs-utils \
+            gnuplot
+
+    elif [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+        echo "Software installation for Centos/RedHat"
+        yum groupinstall "Development tools"
+        yum install zlib-devel bzip2-devel openssl-devel \
+                    wget httpd-devel mysql-libs sqlite sqlite-devel \
+                    mariadb-devel libffi-devel \
+                    gnuplot cifs-utils
+    fi
+}
+
+# run_django_deploy: execute makemigrations/migrate and optional fixture/superuser steps.
+run_django_deploy() {
+    local mode="${1:-install}"
+    echo "Generating Django migrations"
+    python manage.py makemigrations $MIGRATION_MODULES
+
+    if [ "$mode" = "upgrade" ]; then
+        echo "Applying migrations in fake-initial mode"
+        python manage.py migrate --noinput --fake-initial
+        if [ $tables == true ] ; then
+            echo "Loading pre-filled tables..."
+            load_tables $prefilled_tables true
+            echo "Done loading pre-filled tables..."
+        fi
+    else
+        echo "Applying migrations"
+        python manage.py migrate --noinput
+        echo "Loading in database initial data"
+        load_tables $prefilled_tables true
+        echo "Creating super user "
+        python manage.py createsuperuser --username admin
+    fi
+}
+
+# sync_requirements_file: copy repository requirements into the target installation path.
+sync_requirements_file() {
+    mkdir -p $INSTALL_PATH/conf
+    rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
+}
+
+# setup_virtualenv: create or refresh the Python virtualenv depending on mode.
+setup_virtualenv() {
+    local mode="$1"
+    cd $INSTALL_PATH
+    if [ "$mode" = "install" ]; then
+        if [ -d virtualenv ]; then
+            echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
+            read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                rm -rf $INSTALL_PATH/virtualenv
+                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+            else
+                echo "virtualenv already defined. Skipping."
+            fi
+        else
+            bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+        fi
+    else
+        if [ -d virtualenv ]; then
+            read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]] ; then
+                rm -rf $INSTALL_PATH/virtualenv
+                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+            fi
+        else
+            read -p "There is no virtualenv. Do you want to create a new one? (Y/N) " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]] ; then
+                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+            else
+                echo "Exiting..."
+                exit 0
+            fi
+        fi
+    fi
+    cd -
+}
+
+# prepare_documents_structure: ensure document directories and templates exist with correct permissions.
+prepare_documents_structure() {
+    echo "Created documents structure"
+    mkdir -p $INSTALL_PATH/documents/wetlab
+    mkdir -p $INSTALL_PATH/documents/wetlab/tmp
+    mkdir -p $INSTALL_PATH/documents/wetlab/sample_sheet
+    mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
+    mkdir -p $INSTALL_PATH/documents/wetlab/templates
+    mkdir -p $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
+    mkdir -p $INSTALL_PATH/documents/drylab
+    mkdir -p $INSTALL_PATH/documents/drylab/service_files
+
+    chown -R $user:$apache_group $INSTALL_PATH/documents
+    chmod 775 $INSTALL_PATH/documents
+
+    cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
+    cp $INSTALL_PATH/conf/samples_template.xlsx $INSTALL_PATH/documents/wetlab/templates/
+
+    mkdir -p $INSTALL_PATH/documents/wetlab/collection_index_kits/
+    cp $INSTALL_PATH/conf/collection_index_kits/*.txt $INSTALL_PATH/documents/wetlab/collection_index_kits/
+
+    cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
+    sed -i "s|INSTALL_PATH|${INSTALL_PATH}|g" $INSTALL_PATH/wetlab/logging_config.ini
+}
+
+# install_python_requirements: activate the venv and install required Python packages.
+install_python_requirements() {
+    cd $INSTALL_PATH
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+    echo "Installing required python packages"
+    python -m pip install --upgrade pip
+    python -m pip install wheel
+    python -m pip install -r conf/requirements.txt
+    cd -
+}
+
+# restart_apache_service: restart Apache/HTTPD unless running inside Docker or explicitly skipped.
+restart_apache_service() {
+    if [ $docker != false ]; then
+        return
+    fi
+    linux_distribution=$(lsb_release -i | cut -f 2-)
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        apache_daemon="apache2"
+    else
+        apache_daemon="httpd"
+    fi
+    if ! systemctl restart $apache_daemon; then
+        echo -e "${ORANGE}Apache server restart failed. trying with sudo${NC}"
+        sudo systemctl restart $apache_daemon
+    fi
+}
+
+# run_dependency_stage: execute the dependency portion (system packages + venv + pip) for install or upgrade.
+run_dependency_stage() {
+    local mode="$1"
+
+    if [ "$mode" = "install" ]; then
+    log_section "Preparing dependency environment for installation"
+        if [ -d $INSTALL_PATH ]; then
+            echo "There already is an installation of iskylims in $INSTALL_PATH."
+            read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+                echo "Exiting without running iSkyLIMS installation"
+                exit 1
+            else
+                rm -rf $INSTALL_PATH
+            fi
+        fi
+        install_system_packages
+        mkdir -p $INSTALL_PATH
+        linux_distribution=$(lsb_release -i | cut -f 2-)
+        if [[ $linux_distribution == "Ubuntu" ]]; then
+            apache_group="www-data"
+        else
+            apache_group="apache"
+        fi
+        chown -R $user:$apache_group $INSTALL_PATH
+        chmod 775 $INSTALL_PATH
+    else
+        log_section "Preparing dependency environment for upgrade"
+        if [ ! -d $INSTALL_PATH ]; then
+            abort_install "Unable to start the upgrade. Folder $INSTALL_PATH does not exist."
+        fi
+        install_system_packages
+    fi
+
+    sync_requirements_file
+    setup_virtualenv "$mode"
+    install_python_requirements
+}
+
+# upgrade_application_files: sync code/config and run upgrade-specific tasks (renames, migrations).
+upgrade_application_files() {
+    if [ ! -d $INSTALL_PATH ]; then
+        abort_install "Unable to start the upgrade. Folder $INSTALL_PATH does not exist."
+    fi
+
+    log_section "Starting iSkyLIMS Upgrade version: ${APP_VERSION}"
+
+    rename_apps_if_needed
+
+    echo "Copying files to installation folder"
+    rsync -rlv conf/ $INSTALL_PATH/conf/
+    rsync -rlv --fuzzy --delay-updates --delete-delay \
+          --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
+          README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
+
+    echo "Update settings and url file."
+    update_settings_and_urls
+    prepare_documents_structure
+    if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets" ]; then
+        echo "Updating sample sheet folder name"
+        mv $INSTALL_PATH/documents/wetlab/SampleSheets $INSTALL_PATH/documents/wetlab/sample_sheet
+    fi
+
+    if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep" ]; then
+        echo "Updating sample sheet for libary preparationfolder name"
+        mv $INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
+    fi
+
+    cd $INSTALL_PATH
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+
+    if [ $docker == false ]; then
+        run_django_deploy "upgrade"
+    fi
+    echo "Deleting static files..."
+    rm -rf $INSTALL_PATH/static
+    echo "Running collect statics..."
+    python manage.py collectstatic
+    echo "Done collect statics"
+
+    if [ $run_script ]; then
+        for val in "${migration_script[@]}"; do
+            if [[ $val = *","* ]]; then
+                parameters=(${val//,/ })
+                echo "Running migration script: ${parameters[0]}"
+                ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
+                echo "Done migration script: ${parameters[0]}"
+            else
+                echo "Running migration script: $val"
+                ./manage.py runscript $val
+                echo "Done migration script: $val"
+            fi
+        done
+    fi
+
+    cd -
+    log_section "Successfuly upgrade of iSKyLIMS version: ${APP_VERSION}"
+}
+
+# install_application_files: deploy Django project files, update settings, and run initial migrations.
+install_application_files() {
+    log_section "Starting iSkyLIMS install version: ${APP_VERSION}"
+
+    user=${SUDO_USER:-$USER}
+    group=$(groups | cut -d" " -f1)
+
+    linux_distribution=$(lsb_release -i | cut -f 2-)
+
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        apache_group="www-data"
+    else
+        apache_group="apache"
+    fi
+
+    if [ "$install_type" == "full" ] || [ "$install_type" == "app" ]; then
+
+        if [ $LOG_TYPE == "symbolic_link" ]; then
+            if [ -d $LOG_PATH ]; then
+                if [ ! -d $INSTALL_PATH/logs ]; then
+                    echo "Deleting existing symbolin link"
+                    rm $INSTALL_PATH/logs
+                fi
+                echo "Creating symbolic link to log folder"
+                ln -s $LOG_PATH  $INSTALL_PATH/logs
+                chmod 775 $LOG_PATH
+            else
+                echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
+            exit 1
+            fi
+        else
+            if  [ ! -d $INSTALL_PATH/logs ]; then
+                mkdir -p $INSTALL_PATH/logs
+                chown $user:$apache_group $INSTALL_PATH/logs
+                chmod 775 $INSTALL_PATH/logs
+            else
+                echo "Log folder path: $INSTALL_PATH/logs already exist."
+            fi
+        fi
+
+        rsync -rlv README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
+
+        cd $INSTALL_PATH
+
+        prepare_documents_structure
+
+        echo "activate the virtualenv"
+        source virtualenv/bin/activate
+
+        echo "Creating iskylims project"
+        django-admin startproject iskylims .
+
+        update_settings_and_urls
+
+        if [ $docker == false ]; then
+            run_django_deploy "install"
+        fi
+
+        echo "Run collectstatic"
+        python manage.py collectstatic
+
+        cd -
+
+        log_section "Successfuly iSkyLIMS Installation version: ${APP_VERSION}"
+        echo "Installation completed"
+    fi
+}
 
 # translate long options to short
 reset=true
@@ -215,6 +752,7 @@ do
         --conf)         set -- "$@" -c ;;
         --ren_app)      set -- "$@" -r ;;
         --docker)       set -- "$@" -k ;;
+        --skip_apache_restart) set -- "$@" -a ;;
 
     # ADITIONAL
         --help)     set -- "$@" -h ;;
@@ -235,9 +773,10 @@ upgrade=false
 upgrade_type="full"
 docker=false
 prefilled_tables="conf/first_install_tables.json"
+restart_apache=true
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:r:g:tdkvh"
+options=":c:s:i:u:r:g:tdkvha"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -281,12 +820,15 @@ while getopts $options opt; do
         k )
             docker=true
             ;;
+        a )
+            restart_apache=false
+            ;;
         h )
             usage
             exit 1
             ;;
         v )
-            echo $ISKYLIMS_VERSION
+            echo $APP_VERSION
             exit 1
             ;;
         \?)
@@ -306,621 +848,36 @@ while getopts $options opt; do
 done
 shift $((OPTIND-1))
 
-#=============================================================================
-#                     SETTINGS CHECKINGS
-#=============================================================================
-
-if [ ! -f "$conf" ]; then
-    printf "\n\n%s"
-    printf "${RED}------------------${NC}\n"
-    printf "${RED}Unable to start.${NC}\n"
-    printf "${RED}Configuration File $conf does not exist.${NC}\n"
-    printf "${RED}------------------${NC}\n"
-    exit 1
-fi
-# Read configuration file
-
-. $conf
-
-# Check if git reference (branch, SHA, or tag) exists and checkout
-if git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
-    if [[ $git_branch != $initial_git_ref ]]; then
-        # Check for local changes
-        local_changes=$(git status --porcelain)
-        if [[ -n $local_changes ]]; then
-            printf "\n\n%s"
-            printf "${RED}------------------${NC}\n"
-            printf "${RED}Unable to switch to $git_branch.${NC}\n"
-            printf "${RED}You have local changes that would be overwritten by checkout:${NC}\n"
-            printf "${RED}\t'$local_changes'.${NC}\n"
-            printf "${RED}Please commit or stash your changes before switching.${NC}\n"
-            printf "${RED}------------------${NC}\n"
-            exit 1
-        else
-            printf "${YELLOW}Switching to revision $git_branch.${NC}\n"
-            git checkout "$git_branch" --quiet
-        fi
-    else
-        printf "${YELLOW}Using current revision: '$git_branch'.${NC}\n"
-    fi
-else
-    printf "\n\n%s"
-    printf "${RED}------------------${NC}\n"
-    printf "${RED}Unable to start.${NC}\n"
-    printf "${RED}Git reference $git_branch is not defined in ${PWD}.${NC}\n"
-    printf "${RED}------------------${NC}\n"
-    exit 1
-fi
-#================================================================
-# CHECK REQUIREMENTS BEFORE STARTING INSTALLATION
-#================================================================
-
-echo "Checking main requirements"
-python_check
-printf "${BLUE}Valid version of Python${NC}\n"
-if [ $docker == false ]; then
-    db_check
-    printf "${BLUE}Successful check for database${NC}\n"
-    apache_check
-    printf "${BLUE}Successful check for apache${NC}\n"
-fi
-
-if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ] || [ "$upgrade_type" == "full" ] || [ "$upgrade_type" == "dep" ]; then
-    printf "${YELLOW} Checking requirement of root  user when installation is full or dep ${NC}\n"
-    root_check
-    printf "${BLUE}Successful checking of root user${NC}\n"
-fi
-
-#=============================================================================
-#                   UPGRADE INSTALLATION
-# Check if parameter is passing to script to upgrade the installation
-# If "upgrade" parameter is set then the script only execute the upgrade part.
-# If other parameter as upgrade is given return usage message and exit
-#=============================================================================
-
+operation="install"
+operation_scope="$install_type"
 if [ $upgrade == true ]; then
-    # check if upgrade keyword is given
-    if [ ! -d $INSTALL_PATH ]; then
-        printf "\n\n%s"
-        printf "${RED}------------------${NC}\n"
-        printf "${RED}Unable to start the upgrade.${NC}\n"
-        printf "${RED}Folder $INSTALL_PATH does not exist.${NC}\n"
-        printf "${RED}------------------${NC}\n"
-        exit 1
-    fi
-    #================================================================
-    # MAIN_BODY FOR UPGRADE
-    #================================================================
-    printf "\n\n%s"
-    printf "${YELLOW}------------------${NC}\n"
-    printf "%s"
-    printf "${YELLOW}Starting iSkyLIMS Upgrade version: ${ISKYLIMS_VERSION}${NC}\n"
-    printf "%s"
-    printf "${YELLOW}------------------${NC}\n\n"
-    
-    if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "dep" ]; then
-        if [ -d $INSTALL_PATH/virtualenv ]; then
-            read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ $REPLY =~ ^[Yy]$ ]] ; then
-                rm -rf $INSTALL_PATH/virtualenv
-                rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
-                cd $INSTALL_PATH
-                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
-                upgrade_venv
-                cd -
-            else
-                rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
-                cd $INSTALL_PATH
-                upgrade_venv
-                cd -
-            fi    
-        else
-            echo "There is no virtualenv to upgrade in $INSTALL_PATH."
-            read -p "Do you want to create a new virtualenv and reinstall? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ $REPLY =~ ^[Yy]$ ]] ; then
-                rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
-                cd $INSTALL_PATH
-                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
-                upgrade_venv
-                cd -
-            else
-                echo "Exiting..."
-                exit 0
-            fi
-        fi
-    fi
-
-    if [ "$upgrade_type" = "full" ] || [ "$upgrade_type" = "app" ]; then
-
-        # Delete git and no copy files stuff
-        if [ $ren_app == true ] ; then
-            # remove all previous migrations and make a fake initial
-            # delete existing migrations file
-            rm -rf $INSTALL_PATH/django_utils/migrations/*
-            rm -rf $INSTALL_PATH/iSkyLIMS_core/migrations/*
-            rm -rf $INSTALL_PATH/iSkyLIMS_wetlab/migrations/*
-            rm -rf $INSTALL_PATH/iSkyLIMS_drylab/migrations/*
-
-            cd $INSTALL_PATH
-            sed -i "s/ugettext/gettext/g" iSkyLIMS_wetlab/models.py
-            sed -i "s/ugettext/gettext/g" iSkyLIMS_core/forms.py
-            sed -i "s/ugettext/gettext/g" django_utils/forms.py
-            echo "activate the virtualenv"
-            source virtualenv/bin/activate
-
-            echo "Create a fake initial"
-            python manage.py makemigrations $FAKEINITIAL_MODULES
-            python manage.py migrate --fake-initial
-
-            if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
-                echo "Changing app dir names in $INSTALL_PATH..."
-                rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
-                    $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
-                    $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt 
-                mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core 
-                mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab
-                mv $INSTALL_PATH/iSkyLIMS_drylab $INSTALL_PATH/drylab
-                mv $INSTALL_PATH/iSkyLIMS_clinic $INSTALL_PATH/clinic
-                echo "Done changing app dir names in $INSTALL_PATH..."
-            fi
-            if [ -d "iSkyLIMS" ]; then
-                mv iSkyLIMS/ iskylims/
-                sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/iskylims/wsgi.py
-                sed -i "s/iSkyLIMS/iskylims/g" $INSTALL_PATH/manage.py
-            fi
-            cd -
-        fi
-
-        # update installation by sinchronize folders
-        echo "Copying files to installation folder"
-        rsync -rlv conf/ $INSTALL_PATH/conf/
-        rsync -rlv --fuzzy --delay-updates --delete-delay \
-              --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
-              README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
-        
-        # update the settings.py and the main urls
-        echo "Update settings and url file."
-        update_settings_and_urls
-        # update illumina template files.# Copy illumina sample sheet templates
-        mkdir -p $INSTALL_PATH/documents/wetlab/templates/
-        cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
-        cp $INSTALL_PATH/conf/samples_template.xlsx $INSTALL_PATH/documents/wetlab/templates/
-
-        # Copy the illumina collection index kits
-        mkdir -p $INSTALL_PATH/documents/wetlab/collection_index_kits/
-        cp $INSTALL_PATH/conf/collection_index_kits/*.txt $INSTALL_PATH/documents/wetlab/collection_index_kits/
-
-        # update logging configuration file
-        cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
-        sed -i "s@INSTALL_PATH@${INSTALL_PATH}@g" $INSTALL_PATH/wetlab/logging_config.ini
-        # update the sample sheet folder and name
-        if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets" ]; then
-            echo "Updating sample sheet folder name"
-            mv $INSTALL_PATH/documents/wetlab/SampleSheets $INSTALL_PATH/documents/wetlab/sample_sheet
-        fi
-            
-        if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep" ]; then
-            echo "Updating sample sheet for libary preparationfolder name"
-            mv $INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
-        fi
-
-        cd $INSTALL_PATH
-        echo "activate the virtualenv"
-        source virtualenv/bin/activate
-        ### RENAME APP  in database and migration files ####
-        if [ $ren_app == true ] ; then
-            
-            echo "Modifying database names and constraints..."
-            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-                -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_core", "core") WHERE app_label like ("iSkyLIMS_%");'
-            # mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP  \
-            #    -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_clinic", "clinic") WHERE app_label like ("iSkyLIMS_%");'
-            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-                -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_wetlab", "wetlab") WHERE app_label like ("iSkyLIMS_%");'
-            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-                -e 'UPDATE django_content_type SET app_label = REPLACE(app_label , "iSkyLIMS_drylab", "drylab") WHERE app_label like ("iSkyLIMS_%");'
-            
-            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-                -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_core", "core") WHERE app like ("iSkyLIMS_%");'
-            # mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-            #    -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_clinic", "clinic") WHERE app like ("iSkyLIMS_%");'
-            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-                -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_wetlab", "wetlab") WHERE app like ("iSkyLIMS_%");'
-            mysql -u $DB_USER -p$DB_PASS -D $DB_NAME -h $DB_SERVER_IP \
-                -e 'UPDATE django_migrations SET app = REPLACE(app , "iSkyLIMS_drylab", "drylab") WHERE app like ("iSkyLIMS_%");'
-            echo "Renaming tables"
-            query_rename_table="SELECT CONCAT('RENAME TABLE ', TABLE_SCHEMA, '.', TABLE_NAME, \
-                                ' TO ', TABLE_SCHEMA, '.', REPLACE(TABLE_NAME, 'iSkyLIMS_', ''), ';') \
-                                AS query FROM information_schema.tables WHERE TABLE_SCHEMA = \"$DB_NAME\" AND TABLE_NAME LIKE 'iSkyLIMS_%';"
-            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_table" \
-                | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
-            echo "Renaming index"
-            query_rename_unique_indexes="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                                 ' RENAME INDEX ', rcu.CONSTRAINT_NAME, \
-                                 ' TO ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ';') \
-                                 AS query FROM information_schema.key_column_usage rcu \
-                                 JOIN information_schema.table_constraints tc \
-                                 ON tc.CONSTRAINT_NAME = rcu.CONSTRAINT_NAME WHERE rcu.TABLE_SCHEMA = \"$DB_NAME\" \
-                                 AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' AND tc.CONSTRAINT_TYPE = 'UNIQUE' \
-                                 GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, \
-                                 rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME;"
-            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_unique_indexes"  \
-                | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
-            echo "Renaming constraints"
-            query_rename_constraints="SELECT CONCAT('ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                    ' DROP FOREIGN KEY ' , rcu.CONSTRAINT_NAME, ';', \
-                    ' ALTER TABLE ', rcu.TABLE_SCHEMA, '.', rcu.TABLE_NAME, \
-                    ' ADD CONSTRAINT ', REPLACE(rcu.CONSTRAINT_NAME, 'iSkyLIMS_', ''), ' ', \
-                    tc.CONSTRAINT_TYPE, ' (', GROUP_CONCAT(rcu.COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ')', \
-                    IF(tc.CONSTRAINT_TYPE = 'FOREIGN KEY', \
-                    CONCAT(' REFERENCES ', rcu.REFERENCED_TABLE_SCHEMA, '.', REPLACE(rcu.REFERENCED_TABLE_NAME, 'iSkyLIMS_', ''), ' (', \
-                            GROUP_CONCAT(rcu.REFERENCED_COLUMN_NAME ORDER BY rcu.ORDINAL_POSITION SEPARATOR ', '), ') ON DELETE ', rc.DELETE_RULE), \
-                    ''), ';') AS query \
-                    FROM information_schema.key_column_usage rcu \
-                    LEFT JOIN information_schema.table_constraints tc ON rcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME \
-                    LEFT JOIN information_schema.referential_constraints rc ON rcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME \
-                    WHERE rcu.TABLE_SCHEMA = '$DB_NAME' AND rcu.CONSTRAINT_NAME LIKE 'iSkyLIMS_%' \
-                    GROUP BY rcu.TABLE_SCHEMA, rcu.TABLE_NAME, rcu.CONSTRAINT_NAME, tc.CONSTRAINT_TYPE, rcu.REFERENCED_TABLE_SCHEMA, rcu.REFERENCED_TABLE_NAME, rc.DELETE_RULE;"
-            mysql -u $DB_USER -p$DB_PASS -h $DB_SERVER_IP -e "$query_rename_constraints" | xargs -I % echo "mysql -u$DB_USER -p'$DB_PASS' -D $DB_NAME -h $DB_SERVER_IP -e \"% \" " | bash
-
-            echo "Done modifying database names and constraints..." 
-
-            echo "Modifying names in migration files..."
-            sed -i 's/iSkyLIMS_core/core/g' */migrations/*.py
-            # sed -i 's/iSkyLIMS_clinic/clinic/g' */migrations/*.py
-            sed -i 's/iSkyLIMS_drylab/drylab/g' */migrations/*.py
-            sed -i 's/iSkyLIMS_wetlab/wetlab/g' */migrations/*.py
-            echo "Done modifying names in migration files..."
-            
-            # copy modified migration files
-            echo "Copying custom migration files from conf."
-            cp $INSTALL_PATH/conf/0002_core_migration_v3.0.0.py $INSTALL_PATH/core/migrations/0002_migration_v3_0_0.py
-            cp $INSTALL_PATH/conf/0002_drylab_migration_v3.0.0.py $INSTALL_PATH/drylab/migrations/0002_migration_v3_0_0.py
-            cp $INSTALL_PATH/conf/0002_wetlab_migration_v3.0.0.py $INSTALL_PATH/wetlab/migrations/0002_migration_v3_0_0.py
-            # cp conf/0002_clinic_migration_v2.3.1.py clinic/migrations/0002_migration_v2_3_1.py
-            cp $INSTALL_PATH/conf/0002_django_utils_migration_v3.0.0.py $INSTALL_PATH/django_utils/migrations/0002_migration_v3_0_0.py
-
-            read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                echo "Exiting without running migrate command."
-                exit 1
-            fi
-
-            echo "activate the virtualenv"
-            source virtualenv/bin/activate
-            echo "Running migrate..."
-            python manage.py migrate
-            echo "Done migrate command."
-
-        else
-            # execute the script to remove the comma in RawTopUnknowBarcodes table
-            echo "Running migration script: remove_comma_rawtopunknownbarcodes"
-            ./manage.py runscript convert_rawtop_counter_to_int
-            echo "checking for database changes"
-            if python manage.py makemigrations --noinput | grep -q "No changes"; then
-                # check for pending migrations
-                if ./manage.py showmigrations | grep '\[ \]'; then
-                    echo "There are pending migrations"
-                    read -p "Do you want to update database with the pending migrations? (Y/N) " -n 1 -r
-                    echo    #  move to a new line
-                    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                        echo "Continue running script without running migrate command."
-                    else
-                        echo "Running migrate..."
-                        python manage.py migrate
-                        echo "Done migrate command."
-                    fi
-                else
-                    echo "No migration is required"
-                fi
-            else
-                read -p "Do you want to proceed with the migrate command? (Y/N) " -n 1 -r
-                echo    # (optional) move to a new line
-                if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                    echo "Exiting without running migrate command."
-                    exit 1
-                fi
-                echo "Running migrate..."
-                python manage.py migrate
-                echo "Done migrate command."
-            fi
-        fi     
-        # update static files
-        echo "Deleting static files..."
-        rm -rf $INSTALL_PATH/static
-        echo "Running collect statics..."
-        python manage.py collectstatic
-        echo "Done collect statics"
-        
-        if [ $tables == true ] ; then
-            echo "Loading pre-filled tables..."
-            echo "Loading in database initial data"
-            load_tables $prefilled_tables true
-            echo "Done loading pre-filled tables..."
-        fi
-
-        if [ $run_script ]; then
-            for val in "${migration_script[@]}"; do
-                if [[ $val = *","* ]]; then
-                    parameters=(${val//,/ })
-                    echo "Running migration script: ${parameters[0]}"
-                    ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
-                    echo "Done migration script: ${parameters[0]}"
-                else
-                    echo "Running migration script: $val"
-                    ./manage.py runscript $val
-                    echo "Done migration script: $val"
-                fi
-            done
-        fi
-
-        cd -
-
-        # Linux distribution
-        linux_distribution=$(lsb_release -i | cut -f 2-)
-
-        echo ""
-        echo "Restart apache server to update changes"
-        if [[ $linux_distribution == "Ubuntu" ]]; then
-            apache_daemon="apache2"
-        else
-            apache_daemon="httpd"
-        fi
-        
-        # systemctl restart $apache_user
-
-        if ! [ $? -eq 0 ]; then
-            echo -e "${ORANGE}Apache server restart failed. trying with sudo{NC}"
-            sudo systemctl restart $apache_daemon
-        fi
-    fi
-    printf "\n\n%s"
-    printf "${BLUE}------------------${NC}\n"
-    printf "%s"
-    printf "${BLUE}Successfuly upgrade of iSKyLIMS version: ${ISKYLIMS_VERSION}${NC}\n"
-    printf "%s"
-    printf "${BLUE}------------------${NC}\n\n"    
-    # exit once upgrade is finished
-    exit 0
-
+    operation="upgrade"
+    operation_scope="$upgrade_type"
 fi
 
-#================================================================
-# INSTALL REPOSITORY REQUIRED SOFTWARE AND PYTHON VIRTUAL ENVIRONMENT
-#================================================================
+load_install_config
+checkout_git_revision
+user=${SUDO_USER:-$USER}
+check_requirements
 
-if [ $install == true ]; then
-
-    if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ]; then
-
-        #================================================================
-        # MAIN_BODY FOR INSTALL
-        #================================================================
-        printf "\n\n%s"
-        printf "${YELLOW}------------------${NC}\n"
-        printf "%s"
-        printf "${YELLOW}Starting iSkyLIMS install version: ${ISKYLIMS_VERSION}${NC}\n"
-        printf "%s"
-        printf "${YELLOW}------------------${NC}\n\n"
-
-        user=$SUDO_USER
-        group=$(groups | cut -d" " -f1)
-        
-        # Find out server Linux distribution
-        linux_distribution=$(lsb_release -i | cut -f 2-)
-
-        if [[ $linux_distribution == "Ubuntu" ]]; then
-            apache_group="www-data"
-        else
-            apache_group="apache"
-        fi
-
-        echo "Starting iSkyLIMS installation"
-        if [ -d $INSTALL_PATH ]; then
-            echo "There already is an installation of iskylims in $INSTALL_PATH."
-            read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                echo "Exiting without running iSkyLIMS installation"
-                exit 1
-            else
-                rm -rf $INSTALL_PATH
-            fi
-        fi
-
-        echo "Installing Interop"
-        if [ -d /opt/interop ]; then
-            echo "There is already an interop installation"
-            echo "Skipping Interop installation"
-        else
-            cd /opt
-            echo "Downloading interop software"
-            wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
-            tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
-            ln -s InterOp-1.1.15-Linux-GNU interop
-            rm InterOp-1.1.15-Linux-GNU.tar.gz
-            echo "Interop is now installed"
-            cd -
-        fi
-
-        if [[ $linux_distribution == "Ubuntu" ]]; then
-            echo "Software installation for Ubuntu"
-            apt-get update && apt-get upgrade -y
-            apt-get install -y \
-                apt-utils wget \
-                libmysqlclient-dev \
-                python3-venv  \
-                libpq-dev \
-                python3-dev python3-pip python3-wheel \
-                apache2-dev cifs-utils \
-                gnuplot
-
-        fi
-
-        if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-            echo "Software installation for Centos/RedHat"
-            yum groupinstall "Development tools"
-            yum install zlib-devel bzip2-devel openssl-devel \
-                        wget httpd-devel mysql-libs sqlite sqlite-devel \
-                        mariadb-devel libffi-devel \
-                        gnuplot cifs-utils
-        fi
-
-        ## Create the installation folder
-        mkdir -p $INSTALL_PATH/conf
-        chown -R $user:$apache_group $INSTALL_PATH
-        chmod 775 $INSTALL_PATH
-        
-        # Copy requirements before moving to install path
-        rsync -rlv conf/requirements.txt $INSTALL_PATH/conf/requirements.txt
-        
-        cd $INSTALL_PATH
-        # install virtual environment
-        echo "Creating virtual environment"
-        if [ -d $INSTALL_PATH/virtualenv ]; then
-            echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
-            read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
-            echo    # (optional) move to a new line
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-                rm -rf $INSTALL_PATH/virtualenv
-                bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
-            else
-                echo "virtualenv alredy defined. Skipping."
-            fi
-        else
-            bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
-        fi
-
-        echo "activate the virtualenv"
-        source virtualenv/bin/activate
-
-        # Install python packages required for iSkyLIMS
-        echo "Installing required python packages"
-        python -m pip install wheel
-        python -m pip install -r conf/requirements.txt
-
-        cd -
-
-        if [ "$install_type" == "full" ]; then
-            printf "\n\n%s"
-            printf "${BLUE}------------------${NC}\n"
-            printf "%s"
-            printf "${BLUE}Software dep are successfuly installed${NC}\n"
-            printf "%s"
-            printf "${BLUE}------------------${NC}\n\n"
-        else
-            printf "\n\n%s"
-            printf "${BLUE}------------------${NC}\n"
-            printf "%s"
-            printf "${BLUE}Software dep are successfuly installed${NC}\n"
-            printf "%s"
-            printf "${BLUE}------------------${NC}\n\n"
-            printf "\n\n%s"
-            printf "${RED}------------------${NC}\n"
-            printf "%s"
-            printf "${RED}Exiting${NC}\n"
-            printf "%s"
-            printf "${RED}------------------${NC}\n\n"
-            exit 0
-        fi
-    fi
-
-    #================================================================
-    # INSTALL iSkyLIMS PLATFORM APPLICATION
-    #================================================================
-
-    if [ "$install_type" == "full" ] || [ "$install_type" == "app" ]; then
-
-        if [ $LOG_TYPE == "symbolic_link" ]; then
-            if [ -d $LOG_PATH ]; then
-                if [ ! -d $INSTALL_PATH/logs ]; then
-                    echo "Deleting existing symbolin link" 
-                    rm $INSTALL_PATH/logs
-                fi
-                echo "Creating symbolic link to log folder"
-                ln -s $LOG_PATH  $INSTALL_PATH/logs
-                chmod 775 $LOG_PATH
-            else
-                echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
-            exit 1
-            fi
-        else
-            if  [ ! -d $INSTALL_PATH/logs ]; then
-                mkdir -p $INSTALL_PATH/logs
-                chown $user:$apache_group $INSTALL_PATH/logs
-                chmod 775 $INSTALL_PATH/logs
-            else
-                echo "Log folder path: $INSTALL_PATH/logs already exist."
-            fi
-        fi
-
-        rsync -rlv README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
-
-        cd $INSTALL_PATH
-
-        # Create necessary folders
-        echo "Created documents structure"
-        mkdir -p $INSTALL_PATH/documents/wetlab
-        mkdir -p $INSTALL_PATH/documents/wetlab/tmp
-        mkdir -p $INSTALL_PATH/documents/wetlab/sample_sheet
-        mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
-        mkdir -p $INSTALL_PATH/documents/wetlab/templates
-        mkdir -p $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
-        mkdir -p $INSTALL_PATH/documents/drylab
-        mkdir -p $INSTALL_PATH/documents/drylab/service_files
-        
-        chown -R $user:$apache_group $INSTALL_PATH/documents
-        chmod 775 $INSTALL_PATH/documents
-        
-        # Copy illumina sample sheet templates
-        cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
-        cp $INSTALL_PATH/conf/samples_template.xlsx $INSTALL_PATH/documents/wetlab/templates/
-
-        # update logging configuration file
-        cp $INSTALL_PATH/conf/template_logging_config.ini $INSTALL_PATH/wetlab/logging_config.ini
-        sed -i "s|INSTALL_PATH|${INSTALL_PATH}|g" $INSTALL_PATH/wetlab/logging_config.ini
-
-        # Starting iSkyLIMS
-        echo "activate the virtualenv"
-        source virtualenv/bin/activate
-
-        echo "Creating iskylims project"
-        django-admin startproject iskylims .
-        
-        # update the settings.py and the main urls
-        update_settings_and_urls
-
-        # Creating data base structure and load prefilled tables
-        if [ $docker == false ]; then
-            echo "Creating the database structure for iSkyLIMS"
-            python manage.py migrate
-            python manage.py makemigrations $MIGRATION_MODULES
-            python manage.py migrate
-            echo "Loading in database initial data"
-            load_tables $prefilled_tables true
-            echo "Creating super user "
-            python manage.py createsuperuser --username admin
-        fi
-
-        # copy static files 
-        echo "Run collectstatic"
-        python manage.py collectstatic
-
-        cd -
-
-        printf "\n\n%s"
-        printf "${BLUE}------------------${NC}\n"
-        printf "%s"
-        printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
-        printf "%s"
-        printf "${BLUE}------------------${NC}\n\n"
-
-        echo "Installation completed"
+if [[ "$operation_scope" == "full" || "$operation_scope" == "dep" ]]; then
+    run_dependency_stage "$operation"
+    if [ "$operation_scope" = "dep" ]; then
+        log_info "Dependency stage completed."
         exit 0
     fi
+fi
+
+if [[ "$operation_scope" == "full" || "$operation_scope" == "app" ]]; then
+    if [ "$operation" = "install" ]; then
+        install_application_files
+    else
+        upgrade_application_files
+    fi
+    if [ $docker == false ] && [ $restart_apache == true ]; then
+        restart_apache_service
+    fi
+    exit 0
 fi
 
 printf "\n\n%s"
