@@ -6,17 +6,25 @@ usage() {
 cat << EOF
 This script installs and upgrades the iskylims app.
 
-Usage : $0 [--demo_data] [--install_type] [--git_revision]
+Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--test]
     Optional input data:
     --demo_data         | Provide already downloaded demo data from Zenodo
     --install_type      | Specify the installation type for iSkyLIMS (default: full)
     --git_revision      | Specify the Git revision to install (default: main)
+    --compose_file      | docker compose file to use (overrides default)
+    --install_conf      | Settings file consumed during docker image build (mandatory for production)
+    --skip_demo_data    | Skip downloading/copying demo data to samba container
+    --skip_test_data    | Skip loading test fixtures (test/test_data.json)
+    --test              | Use development/test compose file and sample data
 
 Examples:
-    Install demo docker system
-    bash $0 
+    Deploy production container pointing to an external DB/Samba:
+    bash $0 --install_conf conf/my_prod_settings.txt
 
-    Provide already downloaded data from Zenodo (compressed)
+    Install demo docker system with local services
+    bash $0 --test
+
+    Provide already downloaded data from Zenodo (compressed) for test environment
     bash $0 --demo_data /path/to/iskylims_demo_data.tar.gz
 
     Speficy a custom installation using the Git revision "develop":
@@ -39,6 +47,11 @@ do
         --demo_data)         set -- "$@" -d ;;
         --install_type)      set -- "$@" -i ;;
         --git_revision)      set -- "$@" -g ;;
+        --compose_file)      set -- "$@" -c ;;
+        --install_conf)      set -- "$@" -s ;;
+        --skip_demo_data)    set -- "$@" -n ;;
+        --skip_test_data)    set -- "$@" -t ;;
+        --test)              set -- "$@" -p ;;
 
         # ADDITIONAL
         --help)              set -- "$@" -h ;;
@@ -52,9 +65,14 @@ done
 demo_data=false
 install_type="full"
 git_revision="main"
+compose_file=""
+install_conf=""
+skip_demo_data=""
+skip_test_data=""
+mode="production"
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:i:g:vh"
+options=":d:i:g:c:s:vhntp"
 while getopts $options opt; do
     case $opt in
         d)
@@ -65,6 +83,21 @@ while getopts $options opt; do
             ;;
         g)
             git_revision=$OPTARG
+            ;;
+        c)
+            compose_file=$OPTARG
+            ;;
+        s)
+            install_conf=$OPTARG
+            ;;
+        n)
+            skip_demo_data=true
+            ;;
+        t)
+            skip_test_data=true
+            ;;
+        p)
+            mode="test"
             ;;
         h)
             usage
@@ -91,9 +124,57 @@ while getopts $options opt; do
 done
 shift $((OPTIND-1))
 
-echo "Deploying test containers with INSTALL_TYPE=$install_type and GIT_REVISION=$git_revision..."
-docker compose build --no-cache --build-arg INSTALL_TYPE=$install_type --build-arg GIT_REVISION=$git_revision
-docker compose up -d
+if [ "$mode" = "test" ]; then
+    if [ -z "$compose_file" ]; then
+        compose_file="docker-compose.yml"
+    fi
+    if [ -z "$install_conf" ]; then
+        install_conf="conf/docker_install_settings.txt"
+    fi
+else
+    if [ -z "$compose_file" ]; then
+        compose_file="docker-compose.prod.yml"
+    fi
+fi
+
+if [ "$mode" = "production" ] && [ -z "$install_conf" ]; then
+    echo "Production deployments require --install_conf pointing to your settings file."
+    exit 1
+fi
+
+if [ -z "$skip_demo_data" ]; then
+    if [ "$mode" = "test" ]; then
+        skip_demo_data=false
+    else
+        skip_demo_data=true
+    fi
+fi
+
+if [ -z "$skip_test_data" ]; then
+    if [ "$mode" = "test" ]; then
+        skip_test_data=false
+    else
+        skip_test_data=true
+    fi
+fi
+
+if [ ! -f "$compose_file" ]; then
+    echo "Compose file '$compose_file' not found"
+    exit 1
+fi
+
+if [ ! -f "$install_conf" ]; then
+    echo "Install configuration '$install_conf' not found"
+    exit 1
+fi
+
+service_exists() {
+    docker compose -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
+}
+
+echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=$install_type and GIT_REVISION=$git_revision..."
+docker compose -f "$compose_file" build --no-cache --build-arg INSTALL_TYPE="$install_type" --build-arg GIT_REVISION="$git_revision" --build-arg INSTALL_CONF="$install_conf"
+docker compose -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
@@ -108,21 +189,29 @@ docker exec -it iskylims_app python3 manage.py createsuperuser
 
 echo "Loading initial data into the database"
 docker exec -it iskylims_app python3 manage.py loaddata conf/first_install_tables.json
-docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
-
-echo "Downloading and copying test files to the Samba container"
-if [ "$demo_data" == "false" ]; then
-    wget https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
-    demo_data="./iskylims_demo_data.tar.gz"
+if [ "$skip_test_data" = false ]; then
+    docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
+else
+    echo "Skipping test data fixtures as requested"
 fi
-docker cp $demo_data samba:/mnt
-docker exec -it samba tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
 
-echo "Deleting compressed test file"
-docker exec -it samba rm /mnt/iskylims_demo_data.tar.gz
+if [ "$skip_demo_data" = false ] && service_exists "samba"; then
+    echo "Downloading and copying test files to the Samba container"
+    if [ "$demo_data" == "false" ]; then
+        wget https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
+        demo_data="./iskylims_demo_data.tar.gz"
+    fi
+    docker cp "$demo_data" samba:/mnt
+    docker exec -it samba tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
 
-if [ "$demo_data" == "false" ]; then
-    rm -f $demo_data
+    echo "Deleting compressed test file"
+    docker exec -it samba rm /mnt/iskylims_demo_data.tar.gz
+
+    if [ "$demo_data" == "false" ]; then
+        rm -f "$demo_data"
+    fi
+else
+    echo "Skipping Samba demo data load (flag enabled or service not present)"
 fi
 
 echo "Running crontab"
