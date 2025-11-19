@@ -130,13 +130,19 @@ sudo nano install_settings.txt
 
 iSkyLIMS debe instalarse en el directorio "/opt".
 
-Necesitará privilegios de administrador para instalar las dependencias. Para manejar diferentes responsabilidades de instalación dentro de la organización, donde es posible que no sea la persona con privilegios de administrador, nuestro script de instalación tiene estas opciones en el parámetro `--install`:
+Necesitará privilegios de administrador para instalar las dependencias. El mismo
+script (`install.sh`) ahora coordina la preparación de dependencias y el
+despliegue de la aplicación, por lo que puede elegir lo que necesite usando el
+parámetro `--install`:
 
-- `dep`: para instalar los paquetes de software, así como los paquetes de Python dentro del entorno virtual. Se necesita permisos de administrador.
-- `app`: para instalar solo el software de la aplicación iSkyLIMS sin necesidad de tener permisos de administrador.
-- `full`: si tiene directamente permisos de administrador, puede instalar tanto las dependencias como la aplicación con esta opción.
+- `dep`: instala los paquetes del sistema y los requisitos de Python dentro del
+  entorno virtual. Requiere permisos de administrador.
+- `app`: despliega solo la aplicación (copia el código, ejecuta migraciones y
+  collectstatic). No requiere permisos de administrador.
+- `full`: ejecuta los dos pasos secuencialmente.
 
-Ejecute uno de los siguientes comandos en una terminal de Linux para la instalación, de acuerdo con la descripción anterior.
+Ejecute uno de los siguientes comandos en una terminal de Linux según el paso
+que quiera realizar.
 
 ```bash
 # para instalar solo las dependencias
@@ -148,6 +154,10 @@ bash install.sh --install app
 # para instalar ambos al mismo tiempo
 sudo bash install.sh --install full
 ```
+
+Por defecto el script reinicia Apache cuando finaliza la etapa `app`. Si no
+quiere hacerlo (por ejemplo, porque usa otro frontal web) añada la opción
+`--skip_apache_restart`.
 
 ## Actualización a la versión 3.1.0 de iSkyLIMS
 
@@ -201,22 +211,31 @@ Asegúrate de que la carpeta de instalación tenga los permisos correctos para q
 sudo /scripts/hardening.sh
 ```
 
-En la terminal de Linux, ejecuta uno de los siguientes comandos que mejor se adapte a ti:
+En la terminal de Linux, ejecuta el comando que mejor se adapte a tus
+necesidades:
 
 ```bash
-# para actualizar solo las dependencias del software. ES NECESARIO DISPONER DE PERMISOS DE ROOT.
+# para actualizar solo las dependencias del software. REQUIERE DE PERMISOS DE ROOT.
 sudo bash install.sh --upgrade dep
 
-# PARA INSTALAR AMBAS COSAS AL MISMO TIEMPO. REQUIERE DE ROOT. SI SE VA A INSTALAR POR OTRA PERSONA SIN ROOT NO HACER ESTO.
-sudo bash install.sh --upgrade full  --git_revision main  --tables
+# para ejecutar dependencias y aplicación en un único paso
+sudo bash install.sh --upgrade full --git_revision main --tables
 ```
 
 #### Pasos que no necesitan de permisos de administración
 
-Actualiza a la nueva version de la aplicación de iskylims usando el siguiente comando:
+Actualiza a la nueva versión de la aplicación de iSkyLIMS usando el siguiente
+comando:
 
 ```bash
-bash install.sh --upgrade app  --git_revision main --tables
+bash install.sh --upgrade app --git_revision main --tables
+```
+
+Esto aplica también si necesita restaurar la información de las librerías
+respaldadas:
+
+```bash
+bash install.sh --upgrade app --script <your_selected_folder/backup_lib_pool.sql> --git_revision main --tables
 ```
 
 Por último, asegúrate que los permisos de la carpeta son correctos.
@@ -225,6 +244,11 @@ Por último, asegúrate que los permisos de la carpeta son correctos.
 # En el caso de que tengas un script para esta tarea. En esta versión han cambiado algunas rutas a ficheros, es posible que tengas que ajustar el script en consecuencia.
 /scripts/hardening.sh
 ```
+
+Durante las actualizaciones el script regenera las migraciones de Django y las
+aplica con `--fake-initial`, preservando las tablas existentes (igual que en el
+despliegue con Docker). Si te interesa omitir el reinicio de Apache tras la
+actualización añade el parámetro `--skip_apache_restart`.
 
 #### Qué hacer si algo falla
 

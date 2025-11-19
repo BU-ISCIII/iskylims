@@ -171,14 +171,19 @@ nano install_settings.txt
 
 iSkyLIMS should be installed on the "/opt" directory.
 
-You will need sudo privileges for installing dependencies. In order to handle different installation responsibilities inside the organization, where you may not be the person with root privileges, our instalation script has these options in ```--install``` parameter:
+You will need sudo privileges for installing dependencies. The same
+`install.sh` script now orchestrates both dependency preparation and the
+application deployment, so you can mix and match what you need through the
+`--install` parameter:
 
-- dep: to install the software packages as well as python packages inside the virtual environment. Root is needed.
-- app: to install only the iSkyLIMS application software without need of being root.
-- full: if you directly have root permissions you can install both deps and app at the same time with this option.
+- `dep`: installs system packages plus Python requirements inside the virtual
+  environment. Requires root/sudo.
+- `app`: copies the iSkyLIMS code, updates settings, runs migrations and
+  collectstatic. Does not require root.
+- `full`: performs both steps sequentially for you.
 
-Execute one of the following commands in a linux terminal to install, according as
-above description.
+Execute one of the following commands in a linux terminal, depending on the
+stage you want to run:
 
 ```bash
 # to install only software packages dependences
@@ -190,6 +195,10 @@ bash install.sh --install app --git_revision main --tables
 # to install both software
 sudo bash install.sh --install full --git_revision main --tables
 ```
+
+By default the script restarts Apache when the `app` stage finishes. If you are
+deploying behind another HTTP front-end you can skip this step with
+`--skip_apache_restart`.
 
 ## Upgrade from 3.0.x to iSkyLIMS version 3.1.x
 
@@ -283,8 +292,19 @@ If restauration of libary preparation is not required then execute the following
 
 ```bash
 # to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app ---git_revision main  -tables
+bash install.sh --upgrade app --git_revision main --tables
 ```
+
+You can also run the full upgrade in one command (both dependency and app
+stages):
+
+```bash
+sudo bash install.sh --upgrade full --git_revision main --tables
+```
+
+During upgrades the script regenerates the Django migrations and applies them in
+`--fake-initial` mode so existing tables are preserved, matching what we do in
+the Docker deployment.
 
 Make sure that the installation folder has the correct permissions.
 
