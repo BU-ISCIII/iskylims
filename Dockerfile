@@ -36,9 +36,10 @@ RUN /srv/iskylims/venv/bin/pip install -r conf/requirements.txt
 # Set default install type
 ARG INSTALL_TYPE=app
 ARG GIT_REVISION=main
+ARG INSTALL_CONF=conf/docker_install_settings.txt
 
 # Execute the installation script
-RUN /bin/bash install.sh --install $INSTALL_TYPE --git_revision $GIT_REVISION --conf conf/docker_install_settings.txt --docker
+RUN /bin/bash install.sh --install $INSTALL_TYPE --git_revision $GIT_REVISION --conf $INSTALL_CONF --docker
 WORKDIR /opt/iskylims
 
 # Expose
