@@ -13,7 +13,8 @@ usage : $0 --upgrade --git_revision --conf
     --upgrade       | Upgrade iskylims full/dep/app
     --git_revision  | Git revision name to run (it can be git branch, git version tag or commit SHA)
     --conf          | Select custom configuration file. Default: ./install_settings.txt
-    --tables        | Load the first inital tables for upgrades in conf folder
+    --tables        | Load the first inital tables (from conf folder)
+    --skip_tables   | Skip loading initial tables (even during install)
     --script        | Run a migration script.
     --ren_app       | Rename apps required for the upgrade migration to 3.0.0
     --docker        | Specific installation for docker compose configuration.
@@ -458,16 +459,33 @@ run_django_deploy() {
     if [ "$mode" = "upgrade" ]; then
         echo "Applying migrations in fake-initial mode"
         python manage.py migrate --noinput --fake-initial
-        if [ $tables == true ] ; then
-            echo "Loading pre-filled tables..."
-            load_tables $prefilled_tables true
-            echo "Done loading pre-filled tables..."
-        fi
     else
         echo "Applying migrations"
         python manage.py migrate --noinput
-        echo "Loading in database initial data"
-        load_tables $prefilled_tables true
+    fi
+
+    if [ "$tables" = true ]; then
+        echo "Loading pre-filled tables..."
+        load_tables "$prefilled_tables" true
+        echo "Done loading pre-filled tables..."
+    fi
+
+    if [ "$run_script" = true ]; then
+        for val in "${migration_script[@]}"; do
+            if [[ $val = *","* ]]; then
+                parameters=(${val//,/ })
+                echo "Running migration script: ${parameters[0]}"
+                ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
+                echo "Done migration script: ${parameters[0]}"
+            else
+                echo "Running migration script: $val"
+                ./manage.py runscript $val
+                echo "Done migration script: $val"
+            fi
+        done
+    fi
+
+    if [ "$mode" = "install" ]; then
         echo "Creating super user "
         python manage.py createsuperuser --username admin
     fi
@@ -646,21 +664,6 @@ upgrade_application_files() {
     python manage.py collectstatic
     echo "Done collect statics"
 
-    if [ $run_script ]; then
-        for val in "${migration_script[@]}"; do
-            if [[ $val = *","* ]]; then
-                parameters=(${val//,/ })
-                echo "Running migration script: ${parameters[0]}"
-                ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
-                echo "Done migration script: ${parameters[0]}"
-            else
-                echo "Running migration script: $val"
-                ./manage.py runscript $val
-                echo "Done migration script: $val"
-            fi
-        done
-    fi
-
     cd -
     log_section "Successfuly upgrade of iSKyLIMS version: ${APP_VERSION}"
 }
@@ -684,13 +687,13 @@ install_application_files() {
 
         if [ $LOG_TYPE == "symbolic_link" ]; then
             if [ -d $LOG_PATH ]; then
-                if [ ! -d $INSTALL_PATH/logs ]; then
-                    echo "Deleting existing symbolin link"
-                    rm $INSTALL_PATH/logs
+                if [ -e "$INSTALL_PATH/logs" ]; then
+                    echo "Log target $INSTALL_PATH/logs already exists. Leaving it unchanged."
+                else
+                    echo "Creating symbolic link to log folder"
+                    ln -s "$LOG_PATH" "$INSTALL_PATH/logs"
+                    chmod 775 "$LOG_PATH"
                 fi
-                echo "Creating symbolic link to log folder"
-                ln -s $LOG_PATH  $INSTALL_PATH/logs
-                chmod 775 $LOG_PATH
             else
                 echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
             exit 1
@@ -747,6 +750,7 @@ do
         --upgrade)      set -- "$@" -u ;;
         --script)       set -- "$@" -s ;;
         --tables)       set -- "$@" -t ;;
+        --skip_tables)  set -- "$@" -b ;;
         --git_revision) set -- "$@" -g ;;
         --conf)         set -- "$@" -c ;;
         --ren_app)      set -- "$@" -r ;;
@@ -773,9 +777,11 @@ upgrade_type="full"
 docker=false
 prefilled_tables="conf/first_install_tables.json"
 restart_apache=true
+run_script=false
+skip_tables=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:r:g:tdkvha"
+options=":c:s:i:u:r:g:tdbkvha"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -806,6 +812,10 @@ while getopts $options opt; do
             ;;
         t )
             tables=true
+            ;;
+        b )
+            tables=false
+            skip_tables=true
             ;;
         r )
             ren_app=true
@@ -852,6 +862,11 @@ operation_scope="$install_type"
 if [ $upgrade == true ]; then
     operation="upgrade"
     operation_scope="$upgrade_type"
+fi
+
+# Default to loading initial tables on installs unless explicitly skipped.
+if [ "$operation" = "install" ] && [ "$skip_tables" = false ] && [ "$tables" = false ]; then
+    tables=true
 fi
 
 load_install_config
