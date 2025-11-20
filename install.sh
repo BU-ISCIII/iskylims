@@ -632,15 +632,6 @@ upgrade_application_files() {
     echo "Update settings and url file."
     update_settings_and_urls
     prepare_documents_structure
-    if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets" ]; then
-        echo "Updating sample sheet folder name"
-        mv $INSTALL_PATH/documents/wetlab/SampleSheets $INSTALL_PATH/documents/wetlab/sample_sheet
-    fi
-
-    if [ -d "$INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep" ]; then
-        echo "Updating sample sheet for libary preparationfolder name"
-        mv $INSTALL_PATH/documents/wetlab/SampleSheets4LibPrep $INSTALL_PATH/documents/wetlab/sample_sheets_lib_prep
-    fi
 
     cd $INSTALL_PATH
     echo "activate the virtualenv"
