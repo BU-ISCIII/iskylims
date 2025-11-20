@@ -1,7 +1,6 @@
 #!/bin/bash
 
-APP_VERSION="3.x.x"
-LOG_FILE="/var/log/iskylims_install.log"
+APP_VERSION="3.1.0dev"
 
 # usage: prints the command line help and usage examples.
 usage() {
@@ -38,19 +37,27 @@ Examples:
 EOF
 }
 
-# log: write timestamped log entries to stdout and LOG_FILE.
-log() {
+# log: write timestamped log entries to stdout.
+_log_compose_entry() {
     local level="$1"; shift
     local message="$*"
     local timestamp
     timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    printf "%s [%s] %s\n" "$timestamp" "$level" "$message" | tee -a "$LOG_FILE"
+    printf "%s [%s] %s" "$timestamp" "$level" "$message"
+}
+
+log() {
+    local level="$1"; shift
+    local message="$*"
+    local entry
+    entry="$(_log_compose_entry "$level" "$message")"
+    printf "%s\n" "$entry"
 }
 
 # db_check: verifies connectivity to the configured MySQL instance using mysqladmin/mysqlshow.
 db_check(){
     log "INFO" "Checking database connectivity against $DB_SERVER_IP:$DB_PORT"
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null 2>>"$LOG_FILE"
+    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null
 
     if ! [ $? -eq 0 ]; then
         log "ERROR" "Unable to connect to database. Check if your database is running and accessible"
@@ -98,7 +105,7 @@ apache_check(){
 
 # python_check: confirm required Python version is available in PYTHON_BIN_PATH.
 python_check(){
-    python_version=$(su -c $PYTHON_BIN_PATH --version $user 2>>"$LOG_FILE")
+    python_version=$(su -c $PYTHON_BIN_PATH --version $user 2>&1)
     if [[ $python_version == "" ]]; then
         log "ERROR" "Python3 is not found in your system"
         log "ERROR" "Solve the issue with Python and run again the installation script"
@@ -200,6 +207,7 @@ ORANGE='\033[0;33m'
 # log_section: print a visually separated header in both console and log.
 log_section() {
     local message="$1"
+    log "INFO" "$message"
     printf "\n\n%s\n" "${YELLOW}------------------${NC}"
     printf "%b\n" "${YELLOW}${message}${NC}"
     printf "%s\n\n" "${YELLOW}------------------${NC}"
@@ -207,17 +215,17 @@ log_section() {
 
 # log_info: convenience helper for blue info messages (console only).
 log_info() {
-    printf "%b\n" "${BLUE}$1${NC}"
+    printf "%b\n" "${BLUE}$(_log_compose_entry "INFO" "$1")${NC}"
 }
 
 # log_warn: emit warning text in cyan for terminal visibility.
 log_warn() {
-    printf "%b\n" "${CYAN}$1${NC}"
+    printf "%b\n" "${CYAN}$(_log_compose_entry "WARN" "$1")${NC}"
 }
 
 # log_error: emit error text in red for terminal visibility.
 log_error() {
-    printf "%b\n" "${RED}$1${NC}"
+    printf "%b\n" "${RED}$(_log_compose_entry "ERROR" "$1")${NC}"
 }
 
 # abort_install: log an error and exit with optional status.

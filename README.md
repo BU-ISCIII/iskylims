@@ -196,6 +196,13 @@ bash install.sh --install app --git_revision main --tables
 sudo bash install.sh --install full --git_revision main --tables
 ```
 
+To keep a complete stdout/stderr record (useful for debugging), run the script
+through `tee`:
+
+```bash
+sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee install_full.log
+```
+
 By default the script restarts Apache when the `app` stage finishes. If you are
 deploying behind another HTTP front-end you can skip this step with
 `--skip_apache_restart`.
@@ -275,6 +282,13 @@ In the linux terminal execute the following command-
 ```bash
 # to upgrade only software packages dependences. NEEDS ROOT.
 sudo bash install.sh --upgrade dep
+```
+
+Capture the full upgrade transcript with `tee` so you have all stdout/stderr if
+troubleshooting is needed:
+
+```bash
+sudo bash install.sh --upgrade dep 2>&1 | tee install_full.log
 ```
 
 #### Steps not requiring root

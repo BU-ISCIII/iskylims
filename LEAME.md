@@ -155,6 +155,13 @@ bash install.sh --install app
 sudo bash install.sh --install full
 ```
 
+Para conservar todo el registro de salida (stdout y stderr) en caso de
+necesitar depurar, ejecute el script a través de `tee`:
+
+```bash
+sudo bash install.sh --install full 2>&1 | tee install_full.log
+```
+
 Por defecto el script reinicia Apache cuando finaliza la etapa `app`. Si no
 quiere hacerlo (por ejemplo, porque usa otro frontal web) añada la opción
 `--skip_apache_restart`.
@@ -220,6 +227,13 @@ sudo bash install.sh --upgrade dep
 
 # para ejecutar dependencias y aplicación en un único paso
 sudo bash install.sh --upgrade full --git_revision main --tables
+```
+
+Guarde toda la salida de la actualización usando `tee` para tener un registro
+completo si surge algún problema:
+
+```bash
+sudo bash install.sh --upgrade full --git_revision main --tables 2>&1 | tee install_full.log
 ```
 
 #### Pasos que no necesitan de permisos de administración
