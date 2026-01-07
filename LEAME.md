@@ -75,6 +75,13 @@ Puedes personalizar los valores por defecto:
 - `--demo_data /ruta/a/iskylims_demo_data.tar.gz` para reutilizar un archivo local (si no, se descarga).
 - `--skip_demo_data` o `--skip_test_data` para evitar cargar datos extra.
 - `--install_type` (`full` por defecto) y `--git_revision` para controlar el build.
+- `--script` para ejecutar uno o mas scripts de migracion via `install.sh` (puedes repetir la opcion).
+
+Ejemplo de uso con un script de migracion en Docker:
+
+```bash
+bash docker_install.sh --test --script migrate_optional_values
+```
 
 Cuando el script termine, abre `http://localhost:8001` y crea el superusuario de Django cuando te lo pida.
 
@@ -107,7 +114,7 @@ Re-despliega el contenedor de aplicacion contra una base de datos existente sin 
 bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
-La actualizacion reconstruye/reinicia el contenedor, regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
+La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentro del contenedor, que regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
 
 ## Despliegue bare-metal (Ubuntu/CentOS)
 
@@ -223,6 +230,9 @@ bash install.sh --upgrade app --script <carpeta_backup>/backup_lib_pool.sql --gi
 
 # sin restauracion de library pool
 bash install.sh --upgrade app --git_revision main --tables
+
+# ejemplo ejecutando un script de migracion en la actualizacion
+bash install.sh --upgrade app --script migrate_optional_values --git_revision main --tables
 ```
 
 O ejecuta todo en un unico comando:

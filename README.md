@@ -76,6 +76,13 @@ Defaults can be customised:
 - `--demo_data /path/to/iskylims_demo_data.tar.gz` to reuse a local demo archive (otherwise it is downloaded).
 - `--skip_demo_data` or `--skip_test_data` to avoid loading extra data.
 - `--install_type` (`full` by default) and `--git_revision` to control the build.
+- `--script` to run one or more Django migration scripts through `install.sh` (repeat the flag as needed).
+
+Example running a migration script during Docker install:
+
+```bash
+bash docker_install.sh --test --script migrate_optional_values
+```
 
 When the script finishes, open `http://localhost:8001` and follow the prompt to create the Django superuser.
 
@@ -108,7 +115,7 @@ Re-deploy the application container against an existing production database with
 bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
-The upgrade path rebuilds/restarts the container, regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
+The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
 
 ## Bare-metal deployment (Ubuntu/CentOS)
 
@@ -224,6 +231,9 @@ bash install.sh --upgrade app --script <backup_folder>/backup_lib_pool.sql --git
 
 # without library pool restore
 bash install.sh --upgrade app --git_revision main --tables
+
+# example running a migration script during upgrade
+bash install.sh --upgrade app --script migrate_optional_values --git_revision main --tables
 ```
 
 Or run everything in one go:
