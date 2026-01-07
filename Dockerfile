@@ -35,7 +35,7 @@ ARG INSTALL_CONF=conf/docker_install_settings.txt
 # Execute the dependency stage only; app migrations run when the container is up.
 RUN /bin/bash install.sh --install dep --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart
 # Use the virtualenv created by install.sh
-ENV PATH="/opt/relecov-platform/virtualenv/bin:${PATH}"
+ENV PATH="/opt/iskylims/virtualenv/bin:${PATH}"
 
 WORKDIR /opt/iskylims
 
@@ -43,4 +43,4 @@ WORKDIR /opt/iskylims
 EXPOSE 8001
 
 # Start the application
-CMD ["python", "/opt/iskylims/manage.py", "runserver", "0:8001"]
+CMD ["python3", "/opt/iskylims/manage.py", "runserver", "0:8001"]

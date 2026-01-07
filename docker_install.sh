@@ -198,12 +198,25 @@ service_exists() {
     docker compose -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
 }
 
+ensure_app_running() {
+    if ! docker inspect -f '{{.State.Running}}' iskylims_app >/dev/null 2>&1; then
+        echo "Error: iskylims_app container does not exist."
+        exit 1
+    fi
+    if [ "$(docker inspect -f '{{.State.Running}}' iskylims_app)" != "true" ]; then
+        echo "Error: iskylims_app container is not running. Showing logs:"
+        docker logs --tail 200 iskylims_app
+        exit 1
+    fi
+}
+
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=$install_type and GIT_REVISION=$git_revision..."
 docker compose -f "$compose_file" build --no-cache --build-arg INSTALL_TYPE="$install_type" --build-arg GIT_REVISION="$git_revision" --build-arg INSTALL_CONF="$install_conf"
 docker compose -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
+ensure_app_running
 
 script_args=""
 if [ "$run_script" = true ]; then
