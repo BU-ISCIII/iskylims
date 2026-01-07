@@ -6,7 +6,7 @@ usage() {
 cat << EOF
 This script installs and upgrades the iskylims app.
 
-Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--action] [--test]
+Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--test]
     Optional input data:
     --demo_data         | Provide already downloaded demo data from Zenodo
     --install_type      | Specify the installation type for iSkyLIMS (default: full)
@@ -14,6 +14,7 @@ Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--i
     --compose_file      | docker compose file to use (overrides default)
     --install_conf      | Settings file consumed during docker image build (mandatory for production)
     --action            | install (default) or upgrade, to control DB initialisation steps
+    --script            | Run a Django migration script (can be repeated)
     --skip_demo_data    | Skip downloading/copying demo data to samba container
     --skip_test_data    | Skip loading test fixtures (test/test_data.json)
     --test              | Use development/test compose file and sample data
@@ -54,6 +55,7 @@ do
         --compose_file)      set -- "$@" -c ;;
         --install_conf)      set -- "$@" -s ;;
         --action)            set -- "$@" -a ;;
+        --script)            set -- "$@" -m ;;
         --skip_demo_data)    set -- "$@" -n ;;
         --skip_test_data)    set -- "$@" -t ;;
         --test)              set -- "$@" -p ;;
@@ -76,11 +78,11 @@ skip_demo_data=""
 skip_test_data=""
 mode="production"
 action="install"
-run_superuser=true
-load_initial_data=true
+run_script=false
+migration_script=()
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:i:g:c:s:a:vhntp"
+options=":d:i:g:c:s:a:m:vhntp"
 while getopts $options opt; do
     case $opt in
         d)
@@ -104,6 +106,10 @@ while getopts $options opt; do
                 echo "Invalid action '$action'. Use install or upgrade."
                 exit 1
             fi
+            ;;
+        m)
+            run_script=true
+            migration_script+=("$OPTARG")
             ;;
         n)
             skip_demo_data=true
@@ -174,13 +180,8 @@ if [ -z "$skip_test_data" ]; then
 fi
 
 if [ "$action" = "upgrade" ]; then
-    run_superuser=false
-    load_initial_data=false
     skip_demo_data=true
     skip_test_data=true
-else
-    run_superuser=true
-    load_initial_data=true
 fi
 
 if [ ! -f "$compose_file" ]; then
@@ -204,29 +205,19 @@ docker compose -f "$compose_file" up -d
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
 
-echo "Generating Django migrations for iSkyLIMS apps"
-docker exec -it iskylims_app python3 manage.py makemigrations django_utils core wetlab drylab
+script_args=""
+if [ "$run_script" = true ]; then
+    for val in "${migration_script[@]}"; do
+        script_args+=" --script $(printf '%q' "$val")"
+    done
+fi
 
 if [ "$action" = "upgrade" ]; then
-    echo "Applying migrations in fake-initial mode (existing tables will be kept)"
-    docker exec -it iskylims_app python3 manage.py migrate --noinput --fake-initial
+    echo "Running install.sh upgrade inside the container"
+    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf\" --skip_apache_restart$script_args"
 else
-    echo "Applying migrations"
-    docker exec -it iskylims_app python3 manage.py migrate --noinput
-fi
-
-if [ "$run_superuser" = true ]; then
-    echo "Creating super user"
-    docker exec -it iskylims_app python3 manage.py createsuperuser
-else
-    echo "Skipping super user creation (--action upgrade)"
-fi
-
-if [ "$load_initial_data" = true ]; then
-    echo "Loading initial data into the database"
-    docker exec -it iskylims_app python3 manage.py loaddata conf/first_install_tables.json
-else
-    echo "Skipping initial fixture load (--action upgrade)"
+    echo "Running install.sh install inside the container"
+    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf\" --skip_apache_restart$script_args"
 fi
 
 if [ "$skip_test_data" = false ]; then

@@ -17,7 +17,7 @@ usage : $0 --upgrade --git_revision --conf
     --skip_tables   | Skip loading initial tables (even during install)
     --script        | Run a migration script.
     --ren_app       | Rename apps required for the upgrade migration to 3.0.0
-    --docker        | Specific installation for docker compose configuration.
+    --docker        | Deprecated. Use --skip_apache_restart to avoid Apache checks/restart.
 
 
 Examples:
@@ -274,11 +274,13 @@ check_requirements() {
     log_section "Checking main requirements"
     python_check
     log_info "Valid version of Python"
-    if [ $docker == false ]; then
+    if [[ "$operation_scope" == "full" || "$operation_scope" == "app" ]]; then
         db_check
         log_info "Successful check for database"
-        apache_check
-        log_info "Successful check for apache"
+        if [ "$restart_apache" = true ]; then
+            apache_check
+            log_info "Successful check for apache"
+        fi
     fi
 
     if [ "$install_type" == "full" ] || [ "$install_type" == "dep" ] || [ "$upgrade_type" == "full" ] || [ "$upgrade_type" == "dep" ]; then
@@ -576,9 +578,6 @@ install_python_requirements() {
 
 # restart_apache_service: restart Apache/HTTPD unless running inside Docker or explicitly skipped.
 restart_apache_service() {
-    if [ $docker != false ]; then
-        return
-    fi
     linux_distribution=$(lsb_release -i | cut -f 2-)
     if [[ $linux_distribution == "Ubuntu" ]]; then
         apache_daemon="apache2"
@@ -655,9 +654,7 @@ upgrade_application_files() {
     echo "activate the virtualenv"
     source virtualenv/bin/activate
 
-    if [ $docker == false ]; then
-        run_django_deploy "upgrade"
-    fi
+    run_django_deploy "upgrade"
     echo "Deleting static files..."
     rm -rf $INSTALL_PATH/static
     echo "Running collect statics..."
@@ -722,9 +719,7 @@ install_application_files() {
 
         update_settings_and_urls
 
-        if [ $docker == false ]; then
-            run_django_deploy "install"
-        fi
+        run_django_deploy "install"
 
         echo "Run collectstatic"
         python manage.py collectstatic
@@ -828,6 +823,7 @@ while getopts $options opt; do
             ;;
         k )
             docker=true
+            restart_apache=false
             ;;
         a )
             restart_apache=false
@@ -888,7 +884,7 @@ if [[ "$operation_scope" == "full" || "$operation_scope" == "app" ]]; then
     else
         upgrade_application_files
     fi
-    if [ $docker == false ] && [ $restart_apache == true ]; then
+    if [ $restart_apache == true ]; then
         restart_apache_service
     fi
     exit 0
