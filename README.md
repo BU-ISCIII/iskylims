@@ -13,6 +13,7 @@ According to existent infrastructure sequencing is performed on an Illumina Next
 Application servers run web applications for bioinformatics analysis (GALAXY), the iSkyLIMS app, and host the MySQL information tier. iSkyLIMS WetLab workflow deals with sequencing run tracking and statistics. Run tracking passes through five states: "recorded” genomics user record the new sequencing run into the system, the process will wait till run is completed by the machine and data is transferred to the mass storage device; “Sample sheet sent” sample sheet file with the sequencing run information will be copied to the run folder for bcl2fastq process; “Processing data” run parameters files are processed and data is stored in the database; “Running stats” demultiplexing data generated in bcl2fastq process is processed and stored into the database, “Completed” all data is processed and stored successfully. Statistics per sample, per project, per run and per investigation are provided, as well as annual and monthly reports. iSkyLIMS DryLab workflow deals with bioinformatics services request and statistics. User request services that can be associated with a sequencing run. Stats and services tracking is provided.
 
 - [iSkyLIMS](#iskylims)
+  - [Get the code (required)](#get-the-code-required)
   - [Choose your path](#choose-your-path)
   - [Docker deployment](#docker-deployment)
     - [Local test stack](#local-test-stack)
@@ -40,6 +41,15 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
 
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
 
+## Get the code (required)
+
+All installation paths assume you already cloned the repository:
+
+```bash
+git clone https://github.com/BU-ISCIII/iskylims.git iskylims
+cd iskylims
+```
+
 ## Choose your path
 
 - **Docker (local test)**: spin up MySQL + Samba + iSkyLIMS with demo data to try the app quickly.
@@ -48,13 +58,16 @@ For any problems or bug reporting please post us an [issue](https://github.com/B
 
 ## Docker deployment
 
+Prerequisites for Docker-based installs:
+
+- Docker Engine + Docker Compose v2
+- git (to clone the repository)
+
 ### Local test stack
 
 Bring up a full test stack (database, Samba, app) plus fixtures and demo data:
 
 ```bash
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-cd iSkyLIMS
 bash docker_install.sh --test
 ```
 

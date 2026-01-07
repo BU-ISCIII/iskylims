@@ -3,272 +3,241 @@
 [![Django](https://img.shields.io/static/v1?label=Django&message=4.2&color=azul?style=plastic&logo=django)](https://github.com/django/django)
 [![Python](https://img.shields.io/static/v1?label=Python&message=3.8.10&color=verde?style=plastic&logo=Python)](https://www.python.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.0-azulvioleta?style=plastic&logo=Bootstrap)](https://getbootstrap.com)
-[![versión](https://img.shields.io/badge/versión-3.0.0-naranja?style=plastic&logo=GitHub)](https://github.com/BU-ISCIII/iskylims.git)
+[![version](https://img.shields.io/badge/version-3.0.0-naranja?style=plastic&logo=GitHub)](https://github.com/BU-ISCIII/iskylims.git)
 
-La introducción de la secuenciación masiva (MS) en las instalaciones de genómica ha significado un crecimiento exponencial en la generación de datos, lo que requiere un sistema de seguimiento preciso, desde la preparación de la biblioteca hasta la generación de archivos fastq, el análisis y la entrega al investigador. El software diseñado para manejar esas tareas se llama Sistemas de Gestión de Información de Laboratorio (LIMS), y su software debe adaptarse a las necesidades particulares de su laboratorio de genómica. iSkyLIMS nace con el objetivo de ayudar con las tareas de laboratorio húmedo e implementar un flujo de trabajo que guíe a los laboratorios de genómica en sus actividades, desde la preparación de la biblioteca hasta la producción de datos, reduciendo los posibles errores asociados a la tecnología de alto rendimiento y facilitando el control de calidad de la secuenciación. Además, iSkyLIMS conecta el laboratorio húmedo con el laboratorio seco, facilitando el análisis de datos por parte de bioinformáticos.
+La introduccion de la secuenciacion masiva (MS) en las instalaciones de genomica ha significado un crecimiento exponencial en la generacion de datos, lo que requiere un sistema de seguimiento preciso, desde la preparacion de la biblioteca hasta la generacion de archivos fastq, el analisis y la entrega al investigador. El software disenado para manejar esas tareas se llama Sistemas de Gestion de Informacion de Laboratorio (LIMS), y su software debe adaptarse a las necesidades particulares de su laboratorio de genomica. iSkyLIMS nace con el objetivo de ayudar con las tareas de laboratorio humedo e implementar un flujo de trabajo que guie a los laboratorios de genomica en sus actividades, desde la preparacion de la biblioteca hasta la produccion de datos, reduciendo los posibles errores asociados a la tecnologia de alto rendimiento y facilitando el control de calidad de la secuenciacion. Ademas, iSkyLIMS conecta el laboratorio humedo con el laboratorio seco, facilitando el analisis de datos por parte de bioinformaticos.
 
 ![Imagen](img/iskylims_scheme.png)
 
-De acuerdo con la infraestructura existente, la secuenciación se realiza en un instrumento Illumina NextSeq. Los datos se almacenan en un dispositivo de almacenamiento masivo NetApp y los archivos fastq se generan (bcl2fastq) en un clúster de cómputo de alto rendimiento Sun Grid Engine (SGE-HPC). Los servidores de aplicaciones ejecutan aplicaciones web para el análisis bioinformático (GALAXY), la aplicación iSkyLIMS y alojan la capa de información de MySQL. El flujo de trabajo de iSkyLIMS WetLab se ocupa del seguimiento y las estadísticas de la ejecución de la secuenciación. El seguimiento de la ejecución pasa por cinco estados: "registrado", el usuario de genómica registra la nueva ejecución de la secuenciación en el sistema, el proceso esperará hasta que la ejecución se complete en la máquina y los datos se transfieran al dispositivo de almacenamiento masivo; "Envío de hoja de muestra", el archivo de hoja de muestra con la información de la ejecución de la secuenciación se copiará en la carpeta de ejecución para el proceso de bcl2fastq; "Procesamiento de datos", se procesan los archivos de parámetros de ejecución y los datos se almacenan en la base de datos; "Estadísticas en ejecución", los datos de desmultiplexación generados en el proceso de bcl2fastq se procesan y almacenan en la base de datos, "Completado", todos los datos se procesan y almacenan correctamente. Se proporcionan estadísticas por muestra, por proyecto, por ejecución y por investigación, así como informes anuales y mensuales. El flujo de trabajo de iSkyLIMS DryLab se encarga de la solicitud de servicios de bioinformática y estadísticas. El usuario solicita servicios que pueden estar asociados con una ejecución de secuenciación. Se proporciona seguimiento de estadísticas y servicios.
+De acuerdo con la infraestructura existente, la secuenciacion se realiza en un instrumento Illumina NextSeq. Los datos se almacenan en un dispositivo de almacenamiento masivo NetApp y los archivos fastq se generan (bcl2fastq) en un cluster de computo de alto rendimiento Sun Grid Engine (SGE-HPC). Los servidores de aplicaciones ejecutan aplicaciones web para el analisis bioinformatico (GALAXY), la aplicacion iSkyLIMS y alojan la capa de informacion de MySQL. El flujo de trabajo de iSkyLIMS WetLab se ocupa del seguimiento y las estadisticas de la ejecucion de la secuenciacion. El seguimiento de la ejecucion pasa por cinco estados: "registrado", el usuario de genomica registra la nueva ejecucion de la secuenciacion en el sistema, el proceso esperara hasta que la ejecucion se complete en la maquina y los datos se transfieran al dispositivo de almacenamiento masivo; "Envio de hoja de muestra", el archivo de hoja de muestra con la informacion de la ejecucion de la secuenciacion se copiara en la carpeta de ejecucion para el proceso de bcl2fastq; "Procesamiento de datos", se procesan los archivos de parametros de ejecucion y los datos se almacenan en la base de datos; "Estadisticas en ejecucion", los datos de desmultiplexacion generados en el proceso de bcl2fastq se procesan y almacenan en la base de datos, "Completado", todos los datos se procesan y almacenan correctamente. Se proporcionan estadisticas por muestra, por proyecto, por ejecucion y por investigacion, asi como informes anuales y mensuales. El flujo de trabajo de iSkyLIMS DryLab se encarga de la solicitud de servicios de bioinformatica y estadisticas. El usuario solicita servicios que pueden estar asociados con una ejecucion de secuenciacion. Se proporciona seguimiento de estadisticas y servicios.
 
 - [iSkyLIMS](#iskylims)
-  - [Instalación](#instalación)
-    - [Requisitos previos](#requisitos-previos)
-    - [Instalación de iSkyLIMS en Docker](#instalación-de-iskylims-en-docker)
-    - [Instalación de iSkyLIMS en su servidor con Ubuntu/CentOS](#instalación-de-iskylims-en-su-servidor-con-ubuntucentos)
-      - [Clonar el repositorio de GitHub](#clonar-el-repositorio-de-github)
-      - [Crear la base de datos de iSkyLIMS y otorgar permisos](#crear-la-base-de-datos-de-iskylims-y-otorgar-permisos)
-      - [Configuración de ajustes](#configuración-de-ajustes)
-      - [Ejecutar el script de instalación](#ejecutar-el-script-de-instalación)
-  - [Actualización a la versión 3.1.0 de iSkyLIMS](#actualización-a-la-versión-310-de-iskylims)
-    - [Prerrequisitos](#prerrequisitos)
-    - [Clonar el repositorio de GitHub](#clonar-el-repositorio-de-github-1)
-    - [Configuración de opciones](#configuración-de-opciones)
-    - [Ejecución del script de actualización](#ejecución-del-script-de-actualización)
-      - [Pasos que necesitan permisos de adminsitración](#pasos-que-necesitan-permisos-de-adminsitración)
-      - [Pasos que no necesitan de permisos de administración](#pasos-que-no-necesitan-de-permisos-de-administración)
-      - [Qué hacer si algo falla](#qué-hacer-si-algo-falla)
-    - [Pasos finales de configuración](#pasos-finales-de-configuración)
-      - [Configuración de SAMBA](#configuración-de-samba)
-      - [Verificación de correo electrónico](#verificación-de-correo-electrónico)
-      - [Configurar el servidor Apache](#configurar-el-servidor-apache)
-      - [Verificación de la instalación](#verificación-de-la-instalación)
-    - [Documentación de iSkyLIMS](#documentación-de-iskylims)
+  - [Obtener el codigo (obligatorio)](#obtener-el-codigo-obligatorio)
+  - [Elige tu ruta](#elige-tu-ruta)
+  - [Despliegue con Docker](#despliegue-con-docker)
+    - [Contenedor local de pruebas](#contenedor-local-de-pruebas)
+    - [Contenedor de produccion](#contenedor-de-produccion)
+    - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
+  - [Despliegue bare-metal (Ubuntu/CentOS)](#despliegue-bare-metal-ubuntucentos)
+    - [Instalacion](#instalacion)
+      - [Requisitos previos](#requisitos-previos)
+      - [Clonar el repositorio](#clonar-el-repositorio)
+      - [Preparar la base de datos](#preparar-la-base-de-datos)
+      - [Configurar install\_settings.txt](#configurar-install_settingstxt)
+      - [Ejecutar install.sh](#ejecutar-installsh)
+    - [Actualizacion (3.0.x a 3.1.x)](#actualizacion-30x-a-31x)
+      - [Haz copia de seguridad](#haz-copia-de-seguridad)
+      - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes)
+      - [Ejecutar pasos de actualizacion con root](#ejecutar-pasos-de-actualizacion-con-root)
+      - [Ejecutar pasos de actualizacion sin root](#ejecutar-pasos-de-actualizacion-sin-root)
+  - [Que hacer si algo falla](#que-hacer-si-algo-falla)
+  - [Pasos finales de configuracion](#pasos-finales-de-configuracion)
+    - [Configuracion de SAMBA](#configuracion-de-samba)
+    - [Verificacion de correo electronico](#verificacion-de-correo-electronico)
+    - [Configurar el servidor Apache](#configurar-el-servidor-apache)
+    - [Verificacion de la instalacion](#verificacion-de-la-instalacion)
+  - [Documentacion de iSkyLIMS](#documentacion-de-iskylims)
 
-## Instalación
+Si tienes algun problema o deseas informar de algun error, por favor, publicalo en [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
 
-Si tienes algún problema o deseas informar de algún error, por favor, publícalo en [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
+## Obtener el codigo (obligatorio)
 
-### Requisitos previos
-
-Antes de comenzar la instalación, asegúrate de lo siguiente:
-
-- Tienes privilegios de **sudo** para instalar los paquetes de software adicionales que iSkyLIMS necesita.
-- Dependencias:
-  - Librerías:
-
+Todas las rutas de instalacion asumen que ya clonaste el repositorio:
 
 ```bash
-  yum groupinstall "Development tools"
-  yum install zlib-devel bzip2-devel openssl-devel \
-              wget httpd-devel mysql-libs sqlite sqlite-devel \
-              mariadb-devel mysql-client libffi-devel \
-              gnuplot cifs-utils
-```
-
-- lsb_relase:
-  - RedHat/CentOS: `yum install redhat-lsb-core`
-  - Ubuntu: `apt install lsb-core lsb-release`
-
-- lsb_relase:
-  - RedHat/CentOS: `yum install redhat-lsb-core`
-  - Ubuntu: `apt install lsb-core lsb-release`
-- Base de datos MySQL > 8.0 o MariaDB > 10.4
-- Tienes configurado un servidor local para enviar correos electrónicos.
-- git > 2.34
-- Tienes Apache servidor v2.4
-- Tienes Python > 3.8 (si lo compilas debes haber instalado previamente las dependecias de arriba)
-- Tienes una conexión a la carpeta compartida de Samba donde se almacenan las carpetas de ejecución (por ejemplo, galera/NGS_Data).
-- Dependencias:
-
-### Instalación de iSkyLIMS en Docker
-
-Puedes probar iSkyLIMS creando un contenedor Docker en tu máquina local.
-
-Clona el repositorio de GitHub de iSkyLIMS y ejecuta el script de Docker para crear el contenedor Docker.
-
-```bash
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-sudo bash docker_install.sh
-```
-
-El script crea un contenedor de Docker Compose con 3 servicios:
-
-- web1: contiene la aplicación web iSkyLIMS
-- db1: contiene la base de datos MySQL
-- samba: contiene el servidor Samba
-
-Después de crear Docker y tener los servicios en funcionamiento, la estructura de la base de datos y los datos iniciales se cargan en la base de datos. Cuando se complete este paso, se le pedirá que defina al superusuario que tendrá acceso a las páginas de administración de Django. Puede escribir cualquier nombre, pero recomendamos que utilice "admin", ya que más adelante se le pedirá un usuario administrador cuando defina la configuración inicial.
-
-Siga el mensaje de instrucciones para crear la cuenta del superusuario.
-
-Cuando el script finalice, abra su navegador escribiendo **localhost:8001** para acceder a iSkyLIMS
-
-### Instalación de iSkyLIMS en su servidor con Ubuntu/CentOS
-
-#### Clonar el repositorio de GitHub
-
-Abra una terminal de Linux y vaya a un directorio donde se descargará el código de iSkyLIMS
-
-```bash
-cd <su carpeta personal>
 git clone https://github.com/BU-ISCIII/iskylims.git iskylims
 cd iskylims
 ```
 
-#### Crear la base de datos de iSkyLIMS y otorgar permisos
+## Elige tu ruta
 
-1. Cree una nueva base de datos llamada "iskylims" (esto es obligatorio).
-2. Cree un nuevo usuario con permisos para leer y modificar esa base de datos.
-3. Anote el nombre de usuario, la contraseña y la información del servidor de la base de datos.
+- **Docker (pruebas locales)**: levanta MySQL + Samba + iSkyLIMS con datos de demo para probar rapidamente.
+- **Docker (contenedor de produccion)**: despliega solo la aplicacion, apuntando a tu DB/Samba existente.
+- **Bare-metal**: instala o actualiza directamente en hosts Ubuntu/CentOS con `install.sh`.
 
-#### Configuración de ajustes
+## Despliegue con Docker
 
-Copia la plantilla de ajustes iniciales en un archivo llamado `install_settings.txt`
+Requisitos previos para instalaciones con Docker:
+
+- Docker Engine + Docker Compose v2
+- git (para clonar el repositorio)
+
+### Contenedor local de pruebas
+
+Levanta el sistema completo (base de datos, Samba y app) con fixtures y datos de demo:
+
+```bash
+bash docker_install.sh --test
+```
+
+Puedes personalizar los valores por defecto:
+
+- `--demo_data /ruta/a/iskylims_demo_data.tar.gz` para reutilizar un archivo local (si no, se descarga).
+- `--skip_demo_data` o `--skip_test_data` para evitar cargar datos extra.
+- `--install_type` (`full` por defecto) y `--git_revision` para controlar el build.
+
+Cuando el script termine, abre `http://localhost:8001` y crea el superusuario de Django cuando te lo pida.
+
+### Contenedor de produccion
+
+Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
+
+1. Copia y edita la plantilla de produccion:
+
+    ```bash
+    cp conf/docker_production_settings.txt conf/my_prod_settings.txt
+    # edita conf/my_prod_settings.txt con tus datos de DB/Samba
+    ```
+
+2. Construye y ejecuta en modo produccion (usa `docker-compose.prod.yml` por defecto):
+
+    ```bash
+    bash docker_install.sh --install_conf conf/my_prod_settings.txt
+    ```
+
+   Usa `--compose_file` para cambiar el compose o `--install_type`/`--git_revision` para variar el build.
+
+3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
+
+### Actualizacion del despliegue Docker
+
+Re-despliega el contenedor de aplicacion contra una base de datos existente sin tocar los datos:
+
+```bash
+bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+```
+
+La actualizacion reconstruye/reinicia el contenedor, regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
+
+## Despliegue bare-metal (Ubuntu/CentOS)
+
+### Instalacion
+
+#### Requisitos previos
+
+- **Privilegios sudo** para instalar dependencias
+- MySQL > 8.0 o MariaDB > 10.4
+- Apache 2.4
+- git > 2.34
+- Python > 3.8
+- Servidor local configurado para enviar correos
+- Acceso a la carpeta Samba donde estan los run folders
+- Paquete `lsb_release` (`yum install redhat-lsb-core` en RedHat/CentOS, `apt install lsb-core lsb-release` en Ubuntu)
+
+#### Clonar el repositorio
+
+```bash
+cd <tu directorio de trabajo>
+git clone https://github.com/BU-ISCIII/iskylims.git iskylims
+cd iskylims
+```
+
+#### Preparar la base de datos
+
+1. Crea una base de datos llamada `iskylims`.
+2. Crea un usuario con permisos de lectura/escritura sobre esa base.
+3. Guarda host, puerto, usuario y password para el archivo de ajustes.
+
+#### Configurar install_settings.txt
 
 ```bash
 cp conf/template_install_settings.txt install_settings.txt
-```
-
-Abra el archivo de configuración con su editor favorito para establecer sus propios valores para la base de datos, la configuración de correo electrónico y la dirección IP local del servidor donde se ejecutará iSkyLIMS.
-
-```bash
-sudo nano install_settings.txt
-```
-
-#### Ejecutar el script de instalación
-
-iSkyLIMS debe instalarse en el directorio "/opt".
-
-Necesitará privilegios de administrador para instalar las dependencias. El mismo
-script (`install.sh`) ahora coordina la preparación de dependencias y el
-despliegue de la aplicación, por lo que puede elegir lo que necesite usando el
-parámetro `--install`:
-
-- `dep`: instala los paquetes del sistema y los requisitos de Python dentro del
-  entorno virtual. Requiere permisos de administrador.
-- `app`: despliega solo la aplicación (copia el código, ejecuta migraciones y
-  collectstatic). No requiere permisos de administrador.
-- `full`: ejecuta los dos pasos secuencialmente.
-
-Ejecute uno de los siguientes comandos en una terminal de Linux según el paso
-que quiera realizar.
-
-```bash
-# para instalar solo las dependencias
-sudo bash install.sh --install dep
-
-# para instalar la aplicación iskylims
-bash install.sh --install app
-
-# para instalar ambos al mismo tiempo
-sudo bash install.sh --install full
-```
-
-Para conservar todo el registro de salida (stdout y stderr) en caso de
-necesitar depurar, ejecute el script a través de `tee`:
-
-```bash
-sudo bash install.sh --install full 2>&1 | tee install_full.log
-```
-
-Por defecto el script reinicia Apache cuando finaliza la etapa `app`. Si no
-quiere hacerlo (por ejemplo, porque usa otro frontal web) añada la opción
-`--skip_apache_restart`.
-
-## Actualización a la versión 3.1.0 de iSkyLIMS
-
-En esta version se han implementado fallos de código y mejoras en las gráficas. Para obtener más detalles sobre los cambios, consulta las notas de la versión.
-
-### Prerrequisitos
-
-Por temas de seguridad es recomendado realizar una copia de seguridad de:
-
-- La base de datos de iSkyLIMS.
-- La carpeta de iSkyLIMS (carpeta de instalación completa, por ejemplo, /opt/iSkyLIMS).
-
-Se recomienda encarecidamente que se hagan estas copias de seguridad y se guarden de manera segura en caso de que la actualización falle, para poder recuperar tu sistema. Por ejemplo crea una carpeta en `/home/dadmin/backup_pro` que contenga la base de datos y la carpeta de /opt/iskylims para tenerla a mano y poder [restaurar el sistema](#qué-hacer-si-algo-falla).
-
-### Clonar el repositorio de GitHub
-
-A partir ya de la version anterior, ahora el código de iSkyLIMS se descarga en una carpeta del usuario y se instala en otro lugar (por ejemplo, /opt/).
-
-Abre una terminal de Linux y dirígete a un directorio donde estaba descargado el código de iSkyLIMS. Actualiza el codigo
-
-```bash
-cd < directorio donde esta el codigo anterior de iskylims de instalación >
-git pull
-```
-
-### Configuración de opciones
-
-Copia la plantilla de configuración inicial en un archivo llamado install_settings.txt
-
-```bash
-cp conf/template_install_settings.txt install_settings.txt
-```
-
-Abre el archivo de configuración con tu editor favorito para establecer tus propios valores para la base de datos, la configuración de correo electrónico y la dirección IP local del servidor donde se ejecutará iSkyLIMS.
-> Si utilizas un sistema basado en Windows para modificar el archivo, asegúrate de que el archivo se guarde con una codificación amigable para Linux, como ASCII o UTF-8.
-
-```bash
 nano install_settings.txt
 ```
 
-### Ejecución del script de actualización
+Completa los valores de base de datos, email, IP/URL del servidor y logging.
 
-Debido a que los paquetes de python de los que depende iSkyLIMs se han ido actualizando desde la última release es necesario que sean actualizados.
+#### Ejecutar install.sh
 
-#### Pasos que necesitan permisos de adminsitración
+iSkyLIMS se instala en `/opt/iskylims` por defecto. El script `install.sh` gestiona dependencias y aplicacion; elige lo que necesitas con `--install`:
 
-Asegúrate de que la carpeta de instalación tenga los permisos correctos para que la persona que instala la aplicación pueda escribir en esa carpeta.
+- `dep`: instala dependencias del sistema y de Python (requiere sudo).
+- `app`: despliega el codigo, actualiza ajustes, ejecuta migraciones y collectstatic (sin sudo).
+- `full`: ejecuta ambos pasos.
+
+Ejemplos:
 
 ```bash
-# En el caso de que tengas un script para esta tarea. Necesitarás ajustar este script de acuerdo al cambio en el nombre de la ruta: /opt/iSkyLIMS a /opt/iskylims
-sudo /scripts/hardening.sh
+# solo dependencias del sistema
+sudo bash install.sh --install dep
+
+# solo aplicacion iSkyLIMS
+bash install.sh --install app --git_revision main --tables
+
+# dependencias + aplicacion
+sudo bash install.sh --install full --git_revision main --tables
 ```
 
-En la terminal de Linux, ejecuta el comando que mejor se adapte a tus
-necesidades:
+- Añade `--tables` para cargar los datos iniciales en instalaciones nuevas, o `--skip_tables` si quieres omitirlos.
+- Captura logs para depuracion con `tee`:
+
+  ```bash
+  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee install_full.log
+  ```
+
+- Si Apache se gestiona desde otro sitio, omite el reinicio automatico con `--skip_apache_restart`.
+
+### Actualizacion (3.0.x a 3.1.x)
+
+Sigue estos pasos para pasar de la version 3.0.0 a la serie 3.1.x.
+
+#### Haz copia de seguridad
+
+- Copia completa de la base de datos `iskylims`.
+- Copia completa de la carpeta de instalacion (por ejemplo `/opt/iskylims`).
+- Si usas library pools, exportalos antes de actualizar:
+
+  ```bash
+  mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+    -e "SELECT * FROM wetlab_library_pool" > <carpeta_backup>/backup_lib_pool.sql
+  ```
+
+#### Actualizar codigo y ajustes
 
 ```bash
-# para actualizar solo las dependencias del software. REQUIERE DE PERMISOS DE ROOT.
-sudo bash install.sh --upgrade dep
-
-# para ejecutar dependencias y aplicación en un único paso
-sudo bash install.sh --upgrade full --git_revision main --tables
+cd <tu directorio de trabajo>/iskylims
+git pull
+cp conf/template_install_settings.txt install_settings.txt
+sudo nano install_settings.txt
 ```
 
-Guarde toda la salida de la actualización usando `tee` para tener un registro
-completo si surge algún problema:
+Si editas el archivo en Windows, asegurate de guardarlo con codificacion UTF-8/ASCII.
+
+#### Ejecutar pasos de actualizacion con root
+
+Actualiza dependencias del sistema y de Python:
 
 ```bash
-sudo bash install.sh --upgrade full --git_revision main --tables 2>&1 | tee install_full.log
+sudo bash install.sh --upgrade dep 2>&1 | tee install_full.log
 ```
 
-#### Pasos que no necesitan de permisos de administración
+Asegura que los permisos permiten que el paso sin root escriba en `/opt/iskylims` (ajusta tu hardening si cambio la ruta).
 
-Actualiza a la nueva versión de la aplicación de iSkyLIMS usando el siguiente
-comando:
+#### Ejecutar pasos de actualizacion sin root
+
+Actualiza el codigo y la base de datos:
 
 ```bash
+# con restauracion de library pool
+bash install.sh --upgrade app --script <carpeta_backup>/backup_lib_pool.sql --git_revision main --tables
+
+# sin restauracion de library pool
 bash install.sh --upgrade app --git_revision main --tables
 ```
 
-Esto aplica también si necesita restaurar la información de las librerías
-respaldadas:
+O ejecuta todo en un unico comando:
 
 ```bash
-bash install.sh --upgrade app --script <your_selected_folder/backup_lib_pool.sql> --git_revision main --tables
+sudo bash install.sh --upgrade full --git_revision main --tables
 ```
 
-Por último, asegúrate que los permisos de la carpeta son correctos.
+Las actualizaciones regeneran las migraciones y las aplican con `--fake-initial` para conservar las tablas existentes, igual que en Docker.
 
-```bash
-# En el caso de que tengas un script para esta tarea. En esta versión han cambiado algunas rutas a ficheros, es posible que tengas que ajustar el script en consecuencia.
-/scripts/hardening.sh
-```
+## Que hacer si algo falla
 
-Durante las actualizaciones el script regenera las migraciones de Django y las
-aplica con `--fake-initial`, preservando las tablas existentes (igual que en el
-despliegue con Docker). Si te interesa omitir el reinicio de Apache tras la
-actualización añade el parámetro `--skip_apache_restart`.
+Cuando actualizamos usando el script de instalacion estamos realizando varios cambios en la base de datos. Si algo falla necesitamos restaurar el estado anterior y empezar de nuevo.
 
-#### Qué hacer si algo falla
-
-Cuando actualizamos la aplicación usando el script estamos realizando varios cambios en la base de datos. Si algo falla tenemos que restaurar el estado anterior, antes de que hubiesemos realizado ninguna acción.
-
-Necesitamos copiar de vuelta nuestro backup de carpet ade aplicación a /opt/iSkyLIMS (o la carpeta de instalación de nuestra elección), y restaurar la base de datos realizando algo como lo siguiente:
+Necesitamos copiar la carpeta completa `/opt/iskylims` de vuelta a `/opt/iskylims` (o tu ruta de instalacion), y restaurar la base de datos con algo como:
 
 ```bash
 sudo rm -rf /opt/iskylims
@@ -280,38 +249,38 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es
 mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
 
-### Pasos finales de configuración
+## Pasos finales de configuracion
 
-#### Configuración de SAMBA
+### Configuracion de SAMBA
 
-- Inicia sesión con la cuenta de administrador.
-- Ve a Massive Sequencing
-![Ir a WetLab](img/got_to_wetlab.png){width:50px}
-- Ve a Configuración -> Configuración de SAMBA
-- Completa el formulario con los parámetros apropiados para la carpeta compartida de SAMBA:
-![Formulario SAMBA](img/samba_form.png)
+- Inicia sesion con la cuenta admin.
+- Ve a Massive sequencing
+![go_to_wetlab](img/got_to_wetlab.png){width:50px}
+- Ve a Configuration -> Samba configuration
+- Rellena el formulario con los parametros apropiados para la carpeta compartida de Samba:
+![samba form](img/samba_form.png)
 
-#### Verificación de correo electrónico
+### Verificacion de correo electronico
 
-- Ve a Massive Sequencing
-- Ve a Configuración -> Configuración de correo electrónico
-- Completa el formulario con los parámetros necesarios para la configuración de correo electrónico y trata de enviar un correo de prueba.
+- Ve a Massive sequencing
+- Ve a Configuration -> Email configuration
+- Rellena el formulario con los parametros necesarios y prueba a enviar un correo.
 
-#### Configurar el servidor Apache
+### Configurar el servidor Apache
 
-Copia el archivo de configuración de Apache que se encuentra en la carpeta `conf` según tu distribución dentro del directorio de configuración de Apache y cambia el nombre a iskylims.conf. Revisa cualquier requerimiento de tu sistema, se trata solo de un ejemplo.
+Copia el archivo de configuracion de Apache segun tu distribucion dentro del directorio de configuracion de Apache y renombralo a iskylims.conf
 
-#### Verificación de la instalación
+### Verificacion de la instalacion
 
-Abre el navegador y escribe "localhost" o la "IP local del servidor" para comprobar que iSkyLIMS está en funcionamiento.
+Abre el navegador y escribe "localhost" o la IP local del servidor para comprobar que iSkyLIMS esta funcionando.
 
-También puedes verificar algunas funcionalidades mientras compruebas las conexiones de SAMBA y la base de datos usando:
+Tambien puedes comprobar parte de la funcionalidad y las conexiones a Samba y base de datos usando:
 
-- Ve a [configurationTest](https://iskylims.isciii.es/wetlab/configurationTest/)
-- Haz clic en Enviar
-- Verifica todas las pestañas para asegurarte de que cada conexión sea exitosa.
-- Ejecuta las 3 pruebas para cada máquina de secuenciación: MiSeq, NextSeq y NovaSeq.
+- Ve a [configuration test](https://iskylims.isciii.es/wetlab/configurationTest/)
+- Haz click en submit
+- Revisa todas las pestañas para confirmar que la conexion es correcta.
+- Ejecuta las 3 pruebas para cada maquina de secuenciacion: MiSeq, NextSeq y NovaSeq.
 
-### Documentación de iSkyLIMS
+## Documentacion de iSkyLIMS
 
-La documentación de iSkyLIMS está disponible en [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
+La documentacion de iSkyLIMS esta disponible en [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
