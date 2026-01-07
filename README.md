@@ -13,21 +13,23 @@ According to existent infrastructure sequencing is performed on an Illumina Next
 Application servers run web applications for bioinformatics analysis (GALAXY), the iSkyLIMS app, and host the MySQL information tier. iSkyLIMS WetLab workflow deals with sequencing run tracking and statistics. Run tracking passes through five states: "recorded” genomics user record the new sequencing run into the system, the process will wait till run is completed by the machine and data is transferred to the mass storage device; “Sample sheet sent” sample sheet file with the sequencing run information will be copied to the run folder for bcl2fastq process; “Processing data” run parameters files are processed and data is stored in the database; “Running stats” demultiplexing data generated in bcl2fastq process is processed and stored into the database, “Completed” all data is processed and stored successfully. Statistics per sample, per project, per run and per investigation are provided, as well as annual and monthly reports. iSkyLIMS DryLab workflow deals with bioinformatics services request and statistics. User request services that can be associated with a sequencing run. Stats and services tracking is provided.
 
 - [iSkyLIMS](#iskylims)
-  - [Installation](#installation)
-    - [Pre-requisites](#pre-requisites)
-    - [iSkyLIMS docker installation](#iskylims-docker-installation)
-    - [Install iSkyLIMS in your server running ubuntu/CentOS](#install-iskylims-in-your-server-running-ubuntucentos)
-      - [Clone github repository](#clone-github-repository)
-      - [Create iskylims database and grant permissions](#create-iskylims-database-and-grant-permissions)
-      - [Configuration settings](#configuration-settings)
-      - [Run installation script](#run-installation-script)
-  - [Upgrade from 3.0.x to iSkyLIMS version 3.1.x](#upgrade-from-30x-to-iskylims-version-31x)
-    - [Pre-requisites for upgrade](#pre-requisites-for-upgrade)
-    - [Clone github repository](#clone-github-repository-1)
-    - [Configuration settings](#configuration-settings-1)
-    - [Running upgrade script](#running-upgrade-script)
-      - [Steps requiring root](#steps-requiring-root)
-      - [Steps not requiring root](#steps-not-requiring-root)
+  - [Choose your path](#choose-your-path)
+  - [Docker deployment](#docker-deployment)
+    - [Local test stack](#local-test-stack)
+    - [Production container](#production-container)
+    - [Upgrade docker deployment](#upgrade-docker-deployment)
+  - [Bare-metal deployment (Ubuntu/CentOS)](#bare-metal-deployment-ubuntucentos)
+    - [Install](#install)
+      - [Prerequisites](#prerequisites)
+      - [Clone the repository](#clone-the-repository)
+      - [Prepare the database](#prepare-the-database)
+      - [Configure install\_settings.txt](#configure-install_settingstxt)
+      - [Run install.sh](#run-installsh)
+    - [Upgrade (3.0.x to 3.1.x)](#upgrade-30x-to-31x)
+      - [Back up first](#back-up-first)
+      - [Refresh code and settings](#refresh-code-and-settings)
+      - [Run upgrade steps requiring root](#run-upgrade-steps-requiring-root)
+      - [Run upgrade steps without root](#run-upgrade-steps-without-root)
   - [What to do if something fails](#what-to-do-if-something-fails)
   - [Final configuration steps](#final-configuration-steps)
     - [SAMBA configurarion](#samba-configurarion)
@@ -36,296 +38,188 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Verification of the installation](#verification-of-the-installation)
   - [iSkyLIMS documentation](#iskylims-documentation)
 
-## Installation
-
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
 
-### Pre-requisites
+## Choose your path
 
-Before starting the installation make sure :
+- **Docker (local test)**: spin up MySQL + Samba + iSkyLIMS with demo data to try the app quickly.
+- **Docker (production container)**: deploy only the application container, pointing to your existing DB/Samba.
+- **Bare-metal**: install or upgrade directly on Ubuntu/CentOS hosts with `install.sh`.
 
-- You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
-- Database MySQL > 8.0 or MariaDB > 10.4
-- Local server configured for sending emails
-- Apache server v2.4
-- git > 2.34
-- Python > 3.8
-- Connection to samba shared folder where run folders are stored (p.e galera/NGS_Data)
-- Dependencies:
-  - lsb_release:
-    - RedHat/CentOS: ```yum install redhat-lsb-core```
-    - Ubuntu: ```apt install lsb-core lsb-release```
+## Docker deployment
 
-### iSkyLIMS docker installation
+### Local test stack
 
-You can test iSkyLIMS by creating a docker container on your local machine.
-
-Clone the iSkyLIMS github repository and run the docker script to create the docker
+Bring up a full test stack (database, Samba, app) plus fixtures and demo data:
 
 ```bash
 git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-sudo bash docker_install.sh
+cd iSkyLIMS
+bash docker_install.sh --test
 ```
 
-Or you can specify installation type and/or git revision:
-```bash
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-# To perform full installation from iskylims using git revision/branch 'develop'
-sudo bash docker_install.sh --install_type full --git_revision develop
-```
+Defaults can be customised:
 
-The script creates a docker compose container with 3 services:
+- `--demo_data /path/to/iskylims_demo_data.tar.gz` to reuse a local demo archive (otherwise it is downloaded).
+- `--skip_demo_data` or `--skip_test_data` to avoid loading extra data.
+- `--install_type` (`full` by default) and `--git_revision` to control the build.
 
-- web1: contains the iSkyLIMS web application
-- db1: contains the mySQL database
-- samba: contains samba server
+When the script finishes, open `http://localhost:8001` and follow the prompt to create the Django superuser.
 
-After Docker is created and services are up, database structure and initial data are loaded into database. When this step is completed, you will be asked to define the super user which will have access to django admin pages. You can type any name, but we recommend that you use "admin", because admin user is requested later on when defining the initial settings.
+### Production container
 
-Follow the prompt message to create the super user account.
+Deploy the iSkyLIMS container against external MySQL/Samba services:
 
-When script ends open your navigator typing **localhost:8001** to access to iSkyLIMS
-
-#### Production docker deployment
-
-When your MySQL database and Samba share run on dedicated machines, you can
-deploy only the iSkyLIMS application container and connect it to those external
-services.
-
-1. Copy the production settings template and adjust it with the real database
-   credentials/host:
+1. Copy and edit the production settings template:
 
     ```bash
     cp conf/docker_production_settings.txt conf/my_prod_settings.txt
-    # edit conf/my_prod_settings.txt to point to your DB server
+    # edit conf/my_prod_settings.txt with your DB/Samba details
     ```
 
-2. Build and run the application container (production mode is the default, so
-   passing the settings file is enough):
+2. Build and run in production mode (uses `docker-compose.prod.yml` by default):
 
     ```bash
     bash docker_install.sh --install_conf conf/my_prod_settings.txt
     ```
 
-   The installer automatically uses `docker-compose.prod.yml`, which only starts
-   the `iskylims_app` container while pointing to external services. You can
-   still override the compose file or skip behaviours through extra flags (see
-   `docker_install.sh --help`).
+   Use `--compose_file` to override the compose file or `--install_type`/`--git_revision` to change the build.
 
-3. Once the container is up, create the Django superuser and configure the Samba
-   connection details through the UI if this is a fresh installation.
+3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
-If you already have a populated production database and only need to roll out a
-new application version, reuse the same command but add `--action upgrade`. The
-script will rebuild/restart the container, regenerate the Django migrations,
-apply them using `--fake-initial` so existing tables are respected, and skip the
-superuser/fixture loading steps so your data remains untouched.
+### Upgrade docker deployment
 
-#### Local testing deployment
-
-To spin up the full stack (database + samba + app) with demo data and fixtures,
-just add the `--test` flag:
+Re-deploy the application container against an existing production database without touching data:
 
 ```bash
-bash docker_install.sh --test
+bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
-You can reuse the existing options (`--demo_data`, `--install_type`, etc.) to
-customise the behaviour if needed.
+The upgrade path rebuilds/restarts the container, regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
 
-### Install iSkyLIMS in your server running ubuntu/CentOS
+## Bare-metal deployment (Ubuntu/CentOS)
 
-#### Clone github repository
+### Install
 
-Open a linux terminal and move to a directory where iSkyLIMS code will be
-downloaded
+#### Prerequisites
+
+- **sudo privileges** for dependency installation
+- MySQL > 8.0 or MariaDB > 10.4
+- Apache 2.4
+- git > 2.34
+- Python > 3.8
+- Local email sender configured
+- Access to the Samba share where run folders live
+- `lsb_release` package (`yum install redhat-lsb-core` on RedHat/CentOS, `apt install lsb-core lsb-release` on Ubuntu)
+
+#### Clone the repository
 
 ```bash
-cd < your personal folder >
+cd <your working directory>
 git clone https://github.com/BU-ISCIII/iskylims.git iskylims
 cd iskylims
 ```
 
-#### Create iskylims database and grant permissions
+#### Prepare the database
 
-1. Create a new database named "iskylims" (this is mandatory)
-2. Create a new user with permission to read and modify that database.
-3. Write down user, passwd and db server info.
+1. Create a database named `iskylims`.
+2. Create a user with read/write permissions on that database.
+3. Note the database host, port, user, and password for the settings file.
 
-#### Configuration settings
-
-Copy the initial setting template into a file named install_settings.txt
+#### Configure install_settings.txt
 
 ```bash
 cp conf/template_install_settings.txt install_settings.txt
-```
-
-Open with your favourite editor the configuration file to set your own values for
-database ,email settings and the local IP of the server where iSkyLIMS will run.
-
-```bash
 nano install_settings.txt
 ```
 
-#### Run installation script
+Set your database, email, server IP/URL, and logging preferences in that file.
 
-iSkyLIMS should be installed on the "/opt" directory.
+#### Run install.sh
 
-You will need sudo privileges for installing dependencies. The same
-`install.sh` script now orchestrates both dependency preparation and the
-application deployment, so you can mix and match what you need through the
-`--install` parameter:
+iSkyLIMS is installed to `/opt/iskylims` by default. The single `install.sh` script handles both dependencies and the app; choose what you need with `--install`:
 
-- `dep`: installs system packages plus Python requirements inside the virtual
-  environment. Requires root/sudo.
-- `app`: copies the iSkyLIMS code, updates settings, runs migrations and
-  collectstatic. Does not require root.
-- `full`: performs both steps sequentially for you.
+- `dep`: install system and Python dependencies (requires sudo).
+- `app`: deploy iSkyLIMS code, update settings, run migrations, and collect static files (no sudo needed).
+- `full`: run both stages in sequence.
 
-Execute one of the following commands in a linux terminal, depending on the
-stage you want to run:
+Examples:
 
 ```bash
-# to install only software packages dependences
+# only software dependencies
 sudo bash install.sh --install dep
 
-# to install only iSkyLIMS application
+# only iSkyLIMS application
 bash install.sh --install app --git_revision main --tables
 
-# to install both software
+# dependencies + application
 sudo bash install.sh --install full --git_revision main --tables
 ```
 
-To keep a complete stdout/stderr record (useful for debugging), run the script
-through `tee`:
+- Add `--tables` to load the initial fixtures on first-time installs, or `--skip_tables` if you want to skip them.
+- Capture logs for troubleshooting with `tee`:
+
+  ```bash
+  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee install_full.log
+  ```
+
+- If Apache is managed elsewhere, skip the automatic restart with `--skip_apache_restart`.
+
+### Upgrade (3.0.x to 3.1.x)
+
+Follow these steps to move from version 3.0.0 to the 3.1.x series.
+
+#### Back up first
+
+- Full backup of the `iskylims` database.
+- Full backup of the installation folder (for example `/opt/iskylims`).
+- If you use library pools, export them before upgrading:
+
+  ```bash
+  mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+    -e "SELECT * FROM wetlab_library_pool" > <backup_folder>/backup_lib_pool.sql
+  ```
+
+#### Refresh code and settings
 
 ```bash
-sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee install_full.log
-```
-
-By default the script restarts Apache when the `app` stage finishes. If you are
-deploying behind another HTTP front-end you can skip this step with
-`--skip_apache_restart`.
-
-## Upgrade from 3.0.x to iSkyLIMS version 3.1.x
-
-Follow the following steps to upgrade from version 3.0.0 to the latest one 3.1.x
-
-### Pre-requisites for upgrade
-
-Before starting the upgrade procedure is highly recomended to perform the following steps:
-
-- Create a full backup of iSkyLIMS database
-- Backup all iSkyLIMS folders (complete installation folder, p.e /opt/iSkyLIMS)
-
-- If in your system you have already defined library pools, then you need to collect this data, before to run the upgrade script. Perform a backup of LibraryPool by running the folowing command.
-
-```bash
- mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims -e "SELECT* FROM wetlab_library_pool" > <your_selected_folder/backup_lib_pool.sql>
-```
-
-It is highly recomended that you made these backups and keep them safely in case of upgrade failure, to recover your system.
-
-### Clone github repository
-
-As it was defined in previous releases the iSkyLIMS code is downloaded in a user folder and then installed elsewhere (p.e /opt/).
-
-If you have already clone the repository from the previous 3.0.0 release open a
-linux terminal and move towards the directory of iSkyLIMS repository.
-
-```bash
-cd < your personal folder/iskylims >
+cd <your working directory>/iskylims
 git pull
-```
-
-If the repository was not created then open a linux terminal and move to a directory where iSkyLIMS code will be downloaded
-
-```bash
-cd < your personal folder >
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
-cd iskylims
-```
-
-### Configuration settings
-
-Copy the initial setting template into a file named install_settings.txt
-
-```bash
 cp conf/template_install_settings.txt install_settings.txt
-```
-
-Open with your favourite editor the configuration file to set your own values for
-database ,email settings and the local IP of the server where iSkyLIMS will run.
-> If you use a windows-based system for modifying the file, make sure the file is saved using a linux-friendly encoding like ASCII or UTF-8
-
-```bash
 sudo nano install_settings.txt
 ```
 
-### Running upgrade script
+Ensure the file uses Linux-friendly encoding (UTF-8/ASCII) if you edit it on Windows.
 
-If your organization requires that dependencies / stuff that needs root are installed by a different person that install the application the you can use the install script in several steps as follows.
+#### Run upgrade steps requiring root
 
-#### Steps requiring root
-
-Make sure that the installation folder has the correct permissions so the person installing the app can write in that folder.
-
-```bash
-# In case you have a script for this task. You'll need to adjust this script according to the name changing: /opt/iSkyLIMS to /opt/iskylims
-/scripts/hardening.sh
-```
-
-From the previous release software dependences (Python packages) must be updated to the releases defined in the requirement.txt file.
-
-In the linux terminal execute the following command-
-
-```bash
-# to upgrade only software packages dependences. NEEDS ROOT.
-sudo bash install.sh --upgrade dep
-```
-
-Capture the full upgrade transcript with `tee` so you have all stdout/stderr if
-troubleshooting is needed:
+Update system and Python dependencies:
 
 ```bash
 sudo bash install.sh --upgrade dep 2>&1 | tee install_full.log
 ```
 
-#### Steps not requiring root
+Make sure the installation directory permissions allow the non-root step to write to `/opt/iskylims` (adapt your hardening script if paths changed).
 
-Next you need to upgrade iskylims app. Please use one of the commands below:
+#### Run upgrade steps without root
 
-If you are using the library pool, you must indicate in the installation script the file you already backup and execute the following command.
-
-```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
-bash install.sh --upgrade app --script <your_selected_folder/backup_lib_pool.sql>  --git_revision main --tables
-```
-
-If restauration of libary preparation is not required then execute the following command
+Upgrade the application code and database:
 
 ```bash
-# to upgrade iSkyLIMS application including changes required in this release. DOES NOT NEED ROOT.
+# with library pool restore
+bash install.sh --upgrade app --script <backup_folder>/backup_lib_pool.sql --git_revision main --tables
+
+# without library pool restore
 bash install.sh --upgrade app --git_revision main --tables
 ```
 
-You can also run the full upgrade in one command (both dependency and app
-stages):
+Or run everything in one go:
 
 ```bash
 sudo bash install.sh --upgrade full --git_revision main --tables
 ```
 
-During upgrades the script regenerates the Django migrations and applies them in
-`--fake-initial` mode so existing tables are preserved, matching what we do in
-the Docker deployment.
-
-Make sure that the installation folder has the correct permissions.
-
-```bash
-# In case you have a script for this task. Some paths have changed in this version, so you may need to adjust your hardening script.
-/scripts/hardening.sh
-```
+Upgrades regenerate migrations and apply them with `--fake-initial` so existing tables remain intact, matching the Docker workflow.
 
 ## What to do if something fails
 
