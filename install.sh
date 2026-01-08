@@ -576,12 +576,11 @@ install_python_requirements() {
     cd -
 }
 
-# ensure_virtualenv_ready: create the venv and install requirements if missing (useful in Docker app-only stage).
 ensure_virtualenv_ready() {
     if [ ! -d "$INSTALL_PATH/virtualenv" ]; then
-        log_warn "Virtualenv not found. Creating and installing requirements."
-        setup_virtualenv "install"
-        install_python_requirements
+        log_warn "Virtualenv missing. INSTALL_PATH=$INSTALL_PATH"
+        ls -la "$INSTALL_PATH" || true
+        abort_install "Virtualenv not found at $INSTALL_PATH/virtualenv. Run --install dep first."
     fi
 }
 
