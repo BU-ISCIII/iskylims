@@ -42,5 +42,5 @@ WORKDIR /opt/iskylims
 # Expose
 EXPOSE 8001
 
-# Start the application
-CMD ["python3", "/opt/iskylims/manage.py", "runserver", "0:8001"]
+# Start the application once install.sh has populated /opt/iskylims.
+CMD ["bash", "-c", "while [ ! -f /opt/iskylims/manage.py ]; do sleep 2; done; python3 /opt/iskylims/manage.py runserver 0:8001"]
