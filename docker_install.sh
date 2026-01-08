@@ -190,6 +190,14 @@ if [ ! -f "$install_conf" ]; then
     exit 1
 fi
 
+repo_root="$(pwd)"
+if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$repo_root/"* ]]; then
+    install_conf_copy="conf/docker_runtime_settings.txt"
+    echo "Copying $install_conf into repository as $install_conf_copy for Docker build/runtime."
+    cp "$install_conf" "$install_conf_copy"
+    install_conf="$install_conf_copy"
+fi
+
 service_exists() {
     docker compose -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
 }
