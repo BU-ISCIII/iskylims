@@ -576,6 +576,15 @@ install_python_requirements() {
     cd -
 }
 
+# ensure_virtualenv_ready: create the venv and install requirements if missing (useful in Docker app-only stage).
+ensure_virtualenv_ready() {
+    if [ ! -d "$INSTALL_PATH/virtualenv" ]; then
+        log_warn "Virtualenv not found. Creating and installing requirements."
+        setup_virtualenv "install"
+        install_python_requirements
+    fi
+}
+
 # restart_apache_service: restart Apache/HTTPD unless running inside Docker or explicitly skipped.
 restart_apache_service() {
     linux_distribution=$(lsb_release -i | cut -f 2-)
@@ -647,12 +656,13 @@ upgrade_application_files() {
           README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
 
     cd $INSTALL_PATH
+    ensure_virtualenv_ready
     echo "activate the virtualenv"
     source virtualenv/bin/activate
 
     if [ ! -f "$INSTALL_PATH/manage.py" ]; then
         echo "manage.py not found. Creating iskylims project"
-        django-admin startproject iskylims .
+        "$INSTALL_PATH/virtualenv/bin/python" -m django startproject iskylims .
     fi
 
     echo "Update settings and url file."
@@ -716,11 +726,12 @@ install_application_files() {
 
         prepare_documents_structure
 
+        ensure_virtualenv_ready
         echo "activate the virtualenv"
         source virtualenv/bin/activate
 
         echo "Creating iskylims project"
-        django-admin startproject iskylims .
+        "$INSTALL_PATH/virtualenv/bin/python" -m django startproject iskylims .
 
         update_settings_and_urls
 
