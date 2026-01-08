@@ -646,13 +646,18 @@ upgrade_application_files() {
           --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
           README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
 
-    echo "Update settings and url file."
-    update_settings_and_urls
-    prepare_documents_structure
-
     cd $INSTALL_PATH
     echo "activate the virtualenv"
     source virtualenv/bin/activate
+
+    if [ ! -f "$INSTALL_PATH/manage.py" ]; then
+        echo "manage.py not found. Creating iskylims project"
+        django-admin startproject iskylims .
+    fi
+
+    echo "Update settings and url file."
+    update_settings_and_urls
+    prepare_documents_structure
 
     run_django_deploy "upgrade"
     echo "Deleting static files..."
