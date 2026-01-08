@@ -229,6 +229,12 @@ else
     docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf\" --skip_apache_restart$script_args"
 fi
 
+if ! docker exec -it iskylims_app test -f /opt/iskylims/manage.py; then
+    echo "Error: /opt/iskylims/manage.py not found after install.sh. Showing logs:"
+    docker logs --tail 200 iskylims_app
+    exit 1
+fi
+
 if [ "$skip_test_data" = false ]; then
     docker exec -it iskylims_app python3 manage.py loaddata test/test_data.json
 else
