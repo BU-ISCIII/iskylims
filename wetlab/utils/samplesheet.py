@@ -333,7 +333,7 @@ def get_sample_with_user_owner(sample_sheet_path):
         line = line.rstrip()
         if line == "":
             continue
-        found_header = re.search("^Sample_ID,Sample_Name", line)
+        found_header = re.search("^Sample_ID,Sample_Name,.*Description.*$", line)
         if found_header:
             header_found = True
             sample_sheet_heading = line.split(",")
@@ -379,7 +379,7 @@ def get_projects_in_run(in_file: str) -> dict:
             if line == "":
                 continue
             if not header_found:
-                header = re.search("^Sample_ID,Sample_Name,.+,Description.?", line)
+                header = re.search("^Sample_ID,Sample_Name,.*Description.*$", line)
                 if header:
                     # match line with the header
                     # look for projects and description indexes
