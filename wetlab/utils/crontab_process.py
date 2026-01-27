@@ -299,9 +299,12 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
         experiment_name,
     )
     # check if NextSEq run have been successful completed
-    status_run = wetlab.utils.common.find_xml_tag_text(
-        l_run_completion, wetlab.config.COMPLETION_TAG
-    )
+    for xml_tag in wetlab.config.COMPLETION_TAG:
+        status_run = wetlab.utils.common.find_xml_tag_text(
+            l_run_completion, xml_tag
+        )
+        if status_run != "NOT FOUND":
+            break
     if status_run not in wetlab.config.COMPLETION_SUCCESS:
         logger.info(
             "%s : Run in sequencer was not completed but %s",
@@ -445,7 +448,7 @@ def check_sequencer_run_is_completed(
             "%s : End function check_sequencer_run_is_completed with exception",
             experiment_name,
         )
-        return "cancelled", ""
+        return "cancelled", None
     elif way_to_check == "txt_file":
         # l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_TXT_FILE)
         s_run_completion = os.path.join(
@@ -1119,6 +1122,8 @@ def parsing_run_info_and_parameter_information(
                 wetlab.utils.common.logging_warnings(string_message, False)
     # get date for miSeq and NextSeq with the format yymmdd
     date = p_run.find("Date").text
+    # Remove timestamp
+    date = date.split("T")[0]
     try:
         run_date = datetime.datetime.strptime(date, "%y%m%d")
     except Exception:
