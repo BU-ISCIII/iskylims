@@ -1791,7 +1791,7 @@ class SequencerInLabManager(models.Manager):
             platform_obj = SequencingPlatform.objects.get(
                 pk__exact=sequencer_value["platformID"]
             )
-        except models.SequencingPlatform.DoesNotExist:
+        except SequencingPlatform.DoesNotExist:
             platform_obj = None
         new_sequencer = self.create(
             platform_id=platform_obj,
