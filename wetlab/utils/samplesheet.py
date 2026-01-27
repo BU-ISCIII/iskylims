@@ -379,7 +379,7 @@ def get_projects_in_run(in_file: str) -> dict:
             if line == "":
                 continue
             if not header_found:
-                header = re.search("^Sample_ID,Sample_Name", line)
+                header = re.search("^Sample_ID,Sample_Name,.+,Description.?", line)
                 if header:
                     # match line with the header
                     # look for projects and description indexes
@@ -391,6 +391,9 @@ def get_projects_in_run(in_file: str) -> dict:
                     header_found = True
                     continue
             else:
+                if line.startswith("["):
+                    # Jumped to next section - break search
+                    break
                 # ignore the empty lines separated by commas
                 valid_line = re.search(r"^\w+", line)
                 if not valid_line:
