@@ -77,8 +77,8 @@ PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [
 ]
 
 # ########### VALUE TAG FOR XML FILES #########################
-COMPLETION_TAG = "CompletionStatus"
-COMPLETION_SUCCESS = ["CompletedAsPlanned", "SuccessfullyCompleted"]
+COMPLETION_TAG = ["CompletionStatus", "RunStatus"]
+COMPLETION_SUCCESS = ["CompletedAsPlanned", "SuccessfullyCompleted", "RunCompleted"]
 EXPERIMENT_NAME_TAG = "ExperimentName"
 APPLICATION_NAME_TAG = "ApplicationName"
 NUMBER_CYCLES_TAG = "NumCycles"
