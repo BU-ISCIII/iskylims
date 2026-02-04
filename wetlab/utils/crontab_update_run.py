@@ -585,8 +585,8 @@ def manage_run_in_recorded_state(conn, run_process_objs):
             )
 
         if (
-            wetlab.config.COPY_SAMPLE_SHEET_TO_REMOTE
-            and "NextSeq" in run_process_obj.get_run_platform()
+            #wetlab.config.COPY_SAMPLE_SHEET_TO_REMOTE
+            "NextSeq" in run_process_obj.get_run_platform()
         ):
             sample_sheet_path = run_process_obj.get_sample_file()
 
