@@ -859,19 +859,19 @@ def format_sample_sheet_to_display_in_form(sample_sheet_data):
         display_data["adapter2"] = True
 
     display_data["sample_data"] = sample_sheet_data["sample_data"]
-    display_data["heading"] = sample_sheet_data["heading"]
+    display_data["headers"] = sample_sheet_data["headers"]
     main_values = []
     for item in extract_values:
         main_values.append(sample_sheet_data[item])
     summary_values = []
     summary_values.append(len(sample_sheet_data["samples"]))
-    summary_values.append(sample_sheet_data["proyects"])
+    summary_values.append(sample_sheet_data["projects"])
     summary_values.append(sample_sheet_data["userid_names"])
     display_data["main_data"] = list(zip(main_data_heading, main_values))
     display_data["summary_data"] = list(
         zip(wetlab.config.HEADING_SUMMARY_DATA_SAMPLE_SHEET, summary_values)
     )
-    display_data["heading_excel"] = ",".join(sample_sheet_data["heading"])
+    display_data["headers_excel"] = ",".join(sample_sheet_data["headers"])
     # if len(sample_sheet_data['userid_names']) == 0:
     #    display_data['no_user_defined'] = True
 
