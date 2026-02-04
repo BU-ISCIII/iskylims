@@ -337,6 +337,18 @@ MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
 # Sections to check in the IEM file created by user
 SECTIONS_IN_IEM_SAMPLE_SHEET = ["[Header]", "[Reads]", "[Settings]", "[Data]"]
 
+# Tabular data sections in samplesheets. For future references: Insert in order.
+TABULAR_DATA_SECTIONS_SAMPLE_SHEET = [
+    "Data", 
+    "CustomCustomer_Data", 
+    "BCLConvert_Data"
+]
+
+SETTINGS_SECTIONS_SAMPLE_SHEET = [
+    "Settings",
+    "BCLConvert_Settings"
+]
+
 FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Date",
     "Experiment Name",
@@ -348,6 +360,17 @@ FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Chemistry",
     "Description",
 ]
+
+ADAPTER_1_FIELD_NAMES = [
+    "Adapter",
+    "AdapterRead1"
+]
+
+ADAPTER_2_FIELD_NAMES = [
+    "Adapter",
+    "AdapterRead2"
+]
+
 
 # #### HEADINGS VALUES
 
@@ -685,6 +708,9 @@ ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES = [
 ]
 ERROR_SAMPLE_SHEET_USER_ARE_NOT_DEFINED = (
     "Sample sheet has users which are not defined : "
+)
+ERROR_SAMPLE_SHEET_HAS_INVALID_LINES = (
+    "Sample sheet has an invalid (Non-empty, non-comma-delimited) line: "
 )
 ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = [
     "The Sample Sheet that you are uploaded does not longer exists",
