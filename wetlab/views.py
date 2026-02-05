@@ -592,11 +592,14 @@ def create_nextseq_run(request):
             update_info_proj.save()
         results.append(["runname", experiment_name])
         run_p.set_run_state("recorded")
-        sample_sheet_lines = wetlab.utils.samplesheet.read_all_lines_in_sample_sheet(
+        file_read = wetlab.utils.samplesheet.read_file_from_path(
             in_file
         )
+        samplesheet = wetlab.utils.samplesheet.file_read_to_dictionary(
+            file_read
+        )
         sample_names_and_data = wetlab.utils.samplesheet.get_samples_in_sample_sheet(
-            sample_sheet_lines
+            samplesheet
         )
         wetlab.utils.run.increase_reuse_if_samples_exists(
             sample_names_and_data["samples"]
@@ -3079,7 +3082,7 @@ def manage_library_preparation(request):
             data["full_path_file"],
             data["file_name"],
         ) = wetlab.utils.samplesheet.store_user_input_file(request.FILES["uploadfile"])
-        file_read = wetlab.utils.samplesheet.read_user_iem_file(data["full_path_file"])
+        file_read = wetlab.utils.samplesheet.read_file_from_path(data["full_path_file"])
         if not wetlab.utils.samplesheet.valid_user_iem_file(file_read):
             # Error found when extracting data from sample sheet
             data["ERROR"] = wetlab.config.ERROR_INVALID_FILE_FORMAT

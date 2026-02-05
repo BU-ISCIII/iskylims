@@ -34,11 +34,15 @@ def check_run_already_defined_by_crontab(exp_name, pool_ids):
     # experiment name already exists, check if samples are the same
     # to confirm the match
     run_obj = wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
-    sample_sheet = run_obj.get_sample_file()
-    f_name = os.path.join(settings.MEDIA_ROOT, sample_sheet)
+    sample_sheet_path = run_obj.get_sample_file()
+    f_name = os.path.join(settings.MEDIA_ROOT, sample_sheet_path)
     try:
-        with open(f_name, "r") as fh:
-            file_data = fh.readlines()
+        file_data = wetlab.utils.samplesheet.read_file_from_path(
+            f_name
+        )
+        samplesheet = wetlab.utils.samplesheet.file_read_to_dictionary(
+            file_data
+        )
     except FileNotFoundError:
         error_message = str(
             wetlab.config.ERROR_RUN_NAME_BY_CRONTAB_ALREADY_CREATED
@@ -46,7 +50,7 @@ def check_run_already_defined_by_crontab(exp_name, pool_ids):
             + wetlab.config.ERROR_SAMPLE_SHEET_NOT_FOUND_WHEN_CREATED_BY_CRONTAB
         )
         return {"ERROR": error_message}
-    sample_in_s_sheet = wetlab.utils.samplesheet.get_samples_in_sample_sheet(file_data)
+    sample_in_s_sheet = wetlab.utils.samplesheet.get_samples_in_sample_sheet(samplesheet)
     sample_in_pools = wetlab.utils.pool.get_sample_name_in_pools(pool_ids)
     if len(sample_in_pools) != len(sample_in_s_sheet["samples"]):
         return {"ERROR": wetlab.config.ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON}
