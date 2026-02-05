@@ -330,7 +330,7 @@ def search_update_new_runs(request_reason):
                     == "TRUE"
                 ):
                     user_id_list = wetlab.utils.common.get_userid_list()
-                    file_read = wetlab.utils.samplesheet.read_user_iem_file(
+                    file_read = wetlab.utils.samplesheet.read_file_from_path(
                         l_sample_sheet_path
                     )
                     users = wetlab.utils.samplesheet.validate_userid_in_user_iem_file(
