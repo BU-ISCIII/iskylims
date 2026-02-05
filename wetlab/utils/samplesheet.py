@@ -438,29 +438,18 @@ def update_library_kit_field(library_file_name, library_kit_name, library_name):
     return file_name_in_database
 
 
-def update_sample_sheet(in_file, experiment_name):
-    out_line = str("Experiment Name," + experiment_name + "\n")
-    fh_in = open(in_file, "r")
-    temp = os.path.join(settings.MEDIA_ROOT, "wetlab", "tmp.txt")
-    fh_out = open(temp, "w")
-    experiment_line_found = False
-    for line in fh_in:
-        # find experiment name line
-        found_experiment = re.search("^Experiment Name", line)
-        if found_experiment:
-            fh_out.write(out_line)
-            experiment_line_found = True
+def update_sample_sheet(in_file: str, experiment_name: str):
+    """
+    Update experiment name in samplesheet
 
-        elif line == "\n" and experiment_line_found is False:
-            fh_out.write(out_line)
-            fh_out.write("\n")
-            experiment_line_found = True
-        else:
-            fh_out.write(line)
-
-    fh_in.close()
-    fh_out.close()
-    os.rename(temp, in_file)
+    Args:
+        in_file (str): Path to samplesheet
+        experiment_name (str): experiment name
+    """
+    file_read = read_file_from_path(in_file)
+    samplesheet = file_read_to_dictionary(file_read)
+    samplesheet["Header"]["Experiment Name"] = experiment_name
+    write_samplesheet_to_path(in_file)
 
 
 def create_unique_sample_id_values(in_file: str, index_file: str):
@@ -487,7 +476,7 @@ def create_unique_sample_id_values(in_file: str, index_file: str):
     data = get_tabular_data(samplesheet, header_includes="Sample_ID")
     for row in data[1:]:
         index_number += 1
-        index_number = index_number % (10000) # Return only 4 last digits, effectively restarting at 10000
+        index_number = index_number % 10000 # Return only 4 last digits, effectively restarting at 10000
         if index_number == 0:
             # When index re-starts, we move on to the next letter
             index_letter_parts = list(index_letter)
