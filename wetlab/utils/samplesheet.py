@@ -583,23 +583,6 @@ def store_user_input_file(user_input_file):
     return stored_path_file, file_name
 
 
-def read_all_lines_in_sample_sheet(sample_sheet):
-    """
-    Description:
-        The function reads the input file and return the content in a variable
-    Input:
-        sample_sheet    # location of sample sheet
-    Return:
-        read_lines
-    """
-    read_lines = []
-    if os.path.exists(sample_sheet):
-        fh = open(sample_sheet, "r")
-        read_lines = fh.readlines()
-        fh.close()
-    return read_lines
-
-
 def valid_user_iem_file(file_read):
     """
     Description:
