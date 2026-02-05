@@ -405,6 +405,7 @@ def get_index_library_name(in_file):
 
 
 def update_library_kit_field(library_file_name, library_kit_name, library_name):
+    # FIXME This function is not used anywhere - Not going to touch it for now
     # result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
     timestr = time.strftime("%Y%m%d-%H%M%S")
     tmp = re.search(r"(.*)\d{8}-\d+.*\.csv", library_file_name)
