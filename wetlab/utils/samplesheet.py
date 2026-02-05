@@ -28,6 +28,35 @@ def read_file_from_path(file_path: str) -> str:
         return False
     return read_file
 
+def write_samplesheet_to_path(samplesheet: dict, path: str) -> bool:
+    """
+    Write the samplesheet to a path.
+
+    Args:
+        samplesheet (dict): Sample sheet (As a dictionary)
+        path (str): Path to write the file to
+
+    Returns:
+        bool: True if no issue, False if any exception is raised
+    """
+
+    string_to_write = ""
+    for key, value in samplesheet.items():
+        string_to_write += f"[{key}]\n"
+        if key in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
+            string_to_write += f"{'\n'.join([','.join(row) for row in value])}\n"
+        else:
+            for row_header, element in value.items():
+                string_to_write += f"{row_header},{element}\n"
+    try:
+        with open(path, "w") as f:
+            f.write(string_to_write)
+        return True
+    except Exception:
+        return False
+            
+
+
 
 def file_read_to_dictionary(file_read: str) -> dict[str, dict[str, any] | list[list[str]]]:
     """
@@ -63,7 +92,7 @@ def file_read_to_dictionary(file_read: str) -> dict[str, dict[str, any] | list[l
             line = line.split(",")
             try:
                 # Sometimes there are empty lines (e.g. READS values)
-                samplesheet[section][line[0].strip()] = line[1].strip() if len(line) > 1 else ""
+                samplesheet[section][line[0].strip()] = ",".join(line[1:]).strip() if len(line) > 1 else ""
             except IndexError:
                 return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_LINES}
     return samplesheet
@@ -512,39 +541,17 @@ def set_user_names_in_sample_sheet(in_file, user_names):
         temp_sample_sheet # temporary sample sheet to store the information
                             it will replace the in_file
     Return:
-        True
+        Bool: True if successful writing, False otherwise
     """
-    found_sample_line = False
-    temp_sample_sheet = os.path.join(settings.MEDIA_ROOT, "wetlab", "tmp_file")
-    fh = open(in_file, "r")
-    fh_out_file = open(temp_sample_sheet, "w")
-    for line in fh:
-        if "Sample_ID" in line:
-            found_sample_line = True
-            line = line.rstrip()
-            project_index = line.split(",").index("Sample_Project")
-            description_index = line.split(",").index("Description")
-            fh_out_file.write(str(line + "\n"))
-            continue
-        if found_sample_line:
-            # discard the empty lines or the lines that contains empty lines separated by comma
-            if line == "\n" or re.search(r"^\W", line):
-                continue
-
-            data_line = line.split(",")
-            project_name = data_line[project_index]
-            data_line[description_index] = user_names[project_name]
-
-            new_line = ",".join(data_line)
-            fh_out_file.write(str(new_line + "\n"))
-
-        else:
-            fh_out_file.write(line)
-    fh.close()
-    fh_out_file.close()
-    os.rename(temp_sample_sheet, in_file)
-    return True
-
+    file_read = read_file_from_path(in_file)
+    samplesheet = file_read_to_dictionary(file_read)
+    data = get_tabular_data(samplesheet, header_includes="Description")
+    projects = get_column_from_tabular_data("Sample_Project")
+    descriptions_index = data[0].index("Description")
+    for i in range(1, len(data)):
+        data[i][descriptions_index] = user_names[projects[i -1]]
+    success_writing = write_samplesheet_to_path(samplesheet, in_file)
+    return success_writing
 
 def store_user_input_file(user_input_file):
     """
@@ -558,7 +565,7 @@ def store_user_input_file(user_input_file):
     Return
         stored_path_file contains the full path of the file and file_name
     """
-    # create thd directory if not exists
+    # create the directory if not exists
     template_dir = os.path.join(
         settings.MEDIA_ROOT, wetlab.config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
     )
@@ -583,7 +590,7 @@ def store_user_input_file(user_input_file):
     return stored_path_file, file_name
 
 
-def valid_user_iem_file(file_read):
+def valid_user_iem_file(file_read: str) -> bool:
     """
     Description:
         The function check if the user IEM file has a valid format by checking the headings and
