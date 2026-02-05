@@ -14,6 +14,60 @@ import wetlab.config
 
 # import wetlab.models
 
+def read_file_from_path(file_path: str) -> str:
+    """
+    Read file from path, ensuring characters are not lost due to encoding
+    
+    :param file_path: Description
+    :type file_path: str
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            read_file = f.read()
+    except Exception:
+        return False
+    return read_file
+
+
+def file_read_to_dictionary(file_read: str) -> dict[str, dict[str, any] | list[list[str]]]:
+    """
+    Description:
+        This function transforms a SampleSheet from string to dictionary,
+        loading the headers as keys. If data is fully tabular (e.g. [Data]),
+        load rows as list of list; if not, nested dict.
+    Input:
+        file_read           # content of the IEM file from user
+    Constant:
+        ERROR_SAMPLE_SHEET_HAS_INVALID_LINES
+    Return
+        ERROR if any line was not in the proper format (tabular, comma-delimited)
+        samplesheet as a dictionary
+    """
+    samplesheet = {}
+    file_read = file_read.splitlines()
+    for line in file_read:
+        if line.startswith("["):
+            section = line.split(',')[0].lstrip("[").rstrip("]")
+            samplesheet[section] = {}
+            continue
+        if not line or re.match("^,+$", line):
+            # Empty/Filler/Artifact lines with no info
+            continue
+        if section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
+            # Data is tabular; append as list of lists until next header
+            if not isinstance(samplesheet[section], list):
+                samplesheet[section] = []
+            samplesheet[section].append(line)
+        else:
+            # Data is processed as key: value before adding it to dictionary
+            line = line.split(",")
+            try:
+                # Sometimes there are empty lines (e.g. READS values)
+                samplesheet[section][line[0].strip()] = line[1].strip() if len(line) > 1 else ""
+            except IndexError:
+                return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_LINES}
+    return samplesheet
+
 
 def validate_userid_in_user_iem_file(file_read, user_id_list):
     """
@@ -29,37 +83,20 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         userids with the ids found
     """
     users = {}
-    lines = file_read.split("\n")
-    data_section_found = False
-    description_index = False
-    userid_names, invalid_names = [], []
-    for line in lines:
-        line = line.rstrip()
-        if line == "":
-            continue
-        if "[Data]" in line:
-            data_section_found = True
-            continue
-        if data_section_found:
-            line = line.split(",")
-            if not description_index:
-                try:
-                    description_index = line.index("Description")
-                    continue
-                except Exception:
-                    users["ERROR"] = (
+    samplesheet = file_read_to_dictionary(file_read)
+    if "ERROR" in samplesheet:
+        return samplesheet
+
+    data = get_tabular_data(samplesheet, header_includes="Description")
+    if not data:
+        users["ERROR"] = (
                         wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
                     )
-                    return users
-            else:
-                try:
-                    u_name = line[description_index]
-                except Exception:
-                    continue
-                if u_name in user_id_list:
-                    userid_names.append(u_name)
-                else:
-                    invalid_names.append(u_name)
+        return users
+    users_in_sample_sheet = get_column_from_tabular_data(data, "Description")
+
+    userid_names = [user for user in users_in_sample_sheet if user in user_id_list]
+    invalid_names = [user for user in users_in_sample_sheet if user not in user_id_list]
 
     if len(invalid_names) > 0:
         invalid_names = list(set(invalid_names))
@@ -68,6 +105,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         )
         users["ERROR"] = invalid_names
         return users
+    
     users["user_ids"] = list(set(userid_names))
     return users
 
@@ -90,31 +128,43 @@ def delete_stored_file(input_file):
     return False
 
 
-def get_adapters(file_lines):
-    adapter1 = ""
-    adapter2 = ""
-    # For accepting characters like spanish characters.
-    for line in file_lines:
-        if line == "":
+def get_adapters(samplesheet: dict) -> tuple[str, str]:
+    """
+    Get the adapters from the samplesheet (v1 | v2)
+    
+    Parameters
+    ----------
+    samplesheet : dict
+        User sample sheet read as a dictionary
+
+    Return
+    ------
+    adapters : tuple
+        tuple containing the values in order for adapter 1 and 2
+    """
+    for settings_name in wetlab.config.SETTINGS_SECTIONS_SAMPLE_SHEET:
+        settings = samplesheet.get(settings_name)
+        if not settings:
             continue
-        found_adapter = re.search("^Adapter", line)
-        if found_adapter:
-            adapter_code = line.split(",")[1]
-            if adapter1 == "":
-                adapter1 = adapter_code
+        for i in range(len(wetlab.config.ADAPTER_1_FIELD_NAMES)):
+            try:
+                adapter1 = samplesheet[wetlab.config.ADAPTER_1_FIELD_NAMES[i]]
+                adapter2 = samplesheet[wetlab.config.ADAPTER_2_FIELD_NAMES[i]]
+            except ValueError:
                 continue
-            else:
-                adapter2 = adapter_code
-                break
-        data_found = re.search(r"^\[Data]", line)
-        if data_found:
             break
+        else:
+            continue
+        break
+    else:
+        return "", ""
 
     return adapter1, adapter2
 
 
-def get_heading(file_lines):
-    """read the input variable and extract the heading row
+def get_row_from_tabular_data(tabular_data: list[list], index) -> list:
+    """
+    Get the data headers 
 
     Parameters
     ----------
@@ -126,39 +176,41 @@ def get_heading(file_lines):
     heading : list
         contain the values from heading row of file
     """
+    try:
+        return tabular_data[index]
+    except IndexError:
+        return []
 
-    # For accepting characters like spanish characters.
-    heading = []
-    for line in file_lines:
-        line = line.strip()
-        if line == "":
+
+def get_column_from_tabular_data(tabular_data: list[list], column_name: str, unique: bool=False) -> list:
+    """
+    Docstring for get_all_values_from_tabular_data
+    
+    :param tabular_data: Description
+    :type tabular_data: dict[list[list[str]]]
+    """
+    headers = tabular_data[0]
+    tabular_data = [row for row in tabular_data[1:]]
+    try:
+        column_index = headers.index(column_name)
+    except ValueError:
+        return []
+
+    values = [row[column_index] for row in tabular_data]
+    return list(set(values)) if unique else values
+
+def get_tabular_data(samplesheet: dict, header_includes="") -> list[list]:
+    for data_section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
+        data = samplesheet.get(data_section, [])
+        if not data:
             continue
-        found_header = re.search("^Sample_ID,Sample_Name", line)
-        if found_header:
-            heading = line.split(",")
-            break
-    return heading
+        if header_includes and header_includes not in data[0]:
+            continue
+        break
+    return [row.split(',') for row in data]
 
 
-def get_index_adapter(file_lines):
-    """
-    Description :
-        get the indexes adapter information from the file_lines
-    Input:
-        file_lines  # sample sheet file converted to list of lines
-    Return:
-        index_adapters . List of the reads
-    """
-    index_adapters = ""
-    for line in file_lines:
-        if "Index Adapters" in line:
-            index_adapters = line.split(",")[1].replace('"', "")
-            break
-    # remove the \n or \r
-    return index_adapters.rstrip()
-
-
-def get_projects_in_sample_sheet(file_lines):
+def get_projects_in_sample_sheet(samplesheet) -> list:
     """
     Description :
         get the project names defined from the file_lines
@@ -167,50 +219,32 @@ def get_projects_in_sample_sheet(file_lines):
     Return:
         project_name_list
     """
-    header_found = False
-    project_list = []
-    for line in file_lines:
-        line = line.rstrip()
-        if line == "":
-            continue
-        found_header = re.search("^Sample_ID,Sample_Name", line)
-        if found_header:
-            header_found = True
-            heading = line.split(",")
-            index_project_name = heading.index("Sample_Project")
-            continue
-        if header_found:
-            try:
-                project_list.append(line.split(",")[index_project_name])
-            except Exception:
-                continue
-    project_name_list = list(set(project_list))
-    return project_name_list
+    data = get_tabular_data(samplesheet)
+    projects = get_column_from_tabular_data(data, 'Sample_Project', unique=True)
+    return projects
 
-
-def get_reads(file_lines):
+def get_reads(samplesheet: dict) -> list[str, str]:
     """
     Description :
-        get the reads information from the file_lines
+        get the reads information from the samplesheet
     Input:
-        file_lines  # sample sheet file converted to list of lines
+        samplesheet  # samplesheet file converted to dictionary
     Return:
         reads . List of the reads
     """
-    read_found = False
+    reads_section = samplesheet.get("Reads")
     reads = []
-    for line in file_lines:
-        if "[Reads]" in line:
-            read_found = True
-            continue
-        if "[Settings]" in line:
+    for key, value in reads_section.items():
+        if not value:
+            # Sample sheets format for read is inconsistent - V1 accepts different format for read lengths
+            reads = list(reads_section.keys())
             break
-        if read_found and re.search(r"^\w+", line):
-            reads.append(line.split(",")[0])
+        if "Read" in key:
+            reads.append(value)
     return reads
 
 
-def get_samples_in_sample_sheet(file_lines):
+def get_samples_in_sample_sheet(samplesheet: dict) -> dict:
     """
     Description :
         get the sample information from the file_lines
@@ -221,34 +255,16 @@ def get_samples_in_sample_sheet(file_lines):
         is a list for each sample row
     """
     samples_dict = {}
-    samples_dict["samples"] = []
-    samples_dict["sample_data"] = []
-    header_found = False
-    for line in file_lines:
-        line = line.rstrip()
-        if line == "":
-            continue
-        found_header = re.search("^Sample_ID,Sample_Name", line)
-        if found_header:
-            header_found = True
-            samples_dict["heading"] = line.split(",")
-            index_sample_name = samples_dict["heading"].index("Sample_Name")
-            continue
-            # found the index for projects
-        if header_found:
-            line_split = line.split(",")
-            try:
-                sample_name = line_split[index_sample_name].strip()
-            except Exception:
-                continue
-            if sample_name == "":
-                continue
-            data = []
-            for item in line_split:
-                data.append(item.strip())
-            samples_dict["sample_data"].append(data)
-            samples_dict["samples"].append(sample_name)
+    data = get_tabular_data(samplesheet)
+
+    samples_dict["header"] = data[0] if len(data) > 1 else ""
+    samples_dict["samples"] = get_column_from_tabular_data(data, "Sample_Name")
+    samples_dict["sample_data"] = [get_row_from_tabular_data(data, i) for i in range(1, len(data))]
     return samples_dict
+
+def get_headers(samplesheet: dict) -> list:
+    data = get_tabular_data(samplesheet)
+    return data[0].split(',')
 
 
 def get_sample_sheet_data(file_read):
@@ -269,49 +285,25 @@ def get_sample_sheet_data(file_read):
         sample_sheet_data dictionary with the extracted information
     """
     sample_sheet_data = {}
-    # initialize data with empty values
+    samplesheet = file_read_to_dictionary(file_read)
+    # initialize header data
     for item in wetlab.config.FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5:
-        sample_sheet_data[item.lower()] = ""
+        sample_sheet_data[item.lower()] = samplesheet['Header'].get(item, "")
 
-    file_lines = file_read.split("\n")
-    for line in file_lines:
-        if "iemfileversion" in line.lower():
-            sample_sheet_data["iem_version"] = line.split(",")[1]
-            break
-    # get assay information
-    for line in file_lines:
-        if "Assay" in line:
-            sample_sheet_data["assay"] = line.split(",")[1]
-            break
-    # get index adapters information
-    # for line in file_lines :
-    #    if 'Index Adapters' in line :
-    #        sample_sheet_data['index_adapters'] = line.split(',')[1]
-    #        break
-    # get application information
-    for line in file_lines:
-        if "Application" in line:
-            sample_sheet_data["application"] = line.split(",")[1]
-            break
-    # get Instrument information
-    for line in file_lines:
-        if "Instrument Type" in line:
-            sample_sheet_data["instrument type"] = line.split(",")[1]
-            break
     # get adapters information
     sample_sheet_data["adapter1"], sample_sheet_data["adapter2"] = get_adapters(
-        file_lines
+        samplesheet
     )
     # get indexes adapters information
-    sample_sheet_data["index_adapters"] = get_index_adapter(file_lines)
+    sample_sheet_data["index_adapters"] = samplesheet.get('Headers', {}).get('Index Adapters', "")
     # get reads information
-    sample_sheet_data["reads"] = get_reads(file_lines)
+    sample_sheet_data["reads"] = get_reads(samplesheet)
     # get proyects in sheet_data
-    sample_sheet_data["proyects"] = get_projects_in_sample_sheet(file_lines)
+    sample_sheet_data["projects"] = get_projects_in_sample_sheet(samplesheet)
     # update sample sheet data
-    sample_sheet_data.update(get_samples_in_sample_sheet(file_lines))
+    sample_sheet_data.update(get_samples_in_sample_sheet(samplesheet))
     # include heading
-    sample_sheet_data["heading"] = get_heading(file_lines)
+    sample_sheet_data["header"] = get_headers(samplesheet)
     return sample_sheet_data
 
 
@@ -326,43 +318,20 @@ def get_sample_with_user_owner(sample_sheet_path):
         sample_user dictionary with the extracted information
     """
     sample_user = {}
-    header_found = False
     full_path = os.path.join(settings.MEDIA_ROOT, sample_sheet_path)
-    fh = open(full_path, "r")
-    for line in fh:
-        line = line.rstrip()
-        if line == "":
-            continue
-        found_header = re.search("^Sample_ID,Sample_Name,.*Description.*$", line)
-        if found_header:
-            header_found = True
-            sample_sheet_heading = line.split(",")
-            index_sample_name = sample_sheet_heading.index("Sample_Name")
-            try:
-                index_description = sample_sheet_heading.index("Description")
-            except Exception:
-                index_description = None
-            continue
-        if header_found:
-            line_split = line.split(",")
-            try:
-                sample_name = line_split[index_sample_name].strip()
-                if index_description is not None:
-                    user_id = line_split[index_description].strip()
-                else:
-                    user_id = None
-            except Exception:
-                continue
-            if sample_name == "":
-                continue
+    file_read = read_file_from_path(full_path)
+    samplesheet = file_read_to_dictionary(file_read)
+    # Retrieve tabular data with "Description" in the header
+    data = get_tabular_data(samplesheet, header_includes="Description")
+    sample_names = get_column_from_tabular_data(data, "Sample_Name")
+    user_ids = get_column_from_tabular_data(data, "Description")
 
-            sample_user[sample_name] = user_id
-    fh.close()
+    sample_user = {sample_names[i]: user_ids[i] for i in range(len(sample_names))}
     return sample_user
 
 
 def get_projects_in_run(in_file: str) -> dict:
-    """Funtion to check if the sample sheet has a valid heading. On valid file
+    """Funtion to check if the sample sheet has a valid header. On valid file
     get project names and the user names from description column
 
     Args:
@@ -371,37 +340,14 @@ def get_projects_in_run(in_file: str) -> dict:
     Returns:
         dict: dictionary with the projects or error message
     """
-    header_found = False
-    projects = {}
-    with open(in_file, "r") as fh:
-        for line in fh:
-            line = line.rstrip()
-            if line == "":
-                continue
-            if not header_found:
-                header = re.search("^Sample_ID,Sample_Name,.*Description.*$", line)
-                if header:
-                    # match line with the header
-                    # look for projects and description indexes
-                    if not "Sample_Project" and "Description" not in line:
-                        break
-                    split_line = line.split(",")
-                    p_index = split_line.index("Sample_Project")
-                    description_index = split_line.index("Description")
-                    header_found = True
-                    continue
-            else:
-                if line.startswith("["):
-                    # Jumped to next section - break search
-                    break
-                # ignore the empty lines separated by commas
-                valid_line = re.search(r"^\w+", line)
-                if not valid_line:
-                    continue
-                # store the project name and the user name (Description) inside projects dict
-                projects[line.split(",")[p_index]] = line.split(",")[description_index]
+    file_read = read_file_from_path(in_file)
+    samplesheet = file_read_to_dictionary(file_read)
+    data = get_tabular_data(samplesheet, header_includes="Description")
+    sample_projects = get_column_from_tabular_data(data, "Sample_Project")
+    user_ids = get_column_from_tabular_data(data, "Description")
+    projects = {sample_projects[i]: user_ids[i] for i in range(len(sample_projects))}
 
-    if not header_found:
+    if not data:
         return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING}
     if not projects:
         return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_PROJECTS}
@@ -420,25 +366,12 @@ def get_index_library_name(in_file):
     Output:
         library_value
     """
-    library_value = ""
-    # For accepting characters like spanish characters.
-    import codecs
 
-    fh = codecs.open(in_file, "r", "utf-8")
-    for line in fh:
-        line = line.rstrip()
-        if line == "":
-            continue
-        found_assay = re.search("^Assay", line)
-        if found_assay:
-            library_value = line.split(",")[1]
-            continue
-        found_adapters = re.search("^Index Adapters", line)
-        if found_adapters:
-            library_value = line.split(",")[1]
-            break
+    file_read = read_file_from_path(in_file)
+    samplesheet = file_read_to_dictionary(file_read)
+    header_values = samplesheet['Header']
+    library_value = header_values.get("Assay", "") or header_values.get("Index Adapters", "")
 
-    fh.close()
     return library_value
 
 
@@ -667,24 +600,6 @@ def read_all_lines_in_sample_sheet(sample_sheet):
     return read_lines
 
 
-def read_user_iem_file(in_file):
-    """
-    Description:
-        The function reads the input file and return the content in a variable
-
-    Return:
-        file_read
-    """
-    fh = codecs.open(in_file, "r", "utf-8")
-    try:
-        file_read = fh.read()
-        fh.close()
-        return file_read
-    except Exception:
-        fh.close()
-        return False
-
-
 def valid_user_iem_file(file_read):
     """
     Description:
@@ -701,33 +616,30 @@ def valid_user_iem_file(file_read):
     Return
         False if file cannot be read or do not have all information
     """
-    for section in wetlab.config.SECTIONS_IN_IEM_SAMPLE_SHEET:
-        if section not in file_read:
+    samplesheet = file_read_to_dictionary(file_read)
+    for section_name in samplesheet.keys():
+        if (
+        section_name not in wetlab.config.SECTIONS_IN_IEM_SAMPLE_SHEET
+        and
+        section_name not in wetlab.config.SECTIONS_IN_V2_SAMPLE_SHEET
+        ):
             return False
 
-    lines = file_read.split("\n")
-    data_section_found = False
     data_field_length = ""
     sample_number = 0
-    for line in lines:
-        line = line.rstrip()
-        if line == "":
-            continue
-        if "[Data]" in line:
-            data_section_found = True
-            continue
-        if data_section_found:
-            if data_field_length == "":
-                data_field_length = len(line.split(","))
-                continue
-            line_split = line.split(",")
-            # Allow at this step the Description field can be empth
-            if (
-                len(line_split) < data_field_length - 1
-                or len(line_split) > data_field_length
-            ):
-                return False
-            sample_number += 1
+    data = get_tabular_data(samplesheet, header_includes="Description")
+
+    # Check on data 
+    if not data:
+        return False
+
+    # Checks on data contents
+    data_field_length = len(data[0])
+    sample_number = len(data) - 1
+    if not all([len(row) - data_field_length for row in data]):
+        # All rows contain the same either the same 
+        return False
+    
     if sample_number == 0:
         return False
     return True
