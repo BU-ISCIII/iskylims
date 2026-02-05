@@ -463,62 +463,54 @@ def update_sample_sheet(in_file, experiment_name):
     os.rename(temp, in_file)
 
 
-def create_unique_sample_id_values(infile, index_file):
-    found_sample_line = False
+def create_unique_sample_id_values(in_file: str, index_file: str):
+    """
+    Create unique sample IDs for samples in the samplesheets by using an ongoing index.
 
-    fh = open(infile, "r")
-    temp_sample_sheet = os.path.join(settings.MEDIA_ROOT, "wetlab", "tmp_file")
-    fh_out_file = open(temp_sample_sheet, "w")
-    with open(index_file) as fh_index:
-        index = fh_index.readline()
-        index = index.rstrip()
-        index_number_str, index_letter = index.split("-")
-        fh_index.close()
+    Args:
+        in_file (str): Path to samplesheet
+        index_file (str): Path to index_file
+    """
+    file_read = read_file_from_path(in_file)
+    samplesheet = file_read_to_dictionary(file_read)
 
-    for line in fh:
-        if "Sample_ID" in line:
-            found_sample_line = True
-            fh_out_file.write(line)
-            continue
-        if found_sample_line:
-            # discard the empty lines or the lines that contains empty lines separated by comma
-            if line == "\n" or re.search(r"^\W", line):
-                continue
+    with open(index_file, "r") as f:
+        try:  # catch OSError in case of a one line file 
+            f.seek(-2, os.SEEK_END)
+            while f.read(1) != b'\n':
+                f.seek(-2, os.SEEK_CUR)
+        except OSError:
+            f.seek(0)
+        last_line = f.readline().decode()
+        index_number_str, index_letter = last_line.rstrip().split("-")
+        index_number = int(index_number_str)
+    data = get_tabular_data(samplesheet, header_includes="Sample_ID")
+    for row in data[1:]:
+        index_number += 1
+        index_number = index_number % (10000) # Return only 4 last digits, effectively restarting at 10000
+        if index_number == 0:
+            # When index re-starts, we move on to the next letter
+            index_letter_parts = list(index_letter)
+            # Reverse order to
+            for i in [1,0]:
+                ascii_index_letter = ord(index_letter_parts[i])
+                ascii_index_letter += 1
+                ascii_index_letter = ascii_index_letter if ascii_index_letter <= 90 else 65
+                index_letter_parts[i] = chr(ascii_index_letter)
+                if ascii_index_letter != 65:
+                    break
+            # Reverse and stringify the index letter parts
+            index_letter = "".join(index_letter_parts)
+        # Create unique sample ID and overwrite Sample_ID
+        sample_unique_id = f"{str(index_number).zfill(4)}-{index_letter}"
+        row[0] = sample_unique_id
+    
+    # Dump the index value to file
+    with open(index_file, "w") as f:
+        f.write(sample_unique_id)
 
-            data_line = line.split(",")
-            data_line[0] = str(index_number_str + "-" + index_letter)
-            new_line = ",".join(data_line)
-            fh_out_file.write(new_line)
-            # increase the index number
-            index_number = int(index_number_str) + 1
-            if index_number > 9999:
-                index_number = 0
-                # increase a letter
-                split_index_letter = list(index_letter)
-                if split_index_letter[1] == "Z":
-                    last_letter = chr(ord(split_index_letter[0]) + 1)
-                    split_index_letter[0] = last_letter
-                    split_index_letter[1] = "A"
-                    index_letter = "".join(split_index_letter)
-                else:
-                    first_letter = chr(ord(split_index_letter[1]) + 1)
-                    split_index_letter[1] = first_letter
-                    index_letter = "".join(split_index_letter)
-
-            index_number_str = str(index_number)
-            index_number_str = index_number_str.zfill(4)
-
-        else:
-            fh_out_file.write(line)
-
-    # dump the index value to file
-    fh_index = open(index_file, "w")
-    index_line = str(index_number_str + "-" + index_letter)
-    fh_index.write(index_line)
-    fh_index.close()
-    fh.close()
-    fh_out_file.close()
-    os.rename(temp_sample_sheet, infile)
+    # Dump the updated samplesheet
+    write_samplesheet_to_path(samplesheet, in_file)
 
 
 def set_user_names_in_sample_sheet(in_file, user_names):
