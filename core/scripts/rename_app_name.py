@@ -1,6 +1,5 @@
 import core.models
 
-
 """
     The script is applicable for the upgrade from 2.3.0 to 3.0.0.
     Because the application in iSkylims have been renamed, this required that
