@@ -193,7 +193,7 @@ fi
 repo_root="$(pwd)"
 temp_install_conf=""
 if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$repo_root/"* ]]; then
-    temp_install_conf="/tmp/iskylims_docker_install_$$.txt"
+    temp_install_conf="$repo_root/.tmp_docker_install_conf_$$.txt"
     echo "Copying $install_conf into temporary file $temp_install_conf for Docker build/runtime."
     cp "$install_conf" "$temp_install_conf"
     install_conf="$temp_install_conf"
