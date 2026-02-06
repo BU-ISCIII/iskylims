@@ -73,6 +73,7 @@ demo_data=false
 git_revision="main"
 compose_file=""
 install_conf=""
+install_conf_container=""
 skip_demo_data=""
 skip_test_data=""
 mode="production"
@@ -205,6 +206,12 @@ if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$repo_root/"* ]]; then
     trap cleanup_temp_conf EXIT
 fi
 
+if [[ "$install_conf" = "$repo_root/"* ]]; then
+    install_conf_container="${install_conf#$repo_root/}"
+else
+    install_conf_container="$install_conf"
+fi
+
 service_exists() {
     docker compose -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
 }
@@ -222,8 +229,11 @@ ensure_app_running() {
 }
 
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
-INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf" \
-    docker compose -f "$compose_file" build --no-cache
+INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" \
+    docker compose -f "$compose_file" build --no-cache \
+    --build-arg INSTALL_TYPE="dep" \
+    --build-arg GIT_REVISION="$git_revision" \
+    --build-arg INSTALL_CONF="$install_conf_container"
 docker compose -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
@@ -239,10 +249,10 @@ fi
 
 if [ "$action" = "upgrade" ]; then
     echo "Running install.sh upgrade inside the container"
-    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf\" --skip_apache_restart$script_args"
+    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args"
 else
     echo "Running install.sh install inside the container"
-    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf\" --skip_apache_restart$script_args"
+    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args"
 fi
 
 if ! docker exec -it iskylims_app test -f /opt/iskylims/manage.py; then
