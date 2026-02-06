@@ -592,12 +592,8 @@ def create_nextseq_run(request):
             update_info_proj.save()
         results.append(["runname", experiment_name])
         run_p.set_run_state("recorded")
-        file_read = wetlab.utils.samplesheet.read_file_from_path(
-            in_file
-        )
-        samplesheet = wetlab.utils.samplesheet.file_read_to_dictionary(
-            file_read
-        )
+        file_read = wetlab.utils.samplesheet.read_file_from_path(in_file)
+        samplesheet = wetlab.utils.samplesheet.file_read_to_dictionary(file_read)
         sample_names_and_data = wetlab.utils.samplesheet.get_samples_in_sample_sheet(
             samplesheet
         )

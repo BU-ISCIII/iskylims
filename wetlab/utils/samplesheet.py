@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 # Generic imports
-import codecs
 import os
 import re
 import time
@@ -14,10 +13,11 @@ import wetlab.config
 
 # import wetlab.models
 
+
 def read_file_from_path(file_path: str) -> str:
     """
     Read file from path, ensuring characters are not lost due to encoding
-    
+
     :param file_path: Description
     :type file_path: str
     """
@@ -27,6 +27,7 @@ def read_file_from_path(file_path: str) -> str:
     except Exception:
         return False
     return read_file
+
 
 def write_samplesheet_to_path(samplesheet: dict, path: str) -> bool:
     """
@@ -54,11 +55,11 @@ def write_samplesheet_to_path(samplesheet: dict, path: str) -> bool:
         return True
     except Exception:
         return False
-            
 
 
-
-def file_read_to_dictionary(file_read: str) -> dict[str, dict[str, any] | list[list[str]]]:
+def file_read_to_dictionary(
+    file_read: str,
+) -> dict[str, dict[str, any] | list[list[str]]]:
     """
     Description:
         This function transforms a SampleSheet from string to dictionary,
@@ -76,7 +77,7 @@ def file_read_to_dictionary(file_read: str) -> dict[str, dict[str, any] | list[l
     file_read = file_read.splitlines()
     for line in file_read:
         if line.startswith("["):
-            section = line.split(',')[0].lstrip("[").rstrip("]")
+            section = line.split(",")[0].lstrip("[").rstrip("]")
             samplesheet[section] = {}
             continue
         if not line or re.match("^,+$", line):
@@ -92,7 +93,9 @@ def file_read_to_dictionary(file_read: str) -> dict[str, dict[str, any] | list[l
             line = line.split(",")
             try:
                 # Sometimes there are empty lines (e.g. READS values)
-                samplesheet[section][line[0].strip()] = ",".join(line[1:]).strip() if len(line) > 1 else ""
+                samplesheet[section][line[0].strip()] = (
+                    ",".join(line[1:]).strip() if len(line) > 1 else ""
+                )
             except IndexError:
                 return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_LINES}
     return samplesheet
@@ -119,8 +122,8 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
     data = get_tabular_data(samplesheet, header_includes="Description")
     if not data:
         users["ERROR"] = (
-                        wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
-                    )
+            wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+        )
         return users
     users_in_sample_sheet = get_column_from_tabular_data(data, "Description")
 
@@ -134,7 +137,7 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         )
         users["ERROR"] = invalid_names
         return users
-    
+
     users["user_ids"] = list(set(userid_names))
     return users
 
@@ -160,7 +163,7 @@ def delete_stored_file(input_file):
 def get_adapters(samplesheet: dict) -> tuple[str, str]:
     """
     Get the adapters from the samplesheet (v1 | v2)
-    
+
     Parameters
     ----------
     samplesheet : dict
@@ -193,7 +196,7 @@ def get_adapters(samplesheet: dict) -> tuple[str, str]:
 
 def get_row_from_tabular_data(tabular_data: list[list], index) -> list:
     """
-    Get the data headers 
+    Get the data headers
 
     Parameters
     ----------
@@ -211,10 +214,12 @@ def get_row_from_tabular_data(tabular_data: list[list], index) -> list:
         return []
 
 
-def get_column_from_tabular_data(tabular_data: list[list], column_name: str, unique: bool=False) -> list:
+def get_column_from_tabular_data(
+    tabular_data: list[list], column_name: str, unique: bool = False
+) -> list:
     """
     Docstring for get_all_values_from_tabular_data
-    
+
     :param tabular_data: Description
     :type tabular_data: dict[list[list[str]]]
     """
@@ -228,6 +233,7 @@ def get_column_from_tabular_data(tabular_data: list[list], column_name: str, uni
     values = [row[column_index] for row in tabular_data]
     return list(set(values)) if unique else values
 
+
 def get_tabular_data(samplesheet: dict, header_includes="") -> list[list]:
     for data_section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
         data = samplesheet.get(data_section, [])
@@ -236,7 +242,7 @@ def get_tabular_data(samplesheet: dict, header_includes="") -> list[list]:
         if header_includes and header_includes not in data[0]:
             continue
         break
-    return [row.split(',') for row in data]
+    return [row.split(",") for row in data]
 
 
 def get_projects_in_sample_sheet(samplesheet) -> list:
@@ -249,8 +255,9 @@ def get_projects_in_sample_sheet(samplesheet) -> list:
         project_name_list
     """
     data = get_tabular_data(samplesheet)
-    projects = get_column_from_tabular_data(data, 'Sample_Project', unique=True)
+    projects = get_column_from_tabular_data(data, "Sample_Project", unique=True)
     return projects
+
 
 def get_reads(samplesheet: dict) -> list[str, str]:
     """
@@ -288,12 +295,15 @@ def get_samples_in_sample_sheet(samplesheet: dict) -> dict:
 
     samples_dict["header"] = data[0] if len(data) > 1 else ""
     samples_dict["samples"] = get_column_from_tabular_data(data, "Sample_Name")
-    samples_dict["sample_data"] = [get_row_from_tabular_data(data, i) for i in range(1, len(data))]
+    samples_dict["sample_data"] = [
+        get_row_from_tabular_data(data, i) for i in range(1, len(data))
+    ]
     return samples_dict
+
 
 def get_headers(samplesheet: dict) -> list:
     data = get_tabular_data(samplesheet)
-    return data[0].split(',')
+    return data[0].split(",")
 
 
 def get_sample_sheet_data(file_read):
@@ -317,14 +327,16 @@ def get_sample_sheet_data(file_read):
     samplesheet = file_read_to_dictionary(file_read)
     # initialize header data
     for item in wetlab.config.FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5:
-        sample_sheet_data[item.lower()] = samplesheet['Header'].get(item, "")
+        sample_sheet_data[item.lower()] = samplesheet["Header"].get(item, "")
 
     # get adapters information
     sample_sheet_data["adapter1"], sample_sheet_data["adapter2"] = get_adapters(
         samplesheet
     )
     # get indexes adapters information
-    sample_sheet_data["index_adapters"] = samplesheet.get('Headers', {}).get('Index Adapters', "")
+    sample_sheet_data["index_adapters"] = samplesheet.get("Headers", {}).get(
+        "Index Adapters", ""
+    )
     # get reads information
     sample_sheet_data["reads"] = get_reads(samplesheet)
     # get proyects in sheet_data
@@ -398,8 +410,10 @@ def get_index_library_name(in_file):
 
     file_read = read_file_from_path(in_file)
     samplesheet = file_read_to_dictionary(file_read)
-    header_values = samplesheet['Header']
-    library_value = header_values.get("Assay", "") or header_values.get("Index Adapters", "")
+    header_values = samplesheet["Header"]
+    library_value = header_values.get("Assay", "") or header_values.get(
+        "Index Adapters", ""
+    )
 
     return library_value
 
@@ -465,9 +479,9 @@ def create_unique_sample_id_values(in_file: str, index_file: str):
     samplesheet = file_read_to_dictionary(file_read)
 
     with open(index_file, "r") as f:
-        try:  # catch OSError in case of a one line file 
+        try:  # catch OSError in case of a one line file
             f.seek(-2, os.SEEK_END)
-            while f.read(1) != b'\n':
+            while f.read(1) != b"\n":
                 f.seek(-2, os.SEEK_CUR)
         except OSError:
             f.seek(0)
@@ -477,15 +491,19 @@ def create_unique_sample_id_values(in_file: str, index_file: str):
     data = get_tabular_data(samplesheet, header_includes="Sample_ID")
     for row in data[1:]:
         index_number += 1
-        index_number = index_number % 10000 # Return only 4 last digits, effectively restarting at 10000
+        index_number = (
+            index_number % 10000
+        )  # Return only 4 last digits, effectively restarting at 10000
         if index_number == 0:
             # When index re-starts, we move on to the next letter
             index_letter_parts = list(index_letter)
             # Reverse order to
-            for i in [1,0]:
+            for i in [1, 0]:
                 ascii_index_letter = ord(index_letter_parts[i])
                 ascii_index_letter += 1
-                ascii_index_letter = ascii_index_letter if ascii_index_letter <= 90 else 65
+                ascii_index_letter = (
+                    ascii_index_letter if ascii_index_letter <= 90 else 65
+                )
                 index_letter_parts[i] = chr(ascii_index_letter)
                 if ascii_index_letter != 65:
                     break
@@ -494,7 +512,7 @@ def create_unique_sample_id_values(in_file: str, index_file: str):
         # Create unique sample ID and overwrite Sample_ID
         sample_unique_id = f"{str(index_number).zfill(4)}-{index_letter}"
         row[0] = sample_unique_id
-    
+
     # Dump the index value to file
     with open(index_file, "w") as f:
         f.write(sample_unique_id)
@@ -531,9 +549,10 @@ def set_user_names_in_sample_sheet(in_file, user_names):
     projects = get_column_from_tabular_data("Sample_Project")
     descriptions_index = data[0].index("Description")
     for i in range(1, len(data)):
-        data[i][descriptions_index] = user_names[projects[i -1]]
+        data[i][descriptions_index] = user_names[projects[i - 1]]
     success_writing = write_samplesheet_to_path(samplesheet, in_file)
     return success_writing
+
 
 def store_user_input_file(user_input_file):
     """
@@ -591,9 +610,8 @@ def valid_user_iem_file(file_read: str) -> bool:
     samplesheet = file_read_to_dictionary(file_read)
     for section_name in samplesheet.keys():
         if (
-        section_name not in wetlab.config.SECTIONS_IN_IEM_SAMPLE_SHEET
-        and
-        section_name not in wetlab.config.SECTIONS_IN_V2_SAMPLE_SHEET
+            section_name not in wetlab.config.SECTIONS_IN_IEM_SAMPLE_SHEET
+            and section_name not in wetlab.config.SECTIONS_IN_V2_SAMPLE_SHEET
         ):
             return False
 
@@ -601,7 +619,7 @@ def valid_user_iem_file(file_read: str) -> bool:
     sample_number = 0
     data = get_tabular_data(samplesheet, header_includes="Description")
 
-    # Check on data 
+    # Check on data
     if not data:
         return False
 
@@ -609,9 +627,9 @@ def valid_user_iem_file(file_read: str) -> bool:
     data_field_length = len(data[0])
     sample_number = len(data) - 1
     if not all([len(row) - data_field_length for row in data]):
-        # All rows contain the same either the same 
+        # All rows contain the same either the same
         return False
-    
+
     if sample_number == 0:
         return False
     return True

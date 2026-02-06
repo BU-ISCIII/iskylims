@@ -336,19 +336,18 @@ MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
 
 # Sections to check in the IEM file created by user
 SECTIONS_IN_IEM_SAMPLE_SHEET = ["Header", "Reads", "Settings", "Data"]
-SECTIONS_IN_V2_SAMPLE_SHEET = ["Header", "Reads", "BCLConvert_Settings", "BCLConvert_Data", "CustomCustomer_Data"]
+SECTIONS_IN_V2_SAMPLE_SHEET = [
+    "Header",
+    "Reads",
+    "BCLConvert_Settings",
+    "BCLConvert_Data",
+    "CustomCustomer_Data",
+]
 
 # Tabular data sections in samplesheets. For future references: Insert in order.
-TABULAR_DATA_SECTIONS_SAMPLE_SHEET = [
-    "Data", 
-    "CustomCustomer_Data", 
-    "BCLConvert_Data"
-]
+TABULAR_DATA_SECTIONS_SAMPLE_SHEET = ["Data", "CustomCustomer_Data", "BCLConvert_Data"]
 
-SETTINGS_SECTIONS_SAMPLE_SHEET = [
-    "Settings",
-    "BCLConvert_Settings"
-]
+SETTINGS_SECTIONS_SAMPLE_SHEET = ["Settings", "BCLConvert_Settings"]
 
 FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Date",
@@ -362,15 +361,9 @@ FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Description",
 ]
 
-ADAPTER_1_FIELD_NAMES = [
-    "Adapter",
-    "AdapterRead1"
-]
+ADAPTER_1_FIELD_NAMES = ["Adapter", "AdapterRead1"]
 
-ADAPTER_2_FIELD_NAMES = [
-    "Adapter",
-    "AdapterRead2"
-]
+ADAPTER_2_FIELD_NAMES = ["Adapter", "AdapterRead2"]
 
 
 # #### HEADINGS VALUES
