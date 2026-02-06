@@ -1,6 +1,5 @@
 import core.models
 
-
 """
     The script is applicable for the upgrade from 2.3.0 to 3.0.0.
     Because the new version changes the value that is stored now is the field

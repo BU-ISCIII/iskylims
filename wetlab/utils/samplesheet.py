@@ -45,7 +45,10 @@ def write_samplesheet_to_path(samplesheet: dict, path: str) -> bool:
     for key, value in samplesheet.items():
         string_to_write += f"[{key}]\n"
         if key in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
-            string_to_write += f"{'\n'.join([','.join(row) for row in value])}\n"
+            delimiter = "\n"
+            string_to_write += (
+                f"{delimiter.join([','.join(row) for row in value])}{delimiter}"
+            )
         else:
             for row_header, element in value.items():
                 string_to_write += f"{row_header},{element}\n"

@@ -1878,7 +1878,7 @@ def record_extract_protocol(samples, excel_data, heading, user, app_name):
             return_data.append(r_data)
         # collect data for dropdown selection
         protocol_filter_selection = []
-        (protocols_dict, protocol_list) = get_molecule_protocols(app_name)
+        protocols_dict, protocol_list = get_molecule_protocols(app_name)
         for key, value in protocols_dict.items():
             protocol_filter_selection.append([key, value])
         return {
