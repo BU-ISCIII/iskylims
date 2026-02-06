@@ -221,8 +221,9 @@ ensure_app_running() {
     fi
 }
 
-echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE="dep" and GIT_REVISION=$git_revision..."
-docker compose -f "$compose_file" build --no-cache --build-arg INSTALL_TYPE="dep" --build-arg GIT_REVISION="$git_revision" --build-arg INSTALL_CONF="$install_conf"
+echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
+INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf" \
+    docker compose -f "$compose_file" build --no-cache
 docker compose -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
