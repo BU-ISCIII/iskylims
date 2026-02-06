@@ -191,11 +191,18 @@ if [ ! -f "$install_conf" ]; then
 fi
 
 repo_root="$(pwd)"
+temp_install_conf=""
 if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$repo_root/"* ]]; then
-    install_conf_copy="conf/docker_runtime_settings.txt"
-    echo "Copying $install_conf into repository as $install_conf_copy for Docker build/runtime."
-    cp "$install_conf" "$install_conf_copy"
-    install_conf="$install_conf_copy"
+    temp_install_conf="/tmp/iskylims_docker_install_$$.txt"
+    echo "Copying $install_conf into temporary file $temp_install_conf for Docker build/runtime."
+    cp "$install_conf" "$temp_install_conf"
+    install_conf="$temp_install_conf"
+    cleanup_temp_conf() {
+        if [ -n "$temp_install_conf" ] && [ -f "$temp_install_conf" ]; then
+            rm -f "$temp_install_conf"
+        fi
+    }
+    trap cleanup_temp_conf EXIT
 fi
 
 service_exists() {
