@@ -38,7 +38,12 @@ services:
         command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
     
     app:
-        build: .
+        build:
+          context: .
+          args:
+            INSTALL_TYPE: ${INSTALL_TYPE:-dep}
+            GIT_REVISION: ${GIT_REVISION:-main}
+            INSTALL_CONF: ${INSTALL_CONF:-conf/docker_install_settings.txt}
         container_name: iskylims_app
         ports:
             - "8001:8001"

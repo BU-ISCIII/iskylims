@@ -70,6 +70,8 @@ Levanta el sistema completo (base de datos, Samba y app) con fixtures y datos de
 bash docker_install.sh --test
 ```
 
+Esto usa `docker-compose.test.yml` por defecto.
+
 Puedes personalizar los valores por defecto:
 
 - `--demo_data /ruta/a/iskylims_demo_data.tar.gz` para reutilizar un archivo local (si no, se descarga).

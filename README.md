@@ -71,6 +71,8 @@ Bring up a full test stack (database, Samba, app) plus fixtures and demo data:
 bash docker_install.sh --test
 ```
 
+This uses `docker-compose.test.yml` by default.
+
 Defaults can be customised:
 
 - `--demo_data /path/to/iskylims_demo_data.tar.gz` to reuse a local demo archive (otherwise it is downloaded).
