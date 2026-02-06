@@ -300,9 +300,7 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
     )
     # check if NextSEq run have been successful completed
     for xml_tag in wetlab.config.COMPLETION_TAG:
-        status_run = wetlab.utils.common.find_xml_tag_text(
-            l_run_completion, xml_tag
-        )
+        status_run = wetlab.utils.common.find_xml_tag_text(l_run_completion, xml_tag)
         if status_run != "NOT FOUND":
             break
     if status_run not in wetlab.config.COMPLETION_SUCCESS:

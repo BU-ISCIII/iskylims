@@ -584,9 +584,7 @@ def manage_run_in_recorded_state(conn, run_process_objs):
                 run_process_obj, l_sample_sheet_path, experiment_name
             )
 
-        if (
-            "NextSeq" in run_process_obj.get_run_platform()
-        ):
+        if "NextSeq" in run_process_obj.get_run_platform():
             sample_sheet_path = run_process_obj.get_sample_file()
 
             try:
