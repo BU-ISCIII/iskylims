@@ -143,7 +143,7 @@ shift $((OPTIND-1))
 
 if [ "$mode" = "test" ]; then
     if [ -z "$compose_file" ]; then
-        compose_file="docker-compose.yml"
+        compose_file="docker-compose.test.yml"
     fi
     if [ -z "$install_conf" ]; then
         install_conf="conf/docker_install_settings.txt"

@@ -315,7 +315,7 @@ rename_apps_if_needed() {
     if [ -d "$INSTALL_PATH/iSkyLIMS_core" ]; then
         echo "Changing app dir names in $INSTALL_PATH..."
         rm -rf $INSTALL_PATH/.git $INSTALL_PATH/.github $INSTALL_PATH/.gitignore \
-            $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.yml $INSTALL_PATH/docker_iskylims_install.sh \
+            $INSTALL_PATH/.Rhistory $INSTALL_PATH/docker-compose.test.yml $INSTALL_PATH/docker_iskylims_install.sh \
             $INSTALL_PATH/Dockerfile $INSTALL_PATH/install.sh $INSTALL_PATH/install_settings.txt
         mv $INSTALL_PATH/iSkyLIMS_core $INSTALL_PATH/core
         mv $INSTALL_PATH/iSkyLIMS_wetlab $INSTALL_PATH/wetlab

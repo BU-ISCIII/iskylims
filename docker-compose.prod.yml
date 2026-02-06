@@ -7,7 +7,7 @@ services:
     build:
       context: .
       args:
-        INSTALL_TYPE: ${INSTALL_TYPE:-app}
+        INSTALL_TYPE: ${INSTALL_TYPE:-dep}
         GIT_REVISION: ${GIT_REVISION:-main}
         INSTALL_CONF: ${INSTALL_CONF:-conf/docker_production_settings.txt}
     ports:
