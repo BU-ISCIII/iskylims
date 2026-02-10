@@ -147,7 +147,7 @@ if [ "$mode" = "test" ]; then
         compose_file="docker-compose.test.yml"
     fi
     if [ -z "$install_conf" ]; then
-        install_conf="conf/docker_install_settings.txt"
+        install_conf="conf/docker_test_settings.txt"
     fi
 else
     if [ -z "$compose_file" ]; then
