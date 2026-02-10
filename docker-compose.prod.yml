@@ -17,3 +17,5 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
