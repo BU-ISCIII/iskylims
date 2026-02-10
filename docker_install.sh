@@ -240,6 +240,21 @@ echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
 ensure_app_running
 
+host_install_conf_path="$install_conf"
+if [[ "$host_install_conf_path" != /* ]]; then
+    host_install_conf_path="$repo_root/$host_install_conf_path"
+fi
+
+container_install_conf_path="$install_conf_container"
+if [[ "$container_install_conf_path" != /* ]]; then
+    container_install_conf_path="/srv/iskylims/$container_install_conf_path"
+fi
+
+if ! docker exec -it iskylims_app test -f "$container_install_conf_path"; then
+    echo "Copying install configuration into container at $container_install_conf_path"
+    docker cp "$host_install_conf_path" "iskylims_app:$container_install_conf_path"
+fi
+
 script_args=""
 if [ "$run_script" = true ]; then
     for val in "${migration_script[@]}"; do
