@@ -30,7 +30,7 @@ ENV PATH="/usr/sbin/cron:$PATH"
 # Set default install type
 ARG INSTALL_TYPE=dep
 ARG GIT_REVISION=main
-ARG INSTALL_CONF=conf/docker_install_settings.txt
+ARG INSTALL_CONF=conf/docker_test_settings.txt
 
 # Execute the dependency stage only; app migrations run when the container is up.
 RUN /bin/bash install.sh --install dep --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart

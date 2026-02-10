@@ -15,7 +15,7 @@ PYTHON_BIN_PATH='python3'
 DB_USER='django'
 DB_PASS='djangopass'
 DB_NAME='iskylims'
-DB_SERVER_IP='prod-db-host'  # hostname or IP of the production DB
+DB_SERVER_IP='host.docker.internal'  # hostname or IP of the production DB (use host.docker.internal for host DB)
 DB_PORT=3306
 
 ### Settings required for sending emails
