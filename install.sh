@@ -650,7 +650,7 @@ upgrade_application_files() {
     echo "Copying files to installation folder"
     rsync -rlv conf/ $INSTALL_PATH/conf/
     rsync -rlv --fuzzy --delay-updates --delete-delay \
-          --exclude "logs" --exclude "documents" --exclude "migrations" --exclude "__pycache__" \
+          --exclude "logs" --exclude "documents" --exclude "__pycache__" \
           README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
 
     cd $INSTALL_PATH
