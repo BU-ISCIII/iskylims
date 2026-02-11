@@ -279,6 +279,19 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 - Go to Configuration -> Email configuration
 - Fill the form with the needed params for your email configuration and try to send a test email.
 
+## Developer notes
+
+### Django migrations workflow
+
+Migrations are committed to the repo. Do not run `makemigrations` during install/upgrade.
+
+Baseline + upgrade flow for new releases:
+
+1. Generate baseline migrations from the last stable tag (example 3.0.0).
+2. Commit the baseline migrations.
+3. Generate new migrations on `develop` for schema changes and commit them.
+4. Upgrades run `migrate --fake-initial` once to align existing tables, then `migrate` to apply the new migration files.
+
 ### Configure Apache server
 
 Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
