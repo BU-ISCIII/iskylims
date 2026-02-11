@@ -3,7 +3,6 @@
 *.bin
 *.gz
 *_BAK
-migrations/
 tmp/
 logs/
 /static/

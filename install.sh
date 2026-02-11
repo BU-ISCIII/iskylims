@@ -455,12 +455,11 @@ install_system_packages() {
 # run_django_deploy: execute makemigrations/migrate and optional fixture/superuser steps.
 run_django_deploy() {
     local mode="${1:-install}"
-    echo "Generating Django migrations"
-    python manage.py makemigrations $MIGRATION_MODULES
-
     if [ "$mode" = "upgrade" ]; then
         echo "Applying migrations in fake-initial mode"
         python manage.py migrate --noinput --fake-initial
+        echo "Applying migrations"
+        python manage.py migrate --noinput
     else
         echo "Applying migrations"
         python manage.py migrate --noinput
