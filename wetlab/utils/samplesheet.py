@@ -14,6 +14,18 @@ import wetlab.config
 # import wetlab.models
 
 
+def samplesheet_version(samplesheet: dict) -> str:
+    """
+    Return samplesheet version (1 or 2) as a string
+
+    Args:
+        samplesheet (dict): samplesheet
+
+    Returns:
+        str: "1" or "2"
+    """
+    return samplesheet.get("Header", {}).get("FileFormatVersion", "1")
+
 def read_file_from_path(file_path: str) -> str:
     """
     Read file from path, ensuring characters are not lost due to encoding
@@ -22,7 +34,7 @@ def read_file_from_path(file_path: str) -> str:
     :type file_path: str
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, "r", encoding="utf-8-sig") as f:
             read_file = f.read()
     except Exception:
         return False
@@ -122,13 +134,14 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
     if "ERROR" in samplesheet:
         return samplesheet
 
-    data = get_tabular_data(samplesheet, header_includes="Description")
+    data = get_tabular_data(samplesheet)
+    iskylims_user_column = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet))
     if not data:
         users["ERROR"] = (
             wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
         )
         return users
-    users_in_sample_sheet = get_column_from_tabular_data(data, "Description")
+    users_in_sample_sheet = get_column_from_tabular_data(data, iskylims_user_column)
 
     userid_names = [user for user in users_in_sample_sheet if user in user_id_list]
     invalid_names = [user for user in users_in_sample_sheet if user not in user_id_list]
@@ -237,14 +250,18 @@ def get_column_from_tabular_data(
     return list(set(values)) if unique else values
 
 
-def get_tabular_data(samplesheet: dict, header_includes="") -> list[list]:
-    for data_section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
-        data = samplesheet.get(data_section, [])
-        if not data:
-            continue
-        if header_includes and header_includes not in data[0]:
-            continue
-        break
+def get_tabular_data(samplesheet: dict) -> list[list]:
+    """
+    Get tabular data from a samplesheet.
+
+    Args:
+        samplesheet (dict): Samplesheet with the tabular data
+
+    Returns:
+        list[list]: Tabular data, in a nested list (Matrix N*M)
+    """
+    data_section = wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.get(samplesheet_version(samplesheet), "")
+    data = samplesheet.get(data_section, [])
     return [row.split(",") for row in data]
 
 
@@ -365,10 +382,11 @@ def get_sample_with_user_owner(sample_sheet_path):
     full_path = os.path.join(settings.MEDIA_ROOT, sample_sheet_path)
     file_read = read_file_from_path(full_path)
     samplesheet = file_read_to_dictionary(file_read)
-    # Retrieve tabular data with "Description" in the header
-    data = get_tabular_data(samplesheet, header_includes="Description")
+    # Retrieve tabular data with the iskylims user in the header
+    data = get_tabular_data(samplesheet)
     sample_names = get_column_from_tabular_data(data, "Sample_Name")
-    user_ids = get_column_from_tabular_data(data, "Description")
+    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet))
+    user_ids = get_column_from_tabular_data(data, iskylims_user_column_id)
 
     sample_user = {sample_names[i]: user_ids[i] for i in range(len(sample_names))}
     return sample_user
@@ -386,9 +404,10 @@ def get_projects_in_run(in_file: str) -> dict:
     """
     file_read = read_file_from_path(in_file)
     samplesheet = file_read_to_dictionary(file_read)
-    data = get_tabular_data(samplesheet, header_includes="Description")
+    data = get_tabular_data(samplesheet)
     sample_projects = get_column_from_tabular_data(data, "Sample_Project")
-    user_ids = get_column_from_tabular_data(data, "Description")
+    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet))
+    user_ids = get_column_from_tabular_data(data, iskylims_user_column_id)
     projects = {sample_projects[i]: user_ids[i] for i in range(len(sample_projects))}
 
     if not data:
@@ -491,7 +510,7 @@ def create_unique_sample_id_values(in_file: str, index_file: str):
         last_line = f.readline().decode()
         index_number_str, index_letter = last_line.rstrip().split("-")
         index_number = int(index_number_str)
-    data = get_tabular_data(samplesheet, header_includes="Sample_ID")
+    data = get_tabular_data(samplesheet)
     for row in data[1:]:
         index_number += 1
         index_number = (
@@ -548,9 +567,9 @@ def set_user_names_in_sample_sheet(in_file, user_names):
     """
     file_read = read_file_from_path(in_file)
     samplesheet = file_read_to_dictionary(file_read)
-    data = get_tabular_data(samplesheet, header_includes="Description")
+    data = get_tabular_data(samplesheet)
     projects = get_column_from_tabular_data("Sample_Project")
-    descriptions_index = data[0].index("Description")
+    descriptions_index = data[0].index(wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet)))
     for i in range(1, len(data)):
         data[i][descriptions_index] = user_names[projects[i - 1]]
     success_writing = write_samplesheet_to_path(samplesheet, in_file)
@@ -620,7 +639,7 @@ def valid_user_iem_file(file_read: str) -> bool:
 
     data_field_length = ""
     sample_number = 0
-    data = get_tabular_data(samplesheet, header_includes="Description")
+    data = get_tabular_data(samplesheet)
 
     # Check on data
     if not data:

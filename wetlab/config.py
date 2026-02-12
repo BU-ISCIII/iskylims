@@ -226,15 +226,10 @@ HEADING_FOR_SAMPLE_SHEET_ONE_INDEX = [
 HEADING_FOR_SAMPLE_SHEET_TWO_INDEX = [
     "Unique_Sample_ID",
     "Sample_Name",
-    "Sample_Plate",
-    "Sample_Well",
-    "Index_Plate_Well",
-    "I7_Index_ID",
     "index",
-    "I5_Index_ID",
     "index2",
     "Sample_Project",
-    "Description",
+    "custom_description",
 ]
 
 
@@ -248,6 +243,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ = [
     ("index", "i7Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [
@@ -261,6 +257,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [
     ("index2", "i5Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5 = [
@@ -272,6 +269,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5 = [
     ("index", "i7Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5 = [
@@ -285,6 +283,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5 = [
     ("index2", "i5Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4 = [
@@ -296,6 +295,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4 = [
     ("index", "i7Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4 = [
@@ -309,6 +309,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4 = [
     ("index2", "i5Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 
@@ -326,6 +327,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS = [
     ("GenomeFolder", "genomeFolder"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 # ######## MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
@@ -344,8 +346,18 @@ SECTIONS_IN_V2_SAMPLE_SHEET = [
     "CustomCustomer_Data",
 ]
 
-# Tabular data sections in samplesheets. For future references: Insert in order.
-TABULAR_DATA_SECTIONS_SAMPLE_SHEET = ["Data", "CustomCustomer_Data", "BCLConvert_Data"]
+# Possible names of the Tabular data iskylims user field
+
+TABULAR_DATA_ISKYLIMS_USER_COLUMN = {
+    "1": "Description", 
+    "2": "custom_description"
+}
+
+# Tabular data sections in samplesheets.
+TABULAR_DATA_SECTIONS_SAMPLE_SHEET = {
+    "1": "Data",
+    "2": "BCLConvert_Data"
+}
 
 SETTINGS_SECTIONS_SAMPLE_SHEET = ["Settings", "BCLConvert_Settings"]
 
