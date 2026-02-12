@@ -348,16 +348,10 @@ SECTIONS_IN_V2_SAMPLE_SHEET = [
 
 # Possible names of the Tabular data iskylims user field
 
-TABULAR_DATA_ISKYLIMS_USER_COLUMN = {
-    "1": "Description", 
-    "2": "custom_description"
-}
+TABULAR_DATA_ISKYLIMS_USER_COLUMN = {"1": "Description", "2": "custom_description"}
 
 # Tabular data sections in samplesheets.
-TABULAR_DATA_SECTIONS_SAMPLE_SHEET = {
-    "1": "Data",
-    "2": "BCLConvert_Data"
-}
+TABULAR_DATA_SECTIONS_SAMPLE_SHEET = {"1": "Data", "2": "BCLConvert_Data"}
 
 SETTINGS_SECTIONS_SAMPLE_SHEET = ["Settings", "BCLConvert_Settings"]
 

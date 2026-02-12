@@ -26,6 +26,7 @@ def samplesheet_version(samplesheet: dict) -> str:
     """
     return samplesheet.get("Header", {}).get("FileFormatVersion", "1")
 
+
 def read_file_from_path(file_path: str) -> str:
     """
     Read file from path, ensuring characters are not lost due to encoding
@@ -135,7 +136,9 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         return samplesheet
 
     data = get_tabular_data(samplesheet)
-    iskylims_user_column = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet))
+    iskylims_user_column = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(
+        samplesheet_version(samplesheet)
+    )
     if not data:
         users["ERROR"] = (
             wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
@@ -260,7 +263,9 @@ def get_tabular_data(samplesheet: dict) -> list[list]:
     Returns:
         list[list]: Tabular data, in a nested list (Matrix N*M)
     """
-    data_section = wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.get(samplesheet_version(samplesheet), "")
+    data_section = wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.get(
+        samplesheet_version(samplesheet), ""
+    )
     data = samplesheet.get(data_section, [])
     return [row.split(",") for row in data]
 
@@ -385,7 +390,9 @@ def get_sample_with_user_owner(sample_sheet_path):
     # Retrieve tabular data with the iskylims user in the header
     data = get_tabular_data(samplesheet)
     sample_names = get_column_from_tabular_data(data, "Sample_Name")
-    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet))
+    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(
+        samplesheet_version(samplesheet)
+    )
     user_ids = get_column_from_tabular_data(data, iskylims_user_column_id)
 
     sample_user = {sample_names[i]: user_ids[i] for i in range(len(sample_names))}
@@ -406,7 +413,9 @@ def get_projects_in_run(in_file: str) -> dict:
     samplesheet = file_read_to_dictionary(file_read)
     data = get_tabular_data(samplesheet)
     sample_projects = get_column_from_tabular_data(data, "Sample_Project")
-    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet))
+    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(
+        samplesheet_version(samplesheet)
+    )
     user_ids = get_column_from_tabular_data(data, iskylims_user_column_id)
     projects = {sample_projects[i]: user_ids[i] for i in range(len(sample_projects))}
 
@@ -421,8 +430,9 @@ def get_projects_in_run(in_file: str) -> dict:
 def get_index_library_name(in_file):
     """
     Description:
-        The function get the index library adapters. It searchs in the  assay value (used for version 4 of IEM sample sheet
-        and in hte Index Adapters on sample sheet version 5.
+        The function get the index library adapters. It searchs in the  assay
+        value (used for version 4 of IEM sample sheet
+        and in the Index Adapters on sample sheet version 5.
         If Index adapters is found they are used if not the assay value
     Input:
         in_file     # shample sheet file
@@ -569,7 +579,11 @@ def set_user_names_in_sample_sheet(in_file, user_names):
     samplesheet = file_read_to_dictionary(file_read)
     data = get_tabular_data(samplesheet)
     projects = get_column_from_tabular_data("Sample_Project")
-    descriptions_index = data[0].index(wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(samplesheet_version(samplesheet)))
+    descriptions_index = data[0].index(
+        wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(
+            samplesheet_version(samplesheet)
+        )
+    )
     for i in range(1, len(data)):
         data[i][descriptions_index] = user_names[projects[i - 1]]
     success_writing = write_samplesheet_to_path(samplesheet, in_file)
