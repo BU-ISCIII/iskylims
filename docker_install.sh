@@ -6,7 +6,7 @@ usage() {
 cat << EOF
 This script installs and upgrades the iskylims app.
 
-Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--test]
+Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--script_before] [--script_after] [--test]
     Optional input data:
     --demo_data         | Provide already downloaded demo data from Zenodo
     --install_type      | Specify the installation type for iSkyLIMS (default: full)
@@ -14,7 +14,9 @@ Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--i
     --compose_file      | docker compose file to use (overrides default)
     --install_conf      | Settings file consumed during docker image build (mandatory for production)
     --action            | install (default) or upgrade, to control DB initialisation steps
-    --script            | Run a Django migration script (can be repeated)
+    --script            | Run a Django migration script after migrations (can be repeated)
+    --script_before     | Run a Django migration script before migrations (can be repeated)
+    --script_after      | Run a Django migration script after migrations (can be repeated)
     --skip_demo_data    | Skip downloading/copying demo data to samba container
     --skip_test_data    | Skip loading test fixtures (test/test_data.json)
     --test              | Use development/test compose file and sample data
@@ -56,6 +58,8 @@ do
         --install_conf)      set -- "$@" -s ;;
         --action)            set -- "$@" -a ;;
         --script)            set -- "$@" -m ;;
+        --script_before)     set -- "$@" -b ;;
+        --script_after)      set -- "$@" -f ;;
         --skip_demo_data)    set -- "$@" -n ;;
         --skip_test_data)    set -- "$@" -t ;;
         --test)              set -- "$@" -p ;;
@@ -79,10 +83,12 @@ skip_test_data=""
 mode="production"
 action="install"
 run_script=false
+run_script_before=false
 migration_script=()
+migration_script_before=()
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:i:g:c:s:a:m:vhntp"
+options=":d:i:g:c:s:a:m:b:f:vhntp"
 while getopts $options opt; do
     case $opt in
         d)
@@ -105,6 +111,14 @@ while getopts $options opt; do
             fi
             ;;
         m)
+            run_script=true
+            migration_script+=("$OPTARG")
+            ;;
+        b)
+            run_script_before=true
+            migration_script_before+=("$OPTARG")
+            ;;
+        f)
             run_script=true
             migration_script+=("$OPTARG")
             ;;
@@ -255,19 +269,26 @@ if ! docker exec -it iskylims_app test -f "$container_install_conf_path"; then
     docker cp "$host_install_conf_path" "iskylims_app:$container_install_conf_path"
 fi
 
-script_args=""
+script_args_before=""
+if [ "$run_script_before" = true ]; then
+    for val in "${migration_script_before[@]}"; do
+        script_args_before+=" --script_before $(printf '%q' "$val")"
+    done
+fi
+
+script_args_after=""
 if [ "$run_script" = true ]; then
     for val in "${migration_script[@]}"; do
-        script_args+=" --script $(printf '%q' "$val")"
+        script_args_after+=" --script_after $(printf '%q' "$val")"
     done
 fi
 
 if [ "$action" = "upgrade" ]; then
     echo "Running install.sh upgrade inside the container"
-    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args"
+    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 else
     echo "Running install.sh install inside the container"
-    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args"
+    docker exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 fi
 
 if ! docker exec -it iskylims_app test -f /opt/iskylims/manage.py; then
