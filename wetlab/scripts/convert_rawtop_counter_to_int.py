@@ -2,7 +2,8 @@ import wetlab.models
 
 
 def run():
-    """The script implemted the issue #158 Unable to convert barcode count to
+    """Upgrade: 3.0.0 -> 3.1.0
+    The script implemted the issue #158 Unable to convert barcode count to
     integer, to convert the counter that are in a string format, separated
     by ","  to int.
     """
