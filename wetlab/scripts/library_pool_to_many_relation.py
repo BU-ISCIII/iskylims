@@ -5,10 +5,13 @@ def run(f_name):
     """Upgrade: 3.0.0 -> 3.1.0
     This script is part of the issue "#180,when deleting run , pool and
     library_preparations are also deleted" on Class LibraryPool.
-    The first part of the script fetch the existing data on run_process_id
-    and create a file containing the pk of the libraryPool instance and
-    the pk of the run_process_id
-    The second part of the script fetch the data from the file and add the
+    This script expects a file created externally that contains the pk of the
+    LibraryPool instance and the pk of the run_process_id.
+    Export example:
+        mysql -u <db_user> -p -h <db_host> -D <db_name> \
+          -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+          > /tmp/library_pool_run_process.tsv
+    The script fetches the data from the file and adds the
     run_process_pk to the run_process field of the LibraryPool instance
     """
     if hasattr(wetlab.models.LibraryPool, "run_process"):
