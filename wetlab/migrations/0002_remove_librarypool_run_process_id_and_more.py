@@ -3,6 +3,40 @@
 from django.db import migrations, models
 
 
+def drop_librarypool_run_process_id(apps, schema_editor):
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT 1
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'wetlab_library_pool'
+              AND COLUMN_NAME = 'run_process_id_id'
+            """
+        )
+        if cursor.fetchone() is None:
+            return
+
+        cursor.execute(
+            """
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'wetlab_library_pool'
+              AND COLUMN_NAME = 'run_process_id_id'
+              AND REFERENCED_TABLE_NAME IS NOT NULL
+            """
+        )
+        for (constraint_name,) in cursor.fetchall():
+            cursor.execute(
+                f"ALTER TABLE wetlab_library_pool DROP FOREIGN KEY `{constraint_name}`"
+            )
+
+        cursor.execute(
+            "ALTER TABLE wetlab_library_pool DROP COLUMN run_process_id_id"
+        )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -20,36 +54,8 @@ class Migration(migrations.Migration):
         ),
         migrations.SeparateDatabaseAndState(
             database_operations=[
-                migrations.RunSQL(
-                    """
-                    SELECT COLUMN_NAME
-                    FROM information_schema.COLUMNS
-                    WHERE TABLE_SCHEMA = DATABASE()
-                      AND TABLE_NAME = 'wetlab_library_pool'
-                      AND COLUMN_NAME = 'run_process_id_id'
-                    """,
-                    reverse_sql=migrations.RunSQL.noop,
-                ),
-                migrations.RunSQL(
-                    """
-                    SET @drop_col := (
-                        SELECT IF(
-                            EXISTS(
-                                SELECT 1
-                                FROM information_schema.COLUMNS
-                                WHERE TABLE_SCHEMA = DATABASE()
-                                  AND TABLE_NAME = 'wetlab_library_pool'
-                                  AND COLUMN_NAME = 'run_process_id_id'
-                            ),
-                            'ALTER TABLE wetlab_library_pool DROP COLUMN run_process_id_id',
-                            'SELECT 1'
-                        )
-                    );
-                    PREPARE stmt FROM @drop_col;
-                    EXECUTE stmt;
-                    DEALLOCATE PREPARE stmt;
-                    """,
-                    reverse_sql=migrations.RunSQL.noop,
+                migrations.RunPython(
+                    drop_librarypool_run_process_id, migrations.RunPython.noop
                 ),
             ],
             state_operations=[
