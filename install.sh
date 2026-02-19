@@ -15,7 +15,9 @@ usage : $0 --upgrade --git_revision --conf
     --conf          | Select custom configuration file. Default: ./install_settings.txt
     --tables        | Load the first inital tables (from conf folder)
     --skip_tables   | Skip loading initial tables (even during install)
-    --script        | Run a migration script.
+    --script        | Run a migration script after migrations.
+    --script_before | Run a migration script before migrations.
+    --script_after  | Run a migration script after migrations (same as --script).
     --ren_app       | Rename apps required for the upgrade migration to 3.0.0
     --docker        | Deprecated. Use --skip_apache_restart to avoid Apache checks/restart.
 
@@ -35,6 +37,9 @@ Examples:
 
     Make adjustments for apps renaming in upgrade 2.3.0 to 2.3.1
     $0 --upgrade full --ren_app --script <migration_script> --tables
+
+    Upgrade running pre/post migration scripts:
+    $0 --upgrade app --script_before <pre_script> --script_after <post_script>
 EOF
 }
 
@@ -455,6 +460,21 @@ install_system_packages() {
 # run_django_deploy: execute makemigrations/migrate and optional fixture/superuser steps.
 run_django_deploy() {
     local mode="${1:-install}"
+    if [ "$run_script_before" = true ]; then
+        for val in "${migration_script_before[@]}"; do
+            if [[ $val = *","* ]]; then
+                parameters=(${val//,/ })
+                echo "Running pre-migration script: ${parameters[0]}"
+                ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
+                echo "Done pre-migration script: ${parameters[0]}"
+            else
+                echo "Running pre-migration script: $val"
+                ./manage.py runscript $val
+                echo "Done pre-migration script: $val"
+            fi
+        done
+    fi
+
     if [ "$mode" = "upgrade" ]; then
         echo "Applying migrations in fake-initial mode"
         python manage.py migrate --noinput --fake-initial
@@ -475,13 +495,13 @@ run_django_deploy() {
         for val in "${migration_script[@]}"; do
             if [[ $val = *","* ]]; then
                 parameters=(${val//,/ })
-                echo "Running migration script: ${parameters[0]}"
+                echo "Running post-migration script: ${parameters[0]}"
                 ./manage.py runscript ${parameters[0]} --script-args ${parameters[1]}
-                echo "Done migration script: ${parameters[0]}"
+                echo "Done post-migration script: ${parameters[0]}"
             else
-                echo "Running migration script: $val"
+                echo "Running post-migration script: $val"
                 ./manage.py runscript $val
-                echo "Done migration script: $val"
+                echo "Done post-migration script: $val"
             fi
         done
     fi
@@ -758,6 +778,9 @@ do
         --install)      set -- "$@" -i ;;
         --upgrade)      set -- "$@" -u ;;
         --script)       set -- "$@" -s ;;
+        --script_before) set -- "$@" -p ;;
+        --script_after) set -- "$@" -o ;;
+        --script_prev)  set -- "$@" -p ;;
         --tables)       set -- "$@" -t ;;
         --skip_tables)  set -- "$@" -b ;;
         --git_revision) set -- "$@" -g ;;
@@ -787,10 +810,13 @@ docker=false
 prefilled_tables="conf/first_install_tables.json"
 restart_apache=true
 run_script=false
+run_script_before=false
+migration_script=()
+migration_script_before=()
 skip_tables=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:r:g:tdbkvha"
+options=":c:s:i:u:r:g:tdbkvhaop"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -816,6 +842,14 @@ while getopts $options opt; do
             fi
             ;;
         s )
+            run_script=true
+            migration_script+=("$OPTARG")
+            ;;
+        p )
+            run_script_before=true
+            migration_script_before+=("$OPTARG")
+            ;;
+        o )
             run_script=true
             migration_script+=("$OPTARG")
             ;;
