@@ -9,6 +9,19 @@ python manage.py runscript <script_name>
 
 ## 3.0.0 -> 3.1.0
 
+- Run order:
+  1. Export LibraryPool run_process_id data (before migrations).
+  2. Run `convert_rawtop_counter_to_int` before migrations.
+  3. Run migrations.
+  4. Run `library_pool_to_many_relation` after migrations with the exported file.
+
+- Export example:
+  ```bash
+  mysql -u <db_user> -p -h <db_host> -D <db_name> \
+    -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+    > /tmp/library_pool_run_process.tsv
+  ```
+
 - `wetlab/scripts/convert_rawtop_counter_to_int.py` (script name: `convert_rawtop_counter_to_int`)
 - `wetlab/scripts/library_pool_to_many_relation.py` (script name: `library_pool_to_many_relation`)
 
