@@ -816,7 +816,7 @@ migration_script_before=()
 skip_tables=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:r:g:tdbkvhaop"
+options=":c:s:i:u:r:g:tdbkvhao:p:"
 while getopts $options opt; do
     case $opt in
         i ) 
