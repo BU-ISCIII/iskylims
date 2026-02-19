@@ -478,6 +478,7 @@ run_django_deploy() {
     if [ "$mode" = "upgrade" ]; then
         echo "Applying migrations in fake-initial mode"
         python manage.py migrate --noinput --fake-initial
+        # Second pass ensures non-initial migrations are applied after fake-initial.
         echo "Applying migrations"
         python manage.py migrate --noinput
     else
