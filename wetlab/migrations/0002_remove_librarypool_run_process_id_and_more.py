@@ -10,9 +10,54 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='librarypool',
-            name='run_process_id',
+        migrations.RunSQL(
+            """
+            UPDATE wetlab_raw_top_unknown_barcodes
+            SET count = NULL
+            WHERE count IS NOT NULL AND count NOT REGEXP '^[0-9]+$'
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    """
+                    SELECT COLUMN_NAME
+                    FROM information_schema.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'wetlab_library_pool'
+                      AND COLUMN_NAME = 'run_process_id_id'
+                    """,
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+                migrations.RunSQL(
+                    """
+                    SET @drop_col := (
+                        SELECT IF(
+                            EXISTS(
+                                SELECT 1
+                                FROM information_schema.COLUMNS
+                                WHERE TABLE_SCHEMA = DATABASE()
+                                  AND TABLE_NAME = 'wetlab_library_pool'
+                                  AND COLUMN_NAME = 'run_process_id_id'
+                            ),
+                            'ALTER TABLE wetlab_library_pool DROP COLUMN run_process_id_id',
+                            'SELECT 1'
+                        )
+                    );
+                    PREPARE stmt FROM @drop_col;
+                    EXECUTE stmt;
+                    DEALLOCATE PREPARE stmt;
+                    """,
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name='librarypool',
+                    name='run_process_id',
+                ),
+            ],
         ),
         migrations.AddField(
             model_name='runprocess',

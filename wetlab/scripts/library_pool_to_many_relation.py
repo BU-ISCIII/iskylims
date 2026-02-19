@@ -2,7 +2,8 @@ import wetlab.models
 
 
 def run(f_name):
-    """This script is part of the issue "#180,when deleting run , pool and
+    """Upgrade: 3.0.0 -> 3.1.0
+    This script is part of the issue "#180,when deleting run , pool and
     library_preparations are also deleted" on Class LibraryPool.
     The first part of the script fetch the existing data on run_process_id
     and create a file containing the pk of the libraryPool instance and

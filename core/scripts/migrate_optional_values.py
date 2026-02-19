@@ -1,6 +1,7 @@
 import core.models
 
 """
+    Upgrade: 2.3.0 -> 3.0.0
     The script is applicable for the upgrade from 2.3.0 to 3.0.0.
     Because the new version changes the way that optional values are stored.
     Instead of having a field "sample_project_option_list" now values are
