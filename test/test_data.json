@@ -15856,7 +15856,7 @@
         "model": "wetlab.sambaconnectiondata",
         "pk": 1,
         "fields": {
-            "samba_folder_name": "",
+            "samba_folder_name": "Runs",
             "domain": "",
             "host_name": "samba",
             "ip_server": "",
