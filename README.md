@@ -31,10 +31,13 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Refresh code and settings](#refresh-code-and-settings)
       - [Run upgrade steps requiring root](#run-upgrade-steps-requiring-root)
       - [Run upgrade steps without root](#run-upgrade-steps-without-root)
+      - [3.0.0 -\> 3.1.0 data scripts](#300---310-data-scripts)
   - [What to do if something fails](#what-to-do-if-something-fails)
   - [Final configuration steps](#final-configuration-steps)
     - [SAMBA configurarion](#samba-configurarion)
     - [Email verification](#email-verification)
+  - [Developer notes](#developer-notes)
+    - [Django migrations workflow](#django-migrations-workflow)
     - [Configure Apache server](#configure-apache-server)
     - [Verification of the installation](#verification-of-the-installation)
   - [iSkyLIMS documentation](#iskylims-documentation)
@@ -118,6 +121,18 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
+
+For 3.0.0 -> 3.1.0, export the LibraryPool mapping first, then run the upgrade with pre/post scripts:
+
+```bash
+mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+  > /tmp/library_pool_run_process.tsv
+
+bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+```
 
 ## Bare-metal deployment (Ubuntu/CentOS)
 
@@ -236,6 +251,11 @@ bash install.sh --upgrade app --git_revision main --tables
 
 # example running a migration script during upgrade
 bash install.sh --upgrade app --script migrate_optional_values --git_revision main --tables
+
+# 3.0.0 -> 3.1.0 (pre/post data scripts)
+bash install.sh --upgrade app --git_revision main \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
 ```
 
 Or run everything in one go:
@@ -245,6 +265,26 @@ sudo bash install.sh --upgrade full --git_revision main --tables
 ```
 
 Upgrades regenerate migrations and apply them with `--fake-initial` so existing tables remain intact, matching the Docker workflow.
+
+#### 3.0.0 -> 3.1.0 data scripts
+
+Some data migrations must run before/after schema migrations:
+
+1. Export LibraryPool mapping (before migrations):
+
+```bash
+mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+  > /tmp/library_pool_run_process.tsv
+```
+
+2. Run upgrade with pre/post scripts:
+
+```bash
+bash install.sh --upgrade app --git_revision main \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+```
 
 ## What to do if something fails
 
