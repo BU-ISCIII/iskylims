@@ -2874,9 +2874,9 @@ def process_and_store_raw_demux_project_data(
                 experiment_name
                 + " : Created  project name "
                 + project
-                + "Because it was not store"
+                + " because it's a new project and it was not store before."
             )
-            wetlab.utils.common.logging_warnings(string_message, True)
+            wetlab.utils.common.logging_warnings(string_message, False)
 
     logger.info("%s : Processing demultiplexing raw project data", experiment_name)
     for project in parsed_data.keys():
