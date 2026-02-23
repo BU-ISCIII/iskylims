@@ -1932,9 +1932,7 @@ class SambaConnectionData(models.Model):
             return ""
 
     def get_samba_shared_folder_name(self):
-        if self.samba_folder_name is not None and self.shared_folder_name is not None:
-            return "%s\\%s" % (self.samba_folder_name, self.shared_folder_name)
-        elif self.shared_folder_name is not None:
+        if self.shared_folder_name is not None:
             return "%s" % (self.shared_folder_name)
         else:
             return ""
