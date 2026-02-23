@@ -864,7 +864,7 @@ ERROR_NOT_ALLOWED_REPEATED_PROJECTS = (
 # ########################  Configuration test errors #####################################
 ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND = [
     "Unable to run the configuration test",
-    "Run test folder was found on remote server",
+    "Run test folder was not found on remote server",
 ]
 ERROR_NO_RUN_TEST_WAS_CREATED = [
     "Unable to continue with configuration testing",
