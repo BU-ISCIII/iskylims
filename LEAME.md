@@ -235,6 +235,11 @@ bash install.sh --upgrade app --git_revision main --tables
 
 # ejemplo ejecutando un script de migracion en la actualizacion
 bash install.sh --upgrade app --script migrate_optional_values --git_revision main --tables
+
+# 3.0.0 -> 3.1.0 (scripts de datos pre/post)
+bash install.sh --upgrade app --git_revision main \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
 ```
 
 O ejecuta todo en un unico comando:
@@ -244,6 +249,46 @@ sudo bash install.sh --upgrade full --git_revision main --tables
 ```
 
 Las actualizaciones regeneran las migraciones y las aplican con `--fake-initial` para conservar las tablas existentes, igual que en Docker.
+
+Para 3.0.0 -> 3.1.0 en Docker, exporta el mapeo y ejecuta:
+
+```bash
+mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+  > /tmp/library_pool_run_process.tsv
+
+bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+```
+
+#### Scripts de datos 3.0.0 -> 3.1.0
+
+Algunas migraciones de datos deben ejecutarse antes/despues de las migraciones de esquema:
+
+1. Exportar el mapeo de LibraryPool (antes de migrar):
+
+```bash
+mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+  > /tmp/library_pool_run_process.tsv
+```
+
+2. Ejecutar la actualizacion con scripts pre/post:
+
+```bash
+bash install.sh --upgrade app --git_revision main \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+```
+
+Equivalente en Docker:
+
+```bash
+bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
+  --script_before convert_rawtop_counter_to_int \
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+```
 
 ## Que hacer si algo falla
 
