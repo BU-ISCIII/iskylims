@@ -17,5 +17,11 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
+      - iskylims_logs:/opt/iskylims/logs
+      - iskylims_documents:/opt/iskylims/documents
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+volumes:
+  iskylims_logs:
+  iskylims_documents:
