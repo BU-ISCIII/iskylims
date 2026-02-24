@@ -19,6 +19,7 @@ services:
       - /usr/share/zoneinfo:/usr/share/zoneinfo
       - iskylims_logs:/opt/iskylims/logs
       - iskylims_documents:/opt/iskylims/documents
+      - /var/www/iskylims/static:/opt/iskylims/static
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

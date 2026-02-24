@@ -13,6 +13,7 @@ django-mptt-admin==2.6.2
 django-cleanup==8.1.0
 interop>1.1.22
 mod_wsgi==5.0.0
+gunicorn==22.0.0
 mysqlclient==2.2.6
 paramiko==3.4.1
 jsonschema==4.23.0
