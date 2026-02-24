@@ -15,40 +15,101 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Center',
+            name="Center",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('center_name', models.CharField(max_length=50, verbose_name='Center')),
-                ('center_abbr', models.CharField(max_length=25, verbose_name='Acronym')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("center_name", models.CharField(max_length=50, verbose_name="Center")),
+                (
+                    "center_abbr",
+                    models.CharField(max_length=25, verbose_name="Acronym"),
+                ),
             ],
             options={
-                'db_table': 'utils_center',
+                "db_table": "utils_center",
             },
         ),
         migrations.CreateModel(
-            name='ClassificationArea',
+            name="ClassificationArea",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classification_area_name', models.CharField(max_length=80)),
-                ('classification_area_description', models.CharField(blank=True, max_length=255, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("classification_area_name", models.CharField(max_length=80)),
+                (
+                    "classification_area_description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
             ],
             options={
-                'db_table': 'utils_classification_area',
+                "db_table": "utils_classification_area",
             },
         ),
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('profile_position', models.CharField(max_length=50, verbose_name='Position')),
-                ('profile_area', models.CharField(max_length=50, verbose_name='Area / Unit')),
-                ('profile_extension', models.CharField(max_length=5, verbose_name='Phone extension')),
-                ('profile_center', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='django_utils.center', verbose_name='Center')),
-                ('profile_classification_area', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='django_utils.classificationarea')),
-                ('profile_user_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "profile_position",
+                    models.CharField(max_length=50, verbose_name="Position"),
+                ),
+                (
+                    "profile_area",
+                    models.CharField(max_length=50, verbose_name="Area / Unit"),
+                ),
+                (
+                    "profile_extension",
+                    models.CharField(max_length=5, verbose_name="Phone extension"),
+                ),
+                (
+                    "profile_center",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="django_utils.center",
+                        verbose_name="Center",
+                    ),
+                ),
+                (
+                    "profile_classification_area",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="django_utils.classificationarea",
+                    ),
+                ),
+                (
+                    "profile_user_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'utils_profile',
+                "db_table": "utils_profile",
             },
         ),
     ]
