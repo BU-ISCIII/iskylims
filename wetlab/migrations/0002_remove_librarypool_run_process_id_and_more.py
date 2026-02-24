@@ -5,28 +5,24 @@ from django.db import migrations, models
 
 def drop_librarypool_run_process_id(apps, schema_editor):
     with schema_editor.connection.cursor() as cursor:
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT 1
             FROM information_schema.COLUMNS
             WHERE TABLE_SCHEMA = DATABASE()
               AND TABLE_NAME = 'wetlab_library_pool'
               AND COLUMN_NAME = 'run_process_id_id'
-            """
-        )
+            """)
         if cursor.fetchone() is None:
             return
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT CONSTRAINT_NAME
             FROM information_schema.KEY_COLUMN_USAGE
             WHERE TABLE_SCHEMA = DATABASE()
               AND TABLE_NAME = 'wetlab_library_pool'
               AND COLUMN_NAME = 'run_process_id_id'
               AND REFERENCED_TABLE_NAME IS NOT NULL
-            """
-        )
+            """)
         for (constraint_name,) in cursor.fetchall():
             cursor.execute(
                 f"ALTER TABLE wetlab_library_pool DROP FOREIGN KEY `{constraint_name}`"
