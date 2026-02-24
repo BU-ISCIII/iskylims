@@ -23,6 +23,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Included thorough description for wetlab API's update_lab() method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 - Included new API function lab-request-mapping to get LabRequest fields ontology map [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
 - Improved responses in API create-sample-data by adding ERROR messages and data [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
+- Added support for `script-before` and `script-after` hooks in install script. [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Committed baseline migration files and added migrations for develop changes [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Added developer notes on how to create and manage migration files [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Added documentation describing migration scripts and their related versions [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Enabled Docker internal networking for local test installation [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Opened Docker network to allow localhost MySQL connection when required [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 
 #### Fixes
 
@@ -59,6 +65,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Adapted update_lab serializer call to new serializer update method [#361](https://github.com/BU-ISCIII/iskylims/pull/361)
 - Leave missing submitting_fields as empty string instead of crashing in wetlab.api.create_sample_data [#363](https://github.com/BU-ISCIII/iskylims/pull/363)
 - Fixed wetlab API create-sample-data error when submitting_institution fields were not provided [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
+- Fixed incorrect git revision propagation to Dockerfile during build [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Fixed configuration file accessibility from within Docker container [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Fixed disk utilization check to correctly resolve application folder path [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Fixed incorrect application folder path resolution in crontab scripts [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Fixed samplesheet parsing error [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 
 #### Changed
 
@@ -71,10 +82,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Improved query performance and excluded rejected/archived services from ongoing list. (#299)
 - Updated sample metadata fields with standardized ontology mappings and schema alignment.[#358](https://github.com/BU-ISCIII/iskylims/pull/358)
 - API create-sample-data Lab data mapping moved to core_config.LAB_REQUEST_ONTOLOGY_MAP [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
+- Renamed `docker-compose.yml` to `docker-compose.test.yml` and `docker-compose.prod.yml` for test clarity [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Refactored Docker runtime handling when path is outside repository [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Updated `docker_install.sh` with multiple reliability improvements [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Updated upgrade scripts documentation to include execution order information and docker upgrade clarifications [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 
 #### Removed
 
 - Dummy fix in usage line [#271](https://github.com/BU-ISCIII/iskylims/pull/271)
+- Removed migrations from `.gitignore` and app-level `.gitignore` to ensure version control of schema changes [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 
 #### Requirements
 
