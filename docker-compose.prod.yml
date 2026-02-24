@@ -10,10 +10,13 @@ services:
         INSTALL_TYPE: ${INSTALL_TYPE:-dep}
         GIT_REVISION: ${GIT_REVISION:-main}
         INSTALL_CONF: ${INSTALL_CONF:-conf/docker_production_settings.txt}
+        APP_UID: ${APP_UID:-1212}
+        APP_GID: ${APP_GID:-1212}
     ports:
       - "8001:8001"
     environment:
       DJANGO_SETTINGS_MODULE: iskylims.settings
+    user: "${APP_UID:-1212}:${APP_GID:-1212}"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo

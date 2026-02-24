@@ -2,6 +2,10 @@ FROM registry.access.redhat.com/ubi9/ubi
 ENV TZ=Europe/Madrid
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Runtime user (override with build args if needed)
+ARG APP_UID=1212
+ARG APP_GID=1212
+
 
 # Updates
 RUN dnf -y update
@@ -47,8 +51,14 @@ ENV PATH="/opt/iskylims/virtualenv/bin:${PATH}"
 
 WORKDIR /opt/iskylims
 
+# Create non-root user and set ownership
+RUN groupadd -g ${APP_GID} iskylims && \
+    useradd -m -u ${APP_UID} -g ${APP_GID} -s /sbin/nologin iskylims && \
+    chown -R ${APP_UID}:${APP_GID} /opt/iskylims
+
 # Expose
 EXPOSE 8001
 
 # Start the application once install.sh has populated /opt/iskylims.
+USER iskylims
 CMD ["bash", "-c", "while [ ! -f /opt/iskylims/manage.py ]; do sleep 2; done; gunicorn iskylims.wsgi:application --bind 0.0.0.0:8001 --workers 3 --threads 2 --timeout 120"]

@@ -113,6 +113,21 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 
 3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
 
+UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
+
+- Exporta `APP_UID` y `APP_GID` antes de ejecutar `docker_install.sh` si necesitas un UID/GID distinto (por ejemplo, para escribir en `/var/www/iskylims/static`).
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
+
+Asegura que la carpeta de estaticos en el host sea escribible por ese UID/GID:
+
+```bash
+sudo chown -R 1212:1212 /var/www/iskylims/static
+```
+
 #### Proxy inverso con Apache (host) + Gunicorn
 
 En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa Apache en el host como proxy inverso hacia `localhost:8001`.
@@ -134,6 +149,13 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentro del contenedor, que regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
+
+Si usas `APP_UID`/`APP_GID`, exportalos de nuevo antes de la actualizacion para mantener el mismo UID/GID:
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
 
 ### Actualizacion del despliegue Docker v3.0.0 a 3.1.0
 

@@ -118,6 +118,21 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
+UID/GID for the container runtime user (default `1212:1212`):
+
+- Export `APP_UID` and `APP_GID` before running `docker_install.sh` if you need a different host UID/GID (for example, to write to `/var/www/iskylims/static`).
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
+
+Ensure the static directory on the host is writable by that UID/GID:
+
+```bash
+sudo chown -R 1212:1212 /var/www/iskylims/static
+```
+
 #### Persist logs/documents with named volumes
 
 The production compose file mounts two named volumes so upgrades/rebuilds keep data:
@@ -148,6 +163,13 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
+
+If you set `APP_UID`/`APP_GID`, export them again before upgrade so the container runs with the same UID/GID:
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
 
 ### Upgrade docker deployment v3.0.0 to 3.1.0
 
