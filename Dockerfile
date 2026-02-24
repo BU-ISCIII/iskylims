@@ -43,4 +43,4 @@ WORKDIR /opt/iskylims
 EXPOSE 8001
 
 # Start the application once install.sh has populated /opt/iskylims.
-CMD ["bash", "-c", "while [ ! -f /opt/iskylims/manage.py ]; do sleep 2; done; python3 /opt/iskylims/manage.py runserver 0:8001"]
+CMD ["bash", "-c", "while [ ! -f /opt/iskylims/manage.py ]; do sleep 2; done; gunicorn iskylims.wsgi:application --bind 0.0.0.0:8001 --workers 3 --threads 2 --timeout 120"]
