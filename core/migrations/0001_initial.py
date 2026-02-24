@@ -15,478 +15,1135 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='City',
+            name="City",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('city_name', models.CharField(max_length=80)),
-                ('geo_loc_latitude', models.CharField(max_length=80)),
-                ('geo_loc_longitude', models.CharField(max_length=80)),
-                ('apps_name', models.CharField(max_length=40, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("city_name", models.CharField(max_length=80)),
+                ("geo_loc_latitude", models.CharField(max_length=80)),
+                ("geo_loc_longitude", models.CharField(max_length=80)),
+                ("apps_name", models.CharField(max_length=40, null=True)),
             ],
             options={
-                'db_table': 'core_city',
+                "db_table": "core_city",
             },
         ),
         migrations.CreateModel(
-            name='CommercialKits',
+            name="CommercialKits",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=150)),
-                ('provider', models.CharField(max_length=30)),
-                ('cat_number', models.CharField(blank=True, max_length=40, null=True)),
-                ('description', models.CharField(blank=True, max_length=255, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=150)),
+                ("provider", models.CharField(max_length=30)),
+                ("cat_number", models.CharField(blank=True, max_length=40, null=True)),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True, null=True)),
             ],
             options={
-                'db_table': 'core_commercial_kits',
+                "db_table": "core_commercial_kits",
             },
         ),
         migrations.CreateModel(
-            name='Contact',
+            name="Contact",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('contact_name', models.CharField(max_length=80)),
-                ('contact_mail', models.CharField(max_length=40, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("contact_name", models.CharField(max_length=80)),
+                ("contact_mail", models.CharField(max_length=40, null=True)),
             ],
             options={
-                'db_table': 'core_contact',
+                "db_table": "core_contact",
             },
         ),
         migrations.CreateModel(
-            name='LabRequest',
+            name="LabRequest",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('lab_name', models.CharField(max_length=80)),
-                ('lab_name_coding', models.CharField(max_length=50)),
-                ('lab_unit', models.CharField(max_length=50)),
-                ('lab_contact_name', models.CharField(max_length=50)),
-                ('lab_phone', models.CharField(max_length=20)),
-                ('lab_email', models.CharField(max_length=70)),
-                ('address', models.CharField(max_length=255)),
-                ('apps_name', models.CharField(max_length=40, null=True)),
-                ('lab_city', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.city')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("lab_name", models.CharField(max_length=80)),
+                ("lab_name_coding", models.CharField(max_length=50)),
+                ("lab_unit", models.CharField(max_length=50)),
+                ("lab_contact_name", models.CharField(max_length=50)),
+                ("lab_phone", models.CharField(max_length=20)),
+                ("lab_email", models.CharField(max_length=70)),
+                ("address", models.CharField(max_length=255)),
+                ("apps_name", models.CharField(max_length=40, null=True)),
+                (
+                    "lab_city",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.city",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_lab_request',
+                "db_table": "core_lab_request",
             },
         ),
         migrations.CreateModel(
-            name='MoleculeType',
+            name="MoleculeType",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('molecule_type', models.CharField(max_length=30)),
-                ('apps_name', models.CharField(max_length=40, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("molecule_type", models.CharField(max_length=30)),
+                ("apps_name", models.CharField(max_length=40, null=True)),
             ],
             options={
-                'db_table': 'core_molecule_type',
+                "db_table": "core_molecule_type",
             },
         ),
         migrations.CreateModel(
-            name='MoleculeUsedFor',
+            name="MoleculeUsedFor",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('used_for', models.CharField(max_length=50)),
-                ('apps_name', models.CharField(max_length=50)),
-                ('massive_use', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("used_for", models.CharField(max_length=50)),
+                ("apps_name", models.CharField(max_length=50)),
+                ("massive_use", models.BooleanField(default=False)),
             ],
             options={
-                'db_table': 'core_molecule_used_for',
+                "db_table": "core_molecule_used_for",
             },
         ),
         migrations.CreateModel(
-            name='OntologyMap',
+            name="OntologyMap",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(max_length=255)),
-                ('ontology', models.CharField(blank=True, max_length=50, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField(max_length=255)),
+                ("ontology", models.CharField(blank=True, max_length=50, null=True)),
             ],
             options={
-                'db_table': 'core_ontology_map',
+                "db_table": "core_ontology_map",
             },
         ),
         migrations.CreateModel(
-            name='PatientCore',
+            name="PatientCore",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('patient_name', models.CharField(max_length=255, null=True)),
-                ('patient_surname', models.CharField(max_length=255, null=True)),
-                ('patient_code', models.CharField(max_length=255, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("patient_name", models.CharField(max_length=255, null=True)),
+                ("patient_surname", models.CharField(max_length=255, null=True)),
+                ("patient_code", models.CharField(max_length=255, null=True)),
             ],
             options={
-                'db_table': 'core_patient_core',
+                "db_table": "core_patient_core",
             },
         ),
         migrations.CreateModel(
-            name='PatientProjects',
+            name="PatientProjects",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('project_name', models.CharField(max_length=50)),
-                ('project_manager', models.CharField(blank=True, max_length=50, null=True)),
-                ('project_contact', models.CharField(blank=True, max_length=50, null=True)),
-                ('project_description', models.CharField(blank=True, max_length=255, null=True)),
-                ('apps_name', models.CharField(max_length=40)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("project_name", models.CharField(max_length=50)),
+                (
+                    "project_manager",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "project_contact",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "project_description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("apps_name", models.CharField(max_length=40)),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'core_patient_projects',
+                "db_table": "core_patient_projects",
             },
         ),
         migrations.CreateModel(
-            name='PatientSex',
+            name="PatientSex",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sex', models.CharField(max_length=16)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sex", models.CharField(max_length=16)),
             ],
             options={
-                'db_table': 'core_patient_sex',
+                "db_table": "core_patient_sex",
             },
         ),
         migrations.CreateModel(
-            name='SampleProjectFieldClassification',
+            name="SampleProjectFieldClassification",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classification_name', models.CharField(max_length=80)),
-                ('classification_display', models.CharField(max_length=100)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("classification_name", models.CharField(max_length=80)),
+                ("classification_display", models.CharField(max_length=100)),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'core_sample_projects_field_classification',
+                "db_table": "core_sample_projects_field_classification",
             },
         ),
         migrations.CreateModel(
-            name='SampleProjects',
+            name="SampleProjects",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_project_name', models.CharField(max_length=255)),
-                ('sample_project_manager', models.CharField(blank=True, max_length=50, null=True)),
-                ('sample_project_contact', models.CharField(blank=True, max_length=250, null=True)),
-                ('sample_project_description', models.CharField(blank=True, max_length=255, null=True)),
-                ('apps_name', models.CharField(max_length=255)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sample_project_name", models.CharField(max_length=255)),
+                (
+                    "sample_project_manager",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "sample_project_contact",
+                    models.CharField(blank=True, max_length=250, null=True),
+                ),
+                (
+                    "sample_project_description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("apps_name", models.CharField(max_length=255)),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'core_sample_projects',
+                "db_table": "core_sample_projects",
             },
         ),
         migrations.CreateModel(
-            name='SampleProjectsFields',
+            name="SampleProjectsFields",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_project_field_name', models.CharField(max_length=80)),
-                ('sample_project_field_description', models.CharField(blank=True, max_length=400, null=True)),
-                ('sample_project_field_order', models.IntegerField()),
-                ('sample_project_field_used', models.BooleanField()),
-                ('sample_project_field_type', models.CharField(max_length=20)),
-                ('sample_project_option_list', models.CharField(blank=True, max_length=255, null=True)),
-                ('sample_project_searchable', models.BooleanField(default=False)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('sample_project_field_classification_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sampleprojectfieldclassification')),
-                ('sample_projects_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='sample_project_fields', to='core.sampleprojects')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sample_project_field_name", models.CharField(max_length=80)),
+                (
+                    "sample_project_field_description",
+                    models.CharField(blank=True, max_length=400, null=True),
+                ),
+                ("sample_project_field_order", models.IntegerField()),
+                ("sample_project_field_used", models.BooleanField()),
+                ("sample_project_field_type", models.CharField(max_length=20)),
+                (
+                    "sample_project_option_list",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("sample_project_searchable", models.BooleanField(default=False)),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "sample_project_field_classification_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sampleprojectfieldclassification",
+                    ),
+                ),
+                (
+                    "sample_projects_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="sample_project_fields",
+                        to="core.sampleprojects",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_sample_projects_fields',
+                "db_table": "core_sample_projects_fields",
             },
         ),
         migrations.CreateModel(
-            name='SampleType',
+            name="SampleType",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_type', models.CharField(max_length=50)),
-                ('apps_name', models.CharField(max_length=50)),
-                ('mandatory_fields', models.CharField(blank=True, max_length=300, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sample_type", models.CharField(max_length=50)),
+                ("apps_name", models.CharField(max_length=50)),
+                (
+                    "mandatory_fields",
+                    models.CharField(blank=True, max_length=300, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True, null=True)),
             ],
             options={
-                'db_table': 'core_sample_type',
+                "db_table": "core_sample_type",
             },
         ),
         migrations.CreateModel(
-            name='SequencingPlatform',
+            name="SequencingPlatform",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('platform_name', models.CharField(max_length=30)),
-                ('company_name', models.CharField(max_length=30)),
-                ('sequencing_technology', models.CharField(max_length=30)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("platform_name", models.CharField(max_length=30)),
+                ("company_name", models.CharField(max_length=30)),
+                ("sequencing_technology", models.CharField(max_length=30)),
             ],
             options={
-                'db_table': 'core_sequencing_platform',
+                "db_table": "core_sequencing_platform",
             },
         ),
         migrations.CreateModel(
-            name='Species',
+            name="Species",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('species_name', models.CharField(max_length=50)),
-                ('ref_genome_name', models.CharField(blank=True, max_length=255, null=True)),
-                ('ref_genome_size', models.CharField(blank=True, max_length=100, null=True)),
-                ('ref_genome_id', models.CharField(blank=True, max_length=255, null=True)),
-                ('apps_name', models.CharField(max_length=50, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("species_name", models.CharField(max_length=50)),
+                (
+                    "ref_genome_name",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "ref_genome_size",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "ref_genome_id",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("apps_name", models.CharField(max_length=50, null=True)),
+                ("generated_at", models.DateTimeField(auto_now_add=True, null=True)),
             ],
             options={
-                'db_table': 'core_species',
+                "db_table": "core_species",
             },
         ),
         migrations.CreateModel(
-            name='StateInCountry',
+            name="StateInCountry",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state_name', models.CharField(max_length=80)),
-                ('apps_name', models.CharField(max_length=40, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("state_name", models.CharField(max_length=80)),
+                ("apps_name", models.CharField(max_length=40, null=True)),
             ],
             options={
-                'db_table': 'core_state_in_country',
+                "db_table": "core_state_in_country",
             },
         ),
         migrations.CreateModel(
-            name='StatesForMolecule',
+            name="StatesForMolecule",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('molecule_state_name', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("molecule_state_name", models.CharField(max_length=50)),
             ],
             options={
-                'db_table': 'core_states_for_molecule',
+                "db_table": "core_states_for_molecule",
             },
         ),
         migrations.CreateModel(
-            name='StatesForSample',
+            name="StatesForSample",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_state_name', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sample_state_name", models.CharField(max_length=50)),
             ],
             options={
-                'db_table': 'core_states_for_sample',
+                "db_table": "core_states_for_sample",
             },
         ),
         migrations.CreateModel(
-            name='UserLotCommercialKits',
+            name="UserLotCommercialKits",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uses_number', models.IntegerField(default=0, null=True)),
-                ('chip_lot', models.CharField(max_length=50)),
-                ('latest_used_date', models.DateTimeField(blank=True, null=True)),
-                ('expiration_date', models.DateField()),
-                ('run_out', models.BooleanField(default=False)),
-                ('generated_at', models.DateTimeField(auto_now_add=True, null=True)),
-                ('based_commercial', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.commercialkits')),
-                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uses_number", models.IntegerField(default=0, null=True)),
+                ("chip_lot", models.CharField(max_length=50)),
+                ("latest_used_date", models.DateTimeField(blank=True, null=True)),
+                ("expiration_date", models.DateField()),
+                ("run_out", models.BooleanField(default=False)),
+                ("generated_at", models.DateTimeField(auto_now_add=True, null=True)),
+                (
+                    "based_commercial",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.commercialkits",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_user_lot_commercial_kits',
+                "db_table": "core_user_lot_commercial_kits",
             },
         ),
         migrations.CreateModel(
-            name='SequencingConfiguration',
+            name="SequencingConfiguration",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('configuration_name', models.CharField(max_length=255)),
-                ('platform_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sequencingplatform')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("configuration_name", models.CharField(max_length=255)),
+                (
+                    "platform_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sequencingplatform",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_sequencing_configuration',
+                "db_table": "core_sequencing_configuration",
             },
         ),
         migrations.CreateModel(
-            name='SequencerInLab',
+            name="SequencerInLab",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sequencer_name', models.CharField(max_length=255)),
-                ('sequencer_description', models.CharField(blank=True, max_length=255, null=True)),
-                ('sequencer_location', models.CharField(blank=True, max_length=255, null=True)),
-                ('sequencer_serial_number', models.CharField(blank=True, max_length=255, null=True)),
-                ('sequencer_state', models.CharField(blank=True, max_length=50, null=True)),
-                ('sequencer_operation_start', models.DateField(blank=True, null=True)),
-                ('sequencer_operation_end', models.DateField(blank=True, null=True)),
-                ('sequencer_number_lanes', models.CharField(blank=True, max_length=5, null=True)),
-                ('platform_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sequencingplatform')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sequencer_name", models.CharField(max_length=255)),
+                (
+                    "sequencer_description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "sequencer_location",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "sequencer_serial_number",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "sequencer_state",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                ("sequencer_operation_start", models.DateField(blank=True, null=True)),
+                ("sequencer_operation_end", models.DateField(blank=True, null=True)),
+                (
+                    "sequencer_number_lanes",
+                    models.CharField(blank=True, max_length=5, null=True),
+                ),
+                (
+                    "platform_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sequencingplatform",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_sequencer_in_lab',
+                "db_table": "core_sequencer_in_lab",
             },
         ),
         migrations.CreateModel(
-            name='SamplesProjectsTableOptions',
+            name="SamplesProjectsTableOptions",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('option_value', models.CharField(max_length=120)),
-                ('sample_project_field', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='opt_value_prop', to='core.sampleprojectsfields')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("option_value", models.CharField(max_length=120)),
+                (
+                    "sample_project_field",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="opt_value_prop",
+                        to="core.sampleprojectsfields",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_sample_projects_table_options',
+                "db_table": "core_sample_projects_table_options",
             },
         ),
         migrations.CreateModel(
-            name='Samples',
+            name="Samples",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_name', models.CharField(max_length=255, null=True, verbose_name='Sample Name')),
-                ('sample_location', models.CharField(blank=True, max_length=255, null=True, verbose_name='Sample location')),
-                ('sample_entry_date', models.DateTimeField(blank=True, null=True, verbose_name='Sample defined date')),
-                ('collection_sample_date', models.DateTimeField(blank=True, null=True, verbose_name='Sample collection date')),
-                ('unique_sample_id', models.CharField(max_length=8, null=True, verbose_name='Unique sample id')),
-                ('sample_code_id', models.CharField(max_length=60, null=True, verbose_name='Sample code id')),
-                ('reused_number', models.IntegerField(default=0, verbose_name='Number of type reused')),
-                ('sequencing_date', models.DateTimeField(blank=True, null=True, verbose_name='Sequencing date')),
-                ('completed_date', models.DateTimeField(blank=True, null=True, verbose_name='Completion date')),
-                ('generated_at', models.DateTimeField(auto_now_add=True, verbose_name='Generated at')),
-                ('only_recorded', models.BooleanField(blank=True, default=False, null=True, verbose_name='Only recorded?')),
-                ('lab_request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.labrequest', verbose_name='Laboratory')),
-                ('patient_core', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientcore', verbose_name='Patient Code ID')),
-                ('sample_project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sampleprojects', verbose_name='Sample Project')),
-                ('sample_state', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.statesforsample', verbose_name='Sample state')),
-                ('sample_type', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sampletype', verbose_name='Sample type')),
-                ('sample_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Username')),
-                ('species', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.species', verbose_name='Species')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "sample_name",
+                    models.CharField(
+                        max_length=255, null=True, verbose_name="Sample Name"
+                    ),
+                ),
+                (
+                    "sample_location",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Sample location",
+                    ),
+                ),
+                (
+                    "sample_entry_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Sample defined date"
+                    ),
+                ),
+                (
+                    "collection_sample_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Sample collection date"
+                    ),
+                ),
+                (
+                    "unique_sample_id",
+                    models.CharField(
+                        max_length=8, null=True, verbose_name="Unique sample id"
+                    ),
+                ),
+                (
+                    "sample_code_id",
+                    models.CharField(
+                        max_length=60, null=True, verbose_name="Sample code id"
+                    ),
+                ),
+                (
+                    "reused_number",
+                    models.IntegerField(
+                        default=0, verbose_name="Number of type reused"
+                    ),
+                ),
+                (
+                    "sequencing_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Sequencing date"
+                    ),
+                ),
+                (
+                    "completed_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Completion date"
+                    ),
+                ),
+                (
+                    "generated_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Generated at"
+                    ),
+                ),
+                (
+                    "only_recorded",
+                    models.BooleanField(
+                        blank=True,
+                        default=False,
+                        null=True,
+                        verbose_name="Only recorded?",
+                    ),
+                ),
+                (
+                    "lab_request",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.labrequest",
+                        verbose_name="Laboratory",
+                    ),
+                ),
+                (
+                    "patient_core",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.patientcore",
+                        verbose_name="Patient Code ID",
+                    ),
+                ),
+                (
+                    "sample_project",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sampleprojects",
+                        verbose_name="Sample Project",
+                    ),
+                ),
+                (
+                    "sample_state",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.statesforsample",
+                        verbose_name="Sample state",
+                    ),
+                ),
+                (
+                    "sample_type",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sampletype",
+                        verbose_name="Sample type",
+                    ),
+                ),
+                (
+                    "sample_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Username",
+                    ),
+                ),
+                (
+                    "species",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.species",
+                        verbose_name="Species",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_samples',
+                "db_table": "core_samples",
             },
         ),
         migrations.CreateModel(
-            name='SampleProjectsFieldsValue',
+            name="SampleProjectsFieldsValue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_project_field_value', models.CharField(blank=True, max_length=255, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('sample_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='project_values', to='core.samples', verbose_name='Sample Name')),
-                ('sample_project_field_id', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sampleprojectsfields')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "sample_project_field_value",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "sample_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="project_values",
+                        to="core.samples",
+                        verbose_name="Sample Name",
+                    ),
+                ),
+                (
+                    "sample_project_field_id",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sampleprojectsfields",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_sample_projects_fields_value',
+                "db_table": "core_sample_projects_fields_value",
             },
         ),
         migrations.AddField(
-            model_name='sampleprojectfieldclassification',
-            name='sample_projects_id',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sampleprojects'),
+            model_name="sampleprojectfieldclassification",
+            name="sample_projects_id",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.sampleprojects",
+            ),
         ),
         migrations.CreateModel(
-            name='ProtocolType',
+            name="ProtocolType",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('protocol_type', models.CharField(max_length=40)),
-                ('apps_name', models.CharField(max_length=40)),
-                ('molecule', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.moleculetype')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("protocol_type", models.CharField(max_length=40)),
+                ("apps_name", models.CharField(max_length=40)),
+                (
+                    "molecule",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.moleculetype",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_protocol_type',
+                "db_table": "core_protocol_type",
             },
         ),
         migrations.CreateModel(
-            name='Protocols',
+            name="Protocols",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=40)),
-                ('description', models.CharField(blank=True, max_length=160, null=True)),
-                ('type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.protocoltype')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=40)),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=160, null=True),
+                ),
+                (
+                    "type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.protocoltype",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_protocols',
+                "db_table": "core_protocols",
             },
         ),
         migrations.CreateModel(
-            name='ProtocolParameters',
+            name="ProtocolParameters",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('parameter_name', models.CharField(max_length=255)),
-                ('parameter_description', models.CharField(blank=True, max_length=400, null=True)),
-                ('parameter_order', models.IntegerField()),
-                ('parameter_used', models.BooleanField()),
-                ('parameter_type', models.CharField(default='string', max_length=20)),
-                ('parameter_option_values', models.CharField(blank=True, max_length=400, null=True)),
-                ('parameter_max_value', models.CharField(blank=True, max_length=50, null=True)),
-                ('parameter_min_value', models.CharField(blank=True, max_length=50, null=True)),
-                ('protocol_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.protocols')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("parameter_name", models.CharField(max_length=255)),
+                (
+                    "parameter_description",
+                    models.CharField(blank=True, max_length=400, null=True),
+                ),
+                ("parameter_order", models.IntegerField()),
+                ("parameter_used", models.BooleanField()),
+                ("parameter_type", models.CharField(default="string", max_length=20)),
+                (
+                    "parameter_option_values",
+                    models.CharField(blank=True, max_length=400, null=True),
+                ),
+                (
+                    "parameter_max_value",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "parameter_min_value",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "protocol_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.protocols"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_protocol_parameters',
+                "db_table": "core_protocol_parameters",
             },
         ),
         migrations.CreateModel(
-            name='PatientProjectsFields',
+            name="PatientProjectsFields",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('project_field_name', models.CharField(max_length=50)),
-                ('project_field_description', models.CharField(blank=True, max_length=400, null=True)),
-                ('project_field_order', models.IntegerField()),
-                ('project_field_used', models.BooleanField()),
-                ('patient_projects_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientprojects')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("project_field_name", models.CharField(max_length=50)),
+                (
+                    "project_field_description",
+                    models.CharField(blank=True, max_length=400, null=True),
+                ),
+                ("project_field_order", models.IntegerField()),
+                ("project_field_used", models.BooleanField()),
+                (
+                    "patient_projects_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.patientprojects",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_patient_projects_fields',
+                "db_table": "core_patient_projects_fields",
             },
         ),
         migrations.CreateModel(
-            name='PatientProjectFieldValue',
+            name="PatientProjectFieldValue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('project_field_value', models.CharField(max_length=255)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('patient_core_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientcore')),
-                ('project_field_id', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientprojectsfields')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("project_field_value", models.CharField(max_length=255)),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "patient_core_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.patientcore",
+                    ),
+                ),
+                (
+                    "project_field_id",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.patientprojectsfields",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_patient_project_field_value',
+                "db_table": "core_patient_project_field_value",
             },
         ),
         migrations.AddField(
-            model_name='patientcore',
-            name='patient_projects',
-            field=models.ManyToManyField(blank=True, to='core.patientprojects'),
+            model_name="patientcore",
+            name="patient_projects",
+            field=models.ManyToManyField(blank=True, to="core.patientprojects"),
         ),
         migrations.AddField(
-            model_name='patientcore',
-            name='patient_sex',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.patientsex'),
+            model_name="patientcore",
+            name="patient_sex",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.patientsex",
+            ),
         ),
         migrations.CreateModel(
-            name='MoleculePreparation',
+            name="MoleculePreparation",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('molecule_code_id', models.CharField(max_length=255)),
-                ('extraction_type', models.CharField(max_length=50)),
-                ('molecule_extraction_date', models.DateTimeField(null=True)),
-                ('reused_number', models.IntegerField(default=0)),
-                ('used_for_massive_sequencing', models.BooleanField(blank=True, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('molecule_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.moleculetype')),
-                ('molecule_used_for', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.moleculeusedfor')),
-                ('molecule_user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('protocol_used', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.protocols')),
-                ('sample', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.samples')),
-                ('state', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='core.statesformolecule')),
-                ('user_lot_kit_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.userlotcommercialkits')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("molecule_code_id", models.CharField(max_length=255)),
+                ("extraction_type", models.CharField(max_length=50)),
+                ("molecule_extraction_date", models.DateTimeField(null=True)),
+                ("reused_number", models.IntegerField(default=0)),
+                (
+                    "used_for_massive_sequencing",
+                    models.BooleanField(blank=True, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "molecule_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.moleculetype",
+                    ),
+                ),
+                (
+                    "molecule_used_for",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.moleculeusedfor",
+                    ),
+                ),
+                (
+                    "molecule_user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "protocol_used",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.protocols"
+                    ),
+                ),
+                (
+                    "sample",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.samples"
+                    ),
+                ),
+                (
+                    "state",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.statesformolecule",
+                    ),
+                ),
+                (
+                    "user_lot_kit_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.userlotcommercialkits",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_molecule_preparation',
+                "db_table": "core_molecule_preparation",
             },
         ),
         migrations.CreateModel(
-            name='MoleculeParameterValue',
+            name="MoleculeParameterValue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('parameter_value', models.CharField(max_length=255)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('molecule_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.moleculepreparation')),
-                ('molecule_parameter_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.protocolparameters')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("parameter_value", models.CharField(max_length=255)),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "molecule_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.moleculepreparation",
+                    ),
+                ),
+                (
+                    "molecule_parameter_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.protocolparameters",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'core_molecule_parameter_value',
+                "db_table": "core_molecule_parameter_value",
             },
         ),
         migrations.AddField(
-            model_name='commercialkits',
-            name='platform_kits',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sequencingplatform'),
+            model_name="commercialkits",
+            name="platform_kits",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.sequencingplatform",
+            ),
         ),
         migrations.AddField(
-            model_name='commercialkits',
-            name='protocol_kits',
-            field=models.ManyToManyField(blank=True, to='core.protocols'),
+            model_name="commercialkits",
+            name="protocol_kits",
+            field=models.ManyToManyField(blank=True, to="core.protocols"),
         ),
         migrations.AddField(
-            model_name='city',
-            name='belongs_to_state',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.stateincountry'),
+            model_name="city",
+            name="belongs_to_state",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.stateincountry",
+            ),
         ),
     ]

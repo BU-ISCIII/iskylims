@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('drylab', '0001_initial'),
+        ("drylab", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='service',
-            name='service_status',
+            model_name="service",
+            name="service_status",
         ),
     ]

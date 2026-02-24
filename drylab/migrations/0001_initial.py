@@ -11,224 +11,569 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('core', '0001_initial'),
-        ('wetlab', '0001_initial'),
+        ("core", "0001_initial"),
+        ("wetlab", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AvailableService',
+            name="AvailableService",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('avail_service_description', models.CharField(max_length=200, verbose_name='Available services')),
-                ('service_in_use', models.BooleanField(default=True)),
-                ('service_id', models.CharField(blank=True, max_length=40, null=True)),
-                ('description', models.CharField(blank=True, max_length=200, null=True)),
-                ('lft', models.PositiveIntegerField(editable=False)),
-                ('rght', models.PositiveIntegerField(editable=False)),
-                ('tree_id', models.PositiveIntegerField(db_index=True, editable=False)),
-                ('level', models.PositiveIntegerField(editable=False)),
-                ('parent', mptt.fields.TreeForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='drylab.availableservice')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "avail_service_description",
+                    models.CharField(max_length=200, verbose_name="Available services"),
+                ),
+                ("service_in_use", models.BooleanField(default=True)),
+                ("service_id", models.CharField(blank=True, max_length=40, null=True)),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("lft", models.PositiveIntegerField(editable=False)),
+                ("rght", models.PositiveIntegerField(editable=False)),
+                ("tree_id", models.PositiveIntegerField(db_index=True, editable=False)),
+                ("level", models.PositiveIntegerField(editable=False)),
+                (
+                    "parent",
+                    mptt.fields.TreeForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="drylab.availableservice",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'AvailableService',
-                'verbose_name_plural': 'AvailableServices',
-                'db_table': 'drylab_available_service',
-                'ordering': ['tree_id', 'lft'],
+                "verbose_name": "AvailableService",
+                "verbose_name_plural": "AvailableServices",
+                "db_table": "drylab_available_service",
+                "ordering": ["tree_id", "lft"],
             },
         ),
         migrations.CreateModel(
-            name='ConfigSetting',
+            name="ConfigSetting",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('configuration_name', models.CharField(max_length=80)),
-                ('configuration_value', models.CharField(blank=True, max_length=255, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("configuration_name", models.CharField(max_length=80)),
+                (
+                    "configuration_value",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'drylab_config_setting',
+                "db_table": "drylab_config_setting",
             },
         ),
         migrations.CreateModel(
-            name='Pipelines',
+            name="Pipelines",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('pipeline_name', models.CharField(max_length=50)),
-                ('pipeline_version', models.CharField(max_length=10)),
-                ('pipeline_in_use', models.BooleanField(default=True)),
-                ('pipeline_file', models.FileField(blank=True, null=True, upload_to='drylab/pipelinesFiles')),
-                ('pipeline_url', models.CharField(blank=True, max_length=200, null=True)),
-                ('pipeline_description', models.CharField(blank=True, max_length=500, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('user_name', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("pipeline_name", models.CharField(max_length=50)),
+                ("pipeline_version", models.CharField(max_length=10)),
+                ("pipeline_in_use", models.BooleanField(default=True)),
+                (
+                    "pipeline_file",
+                    models.FileField(
+                        blank=True, null=True, upload_to="drylab/pipelinesFiles"
+                    ),
+                ),
+                (
+                    "pipeline_url",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                (
+                    "pipeline_description",
+                    models.CharField(blank=True, max_length=500, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user_name",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'drylab_pipelines',
+                "db_table": "drylab_pipelines",
             },
         ),
         migrations.CreateModel(
-            name='Resolution',
+            name="Resolution",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('resolution_number', models.CharField(max_length=255, null=True, verbose_name='Resolution name')),
-                ('resolution_estimated_date', models.DateField(null=True, verbose_name=' Estimated resolution date')),
-                ('resolution_date', models.DateField(auto_now_add=True, verbose_name='Resolution date')),
-                ('resolution_queued_date', models.DateField(blank=True, null=True)),
-                ('resolution_in_progress_date', models.DateField(blank=True, null=True)),
-                ('resolution_delivery_date', models.DateField(blank=True, null=True)),
-                ('resolution_notes', models.TextField(blank=True, max_length=1000, null=True, verbose_name='Resolution notes')),
-                ('resolution_full_number', models.CharField(blank=True, max_length=255, null=True, verbose_name='Acronym Name')),
-                ('resolution_pdf_file', models.FileField(blank=True, null=True, upload_to='documents/drylab/resolutions')),
-                ('available_services', models.ManyToManyField(blank=True, to='drylab.availableservice')),
-                ('resolution_assigned_user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='groups+', to=settings.AUTH_USER_MODEL)),
-                ('resolution_pipelines', models.ManyToManyField(blank=True, to='drylab.pipelines')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "resolution_number",
+                    models.CharField(
+                        max_length=255, null=True, verbose_name="Resolution name"
+                    ),
+                ),
+                (
+                    "resolution_estimated_date",
+                    models.DateField(
+                        null=True, verbose_name=" Estimated resolution date"
+                    ),
+                ),
+                (
+                    "resolution_date",
+                    models.DateField(auto_now_add=True, verbose_name="Resolution date"),
+                ),
+                ("resolution_queued_date", models.DateField(blank=True, null=True)),
+                (
+                    "resolution_in_progress_date",
+                    models.DateField(blank=True, null=True),
+                ),
+                ("resolution_delivery_date", models.DateField(blank=True, null=True)),
+                (
+                    "resolution_notes",
+                    models.TextField(
+                        blank=True,
+                        max_length=1000,
+                        null=True,
+                        verbose_name="Resolution notes",
+                    ),
+                ),
+                (
+                    "resolution_full_number",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Acronym Name",
+                    ),
+                ),
+                (
+                    "resolution_pdf_file",
+                    models.FileField(
+                        blank=True, null=True, upload_to="documents/drylab/resolutions"
+                    ),
+                ),
+                (
+                    "available_services",
+                    models.ManyToManyField(blank=True, to="drylab.availableservice"),
+                ),
+                (
+                    "resolution_assigned_user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="groups+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "resolution_pipelines",
+                    models.ManyToManyField(blank=True, to="drylab.pipelines"),
+                ),
             ],
             options={
-                'db_table': 'drylab_resolution',
+                "db_table": "drylab_resolution",
             },
         ),
         migrations.CreateModel(
-            name='ResolutionStates',
+            name="ResolutionStates",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state_value', models.CharField(max_length=50)),
-                ('state_display', models.CharField(blank=True, max_length=80, null=True)),
-                ('description', models.CharField(blank=True, max_length=255, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("state_value", models.CharField(max_length=50)),
+                (
+                    "state_display",
+                    models.CharField(blank=True, max_length=80, null=True),
+                ),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
             ],
             options={
-                'db_table': 'drylab_resolution_states',
+                "db_table": "drylab_resolution_states",
             },
         ),
         migrations.CreateModel(
-            name='Service',
+            name="Service",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('service_center', models.CharField(max_length=50, null=True, verbose_name='Sequencing center')),
-                ('service_request_number', models.CharField(max_length=80, null=True, verbose_name='Service ID')),
-                ('service_request_int', models.CharField(max_length=80, null=True)),
-                ('service_run_specs', models.CharField(blank=True, max_length=10, null=True, verbose_name='Run specifications')),
-                ('service_status', models.CharField(choices=[('recorded', 'Recorded'), ('approved', 'Approved'), ('rejected', 'Rejected'), ('queued', 'Queued'), ('in_progress', 'In Progress'), ('delivered', 'Delivered'), ('archived', 'Archived')], max_length=15, verbose_name='Service status')),
-                ('service_notes', models.TextField(blank=True, max_length=2048, null=True, verbose_name='Service Notes')),
-                ('service_created_date', models.DateField(auto_now_add=True, null=True)),
-                ('service_approved_date', models.DateField(blank=True, null=True)),
-                ('service_rejected_date', models.DateField(blank=True, null=True)),
-                ('service_delivered_date', models.DateField(blank=True, null=True)),
-                ('service_available_service', mptt.fields.TreeManyToManyField(to='drylab.availableservice', verbose_name='AvailableServices')),
-                ('service_project_names', models.ManyToManyField(blank=True, to='wetlab.projects', verbose_name="User's projects")),
-                ('service_sequencing_platform', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='core.sequencingplatform')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "service_center",
+                    models.CharField(
+                        max_length=50, null=True, verbose_name="Sequencing center"
+                    ),
+                ),
+                (
+                    "service_request_number",
+                    models.CharField(
+                        max_length=80, null=True, verbose_name="Service ID"
+                    ),
+                ),
+                ("service_request_int", models.CharField(max_length=80, null=True)),
+                (
+                    "service_run_specs",
+                    models.CharField(
+                        blank=True,
+                        max_length=10,
+                        null=True,
+                        verbose_name="Run specifications",
+                    ),
+                ),
+                (
+                    "service_status",
+                    models.CharField(
+                        choices=[
+                            ("recorded", "Recorded"),
+                            ("approved", "Approved"),
+                            ("rejected", "Rejected"),
+                            ("queued", "Queued"),
+                            ("in_progress", "In Progress"),
+                            ("delivered", "Delivered"),
+                            ("archived", "Archived"),
+                        ],
+                        max_length=15,
+                        verbose_name="Service status",
+                    ),
+                ),
+                (
+                    "service_notes",
+                    models.TextField(
+                        blank=True,
+                        max_length=2048,
+                        null=True,
+                        verbose_name="Service Notes",
+                    ),
+                ),
+                (
+                    "service_created_date",
+                    models.DateField(auto_now_add=True, null=True),
+                ),
+                ("service_approved_date", models.DateField(blank=True, null=True)),
+                ("service_rejected_date", models.DateField(blank=True, null=True)),
+                ("service_delivered_date", models.DateField(blank=True, null=True)),
+                (
+                    "service_available_service",
+                    mptt.fields.TreeManyToManyField(
+                        to="drylab.availableservice", verbose_name="AvailableServices"
+                    ),
+                ),
+                (
+                    "service_project_names",
+                    models.ManyToManyField(
+                        blank=True, to="wetlab.projects", verbose_name="User's projects"
+                    ),
+                ),
+                (
+                    "service_sequencing_platform",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.sequencingplatform",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'drylab_service',
+                "db_table": "drylab_service",
             },
         ),
         migrations.CreateModel(
-            name='ServiceState',
+            name="ServiceState",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state_value', models.CharField(max_length=50)),
-                ('state_display', models.CharField(blank=True, max_length=80, null=True)),
-                ('description', models.CharField(blank=True, max_length=255, null=True)),
-                ('show_in_stats', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("state_value", models.CharField(max_length=50)),
+                (
+                    "state_display",
+                    models.CharField(blank=True, max_length=80, null=True),
+                ),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("show_in_stats", models.BooleanField(default=False)),
             ],
             options={
-                'db_table': 'drylab_service_state',
+                "db_table": "drylab_service_state",
             },
         ),
         migrations.CreateModel(
-            name='UploadServiceFile',
+            name="UploadServiceFile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('upload_file', models.FileField(upload_to='drylab/service_files')),
-                ('upload_file_name', models.CharField(blank=True, max_length=255, null=True)),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('upload_service', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='drylab.service')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("upload_file", models.FileField(upload_to="drylab/service_files")),
+                (
+                    "upload_file_name",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("uploaded_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "upload_service",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="drylab.service",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'drylab_upload_service_file',
+                "db_table": "drylab_upload_service_file",
             },
         ),
         migrations.AddField(
-            model_name='service',
-            name='service_state',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='drylab.servicestate', verbose_name='Service State'),
+            model_name="service",
+            name="service_state",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="drylab.servicestate",
+                verbose_name="Service State",
+            ),
         ),
         migrations.AddField(
-            model_name='service',
-            name='service_user_id',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="service",
+            name="service_user_id",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.CreateModel(
-            name='ResolutionParameters',
+            name="ResolutionParameters",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('resolution_parameter', models.CharField(max_length=50)),
-                ('resolution_param_value', models.CharField(max_length=80)),
-                ('resolution_param_notes', models.CharField(blank=True, max_length=200, null=True)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('resolution', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='drylab.resolution')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("resolution_parameter", models.CharField(max_length=50)),
+                ("resolution_param_value", models.CharField(max_length=80)),
+                (
+                    "resolution_param_notes",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("generated_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "resolution",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="drylab.resolution",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'drylab_resolution_parameters',
+                "db_table": "drylab_resolution_parameters",
             },
         ),
         migrations.AddField(
-            model_name='resolution',
-            name='resolution_service_id',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='resolutions', to='drylab.service'),
+            model_name="resolution",
+            name="resolution_service_id",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="resolutions",
+                to="drylab.service",
+            ),
         ),
         migrations.AddField(
-            model_name='resolution',
-            name='resolution_state',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='drylab.resolutionstates'),
+            model_name="resolution",
+            name="resolution_state",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="drylab.resolutionstates",
+            ),
         ),
         migrations.CreateModel(
-            name='RequestedSamplesInServices',
+            name="RequestedSamplesInServices",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sample_key', models.CharField(blank=True, max_length=15, null=True)),
-                ('sample_name', models.CharField(blank=True, max_length=50, null=True)),
-                ('sample_path', models.CharField(blank=True, max_length=250, null=True)),
-                ('run_name_key', models.CharField(blank=True, max_length=15, null=True)),
-                ('run_name', models.CharField(blank=True, max_length=50, null=True)),
-                ('project_key', models.CharField(blank=True, max_length=15, null=True)),
-                ('project_name', models.CharField(blank=True, max_length=50, null=True)),
-                ('only_recorded_sample', models.BooleanField(default=False)),
-                ('generated_at', models.DateField(auto_now_add=True)),
-                ('samples_in_service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='samples', to='drylab.service')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sample_key", models.CharField(blank=True, max_length=15, null=True)),
+                ("sample_name", models.CharField(blank=True, max_length=50, null=True)),
+                (
+                    "sample_path",
+                    models.CharField(blank=True, max_length=250, null=True),
+                ),
+                (
+                    "run_name_key",
+                    models.CharField(blank=True, max_length=15, null=True),
+                ),
+                ("run_name", models.CharField(blank=True, max_length=50, null=True)),
+                ("project_key", models.CharField(blank=True, max_length=15, null=True)),
+                (
+                    "project_name",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                ("only_recorded_sample", models.BooleanField(default=False)),
+                ("generated_at", models.DateField(auto_now_add=True)),
+                (
+                    "samples_in_service",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="samples",
+                        to="drylab.service",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'drylab_request_samples_in_services',
+                "db_table": "drylab_request_samples_in_services",
             },
         ),
         migrations.CreateModel(
-            name='ParameterPipeline',
+            name="ParameterPipeline",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('parameter_name', models.CharField(max_length=80)),
-                ('parameter_value', models.CharField(blank=True, max_length=200, null=True)),
-                ('parameter_type', models.CharField(blank=True, max_length=20, null=True)),
-                ('parameter_pipeline', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='drylab.pipelines')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("parameter_name", models.CharField(max_length=80)),
+                (
+                    "parameter_value",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                (
+                    "parameter_type",
+                    models.CharField(blank=True, max_length=20, null=True),
+                ),
+                (
+                    "parameter_pipeline",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="drylab.pipelines",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'drylab_parameter_pipeline',
+                "db_table": "drylab_parameter_pipeline",
             },
         ),
         migrations.CreateModel(
-            name='Delivery',
+            name="Delivery",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('delivery_notes', models.TextField(blank=True, max_length=1000, null=True)),
-                ('execution_start_date', models.DateField(blank=True, null=True)),
-                ('execution_end_date', models.DateField(blank=True, null=True)),
-                ('execution_time', models.CharField(blank=True, max_length=80, null=True)),
-                ('permanent_used_space', models.CharField(blank=True, max_length=80, null=True)),
-                ('temporary_used_space', models.CharField(blank=True, max_length=80, null=True)),
-                ('delivery_resolution_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='delivery', to='drylab.resolution')),
-                ('pipelines_in_delivery', models.ManyToManyField(blank=True, to='drylab.pipelines')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "delivery_notes",
+                    models.TextField(blank=True, max_length=1000, null=True),
+                ),
+                ("execution_start_date", models.DateField(blank=True, null=True)),
+                ("execution_end_date", models.DateField(blank=True, null=True)),
+                (
+                    "execution_time",
+                    models.CharField(blank=True, max_length=80, null=True),
+                ),
+                (
+                    "permanent_used_space",
+                    models.CharField(blank=True, max_length=80, null=True),
+                ),
+                (
+                    "temporary_used_space",
+                    models.CharField(blank=True, max_length=80, null=True),
+                ),
+                (
+                    "delivery_resolution_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="delivery",
+                        to="drylab.resolution",
+                    ),
+                ),
+                (
+                    "pipelines_in_delivery",
+                    models.ManyToManyField(blank=True, to="drylab.pipelines"),
+                ),
             ],
             options={
-                'db_table': 'drylab_delivery',
+                "db_table": "drylab_delivery",
             },
         ),
     ]

@@ -32,15 +32,13 @@ def drop_librarypool_run_process_id(apps, schema_editor):
                 f"ALTER TABLE wetlab_library_pool DROP FOREIGN KEY `{constraint_name}`"
             )
 
-        cursor.execute(
-            "ALTER TABLE wetlab_library_pool DROP COLUMN run_process_id_id"
-        )
+        cursor.execute("ALTER TABLE wetlab_library_pool DROP COLUMN run_process_id_id")
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wetlab', '0001_initial'),
+        ("wetlab", "0001_initial"),
     ]
 
     operations = [
@@ -60,39 +58,39 @@ class Migration(migrations.Migration):
             ],
             state_operations=[
                 migrations.RemoveField(
-                    model_name='librarypool',
-                    name='run_process_id',
+                    model_name="librarypool",
+                    name="run_process_id",
                 ),
             ],
         ),
         migrations.AddField(
-            model_name='runprocess',
-            name='library_pool',
-            field=models.ManyToManyField(blank=True, to='wetlab.librarypool'),
+            model_name="runprocess",
+            name="library_pool",
+            field=models.ManyToManyField(blank=True, to="wetlab.librarypool"),
         ),
         migrations.AddField(
-            model_name='runstates',
-            name='description',
+            model_name="runstates",
+            name="description",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='runstates',
-            name='show_in_stats',
+            model_name="runstates",
+            name="show_in_stats",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='runstates',
-            name='state_display',
+            model_name="runstates",
+            name="state_display",
             field=models.CharField(blank=True, max_length=80, null=True),
         ),
         migrations.AlterField(
-            model_name='libprepare',
-            name='prefix_protocol',
+            model_name="libprepare",
+            name="prefix_protocol",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='rawtopunknowbarcodes',
-            name='count',
+            model_name="rawtopunknowbarcodes",
+            name="count",
             field=models.IntegerField(),
         ),
     ]

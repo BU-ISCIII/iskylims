@@ -772,7 +772,11 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             .last()
             .get_run_folder()
         )
-        root_run_folder = os.path.join("/", wetlab.utils.crontab_process.get_samba_application_shared_folder(), run_folder)
+        root_run_folder = os.path.join(
+            "/",
+            wetlab.utils.crontab_process.get_samba_application_shared_folder(),
+            run_folder,
+        )
         # delete existing information to avoid having duplicated tables
         wetlab.utils.crontab_process.delete_existing_run_metrics_table_processed(
             run_process_obj, experiment_name
