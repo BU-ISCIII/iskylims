@@ -19,6 +19,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
       - [Persist logs/documents with named volumes](#persist-logsdocuments-with-named-volumes)
+      - [Apache reverse proxy (host) + Gunicorn](#apache-reverse-proxy-host--gunicorn)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
     - [Upgrade docker deployment v3.0.0 to 3.1.0](#upgrade-docker-deployment-v300-to-310)
       - [Back up first](#back-up-first)
@@ -123,6 +124,18 @@ The production compose file mounts two named volumes so upgrades/rebuilds keep d
 - `iskylims_documents` → `/opt/iskylims/documents`
 
 If you override the compose file, ensure these two mounts exist to keep logs and documents persistent.
+
+#### Apache reverse proxy (host) + Gunicorn
+
+For production, the container runs `gunicorn` (not `manage.py runserver`). Use Apache on the host as a reverse proxy to `localhost:8001`.
+
+Static files:
+
+- The container writes collected static files to `/opt/iskylims/static`.
+- `docker-compose.prod.yml` bind-mounts that path to `/var/www/iskylims/static` on the host.
+- Configure Apache with `Alias /static/ /var/www/iskylims/static/`.
+
+See the example config in `conf/iskylims_apache_reverse_proxy.conf` and the [Configure Apache server](#configure-apache-server) section below.
 
 ### Upgrade docker deployment
 
@@ -300,6 +313,8 @@ Upgrades regenerate migrations and apply them with `--fake-initial` so existing 
 
 When we upgrade using the installation script we are performing several changes in the database. If something fails we need to restore the app situation before anything happened and start all over.
 
+### Bare-metal
+
 We need to copy back the full `/opt/iskylims` folder back to `/opt/iskylims` (or your installation path preference), and restore the database doing something like this:
 
 ```bash
@@ -311,6 +326,39 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es
 # create database iskylims;
 mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
+
+### Docker
+
+1. Stop the container:
+
+    ```bash
+    docker compose -f docker-compose.prod.yml down
+    ```
+
+2. Restore the database from your backup.
+
+3. If you suspect the image or build cache is corrupted, remove the app image and rebuild:
+
+    ```bash
+    docker image ls | grep iskylims
+    docker rmi <iskylims_image_id>
+    ```
+
+4. If volumes are compromised, restore them from the tar backups:
+
+    ```bash
+    docker run --rm -v iskylims_logs:/to -v "$PWD":/from alpine \
+      tar -xzf /from/iskylims_logs.tgz -C /to
+
+    docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
+      tar -xzf /from/iskylims_documents.tgz -C /to
+    ```
+
+5. Start the container again:
+
+    ```bash
+    bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+    ```
 
 ## Final configuration steps
 
@@ -344,7 +392,49 @@ Baseline + upgrade flow for new releases:
 
 ### Configure Apache server
 
-Copy the apache configuration file according to your distribution inside the apache configutation directory and rename it to iskylims.conf
+Copy the apache configuration file according to your distribution inside the apache configuration directory and rename it to iskylims.conf
+
+Typical config locations:
+
+- Ubuntu/Debian: `/etc/apache2/sites-available/iskylims.conf` (enable with `a2ensite`)
+- CentOS/RHEL: `/etc/httpd/conf.d/iskylims.conf`
+
+Suggested steps (host Apache as reverse proxy):
+
+1. Copy the example config:
+
+    ```bash
+    sudo cp conf/iskylims_apache_reverse_proxy.conf /etc/apache2/sites-available/iskylims.conf
+    # CentOS/RHEL:
+    # sudo cp conf/iskylims_apache_reverse_proxy.conf /etc/httpd/conf.d/iskylims.conf
+    ```
+
+2. Edit the config:
+
+    - Set `ServerName`
+    - Ensure `ProxyPass` points to `http://localhost:8001/`
+    - Ensure `Alias /static/ /var/www/iskylims/static/`
+
+3. Create the static folder on the host:
+
+    ```bash
+    sudo mkdir -p /var/www/iskylims/static
+    ```
+
+4. Enable required modules (Ubuntu/Debian):
+
+    ```bash
+    sudo a2enmod proxy proxy_http headers
+    sudo a2ensite iskylims.conf
+    ```
+
+5. Reload Apache:
+
+    ```bash
+    sudo systemctl reload apache2
+    # CentOS/RHEL:
+    # sudo systemctl reload httpd
+    ```
 
 ### Verification of the installation
 

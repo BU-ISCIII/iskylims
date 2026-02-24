@@ -109,6 +109,18 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 
 3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
 
+#### Proxy inverso con Apache (host) + Gunicorn
+
+En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa Apache en el host como proxy inverso hacia `localhost:8001`.
+
+Archivos estaticos:
+
+- El contenedor genera los estaticos en `/opt/iskylims/static`.
+- `docker-compose.prod.yml` monta ese directorio en `/var/www/iskylims/static` del host.
+- Configura Apache con `Alias /static/ /var/www/iskylims/static/`.
+
+Ejemplo de configuracion en `conf/iskylims_apache_reverse_proxy.conf`.
+
 ### Actualizacion del despliegue Docker
 
 Re-despliega el contenedor de aplicacion contra una base de datos existente sin tocar los datos:
@@ -292,6 +304,8 @@ Las actualizaciones regeneran las migraciones y las aplican con `--fake-initial`
 
 Cuando actualizamos usando el script de instalacion estamos realizando varios cambios en la base de datos. Si algo falla necesitamos restaurar el estado anterior y empezar de nuevo.
 
+### Bare-metal
+
 Necesitamos copiar la carpeta completa `/opt/iskylims` de vuelta a `/opt/iskylims` (o tu ruta de instalacion), y restaurar la base de datos con algo como:
 
 ```bash
@@ -303,6 +317,39 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es
 # create database iskylims;
 mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
 ```
+
+### Docker
+
+1. Para el contenedor:
+
+    ```bash
+    docker compose -f docker-compose.prod.yml down
+    ```
+
+2. Restaura la base de datos desde tu backup.
+
+3. Si sospechas que la imagen o la cache de build esta corrupta, elimina la imagen de la app y reconstruye:
+
+    ```bash
+    docker image ls | grep iskylims
+    docker rmi <iskylims_image_id>
+    ```
+
+4. Si los volumenes estan comprometidos, restauralos desde los tar:
+
+    ```bash
+    docker run --rm -v iskylims_logs:/to -v "$PWD":/from alpine \
+      tar -xzf /from/iskylims_logs.tgz -C /to
+
+    docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
+      tar -xzf /from/iskylims_documents.tgz -C /to
+    ```
+
+5. Arranca el contenedor de nuevo:
+
+    ```bash
+    bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+    ```
 
 ## Pasos finales de configuracion
 
@@ -324,6 +371,48 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 ### Configurar el servidor Apache
 
 Copia el archivo de configuracion de Apache segun tu distribucion dentro del directorio de configuracion de Apache y renombralo a iskylims.conf
+
+Ubicaciones tipicas:
+
+- Ubuntu/Debian: `/etc/apache2/sites-available/iskylims.conf` (habilitar con `a2ensite`)
+- CentOS/RHEL: `/etc/httpd/conf.d/iskylims.conf`
+
+Pasos sugeridos (Apache en el host como proxy inverso):
+
+1. Copia el ejemplo de configuracion:
+
+    ```bash
+    sudo cp conf/iskylims_apache_reverse_proxy.conf /etc/apache2/sites-available/iskylims.conf
+    # CentOS/RHEL:
+    # sudo cp conf/iskylims_apache_reverse_proxy.conf /etc/httpd/conf.d/iskylims.conf
+    ```
+
+2. Edita la configuracion:
+
+    - Ajusta `ServerName`
+    - Comprueba que `ProxyPass` apunte a `http://localhost:8001/`
+    - Comprueba `Alias /static/ /var/www/iskylims/static/`
+
+3. Crea la carpeta de estaticos en el host:
+
+    ```bash
+    sudo mkdir -p /var/www/iskylims/static
+    ```
+
+4. Habilita modulos necesarios (Ubuntu/Debian):
+
+    ```bash
+    sudo a2enmod proxy proxy_http headers
+    sudo a2ensite iskylims.conf
+    ```
+
+5. Recarga Apache:
+
+    ```bash
+    sudo systemctl reload apache2
+    # CentOS/RHEL:
+    # sudo systemctl reload httpd
+    ```
 
 ### Verificacion de la instalacion
 
