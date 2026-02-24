@@ -99,7 +99,7 @@ def file_read_to_dictionary(
         if not line or re.match("^,+$", line):
             # Empty/Filler/Artifact lines with no info
             continue
-        if section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
+        if section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.values():
             # Data is tabular; append as list of lists until next header
             if not isinstance(samplesheet[section], list):
                 samplesheet[section] = []
