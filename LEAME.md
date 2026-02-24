@@ -121,6 +121,23 @@ La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentr
 
 ### Actualizacion del despliegue Docker v3.0.0 a 3.1.0
 
+#### Haz copia de seguridad
+
+- Copia completa de la base de datos `iskylims`.
+- Copia completa de las carpetas de logs y documents.
+
+```bash
+docker run --rm \
+  -v iskylims_logs:/from \
+  -v "$PWD":/to \
+  alpine tar -czf /to/iskylims_logs.tgz -C /from .
+
+docker run --rm \
+  -v iskylims_documents:/from \
+  -v "$PWD":/to \
+  alpine tar -czf /to/iskylims_documents.tgz -C /from .
+```
+
 Antes de actualizar, asegurate de tener una copia completa de la base de datos y de los datos en volumenes que uses. Confirma que `conf/my_prod_settings.txt` tenga el host/usuario/password de la base de datos de produccion, la URL/IP del servidor, correo y ajustes de logging usados por el contenedor.
 
 Para 3.0.0 -> 3.1.0, exporta primero el mapeo de LibraryPool y luego ejecuta la actualizacion con scripts pre/post:

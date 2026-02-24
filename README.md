@@ -18,6 +18,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
   - [Docker deployment](#docker-deployment)
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
+      - [Persist logs/documents with named volumes](#persist-logsdocuments-with-named-volumes)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
     - [Upgrade docker deployment v3.0.0 to 3.1.0](#upgrade-docker-deployment-v300-to-310)
       - [Back up first](#back-up-first)
@@ -114,6 +115,15 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
+#### Persist logs/documents with named volumes
+
+The production compose file mounts two named volumes so upgrades/rebuilds keep data:
+
+- `iskylims_logs` → `/opt/iskylims/logs`
+- `iskylims_documents` → `/opt/iskylims/documents`
+
+If you override the compose file, ensure these two mounts exist to keep logs and documents persistent.
+
 ### Upgrade docker deployment
 
 Re-deploy the application container against an existing production database without touching data:
@@ -130,6 +140,18 @@ The upgrade path rebuilds/restarts the container and runs `install.sh` inside th
 
 - Full backup of the `iskylims` database.
 - Full backup of the logs folder and the documents folder.
+
+```bash
+docker run --rm \
+  -v iskylims_logs:/from \
+  -v "$PWD":/to \
+  alpine tar -czf /to/iskylims_logs.tgz -C /from .
+
+docker run --rm \
+  -v iskylims_documents:/from \
+  -v "$PWD":/to \
+  alpine tar -czf /to/iskylims_documents.tgz -C /from .
+```
 
 For 3.0.0 -> 3.1.0, export the LibraryPool mapping first, then run the upgrade with pre/post scripts:
 
