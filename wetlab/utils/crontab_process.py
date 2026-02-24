@@ -47,7 +47,7 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
     full_path_run = os.path.join(application_folder, run_folder)
 
     try:
-        get_full_list = conn.listPath(shared_folder, run_folder)
+        get_full_list = conn.listPath(shared_folder, full_path_run)
     except Exception:
         string_message = experiment_name + " : Unable to get the folder " + run_folder
         wetlab.utils.common.logging_errors(string_message, True, False)
@@ -70,7 +70,7 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
                 "%s : Starting getting disk space utilization for Data Folder",
                 experiment_name,
             )
-            dir_data = os.path.join(run_folder, "Data")
+            dir_data = os.path.join(full_path_run, "Data")
             data_dir_size = get_size_dir(dir_data, conn, shared_folder)
 
         elif item_list.filename == "Images":
