@@ -19,6 +19,9 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
+    - [Upgrade docker deployment v3.0.0 to 3.1.0](#upgrade-docker-deployment-v300-to-310)
+      - [Back up first](#back-up-first)
+      - [Refresh code and settings](#refresh-code-and-settings)
   - [Bare-metal deployment (Ubuntu/CentOS)](#bare-metal-deployment-ubuntucentos)
     - [Install](#install)
       - [Prerequisites](#prerequisites)
@@ -26,12 +29,11 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Prepare the database](#prepare-the-database)
       - [Configure install\_settings.txt](#configure-install_settingstxt)
       - [Run install.sh](#run-installsh)
-    - [Upgrade (3.0.x to 3.1.x)](#upgrade-30x-to-31x)
-      - [Back up first](#back-up-first)
-      - [Refresh code and settings](#refresh-code-and-settings)
+    - [Upgrade (3.0.0 to 3.1.0)](#upgrade-300-to-310)
+      - [Back up first](#back-up-first-1)
+      - [Refresh code and settings](#refresh-code-and-settings-1)
       - [Run upgrade steps requiring root](#run-upgrade-steps-requiring-root)
       - [Run upgrade steps without root](#run-upgrade-steps-without-root)
-      - [3.0.0 -\> 3.1.0 data scripts](#300---310-data-scripts)
   - [What to do if something fails](#what-to-do-if-something-fails)
   - [Final configuration steps](#final-configuration-steps)
     - [SAMBA configurarion](#samba-configurarion)
@@ -122,14 +124,34 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 
 The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
 
+### Upgrade docker deployment v3.0.0 to 3.1.0
+
+#### Back up first
+
+- Full backup of the `iskylims` database.
+- Full backup of the logs folder and the documents folder.
+
 For 3.0.0 -> 3.1.0, export the LibraryPool mapping first, then run the upgrade with pre/post scripts:
 
 ```bash
 mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
   -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
   > /tmp/library_pool_run_process.tsv
+```
 
-bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
+#### Refresh code and settings
+
+```bash
+cd <your working directory>/iskylims
+git pull
+cp conf/docker_production_settings.txt myprod_settings.txt
+sudo nano myprod_settings.txt
+```
+
+Ensure the file uses Linux-friendly encoding (UTF-8/ASCII) if you edit it on Windows.
+
+```bash
+bash docker_install.sh --install_conf my_prod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
 ```
@@ -202,7 +224,7 @@ sudo bash install.sh --install full --git_revision main --tables
 
 - If Apache is managed elsewhere, skip the automatic restart with `--skip_apache_restart`.
 
-### Upgrade (3.0.x to 3.1.x)
+### Upgrade (3.0.0 to 3.1.0)
 
 Follow these steps to move from version 3.0.0 to the 3.1.x series.
 
@@ -213,8 +235,9 @@ Follow these steps to move from version 3.0.0 to the 3.1.x series.
 - If you use library pools, export them before upgrading:
 
   ```bash
-  mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
-    -e "SELECT * FROM wetlab_library_pool" > <backup_folder>/backup_lib_pool.sql
+mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
+  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+  > /tmp/library_pool_run_process.tsv
   ```
 
 #### Refresh code and settings
@@ -244,47 +267,12 @@ Upgrade the application code and database:
 
 ```bash
 # with library pool restore
-bash install.sh --upgrade app --script <backup_folder>/backup_lib_pool.sql --git_revision main --tables
-
-# without library pool restore
-bash install.sh --upgrade app --git_revision main --tables
-
-# example running a migration script during upgrade
-bash install.sh --upgrade app --script migrate_optional_values --git_revision main --tables
-
-# 3.0.0 -> 3.1.0 (pre/post data scripts)
 bash install.sh --upgrade app --git_revision main \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
-```
-
-Or run everything in one go:
-
-```bash
-sudo bash install.sh --upgrade full --git_revision main --tables
 ```
 
 Upgrades regenerate migrations and apply them with `--fake-initial` so existing tables remain intact, matching the Docker workflow.
-
-#### 3.0.0 -> 3.1.0 data scripts
-
-Some data migrations must run before/after schema migrations:
-
-1. Export LibraryPool mapping (before migrations):
-
-```bash
-mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
-  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
-  > /tmp/library_pool_run_process.tsv
-```
-
-2. Run upgrade with pre/post scripts:
-
-```bash
-bash install.sh --upgrade app --git_revision main \
-  --script_before convert_rawtop_counter_to_int \
-  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
-```
 
 ## What to do if something fails
 
