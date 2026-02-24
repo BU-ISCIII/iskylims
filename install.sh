@@ -63,13 +63,23 @@ log() {
 # db_check: verifies connectivity to the configured MySQL instance using mysqladmin/mysqlshow.
 db_check(){
     log "INFO" "Checking database connectivity against $DB_SERVER_IP:$DB_PORT"
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null
+    local mysqladmin_bin
+    local mysqlshow_bin
+    mysqladmin_bin="$(command -v mysqladmin || command -v mariadb-admin || true)"
+    mysqlshow_bin="$(command -v mysqlshow || command -v mariadb-show || true)"
+
+    if [ -z "$mysqladmin_bin" ] || [ -z "$mysqlshow_bin" ]; then
+        log "ERROR" "mysql client tools not found (mysqladmin/mysqlshow or mariadb-admin/mariadb-show)."
+        exit 1
+    fi
+
+    "$mysqladmin_bin" -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null
 
     if ! [ $? -eq 0 ]; then
         log "ERROR" "Unable to connect to database. Check if your database is running and accessible"
         exit 1
     fi
-    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
+    RESULT=`"$mysqlshow_bin" --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
 
     if  ! [ "$RESULT" == "$DB_NAME" ] ; then
         log "ERROR" "iskylims database is not defined yet"
@@ -418,6 +428,11 @@ rename_apps_if_needed() {
 
 # install_system_packages: install InterOp and distro-specific OS packages required by iSkyLIMS.
 install_system_packages() {
+    if [ "${SKIP_SYSTEM_PACKAGES:-}" = "1" ]; then
+        echo "Skipping system package installation (SKIP_SYSTEM_PACKAGES=1)"
+        return
+    fi
+
     echo "Installing Interop"
     if [ -d /opt/interop ]; then
         echo "There is already an interop installation"

@@ -37,6 +37,8 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Run upgrade steps requiring root](#run-upgrade-steps-requiring-root)
       - [Run upgrade steps without root](#run-upgrade-steps-without-root)
   - [What to do if something fails](#what-to-do-if-something-fails)
+    - [Bare-metal](#bare-metal)
+    - [Docker](#docker)
   - [Final configuration steps](#final-configuration-steps)
     - [SAMBA configurarion](#samba-configurarion)
     - [Email verification](#email-verification)
@@ -201,7 +203,7 @@ bash docker_install.sh --install_conf my_prod_settings.txt --action upgrade \
 - MySQL > 8.0 or MariaDB > 10.4
 - Apache 2.4
 - git > 2.34
-- Python > 3.8
+- Python > 3.11
 - Local email sender configured
 - Access to the Samba share where run folders live
 - `lsb_release` package (`yum install redhat-lsb-core` on RedHat/CentOS, `apt install lsb-core lsb-release` on Ubuntu)

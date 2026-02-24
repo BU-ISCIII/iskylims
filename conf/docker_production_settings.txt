@@ -9,7 +9,7 @@ MIGRATION_MODULES='core drylab wetlab django_utils'
 FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 
 ### (optional) Python installation path where pip and python executables are located
-PYTHON_BIN_PATH='python3'
+PYTHON_BIN_PATH='python3.11'
 
 ### Settings required to access database (external MySQL server)
 DB_USER='django'

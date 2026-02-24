@@ -17,8 +17,10 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
   - [Despliegue con Docker](#despliegue-con-docker)
     - [Contenedor local de pruebas](#contenedor-local-de-pruebas)
     - [Contenedor de produccion](#contenedor-de-produccion)
+      - [Proxy inverso con Apache (host) + Gunicorn](#proxy-inverso-con-apache-host--gunicorn)
     - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
     - [Actualizacion del despliegue Docker v3.0.0 a 3.1.0](#actualizacion-del-despliegue-docker-v300-a-310)
+      - [Haz copia de seguridad](#haz-copia-de-seguridad)
   - [Despliegue bare-metal (Ubuntu/CentOS)](#despliegue-bare-metal-ubuntucentos)
     - [Instalacion](#instalacion)
       - [Requisitos previos](#requisitos-previos)
@@ -27,11 +29,13 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
       - [Configurar install\_settings.txt](#configurar-install_settingstxt)
       - [Ejecutar install.sh](#ejecutar-installsh)
     - [Actualizacion (3.0.x a 3.1.x)](#actualizacion-30x-a-31x)
-      - [Haz copia de seguridad](#haz-copia-de-seguridad)
+      - [Haz copia de seguridad](#haz-copia-de-seguridad-1)
       - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes)
       - [Ejecutar pasos de actualizacion con root](#ejecutar-pasos-de-actualizacion-con-root)
       - [Ejecutar pasos de actualizacion sin root](#ejecutar-pasos-de-actualizacion-sin-root)
   - [Que hacer si algo falla](#que-hacer-si-algo-falla)
+    - [Bare-metal](#bare-metal)
+    - [Docker](#docker)
   - [Pasos finales de configuracion](#pasos-finales-de-configuracion)
     - [Configuracion de SAMBA](#configuracion-de-samba)
     - [Verificacion de correo electronico](#verificacion-de-correo-electronico)
@@ -174,7 +178,7 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 - MySQL > 8.0 o MariaDB > 10.4
 - Apache 2.4
 - git > 2.34
-- Python > 3.8
+- Python > 3.11
 - Servidor local configurado para enviar correos
 - Acceso a la carpeta Samba donde estan los run folders
 - Paquete `lsb_release` (`yum install redhat-lsb-core` en RedHat/CentOS, `apt install lsb-core lsb-release` en Ubuntu)
