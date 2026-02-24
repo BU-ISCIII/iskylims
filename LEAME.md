@@ -115,7 +115,7 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 
 UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
 
-- Exporta `APP_UID` y `APP_GID` antes de ejecutar `docker_install.sh` si necesitas un UID/GID distinto (por ejemplo, para escribir en `/var/www/iskylims/static`).
+- Exporta `APP_UID` y `APP_GID` antes de ejecutar `docker_install.sh` si necesitas un UID/GID distinto (por ejemplo, para escribir en `/opt/iskylims/static-host`).
 
 ```bash
 export APP_UID=1212
@@ -125,7 +125,7 @@ export APP_GID=1212
 Asegura que la carpeta de estaticos en el host sea escribible por ese UID/GID:
 
 ```bash
-sudo chown -R 1212:1212 /var/www/iskylims/static
+sudo chown -R 1212:1212 /opt/iskylims/static-host
 ```
 
 #### Proxy inverso con Apache (host) + Gunicorn
@@ -135,8 +135,8 @@ En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa 
 Archivos estaticos:
 
 - El contenedor genera los estaticos en `/opt/iskylims/static`.
-- `docker-compose.prod.yml` monta ese directorio en `/var/www/iskylims/static` del host.
-- Configura Apache con `Alias /static/ /var/www/iskylims/static/`.
+- `docker-compose.prod.yml` monta ese directorio en `/opt/iskylims/static-host` del host.
+- Configura Apache con `Alias /static/ /opt/iskylims/static-host/`.
 
 Ejemplo de configuracion en `conf/iskylims_apache_reverse_proxy.conf`.
 
@@ -417,12 +417,12 @@ Pasos sugeridos (Apache en el host como proxy inverso):
 
     - Ajusta `ServerName`
     - Comprueba que `ProxyPass` apunte a `http://localhost:8001/`
-    - Comprueba `Alias /static/ /var/www/iskylims/static/`
+    - Comprueba `Alias /static/ /opt/iskylims/static-host/`
 
 3. Crea la carpeta de estaticos en el host:
 
     ```bash
-    sudo mkdir -p /var/www/iskylims/static
+    sudo mkdir -p /opt/iskylims/static-host
     ```
 
 4. Habilita modulos necesarios (Ubuntu/Debian):

@@ -120,7 +120,7 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 UID/GID for the container runtime user (default `1212:1212`):
 
-- Export `APP_UID` and `APP_GID` before running `docker_install.sh` if you need a different host UID/GID (for example, to write to `/var/www/iskylims/static`).
+- Export `APP_UID` and `APP_GID` before running `docker_install.sh` if you need a different host UID/GID (for example, to write to `/opt/iskylims/static-host`).
 
 ```bash
 export APP_UID=1212
@@ -130,7 +130,7 @@ export APP_GID=1212
 Ensure the static directory on the host is writable by that UID/GID:
 
 ```bash
-sudo chown -R 1212:1212 /var/www/iskylims/static
+sudo chown -R 1212:1212 /opt/iskylims/static-host
 ```
 
 #### Persist logs/documents with named volumes
@@ -149,8 +149,8 @@ For production, the container runs `gunicorn` (not `manage.py runserver`). Use A
 Static files:
 
 - The container writes collected static files to `/opt/iskylims/static`.
-- `docker-compose.prod.yml` bind-mounts that path to `/var/www/iskylims/static` on the host.
-- Configure Apache with `Alias /static/ /var/www/iskylims/static/`.
+- `docker-compose.prod.yml` bind-mounts that path to `/opt/iskylims/static-host` on the host.
+- Configure Apache with `Alias /static/ /opt/iskylims/static-host/`.
 
 See the example config in `conf/iskylims_apache_reverse_proxy.conf` and the [Configure Apache server](#configure-apache-server) section below.
 
@@ -437,12 +437,12 @@ Suggested steps (host Apache as reverse proxy):
 
     - Set `ServerName`
     - Ensure `ProxyPass` points to `http://localhost:8001/`
-    - Ensure `Alias /static/ /var/www/iskylims/static/`
+    - Ensure `Alias /static/ /opt/iskylims/static-host/`
 
 3. Create the static folder on the host:
 
     ```bash
-    sudo mkdir -p /var/www/iskylims/static
+    sudo mkdir -p /opt/iskylims/static-host
     ```
 
 4. Enable required modules (Ubuntu/Debian):
