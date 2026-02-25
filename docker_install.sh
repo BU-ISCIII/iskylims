@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-ISKYLIMS_VERSION="3.0.0"
+ISKYLIMS_VERSION="3.1.0"
 
 usage() {
 cat << EOF
@@ -324,4 +324,22 @@ fi
 
 echo "Skipping crontab add/start (cron is managed by the container entrypoint)"
 
-echo "You can now access iSkyLIMS via: http://localhost:8001"
+dns_url=""
+local_ip=""
+if [ -f "$host_install_conf_path" ]; then
+    dns_url=$(grep -E "^DNS_URL=" "$host_install_conf_path" | tail -n 1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+    local_ip=$(grep -E "^LOCAL_SERVER_IP=" "$host_install_conf_path" | tail -n 1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+fi
+
+access_urls=()
+if [ -n "$dns_url" ] && [ "$dns_url" != "*" ]; then
+    access_urls+=("http://${dns_url}:8001")
+fi
+if [ -n "$local_ip" ] && [ "$local_ip" != "*" ]; then
+    access_urls+=("http://${local_ip}:8001")
+fi
+if [ ${#access_urls[@]} -eq 0 ]; then
+    access_urls+=("http://localhost:8001")
+fi
+
+echo "You can now access iSkyLIMS via: ${access_urls[*]}"

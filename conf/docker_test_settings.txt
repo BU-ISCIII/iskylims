@@ -24,8 +24,10 @@ EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
 
 ### Settings required for accessing iSkyLIMS
-LOCAL_SERVER_IP='*' # example: 172.0.0.1
-DNS_URL='*' # example: iskylims.isciii.es
+# example: 172.0.0.1
+LOCAL_SERVER_IP='*'
+# example: iskylims.isciii.es
+DNS_URL='*' 
 
 ### Logs settings
 LOG_TYPE="regular_folder" # can be symbolic link, or regular_folder

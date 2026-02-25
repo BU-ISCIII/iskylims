@@ -24,8 +24,10 @@ EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
 
 ### Settings required for accessing iSkyLIMS
-LOCAL_SERVER_IP='<Relecov_IP>' # example: 172.0.0.1
-DNS_URL='<Relecov_url_address>' # example: iskylims.isciii.es
+# example: 172.0.0.1
+LOCAL_SERVER_IP='<Relecov_IP>' 
+# example: iskylims.isciii.es
+DNS_URL='<Relecov_url_address>' 
 
 ### Logs settings
 LOG_TYPE="symbolic_link" # can be symbolic link, or regular_folder
