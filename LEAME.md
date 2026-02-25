@@ -110,6 +110,11 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
     ```
 
    Usa `--compose_file` para cambiar el compose o `--install_type`/`--git_revision` para variar el build.
+   Tip: captura logs para depuracion:
+
+    ```bash
+    bash docker_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+    ```
 
 3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
 
@@ -259,7 +264,7 @@ sudo bash install.sh --install full --git_revision main --tables
 - Captura logs para depuracion con `tee`:
 
   ```bash
-  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee install_full.log
+  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee ./iskylims_install_$(date +%Y%m%d_%H%M%S).log
   ```
 
 - Si Apache se gestiona desde otro sitio, omite el reinicio automatico con `--skip_apache_restart`.

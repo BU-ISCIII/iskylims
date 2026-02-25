@@ -115,6 +115,11 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
     ```
 
    Use `--compose_file` to override the compose file or `--install_type`/`--git_revision` to change the build.
+   Tip: capture logs for troubleshooting:
+
+    ```bash
+    bash docker_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+    ```
 
 3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
@@ -284,7 +289,7 @@ sudo bash install.sh --install full --git_revision main --tables
 - Capture logs for troubleshooting with `tee`:
 
   ```bash
-  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee install_full.log
+  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee ./iskylims_install_$(date +%Y%m%d_%H%M%S).log
   ```
 
 - If Apache is managed elsewhere, skip the automatic restart with `--skip_apache_restart`.
