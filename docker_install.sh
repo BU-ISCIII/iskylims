@@ -254,6 +254,11 @@ echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
 ensure_app_running
 
+app_uid="${APP_UID:-1212}"
+app_gid="${APP_GID:-1212}"
+echo "Ensuring runtime directories are writable by ${app_uid}:${app_gid}"
+docker exec -u 0 -it iskylims_app sh -lc "mkdir -p /opt/iskylims/documents /opt/iskylims/logs /opt/iskylims/static /opt/iskylims/cron /opt/iskylims/tmp && chown -R ${app_uid}:${app_gid} /opt/iskylims/documents /opt/iskylims/logs /opt/iskylims/static /opt/iskylims/cron /opt/iskylims/tmp"
+
 host_install_conf_path="$install_conf"
 if [[ "$host_install_conf_path" != /* ]]; then
     host_install_conf_path="$repo_root/$host_install_conf_path"
