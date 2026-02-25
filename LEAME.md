@@ -132,6 +132,12 @@ sudo chown -R 1212:1212 /opt/iskylims/static-host
 
 En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa Apache en el host como proxy inverso hacia `localhost:8001`.
 
+#### Tareas cron dentro del contenedor
+
+Cron se ejecuta mediante un `crond` ligero lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `/opt/iskylims/cron/iskylims` y arranca `crond` con un PID en una ruta escribible por el usuario.
+
+Si modificas `CRONJOBS`, reconstruye o reinicia el contenedor para regenerar el archivo de cron.
+
 Archivos estaticos:
 
 - El contenedor genera los estaticos en `/opt/iskylims/static`.

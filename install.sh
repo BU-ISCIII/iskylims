@@ -705,7 +705,13 @@ upgrade_application_files() {
 
     run_django_deploy "upgrade"
     echo "Deleting static files..."
-    rm -rf $INSTALL_PATH/static
+    if [ -d "$INSTALL_PATH/static" ]; then
+        if command -v mountpoint >/dev/null 2>&1 && mountpoint -q "$INSTALL_PATH/static"; then
+            echo "Static directory is a mount point. Skipping delete."
+        else
+            rm -rf "$INSTALL_PATH/static" || echo "Skipping static removal (busy)."
+        fi
+    fi
     echo "Running collect statics..."
     python manage.py collectstatic
     echo "Done collect statics"

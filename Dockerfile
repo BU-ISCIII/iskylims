@@ -37,6 +37,7 @@ WORKDIR /srv/iskylims
 COPY . /srv/iskylims
 
 ENV PATH="/usr/sbin/cron:$PATH"
+RUN chmod +x /srv/iskylims/scripts/container_start.sh
 
 # Set default install type
 ARG INSTALL_TYPE=dep
@@ -54,11 +55,12 @@ WORKDIR /opt/iskylims
 # Create non-root user and set ownership
 RUN groupadd -g ${APP_GID} iskylims && \
     useradd -m -u ${APP_UID} -g ${APP_GID} -s /sbin/nologin iskylims && \
-    chown -R ${APP_UID}:${APP_GID} /opt/iskylims
+    chown -R ${APP_UID}:${APP_GID} /opt/iskylims /srv/iskylims && \
+    git config --system --add safe.directory /srv/iskylims
 
 # Expose
 EXPOSE 8001
 
 # Start the application once install.sh has populated /opt/iskylims.
 USER iskylims
-CMD ["bash", "-c", "while [ ! -f /opt/iskylims/manage.py ]; do sleep 2; done; gunicorn iskylims.wsgi:application --bind 0.0.0.0:8001 --workers 3 --threads 2 --timeout 120"]
+CMD ["/srv/iskylims/scripts/container_start.sh"]

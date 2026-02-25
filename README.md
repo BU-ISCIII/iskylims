@@ -146,6 +146,12 @@ If you override the compose file, ensure these two mounts exist to keep logs and
 
 For production, the container runs `gunicorn` (not `manage.py runserver`). Use Apache on the host as a reverse proxy to `localhost:8001`.
 
+#### Cron jobs inside the container
+
+Cron runs via a lightweight `crond` started by the container entrypoint script. The script writes the django-crontab entries to `/opt/iskylims/cron/iskylims` and starts `crond` with a user-writable PID file.
+
+If you change `CRONJOBS`, rebuild or restart the container to regenerate the cron file.
+
 Static files:
 
 - The container writes collected static files to `/opt/iskylims/static`.

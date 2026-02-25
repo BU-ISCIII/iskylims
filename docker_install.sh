@@ -322,8 +322,6 @@ else
     echo "Skipping Samba demo data load (flag enabled or service not present)"
 fi
 
-echo "Running crontab"
-docker exec -it iskylims_app python3 manage.py crontab add
-docker exec -it iskylims_app service cron start
+echo "Skipping crontab add/start (cron is managed by the container entrypoint)"
 
 echo "You can now access iSkyLIMS via: http://localhost:8001"
