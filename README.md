@@ -20,6 +20,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Production container](#production-container)
       - [Persist logs/documents with named volumes](#persist-logsdocuments-with-named-volumes)
       - [Apache reverse proxy (host) + Gunicorn](#apache-reverse-proxy-host--gunicorn)
+      - [Cron jobs inside the container](#cron-jobs-inside-the-container)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
     - [Upgrade docker deployment v3.0.0 to 3.1.0](#upgrade-docker-deployment-v300-to-310)
       - [Back up first](#back-up-first)
@@ -151,12 +152,6 @@ If you override the compose file, ensure these two mounts exist to keep logs and
 
 For production, the container runs `gunicorn` (not `manage.py runserver`). Use Apache on the host as a reverse proxy to `localhost:8001`.
 
-#### Cron jobs inside the container
-
-Cron runs via a lightweight `crond` started by the container entrypoint script. The script writes the django-crontab entries to `/opt/iskylims/cron/iskylims` and starts `crond` with a user-writable PID file.
-
-If you change `CRONJOBS`, rebuild or restart the container to regenerate the cron file.
-
 Static files:
 
 - The container writes collected static files to `/opt/iskylims/static`.
@@ -165,7 +160,20 @@ Static files:
 
 See the example config in `conf/iskylims_apache_reverse_proxy.conf` and the [Configure Apache server](#configure-apache-server) section below.
 
+#### Cron jobs inside the container
+
+Cron runs via a lightweight `crond` started by the container entrypoint script. The script writes the django-crontab entries to `/opt/iskylims/cron/iskylims` and starts `crond` with a user-writable PID file.
+
+If you change `CRONJOBS`, rebuild or restart the container to regenerate the cron file.
+
 ### Upgrade docker deployment
+
+If you set `APP_UID`/`APP_GID`, export them again before upgrade so the container runs with the same UID/GID:
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
 
 Re-deploy the application container against an existing production database without touching data:
 
@@ -174,13 +182,6 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
-
-If you set `APP_UID`/`APP_GID`, export them again before upgrade so the container runs with the same UID/GID:
-
-```bash
-export APP_UID=1212
-export APP_GID=1212
-```
 
 ### Upgrade docker deployment v3.0.0 to 3.1.0
 
@@ -219,6 +220,15 @@ sudo nano myprod_settings.txt
 ```
 
 Ensure the file uses Linux-friendly encoding (UTF-8/ASCII) if you edit it on Windows.
+
+If you set `APP_UID`/`APP_GID`, export them again before upgrade so the container runs with the same UID/GID:
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
+
+Run upgrade command:
 
 ```bash
 bash docker_install.sh --install_conf my_prod_settings.txt --action upgrade \

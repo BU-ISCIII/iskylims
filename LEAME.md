@@ -18,6 +18,7 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
     - [Contenedor local de pruebas](#contenedor-local-de-pruebas)
     - [Contenedor de produccion](#contenedor-de-produccion)
       - [Proxy inverso con Apache (host) + Gunicorn](#proxy-inverso-con-apache-host--gunicorn)
+      - [Tareas cron dentro del contenedor](#tareas-cron-dentro-del-contenedor)
     - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
     - [Actualizacion del despliegue Docker v3.0.0 a 3.1.0](#actualizacion-del-despliegue-docker-v300-a-310)
       - [Haz copia de seguridad](#haz-copia-de-seguridad)
@@ -137,21 +138,28 @@ sudo chown -R 1212:1212 /opt/iskylims/static-host
 
 En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa Apache en el host como proxy inverso hacia `localhost:8001`.
 
-#### Tareas cron dentro del contenedor
-
-Cron se ejecuta mediante un `crond` ligero lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `/opt/iskylims/cron/iskylims` y arranca `crond` con un PID en una ruta escribible por el usuario.
-
-Si modificas `CRONJOBS`, reconstruye o reinicia el contenedor para regenerar el archivo de cron.
-
 Archivos estaticos:
 
 - El contenedor genera los estaticos en `/opt/iskylims/static`.
 - `docker-compose.prod.yml` monta ese directorio en `/opt/iskylims/static-host` del host.
 - Configura Apache con `Alias /static/ /opt/iskylims/static-host/`.
 
-Ejemplo de configuracion en `conf/iskylims_apache_reverse_proxy.conf`.
+Ejemplo de configuracion en `conf/iskylims_apache_reverse_proxy.conf` y la sección [Configurar el servidor Apache](#configurar-el-servidor Apache).
+
+#### Tareas cron dentro del contenedor
+
+Cron se ejecuta mediante un `crond` ligero lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `/opt/iskylims/cron/iskylims` y arranca `crond` con un PID en una ruta escribible por el usuario.
+
+Si modificas `CRONJOBS`, reconstruye o reinicia el contenedor para regenerar el archivo de cron.
 
 ### Actualizacion del despliegue Docker
+
+Si usas `APP_UID`/`APP_GID`, exportalos de nuevo antes de la actualizacion para mantener el mismo UID/GID:
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
 
 Re-despliega el contenedor de aplicacion contra una base de datos existente sin tocar los datos:
 
@@ -160,13 +168,6 @@ bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentro del contenedor, que regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
-
-Si usas `APP_UID`/`APP_GID`, exportalos de nuevo antes de la actualizacion para mantener el mismo UID/GID:
-
-```bash
-export APP_UID=1212
-export APP_GID=1212
-```
 
 ### Actualizacion del despliegue Docker v3.0.0 a 3.1.0
 
