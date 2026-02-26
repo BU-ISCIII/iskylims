@@ -16,6 +16,7 @@ services:
       - "8001:8001"
     environment:
       DJANGO_SETTINGS_MODULE: iskylims.settings
+      APP_MODE: prod
     user: "${APP_UID:-1212}:${APP_GID:-1212}"
     volumes:
       - /etc/localtime:/etc/localtime:ro

@@ -5,6 +5,7 @@ APP_DIR="/opt/iskylims"
 CRON_DIR="${APP_DIR}/cron"
 TMP_DIR="${APP_DIR}/tmp"
 CRON_FILE="${CRON_DIR}/iskylims"
+APP_MODE="${APP_MODE:-prod}"
 
 while [ ! -f "${APP_DIR}/manage.py" ]; do
     sleep 2
@@ -14,6 +15,10 @@ source "${APP_DIR}/virtualenv/bin/activate"
 
 mkdir -p "${CRON_DIR}" "${TMP_DIR}"
 chmod 700 "${CRON_DIR}" "${TMP_DIR}"
+
+if [ "$APP_MODE" = "dev" ]; then
+    exec python "${APP_DIR}/manage.py" runserver 0.0.0.0:8001
+fi
 
 if command -v crond >/dev/null 2>&1; then
     python "${APP_DIR}/manage.py" crontab show > "${CRON_FILE}" || true
