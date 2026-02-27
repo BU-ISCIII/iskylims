@@ -21,7 +21,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - iskylims_logs:/opt/iskylims/logs
+      - /var/log/apps/iskylims:/opt/iskylims/logs
       - iskylims_documents:/opt/iskylims/documents
       - /opt/iskylims/static-host:/opt/iskylims/static
     extra_hosts:

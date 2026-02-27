@@ -134,6 +134,22 @@ Asegura que la carpeta de estaticos en el host sea escribible por ese UID/GID:
 sudo chown -R 1212:1212 /opt/iskylims/static-host
 ```
 
+#### Persistir logs/documentos en el host
+
+El compose de produccion monta los logs en el host para facilitar la recoleccion (por ejemplo, con Elastic):
+
+- `/var/log/apps/iskylims` -> `/opt/iskylims/logs`
+- `iskylims_documents` -> `/opt/iskylims/documents`
+
+Si usas un compose personalizado, asegurate de mantener estos montajes para conservar logs y documentos.
+
+Crea el directorio de logs en el host y ajusta permisos segun el UID/GID del contenedor:
+
+```bash
+sudo mkdir -p /var/log/apps/iskylims
+sudo chown -R 1212:1212 /var/log/apps/iskylims
+```
+
 #### Proxy inverso con Apache (host) + Gunicorn
 
 En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa Apache en el host como proxy inverso hacia `localhost:8001`.
@@ -177,10 +193,7 @@ La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentr
 - Copia completa de las carpetas de logs y documents.
 
 ```bash
-docker run --rm \
-  -v iskylims_logs:/from \
-  -v "$PWD":/to \
-  alpine tar -czf /to/iskylims_logs.tgz -C /from .
+tar -czf iskylims_logs.tgz -C /var/log/apps/iskylims .
 
 docker run --rm \
   -v iskylims_documents:/from \
@@ -375,13 +388,13 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 
 4. Si los volumenes estan comprometidos, restauralos desde los tar:
 
-    ```bash
-    docker run --rm -v iskylims_logs:/to -v "$PWD":/from alpine \
-      tar -xzf /from/iskylims_logs.tgz -C /to
+```bash
+mkdir -p /var/log/apps/iskylims
+tar -xzf iskylims_logs.tgz -C /var/log/apps/iskylims
 
-    docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
-      tar -xzf /from/iskylims_documents.tgz -C /to
-    ```
+docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
+  tar -xzf /from/iskylims_documents.tgz -C /to
+```
 
 5. Arranca el contenedor de nuevo:
 

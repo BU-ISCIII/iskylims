@@ -18,7 +18,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
   - [Docker deployment](#docker-deployment)
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
-      - [Persist logs/documents with named volumes](#persist-logsdocuments-with-named-volumes)
+- [Persist logs/documents on the host](#persist-logsdocuments-on-the-host)
       - [Apache reverse proxy (host) + Gunicorn](#apache-reverse-proxy-host--gunicorn)
       - [Cron jobs inside the container](#cron-jobs-inside-the-container)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
@@ -139,14 +139,21 @@ Ensure the static directory on the host is writable by that UID/GID:
 sudo chown -R 1212:1212 /opt/iskylims/static-host
 ```
 
-#### Persist logs/documents with named volumes
+#### Persist logs/documents on the host
 
-The production compose file mounts two named volumes so upgrades/rebuilds keep data:
+The production compose file mounts logs on the host and keeps documents in a named volume:
 
-- `iskylims_logs` → `/opt/iskylims/logs`
+- `/var/log/apps/iskylims` → `/opt/iskylims/logs`
 - `iskylims_documents` → `/opt/iskylims/documents`
 
-If you override the compose file, ensure these two mounts exist to keep logs and documents persistent.
+If you override the compose file, ensure these mounts exist to keep logs and documents persistent.
+
+Create the host log directory and set ownership to match the container UID/GID:
+
+```bash
+sudo mkdir -p /var/log/apps/iskylims
+sudo chown -R 1212:1212 /var/log/apps/iskylims
+```
 
 #### Apache reverse proxy (host) + Gunicorn
 
@@ -191,10 +198,7 @@ The upgrade path rebuilds/restarts the container and runs `install.sh` inside th
 - Full backup of the logs folder and the documents folder.
 
 ```bash
-docker run --rm \
-  -v iskylims_logs:/from \
-  -v "$PWD":/to \
-  alpine tar -czf /to/iskylims_logs.tgz -C /from .
+tar -czf iskylims_logs.tgz -C /var/log/apps/iskylims .
 
 docker run --rm \
   -v iskylims_documents:/from \
@@ -391,13 +395,13 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 
 4. If volumes are compromised, restore them from the tar backups:
 
-    ```bash
-    docker run --rm -v iskylims_logs:/to -v "$PWD":/from alpine \
-      tar -xzf /from/iskylims_logs.tgz -C /to
+```bash
+mkdir -p /var/log/apps/iskylims
+tar -xzf iskylims_logs.tgz -C /var/log/apps/iskylims
 
-    docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
-      tar -xzf /from/iskylims_documents.tgz -C /to
-    ```
+docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
+  tar -xzf /from/iskylims_documents.tgz -C /to
+```
 
 5. Start the container again:
 
