@@ -25,10 +25,6 @@ RUN dnf -y install \
 # Ensure python3 points to the desired version
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python3
 
-# Set MYSQLCLIENT_CFLAGS and MYSQLCLIENT_LDFLAGS using pkg-config
-RUN export MYSQLCLIENT_CFLAGS="$(pkg-config --libs mysqlclient)" && \
-    export MYSQLCLIENT_LDFLAGS="$(pkg-config --cflags mysqlclient)"
-
 # Set git repository
 RUN mkdir /srv/iskylims 
 WORKDIR /srv/iskylims
