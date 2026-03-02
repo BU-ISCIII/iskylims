@@ -448,9 +448,17 @@ install_system_packages() {
         cd -
     fi
 
-    linux_distribution=$(lsb_release -i | cut -f 2-)
+    if command -v lsb_release >/dev/null 2>&1; then
+        if command -v lsb_release >/dev/null 2>&1; then
+            linux_distribution=$(lsb_release -i | cut -f 2-)
+        else
+            linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
+        fi
+    else
+        linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
+    fi
 
-    if [[ $linux_distribution == "Ubuntu" ]]; then
+    if [[ $linux_distribution == "Ubuntu" || $linux_distribution == "ubuntu" ]]; then
         echo "Software installation for Ubuntu"
         apt-get update && apt-get upgrade -y
         apt-get install -y \
@@ -462,7 +470,7 @@ install_system_packages() {
             apache2-dev cifs-utils \
             gnuplot
 
-    elif [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+    elif [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" || $linux_distribution == "centos" || $linux_distribution == "rhel" || $linux_distribution == "fedora" ]]; then
         echo "Software installation for Centos/RedHat"
         yum groupinstall "Development tools"
         yum install zlib-devel bzip2-devel openssl-devel \
@@ -621,7 +629,11 @@ ensure_virtualenv_ready() {
 
 # restart_apache_service: restart Apache/HTTPD unless running inside Docker or explicitly skipped.
 restart_apache_service() {
-    linux_distribution=$(lsb_release -i | cut -f 2-)
+    if command -v lsb_release >/dev/null 2>&1; then
+        linux_distribution=$(lsb_release -i | cut -f 2-)
+    else
+        linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
+    fi
     if [[ $linux_distribution == "Ubuntu" ]]; then
         apache_daemon="apache2"
     else
@@ -727,9 +739,13 @@ install_application_files() {
     user=${SUDO_USER:-$USER}
     group=$(groups | cut -d" " -f1)
 
-    linux_distribution=$(lsb_release -i | cut -f 2-)
+    if command -v lsb_release >/dev/null 2>&1; then
+        linux_distribution=$(lsb_release -i | cut -f 2-)
+    else
+        linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
+    fi
 
-    if [[ $linux_distribution == "Ubuntu" ]]; then
+    if [[ $linux_distribution == "Ubuntu" || $linux_distribution == "ubuntu" ]]; then
         apache_group="www-data"
     else
         apache_group="apache"
