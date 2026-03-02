@@ -28,5 +28,4 @@ services:
       - "host.docker.internal:host-gateway"
 
 volumes:
-  iskylims_logs:
   iskylims_documents:
