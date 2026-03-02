@@ -241,12 +241,10 @@ export APP_GID=1212
 Run upgrade command:
 
 ```bash
-bash container_install.sh --install_conf my_prod_settings.txt --action upgrade \
+bash container_install.sh --engine podman --install_conf my_prod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
-
-If something fails check the section [What to do if something fails](#what-to-do-if-something-fails).
 
 ## Bare-metal deployment (Ubuntu/CentOS)
 
