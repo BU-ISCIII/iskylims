@@ -146,25 +146,26 @@ root_check(){
 # update_settings_and_urls: rewrite Django settings and urls with deployment values.
 update_settings_and_urls(){
     log "INFO" "Updating settings.py and urls.py with deployment values"
-    grep ^SECRET $INSTALL_PATH/iskylims/settings.py > ~/.secret
+    local project_dir="$INSTALL_PATH/$PROJECT_NAME"
+    grep ^SECRET "$project_dir/settings.py" > ~/.secret
 
-    cp conf/template_settings.txt $INSTALL_PATH/iskylims/settings.py
-    cp conf/urls.py $INSTALL_PATH/iskylims
+    cp conf/template_settings.txt "$project_dir/settings.py"
+    cp conf/urls.py "$project_dir"
     
-    sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "/^SECRET/c\\$(cat ~/.secret)" "$project_dir/settings.py"
+    sed -i "s/djangouser/${DB_USER}/g" "$project_dir/settings.py"
+    sed -i "s/djangopass/${DB_PASS}/g" "$project_dir/settings.py"
+    sed -i "s/djangohost/${DB_SERVER_IP}/g" "$project_dir/settings.py"
+    sed -i "s/djangoport/${DB_PORT}/g" "$project_dir/settings.py"
+    sed -i "s/djangodbname/${DB_NAME}/g" "$project_dir/settings.py"
 
-    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iskylims/settings.py
-    sed -i "s/localhost/${DNS_URL}/g" $INSTALL_PATH/iskylims/settings.py
+    sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" "$project_dir/settings.py"
+    sed -i "s/emailport/${EMAIL_PORT}/g" "$project_dir/settings.py"
+    sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" "$project_dir/settings.py"
+    sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" "$project_dir/settings.py"
+    sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" "$project_dir/settings.py"
+    sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" "$project_dir/settings.py"
+    sed -i "s/localhost/${DNS_URL}/g" "$project_dir/settings.py"
 }
 
 # restore_git_ref: reset repository to branch/tag/commit active before script ran.
@@ -707,8 +708,8 @@ upgrade_application_files() {
     source virtualenv/bin/activate
 
     if [ ! -f "$INSTALL_PATH/manage.py" ]; then
-        echo "manage.py not found. Creating iskylims project"
-        "$INSTALL_PATH/virtualenv/bin/python" -m django startproject iskylims .
+        echo "manage.py not found. Creating ${PROJECT_NAME} project"
+        "$INSTALL_PATH/virtualenv/bin/python" -m django startproject "$PROJECT_NAME" .
     fi
 
     echo "Update settings and url file."
@@ -786,8 +787,8 @@ install_application_files() {
         echo "activate the virtualenv"
         source virtualenv/bin/activate
 
-        echo "Creating iskylims project"
-        "$INSTALL_PATH/virtualenv/bin/python" -m django startproject iskylims .
+        echo "Creating ${PROJECT_NAME} project"
+        "$INSTALL_PATH/virtualenv/bin/python" -m django startproject "$PROJECT_NAME" .
 
         update_settings_and_urls
 
@@ -860,7 +861,7 @@ while getopts $options opt; do
         i ) 
             install=true
             upgrade=false
-            if [[ "$OPTARG" -eq "full" || "$OPTARG" -eq "dep" || "$OPTARG" -eq "app" ]]; then
+            if [[ "$OPTARG" == "full" || "$OPTARG" == "dep" || "$OPTARG" == "app" ]]; then
                 install_type=$OPTARG
                 upgrade_type=$OPTARG
             else
@@ -871,7 +872,7 @@ while getopts $options opt; do
         u )
             install=false
             upgrade=true
-            if [[ "$OPTARG" -eq "full" || "$OPTARG" -eq "dep" || "$OPTARG" -eq "app" ]]; then
+            if [[ "$OPTARG" == "full" || "$OPTARG" == "dep" || "$OPTARG" == "app" ]]; then
                 upgrade_type=$OPTARG
                 install_type=$OPTARG
             else
@@ -952,6 +953,7 @@ if [ "$operation" = "install" ] && [ "$skip_tables" = false ] && [ "$tables" = f
 fi
 
 load_install_config
+PROJECT_NAME="${PROJECT_NAME:-iskylims}"
 checkout_git_revision
 user=${SUDO_USER:-$USER}
 check_requirements

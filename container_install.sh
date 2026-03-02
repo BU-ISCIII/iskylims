@@ -274,18 +274,33 @@ fi
 
 set_engine
 
+app_service="${APP_SERVICE:-app}"
+app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
+app_install_path="${APP_INSTALL_PATH:-/opt/iskylims}"
+app_port="${APP_PORT:-8001}"
+app_container=""
+
 service_exists() {
     compose_exec -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
 }
 
-ensure_app_running() {
-    if ! engine_exec inspect -f '{{.State.Running}}' iskylims_app >/dev/null 2>&1; then
-        echo "Error: iskylims_app container does not exist."
+resolve_app_container() {
+    app_container="$(compose_exec -f "$compose_file" ps -q "$app_service" | head -n 1)"
+    if [ -z "$app_container" ]; then
+        echo "Error: unable to resolve container ID for service '$app_service'."
         exit 1
     fi
-    if [ "$(engine_exec inspect -f '{{.State.Running}}' iskylims_app)" != "true" ]; then
-        echo "Error: iskylims_app container is not running. Showing logs:"
-        engine_exec logs --tail 200 iskylims_app
+}
+
+ensure_app_running() {
+    resolve_app_container
+    if ! engine_exec inspect -f '{{.State.Running}}' "$app_container" >/dev/null 2>&1; then
+        echo "Error: service '$app_service' container does not exist."
+        exit 1
+    fi
+    if [ "$(engine_exec inspect -f '{{.State.Running}}' "$app_container")" != "true" ]; then
+        echo "Error: service '$app_service' container is not running. Showing logs:"
+        engine_exec logs --tail 200 "$app_container"
         exit 1
     fi
 }
@@ -305,7 +320,7 @@ ensure_app_running
 app_uid="${APP_UID:-1212}"
 app_gid="${APP_GID:-1212}"
 echo "Ensuring runtime directories are writable by ${app_uid}:${app_gid}"
-engine_exec exec -u 0 -it iskylims_app sh -lc "mkdir -p /opt/iskylims/documents /opt/iskylims/logs /opt/iskylims/static /opt/iskylims/cron /opt/iskylims/tmp && chown -R ${app_uid}:${app_gid} /opt/iskylims/documents /opt/iskylims/logs /opt/iskylims/static /opt/iskylims/cron /opt/iskylims/tmp"
+engine_exec exec -u 0 -it "$app_container" sh -lc "mkdir -p ${app_install_path}/documents ${app_install_path}/logs ${app_install_path}/static ${app_install_path}/cron ${app_install_path}/tmp && chown -R ${app_uid}:${app_gid} ${app_install_path}/documents ${app_install_path}/logs ${app_install_path}/static ${app_install_path}/cron ${app_install_path}/tmp"
 
 host_install_conf_path="$install_conf"
 if [[ "$host_install_conf_path" != /* ]]; then
@@ -314,12 +329,12 @@ fi
 
 container_install_conf_path="$install_conf_container"
 if [[ "$container_install_conf_path" != /* ]]; then
-    container_install_conf_path="/srv/iskylims/$container_install_conf_path"
+    container_install_conf_path="$app_repo_path/$container_install_conf_path"
 fi
 
-if ! engine_exec exec -it iskylims_app test -f "$container_install_conf_path"; then
+if ! engine_exec exec -it "$app_container" test -f "$container_install_conf_path"; then
     echo "Copying install configuration into container at $container_install_conf_path"
-    engine_exec cp "$host_install_conf_path" "iskylims_app:$container_install_conf_path"
+    engine_exec cp "$host_install_conf_path" "${app_container}:$container_install_conf_path"
 fi
 
 script_args_before=""
@@ -338,20 +353,20 @@ fi
 
 if [ "$action" = "upgrade" ]; then
     echo "Running install.sh upgrade inside the container"
-    engine_exec exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
+    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 else
     echo "Running install.sh install inside the container"
-    engine_exec exec -it iskylims_app bash -c "cd /srv/iskylims && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
+    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 fi
 
-if ! engine_exec exec -it iskylims_app test -f /opt/iskylims/manage.py; then
-    echo "Error: /opt/iskylims/manage.py not found after install.sh. Showing logs:"
-    engine_exec logs --tail 200 iskylims_app
+if ! engine_exec exec -it "$app_container" test -f "$app_install_path/manage.py"; then
+    echo "Error: $app_install_path/manage.py not found after install.sh. Showing logs:"
+    engine_exec logs --tail 200 "$app_container"
     exit 1
 fi
 
 if [ "$skip_test_data" = false ]; then
-    engine_exec exec -it iskylims_app python3 manage.py loaddata test/test_data.json
+    engine_exec exec -it "$app_container" python3 manage.py loaddata test/test_data.json
 else
     echo "Skipping test data fixtures as requested"
 fi
@@ -386,13 +401,13 @@ fi
 
 access_urls=()
 if [ -n "$dns_url" ] && [ "$dns_url" != "*" ]; then
-    access_urls+=("http://${dns_url}:8001")
+    access_urls+=("http://${dns_url}:${app_port}")
 fi
 if [ -n "$local_ip" ] && [ "$local_ip" != "*" ]; then
-    access_urls+=("http://${local_ip}:8001")
+    access_urls+=("http://${local_ip}:${app_port}")
 fi
 if [ ${#access_urls[@]} -eq 0 ]; then
-    access_urls+=("http://localhost:8001")
+    access_urls+=("http://localhost:${app_port}")
 fi
 
 echo "You can now access iSkyLIMS via: ${access_urls[*]}"
