@@ -280,18 +280,70 @@ app_install_path="${APP_INSTALL_PATH:-/opt/iskylims}"
 app_port="${APP_PORT:-8001}"
 app_container=""
 
+# Check if a service exists in the compose file
+#
+# Parameters:
+#   $1 - Service name to check
+#
+# Returns:
+#   0 if the service exists, 1 otherwise
 service_exists() {
     compose_exec -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
 }
 
+# Return the name of the container for a given service name.
+# The container name is different based on whether we are in test mode or not.
+#
+# Parameters:
+#   $1 - Service name to return the container name for
+#
+# Returns:
+#   The name of the container for the given service name
+service_container_name() {
+    local service_name="$1"
+    if [ "$mode" = "test" ]; then
+        case "$service_name" in
+            db) echo "db" ;;
+            samba) echo "samba" ;;
+            app) echo "iskylims_app" ;;
+            *) echo "" ;;
+        esac
+    else
+        case "$service_name" in
+            app) echo "iskylims_app" ;;
+            samba) echo "samba" ;;
+            *) echo "" ;;
+        esac
+    fi
+}
+
+# Resolve the container ID for the target app service.
+#
+# Returns:
+#   Sets global variable `app_container` to a valid container name/ID.
+#
+# Errors:
+#   Exits if unable to resolve a container for `app_service`.
 resolve_app_container() {
-    app_container="$(compose_exec -f "$compose_file" ps -q "$app_service" | head -n 1)"
+    local container_name
+    container_name="$(service_container_name "$app_service")"
+
+    if [ -n "$container_name" ] && engine_exec inspect -f '{{.Id}}' "$container_name" >/dev/null 2>&1; then
+        app_container="$container_name"
+    else
+        app_container="$(engine_exec ps -a --filter "label=com.docker.compose.service=${app_service}" --format '{{.ID}}' | head -n 1)"
+    fi
+
     if [ -z "$app_container" ]; then
-        echo "Error: unable to resolve container ID for service '$app_service'."
+        echo "Error: unable to resolve container ID for service '$app_service'." >&2
         exit 1
     fi
 }
 
+# Ensure target app service container exists and is running.
+#
+# Errors:
+#   Exits if container does not exist or is not running.
 ensure_app_running() {
     resolve_app_container
     if ! engine_exec inspect -f '{{.State.Running}}' "$app_container" >/dev/null 2>&1; then
@@ -304,6 +356,33 @@ ensure_app_running() {
         exit 1
     fi
 }
+
+# Remove stale test containers left over from previous runs.
+#
+# This function will only be executed in "test" mode when the engine is "podman".
+# It only removes known test container names and never removes volumes.
+cleanup_stale_test_containers() {
+    if [ "$mode" != "test" ] || [ "$engine" != "podman" ]; then
+        return 0
+    fi
+
+    local svc cname cstate
+    for svc in db app samba; do
+        cname="$(service_container_name "$svc")"
+        if [ -z "$cname" ]; then
+            continue
+        fi
+        if engine_exec inspect -f '{{.Id}}' "$cname" >/dev/null 2>&1; then
+            cstate="$(engine_exec inspect -f '{{.State.Status}}' "$cname" 2>/dev/null || true)"
+            if [ "$cstate" != "running" ]; then
+                echo "Removing stale test container '$cname' (state: ${cstate:-unknown})"
+                engine_exec rm -f "$cname" >/dev/null 2>&1 || true
+            fi
+        fi
+    done
+}
+
+cleanup_stale_test_containers
 
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
 INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" \

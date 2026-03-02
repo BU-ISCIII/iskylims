@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
     db:
-        image: mysql:8.0
+        image: docker.io/library/mysql:8.0
         container_name: db
         command: --default-authentication-plugin=mysql_native_password
         restart: always
@@ -27,7 +27,7 @@ services:
             - /usr/share/zoneinfo:/usr/share/zoneinfo
     
     samba:
-        image: dperson/samba
+        image: docker.io/dperson/samba
         container_name: samba
         networks:
         - develop_net
