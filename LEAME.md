@@ -73,7 +73,13 @@ Requisitos previos para instalaciones con Docker:
 Levanta el sistema completo (base de datos, Samba y app) con fixtures y datos de demo:
 
 ```bash
-bash docker_install.sh --test
+bash container_install.sh --test
+```
+
+Usa `--engine podman` para ejecutar el mismo flujo con Podman:
+
+```bash
+bash container_install.sh --test --engine podman
 ```
 
 Esto usa `docker-compose.test.yml` por defecto.
@@ -88,7 +94,7 @@ Puedes personalizar los valores por defecto:
 Ejemplo de uso con un script de migracion en Docker:
 
 ```bash
-bash docker_install.sh --test --script migrate_optional_values
+bash container_install.sh --test --script migrate_optional_values
 ```
 
 Cuando el script termine, abre `http://localhost:8001` y crea el superusuario de Django cuando te lo pida.
@@ -107,21 +113,22 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 2. Construye y ejecuta en modo produccion (usa `docker-compose.prod.yml` por defecto):
 
     ```bash
-    bash docker_install.sh --install_conf conf/my_prod_settings.txt
+    bash container_install.sh --install_conf conf/my_prod_settings.txt
     ```
 
    Usa `--compose_file` para cambiar el compose o `--install_type`/`--git_revision` para variar el build.
+   Añade `--engine podman` para usar Podman en lugar de Docker.
    Tip: captura logs para depuracion:
 
     ```bash
-    bash docker_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+    bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
     ```
 
 3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
 
 UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
 
-- Exporta `APP_UID` y `APP_GID` antes de ejecutar `docker_install.sh` si necesitas un UID/GID distinto (por ejemplo, para escribir en `/opt/iskylims/static-host`).
+- Exporta `APP_UID` y `APP_GID` antes de ejecutar `container_install.sh` si necesitas un UID/GID distinto (por ejemplo, para escribir en `/opt/iskylims/static-host`).
 
 ```bash
 export APP_UID=1212
@@ -180,7 +187,7 @@ export APP_GID=1212
 Re-despliega el contenedor de aplicacion contra una base de datos existente sin tocar los datos:
 
 ```bash
-bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentro del contenedor, que regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
@@ -210,7 +217,7 @@ mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db
   -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
   > /tmp/library_pool_run_process.tsv
 
-bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
+bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
 ```
@@ -399,7 +406,7 @@ docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
 5. Arranca el contenedor de nuevo:
 
     ```bash
-    bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+    bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
     ```
 
 ## Pasos finales de configuracion

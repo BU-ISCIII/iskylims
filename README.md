@@ -78,7 +78,13 @@ Prerequisites for Docker-based installs:
 Bring up a full test stack (database, Samba, app) plus fixtures and demo data:
 
 ```bash
-bash docker_install.sh --test
+bash container_install.sh --test
+```
+
+Use `--engine podman` to run the same flow with Podman:
+
+```bash
+bash container_install.sh --test --engine podman
 ```
 
 This uses `docker-compose.test.yml` by default.
@@ -93,7 +99,7 @@ Defaults can be customised:
 Example running a migration script during Docker install:
 
 ```bash
-bash docker_install.sh --test --script migrate_optional_values
+bash container_install.sh --test --script migrate_optional_values
 ```
 
 When the script finishes, open `http://localhost:8001` and follow the prompt to create the Django superuser.
@@ -112,21 +118,22 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 2. Build and run in production mode (uses `docker-compose.prod.yml` by default):
 
     ```bash
-    bash docker_install.sh --install_conf conf/my_prod_settings.txt
+    bash container_install.sh --install_conf conf/my_prod_settings.txt
     ```
 
    Use `--compose_file` to override the compose file or `--install_type`/`--git_revision` to change the build.
+   Add `--engine podman` to use Podman instead of Docker.
    Tip: capture logs for troubleshooting:
 
     ```bash
-    bash docker_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+    bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
     ```
 
 3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
 UID/GID for the container runtime user (default `1212:1212`):
 
-- Export `APP_UID` and `APP_GID` before running `docker_install.sh` if you need a different host UID/GID (for example, to write to `/opt/iskylims/static-host`).
+- Export `APP_UID` and `APP_GID` before running `container_install.sh` if you need a different host UID/GID (for example, to write to `/opt/iskylims/static-host`).
 
 ```bash
 export APP_UID=1212
@@ -185,7 +192,7 @@ export APP_GID=1212
 Re-deploy the application container against an existing production database without touching data:
 
 ```bash
-bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
 The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
@@ -235,7 +242,7 @@ export APP_GID=1212
 Run upgrade command:
 
 ```bash
-bash docker_install.sh --install_conf my_prod_settings.txt --action upgrade \
+bash container_install.sh --install_conf my_prod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
 ```
@@ -406,7 +413,7 @@ docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
 5. Start the container again:
 
     ```bash
-    bash docker_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+    bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
     ```
 
 ## Final configuration steps
