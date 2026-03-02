@@ -251,6 +251,14 @@ abort_install() {
     exit "${2:-1}"
 }
 
+chown_if_root() {
+    if [ "$EUID" -eq 0 ]; then
+        chown "$@"
+    else
+        log_warn "Skipping chown (requires root): chown $*"
+    fi
+}
+
 ensure_file_exists() {
     local file_path="$1"
     local friendly_name="${2:-$1}"
@@ -595,7 +603,7 @@ prepare_documents_structure() {
     mkdir -p $INSTALL_PATH/documents/drylab
     mkdir -p $INSTALL_PATH/documents/drylab/service_files
 
-    chown -R $user:$apache_group $INSTALL_PATH/documents
+    chown_if_root -R "$user:$apache_group" "$INSTALL_PATH/documents"
     chmod 775 $INSTALL_PATH/documents
 
     cp $INSTALL_PATH/conf/*_template.csv $INSTALL_PATH/documents/wetlab/templates/
@@ -671,7 +679,7 @@ run_dependency_stage() {
         else
             apache_group="apache"
         fi
-        chown -R $user:$apache_group $INSTALL_PATH
+        chown_if_root -R "$user:$apache_group" "$INSTALL_PATH"
         chmod 775 $INSTALL_PATH
     else
         log_section "Preparing dependency environment for upgrade"
@@ -770,7 +778,7 @@ install_application_files() {
         else
             if  [ ! -d $INSTALL_PATH/logs ]; then
                 mkdir -p $INSTALL_PATH/logs
-                chown $user:$apache_group $INSTALL_PATH/logs
+                chown_if_root "$user:$apache_group" "$INSTALL_PATH/logs"
                 chmod 775 $INSTALL_PATH/logs
             else
                 echo "Log folder path: $INSTALL_PATH/logs already exist."
