@@ -13,6 +13,7 @@ Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--i
     --git_revision      | Specify the Git revision to install (default: main)
     --compose_file      | Compose file to use (overrides default)
     --install_conf      | Settings file consumed during container image build (mandatory for production)
+    --install_conf_map  | Service-specific settings file: service,path (can be repeated)
     --action            | install (default) or upgrade, to control DB initialisation steps
     --script            | Run a Django migration script after migrations (can be repeated)
     --script_before     | Run a Django migration script before migrations (can be repeated)
@@ -25,6 +26,9 @@ Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--i
 Examples:
     Deploy production container pointing to an external DB/Samba:
     bash $0 --install_conf conf/my_prod_settings.txt
+
+    Deploy production with service-specific settings mapping:
+    bash $0 --install_conf_map app,conf/docker_production_settings.txt
 
     Upgrade an existing production deployment using the same database:
     bash $0 --install_conf conf/my_prod_settings.txt --action upgrade
@@ -57,6 +61,7 @@ do
         --git_revision)      set -- "$@" -g ;;
         --compose_file)      set -- "$@" -c ;;
         --install_conf)      set -- "$@" -s ;;
+        --install_conf_map)  set -- "$@" -j ;;
         --action)            set -- "$@" -a ;;
         --script)            set -- "$@" -m ;;
         --script_before)     set -- "$@" -b ;;
@@ -80,6 +85,7 @@ git_revision="main"
 compose_file=""
 install_conf=""
 install_conf_container=""
+install_conf_map_entries=()
 skip_demo_data=""
 skip_test_data=""
 mode="production"
@@ -127,7 +133,7 @@ compose_exec() {
 }
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:i:g:c:s:a:m:b:f:e:vhntp"
+options=":d:i:g:c:s:j:a:m:b:f:e:vhntp"
 while getopts $options opt; do
     case $opt in
         d)
@@ -141,6 +147,9 @@ while getopts $options opt; do
             ;;
         s)
             install_conf=$OPTARG
+            ;;
+        j)
+            install_conf_map_entries+=("$OPTARG")
             ;;
         a)
             action=$OPTARG
@@ -206,17 +215,35 @@ if [ "$mode" = "test" ]; then
     if [ -z "$compose_file" ]; then
         compose_file="docker-compose.test.yml"
     fi
-    if [ -z "$install_conf" ]; then
-        install_conf="conf/docker_test_settings.txt"
-    fi
 else
     if [ -z "$compose_file" ]; then
         compose_file="docker-compose.prod.yml"
     fi
 fi
 
+app_service="${APP_SERVICE:-app}"
+selected_install_conf="$install_conf"
+for map_entry in "${install_conf_map_entries[@]}"; do
+    svc_name="${map_entry%%,*}"
+    conf_name="${map_entry#*,}"
+    if [ -z "$svc_name" ] || [ -z "$conf_name" ] || [ "$svc_name" = "$map_entry" ]; then
+        echo "Invalid --install_conf_map value '$map_entry'. Expected format: service,path"
+        exit 1
+    fi
+    if [ "$svc_name" != "app" ]; then
+        echo "Unknown service '$svc_name' in --install_conf_map. Valid service: app"
+        exit 1
+    fi
+    selected_install_conf="$conf_name"
+done
+
+if [ "$mode" = "test" ] && [ -z "$selected_install_conf" ]; then
+    selected_install_conf="conf/docker_test_settings.txt"
+fi
+install_conf="$selected_install_conf"
+
 if [ "$mode" = "production" ] && [ -z "$install_conf" ]; then
-    echo "Production deployments require --install_conf pointing to your settings file."
+    echo "Production deployments require --install_conf or --install_conf_map app,<path>."
     exit 1
 fi
 
@@ -274,7 +301,6 @@ fi
 
 set_engine
 
-app_service="${APP_SERVICE:-app}"
 app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
 app_install_path="${APP_INSTALL_PATH:-/opt/iskylims}"
 app_port="${APP_PORT:-8001}"
