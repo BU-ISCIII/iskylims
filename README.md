@@ -18,7 +18,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
   - [Docker deployment](#docker-deployment)
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
-- [Persist logs/documents on the host](#persist-logsdocuments-on-the-host)
+      - [Persist logs/documents on the host](#persist-logsdocuments-on-the-host)
       - [Apache reverse proxy (host) + Gunicorn](#apache-reverse-proxy-host--gunicorn)
       - [Cron jobs inside the container](#cron-jobs-inside-the-container)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
@@ -78,13 +78,13 @@ Prerequisites for Docker-based installs:
 Bring up a full test stack (database, Samba, app) plus fixtures and demo data:
 
 ```bash
-bash container_install.sh --test
+bash container_install.sh --test 2>&1 | tee test.log
 ```
 
 Use `--engine podman` to run the same flow with Podman:
 
 ```bash
-bash container_install.sh --test --engine podman
+bash container_install.sh --test --engine podman 2>&1 | tee test.log
 ```
 
 This uses `docker-compose.test.yml` by default.
@@ -99,7 +99,7 @@ Defaults can be customised:
 Example running a migration script during Docker install:
 
 ```bash
-bash container_install.sh --test --script migrate_optional_values
+bash container_install.sh --test --script migrate_optional_values 2>&1 | tee test.log
 ```
 
 When the script finishes, open `http://localhost:8001` and follow the prompt to create the Django superuser.
@@ -118,7 +118,7 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 2. Build and run in production mode (uses `docker-compose.prod.yml` by default):
 
     ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt
+    bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
     ```
 
    Use `--compose_file` to override the compose file or `--install_type`/`--git_revision` to change the build.
@@ -143,7 +143,7 @@ export APP_GID=1212
 Ensure the static directory on the host is writable by that UID/GID:
 
 ```bash
-sudo chown -R 1212:1212 /opt/iskylims/static-host
+sudo chown -R ${APP_UID}:${APP_GID} /opt/iskylims/static-host
 ```
 
 #### Persist logs/documents on the host
@@ -159,7 +159,7 @@ Create the host log directory and set ownership to match the container UID/GID:
 
 ```bash
 sudo mkdir -p /var/log/apps/iskylims
-sudo chown -R 1212:1212 /var/log/apps/iskylims
+sudo chown -R ${APP_UID}:${APP_GID} /var/log/apps/iskylims
 ```
 
 #### Apache reverse proxy (host) + Gunicorn
@@ -192,7 +192,7 @@ export APP_GID=1212
 Re-deploy the application container against an existing production database without touching data:
 
 ```bash
-bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
+bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
 
 The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
@@ -244,7 +244,7 @@ Run upgrade command:
 ```bash
 bash container_install.sh --install_conf my_prod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
-  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
 
 ## Bare-metal deployment (Ubuntu/CentOS)
