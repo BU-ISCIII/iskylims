@@ -22,6 +22,19 @@ RUN dnf -y install \
     pkgconf-pkg-config \
     && dnf clean all
 
+# Install supercronic (rootless-friendly cron runner)
+RUN set -eux; \
+    SUPERCRONIC_VERSION="v0.2.38"; \
+    arch="$(uname -m)"; \
+    case "$arch" in \
+      x86_64) supercronic_arch="amd64" ;; \
+      aarch64) supercronic_arch="arm64" ;; \
+      *) echo "Unsupported architecture for supercronic: $arch" >&2; exit 1 ;; \
+    esac; \
+    wget -q -O /usr/local/bin/supercronic \
+      "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-${supercronic_arch}"; \
+    chmod +x /usr/local/bin/supercronic
+
 # Ensure python3 points to the desired version
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python3
 
