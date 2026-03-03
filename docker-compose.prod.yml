@@ -21,9 +21,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - /var/log/apps/iskylims:/opt/iskylims/logs
+      - /var/log/local/apps/iskylims:/opt/iskylims/logs:Z
       - iskylims_documents:/opt/iskylims/documents
-      - /opt/iskylims/static-host:/opt/iskylims/static
+      - /opt/iskylims/static-host:/opt/iskylims/static:Z
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
