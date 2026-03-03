@@ -15,6 +15,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
 - [iSkyLIMS](#iskylims)
   - [Get the code (required)](#get-the-code-required)
   - [Choose your path](#choose-your-path)
+  - [Minimum requirements](#minimum-requirements)
   - [Docker deployment](#docker-deployment)
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
@@ -27,7 +28,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Refresh code and settings](#refresh-code-and-settings)
   - [Bare-metal deployment (Ubuntu/CentOS)](#bare-metal-deployment-ubuntucentos)
     - [Install](#install)
-      - [Prerequisites](#prerequisites)
       - [Clone the repository](#clone-the-repository)
       - [Prepare the database](#prepare-the-database)
       - [Configure install\_settings.txt](#configure-install_settingstxt)
@@ -37,9 +37,11 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Refresh code and settings](#refresh-code-and-settings-1)
       - [Run upgrade steps requiring root](#run-upgrade-steps-requiring-root)
       - [Run upgrade steps without root](#run-upgrade-steps-without-root)
-  - [What to do if something fails](#what-to-do-if-something-fails)
-    - [Bare-metal](#bare-metal)
-    - [Docker](#docker)
+  - [Common operations (Docker + bare-metal)](#common-operations-docker--bare-metal)
+    - [Database creation, users and grants](#database-creation-users-and-grants)
+    - [Backups](#backups)
+    - [Restore / rollback](#restore--rollback)
+    - [What to do if something fails](#what-to-do-if-something-fails)
   - [Final configuration steps](#final-configuration-steps)
     - [SAMBA configurarion](#samba-configurarion)
     - [Email verification](#email-verification)
@@ -66,12 +68,21 @@ cd iskylims
 - **Docker (production container)**: deploy only the application container, pointing to your existing DB/Samba.
 - **Bare-metal**: install or upgrade directly on Ubuntu/CentOS hosts with `install.sh`.
 
+## Minimum requirements
+
+- **sudo privileges** for dependency installation
+- MySQL > 8.0 or MariaDB > 10.4
+- Apache 2.4
+- git > 2.34
+- Python > 3.11
+- Local email sender configured
+- Access to the Samba share where run folders live
+- `lsb_release` package:
+  - RedHat/CentOS: `yum install redhat-lsb-core`
+  - Ubuntu: `apt install lsb-core lsb-release`
+- For containers: Docker Engine + Docker Compose v2, or Podman + `podman-compose`
+
 ## Docker deployment
-
-Prerequisites for Docker-based installs:
-
-- Docker Engine + Docker Compose v2
-- git (to clone the repository)
 
 ### Local test stack
 
@@ -201,17 +212,7 @@ The upgrade path rebuilds/restarts the container and runs `install.sh` inside th
 
 #### Back up first
 
-- Full backup of the `iskylims` database.
-- Full backup of the logs folder and the documents folder.
-
-```bash
-tar -czf iskylims_logs.tgz -C /var/log/apps/iskylims .
-
-docker run --rm \
-  -v iskylims_documents:/from \
-  -v "$PWD":/to \
-  alpine tar -czf /to/iskylims_documents.tgz -C /from .
-```
+Run the backup steps in [Backups](#backups) first.
 
 For 3.0.0 -> 3.1.0, export the LibraryPool mapping first, then run the upgrade with pre/post scripts:
 
@@ -247,20 +248,11 @@ bash container_install.sh --install_conf my_prod_settings.txt --action upgrade \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
 
+If something fails check the section [What to do if something fails](#what-to-do-if-something-fails).
+
 ## Bare-metal deployment (Ubuntu/CentOS)
 
 ### Install
-
-#### Prerequisites
-
-- **sudo privileges** for dependency installation
-- MySQL > 8.0 or MariaDB > 10.4
-- Apache 2.4
-- git > 2.34
-- Python > 3.11
-- Local email sender configured
-- Access to the Samba share where run folders live
-- `lsb_release` package (`yum install redhat-lsb-core` on RedHat/CentOS, `apt install lsb-core lsb-release` on Ubuntu)
 
 #### Clone the repository
 
@@ -272,9 +264,7 @@ cd iskylims
 
 #### Prepare the database
 
-1. Create a database named `iskylims`.
-2. Create a user with read/write permissions on that database.
-3. Note the database host, port, user, and password for the settings file.
+Create the database and application user following [Database creation, users and grants](#database-creation-users-and-grants), then note DB host/port/user/password for `install_settings.txt`.
 
 #### Configure install_settings.txt
 
@@ -321,8 +311,8 @@ Follow these steps to move from version 3.0.0 to the 3.1.x series.
 
 #### Back up first
 
-- Full backup of the `iskylims` database.
-- Full backup of the installation folder (for example `/opt/iskylims`).
+Run the backup steps in [Backups](#backups) first.
+- Additionally, back up the full installation folder (for example `/opt/iskylims`) for bare-metal rollback.
 - If you use library pools, export them before upgrading:
 
   ```bash
@@ -365,56 +355,117 @@ bash install.sh --upgrade app --git_revision main \
 
 Upgrades regenerate migrations and apply them with `--fake-initial` so existing tables remain intact, matching the Docker workflow.
 
-## What to do if something fails
+## Common operations (Docker + bare-metal)
 
-When we upgrade using the installation script we are performing several changes in the database. If something fails we need to restore the app situation before anything happened and start all over.
+### Database creation, users and grants
 
-### Bare-metal
+Run as MySQL root:
 
-We need to copy back the full `/opt/iskylims` folder back to `/opt/iskylims` (or your installation path preference), and restore the database doing something like this:
+```sql
+CREATE DATABASE IF NOT EXISTS iskylims CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'iskylims'@'%' IDENTIFIED BY 'djangopass';
+CREATE USER IF NOT EXISTS 'iskylims'@'localhost' IDENTIFIED BY 'djangopass';
+
+GRANT ALL PRIVILEGES ON iskylims.* TO 'iskylims'@'%';
+GRANT ALL PRIVILEGES ON iskylims.* TO 'iskylims'@'localhost';
+
+FLUSH PRIVILEGES;
+```
+
+Verification:
+
+```sql
+SHOW GRANTS FOR 'iskylims'@'%';
+```
+
+### Backups
+
+Database dump:
+
+```bash
+mysqldump -h <db_host> -P <db_port> -u iskylims -p iskylims > iskylims_$(date +%Y%m%d_%H%M%S).sql
+```
+
+Logs archive:
+
+```bash
+tar -czf iskylims_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/apps/iskylims .
+```
+
+Documents volume archive:
+
+```bash
+docker run --rm -v iskylims_documents:/from -v "$PWD":/to alpine \
+  tar -czf /to/iskylims_documents_$(date +%Y%m%d_%H%M%S).tgz -C /from .
+```
+
+With Podman, use the same command replacing `docker` with `podman`.
+
+Suggested order before upgrades:
+
+1. DB dump
+2. Documents volume archive
+3. Logs archive
+
+### Restore / rollback
+
+Restore DB:
+
+```bash
+mysql -h <db_host> -P <db_port> -u iskylims -p iskylims < iskylims_YYYYMMDD_HHMMSS.sql
+```
+
+Restore documents volume:
+
+```bash
+docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
+  sh -lc "cd /to && tar -xzf /from/iskylims_documents_YYYYMMDD_HHMMSS.tgz"
+```
+
+With Podman, use the same command replacing `docker` with `podman`.
+
+Restore logs:
+
+```bash
+mkdir -p /var/log/apps/iskylims
+tar -xzf iskylims_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/apps/iskylims
+```
+
+Bare-metal full rollback example:
 
 ```bash
 sudo rm -rf /opt/iskylims
 sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
 sudo /scripts/hardening.sh
-mysql -u iskylims -p -h dmysqlps.isciiides.es
-# drop database iskylims;
-# create database iskylims;
-mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+mysql -u iskylims -p -h <db_host> iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_YYYYMMDDHHMM.sql
 ```
 
-### Docker
+### What to do if something fails
 
-1. Stop the container:
+When install/upgrade fails, restore the previous state and retry with logs enabled.
 
-    ```bash
-    docker compose -f docker-compose.prod.yml down
-    ```
-
-2. Restore the database from your backup.
-
-3. If you suspect the image or build cache is corrupted, remove the app image and rebuild:
-
-    ```bash
-    docker image ls | grep iskylims
-    docker rmi <iskylims_image_id>
-    ```
-
-4. If volumes are compromised, restore them from the tar backups:
+Quick diagnostics:
 
 ```bash
-mkdir -p /var/log/apps/iskylims
-tar -xzf iskylims_logs.tgz -C /var/log/apps/iskylims
+# bare-metal
+cd /opt/iskylims
+python manage.py check
 
-docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
-  tar -xzf /from/iskylims_documents.tgz -C /to
+# docker
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs --tail 200 app
+# podman
+podman-compose -f docker-compose.prod.yml ps
+podman-compose -f docker-compose.prod.yml logs --tail 200 app
 ```
 
-5. Start the container again:
+If you suspect a corrupted image/build cache in Docker:
 
-    ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
-    ```
+```bash
+docker compose -f docker-compose.prod.yml build --no-cache app
+docker compose -f docker-compose.prod.yml up -d --force-recreate app
+```
 
 ## Final configuration steps
 
