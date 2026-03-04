@@ -11184,7 +11184,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0056-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0575",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -11215,7 +11215,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0067-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0586",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11248,7 +11248,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0066-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0585",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11281,7 +11281,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0065-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0584",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11314,7 +11314,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0064-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0583",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11347,7 +11347,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0063-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0582",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11380,7 +11380,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0062-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0581",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11413,7 +11413,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0061-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0580",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11446,7 +11446,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0060-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0579",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11479,7 +11479,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0059-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0578",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11512,7 +11512,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0058-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0577",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11545,7 +11545,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0057-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0576",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11578,7 +11578,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0068-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0587",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11611,7 +11611,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0055-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0574",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11644,7 +11644,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0054-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0573",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11677,7 +11677,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0053-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0572",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11710,7 +11710,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0052-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0554",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11743,7 +11743,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0051-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0553",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11776,7 +11776,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0050-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0552",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11809,7 +11809,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0049-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0551",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11842,7 +11842,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0048-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0550",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11875,7 +11875,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0047-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0548",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11908,7 +11908,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0046-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0547",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -11941,7 +11941,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0079-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0599",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -11972,7 +11972,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0089-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Entb0091",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12003,7 +12003,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0088-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Ent0085",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12034,7 +12034,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0087-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Sm0004",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12065,7 +12065,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0086-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Sm0008",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12096,7 +12096,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0085-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Sm0007",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12127,7 +12127,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0084-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Sm0006",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12158,7 +12158,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0083-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Sm0005",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12189,7 +12189,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0082-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Sm0003",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12220,7 +12220,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0081-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0601",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12251,7 +12251,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0080-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0600",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12284,7 +12284,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0045-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0546",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": []
@@ -12315,7 +12315,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0078-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0598",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12348,7 +12348,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0077-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0597",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12381,7 +12381,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0076-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0595",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12414,7 +12414,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0075-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0594",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12447,7 +12447,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0074-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0593",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12480,7 +12480,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0073-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0592",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12513,7 +12513,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0072-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0591",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12546,7 +12546,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0071-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0590",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12579,7 +12579,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0070-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0589",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12612,7 +12612,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0069-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0588",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12645,7 +12645,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0012-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0189",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12678,7 +12678,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0022-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0523",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12711,7 +12711,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0021-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Entb0090",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12744,7 +12744,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0020-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Entb0089",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12777,7 +12777,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0019-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Entb0088",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12810,7 +12810,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0018-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Entb0011",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12843,7 +12843,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0017-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0196",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12876,7 +12876,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0016-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0195",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12909,7 +12909,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0015-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0194",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12942,7 +12942,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0014-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0193",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -12975,7 +12975,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0013-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0192",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13008,7 +13008,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0023-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0524",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13041,7 +13041,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0011-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0188",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13074,7 +13074,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0010-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0187",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13107,7 +13107,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0009-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0186",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13140,7 +13140,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0008-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0185",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13173,7 +13173,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0007-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0184",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13206,7 +13206,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0006-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0178",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13239,7 +13239,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0005-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0177",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13272,7 +13272,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0004-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0176",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13305,7 +13305,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0003-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0175",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13338,7 +13338,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0002-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23Eco0173",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13371,7 +13371,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0034-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0535",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13404,7 +13404,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0044-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0545",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13437,7 +13437,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0043-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0544",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13470,7 +13470,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0042-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0543",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13503,7 +13503,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0041-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0542",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13536,7 +13536,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0040-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0541",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13569,7 +13569,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0039-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0540",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13602,7 +13602,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0038-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0539",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13635,7 +13635,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0037-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0538",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13668,7 +13668,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0036-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0537",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13701,7 +13701,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0035-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0536",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13734,7 +13734,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0001-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "22K0483",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13767,7 +13767,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0033-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0534",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13800,7 +13800,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0032-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0533",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13833,7 +13833,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0031-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0532",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13866,7 +13866,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0030-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0531",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13899,7 +13899,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0029-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0530",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13932,7 +13932,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0028-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0529",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13965,7 +13965,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0027-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0528",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -13998,7 +13998,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0026-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0527",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -14031,7 +14031,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0025-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0526",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -14064,7 +14064,7 @@
             "manifest": null,
             "reused_number": 0,
             "unique_id": "AAA-0024-1",
-            "user_in_samplesheet": "test_user1",
+            "user_in_samplesheet": "testuser1",
             "samplename_in_samplesheet": "23K0525",
             "prefix_protocol": "illumina nextera lib prep",
             "pools": [
@@ -16307,7 +16307,7 @@
             "resolution_in_progress_date": null,
             "resolution_delivery_date": null,
             "resolution_notes": "",
-            "resolution_full_number": "SRVSGAFI003_20230725_WGMLST01_test_user1_S",
+            "resolution_full_number": "SRVSGAFI003_20230725_WGMLST01_testuser1_S",
             "resolution_pdf_file": "",
             "resolution_pipelines": [],
             "available_services": [
@@ -16322,7 +16322,7 @@
             "password": "pbkdf2_sha256$260000$WoFbBL6zQ3F4nCr3oAFzFd$kT3I+1KotzgT1zT8on4zXZte5vS07KnQr6RmDw2N+UU=",
             "last_login": null,
             "is_superuser": false,
-            "username": "test_user1",
+            "username": "testuser1",
             "first_name": "",
             "last_name": "",
             "email": "",
