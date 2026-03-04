@@ -43,6 +43,6 @@ fi
 
 exec gunicorn iskylims.wsgi:application \
     --bind 0.0.0.0:8001 \
-    --workers 3 \
-    --threads 2 \
+    --workers 1 \
+    --threads 1 \
     --timeout 120
