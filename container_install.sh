@@ -279,9 +279,15 @@ if [ ! -f "$install_conf" ]; then
 fi
 
 repo_root="$(pwd)"
+build_context_dir="$repo_root"
+if [ ! -d "$build_context_dir" ]; then
+    echo "Build context directory '$build_context_dir' not found"
+    exit 1
+fi
+
 temp_install_conf=""
-if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$repo_root/"* ]]; then
-    temp_install_conf="$repo_root/.tmp_docker_install_conf_$$.txt"
+if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$build_context_dir/"* ]]; then
+    temp_install_conf="$build_context_dir/.tmp_docker_install_conf_app_$$.txt"
     echo "Copying $install_conf into temporary file $temp_install_conf for Docker build/runtime."
     cp "$install_conf" "$temp_install_conf"
     install_conf="$temp_install_conf"
@@ -293,8 +299,8 @@ if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$repo_root/"* ]]; then
     trap cleanup_temp_conf EXIT
 fi
 
-if [[ "$install_conf" = "$repo_root/"* ]]; then
-    install_conf_container="${install_conf#$repo_root/}"
+if [[ "$install_conf" = "$build_context_dir/"* ]]; then
+    install_conf_container="${install_conf#$build_context_dir/}"
 else
     install_conf_container="$install_conf"
 fi
