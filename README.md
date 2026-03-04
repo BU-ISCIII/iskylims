@@ -47,6 +47,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Email verification](#email-verification)
   - [Developer notes](#developer-notes)
     - [Django migrations workflow](#django-migrations-workflow)
+    - [Persistent host paths](#persistent-host-paths)
     - [Configure Apache server](#configure-apache-server)
     - [Verification of the installation](#verification-of-the-installation)
   - [iSkyLIMS documentation](#iskylims-documentation)
@@ -151,11 +152,7 @@ export APP_UID=1212
 export APP_GID=1212
 ```
 
-Ensure the static directory on the host is writable by that UID/GID:
-
-```bash
-sudo chown -R ${APP_UID}:${APP_GID} /opt/iskylims/static-host
-```
+Host directory and ownership preparation is described in [Persist logs/documents on the host](#persist-logsdocuments-on-the-host).
 
 #### Persist logs/documents on the host
 
@@ -166,11 +163,12 @@ The production compose file mounts logs on the host and keeps documents in a nam
 
 If you override the compose file, ensure these mounts exist to keep logs and documents persistent.
 
-Create the host log directory and set ownership to match the container UID/GID:
+Create host directories and set ownership to match the container UID/GID:
 
 ```bash
 sudo mkdir -p /var/log/apps/iskylims
-sudo chown -R ${APP_UID}:${APP_GID} /var/log/apps/iskylims
+sudo mkdir -p /opt/iskylims/static-host
+sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/apps/iskylims /opt/iskylims/static-host
 ```
 
 #### Apache reverse proxy (host) + Gunicorn
@@ -496,6 +494,10 @@ Baseline + upgrade flow for new releases:
 2. Commit the baseline migrations.
 3. Generate new migrations on `develop` for schema changes and commit them.
 4. Upgrades run `migrate --fake-initial` once to align existing tables, then `migrate` to apply the new migration files.
+
+### Persistent host paths
+
+See [Persist logs/documents on the host](#persist-logsdocuments-on-the-host) in the production deployment section.
 
 ### Configure Apache server
 
