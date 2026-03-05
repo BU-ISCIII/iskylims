@@ -5,6 +5,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Runtime user (override with build args if needed)
 ARG APP_UID=1212
 ARG APP_GID=1212
+ARG APP_SHELL=/sbin/nologin
 
 
 # Updates
@@ -63,7 +64,7 @@ WORKDIR /opt/iskylims
 
 # Create non-root user and set ownership
 RUN groupadd -g ${APP_GID} iskylims && \
-    useradd -m -u ${APP_UID} -g ${APP_GID} -s /sbin/nologin iskylims && \
+    useradd -m -u ${APP_UID} -g ${APP_GID} -s ${APP_SHELL} iskylims && \
     chown -R ${APP_UID}:${APP_GID} /opt/iskylims /srv/iskylims && \
     git config --system --add safe.directory /srv/iskylims
 

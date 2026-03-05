@@ -12,6 +12,7 @@ services:
         INSTALL_CONF: ${INSTALL_CONF:-conf/docker_production_settings.txt}
         APP_UID: ${APP_UID:-1212}
         APP_GID: ${APP_GID:-1212}
+        APP_SHELL: ${APP_SHELL:-/sbin/nologin}
     ports:
       - "8001:8001"
     environment:

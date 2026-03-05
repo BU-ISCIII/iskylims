@@ -44,6 +44,7 @@ services:
             INSTALL_TYPE: ${INSTALL_TYPE:-dep}
             GIT_REVISION: ${GIT_REVISION:-main}
             INSTALL_CONF: ${INSTALL_CONF:-conf/docker_test_settings.txt}
+            APP_SHELL: ${APP_SHELL:-/bin/bash}
         container_name: iskylims_app
         ports:
             - "8001:8001"
