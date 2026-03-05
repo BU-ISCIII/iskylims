@@ -16316,6 +16316,15 @@
         }
     },
     {
+        "model": "wetlab.configsetting",
+        "pk": 9,
+        "fields": {
+            "configuration_name": "SENT_EMAIL_ON_CRONTAB_ERROR",
+            "configuration_value": "FALSE",
+            "generated_at": "2021-06-09T22:10:57.394"
+        }
+    },
+    {
         "model": "auth.user",
         "pk": 2,
         "fields": {
