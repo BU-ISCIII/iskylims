@@ -458,11 +458,7 @@ install_system_packages() {
     fi
 
     if command -v lsb_release >/dev/null 2>&1; then
-        if command -v lsb_release >/dev/null 2>&1; then
-            linux_distribution=$(lsb_release -i | cut -f 2-)
-        else
-            linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
-        fi
+        linux_distribution=$(lsb_release -i | cut -f 2-)
     else
         linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
     fi
@@ -560,7 +556,7 @@ setup_virtualenv() {
             echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
             read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
             echo
-            if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+            if [[ $REPLY =~ ^[Yy]$ ]] ; then
                 rm -rf $INSTALL_PATH/virtualenv
                 bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
             else
@@ -873,7 +869,7 @@ while getopts $options opt; do
                 install_type=$OPTARG
                 upgrade_type=$OPTARG
             else
-                echo "Upgrade is not set to one valid option. Use: --upgrade full/app/dep"
+                echo "Install is not set to one valid option. Use: --install full/app/dep"
                 exit 1
             fi
             ;;

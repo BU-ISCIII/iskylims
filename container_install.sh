@@ -6,10 +6,9 @@ usage() {
 cat << EOF
 This script installs and upgrades the iskylims app.
 
-Usage : $0 [--demo_data] [--install_type] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--script_before] [--script_after] [--engine] [--test]
+Usage : $0 [--demo_data] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--script_before] [--script_after] [--engine] [--test]
     Optional input data:
     --demo_data         | Provide already downloaded demo data from Zenodo
-    --install_type      | Specify the installation type for iSkyLIMS (default: full)
     --git_revision      | Specify the Git revision to install (default: main)
     --compose_file      | Compose file to use (overrides default)
     --install_conf      | Settings file consumed during container image build (mandatory for production)
@@ -39,9 +38,6 @@ Examples:
     Provide already downloaded data from Zenodo (compressed) for test environment
     bash $0 --demo_data /path/to/iskylims_demo_data.tar.gz
 
-    Speficy a custom installation using the Git revision "develop":
-    bash $0 --install_type app --git_revision develop
-
 EOF
 }
 
@@ -57,7 +53,6 @@ do
     case "$arg" in
         # OPTIONAL
         --demo_data)         set -- "$@" -d ;;
-        --install_type)      set -- "$@" -i ;;
         --git_revision)      set -- "$@" -g ;;
         --compose_file)      set -- "$@" -c ;;
         --install_conf)      set -- "$@" -s ;;
@@ -133,7 +128,7 @@ compose_exec() {
 }
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:i:g:c:s:j:a:m:b:f:e:vhntp"
+options=":d:g:c:s:j:a:m:b:f:e:vhntp"
 while getopts $options opt; do
     case $opt in
         d)
