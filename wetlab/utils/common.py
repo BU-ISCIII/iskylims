@@ -158,7 +158,8 @@ def open_samba_connection():
     Return:
         conn object for the samba connection
     """
-    logger = logging.getLogger(__name__)
+    # Use root logger to ensure messages always follow the configured handlers.
+    logger = logging.getLogger()
     logger.debug("Starting function open_samba_connection")
     samba_data = get_samba_connection_data()
 
@@ -412,7 +413,8 @@ def logging_errors(string_text, showing_traceback, print_on_screen):
     Variables:
         subject # text to include in the subject email
     """
-    logger = logging.getLogger(__name__)
+    # Use root logger to ensure messages always follow the configured handlers.
+    logger = logging.getLogger()
     logger.error("-----------------    ERROR   ------------------")
     logger.error(string_text)
     if wetlab.models.ConfigSetting.objects.filter(
@@ -469,7 +471,8 @@ def logging_warnings(string_text, print_on_screen):
         logger # contains the logger object
         string_text # information text to include in the log
     """
-    logger = logging.getLogger(__name__)
+    # Use root logger to ensure messages always follow the configured handlers.
+    logger = logging.getLogger()
     logger.warning("-----------------    WARNING   ------------------")
     logger.warning(string_text)
     logger.warning("-----------------    END WARNING   --------------")
@@ -494,6 +497,7 @@ def open_log(config_file):
     Return:
         logger object
     """
-    fileConfig(config_file)
-    logger = logging.getLogger(__name__)
+    # Keep existing named loggers active; otherwise fileConfig may disable them.
+    fileConfig(config_file, disable_existing_loggers=False)
+    logger = logging.getLogger()
     return logger
