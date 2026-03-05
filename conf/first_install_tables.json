@@ -1919,7 +1919,7 @@
     "model": "wetlab.runconfigurationtest",
     "pk": 4,
     "fields": {
-        "run_test_name": "MiSeqi100_Test",
+        "run_test_name": "Miseqi100_Test",
         "run_test_folder": "MiSeqi100_Test"
     }
 },
