@@ -258,6 +258,21 @@
     }
 },
 {
+    "model": "core.sequencerinlab",
+    "pk": 7,
+    "fields": {
+        "platform_id": 7,
+        "sequencer_name": "SH00752",
+        "sequencer_description": "MiSeqi100",
+        "sequencer_location": "Genomics Unit",
+        "sequencer_serial_number": null,
+        "sequencer_state": "In Use",
+        "sequencer_operation_start": null,
+        "sequencer_operation_end": null,
+        "sequencer_number_lanes": "1/2/4"
+    }
+},
+{
     "model": "core.statesforsample",
     "pk": 1,
     "fields": {
@@ -20331,4 +20346,3 @@
     }
 }
 ]
-
