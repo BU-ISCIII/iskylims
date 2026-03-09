@@ -57,7 +57,10 @@ def write_samplesheet_to_path(samplesheet: dict, path: str) -> bool:
     string_to_write = ""
     for key, value in samplesheet.items():
         string_to_write += f"[{key}]\n"
-        if key in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET:
+        if (
+            key in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.values()
+            or key.endswith("_Data")
+        ):
             delimiter = "\n"
             string_to_write += (
                 f"{delimiter.join([','.join(row) for row in value])}{delimiter}"
@@ -99,7 +102,10 @@ def file_read_to_dictionary(
         if not line or re.match("^,+$", line):
             # Empty/Filler/Artifact lines with no info
             continue
-        if section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.values():
+        if (
+            section in wetlab.config.TABULAR_DATA_SECTIONS_SAMPLE_SHEET.values()
+            or section.endswith("_Data")
+        ):
             # Data is tabular; append as list of lists until next header
             if not isinstance(samplesheet[section], list):
                 samplesheet[section] = []
@@ -144,7 +150,16 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
             wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
         )
         return users
-    users_in_sample_sheet = get_column_from_tabular_data(data, iskylims_user_column)
+    users_in_sample_sheet = get_user_ids_from_samplesheet(samplesheet, data)
+    if not users_in_sample_sheet and iskylims_user_column:
+        # Keep compatibility with old behavior for v1 sheets.
+        users_in_sample_sheet = get_column_from_tabular_data(data, iskylims_user_column)
+
+    if not users_in_sample_sheet:
+        users["ERROR"] = (
+            wetlab.config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+        )
+        return users
 
     userid_names = [user for user in users_in_sample_sheet if user in user_id_list]
     invalid_names = [user for user in users_in_sample_sheet if user not in user_id_list]
@@ -242,6 +257,9 @@ def get_column_from_tabular_data(
     :param tabular_data: Description
     :type tabular_data: dict[list[list[str]]]
     """
+    if not tabular_data:
+        return []
+
     headers = tabular_data[0]
     tabular_data = [row for row in tabular_data[1:]]
     try:
@@ -268,6 +286,74 @@ def get_tabular_data(samplesheet: dict) -> list[list]:
     )
     data = samplesheet.get(data_section, [])
     return [row.split(",") for row in data]
+
+
+def get_tabular_data_for_section(samplesheet: dict, section_name: str) -> list[list]:
+    """
+    Get tabular data for a specific section in a samplesheet.
+
+    Args:
+        samplesheet (dict): Parsed samplesheet data
+        section_name (str): Section name to fetch
+
+    Returns:
+        list[list]: Tabular data, in a nested list (Matrix N*M)
+    """
+    data = samplesheet.get(section_name, [])
+    if not isinstance(data, list):
+        return []
+    return [row.split(",") for row in data]
+
+
+def get_user_id_from_project_name(project_name: str) -> str:
+    """
+    Extract iSkyLIMS username from the project name suffix.
+    Example: MiSeq_i100_GEN_002_20260219_testuser1 -> testuser1
+    """
+    if not project_name or "_" not in project_name:
+        return ""
+    return project_name.rsplit("_", 1)[-1].strip()
+
+
+def get_user_ids_from_project_name(samplesheet: dict) -> list[str]:
+    """
+    Extract iSkyLIMS usernames from Cloud_Data.ProjectName values.
+    """
+    cloud_data = get_tabular_data_for_section(samplesheet, "Cloud_Data")
+    project_names = get_column_from_tabular_data(cloud_data, "ProjectName")
+    return [get_user_id_from_project_name(project_name) for project_name in project_names]
+
+
+def get_user_ids_from_samplesheet(samplesheet: dict, data: list[list] | None = None) -> list:
+    """
+    Extract user IDs from a samplesheet.
+    Priority:
+    - v1: Description/custom_description column in [Data]
+    - v2: custom_description/Description in [BCLConvert_Data]
+    - v2 fallback: suffix from Cloud_Data.ProjectName
+    """
+    if data is None:
+        data = get_tabular_data(samplesheet)
+
+    if not data:
+        return []
+
+    version = samplesheet_version(samplesheet)
+    iskylims_user_column = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(version)
+
+    user_ids = []
+    if iskylims_user_column:
+        user_ids = get_column_from_tabular_data(data, iskylims_user_column)
+
+    # Some v2 sheets still use Description rather than custom_description.
+    if not user_ids and version == "2":
+        user_ids = get_column_from_tabular_data(data, "Description")
+
+    # v2 fallback: parse user id from Cloud_Data.ProjectName suffix.
+    if not user_ids and version == "2":
+        user_ids = get_user_ids_from_project_name(samplesheet)
+
+    return user_ids
 
 
 def get_projects_in_sample_sheet(samplesheet) -> list:
@@ -390,12 +476,13 @@ def get_sample_with_user_owner(sample_sheet_path):
     # Retrieve tabular data with the iskylims user in the header
     data = get_tabular_data(samplesheet)
     sample_names = get_column_from_tabular_data(data, "Sample_Name")
-    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(
-        samplesheet_version(samplesheet)
-    )
-    user_ids = get_column_from_tabular_data(data, iskylims_user_column_id)
+    if not sample_names:
+        # v2 sheets frequently provide Sample_ID only.
+        sample_names = get_column_from_tabular_data(data, "Sample_ID")
+    user_ids = get_user_ids_from_samplesheet(samplesheet, data)
 
-    sample_user = {sample_names[i]: user_ids[i] for i in range(len(sample_names))}
+    min_len = min(len(sample_names), len(user_ids))
+    sample_user = {sample_names[i]: user_ids[i] for i in range(min_len)}
     return sample_user
 
 
@@ -413,11 +500,20 @@ def get_projects_in_run(in_file: str) -> dict:
     samplesheet = file_read_to_dictionary(file_read)
     data = get_tabular_data(samplesheet)
     sample_projects = get_column_from_tabular_data(data, "Sample_Project")
-    iskylims_user_column_id = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(
-        samplesheet_version(samplesheet)
-    )
-    user_ids = get_column_from_tabular_data(data, iskylims_user_column_id)
-    projects = {sample_projects[i]: user_ids[i] for i in range(len(sample_projects))}
+    user_ids = get_user_ids_from_samplesheet(samplesheet, data)
+
+    # v2 fallback: project names can live in Cloud_Data.ProjectName.
+    if not sample_projects and samplesheet_version(samplesheet) == "2":
+        cloud_data = get_tabular_data_for_section(samplesheet, "Cloud_Data")
+        sample_projects = get_column_from_tabular_data(cloud_data, "ProjectName")
+        if not user_ids:
+            user_ids = [
+                get_user_id_from_project_name(project_name)
+                for project_name in sample_projects
+            ]
+
+    min_len = min(len(sample_projects), len(user_ids))
+    projects = {sample_projects[i]: user_ids[i] for i in range(min_len)}
 
     if not data:
         return {"ERROR": wetlab.config.ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING}

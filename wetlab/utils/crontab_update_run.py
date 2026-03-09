@@ -36,6 +36,25 @@ def _as_utc_datetime(value):
     return None
 
 
+def _coerce_to_date(value):
+    """
+    Convert supported date/datetime/string inputs to a date object.
+    """
+    if isinstance(value, datetime.datetime):
+        return value.date()
+    if isinstance(value, datetime.date):
+        return value
+    if isinstance(value, str) and value:
+        try:
+            return datetime.datetime.fromisoformat(value).date()
+        except ValueError:
+            try:
+                return datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S").date()
+            except ValueError:
+                return None
+    return None
+
+
 def get_list_processed_runs():
     """
     Description:
@@ -938,11 +957,10 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
                     .last()
                     .get_configuration_value()
                 )
-                try:
-                    time_to_check = (
-                        run_process_obj.get_run_completion_date_no_format().date()
-                    )
-                except Exception:
+                time_to_check = _coerce_to_date(
+                    run_process_obj.get_run_completion_date_no_format()
+                )
+                if time_to_check is None:
                     string_message = (
                         experiment_name
                         + " :  Aborting the process. No Run completion date was defined."

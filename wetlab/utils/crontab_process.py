@@ -2097,6 +2097,75 @@ def parsing_run_metrics_files(
 #######################
 
 
+def _get_existing_stats_folder(conn, run_folder, experiment_name=""):
+    """
+    Description:
+        Return first available remote stats folder for a run.
+    Input:
+        conn                # samba connection instance
+        run_folder          # run folder on the remote server
+    Return:
+        statistics_folder   # absolute remote stats path or None
+    """
+    logger = logging.getLogger(__name__)
+    shared_folder = get_samba_shared_folder()
+    base_folder = get_samba_application_shared_folder()
+    stats_file_paths = getattr(
+        wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
+    )
+    base_folder = str(base_folder or "").strip().strip("/\\")
+    run_folder = str(run_folder or "").strip().strip("/\\")
+
+    def _join_remote_path(*parts):
+        return "/".join([str(part).strip("/\\") for part in parts if str(part).strip("/\\")])
+
+    run_roots = []
+    if run_folder:
+        if base_folder and run_folder.startswith(base_folder + "/"):
+            run_roots.append(run_folder)
+        else:
+            if base_folder:
+                run_roots.append(_join_remote_path(base_folder, run_folder))
+            run_roots.append(run_folder)
+    run_roots = list(dict.fromkeys(run_roots))
+    logger.debug(
+        "Resolving stats folder with shared=%s base=%s run_folder=%s candidates=%s",
+        shared_folder,
+        base_folder,
+        run_folder,
+        run_roots,
+    )
+
+    access_denied_paths = []
+
+    for run_root in run_roots:
+        for stats_path in stats_file_paths:
+            statistics_folder = _join_remote_path(run_root, stats_path)
+            conversion_stats_file = _join_remote_path(
+                statistics_folder, wetlab.config.CONVERSION_STATS_FILE
+            )
+            try:
+                conn.getAttributes(shared_folder, conversion_stats_file)
+                return statistics_folder
+            except Exception as ex:
+                error_text = str(ex).lower()
+                if "c0000022" in error_text or "access denied" in error_text:
+                    access_denied_paths.append(conversion_stats_file)
+                logger.debug(
+                    "Unable to access stats file at %s (%s)",
+                    conversion_stats_file,
+                    str(ex),
+                )
+    if access_denied_paths:
+        logger.warning(
+            "%s : SMB permission denied while checking stats files. "
+            "Verify read/execute permissions for samba user on: %s",
+            experiment_name or run_folder,
+            ", ".join(access_denied_paths),
+        )
+    return None
+
+
 def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
     """
     Description:
@@ -2106,7 +2175,7 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         run_folder          # run folder on the remote server
         experiment_name     # Experiment name
     Constants:
-        STATS_FILE_PATH
+        STATS_FILE_PATHS
         CONVERSION_STATS_FILE
     Functions:
         get_samba_application_shared_folder
@@ -2119,19 +2188,15 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         "%s : Starting function check_demultiplexing_folder_exists", experiment_name
     )
     bcl2fastq_finish_date = ""
-    statistics_folder = os.path.join(
-        get_samba_application_shared_folder(),
-        run_folder,
-        wetlab.config.STATS_FILE_PATH,
-    )
-
-    try:
-        conn.listPath(get_samba_shared_folder(), statistics_folder)
-    except Exception:
+    statistics_folder = _get_existing_stats_folder(conn, run_folder, experiment_name)
+    if not statistics_folder:
+        stats_file_paths = getattr(
+            wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
+        )
         string_message = (
             experiment_name
-            + " : Unable to fetch folder demultiplexing at  "
-            + statistics_folder
+            + " : Unable to fetch folder demultiplexing at any of "
+            + ", ".join(stats_file_paths)
         )
         wetlab.utils.common.logging_warnings(string_message, True)
         logger.debug(
@@ -2242,7 +2307,7 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
         run_folder          # run folder on the remote server
         experiment_name     # Experiment name
     Constants:
-        STATS_FILE_PATH
+        STATS_FILE_PATHS
         CONVERSION_STATS_FILE
     Functions:
         get_samba_application_shared_folder
@@ -2253,16 +2318,15 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function get_demultiplexing_files", experiment_name)
-    statistics_folder = os.path.join(
-        get_samba_application_shared_folder(), run_folder, wetlab.config.STATS_FILE_PATH
-    )
-    try:
-        conn.listPath(get_samba_shared_folder(), statistics_folder)
-    except Exception:
+    statistics_folder = _get_existing_stats_folder(conn, run_folder, experiment_name)
+    if not statistics_folder:
+        stats_file_paths = getattr(
+            wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
+        )
         string_message = (
             experiment_name
-            + " : Unable to fetch folder demultiplexing at  "
-            + statistics_folder
+            + " : Unable to fetch folder demultiplexing at any of "
+            + ", ".join(stats_file_paths)
         )
         wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(

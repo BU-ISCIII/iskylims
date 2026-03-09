@@ -64,6 +64,8 @@ SAMPLE_SHEET = "samplesheet.csv"
 RUN_LOG_FOLDER = "Logs"
 
 STATS_FILE_PATH = "Data/Intensities/BaseCalls/Stats"
+STATS_FILE_PATH_ALTERNATIVE = "Data/Intensities/BaseCalls/Reports/legacy/Stats"
+STATS_FILE_PATHS = [STATS_FILE_PATH, STATS_FILE_PATH_ALTERNATIVE]
 
 
 CONVERSION_STATS_FILE = "ConversionStats.xml"
@@ -74,6 +76,7 @@ PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [
     ["NextSeq", "xml_file"],
     ["MiSeq", "xml_file"],
     ["NovaSeq", "txt_file"],
+    ["iSeq 100", "xml_file"]
 ]
 
 # ########### VALUE TAG FOR XML FILES #########################
@@ -341,8 +344,11 @@ SECTIONS_IN_IEM_SAMPLE_SHEET = ["Header", "Reads", "Settings", "Data"]
 SECTIONS_IN_V2_SAMPLE_SHEET = [
     "Header",
     "Reads",
+    "Sequencing_Settings",
     "BCLConvert_Settings",
     "BCLConvert_Data",
+    "Cloud_Settings",
+    "Cloud_Data",
     "CustomCustomer_Data",
 ]
 
