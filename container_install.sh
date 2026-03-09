@@ -485,6 +485,15 @@ if [ "$skip_demo_data" = false ] && service_exists "samba"; then
     fi
     engine_exec cp "$demo_data" samba:/mnt
     engine_exec exec -it samba tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
+    # Ensure extracted demo data can be traversed/read through SMB by non-owner users.
+    engine_exec exec -it samba sh -lc '
+        for root in /mnt/test_ngs_data /mnt/Runs; do
+            if [ -d "$root" ]; then
+                find "$root" -type d -exec chmod o+rx {} +
+                find "$root" -type f -exec chmod o+r {} +
+            fi
+        done
+    '
 
     echo "Deleting compressed test file"
     engine_exec exec -it samba rm /mnt/iskylims_demo_data.tar.gz
