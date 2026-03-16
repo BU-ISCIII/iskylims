@@ -44,7 +44,7 @@ RUN mkdir /srv/iskylims
 WORKDIR /srv/iskylims
 
 # Copy the local git repository to docker image directory
-COPY . /srv/iskylims
+COPY --chown=${APP_UID}:${APP_GID} . /srv/iskylims
 
 ENV PATH="/usr/sbin/cron:$PATH"
 RUN chmod +x /srv/iskylims/scripts/container_start.sh
@@ -65,7 +65,9 @@ WORKDIR /opt/iskylims
 # Create non-root user and set ownership
 RUN groupadd -g ${APP_GID} iskylims && \
     useradd -m -u ${APP_UID} -g ${APP_GID} -s ${APP_SHELL} iskylims && \
+    mkdir -p /opt/iskylims/cron /opt/iskylims/tmp && \
     chown -R ${APP_UID}:${APP_GID} /opt/iskylims /srv/iskylims && \
+    chmod 700 /opt/iskylims/cron /opt/iskylims/tmp && \
     git config --system --add safe.directory /srv/iskylims
 
 # Expose
