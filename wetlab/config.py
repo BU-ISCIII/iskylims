@@ -84,9 +84,16 @@ COMPLETION_TAG = ["CompletionStatus", "RunStatus"]
 COMPLETION_SUCCESS = ["CompletedAsPlanned", "SuccessfullyCompleted", "RunCompleted"]
 EXPERIMENT_NAME_TAG = "ExperimentName"
 APPLICATION_NAME_TAG = "ApplicationName"
+APPLICATION_TAG_ALIASES = ["ApplicationName", "Application"]
 NUMBER_CYCLES_TAG = "NumCycles"
 RUN_INFO_READ_TAG = "RunInfoRead"
 NUMBER_TAG = "Number"
+PLANNED_READS_TAG = "PlannedReads"
+PLANNED_READ_TAG = "Read"
+READ_NAME_TAG = "ReadName"
+READ_CYCLES_FALLBACK_TAGS = ["NumCycles", "Cycles"]
+RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG = "LaneCount"
+RUN_DATE_FORMATS = ["%y%m%d", "%Y-%m-%d", "%m/%d/%Y"]
 
 ##############################################################
 RUN_METRIC_GRAPHIC_COMMANDS = [
@@ -124,12 +131,24 @@ FIELDS_TO_FETCH_FROM_SETUP_TAG = [
     "ApplicationVersion",
     "NumTilesPerSwath",
 ]
+FIELDS_WITHOUT_SETUP_TAG = [
+    "NumLanes",
+    "Application",
+    "ApplicationVersion",
+    "NumTilesPerSwath",
+]
 READ_NUMBER_OF_CYCLES = [
     "PlannedRead1Cycles",
     "PlannedIndex1ReadCycles",
     "PlannedIndex2ReadCycles",
     "PlannedRead2Cycles",
 ]
+PLANNED_READ_FIELD_MAP = {
+    "Read1": "PlannedRead1Cycles",
+    "Index1": "PlannedIndex1ReadCycles",
+    "Index2": "PlannedIndex2ReadCycles",
+    "Read2": "PlannedRead2Cycles",
+}
 # NOVASEQ 6000
 FIELDS_NOVASEQ_TO_FETCH_TAG = [
     "NumLanes",

@@ -870,6 +870,13 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
         ).last()
 
     else:
+        number_of_lanes = running_parameters["running_data"].get("NumLanes", "")
+        if not number_of_lanes:
+            flowcell_layout = running_parameters["running_data"].get("FlowcellLayout", {})
+            if isinstance(flowcell_layout, dict):
+                number_of_lanes = flowcell_layout.get(
+                    wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
+                )
         string_message = (
             experiment_name
             + " : "
@@ -879,7 +886,7 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
         wetlab.utils.common.logging_errors(string_message, True, False)
         sequencer_obj = create_new_sequencer_lab_not_defined(
             running_parameters["instrument"],
-            running_parameters["running_data"]["NumLanes"],
+            number_of_lanes,
             experiment_name,
         )
         logger.info(
@@ -974,6 +981,21 @@ def parsing_run_info_and_parameter_information(
     parsing_data = {}
     image_channel = []
 
+    def get_xml_text_case_insensitive(root_element, tag_names):
+        if isinstance(tag_names, str):
+            tag_names = [tag_names]
+        lowered_tag_names = {tag_name.lower() for tag_name in tag_names}
+        for element in root_element.iter():
+            if element.tag.lower() in lowered_tag_names:
+                return element.text
+        return ""
+
+    def get_xml_child_case_insensitive(root_element, tag_name):
+        for element in root_element:
+            if element.tag.lower() == tag_name.lower():
+                return element
+        return None
+
     ############################
     # parsing RunInfo.xml file #
     ############################
@@ -1014,45 +1036,32 @@ def parsing_run_info_and_parameter_information(
     parameter_data_root = parameter_data.getroot()
     # getting the common values NextSeq and MiSeq
     for field in wetlab.config.FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
-        try:
-            running_data[field] = parameter_data_root.find(field).text
-        except Exception:
-            # get the tags item for searching when tagas are in different Caps and lower combination
-            # because of new sintax in NovaSeq
-            try:
-                tag_found_in_case_insensitive = False
-                for element in parameter_data_root.iter():
-                    if field.lower() == element.tag.lower():
-                        running_data[field] = parameter_data_root.find(element.tag).text
-                        tag_found_in_case_insensitive = True
-                        break
-                if not tag_found_in_case_insensitive:
-                    running_data[field] = ""
-                    string_message = (
-                        experiment_name
-                        + " : Parameter "
-                        + field
-                        + " not found looking for case insensitive in RunParameter.xml"
-                    )
-                    wetlab.utils.common.logging_warnings(string_message, False)
-            except Exception:
-                running_data[field] = ""
-                string_message = (
-                    experiment_name
-                    + " : Parameter "
-                    + field
-                    + " unable to fetch in RunParameter.xml"
-                )
-                wetlab.utils.common.logging_warnings(string_message, False)
+        running_data[field] = get_xml_text_case_insensitive(parameter_data_root, field)
+        if running_data[field] == "":
+            string_message = (
+                experiment_name
+                + " : Parameter "
+                + field
+                + " not found looking for case insensitive in RunParameter.xml"
+            )
+            wetlab.utils.common.logging_warnings(string_message, False)
+
+    running_data[wetlab.config.APPLICATION_NAME_TAG] = get_xml_text_case_insensitive(
+        parameter_data_root, wetlab.config.APPLICATION_TAG_ALIASES
+    )
 
     # get the nuber of lanes in case sequencer lab is not defined
-    if parameter_data_root.find(wetlab.config.SETUP_TAG):
+    setup_element = get_xml_child_case_insensitive(
+        parameter_data_root, wetlab.config.SETUP_TAG
+    )
+    if setup_element is not None:
         param_in_setup = ["ApplicationVersion", "NumTilesPerSwath"]
         for i in range(len(param_in_setup)):
             try:
-                running_data[param_in_setup[i]] = (
-                    parameter_data_root.find("Setup").find(param_in_setup[i]).text
+                setup_child = get_xml_child_case_insensitive(
+                    setup_element, param_in_setup[i]
                 )
+                running_data[param_in_setup[i]] = setup_child.text if setup_child else ""
             except Exception:
                 string_message = (
                     experiment_name
@@ -1064,13 +1073,10 @@ def parsing_run_info_and_parameter_information(
                 continue
         # collect information for MiSeq and NextSeq
         for setup_field in wetlab.config.FIELDS_TO_FETCH_FROM_SETUP_TAG:
-            try:
-                running_data[setup_field] = (
-                    parameter_data_root.find(wetlab.config.SETUP_TAG)
-                    .find(setup_field)
-                    .text
-                )
-            except Exception:
+            setup_child = get_xml_child_case_insensitive(setup_element, setup_field)
+            if setup_child is not None and setup_child.text is not None:
+                running_data[setup_field] = setup_child.text
+            else:
                 running_data[setup_field] = ""
                 string_message = (
                     experiment_name
@@ -1079,58 +1085,78 @@ def parsing_run_info_and_parameter_information(
                     + " unable to fetch in RunParameter.xml"
                 )
                 wetlab.utils.common.logging_warnings(string_message, False)
-
-        if "MiSeq" in running_data[wetlab.config.APPLICATION_NAME_TAG]:
-            # initialize paramters in case there are not exists on runParameter file
-            for i in range(len(wetlab.config.READ_NUMBER_OF_CYCLES)):
-                running_data[wetlab.config.READ_NUMBER_OF_CYCLES[i]] = ""
-            # get the length index number for reads and indexes for MiSeq Runs
-            for run_info_read in parameter_data_root.iter(
-                wetlab.config.RUN_INFO_READ_TAG
-            ):
-                try:
-                    index_number = (
-                        int(run_info_read.attrib[wetlab.config.NUMBER_TAG]) - 1
-                    )
-                    running_data[wetlab.config.READ_NUMBER_OF_CYCLES[index_number]] = (
-                        run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
-                    )
-                except Exception:
-                    string_message = (
-                        experiment_name
-                        + " : Parameter RunInfoRead: Read Number not found in RunParameter.xml"
-                    )
-                    wetlab.utils.common.logging_warnings(string_message, False)
-                    continue
     else:
-        # Collect information for NovaSeq
-        for novaseq_field in wetlab.config.FIELDS_NOVASEQ_TO_FETCH_TAG:
-            try:
-                running_data[novaseq_field] = parameter_data_root.find(
-                    novaseq_field
-                ).text
-            except Exception:
-                running_data[novaseq_field] = ""
+        for field_without_setup in wetlab.config.FIELDS_WITHOUT_SETUP_TAG:
+            running_data[field_without_setup] = get_xml_text_case_insensitive(
+                parameter_data_root, field_without_setup
+            )
+            if running_data[field_without_setup] == "":
                 string_message = (
                     experiment_name
-                    + " : Parameter in Setup -- "
-                    + novaseq_field
+                    + " : Parameter in root -- "
+                    + field_without_setup
                     + " unable to fetch in RunParameter.xml"
                 )
                 wetlab.utils.common.logging_warnings(string_message, False)
+
+    if not running_data.get("NumLanes") and isinstance(
+        running_data.get("FlowcellLayout"), dict
+    ):
+        running_data["NumLanes"] = running_data["FlowcellLayout"].get(
+            wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
+        )
+
+    for read_field in wetlab.config.READ_NUMBER_OF_CYCLES:
+        if read_field not in running_data or running_data[read_field] is None:
+            running_data[read_field] = ""
+
+    planned_reads_element = get_xml_child_case_insensitive(
+        parameter_data_root, wetlab.config.PLANNED_READS_TAG
+    )
+    if planned_reads_element is not None:
+        for planned_read in planned_reads_element.findall(wetlab.config.PLANNED_READ_TAG):
+            read_name = planned_read.attrib.get(wetlab.config.READ_NAME_TAG)
+            if read_name not in wetlab.config.PLANNED_READ_FIELD_MAP:
+                continue
+            cycles_value = ""
+            for cycles_tag in wetlab.config.READ_CYCLES_FALLBACK_TAGS:
+                if cycles_tag in planned_read.attrib:
+                    cycles_value = planned_read.attrib[cycles_tag]
+                    break
+            running_data[wetlab.config.PLANNED_READ_FIELD_MAP[read_name]] = cycles_value
+    elif "MiSeq" in running_data.get(wetlab.config.APPLICATION_NAME_TAG, ""):
+        for run_info_read in parameter_data_root.iter(wetlab.config.RUN_INFO_READ_TAG):
+            try:
+                index_number = int(run_info_read.attrib[wetlab.config.NUMBER_TAG]) - 1
+                running_data[wetlab.config.READ_NUMBER_OF_CYCLES[index_number]] = (
+                    run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
+                )
+            except Exception:
+                string_message = (
+                    experiment_name
+                    + " : Parameter RunInfoRead: Read Number not found in RunParameter.xml"
+                )
+                wetlab.utils.common.logging_warnings(string_message, False)
+                continue
     # get date for miSeq and NextSeq with the format yymmdd
     date = p_run.find("Date").text
     # Remove timestamp
     date = date.split("T")[0]
-    try:
-        run_date = datetime.datetime.strptime(date, "%y%m%d")
-    except Exception:
-        # get date for novaseq sequencer
-        date = p_run.find("Date").text.split(" ")[0]
+    run_date = ""
+    for date_format in wetlab.config.RUN_DATE_FORMATS:
         try:
-            run_date = datetime.datetime.strptime(date, "%m/%d/%Y")
+            run_date = datetime.datetime.strptime(date, date_format)
+            break
         except Exception:
-            run_date = ""
+            continue
+    if run_date == "":
+        date = p_run.find("Date").text.split(" ")[0]
+        for date_format in wetlab.config.RUN_DATE_FORMATS:
+            try:
+                run_date = datetime.datetime.strptime(date, date_format)
+                break
+            except Exception:
+                continue
 
     # updating the date fetched from the Date tag for run and project
     logger.debug("%s : Found date that was recorded the Run %s", experiment_name, date)

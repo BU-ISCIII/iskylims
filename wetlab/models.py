@@ -1,4 +1,5 @@
 # Generic imports
+import ast
 import os
 import re
 
@@ -673,10 +674,33 @@ class RunningParameters(models.Model):
         return run_parameters_data
 
     def get_number_of_lanes(self):
-        match_flowcell = re.match(
-            r".*LaneCount.*'(\d+)'.*SurfaceCount.*", self.flowcell_layout
+        if not self.flowcell_layout:
+            return ""
+
+        if isinstance(self.flowcell_layout, dict):
+            return self.flowcell_layout.get(
+                wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
+            )
+
+        try:
+            flowcell_layout = ast.literal_eval(self.flowcell_layout)
+        except (ValueError, SyntaxError):
+            flowcell_layout = None
+
+        if isinstance(flowcell_layout, dict):
+            return flowcell_layout.get(
+                wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
+            )
+
+        match_flowcell = re.search(
+            r"'%s':\s*'?(\\d+)'?"
+            % wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG,
+            str(self.flowcell_layout),
         )
-        return match_flowcell.group(1)
+        if match_flowcell:
+            return match_flowcell.group(1)
+
+        return ""
 
     def get_number_of_reads(self):
         count = 0
