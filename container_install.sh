@@ -476,6 +476,15 @@ fi
 
 if [ "$skip_test_data" = false ]; then
     engine_exec exec -it "$app_container" python3 manage.py loaddata test/test_data.json
+    engine_exec exec -it "$app_container" python3 manage.py shell -c "
+from django.contrib.auth.models import Group, User
+admin = User.objects.get(username='admin')
+admin.groups.add(
+    Group.objects.get(name='WetlabManager'),
+    Group.objects.get(name='ServiceManager'),
+)
+print('admin groups:', list(admin.groups.values_list('name', flat=True)))
+"
 else
     echo "Skipping test data fixtures as requested"
 fi
