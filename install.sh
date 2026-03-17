@@ -11,7 +11,7 @@ usage : $0 --upgrade --git_revision --conf
     Optional input data:
     --install       | Install iskylims full/dep/app
     --upgrade       | Upgrade iskylims full/dep/app
-    --git_revision  | Git revision name to run (it can be git branch, git version tag or commit SHA)
+    --git_revision  | Git revision name to run (branch, tag, commit SHA, or 'current' to use copied local sources as-is)
     --conf          | Select custom configuration file. Default: ./install_settings.txt
     --tables        | Load the first inital tables (from conf folder)
     --skip_tables   | Skip loading initial tables (even during install)
@@ -276,6 +276,10 @@ load_install_config() {
 
 # checkout_git_revision: ensure desired git revision exists and check it out safely.
 checkout_git_revision() {
+    if [[ "$git_branch" == "current" ]]; then
+        printf "${YELLOW}Using copied local working tree without git checkout.${NC}\n"
+        return 0
+    fi
     if git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
         if [[ $git_branch != $initial_git_ref ]]; then
             local local_changes

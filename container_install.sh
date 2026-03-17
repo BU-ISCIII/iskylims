@@ -9,7 +9,7 @@ This script installs and upgrades the iskylims app.
 Usage : $0 [--demo_data] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--script_before] [--script_after] [--engine] [--test]
     Optional input data:
     --demo_data         | Provide already downloaded demo data from Zenodo
-    --git_revision      | Specify the Git revision to install (default: main)
+    --git_revision      | Specify the Git revision to install (default: main, or 'current' to use copied local sources)
     --compose_file      | Compose file to use (overrides default)
     --install_conf      | Settings file consumed during container image build (mandatory for production)
     --install_conf_map  | Service-specific settings file: service,path (can be repeated)
@@ -34,6 +34,9 @@ Examples:
 
     Install demo container system with local services
     bash $0 --test
+
+    Install test stack from current local committed sources without checking out a branch in-container
+    bash $0 --test --git_revision current
 
     Provide already downloaded data from Zenodo (compressed) for test environment
     bash $0 --demo_data /path/to/iskylims_demo_data.tar.gz
