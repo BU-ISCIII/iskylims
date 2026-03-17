@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added documentation describing migration scripts and their related versions [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Enabled Docker internal networking for local test installation [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Opened Docker network to allow localhost MySQL connection when required [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Added test fixtures and installation updates for the new sequencer and SampleSheet v2 support, including admin test-group assignment and new sequencer bootstrap data. Closes [#388](https://github.com/BU-ISCIII/iskylims/issues/388) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
 
 #### Fixes
 
@@ -70,6 +71,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed disk utilization check to correctly resolve application folder path [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Fixed incorrect application folder path resolution in crontab scripts [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Fixed samplesheet parsing error [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Fixed logger inconsistency that prevented exceptions and error messages from being written to the update crontab log. Closes [#390](https://github.com/BU-ISCIII/iskylims/issues/390) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
+- Fixed wetlab crontab processing for the new sequencer, including run discovery, completion checks, RunInfo/RunParameters parsing updates, and SampleSheet v2 handling. Closes [#387](https://github.com/BU-ISCIII/iskylims/issues/387) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
 
 #### Changed
 
@@ -96,24 +99,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 | Package             | Last release Version  | New release Version  |
 |:--------------------|:---------------------|:----------------------------|
-| wheel               | 0.37.1               | 0.44.0                      |
+| wheel               | 0.37.1               | 0.46.2                      |
 | asn1crypto          | 1.5.0                | 1.5.1                       |
 | bcrypt              | 4.0.1                | 4.2.0                       |
 | biopython           | 1.79                 | 1.84                        |
-| cryptography        | 38.0.3               | 43.0.1                      |
-| Django              | 4.2                  | 4.2.15                      |
+| cryptography        | 38.0.3               | 44.0.3                      |
+| Django              | 4.2                  | 4.2.28                      |
 | django-crispy-forms | 2.0                  | 2.3                         |
+| crispy-bootstrap5   |                      | 0.7                         |
+| django-crontab      |                      | 0.7.1                       |
 | django-js-asset     | 2.0.0                | 2.2.0                       |
 | django-mptt         | 0.14.0               | 0.16.0                      |
 | django-mptt-admin   | 2.4.1                | 2.6.2                       |
 | django-cleanup      | 7.0.0                | 8.1.0                       |
+| interop             |                      | >1.1.22                     |
 | mod_wsgi            | 4.9.4                | 5.0.0                       |
+| gunicorn            |                      | 22.0.0                      |
 | mysqlclient         | 2.0.3                | 2.2.6                       |
 | paramiko            | 3.1.0                | 3.4.1                       |
 | jsonschema          | 4.17.3               | 4.23.0                      |
+| pysmb               |                      | 1.2.9.1                     |
 | django_extensions   | 3.2.1                | 3.2.3                       |
 | djangorestframework | 3.14.0               | 3.15.2                      |
 | drf-yasg            | 1.21.5               | 1.21.7                      |
+| xlrd                |                      | 2.0.1                       |
 | pandas              | 1.5.3                | 2.2.2                       |
+| numpy               |                      | 1.26.4                      |
 | openpyxl            | 3.1.1                | 3.1.5                       |
-| setuptools          |                      | 75.2.0                      |
+| setuptools          |                      | 78.1.1                      |
