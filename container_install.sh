@@ -309,6 +309,11 @@ app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
 app_install_path="${APP_INSTALL_PATH:-/opt/iskylims}"
 app_port="${APP_PORT:-8001}"
 app_container=""
+local_head_hash=""
+local_head_short=""
+app_image_name="${APP_IMAGE_NAME:-iskylims_app}"
+image_id_before_build=""
+image_id_after_build=""
 
 # Check if a service exists in the compose file
 #
@@ -389,43 +394,75 @@ ensure_app_running() {
 
 print_local_source_diagnostics() {
     echo "Local source diagnostics:"
-    echo "  working directory: $repo_root"
-    echo "  build context: $build_context_dir"
-    echo "  engine: $engine"
-    echo "  compose file: $compose_file"
-    echo "  git revision mode: $git_revision"
     if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "  local branch: $(git -C "$repo_root" rev-parse --abbrev-ref HEAD)"
+        local_head_hash="$(git -C "$repo_root" rev-parse HEAD)"
+        local_head_short="$(git -C "$repo_root" rev-parse --short HEAD)"
         echo "  local HEAD: $(git -C "$repo_root" log -1 --oneline)"
-        echo "  local status:"
-        git -C "$repo_root" status --short || true
+        echo "  local HEAD hash: $local_head_hash"
     else
         echo "  local git metadata unavailable"
     fi
 }
 
+print_existing_artifact_diagnostics() {
+    echo "Image diagnostics before build:"
+    if engine_exec image inspect "$app_image_name" >/dev/null 2>&1; then
+        image_id_before_build="$(engine_exec image inspect -f '{{.Id}}' "$app_image_name" 2>/dev/null || true)"
+        echo "  image before build: $image_id_before_build"
+    else
+        image_id_before_build=""
+        echo "  image before build: none"
+    fi
+}
+
+print_image_after_build() {
+    echo "Image diagnostics after build:"
+    if engine_exec image inspect "$app_image_name" >/dev/null 2>&1; then
+        image_id_after_build="$(engine_exec image inspect -f '{{.Id}}' "$app_image_name" 2>/dev/null || true)"
+        echo "  image after build: $image_id_after_build"
+        if [ -n "$image_id_before_build" ] && [ "$image_id_before_build" = "$image_id_after_build" ]; then
+            echo "  image id check: unchanged"
+        elif [ -n "$image_id_before_build" ] && [ "$image_id_before_build" != "$image_id_after_build" ]; then
+            echo "  image id check: changed"
+        else
+            echo "  image id check: created"
+        fi
+    else
+        echo "  image after build: not found"
+    fi
+}
+
 print_container_source_diagnostics() {
     local label="$1"
+    local container_repo_head_hash=""
+    local container_repo_head_short=""
     echo "$label"
-    echo "  container: $app_container"
-    echo "  image: $(engine_exec inspect -f '{{.Config.Image}}' "$app_container" 2>/dev/null || true)"
-    echo "  image id: $(engine_exec inspect -f '{{.Image}}' "$app_container" 2>/dev/null || true)"
+    container_repo_head_hash="$(engine_exec exec "$app_container" sh -lc "
+        if [ -d '$app_repo_path/.git' ]; then
+            cd '$app_repo_path' && git rev-parse HEAD
+        fi
+    " 2>/dev/null | tail -n 1)"
+    container_repo_head_short="$(engine_exec exec "$app_container" sh -lc "
+        if [ -d '$app_repo_path/.git' ]; then
+            cd '$app_repo_path' && git rev-parse --short HEAD
+        fi
+    " 2>/dev/null | tail -n 1)"
+    if [ -n "$container_repo_head_hash" ]; then
+        echo "  container /srv HEAD hash: $container_repo_head_hash"
+    fi
+    if [ -n "$local_head_hash" ] && [ -n "$container_repo_head_hash" ]; then
+        if [ "$local_head_hash" = "$container_repo_head_hash" ]; then
+            echo "  HEAD check: OK local=$local_head_short container=$container_repo_head_short"
+        else
+            echo "  HEAD check: MISMATCH local=$local_head_short container=$container_repo_head_short"
+        fi
+    fi
     engine_exec exec "$app_container" sh -lc "
         echo '  /srv/iskylims HEAD:'
         if [ -d '$app_repo_path/.git' ]; then
             cd '$app_repo_path' && git log -1 --oneline
         else
             echo 'not a git checkout'
-        fi
-        echo '  plot code markers in /srv/iskylims:'
-        grep -n 'matplotlib\|Creating plot graphics from stored run metrics\|plot_by_cycle' '$app_repo_path/wetlab/utils/crontab_process.py' || true
-    " || true
-    engine_exec exec "$app_container" sh -lc "
-        echo '  plot code markers in $app_install_path:'
-        if [ -f '$app_install_path/wetlab/utils/crontab_process.py' ]; then
-            grep -n 'matplotlib\|Creating plot graphics from stored run metrics\|plot_by_cycle' '$app_install_path/wetlab/utils/crontab_process.py' || true
-        else
-            echo 'not installed yet'
         fi
     " || true
 }
@@ -458,12 +495,14 @@ cleanup_stale_test_containers() {
 cleanup_stale_test_containers
 
 print_local_source_diagnostics
+print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
 INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" \
     compose_exec -f "$compose_file" build --no-cache \
     --build-arg INSTALL_TYPE="dep" \
     --build-arg GIT_REVISION="$git_revision" \
     --build-arg INSTALL_CONF="$install_conf_container"
+print_image_after_build
 compose_exec -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
