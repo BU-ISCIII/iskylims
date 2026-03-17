@@ -693,8 +693,7 @@ class RunningParameters(models.Model):
             )
 
         match_flowcell = re.search(
-            r"'%s':\s*'?(\\d+)'?"
-            % wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG,
+            r"'%s':\s*'?(\\d+)'?" % wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG,
             str(self.flowcell_layout),
         )
         if match_flowcell:

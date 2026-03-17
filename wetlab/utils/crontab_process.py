@@ -872,7 +872,9 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
     else:
         number_of_lanes = running_parameters["running_data"].get("NumLanes", "")
         if not number_of_lanes:
-            flowcell_layout = running_parameters["running_data"].get("FlowcellLayout", {})
+            flowcell_layout = running_parameters["running_data"].get(
+                "FlowcellLayout", {}
+            )
             if isinstance(flowcell_layout, dict):
                 number_of_lanes = flowcell_layout.get(
                     wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
@@ -1061,7 +1063,9 @@ def parsing_run_info_and_parameter_information(
                 setup_child = get_xml_child_case_insensitive(
                     setup_element, param_in_setup[i]
                 )
-                running_data[param_in_setup[i]] = setup_child.text if setup_child else ""
+                running_data[param_in_setup[i]] = (
+                    setup_child.text if setup_child else ""
+                )
             except Exception:
                 string_message = (
                     experiment_name
@@ -1114,7 +1118,9 @@ def parsing_run_info_and_parameter_information(
         parameter_data_root, wetlab.config.PLANNED_READS_TAG
     )
     if planned_reads_element is not None:
-        for planned_read in planned_reads_element.findall(wetlab.config.PLANNED_READ_TAG):
+        for planned_read in planned_reads_element.findall(
+            wetlab.config.PLANNED_READ_TAG
+        ):
             read_name = planned_read.attrib.get(wetlab.config.READ_NAME_TAG)
             if read_name not in wetlab.config.PLANNED_READ_FIELD_MAP:
                 continue
@@ -2186,7 +2192,9 @@ def _get_existing_stats_folder(conn, run_folder, experiment_name=""):
     run_folder = str(run_folder or "").strip().strip("/\\")
 
     def _join_remote_path(*parts):
-        return "/".join([str(part).strip("/\\") for part in parts if str(part).strip("/\\")])
+        return "/".join(
+            [str(part).strip("/\\") for part in parts if str(part).strip("/\\")]
+        )
 
     run_roots = []
     if run_folder:

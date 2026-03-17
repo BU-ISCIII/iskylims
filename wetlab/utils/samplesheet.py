@@ -321,10 +321,14 @@ def get_user_ids_from_project_name(samplesheet: dict) -> list[str]:
     """
     cloud_data = get_tabular_data_for_section(samplesheet, "Cloud_Data")
     project_names = get_column_from_tabular_data(cloud_data, "ProjectName")
-    return [get_user_id_from_project_name(project_name) for project_name in project_names]
+    return [
+        get_user_id_from_project_name(project_name) for project_name in project_names
+    ]
 
 
-def get_user_ids_from_samplesheet(samplesheet: dict, data: list[list] | None = None) -> list:
+def get_user_ids_from_samplesheet(
+    samplesheet: dict, data: list[list] | None = None
+) -> list:
     """
     Extract user IDs from a samplesheet.
     Priority:

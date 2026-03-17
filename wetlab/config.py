@@ -76,7 +76,7 @@ PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [
     ["NextSeq", "xml_file"],
     ["MiSeq", "xml_file"],
     ["NovaSeq", "txt_file"],
-    ["iSeq 100", "xml_file"]
+    ["iSeq 100", "xml_file"],
 ]
 
 # ########### VALUE TAG FOR XML FILES #########################
