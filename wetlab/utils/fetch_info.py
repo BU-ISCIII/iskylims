@@ -276,10 +276,18 @@ def get_run_graphics(run_object):
     ]
 
     for index_graph in range(len(graphics)):
+        graphic_relative_path = os.path.join(folder_graphic, graphics[index_graph])
+        graphic_absolute_path = os.path.join(
+            settings.MEDIA_ROOT,
+            wetlab.config.RUN_IMAGES_DIRECTORY,
+            run_graphics_object.get_folder_graphic(),
+            graphics[index_graph],
+        )
         run_graphics.append(
             [
                 graphic_text[index_graph],
-                os.path.join(folder_graphic, graphics[index_graph]),
+                graphic_relative_path,
+                os.path.exists(graphic_absolute_path),
             ]
         )
     return run_graphics

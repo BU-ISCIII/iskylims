@@ -21,6 +21,7 @@ RUN dnf -y install \
     httpd-devel cronie \
     rsync tzdata \
     pkgconf-pkg-config \
+    gnuplot \
     && dnf clean all
 
 # Install supercronic (rootless-friendly cron runner)
@@ -38,6 +39,14 @@ RUN set -eux; \
 
 # Ensure python3 points to the desired version
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python3
+
+# Install Illumina InterOp CLI used to generate run metric plots
+RUN set -eux; \
+    cd /opt; \
+    wget -q https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz; \
+    tar -xf InterOp-1.1.15-Linux-GNU.tar.gz; \
+    ln -s InterOp-1.1.15-Linux-GNU interop; \
+    rm InterOp-1.1.15-Linux-GNU.tar.gz
 
 # Set git repository
 RUN mkdir /srv/iskylims 

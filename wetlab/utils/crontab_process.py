@@ -1377,6 +1377,13 @@ def create_run_metric_graphics(
     for graphic_file in graphic_files:
         old_file_name = os.path.join(run_graphic_dir, graphic_file)
         split_file_name = graphic_file.split("_")
+        if len(split_file_name) < 2:
+            logger.warning(
+                "%s : Unable to rename unexpected graphic file %s",
+                experiment_name,
+                old_file_name,
+            )
+            continue
         if not split_file_name[1].endswith(wetlab.config.PLOT_EXTENSION):
             split_file_name[1] = split_file_name[1] + wetlab.config.PLOT_EXTENSION
         new_file_name = os.path.join(run_graphic_dir, split_file_name[1])
@@ -1386,6 +1393,29 @@ def create_run_metric_graphics(
             experiment_name,
             old_file_name,
             new_file_name,
+        )
+
+    expected_graphics = [
+        "ClusterCount-by-lane.png",
+        "flowcell-Intensity.png",
+        "Intensity-by-cycle.png",
+        "q-heat-map.png",
+        "q-histogram.png",
+        "sample-qc.png",
+    ]
+    for expected_graphic in expected_graphics:
+        expected_graphic_path = os.path.join(run_graphic_dir, expected_graphic)
+        if not os.path.exists(expected_graphic_path):
+            logger.warning(
+                "%s : Graphic file was not generated: %s",
+                experiment_name,
+                expected_graphic_path,
+            )
+
+    if len(graphic_files) == 0:
+        logger.warning("%s : No graphic files were generated", experiment_name)
+        logger.debug(
+            "%s : End create_run_metric_graphics without graphics", experiment_name
         )
 
     # saving the graphic location in database
