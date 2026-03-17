@@ -387,6 +387,49 @@ ensure_app_running() {
     fi
 }
 
+print_local_source_diagnostics() {
+    echo "Local source diagnostics:"
+    echo "  working directory: $repo_root"
+    echo "  build context: $build_context_dir"
+    echo "  engine: $engine"
+    echo "  compose file: $compose_file"
+    echo "  git revision mode: $git_revision"
+    if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "  local branch: $(git -C "$repo_root" rev-parse --abbrev-ref HEAD)"
+        echo "  local HEAD: $(git -C "$repo_root" log -1 --oneline)"
+        echo "  local status:"
+        git -C "$repo_root" status --short || true
+    else
+        echo "  local git metadata unavailable"
+    fi
+}
+
+print_container_source_diagnostics() {
+    local label="$1"
+    echo "$label"
+    echo "  container: $app_container"
+    echo "  image: $(engine_exec inspect -f '{{.Config.Image}}' "$app_container" 2>/dev/null || true)"
+    echo "  image id: $(engine_exec inspect -f '{{.Image}}' "$app_container" 2>/dev/null || true)"
+    engine_exec exec "$app_container" sh -lc "
+        echo '  /srv/iskylims HEAD:'
+        if [ -d '$app_repo_path/.git' ]; then
+            cd '$app_repo_path' && git log -1 --oneline
+        else
+            echo 'not a git checkout'
+        fi
+        echo '  plot code markers in /srv/iskylims:'
+        grep -n 'matplotlib\|Creating plot graphics from stored run metrics\|plot_by_cycle' '$app_repo_path/wetlab/utils/crontab_process.py' || true
+    " || true
+    engine_exec exec "$app_container" sh -lc "
+        echo '  plot code markers in $app_install_path:'
+        if [ -f '$app_install_path/wetlab/utils/crontab_process.py' ]; then
+            grep -n 'matplotlib\|Creating plot graphics from stored run metrics\|plot_by_cycle' '$app_install_path/wetlab/utils/crontab_process.py' || true
+        else
+            echo 'not installed yet'
+        fi
+    " || true
+}
+
 # Remove stale test containers left over from previous runs.
 #
 # This function will only be executed in "test" mode when the engine is "podman".
@@ -414,6 +457,7 @@ cleanup_stale_test_containers() {
 
 cleanup_stale_test_containers
 
+print_local_source_diagnostics
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
 INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" \
     compose_exec -f "$compose_file" build --no-cache \
@@ -425,6 +469,7 @@ compose_exec -f "$compose_file" up -d
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
 ensure_app_running
+print_container_source_diagnostics "Container diagnostics after startup:"
 
 app_uid="${APP_UID:-1212}"
 app_gid="${APP_GID:-1212}"
@@ -467,6 +512,8 @@ else
     echo "Running install.sh install inside the container"
     engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 fi
+
+print_container_source_diagnostics "Container diagnostics after install.sh:"
 
 if ! engine_exec exec -it "$app_container" test -f "$app_install_path/manage.py"; then
     echo "Error: $app_install_path/manage.py not found after install.sh. Showing logs:"
