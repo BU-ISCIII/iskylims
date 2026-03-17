@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  apache:
+    container_name: iskylims_apache
+    restart: unless-stopped
+    image: registry.access.redhat.com/ubi9/httpd-24
+    depends_on:
+      - app
+    ports:
+      - "80:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo
+      - ./conf/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:Z,ro
+      - /var/log/httpd:/var/log/httpd:Z
+
   app:
     container_name: iskylims_app
     restart: unless-stopped
@@ -13,8 +27,8 @@ services:
         APP_UID: ${APP_UID:-1212}
         APP_GID: ${APP_GID:-1212}
         APP_SHELL: ${APP_SHELL:-/sbin/nologin}
-    ports:
-      - "8001:8001"
+    expose:
+      - "8001"
     environment:
       DJANGO_SETTINGS_MODULE: iskylims.settings
       APP_MODE: prod
@@ -24,7 +38,6 @@ services:
       - /usr/share/zoneinfo:/usr/share/zoneinfo
       - /var/log/local/apps/iskylims:/opt/iskylims/logs:Z
       - iskylims_documents:/opt/iskylims/documents
-      - /opt/iskylims/static-host:/opt/iskylims/static:Z
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
