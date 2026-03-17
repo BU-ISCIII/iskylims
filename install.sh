@@ -205,7 +205,19 @@ load_tables() {
     fi
 }
 
+# ensure_git_safe_directory: avoid Git "dubious ownership" failures in containerized installs.
+ensure_git_safe_directory() {
+    local repo_dir
+    repo_dir="$(pwd -P)"
+
+    if [ -d "$repo_dir/.git" ] || [ -f "$repo_dir/.git" ]; then
+        git config --global --add safe.directory "$repo_dir" >/dev/null 2>&1 || true
+        git config --system --add safe.directory "$repo_dir" >/dev/null 2>&1 || true
+    fi
+}
+
 # Ensure to recover current git branch/tag/SHA on script exit
+ensure_git_safe_directory
 initial_git_ref=$(git rev-parse --abbrev-ref HEAD || git rev-parse HEAD)
 trap restore_git_ref EXIT
 
