@@ -11,6 +11,11 @@ ARG APP_SHELL=/sbin/nologin
 # Updates
 RUN dnf -y update
 
+# Add EPEL for packages not available in default UBI repositories
+RUN dnf -y install \
+    https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+    && dnf clean all
+
 # Essential software
 RUN dnf -y install \
     git wget \
@@ -21,7 +26,7 @@ RUN dnf -y install \
     httpd-devel cronie \
     rsync tzdata \
     pkgconf-pkg-config \
-    gnuplot \
+    gnuplot-minimal \
     && dnf clean all
 
 # Install supercronic (rootless-friendly cron runner)
