@@ -1158,6 +1158,19 @@ def parsing_run_info_and_parameter_information(
             except Exception:
                 continue
 
+    logger.info(
+        "%s : Parsed RunParameters values run_id=%s app=%s lanes=%s reads=%s/%s/%s/%s run_date=%s",
+        experiment_name,
+        running_data.get("RunID", ""),
+        running_data.get(wetlab.config.APPLICATION_NAME_TAG, ""),
+        running_data.get("NumLanes", ""),
+        running_data.get("PlannedRead1Cycles", ""),
+        running_data.get("PlannedIndex1ReadCycles", ""),
+        running_data.get("PlannedIndex2ReadCycles", ""),
+        running_data.get("PlannedRead2Cycles", ""),
+        run_date,
+    )
+
     # updating the date fetched from the Date tag for run and project
     logger.debug("%s : Found date that was recorded the Run %s", experiment_name, date)
     parsing_data["running_data"] = running_data
