@@ -8,12 +8,12 @@ services:
     depends_on:
       - app
     ports:
-      - "80:8080"
+      - "8080:8080"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
       - ./conf/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:Z,ro
-      - /var/log/httpd:/var/log/httpd:Z
+      - /var/log/local/apache:/var/log/httpd:Z
 
   app:
     container_name: iskylims_app
