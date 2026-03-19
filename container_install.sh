@@ -303,10 +303,22 @@ else
     install_conf_container="$install_conf"
 fi
 
+host_install_conf_path="$install_conf"
+if [[ "$host_install_conf_path" != /* ]]; then
+    host_install_conf_path="$repo_root/$host_install_conf_path"
+fi
+
+read_install_conf_value() {
+    local key="$1"
+    local file="$2"
+    grep -E "^${key}=" "$file" | tail -n 1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//"
+}
+
 set_engine
 
 app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
-app_install_path="${APP_INSTALL_PATH:-/opt/iskylims}"
+config_install_path="$(read_install_conf_value "INSTALL_PATH" "$host_install_conf_path")"
+app_install_path="${APP_INSTALL_PATH:-${config_install_path:-/opt/iskylims}}"
 app_port="${APP_PORT:-8001}"
 app_container=""
 local_head_hash=""
@@ -497,13 +509,17 @@ cleanup_stale_test_containers
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
-INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" \
+mkdir -p "$app_install_path/conf" "$app_install_path/logs/apache"
+if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
+    cp "$repo_root/conf/iskylims_apache_reverse_proxy.conf" "$app_install_path/conf/iskylims_apache_reverse_proxy.conf"
+fi
+INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" \
     compose_exec -f "$compose_file" build --no-cache \
     --build-arg INSTALL_TYPE="dep" \
     --build-arg GIT_REVISION="$git_revision" \
     --build-arg INSTALL_CONF="$install_conf_container"
 print_image_after_build
-compose_exec -f "$compose_file" up -d
+APP_INSTALL_PATH="$app_install_path" compose_exec -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
@@ -514,11 +530,6 @@ app_uid="${APP_UID:-1212}"
 app_gid="${APP_GID:-1212}"
 echo "Ensuring runtime directories are writable by ${app_uid}:${app_gid}"
 engine_exec exec -u 0 -it "$app_container" sh -lc "mkdir -p ${app_install_path}/documents ${app_install_path}/logs ${app_install_path}/static ${app_install_path}/cron ${app_install_path}/tmp && chown -R ${app_uid}:${app_gid} ${app_install_path}/documents ${app_install_path}/logs ${app_install_path}/static ${app_install_path}/cron ${app_install_path}/tmp"
-
-host_install_conf_path="$install_conf"
-if [[ "$host_install_conf_path" != /* ]]; then
-    host_install_conf_path="$repo_root/$host_install_conf_path"
-fi
 
 container_install_conf_path="$install_conf_container"
 if [[ "$container_install_conf_path" != /* ]]; then

@@ -12,8 +12,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - ./conf/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:Z,ro
-      - /var/log/local/apache:/var/log/httpd:Z
+      - ${APP_INSTALL_PATH:-/opt/iskylims}/conf/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:Z,ro
+      - /var/local/logs/apache:/var/log/httpd:Z
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:Z,ro
 
   app:
     container_name: iskylims_app
@@ -36,10 +37,12 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - /var/log/local/apps/iskylims:/opt/iskylims/logs:Z
-      - iskylims_documents:/opt/iskylims/documents
+      - /var/log/local/apps/iskylims:${APP_INSTALL_PATH:-/opt/iskylims}/logs:Z
+      - iskylims_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:Z
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
 volumes:
   iskylims_documents:
+  iskylims_static:
