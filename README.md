@@ -218,6 +218,24 @@ If you need a different runtime root, set `INSTALL_PATH` in the install config f
 
 `container_install.sh` creates `${APP_INSTALL_PATH}/conf` and `/var/log/local/apache` before `compose up`, copies `conf/iskylims_apache_reverse_proxy.conf` there, passes `APP_INSTALL_PATH` into Compose, and then runs `install.sh` inside the `app` container. `install.sh` creates `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents`, and runs `collectstatic`, while the Apache container keeps using the host log path `/var/log/local/apache`.
 
+SELinux note for pre-production and production:
+
+- Ensure `/var/log/local/apache` is writable by the container runtime and labeled for containers, for example `container_file_t`.
+- If the host path is already labeled `container_file_t`, do not add `:Z` to the Apache log bind mount. `:Z` forces a relabel and may fail with `lsetxattr(... container_file_t ...): operation not permitted`.
+- A quick check is:
+
+```bash
+ls -ldZ /var/log/local/apache
+```
+
+- Expected example:
+
+```text
+system_u:object_r:container_file_t:s0
+```
+
+- If Apache fails on startup with `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, remove any stale host file and recreate/restart the container. In practice, deleting `/var/log/local/apache/modsec_debug.log` has been enough when the existing inode had bad permissions/label state.
+
 #### Cron jobs inside the container
 
 Cron runs via `supercronic`, started by the container entrypoint script. The script writes the django-crontab entries to `${APP_INSTALL_PATH}/cron/iskylims` and starts `supercronic` as the non-root app user.

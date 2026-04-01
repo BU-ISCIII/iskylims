@@ -205,6 +205,24 @@ Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de co
 
 `container_install.sh` crea `${APP_INSTALL_PATH}/conf` y `/var/log/local/apache` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh` dentro del contenedor `app`. `install.sh` crea `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents` y ejecuta `collectstatic`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/apache`.
 
+Nota SELinux para pre-produccion y produccion:
+
+- Asegura que `/var/log/local/apache` sea escribible por el runtime de contenedores y tenga una etiqueta valida para contenedores, por ejemplo `container_file_t`.
+- Si el path del host ya esta etiquetado como `container_file_t`, no anadas `:Z` al bind mount de logs de Apache. `:Z` fuerza un relabel y puede fallar con `lsetxattr(... container_file_t ...): operation not permitted`.
+- Comprobacion rapida:
+
+```bash
+ls -ldZ /var/log/local/apache
+```
+
+- Ejemplo esperado:
+
+```text
+system_u:object_r:container_file_t:s0
+```
+
+- Si Apache falla al arrancar con `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, elimina cualquier fichero host obsoleto y recrea/reinicia el contenedor. En la practica, borrar `/var/log/local/apache/modsec_debug.log` ha sido suficiente cuando el inode existente tenia permisos o contexto incorrectos.
+
 #### Tareas cron dentro del contenedor
 
 Cron se ejecuta mediante `supercronic`, lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `${APP_INSTALL_PATH}/cron/iskylims` y arranca `supercronic` como usuario no root.
