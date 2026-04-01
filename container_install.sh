@@ -509,7 +509,7 @@ cleanup_stale_test_containers
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
-mkdir -p "$app_install_path/conf" "$app_install_path/logs/apache"
+mkdir -p "$app_install_path/conf" "/var/log/local/apache"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
     cp "$repo_root/conf/iskylims_apache_reverse_proxy.conf" "$app_install_path/conf/iskylims_apache_reverse_proxy.conf"
 fi

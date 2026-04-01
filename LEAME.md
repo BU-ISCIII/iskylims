@@ -175,7 +175,7 @@ El compose de produccion usa `INSTALL_PATH` del fichero de configuracion selecci
 Persistencia actual:
 
 - `/var/log/local/apps/iskylims` -> `${INSTALL_PATH}/logs` dentro del contenedor `app`
-- `/var/local/logs/apache` -> `/var/log/httpd` dentro del contenedor `apache`
+- `/var/log/local/apache` -> `/var/log/httpd` dentro del contenedor `apache`
 - `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` dentro del contenedor `apache`
 - volumen nombrado `iskylims_documents` -> `${INSTALL_PATH}/documents`
 - volumen nombrado `iskylims_static` -> `${INSTALL_PATH}/static`
@@ -184,7 +184,7 @@ Crea los directorios necesarios en el host:
 
 ```bash
 sudo mkdir -p /var/log/local/apps/iskylims
-sudo mkdir -p /var/local/logs/apache
+sudo mkdir -p /var/log/local/apache
 sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
 sudo chown -R 1212:1212 /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
@@ -203,7 +203,7 @@ Durante `container_install.sh`, el fichero `conf/iskylims_apache_reverse_proxy.c
 
 Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`.
 
-`container_install.sh` crea `${APP_INSTALL_PATH}/conf` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh` dentro del contenedor `app`. `install.sh` crea `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents` y ejecuta `collectstatic`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/local/logs/apache`.
+`container_install.sh` crea `${APP_INSTALL_PATH}/conf` y `/var/log/local/apache` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh` dentro del contenedor `app`. `install.sh` crea `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents` y ejecuta `collectstatic`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/apache`.
 
 #### Tareas cron dentro del contenedor
 
@@ -238,7 +238,7 @@ La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentr
 ```bash
 tar -czf iskylims_app_logs.tgz -C /var/log/local/apps/iskylims .
 
-tar -czf iskylims_apache_logs.tgz -C /var/local/logs/apache .
+tar -czf iskylims_apache_logs.tgz -C /var/log/local/apache .
 
 docker run --rm \
   -v iskylims_documents:/from \
@@ -437,8 +437,8 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 mkdir -p /var/log/local/apps/iskylims
 tar -xzf iskylims_app_logs.tgz -C /var/log/local/apps/iskylims
 
-mkdir -p /var/local/logs/apache
-tar -xzf iskylims_apache_logs.tgz -C /var/local/logs/apache
+mkdir -p /var/log/local/apache
+tar -xzf iskylims_apache_logs.tgz -C /var/log/local/apache
 
 docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
   tar -xzf /from/iskylims_documents.tgz -C /to

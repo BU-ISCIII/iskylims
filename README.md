@@ -186,7 +186,7 @@ The production compose file uses `INSTALL_PATH` from the selected install config
 Persistence layout:
 
 - `/var/log/local/apps/iskylims` -> `${INSTALL_PATH}/logs` inside the `app` container
-- `/var/local/logs/apache` -> `/var/log/httpd` inside the `apache` container
+- `/var/log/local/apache` -> `/var/log/httpd` inside the `apache` container
 - `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` inside the `apache` container
 - `iskylims_documents` named volume -> `${INSTALL_PATH}/documents`
 - `iskylims_static` named volume -> `${INSTALL_PATH}/static`
@@ -197,7 +197,7 @@ Create host directories before the first deployment:
 
 ```bash
 sudo mkdir -p /var/log/local/apps/iskylims
-sudo mkdir -p /var/local/logs/apache
+sudo mkdir -p /var/log/local/apache
 sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
 sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
@@ -216,7 +216,7 @@ During `container_install.sh`, the file `conf/iskylims_apache_reverse_proxy.conf
 
 If you need a different runtime root, set `INSTALL_PATH` in the install config file or export `APP_INSTALL_PATH` before running `container_install.sh`.
 
-`container_install.sh` creates `${APP_INSTALL_PATH}/conf` before `compose up`, copies `conf/iskylims_apache_reverse_proxy.conf` there, passes `APP_INSTALL_PATH` into Compose, and then runs `install.sh` inside the `app` container. `install.sh` creates `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents`, and runs `collectstatic`, while the Apache container keeps using the host log path `/var/local/logs/apache`.
+`container_install.sh` creates `${APP_INSTALL_PATH}/conf` and `/var/log/local/apache` before `compose up`, copies `conf/iskylims_apache_reverse_proxy.conf` there, passes `APP_INSTALL_PATH` into Compose, and then runs `install.sh` inside the `app` container. `install.sh` creates `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents`, and runs `collectstatic`, while the Apache container keeps using the host log path `/var/log/local/apache`.
 
 #### Cron jobs inside the container
 
@@ -423,7 +423,7 @@ Logs archive:
 ```bash
 tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apps/iskylims .
 
-tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/local/logs/apache .
+tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apache .
 ```
 
 Documents volume archive:
@@ -464,8 +464,8 @@ Restore logs:
 mkdir -p /var/log/local/apps/iskylims
 tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apps/iskylims
 
-mkdir -p /var/local/logs/apache
-tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/local/logs/apache
+mkdir -p /var/log/local/apache
+tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apache
 ```
 
 Bare-metal full rollback example:

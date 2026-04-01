@@ -13,7 +13,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
       - ${APP_INSTALL_PATH:-/opt/iskylims}/conf/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:Z,ro
-      - /var/local/logs/apache:/var/log/httpd:Z
+      - /var/log/local/apache:/var/log/httpd:Z
       - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:Z,ro
 
   app:
