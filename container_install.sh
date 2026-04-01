@@ -517,7 +517,8 @@ INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_cont
     compose_exec -f "$compose_file" build --no-cache \
     --build-arg INSTALL_TYPE="dep" \
     --build-arg GIT_REVISION="$git_revision" \
-    --build-arg INSTALL_CONF="$install_conf_container"
+    --build-arg INSTALL_CONF="$install_conf_container" \
+    --build-arg APP_INSTALL_PATH="$app_install_path"
 print_image_after_build
 APP_INSTALL_PATH="$app_install_path" compose_exec -f "$compose_file" up -d
 

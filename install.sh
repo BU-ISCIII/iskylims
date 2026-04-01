@@ -284,6 +284,7 @@ load_install_config() {
     ensure_file_exists "$conf" "$conf"
     # shellcheck disable=SC1090
     . "$conf"
+    INSTALL_PATH="${APP_INSTALL_PATH:-$INSTALL_PATH}"
 }
 
 # checkout_git_revision: ensure desired git revision exists and check it out safely.

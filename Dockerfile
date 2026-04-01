@@ -6,6 +6,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ARG APP_UID=1212
 ARG APP_GID=1212
 ARG APP_SHELL=/sbin/nologin
+ARG APP_INSTALL_PATH=/opt/iskylims
+ENV APP_INSTALL_PATH=${APP_INSTALL_PATH}
 
 
 # Updates
@@ -72,16 +74,16 @@ ARG INSTALL_CONF=conf/docker_test_settings.txt
 ENV SKIP_SYSTEM_PACKAGES=1
 RUN /bin/bash install.sh --install dep --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart
 # Use the virtualenv created by install.sh
-ENV PATH="/opt/iskylims/virtualenv/bin:${PATH}"
+ENV PATH="${APP_INSTALL_PATH}/virtualenv/bin:${PATH}"
 
-WORKDIR /opt/iskylims
+WORKDIR ${APP_INSTALL_PATH}
 
 # Create non-root user and set ownership
 RUN groupadd -g ${APP_GID} iskylims && \
     useradd -m -u ${APP_UID} -g ${APP_GID} -s ${APP_SHELL} iskylims && \
-    mkdir -p /opt/iskylims/cron /opt/iskylims/tmp && \
-    chown -R ${APP_UID}:${APP_GID} /opt/iskylims /srv/iskylims && \
-    chmod 700 /opt/iskylims/cron /opt/iskylims/tmp && \
+    mkdir -p ${APP_INSTALL_PATH}/cron ${APP_INSTALL_PATH}/tmp && \
+    chown -R ${APP_UID}:${APP_GID} ${APP_INSTALL_PATH} /srv/iskylims && \
+    chmod 700 ${APP_INSTALL_PATH}/cron ${APP_INSTALL_PATH}/tmp && \
     git config --system --add safe.directory /srv/iskylims
 
 # Expose
