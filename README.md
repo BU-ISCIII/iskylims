@@ -152,6 +152,31 @@ export APP_UID=1212
 export APP_GID=1212
 ```
 
+Optional production runtime/build variables:
+
+- `APP_INSTALL_PATH`: overrides the runtime install root used by the app container, Apache config mount, static/documents mounts, and install scripts. Default: `/opt/iskylims`.
+- `APP_UID` / `APP_GID`: runtime UID/GID for the `iskylims` user inside the container. Default: `1212:1212`.
+- `APP_SHELL`: shell assigned to the runtime user during image build. Default: `/sbin/nologin`.
+- `APP_PORT`: internal Gunicorn bind port for the `app` service. Default: `8001`.
+- `DB_CONN_MAX_AGE`: Django persistent DB connection lifetime in seconds. Default: `60`.
+- `WEB_CONCURRENCY`: Gunicorn worker count. Default: `2`. If unset in the container entrypoint, workers fall back to CPU-based auto-selection.
+- `GUNICORN_THREADS`: threads per Gunicorn worker. Default: `2`.
+- `GUNICORN_TIMEOUT`: Gunicorn request timeout in seconds. Default: `120`.
+- `GUNICORN_KEEPALIVE`: Gunicorn keep-alive in seconds. Default: `5`.
+- `DJANGO_DEBUG`: passed to the production app container. Default: `"false"`. Keep it disabled in production.
+
+Example:
+
+```bash
+export APP_INSTALL_PATH=/srv/iskylims
+export APP_UID=1500
+export APP_GID=1500
+export WEB_CONCURRENCY=4
+export GUNICORN_THREADS=2
+export GUNICORN_TIMEOUT=180
+bash container_install.sh --install_conf conf/my_prod_settings.txt
+```
+
 Host directory and ownership preparation is described in [Persist logs/documents on the host](#persist-logsdocuments-on-the-host).
 
 #### Persist logs/documents on the host
@@ -195,7 +220,7 @@ If you need a different runtime root, set `INSTALL_PATH` in the install config f
 
 #### Cron jobs inside the container
 
-Cron runs via a lightweight `crond` started by the container entrypoint script. The script writes the django-crontab entries to `/opt/iskylims/cron/iskylims` and starts `crond` with a user-writable PID file.
+Cron runs via `supercronic`, started by the container entrypoint script. The script writes the django-crontab entries to `${APP_INSTALL_PATH}/cron/iskylims` and starts `supercronic` as the non-root app user.
 
 If you change `CRONJOBS`, rebuild or restart the container to regenerate the cron file.
 

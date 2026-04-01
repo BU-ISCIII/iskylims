@@ -135,6 +135,31 @@ export APP_UID=1212
 export APP_GID=1212
 ```
 
+Variables opcionales de build/runtime para produccion:
+
+- `APP_INSTALL_PATH`: cambia la raiz de instalacion en runtime usada por el contenedor `app`, el montaje de configuracion de Apache, los estaticos/documentos y los scripts de instalacion. Valor por defecto: `/opt/iskylims`.
+- `APP_UID` / `APP_GID`: UID/GID de ejecucion del usuario `iskylims` dentro del contenedor. Valor por defecto: `1212:1212`.
+- `APP_SHELL`: shell asignada al usuario de runtime durante la build. Valor por defecto: `/sbin/nologin`.
+- `APP_PORT`: puerto interno donde Gunicorn escucha dentro del servicio `app`. Valor por defecto: `8001`.
+- `DB_CONN_MAX_AGE`: tiempo de vida, en segundos, de las conexiones persistentes de Django a la BD. Valor por defecto: `60`.
+- `WEB_CONCURRENCY`: numero de workers de Gunicorn. Valor por defecto en compose: `2`. Si no se define en el entrypoint, se calcula segun CPU disponible.
+- `GUNICORN_THREADS`: numero de hilos por worker de Gunicorn. Valor por defecto: `2`.
+- `GUNICORN_TIMEOUT`: timeout de peticiones Gunicorn en segundos. Valor por defecto: `120`.
+- `GUNICORN_KEEPALIVE`: keep-alive de Gunicorn en segundos. Valor por defecto: `5`.
+- `DJANGO_DEBUG`: se pasa al contenedor de produccion. Valor por defecto: `"false"`. Debe mantenerse desactivado en produccion.
+
+Ejemplo:
+
+```bash
+export APP_INSTALL_PATH=/srv/iskylims
+export APP_UID=1500
+export APP_GID=1500
+export WEB_CONCURRENCY=4
+export GUNICORN_THREADS=2
+export GUNICORN_TIMEOUT=180
+bash container_install.sh --install_conf conf/my_prod_settings.txt
+```
+
 Asegura que la carpeta de estaticos en el host sea escribible por ese UID/GID:
 
 ```bash
@@ -182,7 +207,7 @@ Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de co
 
 #### Tareas cron dentro del contenedor
 
-Cron se ejecuta mediante un `crond` ligero lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `/opt/iskylims/cron/iskylims` y arranca `crond` con un PID en una ruta escribible por el usuario.
+Cron se ejecuta mediante `supercronic`, lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `${APP_INSTALL_PATH}/cron/iskylims` y arranca `supercronic` como usuario no root.
 
 Si modificas `CRONJOBS`, reconstruye o reinicia el contenedor para regenerar el archivo de cron.
 
