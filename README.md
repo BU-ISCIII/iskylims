@@ -20,7 +20,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
     - [Local test stack](#local-test-stack)
     - [Production container](#production-container)
       - [Persist logs/documents on the host](#persist-logsdocuments-on-the-host)
-      - [Apache reverse proxy (host) + Gunicorn](#apache-reverse-proxy-host--gunicorn)
+      - [Apache reverse proxy (container) + Gunicorn](#apache-reverse-proxy-container--gunicorn)
       - [Cron jobs inside the container](#cron-jobs-inside-the-container)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
     - [Upgrade docker deployment v3.0.0 to 3.1.0](#upgrade-docker-deployment-v300-to-310)
@@ -145,7 +145,7 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 UID/GID for the container runtime user (default `1212:1212`):
 
-- Export `APP_UID` and `APP_GID` before running `container_install.sh` if you need a different host UID/GID (for example, to write to `/opt/iskylims/static-host`).
+- Export `APP_UID` and `APP_GID` before running `container_install.sh` if you need a different host UID/GID.
 
 ```bash
 export APP_UID=1212
@@ -156,32 +156,42 @@ Host directory and ownership preparation is described in [Persist logs/documents
 
 #### Persist logs/documents on the host
 
-The production compose file mounts logs on the host and keeps documents in a named volume:
+The production compose file uses `INSTALL_PATH` from the selected install config, or `APP_INSTALL_PATH` if exported, as the runtime root for the app and for the Apache config/static mounts.
 
-- `/var/log/apps/iskylims` → `/opt/iskylims/logs`
-- `iskylims_documents` → `/opt/iskylims/documents`
+Persistence layout:
+
+- `/var/log/local/apps/iskylims` -> `${INSTALL_PATH}/logs` inside the `app` container
+- `/var/local/logs/apache` -> `/var/log/httpd` inside the `apache` container
+- `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` inside the `apache` container
+- `iskylims_documents` named volume -> `${INSTALL_PATH}/documents`
+- `iskylims_static` named volume -> `${INSTALL_PATH}/static`
 
 If you override the compose file, ensure these mounts exist to keep logs and documents persistent.
 
-Create host directories and set ownership to match the container UID/GID:
+Create host directories before the first deployment:
 
 ```bash
-sudo mkdir -p /var/log/apps/iskylims
-sudo mkdir -p /opt/iskylims/static-host
-sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/apps/iskylims /opt/iskylims/static-host
+sudo mkdir -p /var/log/local/apps/iskylims
+sudo mkdir -p /var/local/logs/apache
+sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
+sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
 
-#### Apache reverse proxy (host) + Gunicorn
+#### Apache reverse proxy (container) + Gunicorn
 
-For production, the container runs `gunicorn` (not `manage.py runserver`). Use Apache on the host as a reverse proxy to `localhost:8001`.
+For production, the `app` container runs `gunicorn` (not `manage.py runserver`) and the `apache` service in `docker-compose.prod.yml` acts as the reverse proxy.
 
 Static files:
 
-- The container writes collected static files to `/opt/iskylims/static`.
-- `docker-compose.prod.yml` bind-mounts that path to `/opt/iskylims/static-host` on the host.
-- Configure Apache with `Alias /static/ /opt/iskylims/static-host/`.
+- The app collects static files into `${INSTALL_PATH}/static`.
+- `docker-compose.prod.yml` shares that directory with the `apache` service through the named volume `iskylims_static`.
+- The reverse proxy config serves `/static` directly from `${INSTALL_PATH}/static`.
 
-See the example config in `conf/iskylims_apache_reverse_proxy.conf` and the [Configure Apache server](#configure-apache-server) section below.
+During `container_install.sh`, the file `conf/iskylims_apache_reverse_proxy.conf` is copied to `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf` on the host. Edit that copied file for runtime Apache changes after deployment.
+
+If you need a different runtime root, set `INSTALL_PATH` in the install config file or export `APP_INSTALL_PATH` before running `container_install.sh`.
+
+`container_install.sh` creates `${APP_INSTALL_PATH}/conf` before `compose up`, copies `conf/iskylims_apache_reverse_proxy.conf` there, passes `APP_INSTALL_PATH` into Compose, and then runs `install.sh` inside the `app` container. `install.sh` creates `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents`, and runs `collectstatic`, while the Apache container keeps using the host log path `/var/local/logs/apache`.
 
 #### Cron jobs inside the container
 
@@ -386,7 +396,9 @@ mysqldump -h <db_host> -P <db_port> -u iskylims -p iskylims > iskylims_$(date +%
 Logs archive:
 
 ```bash
-tar -czf iskylims_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/apps/iskylims .
+tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apps/iskylims .
+
+tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/local/logs/apache .
 ```
 
 Documents volume archive:
@@ -424,8 +436,11 @@ With Podman, use the same command replacing `docker` with `podman`.
 Restore logs:
 
 ```bash
-mkdir -p /var/log/apps/iskylims
-tar -xzf iskylims_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/apps/iskylims
+mkdir -p /var/log/local/apps/iskylims
+tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apps/iskylims
+
+mkdir -p /var/local/logs/apache
+tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/local/logs/apache
 ```
 
 Bare-metal full rollback example:
@@ -499,7 +514,9 @@ See [Persist logs/documents on the host](#persist-logsdocuments-on-the-host) in 
 
 ### Configure Apache server
 
-Copy the apache configuration file according to your distribution inside the apache configuration directory and rename it to iskylims.conf
+These steps apply to bare-metal Apache installations. Docker production deployments use the `apache` container described above and do not require copying configs into `/etc/apache2` or `/etc/httpd`.
+
+Copy the apache configuration file according to your distribution inside the apache configuration directory and rename it to `iskylims.conf`.
 
 Typical config locations:
 
@@ -520,12 +537,12 @@ Suggested steps (host Apache as reverse proxy):
 
     - Set `ServerName`
     - Ensure `ProxyPass` points to `http://localhost:8001/`
-    - Ensure `Alias /static/ /opt/iskylims/static-host/`
+    - Ensure `Alias /static/ /opt/iskylims/static/`
 
 3. Create the static folder on the host:
 
     ```bash
-    sudo mkdir -p /opt/iskylims/static-host
+    sudo mkdir -p /opt/iskylims/static
     ```
 
 4. Enable required modules (Ubuntu/Debian):

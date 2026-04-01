@@ -17,7 +17,7 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
   - [Despliegue con Docker](#despliegue-con-docker)
     - [Contenedor local de pruebas](#contenedor-local-de-pruebas)
     - [Contenedor de produccion](#contenedor-de-produccion)
-      - [Proxy inverso con Apache (host) + Gunicorn](#proxy-inverso-con-apache-host--gunicorn)
+      - [Proxy inverso con Apache (contenedor) + Gunicorn](#proxy-inverso-con-apache-contenedor--gunicorn)
       - [Tareas cron dentro del contenedor](#tareas-cron-dentro-del-contenedor)
     - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
     - [Actualizacion del despliegue Docker v3.0.0 a 3.1.0](#actualizacion-del-despliegue-docker-v300-a-310)
@@ -128,7 +128,7 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 
 UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
 
-- Exporta `APP_UID` y `APP_GID` antes de ejecutar `container_install.sh` si necesitas un UID/GID distinto (por ejemplo, para escribir en `/opt/iskylims/static-host`).
+- Exporta `APP_UID` y `APP_GID` antes de ejecutar `container_install.sh` si necesitas un UID/GID distinto.
 
 ```bash
 export APP_UID=1212
@@ -138,36 +138,47 @@ export APP_GID=1212
 Asegura que la carpeta de estaticos en el host sea escribible por ese UID/GID:
 
 ```bash
-sudo chown -R 1212:1212 /opt/iskylims/static-host
+sudo chown -R 1212:1212 ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
 
 #### Persistir logs/documentos en el host
 
-El compose de produccion monta los logs en el host para facilitar la recoleccion (por ejemplo, con Elastic):
+Si usas un compose personalizado, asegurate de mantener estos montajes para conservar logs y datos.
 
-- `/var/log/apps/iskylims` -> `/opt/iskylims/logs`
-- `iskylims_documents` -> `/opt/iskylims/documents`
+El compose de produccion usa `INSTALL_PATH` del fichero de configuracion seleccionado, o `APP_INSTALL_PATH` si la exportas, como raiz de ejecucion para la app y para los montajes de configuracion/estaticos del Apache en contenedor.
 
-Si usas un compose personalizado, asegurate de mantener estos montajes para conservar logs y documentos.
+Persistencia actual:
 
-Crea el directorio de logs en el host y ajusta permisos segun el UID/GID del contenedor:
+- `/var/log/local/apps/iskylims` -> `${INSTALL_PATH}/logs` dentro del contenedor `app`
+- `/var/local/logs/apache` -> `/var/log/httpd` dentro del contenedor `apache`
+- `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` dentro del contenedor `apache`
+- volumen nombrado `iskylims_documents` -> `${INSTALL_PATH}/documents`
+- volumen nombrado `iskylims_static` -> `${INSTALL_PATH}/static`
+
+Crea los directorios necesarios en el host:
 
 ```bash
-sudo mkdir -p /var/log/apps/iskylims
-sudo chown -R 1212:1212 /var/log/apps/iskylims
+sudo mkdir -p /var/log/local/apps/iskylims
+sudo mkdir -p /var/local/logs/apache
+sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
+sudo chown -R 1212:1212 /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
 
-#### Proxy inverso con Apache (host) + Gunicorn
+#### Proxy inverso con Apache (contenedor) + Gunicorn
 
-En produccion, el contenedor ejecuta `gunicorn` (no `manage.py runserver`). Usa Apache en el host como proxy inverso hacia `localhost:8001`.
+En produccion, el contenedor `app` ejecuta `gunicorn` (no `manage.py runserver`) y el servicio `apache` de `docker-compose.prod.yml` hace de proxy inverso.
 
 Archivos estaticos:
 
-- El contenedor genera los estaticos en `/opt/iskylims/static`.
-- `docker-compose.prod.yml` monta ese directorio en `/opt/iskylims/static-host` del host.
-- Configura Apache con `Alias /static/ /opt/iskylims/static-host/`.
+- La aplicacion genera los estaticos en `${INSTALL_PATH}/static`.
+- `docker-compose.prod.yml` comparte ese directorio con `apache` mediante el volumen nombrado `iskylims_static`.
+- La configuracion del proxy sirve `/static` directamente desde `${INSTALL_PATH}/static`.
 
-Ejemplo de configuracion en `conf/iskylims_apache_reverse_proxy.conf` y la sección [Configurar el servidor Apache](#configurar-el-servidor Apache).
+Durante `container_install.sh`, el fichero `conf/iskylims_apache_reverse_proxy.conf` se copia al host en `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf`. A partir de ese momento, los cambios de runtime deben hacerse sobre esa copia.
+
+Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`.
+
+`container_install.sh` crea `${APP_INSTALL_PATH}/conf` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh` dentro del contenedor `app`. `install.sh` crea `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents` y ejecuta `collectstatic`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/local/logs/apache`.
 
 #### Tareas cron dentro del contenedor
 
@@ -200,7 +211,9 @@ La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentr
 - Copia completa de las carpetas de logs y documents.
 
 ```bash
-tar -czf iskylims_logs.tgz -C /var/log/apps/iskylims .
+tar -czf iskylims_app_logs.tgz -C /var/log/local/apps/iskylims .
+
+tar -czf iskylims_apache_logs.tgz -C /var/local/logs/apache .
 
 docker run --rm \
   -v iskylims_documents:/from \
@@ -396,8 +409,11 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 4. Si los volumenes estan comprometidos, restauralos desde los tar:
 
 ```bash
-mkdir -p /var/log/apps/iskylims
-tar -xzf iskylims_logs.tgz -C /var/log/apps/iskylims
+mkdir -p /var/log/local/apps/iskylims
+tar -xzf iskylims_app_logs.tgz -C /var/log/local/apps/iskylims
+
+mkdir -p /var/local/logs/apache
+tar -xzf iskylims_apache_logs.tgz -C /var/local/logs/apache
 
 docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
   tar -xzf /from/iskylims_documents.tgz -C /to
@@ -437,6 +453,8 @@ Ubicaciones tipicas:
 
 Pasos sugeridos (Apache en el host como proxy inverso):
 
+Estos pasos aplican a instalaciones bare-metal con Apache en el host. En despliegues Docker de produccion se usa el contenedor `apache` y no hace falta copiar configuracion a `/etc/apache2` o `/etc/httpd`.
+
 1. Copia el ejemplo de configuracion:
 
     ```bash
@@ -449,12 +467,12 @@ Pasos sugeridos (Apache en el host como proxy inverso):
 
     - Ajusta `ServerName`
     - Comprueba que `ProxyPass` apunte a `http://localhost:8001/`
-    - Comprueba `Alias /static/ /opt/iskylims/static-host/`
+    - Comprueba `Alias /static/ /opt/iskylims/static/`
 
 3. Crea la carpeta de estaticos en el host:
 
     ```bash
-    sudo mkdir -p /opt/iskylims/static-host
+    sudo mkdir -p /opt/iskylims/static
     ```
 
 4. Habilita modulos necesarios (Ubuntu/Debian):
