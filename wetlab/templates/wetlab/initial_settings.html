@@ -320,10 +320,12 @@
                                                             <th>Contact phone</th>
                                                             <th>Email</th>
                                                             <th>Address</th>
+                                                            <th>Lab code 1</th>
+                                                            <th>Lab code 2</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {% for name, code, dept, contact, phone, email, addr, id in initial_data.lab_request_data %}
+                                                        {% for name, code, dept, contact, phone, email, addr, lab_code_1, lab_code_2, id in initial_data.lab_request_data %}
                                                             <tr>
                                                                 <td>{{name}}</td>
                                                                 <td>{{code}}</td>
@@ -332,6 +334,8 @@
                                                                 <td>{{phone}}</td>
                                                                 <td>{{email}}</td>
                                                                 <td>{{addr}}</td>
+                                                                <td>{{lab_code_1}}</td>
+                                                                <td>{{lab_code_2}}</td>
                                                             </tr>
                                                         {% endfor %}
                                                         </tbody>
