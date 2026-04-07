@@ -72,10 +72,10 @@ cd iskylims
 ## Minimum requirements
 
 - **sudo privileges** for dependency installation
-- MySQL > 8.0 or MariaDB > 10.4
+- MySQL >= 8.0 or MariaDB > 10.4
 - Apache 2.4
-- git > 2.34
-- Python > 3.11
+- git >= 2.34
+- Python >= 3.11
 - Local email sender configured
 - Access to the Samba share where run folders live
 - `lsb_release` package:
