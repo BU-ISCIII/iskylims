@@ -14,14 +14,17 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
 - [iSkyLIMS](#iskylims)
   - [Obtener el codigo (obligatorio)](#obtener-el-codigo-obligatorio)
   - [Elige tu ruta](#elige-tu-ruta)
+  - [Requisitos minimos](#requisitos-minimos)
   - [Despliegue con Docker](#despliegue-con-docker)
     - [Contenedor local de pruebas](#contenedor-local-de-pruebas)
     - [Contenedor de produccion](#contenedor-de-produccion)
+      - [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host)
       - [Proxy inverso con Apache (contenedor) + Gunicorn](#proxy-inverso-con-apache-contenedor--gunicorn)
       - [Tareas cron dentro del contenedor](#tareas-cron-dentro-del-contenedor)
     - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
     - [Actualizacion del despliegue Docker v3.0.0 a 3.1.0](#actualizacion-del-despliegue-docker-v300-a-310)
       - [Haz copia de seguridad](#haz-copia-de-seguridad)
+      - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes)
   - [Despliegue bare-metal (Ubuntu/CentOS)](#despliegue-bare-metal-ubuntucentos)
     - [Instalacion](#instalacion)
       - [Requisitos previos](#requisitos-previos)
@@ -31,15 +34,22 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
       - [Ejecutar install.sh](#ejecutar-installsh)
     - [Actualizacion (3.0.x a 3.1.x)](#actualizacion-30x-a-31x)
       - [Haz copia de seguridad](#haz-copia-de-seguridad-1)
-      - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes)
+      - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes-1)
       - [Ejecutar pasos de actualizacion con root](#ejecutar-pasos-de-actualizacion-con-root)
       - [Ejecutar pasos de actualizacion sin root](#ejecutar-pasos-de-actualizacion-sin-root)
+  - [Operaciones comunes (Docker + bare-metal)](#operaciones-comunes-docker--bare-metal)
+    - [Creacion de base de datos, usuarios y permisos](#creacion-de-base-de-datos-usuarios-y-permisos)
+    - [Copias de seguridad](#copias-de-seguridad)
+    - [Restauracion / rollback](#restauracion--rollback)
   - [Que hacer si algo falla](#que-hacer-si-algo-falla)
     - [Bare-metal](#bare-metal)
     - [Docker](#docker)
   - [Pasos finales de configuracion](#pasos-finales-de-configuracion)
     - [Configuracion de SAMBA](#configuracion-de-samba)
     - [Verificacion de correo electronico](#verificacion-de-correo-electronico)
+  - [Notas para desarrolladores](#notas-para-desarrolladores)
+    - [Flujo de migraciones Django](#flujo-de-migraciones-django)
+    - [Rutas persistentes en el host](#rutas-persistentes-en-el-host)
     - [Configurar el servidor Apache](#configurar-el-servidor-apache)
     - [Verificacion de la instalacion](#verificacion-de-la-instalacion)
   - [Documentacion de iSkyLIMS](#documentacion-de-iskylims)
@@ -61,12 +71,31 @@ cd iskylims
 - **Docker (contenedor de produccion)**: despliega solo la aplicacion, apuntando a tu DB/Samba existente.
 - **Bare-metal**: instala o actualiza directamente en hosts Ubuntu/CentOS con `install.sh`.
 
+## Requisitos minimos
+
+Requisitos para despliegue en contenedor:
+
+- Docker Engine + Docker Compose v2, o Podman + `podman-compose`
+- git >= 2.34 para clonar/actualizar el repositorio
+- MySQL/MariaDB, Apache, Python y `lsb_release` en el host no son necesarios para el despliegue en contenedor
+- Para contenedores locales de prueba: MySQL y Samba se arrancan como contenedores con `container_install.sh --test`
+- Para contenedores de produccion: acceso a un servidor MySQL/MariaDB externo y a la carpeta Samba configurados en el fichero de instalacion seleccionado
+- Directorios y permisos en el host para logs, documentos y estaticos, como se describe en [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host)
+
+Requisitos para despliegue bare-metal:
+
+- **Privilegios sudo** para instalar dependencias
+- MySQL >= 8.0 o MariaDB > 10.4
+- Apache >= 2.4
+- git >= 2.34
+- Python >= 3.11
+- Servidor local configurado para enviar correos
+- Acceso a la carpeta Samba donde estan los run folders
+- Paquete `lsb_release`:
+  - RedHat/CentOS: `yum install redhat-lsb-core`
+  - Ubuntu: `apt install lsb-core lsb-release`
+
 ## Despliegue con Docker
-
-Requisitos previos para instalaciones con Docker:
-
-- Docker Engine + Docker Compose v2
-- git (para clonar el repositorio)
 
 ### Contenedor local de pruebas
 
@@ -186,7 +215,19 @@ Crea los directorios necesarios en el host:
 sudo mkdir -p /var/log/local/apps/iskylims
 sudo mkdir -p /var/log/local/apache
 sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
-sudo chown -R 1212:1212 /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
+sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
+```
+
+En hosts Podman rootless o endurecidos, ejecuta el script de preparacion del host con el mismo usuario que arranca los contenedores. El script pre-crea los ficheros de log de Apache, ajusta la propiedad para el usuario UBI httpd en Podman rootless y aplica etiquetas SELinux de contenedor cuando SELinux esta activo:
+
+```bash
+bash hardening.sh
+```
+
+Si un administrador lo ejecuta como root, define `PODMAN_USER` con el usuario que arranca los contenedores rootless:
+
+```bash
+PODMAN_USER=bioinfo bash hardening.sh
 ```
 
 #### Proxy inverso con Apache (contenedor) + Gunicorn
@@ -250,21 +291,7 @@ La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentr
 
 #### Haz copia de seguridad
 
-- Copia completa de la base de datos `iskylims`.
-- Copia completa de las carpetas de logs y documents.
-
-```bash
-tar -czf iskylims_app_logs.tgz -C /var/log/local/apps/iskylims .
-
-tar -czf iskylims_apache_logs.tgz -C /var/log/local/apache .
-
-docker run --rm \
-  -v iskylims_documents:/from \
-  -v "$PWD":/to \
-  alpine tar -czf /to/iskylims_documents.tgz -C /from .
-```
-
-Antes de actualizar, asegurate de tener una copia completa de la base de datos y de los datos en volumenes que uses. Confirma que `conf/my_prod_settings.txt` tenga el host/usuario/password de la base de datos de produccion, la URL/IP del servidor, correo y ajustes de logging usados por el contenedor.
+Ejecuta primero los pasos de [Copias de seguridad](#copias-de-seguridad).
 
 Para 3.0.0 -> 3.1.0, exporta primero el mapeo de LibraryPool y luego ejecuta la actualizacion con scripts pre/post:
 
@@ -272,8 +299,30 @@ Para 3.0.0 -> 3.1.0, exporta primero el mapeo de LibraryPool y luego ejecuta la 
 mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
   -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
   > /tmp/library_pool_run_process.tsv
+```
 
-bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade \
+#### Actualizar codigo y ajustes
+
+```bash
+cd <tu directorio de trabajo>/iskylims
+git pull
+cp conf/docker_production_settings.txt myprod_settings.txt
+sudo nano myprod_settings.txt
+```
+
+Si editas el archivo en Windows, asegurate de guardarlo con codificacion UTF-8/ASCII.
+
+Si usas `APP_UID`/`APP_GID`, exportalos de nuevo antes de la actualizacion para que el contenedor se ejecute con el mismo UID/GID:
+
+```bash
+export APP_UID=1212
+export APP_GID=1212
+```
+
+Ejecuta la actualizacion:
+
+```bash
+bash container_install.sh --engine podman --install_conf myprod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
 ```
@@ -303,9 +352,7 @@ cd iskylims
 
 #### Preparar la base de datos
 
-1. Crea una base de datos llamada `iskylims`.
-2. Crea un usuario con permisos de lectura/escritura sobre esa base.
-3. Guarda host, puerto, usuario y password para el archivo de ajustes.
+Crea la base de datos y el usuario de aplicacion siguiendo [Creacion de base de datos, usuarios y permisos](#creacion-de-base-de-datos-usuarios-y-permisos). Guarda host, puerto, usuario y password para `install_settings.txt`.
 
 #### Configurar install_settings.txt
 
@@ -352,13 +399,14 @@ Sigue estos pasos para pasar de la version 3.0.0 a la serie 3.1.x.
 
 #### Haz copia de seguridad
 
-- Copia completa de la base de datos `iskylims`.
-- Copia completa de la carpeta de instalacion (por ejemplo `/opt/iskylims`).
+- Ejecuta primero los pasos de [Copias de seguridad](#copias-de-seguridad).
+- Ademas, guarda una copia completa de la carpeta de instalacion (por ejemplo `/opt/iskylims`) para rollback bare-metal.
 - Si usas library pools, exportalos antes de actualizar:
 
   ```bash
   mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
-    -e "SELECT * FROM wetlab_library_pool" > <carpeta_backup>/backup_lib_pool.sql
+    -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+    > /tmp/library_pool_run_process.tsv
   ```
 
 #### Actualizar codigo y ajustes
@@ -388,19 +436,6 @@ Actualiza el codigo y la base de datos:
 
 ```bash
 # con restauracion de library pool
-bash install.sh --upgrade app --script <carpeta_backup>/backup_lib_pool.sql --git_revision main --tables
-
-# sin restauracion de library pool
-bash install.sh --upgrade app --git_revision main --tables
-
-# ejemplo ejecutando un script de migracion en la actualizacion
-bash install.sh --upgrade app --script migrate_optional_values --git_revision main --tables
-
-# 3.0.0 -> 3.1.0 (scripts de datos pre/post)
-mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
-  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
-  > /tmp/library_pool_run_process.tsv
-
 bash install.sh --upgrade app --git_revision main \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
@@ -414,9 +449,123 @@ sudo bash install.sh --upgrade full --git_revision main --tables
 
 Las actualizaciones regeneran las migraciones y las aplican con `--fake-initial` para conservar las tablas existentes, igual que en Docker.
 
+## Operaciones comunes (Docker + bare-metal)
+
+### Creacion de base de datos, usuarios y permisos
+
+Ejecuta como root de MySQL:
+
+```sql
+CREATE DATABASE IF NOT EXISTS iskylims CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'iskylims'@'%' IDENTIFIED BY 'djangopass';
+CREATE USER IF NOT EXISTS 'iskylims'@'localhost' IDENTIFIED BY 'djangopass';
+
+GRANT ALL PRIVILEGES ON iskylims.* TO 'iskylims'@'%';
+GRANT ALL PRIVILEGES ON iskylims.* TO 'iskylims'@'localhost';
+
+FLUSH PRIVILEGES;
+```
+
+Verificacion:
+
+```sql
+SHOW GRANTS FOR 'iskylims'@'%';
+```
+
+### Copias de seguridad
+
+Dump de base de datos:
+
+```bash
+mysqldump -h <db_host> -P <db_port> -u iskylims -p iskylims > iskylims_$(date +%Y%m%d_%H%M%S).sql
+```
+
+Archivo de logs:
+
+```bash
+tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apps/iskylims .
+
+tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apache .
+```
+
+Archivo del volumen de documents:
+
+```bash
+docker run --rm -v iskylims_documents:/from -v "$PWD":/to alpine \
+  tar -czf /to/iskylims_documents_$(date +%Y%m%d_%H%M%S).tgz -C /from .
+```
+
+Con Podman, usa el mismo comando sustituyendo `docker` por `podman`.
+
+Orden recomendado antes de actualizar:
+
+1. Dump de BD
+2. Archivo del volumen de documents
+3. Archivo de logs
+
+### Restauracion / rollback
+
+Restaurar BD:
+
+```bash
+mysql -h <db_host> -P <db_port> -u iskylims -p iskylims < iskylims_YYYYMMDD_HHMMSS.sql
+```
+
+Restaurar volumen de documents:
+
+```bash
+docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
+  sh -lc "cd /to && tar -xzf /from/iskylims_documents_YYYYMMDD_HHMMSS.tgz"
+```
+
+Con Podman, usa el mismo comando sustituyendo `docker` por `podman`.
+
+Restaurar logs:
+
+```bash
+mkdir -p /var/log/local/apps/iskylims
+tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apps/iskylims
+
+mkdir -p /var/log/local/apache
+tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apache
+```
+
+Ejemplo de rollback completo bare-metal:
+
+```bash
+sudo rm -rf /opt/iskylims
+sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
+sudo /scripts/hardening.sh
+mysql -u iskylims -p -h <db_host> iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_YYYYMMDDHHMM.sql
+```
+
 ## Que hacer si algo falla
 
-Cuando actualizamos usando el script de instalacion estamos realizando varios cambios en la base de datos. Si algo falla necesitamos restaurar el estado anterior y empezar de nuevo.
+Cuando una instalacion o actualizacion falla, restaura el estado anterior y reintenta con logs activados.
+
+Diagnosticos rapidos:
+
+```bash
+# bare-metal
+cd /opt/iskylims
+python manage.py check
+
+# docker
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs --tail 200 app
+
+# podman
+podman-compose -f docker-compose.prod.yml ps
+podman-compose -f docker-compose.prod.yml logs --tail 200 app
+```
+
+Si sospechas que una imagen o cache de build de Docker esta corrupta:
+
+```bash
+docker compose -f docker-compose.prod.yml build --no-cache app
+docker compose -f docker-compose.prod.yml up -d --force-recreate app
+```
 
 ### Bare-metal
 
@@ -484,6 +633,23 @@ docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
 - Ve a Massive sequencing
 - Ve a Configuration -> Email configuration
 - Rellena el formulario con los parametros necesarios y prueba a enviar un correo.
+
+## Notas para desarrolladores
+
+### Flujo de migraciones Django
+
+Las migraciones se versionan en el repositorio. No ejecutes `makemigrations` durante la instalacion o actualizacion.
+
+Flujo base + actualizacion para nuevas releases:
+
+1. Genera las migraciones base desde el ultimo tag estable (por ejemplo 3.0.0).
+2. Versiona las migraciones base.
+3. Genera en `develop` las nuevas migraciones para cambios de esquema y versionalas.
+4. Las actualizaciones ejecutan una vez `migrate --fake-initial` para alinear tablas existentes, y despues `migrate` para aplicar los nuevos ficheros de migracion.
+
+### Rutas persistentes en el host
+
+Consulta [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host) en la seccion de despliegue de produccion.
 
 ### Configurar el servidor Apache
 

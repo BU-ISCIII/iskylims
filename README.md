@@ -71,9 +71,20 @@ cd iskylims
 
 ## Minimum requirements
 
+Container deployment requirements:
+
+- Docker Engine + Docker Compose v2, or Podman + `podman-compose`
+- git >= 2.34 to clone/update the repository
+- Host MySQL/MariaDB, Apache, Python, and `lsb_release` are not required for container deployment
+- For local test containers: MySQL and Samba are started as containers by `container_install.sh --test`
+- For production containers: access to an external MySQL/MariaDB server and Samba share configured in the selected install config
+- Host directories and permissions for logs, documents, and static files, as described in [Persist logs/documents on the host](#persist-logsdocuments-on-the-host)
+
+Bare-metal deployment requirements:
+
 - **sudo privileges** for dependency installation
 - MySQL >= 8.0 or MariaDB > 10.4
-- Apache 2.4
+- Apache >= 2.4
 - git >= 2.34
 - Python >= 3.11
 - Local email sender configured
@@ -81,7 +92,6 @@ cd iskylims
 - `lsb_release` package:
   - RedHat/CentOS: `yum install redhat-lsb-core`
   - Ubuntu: `apt install lsb-core lsb-release`
-- For containers: Docker Engine + Docker Compose v2, or Podman + `podman-compose`
 
 ## Docker deployment
 
