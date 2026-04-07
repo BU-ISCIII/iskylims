@@ -202,6 +202,22 @@ sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
 sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
 
+For hardened/rootless Podman hosts, run the host preparation script as the same
+user that starts the containers. The script pre-creates Apache log files, fixes
+rootless Podman ownership for the UBI httpd user, and applies SELinux container
+labels when SELinux is enabled:
+
+```bash
+bash hardening.sh
+```
+
+If an administrator runs it as root, set `PODMAN_USER` to the user that starts
+the rootless containers:
+
+```bash
+PODMAN_USER=bioinfo bash hardening.sh
+```
+
 #### Apache reverse proxy (container) + Gunicorn
 
 For production, the `app` container runs `gunicorn` (not `manage.py runserver`) and the `apache` service in `docker-compose.prod.yml` acts as the reverse proxy.
