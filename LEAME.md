@@ -61,7 +61,7 @@ Si tienes algun problema o deseas informar de algun error, por favor, publicalo 
 Todas las rutas de instalacion asumen que ya clonaste el repositorio:
 
 ```bash
-git clone https://github.com/BU-ISCIII/iskylims.git iskylims
+git clone https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
@@ -346,7 +346,7 @@ bash container_install.sh --engine podman --install_conf myprod_settings.txt --a
 
 ```bash
 cd <tu directorio de trabajo>
-git clone https://github.com/BU-ISCIII/iskylims.git iskylims
+git clone https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
