@@ -24,7 +24,7 @@ RUN dnf -y install \
     python3.11 python3.11-pip python3.11-devel python3.11-wheel \
     gcc gcc-c++ make \
     openssl-devel libffi-devel \
-    mariadb mariadb-connector-c-devel postgresql-devel \
+    mariadb mariadb-connector-c-devel \
     httpd-devel cronie \
     rsync tzdata \
     pkgconf-pkg-config \
