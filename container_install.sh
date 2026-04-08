@@ -130,6 +130,24 @@ compose_exec() {
     "${COMPOSE_CMD[@]}" "$@"
 }
 
+copy_with_podman_fallback() {
+    local src="$1"
+    local dst="$2"
+
+    if cp "$src" "$dst" 2>/dev/null; then
+        return 0
+    fi
+
+    if [ "$engine" = "podman" ]; then
+        if podman unshare cp "$src" "$dst"; then
+            return 0
+        fi
+    fi
+
+    echo "Failed to copy '$src' to '$dst'" >&2
+    return 1
+}
+
 # PARSE VARIABLE ARGUMENTS WITH getopts
 options=":d:g:c:s:j:a:m:b:f:e:vhntp"
 while getopts $options opt; do
@@ -511,7 +529,9 @@ print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
 mkdir -p "$app_install_path/conf" "/var/log/local/apache"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
-    cp "$repo_root/conf/iskylims_apache_reverse_proxy.conf" "$app_install_path/conf/iskylims_apache_reverse_proxy.conf"
+    copy_with_podman_fallback \
+        "$repo_root/conf/iskylims_apache_reverse_proxy.conf" \
+        "$app_install_path/conf/iskylims_apache_reverse_proxy.conf"
 fi
 INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" \
     compose_exec -f "$compose_file" build --no-cache \
