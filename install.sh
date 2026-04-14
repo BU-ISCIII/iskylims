@@ -11,6 +11,8 @@ usage : $0 --upgrade --git_revision --conf
     Optional input data:
     --install       | Install iskylims full/dep/app
     --upgrade       | Upgrade iskylims full/dep/app
+    --stage         | Stage app files only (install/upgrade) without DB work. Internal/container use.
+    --bootstrap     | Run DB/bootstrap steps only (install/upgrade) against an existing staged app. Internal/container use.
     --git_revision  | Git revision name to run (branch, tag, commit SHA, or 'current' to use copied local sources as-is)
     --conf          | Select custom configuration file. Default: ./install_settings.txt
     --tables        | Load the first inital tables (from conf folder)
@@ -34,6 +36,12 @@ Examples:
 
     Upgrade running migration script and update initial tables
     $0 --upgrade full --script <migration_script> --tables
+
+    Stage application files during a container image build
+    $0 --stage install --git_revision main --conf conf/docker_production_settings.txt
+
+    Bootstrap database/static using an already staged container image
+    $0 --bootstrap upgrade --git_revision main --conf conf/docker_production_settings.txt
 
     Make adjustments for apps renaming in upgrade 2.3.0 to 2.3.1
     $0 --upgrade full --ren_app --script <migration_script> --tables
@@ -331,6 +339,20 @@ check_requirements() {
     fi
 }
 
+check_stage_requirements() {
+    log_section "Checking requirements for staged app preparation"
+    python_check
+    log_info "Valid version of Python"
+}
+
+check_bootstrap_requirements() {
+    log_section "Checking requirements for application bootstrap"
+    python_check
+    log_info "Valid version of Python"
+    db_check
+    log_info "Successful check for database"
+}
+
 # rename_apps_if_needed: handles legacy app renaming and DB/migration adjustments when --ren_app is provided.
 rename_apps_if_needed() {
     if [ $ren_app != true ]; then
@@ -558,6 +580,20 @@ run_django_deploy() {
     fi
 }
 
+refresh_static_files() {
+    echo "Deleting static files..."
+    if [ -d "$INSTALL_PATH/static" ]; then
+        if command -v mountpoint >/dev/null 2>&1 && mountpoint -q "$INSTALL_PATH/static"; then
+            echo "Static directory is a mount point. Skipping delete."
+        else
+            rm -rf "$INSTALL_PATH/static" || echo "Skipping static removal (busy)."
+        fi
+    fi
+    echo "Running collect statics..."
+    python manage.py collectstatic --noinput
+    echo "Done collect statics"
+}
+
 # sync_requirements_file: copy repository requirements into the target installation path.
 sync_requirements_file() {
     mkdir -p $INSTALL_PATH/conf
@@ -717,6 +753,18 @@ upgrade_application_files() {
 
     rename_apps_if_needed
 
+    stage_upgrade_application_files
+    bootstrap_application_runtime "upgrade"
+
+    log_section "Successfuly upgrade of iSKyLIMS version: ${APP_VERSION}"
+}
+
+# stage_upgrade_application_files: sync code/config into INSTALL_PATH without DB work.
+stage_upgrade_application_files() {
+    if [ ! -d $INSTALL_PATH ]; then
+        abort_install "Unable to start the upgrade. Folder $INSTALL_PATH does not exist."
+    fi
+
     echo "Copying files to installation folder"
     rsync -rlv conf/ $INSTALL_PATH/conf/
     rsync -rlv --fuzzy --delay-updates --delete-delay \
@@ -737,25 +785,19 @@ upgrade_application_files() {
     update_settings_and_urls
     prepare_documents_structure
 
-    run_django_deploy "upgrade"
-    echo "Deleting static files..."
-    if [ -d "$INSTALL_PATH/static" ]; then
-        if command -v mountpoint >/dev/null 2>&1 && mountpoint -q "$INSTALL_PATH/static"; then
-            echo "Static directory is a mount point. Skipping delete."
-        else
-            rm -rf "$INSTALL_PATH/static" || echo "Skipping static removal (busy)."
-        fi
-    fi
-    echo "Running collect statics..."
-    python manage.py collectstatic
-    echo "Done collect statics"
-
     cd -
-    log_section "Successfuly upgrade of iSKyLIMS version: ${APP_VERSION}"
 }
 
 # install_application_files: deploy Django project files, update settings, and run initial migrations.
 install_application_files() {
+    stage_install_application_files
+    bootstrap_application_runtime "install"
+    log_section "Successfuly iSkyLIMS Installation version: ${APP_VERSION}"
+    echo "Installation completed"
+}
+
+# stage_install_application_files: copy app files into INSTALL_PATH without DB work.
+stage_install_application_files() {
     log_section "Starting iSkyLIMS install version: ${APP_VERSION}"
 
     user=${SUDO_USER:-$USER}
@@ -813,16 +855,31 @@ install_application_files() {
 
         update_settings_and_urls
 
-        run_django_deploy "install"
-
-        echo "Run collectstatic"
-        python manage.py collectstatic
-
         cd -
-
-        log_section "Successfuly iSkyLIMS Installation version: ${APP_VERSION}"
-        echo "Installation completed"
     fi
+}
+
+# bootstrap_application_runtime: run DB/bootstrap tasks against an already staged INSTALL_PATH.
+bootstrap_application_runtime() {
+    local mode="$1"
+
+    if [ ! -d "$INSTALL_PATH" ]; then
+        abort_install "Unable to bootstrap application. Folder $INSTALL_PATH does not exist."
+    fi
+
+    cd $INSTALL_PATH
+    ensure_virtualenv_ready
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+
+    if [ ! -f "$INSTALL_PATH/manage.py" ]; then
+        abort_install "manage.py not found at $INSTALL_PATH/manage.py. Stage application files first."
+    fi
+
+    run_django_deploy "$mode"
+    refresh_static_files
+
+    cd -
 }
 
 # translate long options to short
@@ -837,6 +894,8 @@ do
     # OPTIONAL
         --install)      set -- "$@" -i ;;
         --upgrade)      set -- "$@" -u ;;
+        --stage)        set -- "$@" -j ;;
+        --bootstrap)    set -- "$@" -l ;;
         --script)       set -- "$@" -s ;;
         --script_before) set -- "$@" -p ;;
         --script_after) set -- "$@" -o ;;
@@ -866,6 +925,8 @@ install=true
 install_type="full"
 upgrade=false
 upgrade_type="full"
+workflow="standard"
+workflow_mode=""
 docker=false
 prefilled_tables="conf/first_install_tables.json"
 restart_apache=true
@@ -876,10 +937,11 @@ migration_script_before=()
 skip_tables=false
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:r:g:tdbkvhao:p:"
+options=":c:s:i:u:j:l:r:g:tdbkvhao:p:"
 while getopts $options opt; do
     case $opt in
         i ) 
+            workflow="standard"
             install=true
             upgrade=false
             if [[ "$OPTARG" == "full" || "$OPTARG" == "dep" || "$OPTARG" == "app" ]]; then
@@ -891,6 +953,7 @@ while getopts $options opt; do
             fi
             ;;
         u )
+            workflow="standard"
             install=false
             upgrade=true
             if [[ "$OPTARG" == "full" || "$OPTARG" == "dep" || "$OPTARG" == "app" ]]; then
@@ -898,6 +961,22 @@ while getopts $options opt; do
                 install_type=$OPTARG
             else
                 echo "Upgrade is not set to one valid option. Use: --upgrade full/app/dep"
+                exit 1
+            fi
+            ;;
+        j )
+            workflow="stage"
+            workflow_mode=$OPTARG
+            if [[ "$workflow_mode" != "install" && "$workflow_mode" != "upgrade" ]]; then
+                echo "Stage is not set to one valid option. Use: --stage install/upgrade"
+                exit 1
+            fi
+            ;;
+        l )
+            workflow="bootstrap"
+            workflow_mode=$OPTARG
+            if [[ "$workflow_mode" != "install" && "$workflow_mode" != "upgrade" ]]; then
+                echo "Bootstrap is not set to one valid option. Use: --bootstrap install/upgrade"
                 exit 1
             fi
             ;;
@@ -967,6 +1046,10 @@ if [ $upgrade == true ]; then
     operation="upgrade"
     operation_scope="$upgrade_type"
 fi
+if [ "$workflow" != "standard" ]; then
+    operation="$workflow_mode"
+    operation_scope="app"
+fi
 
 # Default to loading initial tables on installs unless explicitly skipped.
 if [ "$operation" = "install" ] && [ "$skip_tables" = false ] && [ "$tables" = false ]; then
@@ -977,6 +1060,26 @@ load_install_config
 PROJECT_NAME="${PROJECT_NAME:-iskylims}"
 checkout_git_revision
 user=${SUDO_USER:-$USER}
+
+if [ "$workflow" = "stage" ]; then
+    check_stage_requirements
+    if [ "$workflow_mode" = "install" ]; then
+        stage_install_application_files
+    else
+        stage_upgrade_application_files
+    fi
+    exit 0
+fi
+
+if [ "$workflow" = "bootstrap" ]; then
+    check_bootstrap_requirements
+    if [ "$workflow_mode" = "upgrade" ]; then
+        rename_apps_if_needed
+    fi
+    bootstrap_application_runtime "$workflow_mode"
+    exit 0
+fi
+
 check_requirements
 
 if [[ "$operation_scope" == "full" || "$operation_scope" == "dep" ]]; then

@@ -13,16 +13,17 @@ GUNICORN_TIMEOUT="${GUNICORN_TIMEOUT:-120}"
 GUNICORN_KEEPALIVE="${GUNICORN_KEEPALIVE:-5}"
 GUNICORN_THREADS="${GUNICORN_THREADS:-2}"
 
-WAIT_TIMEOUT_SECONDS=100
-wait_start="${SECONDS}"
+if [ ! -f "${APP_DIR}/manage.py" ]; then
+    echo "Application entrypoint not found at ${APP_DIR}/manage.py" >&2
+    ls -la "${APP_DIR}" >&2 || true
+    exit 1
+fi
 
-while [ ! -f "${APP_DIR}/manage.py" ]; do
-    if (( SECONDS - wait_start >= WAIT_TIMEOUT_SECONDS )); then
-        echo "Timed out after ${WAIT_TIMEOUT_SECONDS}s waiting for ${APP_DIR}/manage.py" >&2
-        exit 1
-    fi
-    sleep 2
-done
+if [ ! -f "${APP_DIR}/virtualenv/bin/activate" ]; then
+    echo "Virtualenv activation script not found at ${APP_DIR}/virtualenv/bin/activate" >&2
+    ls -la "${APP_DIR}/virtualenv" >&2 || true
+    exit 1
+fi
 
 source "${APP_DIR}/virtualenv/bin/activate"
 

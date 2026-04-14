@@ -70,9 +70,11 @@ ARG INSTALL_TYPE=dep
 ARG GIT_REVISION=main
 ARG INSTALL_CONF=conf/docker_test_settings.txt
 
-# Execute the dependency stage only; app migrations run when the container is up.
+# Prepare dependencies and stage the application tree in the image so the
+# container can restart without rerunning install-time file generation.
 ENV SKIP_SYSTEM_PACKAGES=1
 RUN /bin/bash install.sh --install dep --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart
+RUN /bin/bash install.sh --stage install --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart
 # Use the virtualenv created by install.sh
 ENV PATH="${APP_INSTALL_PATH}/virtualenv/bin:${PATH}"
 
