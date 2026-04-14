@@ -46,9 +46,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - /var/log/local/apps/iskylims:${APP_INSTALL_PATH:-/opt/iskylims}/logs:Z
+      - /var/log/local/apps/iskylims:${APP_INSTALL_PATH:-/opt/iskylims}/logs:z
       - iskylims_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents
-      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:Z
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:z
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
