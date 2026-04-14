@@ -126,6 +126,8 @@ bash container_install.sh --test --script migrate_optional_values 2>&1 | tee tes
 
 When the script finishes, open `http://localhost:8001` and follow the prompt to create the Django superuser.
 
+The image now includes the staged application tree under `${APP_INSTALL_PATH}`. Test containers can therefore be recreated or restarted without rerunning the file installation step; only DB/bootstrap tasks are executed by `container_install.sh`.
+
 ### Production container
 
 Deploy the iSkyLIMS container against external MySQL/Samba services:
@@ -152,6 +154,8 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
     ```
 
 3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
+
+Production images now bake the staged iSkyLIMS application into the image itself. Host reboots or container recreation no longer require rerunning the app installation step; `container_install.sh` only performs runtime bootstrap tasks such as migrations, optional fixtures/scripts, superuser creation on first install, and `collectstatic`.
 
 UID/GID for the container runtime user (default `1212:1212`):
 
@@ -242,7 +246,7 @@ During `container_install.sh`, the file `conf/iskylims_apache_reverse_proxy.conf
 
 If you need a different runtime root, set `INSTALL_PATH` in the install config file or export `APP_INSTALL_PATH` before running `container_install.sh`.
 
-`container_install.sh` creates `${APP_INSTALL_PATH}/conf` and `/var/log/local/apache` before `compose up`, copies `conf/iskylims_apache_reverse_proxy.conf` there, passes `APP_INSTALL_PATH` into Compose, and then runs `install.sh` inside the `app` container. `install.sh` creates `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents`, and runs `collectstatic`, while the Apache container keeps using the host log path `/var/log/local/apache`.
+`container_install.sh` creates `${APP_INSTALL_PATH}/conf` and `/var/log/local/apache` before `compose up`, copies `conf/iskylims_apache_reverse_proxy.conf` there, passes `APP_INSTALL_PATH` into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${APP_INSTALL_PATH}`; the bootstrap step applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/apache`.
 
 SELinux note for pre-production and production:
 
@@ -283,7 +287,7 @@ Re-deploy the application container against an existing production database with
 bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
 
-The upgrade path rebuilds/restarts the container and runs `install.sh` inside the app container, which regenerates migrations, applies them with `--fake-initial`, and skips superuser/demo/test data loading.
+The upgrade path rebuilds/restarts the container and runs `install.sh --bootstrap upgrade` inside the app container. The app files are already baked into the rebuilt image; the bootstrap phase applies migrations with `--fake-initial`, refreshes static files, and skips superuser/demo/test data loading.
 
 ### Upgrade docker deployment v3.0.0 to 3.1.0
 
@@ -357,6 +361,8 @@ iSkyLIMS is installed to `/opt/iskylims` by default. The single `install.sh` scr
 - `dep`: install system and Python dependencies (requires sudo).
 - `app`: deploy iSkyLIMS code, update settings, run migrations, and collect static files (no sudo needed).
 - `full`: run both stages in sequence.
+
+The staged/bootstrap split added for container images is internal. Bare-metal commands do not change: `--install` and `--upgrade` still run the complete dependency, application, and database workflow documented here.
 
 Examples:
 

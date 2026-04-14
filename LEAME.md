@@ -128,6 +128,8 @@ bash container_install.sh --test --script migrate_optional_values
 
 Cuando el script termine, abre `http://localhost:8001` y crea el superusuario de Django cuando te lo pida.
 
+La imagen ahora incluye el arbol de la aplicacion ya preparado dentro de `${APP_INSTALL_PATH}`. Por tanto, los contenedores de prueba pueden recrearse o reiniciarse sin volver a ejecutar la instalacion de ficheros; `container_install.sh` solo lanza las tareas de bootstrap de BD, scripts opcionales y estaticos.
+
 ### Contenedor de produccion
 
 Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
@@ -154,6 +156,8 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
     ```
 
 3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
+
+Las imagenes de produccion ahora incorporan la aplicacion iSkyLIMS ya preparada. Un reinicio del host o la recreacion del contenedor ya no requiere reinstalar la aplicacion; `container_install.sh` solo ejecuta tareas de bootstrap en runtime, como migraciones, scripts/fixtures opcionales, creacion del superusuario en la primera instalacion y `collectstatic`.
 
 UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
 
@@ -244,7 +248,7 @@ Durante `container_install.sh`, el fichero `conf/iskylims_apache_reverse_proxy.c
 
 Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`.
 
-`container_install.sh` crea `${APP_INSTALL_PATH}/conf` y `/var/log/local/apache` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh` dentro del contenedor `app`. `install.sh` crea `${INSTALL_PATH}/logs`, `${INSTALL_PATH}/documents` y ejecuta `collectstatic`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/apache`.
+`container_install.sh` crea `${APP_INSTALL_PATH}/conf` y `/var/log/local/apache` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh --bootstrap ...` dentro del contenedor `app`. La imagen del contenedor ya contiene el proyecto Django y el virtualenv preparados dentro de `${APP_INSTALL_PATH}`; el bootstrap aplica migraciones, scripts/fixtures opcionales y refresca `${INSTALL_PATH}/static`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/apache`.
 
 Nota SELinux para pre-produccion y produccion:
 
@@ -285,7 +289,7 @@ Re-despliega el contenedor de aplicacion contra una base de datos existente sin 
 bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
-La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh` dentro del contenedor, que regenera migraciones, las aplica con `--fake-initial` y evita cargar superusuario/datos demo/prueba.
+La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh --bootstrap upgrade` dentro del contenedor. Los ficheros de la aplicacion ya van incorporados en la nueva imagen; la fase de bootstrap aplica migraciones con `--fake-initial`, refresca los estaticos y evita cargar superusuario/datos demo/prueba.
 
 ### Actualizacion del despliegue Docker v3.0.0 a 3.1.0
 
@@ -370,6 +374,8 @@ iSkyLIMS se instala en `/opt/iskylims` por defecto. El script `install.sh` gesti
 - `dep`: instala dependencias del sistema y de Python (requiere sudo).
 - `app`: despliega el codigo, actualiza ajustes, ejecuta migraciones y collectstatic (sin sudo).
 - `full`: ejecuta ambos pasos.
+
+La separacion interna entre preparacion de ficheros y bootstrap se usa solo para las imagenes de contenedor. En bare-metal no cambian los comandos operativos: `--install` y `--upgrade` siguen ejecutando el flujo completo de dependencias, aplicacion y base de datos descrito aqui.
 
 Ejemplos:
 
