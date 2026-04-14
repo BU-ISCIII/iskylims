@@ -526,7 +526,7 @@ cleanup_stale_test_containers
 
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
-echo "Deploying containers (compose file: $compose_file) with INSTALL_TYPE=dep and GIT_REVISION=$git_revision..."
+echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
 mkdir -p "$app_install_path/conf" "/var/log/local/apache"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
     copy_with_podman_fallback \
@@ -577,17 +577,17 @@ if [ "$run_script" = true ]; then
 fi
 
 if [ "$action" = "upgrade" ]; then
-    echo "Running install.sh upgrade inside the container"
-    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --upgrade app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
+    echo "Running install.sh bootstrap inside the container (upgrade mode)"
+    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap upgrade --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 else
-    echo "Running install.sh install inside the container"
-    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --install app --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
+    echo "Running install.sh bootstrap inside the container (install mode)"
+    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap install --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
 fi
 
-print_container_source_diagnostics "Container diagnostics after install.sh:"
+print_container_source_diagnostics "Container diagnostics after bootstrap:"
 
 if ! engine_exec exec -it "$app_container" test -f "$app_install_path/manage.py"; then
-    echo "Error: $app_install_path/manage.py not found after install.sh. Showing logs:"
+    echo "Error: $app_install_path/manage.py not found after bootstrap. Showing logs:"
     engine_exec logs --tail 200 "$app_container"
     exit 1
 fi
