@@ -30,6 +30,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Enabled Docker internal networking for local test installation [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Opened Docker network to allow localhost MySQL connection when required [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Added test fixtures and installation updates for the new sequencer and SampleSheet v2 support, including admin test-group assignment and new sequencer bootstrap data. Closes [#388](https://github.com/BU-ISCIII/iskylims/issues/388) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
+- Refactored container installation flow to separate staged application install from runtime bootstrap tasks [#393](https://github.com/BU-ISCIII/iskylims/pull/393)
+- Updated Docker image build to stage application files at build time and run bootstrap tasks on container start/upgrade [#393](https://github.com/BU-ISCIII/iskylims/pull/393)
+- Replaced container cron runtime with supercronic and improved multi-container install configuration [#391](https://github.com/BU-ISCIII/iskylims/pull/391)
 
 #### Fixes
 
@@ -73,6 +76,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed samplesheet parsing error [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Fixed logger inconsistency that prevented exceptions and error messages from being written to the update crontab log. Closes [#390](https://github.com/BU-ISCIII/iskylims/issues/390) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
 - Fixed wetlab crontab processing for the new sequencer, including run discovery, completion checks, RunInfo/RunParameters parsing updates, and SampleSheet v2 handling. Closes [#387](https://github.com/BU-ISCIII/iskylims/issues/387) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
+- Improved Podman compatibility and adjusted SELinux bind mount handling in production compose setup [#393](https://github.com/BU-ISCIII/iskylims/pull/393)
 
 #### Changed
 
@@ -87,7 +91,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - API create-sample-data Lab data mapping moved to core_config.LAB_REQUEST_ONTOLOGY_MAP [#377](https://github.com/BU-ISCIII/iskylims/pull/377)
 - Renamed `docker-compose.yml` to `docker-compose.test.yml` and `docker-compose.prod.yml` for test clarity [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Refactored Docker runtime handling when path is outside repository [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
-- Updated `docker_install.sh` with multiple reliability improvements [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Updated `docker_install.sh` to `container_install.sh` with multiple reliability improvements [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Updated upgrade scripts documentation to include execution order information and docker upgrade clarifications [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 
 #### Removed
