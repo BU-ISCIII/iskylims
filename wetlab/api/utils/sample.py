@@ -1,5 +1,7 @@
 from datetime import datetime
+from collections import defaultdict
 
+from django.db.models import Count
 import core.models
 import core.utils.samples
 import core.core_config
@@ -520,62 +522,41 @@ def collect_statistics_information(data):
 
             if len(query_params) > 2:
                 return {"ERROR": ""}
-            stats_data = {}
-            par1_values = (
-                core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id__sample_projects_id=s_project_obj,
+            base_values = core.models.SampleProjectsFieldsValue.objects.filter(
+                sample_project_field_id__sample_projects_id=s_project_obj
+            )
+            if len(query_params) == 2:
+                par1_rows = base_values.filter(
                     sample_project_field_id__sample_project_field_name__iexact=query_params[
                         0
-                    ],
-                )
-                .values_list("sample_project_field_value", flat=True)
-                .distinct()
-            )
+                    ]
+                ).values_list("sample_id", "sample_project_field_value")
+                par2_rows = base_values.filter(
+                    sample_project_field_id__sample_project_field_name__iexact=query_params[
+                        1
+                    ]
+                ).values_list("sample_id", "sample_project_field_value")
 
-            if len(query_params) == 2:
-                for par1_val in par1_values:
-                    stats_data[par1_val] = {}
+                par1_by_sample = defaultdict(list)
+                for sample_id, par1_val in par1_rows:
+                    par1_by_sample[sample_id].append(par1_val)
 
-                    samples = core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id__sample_projects_id=s_project_obj,
-                        sample_project_field_id__sample_project_field_name__iexact=query_params[
-                            0
-                        ],
-                        sample_project_field_value__exact=par1_val,
-                    ).values_list("sample_id", flat=True)
-                    par2_values = (
-                        core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_id__in=samples,
-                            sample_project_field_id__sample_project_field_name__iexact=query_params[
-                                1
-                            ],
+                stats_data = defaultdict(dict)
+                for sample_id, par2_val in par2_rows:
+                    for par1_val in par1_by_sample.get(sample_id, []):
+                        stats_data[par1_val][par2_val] = (
+                            stats_data[par1_val].get(par2_val, 0) + 1
                         )
-                        .values_list("sample_project_field_value", flat=True)
-                        .distinct()
-                    )
-                    for par2_val in par2_values:
-                        value = core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_id__in=samples,
-                            sample_project_field_id__sample_project_field_name=query_params[
-                                1
-                            ],
-                            sample_project_field_value__exact=par2_val,
-                        ).count()
-                        if value > 0:
-                            stats_data[par1_val][par2_val] = value
-            else:
-                for par1_val in par1_values:
-                    stats_data[par1_val] = (
-                        core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_project_field_id__sample_projects_id=s_project_obj,
-                            sample_project_field_id__sample_project_field_name__iexact=query_params[
-                                0
-                            ],
-                            sample_project_field_value=par1_val,
-                        ).count()
-                    )
+                return dict(stats_data)
 
-            return stats_data
+            counts = base_values.filter(
+                sample_project_field_id__sample_project_field_name__iexact=query_params[
+                    0
+                ]
+            ).values("sample_project_field_value").annotate(count=Count("id"))
+            return {
+                item["sample_project_field_value"]: item["count"] for item in counts
+            }
         else:  # Collect info stats for all fields
             # Collect the fields utilization for sample projects
             stats_data = {
@@ -591,21 +572,30 @@ def collect_statistics_information(data):
             s_project_field_objs = core.models.SampleProjectsFields.objects.filter(
                 sample_projects_id=s_project_obj
             )
+            field_ids = list(s_project_field_objs.values_list("id", flat=True))
+            total_counts = dict(
+                core.models.SampleProjectsFieldsValue.objects.filter(
+                    sample_project_field_id__in=field_ids
+                )
+                .values_list("sample_project_field_id")
+                .annotate(total=Count("id"))
+            )
+            not_none_counts = dict(
+                core.models.SampleProjectsFieldsValue.objects.filter(
+                    sample_project_field_id__in=field_ids
+                )
+                .exclude(sample_project_field_value__in=["None", ""])
+                .values_list("sample_project_field_id")
+                .annotate(total=Count("id"))
+            )
             for s_project_field_obj in s_project_field_objs:
                 f_name = s_project_field_obj.get_field_name()
-                if not core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id=s_project_field_obj
-                ).exists():
+                total_count = total_counts.get(s_project_field_obj.pk, 0)
+                if total_count == 0:
                     stats_data["never_used"].append(f_name)
                     stats_data["fields_value"][f_name] = 0
                     continue
-                count_not_none = (
-                    core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id=s_project_field_obj
-                    )
-                    .exclude(sample_project_field_value__in=["None", ""])
-                    .count()
-                )
+                count_not_none = not_none_counts.get(s_project_field_obj.pk, 0)
                 stats_data["fields_value"][f_name] = count_not_none
                 if count_not_none == 0:
                     stats_data["always_none"].append(f_name)
