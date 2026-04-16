@@ -40,9 +40,13 @@ RUN set -eux; \
       aarch64) supercronic_arch="arm64" ;; \
       *) echo "Unsupported architecture for supercronic: $arch" >&2; exit 1 ;; \
     esac; \
-    wget -q -O /usr/local/bin/supercronic \
-      "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-${supercronic_arch}"; \
-    chmod +x /usr/local/bin/supercronic
+    supercronic_url="https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-${supercronic_arch}"; \
+    if wget --tries=3 --waitretry=2 --retry-connrefused -q -O /usr/local/bin/supercronic "${supercronic_url}"; then \
+      chmod +x /usr/local/bin/supercronic; \
+    else \
+      rm -f /usr/local/bin/supercronic; \
+      echo "supercronic download failed from ${supercronic_url}; continuing without cron support"; \
+    fi
 
 # Ensure python3 points to the desired version
 RUN ln -sf /usr/bin/python3.11 /usr/bin/python3
