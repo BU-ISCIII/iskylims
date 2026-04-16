@@ -549,11 +549,15 @@ def collect_statistics_information(data):
                         )
                 return dict(stats_data)
 
-            counts = base_values.filter(
-                sample_project_field_id__sample_project_field_name__iexact=query_params[
-                    0
-                ]
-            ).values("sample_project_field_value").annotate(count=Count("id"))
+            counts = (
+                base_values.filter(
+                    sample_project_field_id__sample_project_field_name__iexact=query_params[
+                        0
+                    ]
+                )
+                .values("sample_project_field_value")
+                .annotate(count=Count("id"))
+            )
             return {
                 item["sample_project_field_value"]: item["count"] for item in counts
             }
