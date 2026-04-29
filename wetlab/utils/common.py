@@ -527,13 +527,13 @@ def get_all_string_replacement_combinations(string: str, old: str, new: str)-> l
         list of strings containing all possible combinations for the replacement
     """
     positions = [i for i, ch in enumerate(string) if ch == old]
-    results = []
+    results = [string]
 
     for combo in product([False, True], repeat=len(positions)):
         s_list = list(string)
         for replace, pos in zip(combo, positions):
             if replace:
-                s_list[pos] = '.'
+                s_list[pos] = new
         results.append(''.join(s_list))
 
     return results
