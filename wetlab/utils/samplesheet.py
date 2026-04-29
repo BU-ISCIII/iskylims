@@ -10,6 +10,7 @@ from django.core.files.storage import FileSystemStorage
 
 # Local imports
 import wetlab.config
+import wetlab.utils.common
 
 # import wetlab.models
 
@@ -161,8 +162,19 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         )
         return users
 
-    userid_names = [user for user in users_in_sample_sheet if user in user_id_list]
-    invalid_names = [user for user in users_in_sample_sheet if user not in user_id_list]
+    # FIXME: Due to samplesheet limitations, we need to check all possible combinations of "dash to dot" 
+    # FIXME: When we develop a final solution, change below and "wetlab.common.get_all_string_replacement_combinations"
+    userid_names = []
+    invalid_names = []
+
+    for user in users_in_sample_sheet:
+        all_user_replacement_combinations = wetlab.utils.common.get_all_string_replacement_combinations(user, old="-", new=".")
+        for user_permutation in all_user_replacement_combinations:
+             if user_permutation in user_id_list:
+                userid_names.append(user_permutation)
+                break
+        else:
+            invalid_names.append(user)
 
     if len(invalid_names) > 0:
         invalid_names = list(set(invalid_names))
@@ -345,6 +357,9 @@ def get_user_ids_from_samplesheet(
     version = samplesheet_version(samplesheet)
     iskylims_user_column = wetlab.config.TABULAR_DATA_ISKYLIMS_USER_COLUMN.get(version)
 
+    user_id_list_db = wetlab.utils.common.get_userid_list()
+
+
     user_ids = []
     if iskylims_user_column:
         user_ids = get_column_from_tabular_data(data, iskylims_user_column)
@@ -357,7 +372,17 @@ def get_user_ids_from_samplesheet(
     if not user_ids and version == "2":
         user_ids = get_user_ids_from_project_name(samplesheet)
 
-    return user_ids
+    # FIXME: DUPLICATING VALIDATION LOGIC.
+    userid_names = []
+
+    for user in user_ids:
+        all_user_replacement_combinations = wetlab.utils.common.get_all_string_replacement_combinations(user, old="-", new=".")
+        for user_permutation in all_user_replacement_combinations:
+             if user_permutation in user_id_list_db:
+                userid_names.append(user_permutation)
+                break
+    
+    return userid_names
 
 
 def get_projects_in_sample_sheet(samplesheet) -> list:
