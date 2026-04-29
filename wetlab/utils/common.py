@@ -515,7 +515,10 @@ def open_log(config_file):
             seen_handlers.add(handler_id)
     return logger
 
-def get_all_string_replacement_combinations(string: str, old: str, new: str)-> list[str]:
+
+def get_all_string_replacement_combinations(
+    string: str, old: str, new: str
+) -> list[str]:
     """
     Description:
         Get all replacement combinations for a string. This is used to validate user IDs.
@@ -534,6 +537,6 @@ def get_all_string_replacement_combinations(string: str, old: str, new: str)-> l
         for replace, pos in zip(combo, positions):
             if replace:
                 s_list[pos] = new
-        results.append(''.join(s_list))
+        results.append("".join(s_list))
 
     return results
