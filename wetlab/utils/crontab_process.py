@@ -2185,7 +2185,7 @@ def _get_existing_stats_folder(conn, run_folder, experiment_name=""):
     logger = logging.getLogger(__name__)
     shared_folder = get_samba_shared_folder()
     base_folder = get_samba_application_shared_folder()
-    
+
     stats_file_paths = getattr(
         wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
     )

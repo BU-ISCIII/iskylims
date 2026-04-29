@@ -162,15 +162,19 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         )
         return users
 
-    # FIXME: Due to samplesheet limitations, we need to check all possible combinations of "dash to dot" 
+    # FIXME: Due to samplesheet limitations, we need to check all possible combinations of "dash to dot"
     # FIXME: When we develop a final solution, change below and "wetlab.common.get_all_string_replacement_combinations"
     userid_names = []
     invalid_names = []
 
     for user in users_in_sample_sheet:
-        all_user_replacement_combinations = wetlab.utils.common.get_all_string_replacement_combinations(user, old="-", new=".")
+        all_user_replacement_combinations = (
+            wetlab.utils.common.get_all_string_replacement_combinations(
+                user, old="-", new="."
+            )
+        )
         for user_permutation in all_user_replacement_combinations:
-             if user_permutation in user_id_list:
+            if user_permutation in user_id_list:
                 userid_names.append(user_permutation)
                 break
         else:
@@ -359,7 +363,6 @@ def get_user_ids_from_samplesheet(
 
     user_id_list_db = wetlab.utils.common.get_userid_list()
 
-
     user_ids = []
     if iskylims_user_column:
         user_ids = get_column_from_tabular_data(data, iskylims_user_column)
@@ -376,12 +379,16 @@ def get_user_ids_from_samplesheet(
     userid_names = []
 
     for user in user_ids:
-        all_user_replacement_combinations = wetlab.utils.common.get_all_string_replacement_combinations(user, old="-", new=".")
+        all_user_replacement_combinations = (
+            wetlab.utils.common.get_all_string_replacement_combinations(
+                user, old="-", new="."
+            )
+        )
         for user_permutation in all_user_replacement_combinations:
-             if user_permutation in user_id_list_db:
+            if user_permutation in user_id_list_db:
                 userid_names.append(user_permutation)
                 break
-    
+
     return userid_names
 
 
