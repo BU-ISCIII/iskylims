@@ -5,6 +5,7 @@ import re
 import socket
 import traceback
 from datetime import datetime, timezone
+from itertools import product
 from logging.config import fileConfig
 
 from django.contrib.auth.models import User
@@ -501,3 +502,26 @@ def open_log(config_file):
     fileConfig(config_file, disable_existing_loggers=False)
     logger = logging.getLogger()
     return logger
+
+def get_all_string_replacement_combinations(string: str, old: str, new: str)-> list[str]:
+    """
+    Description:
+        Get all replacement combinations for a string. This is used to validate user IDs.
+    Input:
+        string      # string to return replacements
+        old         # Substring to be replaced
+        new         # Substring to replace old by
+    Return:
+        list of strings containing all possible combinations for the replacement
+    """
+    positions = [i for i, ch in enumerate(string) if ch == old]
+    results = []
+
+    for combo in product([False, True], repeat=len(positions)):
+        s_list = list(string)
+        for replace, pos in zip(combo, positions):
+            if replace:
+                s_list[pos] = '.'
+        results.append(''.join(s_list))
+
+    return results
