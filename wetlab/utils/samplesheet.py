@@ -165,23 +165,8 @@ def validate_userid_in_user_iem_file(file_read, user_id_list):
         )
         return users
 
-    # FIXME: Due to samplesheet limitations, we need to check all possible combinations of "dash to dot"
-    # FIXME: When we develop a final solution, change below and "wetlab.common.get_all_string_replacement_combinations"
-    userid_names = []
-    invalid_names = []
-
-    for user in users_in_sample_sheet:
-        all_user_replacement_combinations = (
-            wetlab.utils.common.get_all_string_replacement_combinations(
-                user, old="-", new="."
-            )
-        )
-        for user_permutation in all_user_replacement_combinations:
-            if user_permutation in user_id_list:
-                userid_names.append(user_permutation)
-                break
-        else:
-            invalid_names.append(user)
+    userid_names = [user for user in users_in_sample_sheet if user in user_id_list]
+    invalid_names = [user for user in users_in_sample_sheet if user not in user_id_list]
 
     if len(invalid_names) > 0:
         invalid_names = list(set(invalid_names))
@@ -378,7 +363,8 @@ def get_user_ids_from_samplesheet(
     if not user_ids and version == "2":
         user_ids = get_user_ids_from_project_name(samplesheet)
 
-    # FIXME: DUPLICATING VALIDATION LOGIC.
+    # FIXME: Due to samplesheet limitations, we need to check all possible combinations of "dash to dot"
+    # FIXME: When we develop a final solution, change below.
     userid_names = []
 
     for user in user_ids:
