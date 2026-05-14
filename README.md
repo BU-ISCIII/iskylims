@@ -170,6 +170,7 @@ Optional production runtime/build variables:
 
 - `APP_INSTALL_PATH`: overrides the runtime install root used by the app container, static/documents mounts, and install scripts. Default: `/opt/iskylims`.
 - `APACHE_CONF_PATH`: overrides the host directory used for Apache bind-mounted config files. If empty, `container_install.sh` uses `${APP_INSTALL_PATH}/conf`.
+- `DJANGO_SETTINGS_PATH`: overrides the host path used for the bind-mounted Django `settings.py`. If empty, `container_install.sh` uses `${APP_INSTALL_PATH}/iskylims/settings.py`.
 - `APP_UID` / `APP_GID`: runtime UID/GID for the `iskylims` user inside the container. Default: `1212:1212`.
 - `APP_SHELL`: shell assigned to the runtime user during image build. Default: `/sbin/nologin`.
 - `APP_PORT`: internal Gunicorn bind port for the `app` service. Default: `8001`.
@@ -204,6 +205,7 @@ Persistence layout:
 - `/var/log/local/iskylims/apache` -> `/var/log/httpd` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_logs.conf` -> `/etc/httpd/conf.d/logformat.conf` inside the `apache` container
+- `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}` -> `${INSTALL_PATH}/iskylims/settings.py` inside the `app` container
 - `iskylims_documents` named volume -> `${INSTALL_PATH}/documents`
 - `iskylims_static` named volume -> `${INSTALL_PATH}/static`
 
@@ -246,9 +248,11 @@ Static files:
 
 During `container_install.sh`, `conf/iskylims_apache_reverse_proxy.conf` and `conf/iskylims_apache_logs.conf` are copied to `${APACHE_CONF_PATH}` on the host. If `APACHE_CONF_PATH` is empty, they are copied to `${INSTALL_PATH}/conf`. Edit those copied files for runtime Apache changes after deployment.
 
-If you need a different runtime root, set `INSTALL_PATH` in the install config file or export `APP_INSTALL_PATH` before running `container_install.sh`. If you need Apache configs outside the app runtime root, set `APACHE_CONF_PATH` in the install config file or export it before running `container_install.sh`.
+`container_install.sh` prepares a host-side Django `settings.py` bind source at `${DJANGO_SETTINGS_PATH}`, or at `${INSTALL_PATH}/iskylims/settings.py` when `DJANGO_SETTINGS_PATH` is empty. During the bootstrap step, `install.sh` updates that bind-mounted file from `conf/template_settings.txt` and the selected install config, preserving an existing `SECRET_KEY`. Runtime settings can then be edited and the container restarted without rebuilding the image.
 
-`container_install.sh` creates `${APP_INSTALL_PATH}/conf`, `${APACHE_CONF_PATH:-${APP_INSTALL_PATH}/conf}`, `/var/log/local/iskylims/apps`, and `/var/log/local/iskylims/apache` before `compose up`, copies both Apache config files there, passes `APP_INSTALL_PATH` and `APACHE_CONF_PATH` into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${APP_INSTALL_PATH}`; the bootstrap step applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/iskylims/apache`.
+If you need a different runtime root, set `INSTALL_PATH` in the install config file or export `APP_INSTALL_PATH` before running `container_install.sh`. If you need Apache configs or Django settings outside the app runtime root, set `APACHE_CONF_PATH` or `DJANGO_SETTINGS_PATH` in the install config file, or export them before running `container_install.sh`.
+
+`container_install.sh` creates `${APP_INSTALL_PATH}/conf`, `${APACHE_CONF_PATH:-${APP_INSTALL_PATH}/conf}`, `/var/log/local/iskylims/apps`, and `/var/log/local/iskylims/apache` before `compose up`, copies both Apache config files there, prepares the bind-mounted Django settings file if it does not exist, passes `APP_INSTALL_PATH`, `APACHE_CONF_PATH`, and `DJANGO_SETTINGS_PATH` into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${APP_INSTALL_PATH}`; the bootstrap step updates settings, applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/iskylims/apache`.
 
 SELinux note for pre-production and production:
 

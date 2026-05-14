@@ -48,6 +48,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - /var/log/local/iskylims/apps/:${APP_INSTALL_PATH:-/opt/iskylims}/logs:U
+      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${APP_INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py:U
       - iskylims_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents
       - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static
     extra_hosts:

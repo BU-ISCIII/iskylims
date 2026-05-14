@@ -172,6 +172,7 @@ Variables opcionales de build/runtime para produccion:
 
 - `APP_INSTALL_PATH`: cambia la raiz de instalacion en runtime usada por el contenedor `app`, los estaticos/documentos y los scripts de instalacion. Valor por defecto: `/opt/iskylims`.
 - `APACHE_CONF_PATH`: cambia el directorio host usado para los ficheros de configuracion de Apache montados por bind mount. Si esta vacio, `container_install.sh` usa `${APP_INSTALL_PATH}/conf`.
+- `DJANGO_SETTINGS_PATH`: cambia el path host usado para el `settings.py` de Django montado por bind mount. Si esta vacio, `container_install.sh` usa `${APP_INSTALL_PATH}/iskylims/settings.py`.
 - `APP_UID` / `APP_GID`: UID/GID de ejecucion del usuario `iskylims` dentro del contenedor. Valor por defecto: `1212:1212`.
 - `APP_SHELL`: shell asignada al usuario de runtime durante la build. Valor por defecto: `/sbin/nologin`.
 - `APP_PORT`: puerto interno donde Gunicorn escucha dentro del servicio `app`. Valor por defecto: `8001`.
@@ -212,6 +213,7 @@ Persistencia actual:
 - `/var/log/local/iskylims/apache` -> `/var/log/httpd` dentro del contenedor `apache`
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` dentro del contenedor `apache`
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_logs.conf` -> `/etc/httpd/conf.d/logformat.conf` dentro del contenedor `apache`
+- `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}` -> `${INSTALL_PATH}/iskylims/settings.py` dentro del contenedor `app`
 - volumen nombrado `iskylims_documents` -> `${INSTALL_PATH}/documents`
 - volumen nombrado `iskylims_static` -> `${INSTALL_PATH}/static`
 
@@ -248,9 +250,11 @@ Archivos estaticos:
 
 Durante `container_install.sh`, los ficheros `conf/iskylims_apache_reverse_proxy.conf` y `conf/iskylims_apache_logs.conf` se copian al host en `${APACHE_CONF_PATH}`. Si `APACHE_CONF_PATH` esta vacio, se copian a `${INSTALL_PATH}/conf`. A partir de ese momento, los cambios de runtime deben hacerse sobre esas copias.
 
-Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`. Si necesitas que los ficheros de Apache queden fuera de la raiz de runtime de la app, define `APACHE_CONF_PATH` en el fichero de configuracion o exportalo antes de ejecutar `container_install.sh`.
+`container_install.sh` prepara un fichero host `settings.py` de Django para el bind mount en `${DJANGO_SETTINGS_PATH}`, o en `${INSTALL_PATH}/iskylims/settings.py` si `DJANGO_SETTINGS_PATH` esta vacio. Durante el bootstrap, `install.sh` actualiza ese fichero montado a partir de `conf/template_settings.txt` y el fichero de configuracion seleccionado, conservando el `SECRET_KEY` si ya existe. Despues se pueden editar settings de runtime y reiniciar el contenedor sin reconstruir la imagen.
 
-`container_install.sh` crea `${APP_INSTALL_PATH}/conf`, `${APACHE_CONF_PATH:-${APP_INSTALL_PATH}/conf}`, `/var/log/local/iskylims/apps` y `/var/log/local/iskylims/apache` antes de `compose up`, copia ahi los dos ficheros de configuracion de Apache, exporta `APP_INSTALL_PATH` y `APACHE_CONF_PATH` a Compose y despues ejecuta `install.sh --bootstrap ...` dentro del contenedor `app`. La imagen del contenedor ya contiene el proyecto Django y el virtualenv preparados dentro de `${APP_INSTALL_PATH}`; el bootstrap aplica migraciones, scripts/fixtures opcionales y refresca `${INSTALL_PATH}/static`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/iskylims/apache`.
+Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`. Si necesitas que los ficheros de Apache o los settings de Django queden fuera de la raiz de runtime de la app, define `APACHE_CONF_PATH` o `DJANGO_SETTINGS_PATH` en el fichero de configuracion, o exportalos antes de ejecutar `container_install.sh`.
+
+`container_install.sh` crea `${APP_INSTALL_PATH}/conf`, `${APACHE_CONF_PATH:-${APP_INSTALL_PATH}/conf}`, `/var/log/local/iskylims/apps` y `/var/log/local/iskylims/apache` antes de `compose up`, copia ahi los dos ficheros de configuracion de Apache, prepara el fichero de settings montado por bind mount si no existe, exporta `APP_INSTALL_PATH`, `APACHE_CONF_PATH` y `DJANGO_SETTINGS_PATH` a Compose y despues ejecuta `install.sh --bootstrap ...` dentro del contenedor `app`. La imagen del contenedor ya contiene el proyecto Django y el virtualenv preparados dentro de `${APP_INSTALL_PATH}`; el bootstrap actualiza settings, aplica migraciones, scripts/fixtures opcionales y refresca `${INSTALL_PATH}/static`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/iskylims/apache`.
 
 Nota SELinux para pre-produccion y produccion:
 

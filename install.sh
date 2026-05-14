@@ -151,16 +151,27 @@ root_check(){
     fi
 }
 
+generate_django_secret_key(){
+    "$PYTHON_BIN_PATH" -c "import secrets; print(''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for _ in range(50)))"
+}
+
 # update_settings_and_urls: rewrite Django settings and urls with deployment values.
 update_settings_and_urls(){
     log "INFO" "Updating settings.py and urls.py with deployment values"
     local project_dir="$INSTALL_PATH/$PROJECT_NAME"
-    grep ^SECRET "$project_dir/settings.py" > ~/.secret
+    local secret_line=""
+
+    if [ -f "$project_dir/settings.py" ]; then
+        secret_line="$(grep -E "^SECRET_KEY[[:space:]]*=" "$project_dir/settings.py" | tail -n 1)"
+    fi
+    if [ -z "$secret_line" ] || [[ "$secret_line" =~ SECRET_KEY[[:space:]]*=[[:space:]]*SECRET ]]; then
+        secret_line="SECRET_KEY = '$(generate_django_secret_key)'"
+    fi
 
     cp conf/template_settings.txt "$project_dir/settings.py"
     cp conf/urls.py "$project_dir"
     
-    sed -i "/^SECRET/c\\$(cat ~/.secret)" "$project_dir/settings.py"
+    sed -i "/^SECRET_KEY/c\\$secret_line" "$project_dir/settings.py"
     sed -i "s/djangouser/${DB_USER}/g" "$project_dir/settings.py"
     sed -i "s/djangopass/${DB_PASS}/g" "$project_dir/settings.py"
     sed -i "s/djangohost/${DB_SERVER_IP}/g" "$project_dir/settings.py"
@@ -876,6 +887,7 @@ bootstrap_application_runtime() {
         abort_install "manage.py not found at $INSTALL_PATH/manage.py. Stage application files first."
     fi
 
+    update_settings_and_urls
     run_django_deploy "$mode"
     refresh_static_files
 

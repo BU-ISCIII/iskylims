@@ -7,6 +7,9 @@ INSTALL_PATH='/opt/iskylims'
 # Optional host directory for Apache bind-mounted conf files.
 # Leave empty to use ${INSTALL_PATH}/conf.
 APACHE_CONF_PATH=''
+# Optional host path for bind-mounted Django settings.py.
+# Leave empty to use ${INSTALL_PATH}/iskylims/settings.py.
+DJANGO_SETTINGS_PATH=''
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
 FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'

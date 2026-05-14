@@ -148,6 +148,19 @@ copy_with_podman_fallback() {
     return 1
 }
 
+prepare_django_settings_bind_mount() {
+    local settings_path="$1"
+
+    if [ "$mode" != "production" ]; then
+        return 0
+    fi
+
+    mkdir -p "$(dirname "$settings_path")"
+    if [ ! -f "$settings_path" ]; then
+        copy_with_podman_fallback "$repo_root/conf/template_settings.txt" "$settings_path"
+    fi
+}
+
 # PARSE VARIABLE ARGUMENTS WITH getopts
 options=":d:g:c:s:j:a:m:b:f:e:vhntp"
 while getopts $options opt; do
@@ -342,6 +355,11 @@ apache_conf_path="${APACHE_CONF_PATH:-${config_apache_conf_path:-}}"
 if [ -z "$apache_conf_path" ]; then
     apache_conf_path="$app_install_path/conf"
 fi
+config_django_settings_path="$(read_install_conf_value "DJANGO_SETTINGS_PATH" "$host_install_conf_path")"
+django_settings_path="${DJANGO_SETTINGS_PATH:-${config_django_settings_path:-}}"
+if [ -z "$django_settings_path" ]; then
+    django_settings_path="$app_install_path/iskylims/settings.py"
+fi
 app_port="${APP_PORT:-8001}"
 app_container=""
 local_head_hash=""
@@ -533,6 +551,7 @@ print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
 mkdir -p "$app_install_path/conf" "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"
+prepare_django_settings_bind_mount "$django_settings_path"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
     copy_with_podman_fallback \
         "$repo_root/conf/iskylims_apache_reverse_proxy.conf" \
@@ -543,14 +562,14 @@ if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
         "$repo_root/conf/iskylims_apache_logs.conf" \
         "$apache_conf_path/iskylims_apache_logs.conf"
 fi
-INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" \
+INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" \
     compose_exec -f "$compose_file" build --no-cache \
     --build-arg INSTALL_TYPE="dep" \
     --build-arg GIT_REVISION="$git_revision" \
     --build-arg INSTALL_CONF="$install_conf_container" \
     --build-arg APP_INSTALL_PATH="$app_install_path"
 print_image_after_build
-APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" compose_exec -f "$compose_file" up -d
+APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" compose_exec -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
