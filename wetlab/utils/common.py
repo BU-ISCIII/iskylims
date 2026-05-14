@@ -500,4 +500,16 @@ def open_log(config_file):
     # Keep existing named loggers active; otherwise fileConfig may disable them.
     fileConfig(config_file, disable_existing_loggers=False)
     logger = logging.getLogger()
+    seen_handlers = set()
+    for handler in logger.handlers[:]:
+        base_filename = getattr(handler, "baseFilename", None)
+        if base_filename:
+            handler_id = (handler.__class__, base_filename)
+        else:
+            handler_id = (handler.__class__, getattr(handler, "stream", None))
+        if handler_id in seen_handlers:
+            logger.removeHandler(handler)
+            handler.close()
+        else:
+            seen_handlers.add(handler_id)
     return logger

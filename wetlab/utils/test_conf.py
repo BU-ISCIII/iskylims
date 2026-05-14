@@ -1,6 +1,5 @@
 # Generic imports
 import grp
-import logging
 import os
 import pwd
 
@@ -159,7 +158,6 @@ def execute_test_for_testing_run(run_test_name, run_test_folder=None):
         settings.BASE_DIR, "wetlab", wetlab.config.LOGGING_CONFIG_FILE
     )
     logger = wetlab.utils.common.open_log(config_file)
-    logger = logging.getLogger(__name__)
     logger.info("----------------------------------")
     logger.info("###########---Start RUN Testing  -----############")
     logger.info("----------------------------------")
