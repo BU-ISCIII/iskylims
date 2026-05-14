@@ -1,5 +1,8 @@
 ### Installation path and modules settings
 INSTALL_PATH='/opt/iskylims'
+# Optional host directory for Apache bind-mounted conf files.
+# Leave empty to use ${INSTALL_PATH}/conf.
+APACHE_CONF_PATH=''
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
 FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
@@ -32,4 +35,3 @@ DNS_URL='<Relecov_url_address>'
 ### Logs settings
 LOG_TYPE="symbolic_link" # can be symbolic link, or regular_folder
 LOG_PATH="" # mandatory if LOG_TYPE="symbolic_link", where is the log folder so we can create a symbolic link in the repository folder.
-

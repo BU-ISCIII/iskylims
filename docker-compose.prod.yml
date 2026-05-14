@@ -11,10 +11,11 @@ services:
       - "8080:8080"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - ${APP_INSTALL_PATH:-/opt/iskylims}/conf/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:Z,ro
-      - /var/log/local/apache:/var/log/httpd
-      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:Z,ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
+      - /var/log/local/iskylims/apache:/var/log/httpd:U
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:ro
 
   app:
     container_name: iskylims_app
@@ -39,16 +40,16 @@ services:
       DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-60}
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
       GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
-      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-120}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-300}
       GUNICORN_KEEPALIVE: ${GUNICORN_KEEPALIVE:-5}
       APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
-    user: "${APP_UID:-1212}:${APP_GID:-1212}"
+    user: "${APP_UID:-1005}:${APP_GID:-1005}"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /usr/share/zoneinfo:/usr/share/zoneinfo
-      - /var/log/local/apps/iskylims:${APP_INSTALL_PATH:-/opt/iskylims}/logs:z
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - /var/log/local/iskylims/apps/:${APP_INSTALL_PATH:-/opt/iskylims}/logs:U
       - iskylims_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents
-      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:z
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

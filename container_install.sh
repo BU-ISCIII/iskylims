@@ -337,6 +337,11 @@ set_engine
 app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
 config_install_path="$(read_install_conf_value "INSTALL_PATH" "$host_install_conf_path")"
 app_install_path="${APP_INSTALL_PATH:-${config_install_path:-/opt/iskylims}}"
+config_apache_conf_path="$(read_install_conf_value "APACHE_CONF_PATH" "$host_install_conf_path")"
+apache_conf_path="${APACHE_CONF_PATH:-${config_apache_conf_path:-}}"
+if [ -z "$apache_conf_path" ]; then
+    apache_conf_path="$app_install_path/conf"
+fi
 app_port="${APP_PORT:-8001}"
 app_container=""
 local_head_hash=""
@@ -527,20 +532,25 @@ cleanup_stale_test_containers
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
-mkdir -p "$app_install_path/conf" "/var/log/local/apache"
+mkdir -p "$app_install_path/conf" "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
     copy_with_podman_fallback \
         "$repo_root/conf/iskylims_apache_reverse_proxy.conf" \
-        "$app_install_path/conf/iskylims_apache_reverse_proxy.conf"
+        "$apache_conf_path/iskylims_apache_reverse_proxy.conf"
 fi
-INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" \
+if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
+    copy_with_podman_fallback \
+        "$repo_root/conf/iskylims_apache_logs.conf" \
+        "$apache_conf_path/iskylims_apache_logs.conf"
+fi
+INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" \
     compose_exec -f "$compose_file" build --no-cache \
     --build-arg INSTALL_TYPE="dep" \
     --build-arg GIT_REVISION="$git_revision" \
     --build-arg INSTALL_CONF="$install_conf_container" \
     --build-arg APP_INSTALL_PATH="$app_install_path"
 print_image_after_build
-APP_INSTALL_PATH="$app_install_path" compose_exec -f "$compose_file" up -d
+APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" compose_exec -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
