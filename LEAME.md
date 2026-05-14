@@ -170,14 +170,15 @@ export APP_GID=1212
 
 Variables opcionales de build/runtime para produccion:
 
-- `APP_INSTALL_PATH`: cambia la raiz de instalacion en runtime usada por el contenedor `app`, el montaje de configuracion de Apache, los estaticos/documentos y los scripts de instalacion. Valor por defecto: `/opt/iskylims`.
+- `APP_INSTALL_PATH`: cambia la raiz de instalacion en runtime usada por el contenedor `app`, los estaticos/documentos y los scripts de instalacion. Valor por defecto: `/opt/iskylims`.
+- `APACHE_CONF_PATH`: cambia el directorio host usado para los ficheros de configuracion de Apache montados por bind mount. Si esta vacio, `container_install.sh` usa `${APP_INSTALL_PATH}/conf`.
 - `APP_UID` / `APP_GID`: UID/GID de ejecucion del usuario `iskylims` dentro del contenedor. Valor por defecto: `1212:1212`.
 - `APP_SHELL`: shell asignada al usuario de runtime durante la build. Valor por defecto: `/sbin/nologin`.
 - `APP_PORT`: puerto interno donde Gunicorn escucha dentro del servicio `app`. Valor por defecto: `8001`.
 - `DB_CONN_MAX_AGE`: tiempo de vida, en segundos, de las conexiones persistentes de Django a la BD. Valor por defecto: `60`.
 - `WEB_CONCURRENCY`: numero de workers de Gunicorn. Valor por defecto en compose: `2`. Si no se define en el entrypoint, se calcula segun CPU disponible.
 - `GUNICORN_THREADS`: numero de hilos por worker de Gunicorn. Valor por defecto: `2`.
-- `GUNICORN_TIMEOUT`: timeout de peticiones Gunicorn en segundos. Valor por defecto: `120`.
+- `GUNICORN_TIMEOUT`: timeout de peticiones Gunicorn en segundos. Valor por defecto: `300`.
 - `GUNICORN_KEEPALIVE`: keep-alive de Gunicorn en segundos. Valor por defecto: `5`.
 - `DJANGO_DEBUG`: se pasa al contenedor de produccion. Valor por defecto: `"false"`. Debe mantenerse desactivado en produccion.
 
@@ -207,19 +208,20 @@ El compose de produccion usa `INSTALL_PATH` del fichero de configuracion selecci
 
 Persistencia actual:
 
-- `/var/log/local/apps/iskylims` -> `${INSTALL_PATH}/logs` dentro del contenedor `app`
-- `/var/log/local/apache` -> `/var/log/httpd` dentro del contenedor `apache`
-- `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` dentro del contenedor `apache`
+- `/var/log/local/iskylims/apps` -> `${INSTALL_PATH}/logs` dentro del contenedor `app`
+- `/var/log/local/iskylims/apache` -> `/var/log/httpd` dentro del contenedor `apache`
+- `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` dentro del contenedor `apache`
+- `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_logs.conf` -> `/etc/httpd/conf.d/logformat.conf` dentro del contenedor `apache`
 - volumen nombrado `iskylims_documents` -> `${INSTALL_PATH}/documents`
 - volumen nombrado `iskylims_static` -> `${INSTALL_PATH}/static`
 
 Crea los directorios necesarios en el host:
 
 ```bash
-sudo mkdir -p /var/log/local/apps/iskylims
-sudo mkdir -p /var/log/local/apache
+sudo mkdir -p /var/log/local/iskylims/apps
+sudo mkdir -p /var/log/local/iskylims/apache
 sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
-sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/apps/iskylims ${APP_INSTALL_PATH:-/opt/iskylims}
+sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/iskylims/apps ${APP_INSTALL_PATH:-/opt/iskylims}
 ```
 
 En hosts Podman rootless o endurecidos, ejecuta el script de preparacion del host con el mismo usuario que arranca los contenedores. El script pre-crea los ficheros de log de Apache, ajusta la propiedad para el usuario UBI httpd en Podman rootless y aplica etiquetas SELinux de contenedor cuando SELinux esta activo:
@@ -244,20 +246,20 @@ Archivos estaticos:
 - `docker-compose.prod.yml` comparte ese directorio con `apache` mediante el volumen nombrado `iskylims_static`.
 - La configuracion del proxy sirve `/static` directamente desde `${INSTALL_PATH}/static`.
 
-Durante `container_install.sh`, el fichero `conf/iskylims_apache_reverse_proxy.conf` se copia al host en `${INSTALL_PATH}/conf/iskylims_apache_reverse_proxy.conf`. A partir de ese momento, los cambios de runtime deben hacerse sobre esa copia.
+Durante `container_install.sh`, los ficheros `conf/iskylims_apache_reverse_proxy.conf` y `conf/iskylims_apache_logs.conf` se copian al host en `${APACHE_CONF_PATH}`. Si `APACHE_CONF_PATH` esta vacio, se copian a `${INSTALL_PATH}/conf`. A partir de ese momento, los cambios de runtime deben hacerse sobre esas copias.
 
-Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`.
+Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion o exporta `APP_INSTALL_PATH` antes de ejecutar `container_install.sh`. Si necesitas que los ficheros de Apache queden fuera de la raiz de runtime de la app, define `APACHE_CONF_PATH` en el fichero de configuracion o exportalo antes de ejecutar `container_install.sh`.
 
-`container_install.sh` crea `${APP_INSTALL_PATH}/conf` y `/var/log/local/apache` antes de `compose up`, copia ahi `conf/iskylims_apache_reverse_proxy.conf`, exporta `APP_INSTALL_PATH` a Compose y despues ejecuta `install.sh --bootstrap ...` dentro del contenedor `app`. La imagen del contenedor ya contiene el proyecto Django y el virtualenv preparados dentro de `${APP_INSTALL_PATH}`; el bootstrap aplica migraciones, scripts/fixtures opcionales y refresca `${INSTALL_PATH}/static`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/apache`.
+`container_install.sh` crea `${APP_INSTALL_PATH}/conf`, `${APACHE_CONF_PATH:-${APP_INSTALL_PATH}/conf}`, `/var/log/local/iskylims/apps` y `/var/log/local/iskylims/apache` antes de `compose up`, copia ahi los dos ficheros de configuracion de Apache, exporta `APP_INSTALL_PATH` y `APACHE_CONF_PATH` a Compose y despues ejecuta `install.sh --bootstrap ...` dentro del contenedor `app`. La imagen del contenedor ya contiene el proyecto Django y el virtualenv preparados dentro de `${APP_INSTALL_PATH}`; el bootstrap aplica migraciones, scripts/fixtures opcionales y refresca `${INSTALL_PATH}/static`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/iskylims/apache`.
 
 Nota SELinux para pre-produccion y produccion:
 
-- Asegura que `/var/log/local/apache` sea escribible por el runtime de contenedores y tenga una etiqueta valida para contenedores, por ejemplo `container_file_t`.
+- Asegura que `/var/log/local/iskylims/apache` sea escribible por el runtime de contenedores y tenga una etiqueta valida para contenedores, por ejemplo `container_file_t`.
 - Si el path del host ya esta etiquetado como `container_file_t`, no anadas `:Z` al bind mount de logs de Apache. `:Z` fuerza un relabel y puede fallar con `lsetxattr(... container_file_t ...): operation not permitted`.
 - Comprobacion rapida:
 
 ```bash
-ls -ldZ /var/log/local/apache
+ls -ldZ /var/log/local/iskylims/apache
 ```
 
 - Ejemplo esperado:
@@ -266,7 +268,7 @@ ls -ldZ /var/log/local/apache
 system_u:object_r:container_file_t:s0
 ```
 
-- Si Apache falla al arrancar con `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, elimina cualquier fichero host obsoleto y recrea/reinicia el contenedor. En la practica, borrar `/var/log/local/apache/modsec_debug.log` ha sido suficiente cuando el inode existente tenia permisos o contexto incorrectos.
+- Si Apache falla al arrancar con `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, elimina cualquier fichero host obsoleto y recrea/reinicia el contenedor. En la practica, borrar `/var/log/local/iskylims/apache/modsec_debug.log` ha sido suficiente cuando el inode existente tenia permisos o contexto incorrectos.
 
 #### Tareas cron dentro del contenedor
 
@@ -490,9 +492,9 @@ mysqldump -h <db_host> -P <db_port> -u iskylims -p iskylims > iskylims_$(date +%
 Archivo de logs:
 
 ```bash
-tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apps/iskylims .
+tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apps .
 
-tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/apache .
+tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apache .
 ```
 
 Archivo del volumen de documents:
@@ -530,11 +532,11 @@ Con Podman, usa el mismo comando sustituyendo `docker` por `podman`.
 Restaurar logs:
 
 ```bash
-mkdir -p /var/log/local/apps/iskylims
-tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apps/iskylims
+mkdir -p /var/log/local/iskylims/apps
+tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apps
 
-mkdir -p /var/log/local/apache
-tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/apache
+mkdir -p /var/log/local/iskylims/apache
+tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apache
 ```
 
 Ejemplo de rollback completo bare-metal:
@@ -607,11 +609,11 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 4. Si los volumenes estan comprometidos, restauralos desde los tar:
 
 ```bash
-mkdir -p /var/log/local/apps/iskylims
-tar -xzf iskylims_app_logs.tgz -C /var/log/local/apps/iskylims
+mkdir -p /var/log/local/iskylims/apps
+tar -xzf iskylims_app_logs.tgz -C /var/log/local/iskylims/apps
 
-mkdir -p /var/log/local/apache
-tar -xzf iskylims_apache_logs.tgz -C /var/log/local/apache
+mkdir -p /var/log/local/iskylims/apache
+tar -xzf iskylims_apache_logs.tgz -C /var/log/local/iskylims/apache
 
 docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
   tar -xzf /from/iskylims_documents.tgz -C /to
