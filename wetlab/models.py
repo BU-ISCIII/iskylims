@@ -401,7 +401,7 @@ class RunProcess(models.Model):
         else:
             self.run_error = RunErrors.objects.get(error_text__exact="Undefined")
         self.state_before_error = self.state
-        self.state = RunStates.objects.get(run_state_name__exact="Error")
+        self.state = RunStates.objects.get(run_state_name__exact="error")
         self.save()
         return True
 

@@ -545,10 +545,10 @@ def get_information_for_incompleted_run():
             data.append(str((today - recorded_date).days))
             run_information["recorded"].append(data)
 
-    if wetlab.models.RunProcess.objects.filter(state__run_state_name="Error").exists():
+    if wetlab.models.RunProcess.objects.filter(state__run_state_name="error").exists():
         run_information["error"] = []
         run_objs = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name="Error"
+            state__run_state_name="error"
         ).order_by("run_name")
         for run_obj in run_objs:
             data = []
@@ -1215,12 +1215,12 @@ def get_sequencers_run_from_time_interval(sequencer, start_date, end_date):
                 used_sequencer=sequencer_obj, run_date__range=(start_date, end_date)
             )
             query_completed = run_objs_found.filter(
-                state__run_state_name__exact="Completed"
+                state__run_state_name__exact="completed"
             )
             for item in query_completed:
                 runs_using_sequencer["completed_run_objs"].append(item)
             query_not_completed = run_objs_found.exclude(
-                state__run_state_name__exact="Completed"
+                state__run_state_name__exact="completed"
             )
             for item in query_not_completed:
                 runs_using_sequencer["not_completed_run_objs"].append(item)
@@ -1384,13 +1384,13 @@ def get_stats_sequencer_data_from_selected_runs(
     # get the data for run executed in other sequencers per months
     if (
         wetlab.models.RunProcess.objects.filter(
-            state__run_state_name__exact="Completed"
+            state__run_state_name__exact="completed"
         )
         .exclude(used_sequencer__sequencer_name__exact=sequencer)
         .exists()
     ):
         runs_in_other_sequencers = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name__exact="Completed"
+            state__run_state_name__exact="completed"
         ).exclude(used_sequencer__sequencer_name__exact=sequencer)
         run_time_dict = {}
         for run_in_other_seq in runs_in_other_sequencers:

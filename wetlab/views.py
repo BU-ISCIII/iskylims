@@ -196,7 +196,7 @@ def configuration_test(request):
                 {"error": wetlab.config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND},
             )
         run_test_result = wetlab.utils.test_conf.execute_test_for_testing_run(
-            run_test_name
+            run_test_name, run_test_folder
         )
         run_test_result["run_test_name"] = run_test_name
         if "ERROR" in run_test_result:
@@ -1169,7 +1169,7 @@ def skip_cancel_situation(request):
         run_id = request.POST["run_id"]
         if wetlab.models.RunProcess.objects.filter(pk__exact=run_id).exists():
             run_name_found = wetlab.models.RunProcess.objects.get(pk__exact=run_id)
-            run_name_found.set_run_state("Sample Sent")
+            run_name_found.set_run_state("sample_sent")
             run_name_found.set_forced_continue_on_error()
             detail_description = {}
             detail_description["information"] = (
@@ -1262,7 +1262,7 @@ def incompleted_runs(request):
         )
     if (
         wetlab.models.wetlab.models.RunProcess.objects.all()
-        .exclude(state__run_state_name="Completed")
+        .exclude(state__run_state_name="completed")
         .exists()
     ):
         display_incompleted_run = (

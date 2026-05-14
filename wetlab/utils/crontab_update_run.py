@@ -87,7 +87,7 @@ def get_list_processed_runs():
     return processed_runs
 
 
-def search_update_new_runs(request_reason):
+def search_update_new_runs(request_reason, run_test_folder=None):
     """
     Description:
         The function will check if there are new run folders in the remote
@@ -232,8 +232,14 @@ def search_update_new_runs(request_reason):
                     logger.info(" %s  : Deleted temporary run parameter file", new_run)
                     continue
             else:
-                if experiment_name != request_reason:
-                    logger.info("ignoring test folder %s", experiment_name)
+                requested_test_run = run_test_folder or request_reason
+                current_test_run = new_run if run_test_folder else experiment_name
+                if current_test_run != requested_test_run:
+                    logger.info(
+                        "ignoring test folder %s in remote folder %s",
+                        experiment_name,
+                        new_run,
+                    )
                     os.remove(l_run_parameter)
                     logger.info(" %s  : Deleted temporary run parameter file", new_run)
                     continue
@@ -618,7 +624,7 @@ def manage_run_in_recorded_state(conn, run_process_objs):
 
                 continue
 
-        run_process_obj.set_run_state("Sample Sent")
+        run_process_obj.set_run_state("sample_sent")
         logger.info("%s  : is now on Sample Sent state", experiment_name)
     logger.debug(" End function manage_run_in_recorded_state")
     return
@@ -1189,6 +1195,6 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
         finish_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         run_process_obj.set_run_finish_date(finish_date)
         # Update the run state to completed
-        run_process_obj.set_run_state("Completed")
+        run_process_obj.set_run_state("completed")
         logger.info("%s : is Completed", experiment_name)
     logger.debug(" End function manage_run_in_processed_bcl2fastq_state")
