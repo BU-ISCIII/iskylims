@@ -175,7 +175,7 @@ def execute_test_for_testing_run(run_test_name, run_test_folder=None):
         "completed",
     ]
     for state_run in state_run_test:
-        run_result[state_run] = "NOK"
+        run_result[state_run] = "SKIP"
     if not wetlab.models.RunProcess.objects.filter(
         run_name__exact=run_test_name
     ).exists():

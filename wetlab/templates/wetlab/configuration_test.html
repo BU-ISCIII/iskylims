@@ -302,6 +302,8 @@
                                                             <p> Result of run test for the state {{key}}
                                                                 {% if  value == 'OK' %}
                                                                     <i class="float-end bi bi-check2-circle" style="font-size:40px;color:green"></i>
+                                                                {% elif value == 'SKIP' %}
+                                                                    <i class="float-end bi bi-dash-circle" style="font-size:40px;color:gray"></i>
                                                                 {% else %}
                                                                     <i class="float-end bi bi-x-circle" style="font-size:40px;color:red"></i>
                                                                 {% endif %}
