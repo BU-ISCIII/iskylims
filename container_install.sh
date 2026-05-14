@@ -578,7 +578,7 @@ fi
 
 if [ "$action" = "upgrade" ]; then
     echo "Running install.sh bootstrap inside the container (upgrade mode)"
-    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap upgrade --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
+    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap upgrade --git_revision \"$git_revision\" --conf \"$install_conf_container\" --tables --skip_apache_restart$script_args_before$script_args_after"
 else
     echo "Running install.sh bootstrap inside the container (install mode)"
     engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap install --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"

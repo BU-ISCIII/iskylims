@@ -157,7 +157,7 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 
 3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
 
-Las imagenes de produccion ahora incorporan la aplicacion iSkyLIMS ya preparada. Un reinicio del host o la recreacion del contenedor ya no requiere reinstalar la aplicacion; `container_install.sh` solo ejecuta tareas de bootstrap en runtime, como migraciones, scripts/fixtures opcionales, creacion del superusuario en la primera instalacion y `collectstatic`.
+Las imagenes de produccion ahora incorporan la aplicacion iSkyLIMS ya preparada. Un reinicio del host o la recreacion del contenedor ya no requiere reinstalar la aplicacion; `container_install.sh` solo ejecuta tareas de bootstrap en runtime, como migraciones, refresco de fixtures, scripts opcionales, creacion del superusuario en la primera instalacion y `collectstatic`.
 
 UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
 
@@ -283,13 +283,13 @@ export APP_UID=1212
 export APP_GID=1212
 ```
 
-Re-despliega el contenedor de aplicacion contra una base de datos existente sin tocar los datos:
+Re-despliega el contenedor de aplicacion contra una base de datos existente:
 
 ```bash
 bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
 ```
 
-La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh --bootstrap upgrade` dentro del contenedor. Los ficheros de la aplicacion ya van incorporados en la nueva imagen; la fase de bootstrap aplica migraciones con `--fake-initial`, refresca los estaticos y evita cargar superusuario/datos demo/prueba.
+La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh --bootstrap upgrade --tables` dentro del contenedor. Los ficheros de la aplicacion ya van incorporados en la nueva imagen; la fase de bootstrap aplica migraciones con `--fake-initial`, refresca `conf/first_install_tables.json`, refresca los estaticos y evita cargar superusuario/datos demo/prueba.
 
 ### Actualizacion del despliegue Docker v3.0.0 a 3.1.0
 

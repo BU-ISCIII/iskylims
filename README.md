@@ -155,7 +155,7 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
-Production images now bake the staged iSkyLIMS application into the image itself. Host reboots or container recreation no longer require rerunning the app installation step; `container_install.sh` only performs runtime bootstrap tasks such as migrations, optional fixtures/scripts, superuser creation on first install, and `collectstatic`.
+Production images now bake the staged iSkyLIMS application into the image itself. Host reboots or container recreation no longer require rerunning the app installation step; `container_install.sh` only performs runtime bootstrap tasks such as migrations, fixture refreshes, optional scripts, superuser creation on first install, and `collectstatic`.
 
 UID/GID for the container runtime user (default `1212:1212`):
 
@@ -281,13 +281,13 @@ export APP_UID=1212
 export APP_GID=1212
 ```
 
-Re-deploy the application container against an existing production database without touching data:
+Re-deploy the application container against an existing production database:
 
 ```bash
 bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
 
-The upgrade path rebuilds/restarts the container and runs `install.sh --bootstrap upgrade` inside the app container. The app files are already baked into the rebuilt image; the bootstrap phase applies migrations with `--fake-initial`, refreshes static files, and skips superuser/demo/test data loading.
+The upgrade path rebuilds/restarts the container and runs `install.sh --bootstrap upgrade --tables` inside the app container. The app files are already baked into the rebuilt image; the bootstrap phase applies migrations with `--fake-initial`, refreshes `conf/first_install_tables.json`, refreshes static files, and skips superuser/demo/test data loading.
 
 ### Upgrade docker deployment v3.0.0 to 3.1.0
 
