@@ -163,6 +163,74 @@ normalize_apache_server_name() {
     echo "$value"
 }
 
+generate_django_secret_key() {
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c "import secrets; print(''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for _ in range(50)))"
+    else
+        LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c 50
+        printf "\n"
+    fi
+}
+
+sed_replacement_escape() {
+    printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
+}
+
+render_django_settings_file() {
+    local settings_path="$1"
+    local secret_line=""
+    local tmp_file=""
+    local db_user db_pass db_name db_host db_port
+    local email_host email_port email_user email_pass email_tls
+    local local_server_ip dns_url
+
+    if [ -f "$settings_path" ]; then
+        secret_line="$(grep -E "^SECRET_KEY[[:space:]]*=" "$settings_path" | tail -n 1)"
+    fi
+    if [ -z "$secret_line" ] || [[ "$secret_line" =~ SECRET_KEY[[:space:]]*=[[:space:]]*SECRET ]]; then
+        secret_line="SECRET_KEY = '$(generate_django_secret_key)'"
+    fi
+
+    db_user="$(read_install_conf_value DB_USER "$host_install_conf_path")"
+    db_pass="$(read_install_conf_value DB_PASS "$host_install_conf_path")"
+    db_name="$(read_install_conf_value DB_NAME "$host_install_conf_path")"
+    db_host="$(read_install_conf_value DB_SERVER_IP "$host_install_conf_path")"
+    db_port="$(read_install_conf_value DB_PORT "$host_install_conf_path")"
+    email_host="$(read_install_conf_value EMAIL_HOST_SERVER "$host_install_conf_path")"
+    email_port="$(read_install_conf_value EMAIL_PORT "$host_install_conf_path")"
+    email_user="$(read_install_conf_value EMAIL_HOST_USER "$host_install_conf_path")"
+    email_pass="$(read_install_conf_value EMAIL_HOST_PASSWORD "$host_install_conf_path")"
+    email_tls="$(read_install_conf_value EMAIL_USE_TLS "$host_install_conf_path")"
+    local_server_ip="$(read_install_conf_value LOCAL_SERVER_IP "$host_install_conf_path")"
+    dns_url="$(read_install_conf_value DNS_URL "$host_install_conf_path")"
+
+    tmp_file="$(mktemp)"
+    cp "$repo_root/conf/template_settings.txt" "$tmp_file"
+    sed -i \
+        -e "s|^SECRET_KEY.*|$(sed_replacement_escape "$secret_line")|" \
+        -e "s|djangouser|$(sed_replacement_escape "$db_user")|g" \
+        -e "s|djangopass|$(sed_replacement_escape "$db_pass")|g" \
+        -e "s|djangohost|$(sed_replacement_escape "$db_host")|g" \
+        -e "s|djangoport|$(sed_replacement_escape "$db_port")|g" \
+        -e "s|djangodbname|$(sed_replacement_escape "$db_name")|g" \
+        -e "s|emailhostserver|$(sed_replacement_escape "$email_host")|g" \
+        -e "s|emailport|$(sed_replacement_escape "$email_port")|g" \
+        -e "s|emailhostuser|$(sed_replacement_escape "$email_user")|g" \
+        -e "s|emailhostpassword|$(sed_replacement_escape "$email_pass")|g" \
+        -e "s|emailhosttls|$(sed_replacement_escape "$email_tls")|g" \
+        -e "s|localserverip|$(sed_replacement_escape "$local_server_ip")|g" \
+        -e "s|localhost|$(sed_replacement_escape "$dns_url")|g" \
+        "$tmp_file"
+
+    if copy_with_podman_fallback "$tmp_file" "$settings_path"; then
+        rm -f "$tmp_file"
+        return 0
+    fi
+
+    rm -f "$tmp_file"
+    return 1
+}
+
 normalize_settings_bind_path() {
     local value="$1"
 
@@ -216,8 +284,8 @@ prepare_django_settings_bind_mount() {
     fi
 
     mkdir -p "$(dirname "$settings_path")"
-    if [ ! -f "$settings_path" ]; then
-        copy_with_podman_fallback "$repo_root/conf/template_settings.txt" "$settings_path"
+    if [ ! -f "$settings_path" ] || grep -Eq "SECRET_KEY[[:space:]]*=[[:space:]]*SECRET|emailhosttls|djangouser|djangopass|djangohost|djangodbname" "$settings_path"; then
+        render_django_settings_file "$settings_path"
     fi
 }
 
@@ -402,7 +470,13 @@ fi
 read_install_conf_value() {
     local key="$1"
     local file="$2"
-    grep -E "^${key}=" "$file" | tail -n 1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//"
+
+    bash -c '
+        set -a
+        . "$1"
+        key="$2"
+        printf "%s" "${!key-}"
+    ' _ "$file" "$key"
 }
 
 config_value_or_default() {
