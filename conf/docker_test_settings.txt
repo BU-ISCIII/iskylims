@@ -4,6 +4,33 @@ REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
 FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 
+### Container build/runtime settings
+# Runtime installation root used by the app container.
+# Leave empty to reuse INSTALL_PATH.
+APP_INSTALL_PATH=''
+# Host directory for Apache bind-mounted configuration files.
+# Leave empty to use ${APP_INSTALL_PATH}/conf.
+APACHE_CONF_PATH=''
+# Host path for the bind-mounted Django settings.py.
+# Leave empty to use ${APP_INSTALL_PATH}/iskylims/settings.py.
+DJANGO_SETTINGS_PATH=''
+# UID/GID for the non-root iskylims user inside the app container.
+APP_UID='1212'
+APP_GID='1212'
+# Shell assigned to the container runtime user during image build.
+APP_SHELL='/bin/bash'
+# Internal app port used by Django runserver/Gunicorn.
+APP_PORT='8001'
+# Django production debug flag. Keep disabled in production.
+DJANGO_DEBUG='false'
+# Django persistent database connection lifetime in seconds.
+DB_CONN_MAX_AGE='60'
+# Gunicorn runtime tuning.
+WEB_CONCURRENCY='2'
+GUNICORN_THREADS='2'
+GUNICORN_TIMEOUT='300'
+GUNICORN_KEEPALIVE='5'
+
 ### (optional) Python installation path where pip and python executables are located
 PYTHON_BIN_PATH='python3' # example: /opt/python/3.9.6/bin/python3
 

@@ -21,6 +21,7 @@ De acuerdo con la infraestructura existente, la secuenciacion se realiza en un i
       - [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host)
       - [Proxy inverso con Apache (contenedor) + Gunicorn](#proxy-inverso-con-apache-contenedor--gunicorn)
       - [Tareas cron dentro del contenedor](#tareas-cron-dentro-del-contenedor)
+    - [Gestionar contenedores despues de la instalacion](#gestionar-contenedores-despues-de-la-instalacion)
     - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
     - [Actualizacion del despliegue Docker v3.0.0 a 3.1.0](#actualizacion-del-despliegue-docker-v300-a-310)
       - [Haz copia de seguridad](#haz-copia-de-seguridad)
@@ -159,46 +160,27 @@ Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
 
 Las imagenes de produccion ahora incorporan la aplicacion iSkyLIMS ya preparada. Un reinicio del host o la recreacion del contenedor ya no requiere reinstalar la aplicacion; `container_install.sh` solo ejecuta tareas de bootstrap en runtime, como migraciones, refresco de fixtures, scripts opcionales, creacion del superusuario en la primera instalacion y `collectstatic`.
 
-UID/GID del usuario de ejecucion del contenedor (por defecto `1212:1212`):
+Los valores de build/runtime del contenedor se configuran en el fichero de instalacion seleccionado, no exportando variables en la shell. Edita estos campos en `conf/my_prod_settings.txt` antes de ejecutar `container_install.sh`:
 
-- Exporta `APP_UID` y `APP_GID` antes de ejecutar `container_install.sh` si necesitas un UID/GID distinto.
-
-```bash
-export APP_UID=1212
-export APP_GID=1212
-```
-
-Variables opcionales de build/runtime para produccion:
-
-- `APP_INSTALL_PATH`: cambia la raiz de instalacion en runtime usada por el contenedor `app`, los estaticos/documentos y los scripts de instalacion. Valor por defecto: `/opt/iskylims`.
-- `APACHE_CONF_PATH`: cambia el directorio host usado para los ficheros de configuracion de Apache montados por bind mount. Si esta vacio, `container_install.sh` usa `${APP_INSTALL_PATH}/conf`.
-- `DJANGO_SETTINGS_PATH`: cambia el path host usado para el `settings.py` de Django montado por bind mount. Si esta vacio, `container_install.sh` usa `${APP_INSTALL_PATH}/iskylims/settings.py`.
+- `APP_INSTALL_PATH`: raiz de instalacion en runtime usada por el contenedor `app`, los estaticos/documentos y los scripts de instalacion. Dejalo vacio para reutilizar `INSTALL_PATH`.
+- `APACHE_CONF_PATH`: directorio host usado para los ficheros de configuracion de Apache montados por bind mount. Dejalo vacio para usar `${APP_INSTALL_PATH}/conf`.
+- `DJANGO_SETTINGS_PATH`: path host usado para el `settings.py` de Django montado por bind mount. Dejalo vacio para usar `${APP_INSTALL_PATH}/iskylims/settings.py`.
 - `APP_UID` / `APP_GID`: UID/GID de ejecucion del usuario `iskylims` dentro del contenedor. Valor por defecto: `1212:1212`.
 - `APP_SHELL`: shell asignada al usuario de runtime durante la build. Valor por defecto: `/sbin/nologin`.
 - `APP_PORT`: puerto interno donde Gunicorn escucha dentro del servicio `app`. Valor por defecto: `8001`.
+- `DJANGO_DEBUG`: flag de debug de Django que se pasa al contenedor de produccion. Valor por defecto: `false`; mantenlo desactivado en produccion.
 - `DB_CONN_MAX_AGE`: tiempo de vida, en segundos, de las conexiones persistentes de Django a la BD. Valor por defecto: `60`.
-- `WEB_CONCURRENCY`: numero de workers de Gunicorn. Valor por defecto en compose: `2`. Si no se define en el entrypoint, se calcula segun CPU disponible.
+- `WEB_CONCURRENCY`: numero de workers de Gunicorn. Valor por defecto: `2`.
 - `GUNICORN_THREADS`: numero de hilos por worker de Gunicorn. Valor por defecto: `2`.
 - `GUNICORN_TIMEOUT`: timeout de peticiones Gunicorn en segundos. Valor por defecto: `300`.
 - `GUNICORN_KEEPALIVE`: keep-alive de Gunicorn en segundos. Valor por defecto: `5`.
-- `DJANGO_DEBUG`: se pasa al contenedor de produccion. Valor por defecto: `"false"`. Debe mantenerse desactivado en produccion.
 
-Ejemplo:
-
-```bash
-export APP_INSTALL_PATH=/srv/iskylims
-export APP_UID=1500
-export APP_GID=1500
-export WEB_CONCURRENCY=4
-export GUNICORN_THREADS=2
-export GUNICORN_TIMEOUT=180
-bash container_install.sh --install_conf conf/my_prod_settings.txt
-```
+Durante una instalacion/actualizacion de produccion, `container_install.sh` escribe `.env.prod.file` en la raiz del repositorio. Este fichero esta ignorado por git y Compose lo usa para interpolar variables en `docker-compose.prod.yml`. Intencionadamente contiene metadatos de Compose/runtime, no passwords de base de datos ni de correo.
 
 Asegura que la carpeta de estaticos en el host sea escribible por ese UID/GID:
 
 ```bash
-sudo chown -R 1212:1212 ${APP_INSTALL_PATH:-/opt/iskylims}
+sudo chown -R <APP_UID>:<APP_GID> <APP_INSTALL_PATH>
 ```
 
 #### Persistir logs/documentos en el host
@@ -222,8 +204,8 @@ Crea los directorios necesarios en el host:
 ```bash
 sudo mkdir -p /var/log/local/iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
-sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
-sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/iskylims/apps ${APP_INSTALL_PATH:-/opt/iskylims}
+sudo mkdir -p <APP_INSTALL_PATH>/conf
+sudo chown -R <APP_UID>:<APP_GID> /var/log/local/iskylims/apps <APP_INSTALL_PATH>
 ```
 
 En hosts Podman rootless o endurecidos, ejecuta el script de preparacion del host con el mismo usuario que arranca los contenedores. El script pre-crea los ficheros de log de Apache, ajusta la propiedad para el usuario UBI httpd en Podman rootless y aplica etiquetas SELinux de contenedor cuando SELinux esta activo:
@@ -280,14 +262,33 @@ Cron se ejecuta mediante `supercronic`, lanzado por el script de arranque del co
 
 Si modificas `CRONJOBS`, reconstruye o reinicia el contenedor para regenerar el archivo de cron.
 
-### Actualizacion del despliegue Docker
+### Gestionar contenedores despues de la instalacion
 
-Si usas `APP_UID`/`APP_GID`, exportalos de nuevo antes de la actualizacion para mantener el mismo UID/GID:
+Despues de una instalacion de produccion, usa el fichero generado `.env.prod.file` siempre que ejecutes Compose directamente. Asi las rutas, UID/GID, puertos y ajustes de Gunicorn siguen alineados con el fichero de instalacion.
+
+Ejemplos con Docker Compose:
 
 ```bash
-export APP_UID=1212
-export APP_GID=1212
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
 ```
+
+Ejemplos con Podman Compose:
+
+```bash
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
+```
+
+Si editas valores de runtime del contenedor en el fichero de instalacion, vuelve a ejecutar `container_install.sh --install_conf <fichero>` para regenerar `.env.prod.file` y los contenedores de forma consistente.
+
+### Actualizacion del despliegue Docker
+
+Mantén los mismos valores de `APP_UID`/`APP_GID` en el fichero de instalacion seleccionado antes de actualizar.
 
 Re-despliega el contenedor de aplicacion contra una base de datos existente:
 
@@ -322,12 +323,7 @@ sudo nano myprod_settings.txt
 
 Si editas el archivo en Windows, asegurate de guardarlo con codificacion UTF-8/ASCII.
 
-Si usas `APP_UID`/`APP_GID`, exportalos de nuevo antes de la actualizacion para que el contenedor se ejecute con el mismo UID/GID:
-
-```bash
-export APP_UID=1212
-export APP_GID=1212
-```
+Mantén los mismos valores de `APP_UID`/`APP_GID` en el fichero de instalacion seleccionado antes de ejecutar la actualizacion 3.0.0 -> 3.1.0.
 
 Ejecuta la actualizacion:
 
@@ -564,19 +560,19 @@ cd /opt/iskylims
 python manage.py check
 
 # docker
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs --tail 200 app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
 
 # podman
-podman-compose -f docker-compose.prod.yml ps
-podman-compose -f docker-compose.prod.yml logs --tail 200 app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
 ```
 
 Si sospechas que una imagen o cache de build de Docker esta corrupta:
 
 ```bash
-docker compose -f docker-compose.prod.yml build --no-cache app
-docker compose -f docker-compose.prod.yml up -d --force-recreate app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml build --no-cache app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d --force-recreate app
 ```
 
 ### Bare-metal
@@ -598,7 +594,7 @@ mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_pro
 1. Para el contenedor:
 
     ```bash
-    docker compose -f docker-compose.prod.yml down
+    docker compose --env-file .env.prod.file -f docker-compose.prod.yml down
     ```
 
 2. Restaura la base de datos desde tu backup.

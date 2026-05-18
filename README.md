@@ -22,6 +22,7 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
       - [Persist logs/documents on the host](#persist-logsdocuments-on-the-host)
       - [Apache reverse proxy (container) + Gunicorn](#apache-reverse-proxy-container--gunicorn)
       - [Cron jobs inside the container](#cron-jobs-inside-the-container)
+    - [Manage containers after installation](#manage-containers-after-installation)
     - [Upgrade docker deployment](#upgrade-docker-deployment)
     - [Upgrade docker deployment v3.0.0 to 3.1.0](#upgrade-docker-deployment-v300-to-310)
       - [Back up first](#back-up-first)
@@ -157,41 +158,22 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 Production images now bake the staged iSkyLIMS application into the image itself. Host reboots or container recreation no longer require rerunning the app installation step; `container_install.sh` only performs runtime bootstrap tasks such as migrations, fixture refreshes, optional scripts, superuser creation on first install, and `collectstatic`.
 
-UID/GID for the container runtime user (default `1212:1212`):
+Container build/runtime values are configured in the selected install config, not by exporting shell variables. Edit these fields in `conf/my_prod_settings.txt` before running `container_install.sh`:
 
-- Export `APP_UID` and `APP_GID` before running `container_install.sh` if you need a different host UID/GID.
-
-```bash
-export APP_UID=1212
-export APP_GID=1212
-```
-
-Optional production runtime/build variables:
-
-- `APP_INSTALL_PATH`: overrides the runtime install root used by the app container, static/documents mounts, and install scripts. Default: `/opt/iskylims`.
-- `APACHE_CONF_PATH`: overrides the host directory used for Apache bind-mounted config files. If empty, `container_install.sh` uses `${APP_INSTALL_PATH}/conf`.
-- `DJANGO_SETTINGS_PATH`: overrides the host path used for the bind-mounted Django `settings.py`. If empty, `container_install.sh` uses `${APP_INSTALL_PATH}/iskylims/settings.py`.
+- `APP_INSTALL_PATH`: runtime install root used by the app container, static/documents mounts, and install scripts. Leave empty to reuse `INSTALL_PATH`.
+- `APACHE_CONF_PATH`: host directory used for Apache bind-mounted config files. Leave empty to use `${APP_INSTALL_PATH}/conf`.
+- `DJANGO_SETTINGS_PATH`: host path used for the bind-mounted Django `settings.py`. Leave empty to use `${APP_INSTALL_PATH}/iskylims/settings.py`.
 - `APP_UID` / `APP_GID`: runtime UID/GID for the `iskylims` user inside the container. Default: `1212:1212`.
 - `APP_SHELL`: shell assigned to the runtime user during image build. Default: `/sbin/nologin`.
 - `APP_PORT`: internal Gunicorn bind port for the `app` service. Default: `8001`.
+- `DJANGO_DEBUG`: Django debug flag passed to the production app container. Default: `false`; keep it disabled in production.
 - `DB_CONN_MAX_AGE`: Django persistent DB connection lifetime in seconds. Default: `60`.
-- `WEB_CONCURRENCY`: Gunicorn worker count. Default: `2`. If unset in the container entrypoint, workers fall back to CPU-based auto-selection.
+- `WEB_CONCURRENCY`: Gunicorn worker count. Default: `2`.
 - `GUNICORN_THREADS`: threads per Gunicorn worker. Default: `2`.
 - `GUNICORN_TIMEOUT`: Gunicorn request timeout in seconds. Default: `300`.
 - `GUNICORN_KEEPALIVE`: Gunicorn keep-alive in seconds. Default: `5`.
-- `DJANGO_DEBUG`: passed to the production app container. Default: `"false"`. Keep it disabled in production.
 
-Example:
-
-```bash
-export APP_INSTALL_PATH=/srv/iskylims
-export APP_UID=1500
-export APP_GID=1500
-export WEB_CONCURRENCY=4
-export GUNICORN_THREADS=2
-export GUNICORN_TIMEOUT=180
-bash container_install.sh --install_conf conf/my_prod_settings.txt
-```
+During production install/upgrade, `container_install.sh` writes `.env.prod.file` in the repository root. This file is ignored by git and is used by Compose for variable interpolation in `docker-compose.prod.yml`. It intentionally contains Compose/runtime metadata, not database or email passwords.
 
 Host directory and ownership preparation is described in [Persist logs/documents on the host](#persist-logsdocuments-on-the-host).
 
@@ -216,8 +198,8 @@ Create host directories before the first deployment:
 ```bash
 sudo mkdir -p /var/log/local/iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
-sudo mkdir -p ${APP_INSTALL_PATH:-/opt/iskylims}/conf
-sudo chown -R ${APP_UID:-1212}:${APP_GID:-1212} /var/log/local/iskylims/apps ${APP_INSTALL_PATH:-/opt/iskylims}
+sudo mkdir -p <APP_INSTALL_PATH>/conf
+sudo chown -R <APP_UID>:<APP_GID> /var/log/local/iskylims/apps <APP_INSTALL_PATH>
 ```
 
 For hardened/rootless Podman hosts, run the host preparation script as the same
@@ -278,14 +260,33 @@ Cron runs via `supercronic`, started by the container entrypoint script. The scr
 
 If you change `CRONJOBS`, rebuild or restart the container to regenerate the cron file.
 
-### Upgrade docker deployment
+### Manage containers after installation
 
-If you set `APP_UID`/`APP_GID`, export them again before upgrade so the container runs with the same UID/GID:
+After a production install, use the generated `.env.prod.file` whenever you run Compose directly. This keeps paths, UID/GID, ports, and Gunicorn settings aligned with the install config.
+
+Docker Compose examples:
 
 ```bash
-export APP_UID=1212
-export APP_GID=1212
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
 ```
+
+Podman Compose examples:
+
+```bash
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
+```
+
+If you edit container runtime values in the install config, rerun `container_install.sh --install_conf <file>` so `.env.prod.file` and the running containers are regenerated consistently.
+
+### Upgrade docker deployment
+
+Keep the same `APP_UID`/`APP_GID` values in the selected install config before running an upgrade.
 
 Re-deploy the application container against an existing production database:
 
@@ -320,12 +321,7 @@ sudo nano myprod_settings.txt
 
 Ensure the file uses Linux-friendly encoding (UTF-8/ASCII) if you edit it on Windows.
 
-If you set `APP_UID`/`APP_GID`, export them again before upgrade so the container runs with the same UID/GID:
-
-```bash
-export APP_UID=1212
-export APP_GID=1212
-```
+Keep the same `APP_UID`/`APP_GID` values in the selected install config before running the 3.0.0 -> 3.1.0 upgrade.
 
 Run upgrade command:
 
@@ -545,18 +541,18 @@ cd /opt/iskylims
 python manage.py check
 
 # docker
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs --tail 200 app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
 # podman
-podman-compose -f docker-compose.prod.yml ps
-podman-compose -f docker-compose.prod.yml logs --tail 200 app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
 ```
 
 If you suspect a corrupted image/build cache in Docker:
 
 ```bash
-docker compose -f docker-compose.prod.yml build --no-cache app
-docker compose -f docker-compose.prod.yml up -d --force-recreate app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml build --no-cache app
+docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d --force-recreate app
 ```
 
 ## Final configuration steps
