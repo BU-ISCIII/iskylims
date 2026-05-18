@@ -164,7 +164,7 @@ Los valores de build/runtime del contenedor se configuran en el fichero de insta
 
 - `APP_INSTALL_PATH`: raiz de instalacion en runtime usada por el contenedor `app`, los estaticos/documentos y los scripts de instalacion. Dejalo vacio para reutilizar `INSTALL_PATH`.
 - `APACHE_CONF_PATH`: directorio host usado para los ficheros de configuracion de Apache montados por bind mount. Dejalo vacio para usar `${APP_INSTALL_PATH}/conf`.
-- `DJANGO_SETTINGS_PATH`: path host usado para el `settings.py` de Django montado por bind mount. Dejalo vacio para usar `${APP_INSTALL_PATH}/iskylims/settings.py`.
+- `DJANGO_SETTINGS_PATH`: path host usado para el `settings.py` de Django montado por bind mount. Dejalo vacio para usar `${APP_INSTALL_PATH}/iskylims/settings.py`. Si el valor es un directorio o termina en `/`, `container_install.sh` anade `settings.py`.
 - `APP_UID` / `APP_GID`: UID/GID de ejecucion del usuario `iskylims` dentro del contenedor. Valor por defecto: `1212:1212`.
 - `APP_SHELL`: shell asignada al usuario de runtime durante la build. Valor por defecto: `/sbin/nologin`.
 - `APP_PORT`: puerto interno donde Gunicorn escucha dentro del servicio `app`. Valor por defecto: `8001`.

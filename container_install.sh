@@ -163,6 +163,22 @@ normalize_apache_server_name() {
     echo "$value"
 }
 
+normalize_settings_bind_path() {
+    local value="$1"
+
+    if [ -z "$value" ]; then
+        echo "$app_install_path/iskylims/settings.py"
+        return 0
+    fi
+
+    if [ -d "$value" ] || [[ "$value" = */ ]]; then
+        echo "${value%/}/settings.py"
+        return 0
+    fi
+
+    echo "$value"
+}
+
 render_apache_config() {
     local src="$1"
     local dst="$2"
@@ -191,6 +207,12 @@ prepare_django_settings_bind_mount() {
 
     if [ "$mode" != "production" ]; then
         return 0
+    fi
+
+    if [ -d "$settings_path" ]; then
+        echo "DJANGO_SETTINGS_PATH must resolve to a file path, but '$settings_path' is a directory." >&2
+        echo "Use a full path like '$settings_path/settings.py' or remove the directory and rerun." >&2
+        return 1
     fi
 
     mkdir -p "$(dirname "$settings_path")"
@@ -451,10 +473,7 @@ if [ -z "$apache_conf_path" ]; then
     apache_conf_path="$app_install_path/conf"
 fi
 config_django_settings_path="$(read_install_conf_value "DJANGO_SETTINGS_PATH" "$host_install_conf_path")"
-django_settings_path="${DJANGO_SETTINGS_PATH:-${config_django_settings_path:-}}"
-if [ -z "$django_settings_path" ]; then
-    django_settings_path="$app_install_path/iskylims/settings.py"
-fi
+django_settings_path="$(normalize_settings_bind_path "${DJANGO_SETTINGS_PATH:-${config_django_settings_path:-}}")"
 app_uid="$(config_value_or_default APP_UID 1212)"
 app_gid="$(config_value_or_default APP_GID 1212)"
 app_shell="$(config_value_or_default APP_SHELL /sbin/nologin)"
