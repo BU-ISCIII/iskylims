@@ -16,6 +16,8 @@ services:
       - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
       - /var/log/local/iskylims/apache:/var/log/httpd:U
       - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:ro
+    networks:
+      - iskylims_net
 
   app:
     container_name: iskylims_app
@@ -53,6 +55,11 @@ services:
       - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - iskylims_net
+
+networks:
+  iskylims_net:
 
 volumes:
   iskylims_documents:
