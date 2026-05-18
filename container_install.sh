@@ -647,9 +647,6 @@ sleep 20
 ensure_app_running
 print_container_source_diagnostics "Container diagnostics after startup:"
 
-echo "Ensuring runtime directories are writable by ${app_uid}:${app_gid}"
-engine_exec exec -u 0 -it "$app_container" sh -lc "mkdir -p ${app_install_path}/documents ${app_install_path}/logs ${app_install_path}/static ${app_install_path}/cron ${app_install_path}/tmp && chown -R ${app_uid}:${app_gid} ${app_install_path}/documents ${app_install_path}/logs ${app_install_path}/static ${app_install_path}/cron ${app_install_path}/tmp"
-
 container_install_conf_path="$install_conf_container"
 if [[ "$container_install_conf_path" != /* ]]; then
     container_install_conf_path="$app_repo_path/$container_install_conf_path"
