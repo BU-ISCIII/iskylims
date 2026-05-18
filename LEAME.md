@@ -230,7 +230,7 @@ Archivos estaticos:
 - `docker-compose.prod.yml` comparte ese directorio con `apache` mediante el volumen nombrado `iskylims_static`.
 - La configuracion del proxy sirve `/static` directamente desde `${INSTALL_PATH}/static`.
 
-Durante `container_install.sh`, los ficheros `conf/iskylims_apache_reverse_proxy.conf` y `conf/iskylims_apache_logs.conf` se copian al host en `${APACHE_CONF_PATH}`. Si `APACHE_CONF_PATH` esta vacio, se copian a `${INSTALL_PATH}/conf`. A partir de ese momento, los cambios de runtime deben hacerse sobre esas copias.
+Durante `container_install.sh`, los ficheros `conf/iskylims_apache_reverse_proxy.conf` y `conf/iskylims_apache_logs.conf` se renderizan y se copian al host en `${APACHE_CONF_PATH}`. Si `APACHE_CONF_PATH` esta vacio, se copian a `${INSTALL_PATH}/conf`. El `ServerName`, el forwarded host y los nombres de logs access/error del proxy inverso se generan desde `DNS_URL` en el fichero de instalacion seleccionado. A partir de ese momento, los cambios de runtime deben hacerse sobre esas copias.
 
 `container_install.sh` prepara un fichero host `settings.py` de Django para el bind mount en `${DJANGO_SETTINGS_PATH}`, o en `${INSTALL_PATH}/iskylims/settings.py` si `DJANGO_SETTINGS_PATH` esta vacio. Durante el bootstrap, `install.sh` actualiza ese fichero montado a partir de `conf/template_settings.txt` y el fichero de configuracion seleccionado, conservando el `SECRET_KEY` si ya existe. Despues se pueden editar settings de runtime y reiniciar el contenedor sin reconstruir la imagen.
 

@@ -228,7 +228,7 @@ Static files:
 - `docker-compose.prod.yml` shares that directory with the `apache` service through the named volume `iskylims_static`.
 - The reverse proxy config serves `/static` directly from `${INSTALL_PATH}/static`.
 
-During `container_install.sh`, `conf/iskylims_apache_reverse_proxy.conf` and `conf/iskylims_apache_logs.conf` are copied to `${APACHE_CONF_PATH}` on the host. If `APACHE_CONF_PATH` is empty, they are copied to `${INSTALL_PATH}/conf`. Edit those copied files for runtime Apache changes after deployment.
+During `container_install.sh`, `conf/iskylims_apache_reverse_proxy.conf` and `conf/iskylims_apache_logs.conf` are rendered and copied to `${APACHE_CONF_PATH}` on the host. If `APACHE_CONF_PATH` is empty, they are copied to `${INSTALL_PATH}/conf`. The reverse proxy `ServerName`, forwarded host, and access/error log file names are generated from `DNS_URL` in the selected install config. Edit those copied files for runtime Apache changes after deployment.
 
 `container_install.sh` prepares a host-side Django `settings.py` bind source at `${DJANGO_SETTINGS_PATH}`, or at `${INSTALL_PATH}/iskylims/settings.py` when `DJANGO_SETTINGS_PATH` is empty. During the bootstrap step, `install.sh` updates that bind-mounted file from `conf/template_settings.txt` and the selected install config, preserving an existing `SECRET_KEY`. Runtime settings can then be edited and the container restarted without rebuilding the image.
 

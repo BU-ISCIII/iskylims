@@ -148,6 +148,44 @@ copy_with_podman_fallback() {
     return 1
 }
 
+normalize_apache_server_name() {
+    local value="$1"
+
+    value="${value#http://}"
+    value="${value#https://}"
+    value="${value%%/*}"
+    value="${value%%:*}"
+
+    if [ -z "$value" ] || [ "$value" = "*" ]; then
+        value="localhost"
+    fi
+
+    echo "$value"
+}
+
+render_apache_config() {
+    local src="$1"
+    local dst="$2"
+    local tmp_file=""
+
+    tmp_file="$(mktemp)"
+    sed \
+        -e "s|__ISKYLIMS_SERVER_NAME__|$apache_server_name|g" \
+        -e "s|__ISKYLIMS_LOG_NAME__|$apache_log_name|g" \
+        -e "s|__APP_INSTALL_PATH__|$app_install_path|g" \
+        -e "s|__APP_PORT__|$app_port|g" \
+        -e "s|__GUNICORN_TIMEOUT__|$gunicorn_timeout|g" \
+        "$src" > "$tmp_file"
+
+    if copy_with_podman_fallback "$tmp_file" "$dst"; then
+        rm -f "$tmp_file"
+        return 0
+    fi
+
+    rm -f "$tmp_file"
+    return 1
+}
+
 prepare_django_settings_bind_mount() {
     local settings_path="$1"
 
@@ -427,6 +465,9 @@ web_concurrency="$(config_value_or_default WEB_CONCURRENCY 2)"
 gunicorn_threads="$(config_value_or_default GUNICORN_THREADS 2)"
 gunicorn_timeout="$(config_value_or_default GUNICORN_TIMEOUT 300)"
 gunicorn_keepalive="$(config_value_or_default GUNICORN_KEEPALIVE 5)"
+config_dns_url="$(read_install_conf_value "DNS_URL" "$host_install_conf_path")"
+apache_server_name="$(normalize_apache_server_name "${APACHE_SERVER_NAME:-${config_dns_url:-localhost}}")"
+apache_log_name="$(printf '%s' "$apache_server_name" | tr -c 'A-Za-z0-9._-' '_' | sed 's/_$//')"
 compose_env_file="$repo_root/.env.prod.file"
 app_container=""
 local_head_hash=""
@@ -620,12 +661,12 @@ echo "Deploying containers (compose file: $compose_file) with a pre-staged app i
 mkdir -p "$app_install_path/conf" "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"
 prepare_django_settings_bind_mount "$django_settings_path"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
-    copy_with_podman_fallback \
+    render_apache_config \
         "$repo_root/conf/iskylims_apache_reverse_proxy.conf" \
         "$apache_conf_path/iskylims_apache_reverse_proxy.conf"
 fi
 if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
-    copy_with_podman_fallback \
+    render_apache_config \
         "$repo_root/conf/iskylims_apache_logs.conf" \
         "$apache_conf_path/iskylims_apache_logs.conf"
 fi
