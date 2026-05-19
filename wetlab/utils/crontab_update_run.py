@@ -807,14 +807,35 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
             run_process_obj, experiment_name
         )
         # Check run_folder time creation
-        created_time = _as_utc_datetime(
-            wetlab.utils.common.get_samba_atribute_data(
+        try:
+            created_time = wetlab.utils.common.get_samba_atribute_data(
                 conn,
                 wetlab.utils.crontab_process.get_samba_shared_folder(),
                 root_run_folder,
                 "create_time",
             )
-        )
+        except Exception:
+            logger.exception(
+                "%s : Unable to access remote run folder %s",
+                experiment_name,
+                root_run_folder,
+            )
+            wetlab.utils.common.logging_errors(
+                (
+                    experiment_name
+                    + " : Unable to access remote run folder "
+                    + root_run_folder
+                ),
+                True,
+                False,
+            )
+            wetlab.utils.crontab_process.manage_errors_in_run(experiment_name, 9)
+            logger.debug(
+                "%s : End manage_run_in_processed_run_state function",
+                experiment_name,
+            )
+            continue
+        created_time = _as_utc_datetime(created_time)
         if created_time is None:
             logger.warning(
                 "%s : Unable to determine creation time for run folder %s",

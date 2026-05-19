@@ -114,7 +114,12 @@ def configuration_samba(request):
                 {"samba_conf_data": samba_user_field, "error_message": error_message},
             )
         try:
-            conn.listPath(samba_user_field["shared_folder_name"], "/")
+            samba_application_folder = os.path.join(
+                "/", samba_user_field.get("samba_folder_name", "")
+            )
+            conn.listPath(
+                samba_user_field["shared_folder_name"], samba_application_folder
+            )
             return render(
                 request,
                 "wetlab/configuration_samba.html",
