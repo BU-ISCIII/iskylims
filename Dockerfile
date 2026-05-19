@@ -11,15 +11,11 @@ ENV APP_INSTALL_PATH=${APP_INSTALL_PATH}
 ENV PIP_NO_CACHE_DIR=1
 
 # Updates
-RUN dnf -y update \
-    && dnf clean all \
-    && rm -rf /var/cache/dnf /tmp/* /var/tmp/*
+RUN dnf -y update
 
 # Add EPEL for packages not available in default UBI repositories
 RUN dnf -y install --setopt=install_weak_deps=False --nodocs \
-    https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
-    && dnf clean all \
-    && rm -rf /var/cache/dnf /tmp/* /var/tmp/*
+    https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm 
 
 # Essential software
 RUN dnf -y install --setopt=install_weak_deps=False --nodocs \
