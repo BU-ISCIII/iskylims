@@ -47,9 +47,9 @@ DB_PORT=3306
 
 ### Settings required for sending emails
 
-EMAIL_HOST_SERVER='localhost'
+EMAIL_HOST_SERVER='host.docker.internal'
 EMAIL_PORT='25'
-EMAIL_HOST_USER='bioinfo'
+EMAIL_HOST_USER='bioinformatica@isciii.es'
 EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
 

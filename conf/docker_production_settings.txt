@@ -10,7 +10,7 @@ FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 
 ### Container build/runtime settings
 # Runtime installation root used by the app container.
-# Leave empty to reuse INSTALL_PATH.
+# Leave empty to reuse INSTALL_PATH. If you are not sure leave it empty.
 APP_INSTALL_PATH=''
 # Host directory for Apache bind-mounted configuration files.
 # Leave empty to use ${APP_INSTALL_PATH}/conf.
@@ -49,9 +49,9 @@ DB_SERVER_IP='host.docker.internal'  # hostname or IP of the production DB (use 
 DB_PORT=3306
 
 ### Settings required for sending emails
-EMAIL_HOST_SERVER='smtp.yourdomain'
+EMAIL_HOST_SERVER='host.docker.internal'
 EMAIL_PORT='25'
-EMAIL_HOST_USER='bioinfo'
+EMAIL_HOST_USER='bioinformatica@isciii.es'
 EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
 
