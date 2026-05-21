@@ -216,10 +216,10 @@ def create_new_resolution(resolution_data_form):
             .get_resolution_full_number()
         )
     else:
-        resolution_data_form[
-            "resolution_full_number"
-        ] = get_assign_resolution_full_number(
-            resolution_data_form["service_id"], resolution_data_form["acronym"]
+        resolution_data_form["resolution_full_number"] = (
+            get_assign_resolution_full_number(
+                resolution_data_form["service_id"], resolution_data_form["acronym"]
+            )
         )
     resolution_data_form["resolution_number"] = create_resolution_number(
         resolution_data_form["service_id"]
@@ -355,9 +355,9 @@ def prepare_form_data_add_resolution(form_data):
         existing_resolution = drylab.models.Resolution.objects.filter(
             resolution_service_id=service_obj
         ).last()
-        resolution_form_data[
-            "resolution_full_number"
-        ] = existing_resolution.get_resolution_full_number()
+        resolution_form_data["resolution_full_number"] = (
+            existing_resolution.get_resolution_full_number()
+        )
     users = django.contrib.auth.models.User.objects.filter(
         groups__name=drylab.config.SERVICE_MANAGER
     )
@@ -376,12 +376,12 @@ def prepare_form_data_add_resolution(form_data):
     for req_service in req_available_services_with_desc:
         req_available_services_id.append(req_service[0])
 
-    resolution_form_data[
-        "pipelines_data"
-    ] = drylab.utils.pipelines.get_all_defined_pipelines(True)
-    resolution_form_data[
-        "pipelines_heading"
-    ] = drylab.config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
+    resolution_form_data["pipelines_data"] = (
+        drylab.utils.pipelines.get_all_defined_pipelines(True)
+    )
+    resolution_form_data["pipelines_heading"] = (
+        drylab.config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
+    )
 
     return resolution_form_data
 
@@ -404,7 +404,7 @@ def send_resolution_creation_email(email_data):
     subject_tmp = drylab.config.SUBJECT_RESOLUTION_QUEUED.copy()
     subject_tmp.insert(1, email_data["service_number"])
     subject = " ".join(subject_tmp)
-    if email_data["status"] == "Accepted":
+    if email_data["status"] == "accepted":
         date = email_data["date"].strftime("%d %B, %Y")
         body_preparation = list(
             map(
@@ -466,8 +466,8 @@ def send_resolution_creation_email(email_data):
     ]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except SMTPException:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
 
 
@@ -514,8 +514,8 @@ def send_resolution_in_progress_email(email_data):
     to_users = [email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except SMTPException:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
 
 
@@ -562,8 +562,8 @@ def send_resolution_on_hold_email(email_data):
     to_users = [email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except SMTPException:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return
 
 

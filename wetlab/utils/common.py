@@ -4,7 +4,7 @@ import os
 import re
 import socket
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from logging.config import fileConfig
 
 from django.contrib.auth.models import User
@@ -79,18 +79,40 @@ def check_valid_date_format(date):
 
 
 def get_samba_atribute_data(conn, shared_folder, remote_path, attribute=None):
-    """_summary_
+    """
+    Fetch Samba metadata for a remote path and optionally return a specific attribute.
+    Time-based attributes are returned as timezone-aware UTC datetimes when possible.
 
     Args:
-        conn (_type_): _description_
-        shared_folder (_type_): _description_
-        remote_path (_type_): _description_
-        attribute (_type_, optional): _description_. Defaults to None.
+        conn (SMBConnection): Active Samba connection used to query metadata.
+        shared_folder (str): Name of the Samba share that contains the target path.
+        remote_path (str): Path inside the share whose attributes are requested.
+        attribute (str, optional): Specific attribute name to return (for example,
+            `create_time`). Defaults to None, which returns the full attributes object.
+
+    Returns:
+        Any: Requested attribute value (converted to UTC datetime for time-based fields)
+        or the full attributes object when `attribute` is None. Returns None if the
+        requested attribute is not available.
     """
     attributes = conn.getAttributes(shared_folder, remote_path)
     if attribute is not None:
-        atr_field = "attributes." + attribute
-        return eval(atr_field)
+        if not hasattr(attributes, attribute):
+            return None
+        attr_value = getattr(attributes, attribute)
+        if isinstance(attr_value, datetime):
+            return (
+                attr_value
+                if attr_value.tzinfo is not None
+                else attr_value.replace(tzinfo=timezone.utc)
+            )
+        if attribute in {
+            "create_time",
+            "last_access_time",
+            "last_write_time",
+        } and isinstance(attr_value, (int, float)):
+            return datetime.fromtimestamp(attr_value, tz=timezone.utc)
+        return attr_value
     return attributes
 
 
@@ -136,7 +158,8 @@ def open_samba_connection():
     Return:
         conn object for the samba connection
     """
-    logger = logging.getLogger(__name__)
+    # Use root logger to ensure messages always follow the configured handlers.
+    logger = logging.getLogger()
     logger.debug("Starting function open_samba_connection")
     samba_data = get_samba_connection_data()
 
@@ -186,7 +209,7 @@ def find_xml_tag_text(input_file, search_tag):
     fh = open(input_file, "r")
     search_line = "<" + search_tag + ">(.*)</" + search_tag + ">"
     for line in fh:
-        found_tag = re.search("^\s+ %s" % search_line, line)
+        found_tag = re.search(r"^\s+ %s" % search_line, line)
         if found_tag:
             fh.close()
             return found_tag.group(1)
@@ -390,7 +413,8 @@ def logging_errors(string_text, showing_traceback, print_on_screen):
     Variables:
         subject # text to include in the subject email
     """
-    logger = logging.getLogger(__name__)
+    # Use root logger to ensure messages always follow the configured handlers.
+    logger = logging.getLogger()
     logger.error("-----------------    ERROR   ------------------")
     logger.error(string_text)
     if wetlab.models.ConfigSetting.objects.filter(
@@ -430,8 +454,6 @@ def logging_errors(string_text, showing_traceback, print_on_screen):
         logger.error("################################")
     logger.error("-----------------    END ERROR   --------------")
     if print_on_screen:
-        from datetime import datetime
-
         print("********* ERROR **********")
         print(string_text)
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -449,13 +471,12 @@ def logging_warnings(string_text, print_on_screen):
         logger # contains the logger object
         string_text # information text to include in the log
     """
-    logger = logging.getLogger(__name__)
+    # Use root logger to ensure messages always follow the configured handlers.
+    logger = logging.getLogger()
     logger.warning("-----------------    WARNING   ------------------")
     logger.warning(string_text)
     logger.warning("-----------------    END WARNING   --------------")
     if print_on_screen:
-        from datetime import datetime
-
         print("******* WARNING ********")
         print(string_text)
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -476,6 +497,19 @@ def open_log(config_file):
     Return:
         logger object
     """
-    fileConfig(config_file)
-    logger = logging.getLogger(__name__)
+    # Keep existing named loggers active; otherwise fileConfig may disable them.
+    fileConfig(config_file, disable_existing_loggers=False)
+    logger = logging.getLogger()
+    seen_handlers = set()
+    for handler in logger.handlers[:]:
+        base_filename = getattr(handler, "baseFilename", None)
+        if base_filename:
+            handler_id = (handler.__class__, base_filename)
+        else:
+            handler_id = (handler.__class__, getattr(handler, "stream", None))
+        if handler_id in seen_handlers:
+            logger.removeHandler(handler)
+            handler.close()
+        else:
+            seen_handlers.add(handler_id)
     return logger

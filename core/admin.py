@@ -77,11 +77,11 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
         "extraction_type",
         "protocol_used",
         "molecule_extraction_date",
-        "molecule_used_for",
+        "sample_continues_on",
         "reused_number",
     )
     list_filter = ("generated_at",)
-    search_fields = ("sample__startswith",)
+    search_fields = ("sample__sample_name__startswith",)
 
 
 class MoleculeUsedForAdmin(admin.ModelAdmin):

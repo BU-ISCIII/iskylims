@@ -3,18 +3,20 @@
 import json
 import os
 from datetime import date, datetime
+from smtplib import SMTPException
 
 import django.contrib.auth.models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 # Local imports
 import core.fusioncharts.fusioncharts
 import core.utils.common
+import core.utils.graphics
 import django_utils.models
 import drylab.config
 import drylab.models
@@ -46,25 +48,33 @@ def index(request):
             s_info.append(r_service_obj.get_user_name())
             service_list["recorded"].append(s_info)
 
-    if (
-        drylab.models.Service.objects.all()
-        .exclude(service_state__state_value__exact="delivered")
-        .exclude(service_approved_date=None)
-        .exists()
-    ):
-        ongoing_services_objs = (
-            drylab.models.Service.objects.all()
-            .exclude(service_state__state_value__exact="delivered")
-            .exclude(service_approved_date=None)
-            .order_by("service_approved_date")
+    # Fetch the excluded states
+    excluded_states = ["delivered", "rejected", "archived"]
+
+    # Check if there are ongoing resolutions
+    if drylab.models.Resolution.objects.exclude(
+        resolution_state__state_value__in=excluded_states
+    ).exists():
+        # Get resolutions excluding delivered, rejected, and archived
+        ongoing_resolutions = (
+            drylab.models.Resolution.objects.exclude(
+                resolution_state__state_value__in=excluded_states
+            )
+            .select_related(
+                "resolution_state", "resolution_service_id"
+            )  # Optimize DB joins
+            .order_by("resolution_estimated_date")  # Order by estimated delivery date
         )
+
         service_list["ongoing"] = []
 
-        for ongoing_services_obj in ongoing_services_objs:
-            s_info = []
-            s_info.append(ongoing_services_obj.get_identifier())
-            s_info.append(ongoing_services_obj.get_delivery_date())
+        for resolution in ongoing_resolutions:
+            s_info = [
+                resolution.get_identifier(),  # Keep service identifier from resolution
+                resolution.get_resolution_estimated_date(),  # Use estimated delivery date
+            ]
             service_list["ongoing"].append(s_info)
+
     org_name = drylab.utils.common.get_configuration_from_database("ORGANIZATION_NAME")
 
     return render(
@@ -79,9 +89,9 @@ def configuration_email(request):
     if request.user.username != "admin":
         return redirect("/wetlab")
     email_conf_data = core.utils.common.get_email_data()
-    email_conf_data[
-        "EMAIL_ISKYLIMS"
-    ] = drylab.utils.common.get_configuration_from_database("EMAIL_FOR_NOTIFICATIONS")
+    email_conf_data["EMAIL_ISKYLIMS"] = (
+        drylab.utils.common.get_configuration_from_database("EMAIL_FOR_NOTIFICATIONS")
+    )
     if request.method == "POST" and (request.POST["action"] == "emailconfiguration"):
         result_email = core.utils.common.send_test_email(request.POST)
         if result_email != "OK":
@@ -488,10 +498,12 @@ def search_service(request):
     for center in center_availables:
         center_list_abbr.append(center.center_abbr)
     services_search_list["centers"] = center_list_abbr
-    services_search_list[
-        "states"
-    ] = drylab.utils.req_services.get_available_service_states(True)
-
+    services_search_list["states"] = (
+        drylab.utils.req_services.get_available_service_states(True)
+    )
+    services_search_list["available_services"] = (
+        drylab.utils.req_services.get_children_services()
+    )
     if "wetlab" in settings.INSTALLED_APPS:
         services_search_list["wetlab_app"] = True
 
@@ -504,6 +516,7 @@ def search_service(request):
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
         center = request.POST["service_center"]
+        available_services = request.POST["available_services"]
 
         service_user = request.POST["service_user"]
         assigned_user = request.POST["bioinfo_user"]
@@ -519,6 +532,7 @@ def search_service(request):
         if (
             service_id == ""
             and service_state == ""
+            and available_services == ""
             and start_date == ""
             and end_date == ""
             and center == ""
@@ -575,9 +589,14 @@ def search_service(request):
                     },
                 )
         else:
-            services_found = drylab.models.Service.objects.prefetch_related(
-                "service_user_id", "service_state"
-            ).all()
+            if available_services != "":
+                services_found = drylab.models.Service.objects.prefetch_related(
+                    "service_user_id", "service_state"
+                ).filter(service_available_service__id__exact=available_services)
+            else:
+                services_found = drylab.models.Service.objects.prefetch_related(
+                    "service_user_id", "service_state"
+                ).all()
 
         if service_state != "":
             services_found = services_found.filter(
@@ -774,9 +793,21 @@ def add_on_hold(request):
         email_data["user_email"] = service_obj.get_user_email()
         email_data["user_name"] = service_obj.get_user_name()
         email_data["resolution_number"] = resolution_number
-        drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
+
         on_hold_resolution = {}
         on_hold_resolution["resolution_number"] = resolution_number
+
+        try:
+            drylab.utils.resolutions.send_resolution_on_hold_email(email_data)
+        except (SMTPException, ConnectionRefusedError):
+            return render(
+                request,
+                "drylab/add_on_hold.html",
+                {
+                    "on_hold_resolution": on_hold_resolution,
+                    "error_message": ["Unable to send confirmation email."],
+                },
+            )
 
         return render(
             request,
@@ -832,12 +863,23 @@ def add_resolution(request):
         email_data["date"] = resolution_data_form["resolution_estimated_date"]
         # include the email for the user who requested the service
         email_data["service_owner_email"] = new_resolution.get_service_owner_email()
-        drylab.utils.resolutions.send_resolution_creation_email(email_data)
+
         created_resolution = {}
         created_resolution["resolution_number"] = resolution_data_form[
             "resolution_number"
         ]
-        # Display pipeline parameters
+
+        try:
+            drylab.utils.resolutions.send_resolution_creation_email(email_data)
+        except (SMTPException, ConnectionRefusedError):
+            return render(
+                request,
+                "drylab/add_resolution.html",
+                {
+                    "created_resolution": created_resolution,
+                    "error_message": ["Unable to send confirmation email."],
+                },
+            )
 
         return render(
             request,
@@ -915,16 +957,29 @@ def add_in_progress(request):
         if drylab.utils.resolutions.check_allow_service_update(
             resolution_obj, "in_progress"
         ):
-            # update the service status and in_porgress date
+            # update the service status and in_progress date
             service_obj = service_obj.update_state("in_progress")
 
         email_data = {}
         email_data["user_email"] = service_obj.get_user_email()
         email_data["user_name"] = service_obj.get_user_name()
         email_data["resolution_number"] = resolution_number
-        drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
+
         in_progress_resolution = {}
         in_progress_resolution["resolution_number"] = resolution_number
+
+        try:
+            drylab.utils.resolutions.send_resolution_in_progress_email(email_data)
+        except (SMTPException, ConnectionRefusedError):
+            return render(
+                request,
+                "drylab/add_in_progress.html",
+                {
+                    "in_progress_resolution": in_progress_resolution,
+                    "error_message": ["Unable to send confirmation email."],
+                },
+            )
+
         return render(
             request,
             "drylab/add_in_progress.html",
@@ -1008,13 +1063,25 @@ def add_delivery(request):
             email_data["user_name"] = request.user.username
             email_data["resolution_number"] = delivery_recorded["resolution_number"]
             email_data["service_owner_email"] = resolution_obj.get_service_owner_email()
-            drylab.utils.deliveries.send_delivery_service_email(email_data)
+
             if drylab.utils.resolutions.check_allow_service_update(
                 resolution_obj, "delivered"
             ):
                 service_obj = resolution_obj.get_service_obj()
                 service_obj = service_obj.update_state("delivered")
                 service_obj.update_delivered_date(date.today())
+
+            try:
+                drylab.utils.deliveries.send_delivery_service_email(email_data)
+            except (SMTPException, ConnectionRefusedError):
+                return render(
+                    request,
+                    "drylab/add_delivery.html",
+                    {
+                        "delivery_recorded": delivery_recorded,
+                        "error_message": ["Unable to send confirmation email."],
+                    },
+                )
             return render(
                 request,
                 "drylab/add_delivery.html",
@@ -1130,6 +1197,8 @@ def stats_by_services_request(request):
     if request.method == "POST" and request.POST["action"] == "service_statistics":
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
+        if start_date == "" and end_date == "":
+            return render(request, "drylab/stats_services_time.html")
         if start_date != "" and not drylab.utils.common.check_valid_date_format(
             start_date
         ):
@@ -1159,12 +1228,10 @@ def stats_by_services_request(request):
                 else:
                     user_services[user] = 1
 
-            period_of_time_selected = str(
-                " For the period between " + start_date + " and " + end_date
-            )
+            period_of_time_selected = str(" From " + start_date + " to " + end_date)
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Requested Services by:",
+                "Service request by user",
                 period_of_time_selected,
                 "User names",
                 "Number of Services",
@@ -1172,11 +1239,11 @@ def stats_by_services_request(request):
                 user_services,
             )
             graphic_requested_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex1", "525", "350", "chart-1", "json", data_source
+                "column3d", "ex1", "900", "350", "chart-1", "json", data_source
             )
-            services_stats_info[
-                "graphic_requested_services_per_user"
-            ] = graphic_requested_services.render()
+            services_stats_info["graphic_requested_services_per_user"] = (
+                graphic_requested_services.render()
+            )
 
             # preparing stats for status of the services
             status_services = {}
@@ -1189,7 +1256,7 @@ def stats_by_services_request(request):
 
             # creating the graphic for status services
             data_source = drylab.utils.graphics.graphic_3D_pie(
-                "Status of Requested Services",
+                "Service request status",
                 period_of_time_selected,
                 "",
                 "",
@@ -1198,12 +1265,12 @@ def stats_by_services_request(request):
             )
             graphic_status_requested_services = (
                 core.fusioncharts.fusioncharts.FusionCharts(
-                    "pie3d", "ex2", "525", "350", "chart-2", "json", data_source
+                    "pie3d", "ex2", "500", "400", "chart-2", "json", data_source
                 )
             )
-            services_stats_info[
-                "graphic_status_requested_services"
-            ] = graphic_status_requested_services.render()
+            services_stats_info["graphic_status_requested_services"] = (
+                graphic_status_requested_services.render()
+            )
 
             # preparing stats for request by Area
             user_area_dict = {}
@@ -1225,7 +1292,7 @@ def stats_by_services_request(request):
 
             # creating the graphic for areas
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Services requested per Area",
+                "Service requests by area",
                 period_of_time_selected,
                 "Area ",
                 "Number of Services",
@@ -1235,9 +1302,9 @@ def stats_by_services_request(request):
             graphic_area_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex3", "600", "350", "chart-3", "json", data_source
             )
-            services_stats_info[
-                "graphic_area_services"
-            ] = graphic_area_services.render()
+            services_stats_info["graphic_area_services"] = (
+                graphic_area_services.render()
+            )
 
             # preparing stats for services request by Center
             user_center_dict = {}
@@ -1257,7 +1324,7 @@ def stats_by_services_request(request):
                     user_center_dict[user_center] = 1
             # creating the graphic for areas
             data_source = drylab.utils.graphics.column_graphic_dict(
-                "Services requested per Center",
+                "Services requests by center",
                 period_of_time_selected,
                 "Center ",
                 "Number of Services",
@@ -1267,9 +1334,9 @@ def stats_by_services_request(request):
             graphic_center_services = core.fusioncharts.fusioncharts.FusionCharts(
                 "column3d", "ex4", "600", "350", "chart-4", "json", data_source
             )
-            services_stats_info[
-                "graphic_center_services"
-            ] = graphic_center_services.render()
+            services_stats_info["graphic_center_services"] = (
+                graphic_center_services.render()
+            )
 
             ################################################
             # Preparing the statistics per period of time
@@ -1314,7 +1381,7 @@ def stats_by_services_request(request):
                     if d_period not in user_services_period[center]:
                         user_services_period[center][d_period] = 0
             data_source = drylab.utils.graphics.column_graphic_per_time(
-                "Services requested by center ",
+                "Service requests by center and period of time",
                 period_of_time_selected,
                 "date",
                 "number of services",
@@ -1326,9 +1393,9 @@ def stats_by_services_request(request):
                     "mscolumn3d", "ex5", "525", "350", "chart-5", "json", data_source
                 )
             )
-            services_stats_info[
-                "graphic_center_services_per_time"
-            ] = graphic_center_services_per_time.render()
+            services_stats_info["graphic_center_services_per_time"] = (
+                graphic_center_services_per_time.render()
+            )
 
             # Preparing the statistics for Area on period of time
             user_area_services_period = {}
@@ -1341,9 +1408,9 @@ def stats_by_services_request(request):
                 ).exists():
                     user_area = django_utils.models.Profile.objects.get(
                         profile_user_id=user_id
-                    ).profile_area
+                    ).get_clasification_area()
                 else:
-                    user_center = "Not defined"
+                    user_area = "Not defined"
                 if date_service not in time_values_dict:
                     time_values_dict[date_service] = 1
                 if user_area in user_area_services_period:
@@ -1364,7 +1431,7 @@ def stats_by_services_request(request):
                         user_area_services_period[area][d_period] = 0
 
             data_source = drylab.utils.graphics.column_graphic_per_time(
-                "Services requested by Area ",
+                "Service requests by Area ",
                 period_of_time_selected,
                 "date",
                 "number of services",
@@ -1376,38 +1443,101 @@ def stats_by_services_request(request):
                     "mscolumn3d", "ex6", "525", "350", "chart-6", "json", data_source
                 )
             )
-            services_stats_info[
-                "graphic_area_services_per_time"
-            ] = graphic_area_services_per_time.render()
+            services_stats_info["graphic_area_services_per_time"] = (
+                graphic_area_services_per_time.render()
+            )
 
             services_stats_info["period_time"] = period_of_time_selected
 
+            # collecting services, samples and re-analysis data for creating
             # statistics on Requested Level 2 Services
-
+            #
             service_dict = {}
+            sample_in_l2 = {}
+            re_analysis_l2 = {}
+            sample_re_analysis_l2 = {}
             for service in services_found:
                 service_request_list = service.service_available_service.filter(level=2)
                 for service_requested in service_request_list:
                     service_name = service_requested.avail_service_description
-                    if service_name in service_dict:
-                        service_dict[service_name] += 1
-                    else:
-                        service_dict[service_name] = 1
+                    service_dict[service_name] = service_dict.get(service_name, 0) + 1
+
+                    # count the number of samples handled on level 2 services
+                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(
+                        samples_in_service=service
+                    ).count()
+                    sample_in_l2[service_name] = (
+                        sample_in_l2.get(service_name, 0) + s_count
+                    )
+                    # check if there are more than one resolution for the same
+                    # service, to be included as re-analysis
+                    resolution_count = drylab.models.Resolution.objects.filter(
+                        resolution_service_id=service
+                    ).count()
+                    if resolution_count > 1:
+                        # reduce the number of services requested because the
+                        # first resolution is the requested service
+                        resolution_count -= 1
+                        # increase the number of re-analysis services
+                        re_analysis_l2[service_name] = (
+                            re_analysis_l2.get(service_name, 0) + resolution_count
+                        )
+                        # count the number of samples handled on re-analysis services
+                        # these number is multiplied by the number of resolutions
+                        sample_re_analysis_l2[service_name] = (
+                            sample_re_analysis_l2.get(service_name, 0)
+                            + s_count * resolution_count
+                        )
 
             # creating the graphic for requested services
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services:", "level 2 ", "", "", "fint", service_dict
             )
             graphic_req_l2_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex7", "800", "375", "chart-7", "json", data_source
+                "column3d", "ex7", "600", "375", "chart-7", "json", data_source
             )
-            services_stats_info[
-                "graphic_req_l2_services"
-            ] = graphic_req_l2_services.render()
+            services_stats_info["graphic_req_l2_services"] = (
+                graphic_req_l2_services.render()
+            )
+            # creating graphic for samples handled on level 2 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Sample per Services:", "level 2 ", "", "", "ocean", sample_in_l2
+            )
+            graphic_sample_service_l2 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex13", "1100", "375", "chart-13", "json", data_source
+            )
+            services_stats_info["graphic_sample_per_service_l2"] = (
+                graphic_sample_service_l2.render()
+            )
+            # creating the graphic for requested re-analysis services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Reanalysis Services:", "level 2 ", "", "", "fint", re_analysis_l2
+            )
+            graphic_re_analysis_l2_services = (
+                core.fusioncharts.fusioncharts.FusionCharts(
+                    "column3d", "ex15", "550", "375", "chart-15", "json", data_source
+                )
+            )
+            services_stats_info["graphic_re_analysis_l2_services"] = (
+                graphic_re_analysis_l2_services.render()
+            )
+            # creating the graphic for re-analysis sample services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Reanalysis Samples", "level 2 ", "", "", "fint", sample_re_analysis_l2
+            )
+            graphic_sample_re_analysis_l2 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex16", "550", "375", "chart-16", "json", data_source
+            )
+            services_stats_info["graphic_sample_re_analysis_service_l2"] = (
+                graphic_sample_re_analysis_l2.render()
+            )
 
             # statistics on Requested Level 3 Services
-
+            # getting also the number of samples handled on level 3 services
             service_dict = {}
+            sample_in_l3 = {}
+            re_analysis_l3 = {}
+            sample_re_analysis_l3 = {}
             for service in services_found:
                 service_request_list = service.service_available_service.filter(level=3)
                 for service_requested in service_request_list:
@@ -1416,18 +1546,177 @@ def stats_by_services_request(request):
                         service_dict[service_name] += 1
                     else:
                         service_dict[service_name] = 1
+                    # count the number of samples handled on level 3 services
+                    s_count = drylab.models.RequestedSamplesInServices.objects.filter(
+                        samples_in_service=service
+                    ).count()
+                    sample_in_l3[service_name] = (
+                        sample_in_l3.get(service_name, 0) + s_count
+                    )
+                    # check if there are more than one resolution for the same
+                    # service, to be included as re-analysis
+                    resolution_count = drylab.models.Resolution.objects.filter(
+                        resolution_service_id=service
+                    ).count()
+                    if resolution_count > 1:
+                        # reduce the number of services requested because the
+                        # first resolution is the requested service
+                        resolution_count -= 1
+                        # increase the number of re-analysis services
+                        re_analysis_l3[service_name] = (
+                            re_analysis_l3.get(service_name, 0) + resolution_count
+                        )
+                        # count the number of samples handled on re-analysis services
+                        # these number is multiplied by the number of resolutions
+                        sample_re_analysis_l3[service_name] = (
+                            sample_re_analysis_l3.get(service_name, 0)
+                            + s_count * resolution_count
+                        )
 
-            # creating the graphic for requested services
+            # creating the graphic for requested services on level 3
             data_source = drylab.utils.graphics.column_graphic_dict(
                 "Requested Services:", "level 3 ", "", "", "fint", service_dict
             )
             graphic_req_l3_services = core.fusioncharts.fusioncharts.FusionCharts(
-                "column3d", "ex8", "800", "375", "chart-8", "json", data_source
+                "column3d", "ex8", "1200", "375", "chart-8", "json", data_source
             )
-            services_stats_info[
-                "graphic_req_l3_services"
-            ] = graphic_req_l3_services.render()
+            services_stats_info["graphic_req_l3_services"] = (
+                graphic_req_l3_services.render()
+            )
+            # creating graphic for samples handled on level 3 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Sample per Services:", "level 3 ", "", "", "fint", sample_in_l3
+            )
+            graphic_sample_service_l3 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex14", "1100", "375", "chart-14", "json", data_source
+            )
+            services_stats_info["graphic_sample_per_service_l3"] = (
+                graphic_sample_service_l3.render()
+            )
+            # creating the graphic for requested re-analysis l3 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Reanalysis Services:", "level 3 ", "", "", "ocean", re_analysis_l3
+            )
+            graphic_re_analysis_l3_services = (
+                core.fusioncharts.fusioncharts.FusionCharts(
+                    "column3d", "ex17", "550", "375", "chart-17", "json", data_source
+                )
+            )
+            services_stats_info["graphic_re_analysis_l3_services"] = (
+                graphic_re_analysis_l3_services.render()
+            )
+            # creating the graphic for re-analysis sample l3 services
+            data_source = drylab.utils.graphics.column_graphic_dict(
+                "Reanalysis Samples",
+                "level 3 ",
+                "",
+                "",
+                "ocean",
+                sample_re_analysis_l3,
+            )
+            graphic_sample_re_analysis_l3 = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex18", "550", "375", "chart-18", "json", data_source
+            )
+            services_stats_info["graphic_sample_re_analysis_service_l3"] = (
+                graphic_sample_re_analysis_l3.render()
+            )
 
+            # Samples handled by requested services
+            sample_in_services_objs = (
+                drylab.models.RequestedSamplesInServices.objects.filter(
+                    samples_in_service__in=services_found
+                )
+            )
+            ana_sample_in_runs = (
+                sample_in_services_objs.exclude(run_name=None)
+                .values("run_name")
+                .annotate(sample_count=Count("sample_name"))
+            )
+            g_data = core.utils.graphics.preparation_graphic_data(
+                "Analyzed Samples from sequencing runs",
+                "",
+                "",
+                "",
+                "ocean",
+                ana_sample_in_runs,
+                "run_name",
+                "sample_count",
+            )
+            graphic_req_samples_run = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex9", "600", "375", "chart-9", "json", g_data
+            )
+            services_stats_info["graphic_samples_per_run"] = (
+                graphic_req_samples_run.render()
+            )
+            ana_sample_in_proj = (
+                sample_in_services_objs.exclude(project_name=None)
+                .values("project_name")
+                .annotate(sample_count=Count("sample_name"))
+            )
+            g_data = core.utils.graphics.preparation_graphic_data(
+                "Analyzed samples by project",
+                "",
+                "",
+                "",
+                "ocean",
+                ana_sample_in_proj,
+                "project_name",
+                "sample_count",
+            )
+            graphic_req_samples_proj = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex10", "600", "375", "chart-10", "json", g_data
+            )
+            services_stats_info["graphic_samples_per_project"] = (
+                graphic_req_samples_proj.render()
+            )
+            ana_sample_in_user = sample_in_services_objs.values(
+                "samples_in_service__service_user_id__username"
+            ).annotate(sample_count=Count("sample_name"))
+            g_data = core.utils.graphics.preparation_graphic_data(
+                "Analyzed samples by user",
+                "",
+                "",
+                "",
+                "ocean",
+                ana_sample_in_user,
+                "samples_in_service__service_user_id__username",
+                "sample_count",
+            )
+
+            graphic_req_samples_user = core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d", "ex11", "600", "375", "chart-11", "json", g_data
+            )
+            services_stats_info["graphic_samples_per_user"] = (
+                graphic_req_samples_user.render()
+            )
+            analyzed_samples = {}
+            analyzed_samples["Sequenced samples"] = sample_in_services_objs.exclude(
+                only_recorded_sample=True
+            ).count()
+            analyzed_samples["Only recorded samples"] = sample_in_services_objs.exclude(
+                only_recorded_sample=False
+            ).count()
+            data_source = drylab.utils.graphics.graphic_3D_pie(
+                "Sample Analysis",
+                period_of_time_selected,
+                "",
+                "",
+                "fint",
+                analyzed_samples,
+            )
+            graphic_analyzed_samples = core.fusioncharts.fusioncharts.FusionCharts(
+                "pie3d", "ex12", "600", "400", "chart-12", "json", data_source
+            )
+            services_stats_info["graphic_analyzed_samples"] = (
+                graphic_analyzed_samples.render()
+            )
+            services_stats_info["table_samples"] = sample_in_services_objs.values_list(
+                "sample_name",
+                "samples_in_service__service_request_number",
+                "samples_in_service__pk",
+                "samples_in_service__service_user_id__username",
+                "samples_in_service__service_state__state_display",
+            )
             return render(
                 request,
                 "drylab/stats_services_time.html",
@@ -1489,9 +1778,9 @@ def configuration_test(request):
             test_results["services"] = ("Available services", "NOK")
         else:
             test_results["services"] = ("Available services", "OK")
-        test_results[
-            "iSkyLIMS_settings"
-        ] = drylab.utils.test_conf.get_iSkyLIMS_settings()
+        test_results["iSkyLIMS_settings"] = (
+            drylab.utils.test_conf.get_iSkyLIMS_settings()
+        )
         test_results["config_file"] = drylab.utils.test_conf.get_config_file(
             config_file
         )
@@ -1528,10 +1817,10 @@ def configuration_test(request):
         else:
             resolution_results["create_service_ok"] = "OK"
             resolution_number = "SRVTEST-IIER001.1"
-            resolution_results[
-                "resolution_test"
-            ] = drylab.utils.test_conf.create_resolution_test(
-                resolution_number, service_requested
+            resolution_results["resolution_test"] = (
+                drylab.utils.test_conf.create_resolution_test(
+                    resolution_number, service_requested
+                )
             )
             resolution_results["create_resolution_ok"] = "OK"
 

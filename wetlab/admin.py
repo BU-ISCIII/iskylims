@@ -33,12 +33,11 @@ class LibParameterValueAdmin(admin.ModelAdmin):
 
 class LibraryPoolAdmin(admin.ModelAdmin):
     list_display = (
-        "register_user",
-        "pool_state",
         "pool_name",
+        "pool_state",
         "platform",
         "pool_code_id",
-        "run_process_id",
+        "register_user",
     )
 
 
@@ -61,6 +60,12 @@ class AdditionaKitsLibraryPreparationAdmin(admin.ModelAdmin):
     list_display = ["kit_name", "protocol_id", "commercial_kit_id"]
 
 
+class LibraryKitAdmin(admin.ModelAdmin):
+    list_display = [
+        "library_name",
+    ]
+
+
 class AdditionalUserLotKitAdmin(admin.ModelAdmin):
     list_display = ["lib_prep_id", "additional_lot_kits", "user_lot_kit_id"]
 
@@ -70,7 +75,7 @@ class RunErrorsAdmin(admin.ModelAdmin):
 
 
 class RunStatesAdmin(admin.ModelAdmin):
-    list_display = ("run_state_name",)
+    list_display = ["run_state_name", "state_display", "description"]
 
 
 class RunningParametersAdmin(admin.ModelAdmin):
@@ -291,6 +296,7 @@ admin.site.register(wetlab.models.Projects, ProjectsAdmin)
 admin.site.register(wetlab.models.RunErrors, RunErrorsAdmin)
 admin.site.register(wetlab.models.RunStates, RunStatesAdmin)
 admin.site.register(wetlab.models.LibPrepareStates, StatesForLibraryPreparationAdmin)
+admin.site.register(wetlab.models.LibraryKit, LibraryKitAdmin)
 admin.site.register(wetlab.models.PoolStates, StatesForPoolAdmin)
 admin.site.register(wetlab.models.SamplesInProject, SamplesInProjectAdmin)
 admin.site.register(wetlab.models.StatsRunSummary, StatsRunSummaryAdmin)

@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
     db:
-        image: mysql:8.0
+        image: docker.io/library/mysql:8.0
         container_name: db
         command: --default-authentication-plugin=mysql_native_password
         restart: always
@@ -13,8 +13,8 @@ services:
           start_period: 30s
         environment:
             MYSQL_DATABASE: iskylims_docker
-            MYSQL_USER : django
-            MYSQL_PASSWORD : djangopass
+            MYSQL_USER: django
+            MYSQL_PASSWORD: djangopass
             MYSQL_ROOT_PASSWORD: root
 
         ports:
@@ -27,7 +27,7 @@ services:
             - /usr/share/zoneinfo:/usr/share/zoneinfo
     
     samba:
-        image: dperson/samba
+        image: docker.io/dperson/samba
         container_name: samba
         networks:
         - develop_net
@@ -38,15 +38,23 @@ services:
         command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
     
     app:
-        build: .
+        build:
+          context: .
+          args:
+            INSTALL_TYPE: ${INSTALL_TYPE:-dep}
+            GIT_REVISION: ${GIT_REVISION:-main}
+            INSTALL_CONF: ${INSTALL_CONF:-conf/docker_test_settings.txt}
+            APP_SHELL: ${APP_SHELL:-/bin/bash}
         container_name: iskylims_app
         ports:
             - "8001:8001"
+        environment:
+            APP_MODE: dev
         networks:
             - develop_net
         depends_on:
             db:
-              condition: service_healthy
+                condition: service_healthy
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo

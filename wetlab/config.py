@@ -64,6 +64,8 @@ SAMPLE_SHEET = "samplesheet.csv"
 RUN_LOG_FOLDER = "Logs"
 
 STATS_FILE_PATH = "Data/Intensities/BaseCalls/Stats"
+STATS_FILE_PATH_ALTERNATIVE = "Data/Intensities/BaseCalls/Reports/legacy/Stats"
+STATS_FILE_PATHS = [STATS_FILE_PATH, STATS_FILE_PATH_ALTERNATIVE]
 
 
 CONVERSION_STATS_FILE = "ConversionStats.xml"
@@ -74,16 +76,24 @@ PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [
     ["NextSeq", "xml_file"],
     ["MiSeq", "xml_file"],
     ["NovaSeq", "txt_file"],
+    ["iSeq 100", "xml_file"],
 ]
 
 # ########### VALUE TAG FOR XML FILES #########################
-COMPLETION_TAG = "CompletionStatus"
-COMPLETION_SUCCESS = ["CompletedAsPlanned", "SuccessfullyCompleted"]
+COMPLETION_TAG = ["CompletionStatus", "RunStatus"]
+COMPLETION_SUCCESS = ["CompletedAsPlanned", "SuccessfullyCompleted", "RunCompleted"]
 EXPERIMENT_NAME_TAG = "ExperimentName"
 APPLICATION_NAME_TAG = "ApplicationName"
+APPLICATION_TAG_ALIASES = ["ApplicationName", "Application"]
 NUMBER_CYCLES_TAG = "NumCycles"
 RUN_INFO_READ_TAG = "RunInfoRead"
 NUMBER_TAG = "Number"
+PLANNED_READS_TAG = "PlannedReads"
+PLANNED_READ_TAG = "Read"
+READ_NAME_TAG = "ReadName"
+READ_CYCLES_FALLBACK_TAGS = ["NumCycles", "Cycles"]
+RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG = "LaneCount"
+RUN_DATE_FORMATS = ["%y%m%d", "%Y-%m-%d", "%m/%d/%Y"]
 
 ##############################################################
 RUN_METRIC_GRAPHIC_COMMANDS = [
@@ -121,12 +131,24 @@ FIELDS_TO_FETCH_FROM_SETUP_TAG = [
     "ApplicationVersion",
     "NumTilesPerSwath",
 ]
+FIELDS_WITHOUT_SETUP_TAG = [
+    "NumLanes",
+    "Application",
+    "ApplicationVersion",
+    "NumTilesPerSwath",
+]
 READ_NUMBER_OF_CYCLES = [
     "PlannedRead1Cycles",
     "PlannedIndex1ReadCycles",
     "PlannedIndex2ReadCycles",
     "PlannedRead2Cycles",
 ]
+PLANNED_READ_FIELD_MAP = {
+    "Read1": "PlannedRead1Cycles",
+    "Index1": "PlannedIndex1ReadCycles",
+    "Index2": "PlannedIndex2ReadCycles",
+    "Read2": "PlannedRead2Cycles",
+}
 # NOVASEQ 6000
 FIELDS_NOVASEQ_TO_FETCH_TAG = [
     "NumLanes",
@@ -164,6 +186,7 @@ COLLECTION_INDEX_HEADING = [
     "[Settings]",
     "[I7]",
 ]
+ERROR_NO_LIBRARY_KIT_DEFINED = ["Library Kits are not defined yet"]
 ##############################################################
 
 MIGRATION_DIRECTORY_FILES = "wetlab/BaseSpaceMigrationFiles/"
@@ -225,15 +248,10 @@ HEADING_FOR_SAMPLE_SHEET_ONE_INDEX = [
 HEADING_FOR_SAMPLE_SHEET_TWO_INDEX = [
     "Unique_Sample_ID",
     "Sample_Name",
-    "Sample_Plate",
-    "Sample_Well",
-    "Index_Plate_Well",
-    "I7_Index_ID",
     "index",
-    "I5_Index_ID",
     "index2",
     "Sample_Project",
-    "Description",
+    "custom_description",
 ]
 
 
@@ -247,6 +265,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ = [
     ("index", "i7Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [
@@ -260,6 +279,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [
     ("index2", "i5Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5 = [
@@ -271,6 +291,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5 = [
     ("index", "i7Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5 = [
@@ -284,6 +305,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5 = [
     ("index2", "i5Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4 = [
@@ -295,6 +317,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4 = [
     ("index", "i7Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4 = [
@@ -308,6 +331,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4 = [
     ("index2", "i5Index"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 
 
@@ -325,6 +349,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS = [
     ("GenomeFolder", "genomeFolder"),
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
+    ("custom_description", "userInSampleSheet"),
 ]
 # ######## MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
@@ -334,7 +359,26 @@ MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
 ]
 
 # Sections to check in the IEM file created by user
-SECTIONS_IN_IEM_SAMPLE_SHEET = ["[Header]", "[Reads]", "[Settings]", "[Data]"]
+SECTIONS_IN_IEM_SAMPLE_SHEET = ["Header", "Reads", "Settings", "Data"]
+SECTIONS_IN_V2_SAMPLE_SHEET = [
+    "Header",
+    "Reads",
+    "Sequencing_Settings",
+    "BCLConvert_Settings",
+    "BCLConvert_Data",
+    "Cloud_Settings",
+    "Cloud_Data",
+    "CustomCustomer_Data",
+]
+
+# Possible names of the Tabular data iskylims user field
+
+TABULAR_DATA_ISKYLIMS_USER_COLUMN = {"1": "Description", "2": "custom_description"}
+
+# Tabular data sections in samplesheets.
+TABULAR_DATA_SECTIONS_SAMPLE_SHEET = {"1": "Data", "2": "BCLConvert_Data"}
+
+SETTINGS_SECTIONS_SAMPLE_SHEET = ["Settings", "BCLConvert_Settings"]
 
 FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Date",
@@ -348,26 +392,31 @@ FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Description",
 ]
 
+ADAPTER_1_FIELD_NAMES = ["Adapter", "AdapterRead1"]
+
+ADAPTER_2_FIELD_NAMES = ["Adapter", "AdapterRead2"]
+
+
 # #### HEADINGS VALUES
 
 # # Heading for pending Library Preparation state
 
 HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL = [
     "Sample Name",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Library Preparation Protocol",
 ]
 
 HEADING_FOR_LIBRARY_PREPARATION_STATE = [
     "Sample extraction date",
     "Sample",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Molecule Extraction Date",
     "Used Protocol",
     "UserID",
 ]
 
-# ######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol', 'Extraction Date', 'To be included']
+# ######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Extraction Code ID', 'Protocol', 'Extraction Date', 'To be included']
 HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS = [
     "Library Preparation Code ID",
     "Sample Name",
@@ -381,7 +430,7 @@ HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS = [
 ]
 HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS = ["Sample Name", "Library Preparation Code ID"]
 HEADING_FOR_CREATION_LIBRARY_PREPARATION = [
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Protocol used",
     "Single/Paired end",
     "Length read",
@@ -401,7 +450,7 @@ HEADING_SUMMARY_DATA_SAMPLE_SHEET = ["Number of Samples", "Projects Name", "User
 # ## Heading for display information on library Preparation definition
 HEADING_FOR_LIBRARY_PREPARATION_DEFINITION = [
     "Library CodeID",
-    "Molecule CodeID ",
+    "Extraction Code ID ",
     "Lib Preparation State",
     "Protocol name",
     "Project Name",
@@ -567,19 +616,45 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5 = [
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ["Run Name", "Date sequencer start"]
 
-HEADING_STATISTICS_FOR_RESEARCHER_SAMPLE = [
-    "Samples",
+HEADING_STATISTICS_FOR_SECUENCED_RESEARCHER_SAMPLE = [
+    "Sample name",
     "Project name",
     "Run name",
     "Platform",
 ]
+HEADING_STATISTICS_FOR_RECORDED_RESEARCHER_SAMPLE = [
+    "sample name",
+    "unique sample ID",
+    "sample type",
+    "specimen type",
+    "sample state",
+    "project name",
+]
+HEADING_STATISTICS_FOR_RECORDED_LAB_SAMPLE = [
+    "sample name",
+    "unique ID",
+    "sample type",
+    "specimen type",
+    "sample state",
+    "project name",
+    "user name",
+]
 HEADING_STATISTICS_FOR_TIME_RUN = ["Run name", "Run state", "Sequencer", "Run date"]
-HEADING_STATISTICS_FOR_TIME_SAMPLE = [
+HEADING_STATISTICS_FOR_TIME_SEQUENCED_SAMPLE = [
     "Sample name",
     "Researcher",
     "Project name",
     "Run name",
     "Barcode",
+]
+HEADING_STATISTICS_FOR_TIME_DEFINED_SAMPLE = [
+    "Sample name",
+    "Unique ID",
+    "State",
+    "Recorded date",
+    "Species",
+    "Sample type",
+    "lab code",
 ]
 HEADING_STATISTICS_FOR_SEQUENCER_RUNS = [
     "Run name",
@@ -645,6 +720,10 @@ ERROR_SAMPLE_SHEET_INSTRUMENT_TYPE_NOT_INCLUDED = [
 ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED = [
     "Sample Sheet does not have Instrument type neither Index Adapters"
 ]
+ERROR_SAMPLE_SHEET_HAS_INVALID_HEADING = [
+    "Sample sheet does not have a valid sample heading"
+]
+ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_PROJECTS = ["Sample sheet does not have Projects"]
 ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED = ["User in sample sheet is not defined"]
 ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = [
     "Sample sheet does not have Description column "
@@ -655,14 +734,16 @@ ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES = [
 ERROR_SAMPLE_SHEET_USER_ARE_NOT_DEFINED = (
     "Sample sheet has users which are not defined : "
 )
+ERROR_SAMPLE_SHEET_HAS_INVALID_LINES = (
+    "Sample sheet has an invalid (Non-empty, non-comma-delimited) line: "
+)
 ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = [
     "The Sample Sheet that you are uploaded does not longer exists",
     "Upload again the sample sheet",
 ]
 
 ERROR_EMPTY_VALUES = [
-    "Your request cannot be recorded because ",
-    "it contains empty values",
+    "Your request cannot be recorded because it contains empty values",
 ]
 
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ["Sample Project is already defined"]
@@ -736,15 +817,15 @@ ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS = [
 ]
 
 # ERROR TEXT FOR SEACHING #############################################
-ERROR_INVALID_FORMAT_FOR_DATES = "Invalid date format. Use the format  (DD-MM-YYYY)"
+ERROR_INVALID_FORMAT_FOR_DATES = ["Invalid date format. Use the format  (DD-MM-YYYY)"]
 
 
 ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS = [
     "There are many user names that matches your request"
 ]
-ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = (
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS = [
     "There is not any match for your input conditions"
-)
+]
 ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = (
     "There is not any Index Library Kit that mathes your input conditions"
 )
@@ -762,9 +843,9 @@ ERROR_NO_MATCHES_FOR_USER_LOT_KIT = [
 ]
 ERROR_NO_SAMPLES_SELECTED = "They were not selected any Sample on your request"
 
-ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = (
+ERROR_NOT_RUNS_FOUND_IN_SELECTED_PERIOD = [
     "There are not runs for the selected period of time"
-)
+]
 ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
     "No results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
 ]
@@ -784,6 +865,7 @@ ERROR_USER_NAME_TOO_SHORT = "User name must contains at least 5 characters"
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = (
     "Unsuccessful configuration settings for Samba connection"
 )
+ERROR_USER_NOT_DEFINED = ["User is not defined"]
 ERROR_WRONG_SAMBA_FOLDER_SETTINGS = (
     "Unsuccessful configuration. Samba folder not reachable"
 )
@@ -807,7 +889,7 @@ ERROR_NOT_ALLOWED_REPEATED_PROJECTS = (
 # ########################  Configuration test errors #####################################
 ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND = [
     "Unable to run the configuration test",
-    "Run test folder was found on remote server",
+    "Run test folder was not found on remote server",
 ]
 ERROR_NO_RUN_TEST_WAS_CREATED = [
     "Unable to continue with configuration testing",

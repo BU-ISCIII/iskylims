@@ -183,15 +183,25 @@ def delete_samples_in_service(sample_list):
     return deleted_sample_names
 
 
-def get_children_services(all_tree_services):
+def get_children_services(
+    all_tree_services: list[drylab.models.AvailableService] = None,
+) -> list[list]:
+    """The function get a list with the children available services from the
+       requested query of available service. If no query is provided, it will
+       return all the children services from the database
+
+    Args:
+        all_tree_services (list[drylab.models.AvailableService]): Queryset of
+            available service. Defaults to None.
+
+    Returns:
+        list[list]: List with 2 values: the primary key and the description for
+            each children service
     """
-    Description:
-        The function get the children available services from a query of service
-    Input:
-        all_tree_services  # queryset of available service
-    Return:
-        children_service
-    """
+    if all_tree_services is None:
+        all_tree_services = drylab.models.AvailableService.objects.all().order_by(
+            "description"
+        )
     children_services = []
     for t_services in all_tree_services:
         if t_services.get_children():
@@ -357,9 +367,9 @@ def get_pending_services_info():
     graphic_unit_pending_services = core.fusioncharts.fusioncharts.FusionCharts(
         "multilevelpie", "ex2", "535", "435", "chart-2", "json", data_source
     )
-    pending_services_graphics[
-        "graphic_pending_unit_services"
-    ] = graphic_unit_pending_services.render()
+    pending_services_graphics["graphic_pending_unit_services"] = (
+        graphic_unit_pending_services.render()
+    )
 
     pending_services_details["graphics"] = pending_services_graphics
     return pending_services_details
@@ -391,9 +401,9 @@ def get_user_pending_services_info(user_name):
             del resolution_data[4]
             res_in_queued.append(resolution_data)
         user_pending_services_details["queued"] = res_in_queued
-        user_pending_services_details[
-            "heading_in_queued"
-        ] = drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        user_pending_services_details["heading_in_queued"] = (
+            drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        )
     if drylab.models.Resolution.objects.filter(
         resolution_assigned_user__username__exact=user_name,
         resolution_state__state_value__exact="in_progress",
@@ -407,9 +417,9 @@ def get_user_pending_services_info(user_name):
             del resolution_data[4]
             res_in_progress.append(resolution_data)
         user_pending_services_details["in_progress"] = res_in_progress
-        user_pending_services_details[
-            "heading_in_progress"
-        ] = drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        user_pending_services_details["heading_in_progress"] = (
+            drylab.config.HEADING_USER_PENDING_SERVICE_QUEUED
+        )
     return user_pending_services_details
 
 
@@ -492,26 +502,26 @@ def get_service_data(request):
         # get samples which have sequencing data in iSkyLIMS
         user_sharing_list = drylab.utils.common.get_user_sharing_list(request.user)
 
-        service_data[
-            "samples_data"
-        ] = wetlab.utils.api.wetlab_api.get_runs_projects_samples_and_dates(
-            user_sharing_list
+        service_data["samples_data"] = (
+            wetlab.utils.api.wetlab_api.get_runs_projects_samples_and_dates(
+                user_sharing_list
+            )
         )
 
         if len(service_data["samples_data"]) > 0:
-            service_data[
-                "samples_heading"
-            ] = drylab.config.HEADING_SELECT_SAMPLE_IN_SERVICE
+            service_data["samples_heading"] = (
+                drylab.config.HEADING_SELECT_SAMPLE_IN_SERVICE
+            )
 
     # get the samples that are only defined without sequencing data available from iSkyLIMS
 
-    service_data[
-        "sample_only_recorded"
-    ] = core.utils.samples.get_only_recorded_samples_and_dates()
+    service_data["sample_only_recorded"] = (
+        core.utils.samples.get_only_recorded_samples_and_dates()
+    )
     if len(service_data["sample_only_recorded"]) > 0:
-        service_data[
-            "sample_only_recorded_heading"
-        ] = drylab.config.HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
+        service_data["sample_only_recorded_heading"] = (
+            drylab.config.HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
+        )
 
     return service_data
 

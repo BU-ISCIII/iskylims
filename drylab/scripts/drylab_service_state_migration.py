@@ -1,7 +1,7 @@
 from drylab.models import Service, ServiceState
 
-
 """
+    Upgrade: 2.3.0 -> 2.3.1
     The script is applicable for the upgrade from 2.3.0 to 2.3.1.
     Service state that was defined as option choice in  models,is replaced in
     version 2.3.1  as a primary key in SampleState table, given in this way

@@ -263,7 +263,7 @@
                         <div class="card mx-2">
                             <div class="card-header text-center"><h3>Results execution for {{run_test_result.run_test_name}} test Run</h3></div>
                             <div class="card-body">
-                                {% if run_test_result.Completed == "OK" %}
+                                {% if run_test_result.completed == "OK" %}
                                     <i class="bi bi-check2-circle float-end" style="font-size:40px;color:green"></i>
                                     <p>Run test was successfully completed</p>
                                 {% else %}
@@ -302,6 +302,8 @@
                                                             <p> Result of run test for the state {{key}}
                                                                 {% if  value == 'OK' %}
                                                                     <i class="float-end bi bi-check2-circle" style="font-size:40px;color:green"></i>
+                                                                {% elif value == 'SKIP' %}
+                                                                    <i class="float-end bi bi-dash-circle" style="font-size:40px;color:gray"></i>
                                                                 {% else %}
                                                                     <i class="float-end bi bi-x-circle" style="font-size:40px;color:red"></i>
                                                                 {% endif %}

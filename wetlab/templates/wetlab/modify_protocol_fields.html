@@ -38,10 +38,10 @@
                                             <tr>
                                                 {% for value in values %}
                                                     <td>
-                                                        {% if value == 'Yes' or value == True %}
+                                                        {% if value == 'Yes' or value == "true" %}
                                                         <i class="bi bi-check2-circle" style="font-size:20px;color:green"></i>
-                                                        {% elif value == 'No' or value == False %}
-
+                                                        {% elif value == 'No' or value == "false" %}
+                                                            <i class="bi bi-stop-circle" style="font-size:20px;color:red"></i>
                                                         {% else %}
                                                             {{ value }}
                                                         {% endif %}
@@ -71,9 +71,11 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="modifyProtocolFields"/>
                                 <input type="hidden" name="protocol_id" value="{{protocol_field.protocol_id}}"/>
-                                <div class="scrolling-wrapper">
-                                    <div id="spreadsheet1"></div>
-                                </div> <!--  end of scrolling  -->
+                                <div class="row mt-4 horizontal-scroll">
+                                    <div class="scrolling-wrapper">
+                                        <div id="spreadsheet1" class="mb-3"></div>
+                                    </div> 
+                                </div>
                                 <input type="button" class="btn btn-outline.secondary my-3" value="Download_Protocol_Parameters" onclick="table1.download()"/>
                                 <input class="btn float-end btn-outline-primary my-3" type="submit" value="Submit">
                             </form>
@@ -95,9 +97,12 @@
             { type: 'text', title:'{{protocol_field.heading.1}}', width:160 },
             { type: 'numeric', title:'{{protocol_field.heading.2}}', width:50, mask:' #.##' },
             { type: 'checkbox', title:'{{protocol_field.heading.3}}', width:50 },
-            { type: 'dropdown' , title: '{{protocol_field.heading.4}}', width:140 , source: ["string", "Date" , "Option List"] },
-            { type: 'text', title:'{{protocol_field.heading.5}}', width:250, wordWrap:true },
-            { type: 'text', title:'{{protocol_field.heading.6}}', width:350 , wordWrap:true },
+            { type: 'checkbox', title:'{{protocol_field.heading.4}}', width:120 },
+            { type: 'dropdown' , title: '{{protocol_field.heading.5}}', width:140 , source: ["string", "Date" , "Option List"] },
+            { type: 'text', title:'{{protocol_field.heading.6}}', width:250, wordWrap:true },
+            { type: 'text', title:'{{protocol_field.heading.7}}', width:150, wordWrap:true },
+            { type: 'text', title:'{{protocol_field.heading.8}}', width:150, wordWrap:true },
+            { type: 'text', title:'{{protocol_field.heading.9}}', width:350 , wordWrap:true },
             { type: 'hidden'}
         ],
         allowInsertColumn:false,

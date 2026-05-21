@@ -130,17 +130,17 @@ def get_annual_report(rep_year):
         "zune",
         format_sample_per_month,
     )
-    report_data[
-        "rep_sample_month_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "column3d",
-        "rep_sample_month_graph",
-        "600",
-        "350",
-        "rep_sample_month_chart",
-        "json",
-        g_data,
-    ).render()
+    report_data["rep_sample_month_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "column3d",
+            "rep_sample_month_graph",
+            "600",
+            "350",
+            "rep_sample_month_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     # Collecting data for previous years
     # ##################################
@@ -195,17 +195,17 @@ def get_annual_report(rep_year):
         "year",
         "values",
     )
-    report_data[
-        "rep_comp_sample_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "column3d",
-        "rep_comp_sample_graph",
-        "600",
-        "350",
-        "rep_comp_sample_chart",
-        "json",
-        g_data,
-    ).render()
+    report_data["rep_comp_sample_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "column3d",
+            "rep_comp_sample_graph",
+            "600",
+            "350",
+            "rep_comp_sample_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     # Graphic chart for samples per researcher
     comp_sample_per_researcher = list(
@@ -223,17 +223,17 @@ def get_annual_report(rep_year):
         "Researcher",
         "value",
     )
-    report_data[
-        "rep_comp_researcher_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "pie3d",
-        "rep_comp_researcher_graph",
-        "600",
-        "350",
-        "rep_comp_researcher_chart",
-        "json",
-        g_data,
-    ).render()
+    report_data["rep_comp_researcher_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "pie3d",
+            "rep_comp_researcher_graph",
+            "600",
+            "350",
+            "rep_comp_researcher_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     report_data["year"] = rep_year
 

@@ -1,7 +1,7 @@
 import core.models
 
-
 """
+    Upgrade: 2.3.0 -> 3.0.0
     The script is applicable for the upgrade from 2.3.0 to 3.0.0.
     Because the application in iSkylims have been renamed, this required that
     some tables where was indicated the application name must be

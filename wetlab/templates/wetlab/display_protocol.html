@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load static %}
 {% block content %}
 {% include "wetlab/menu.html" %}
 <section class="iskylims d-flex flex-column fill-height">
@@ -8,7 +9,7 @@
             <div class="row mt-2 mb-4">
                 <div class="col-md-7 offset-3">
                     <div class="card border-danger mb-3">
-                        <div class="card-header border-danger text-center"><h3>Invalid definition </h3le=> </div>
+                        <div class="card-header border-danger text-center"><h3>Invalid definition </h3> </div>
                         <div class="card-body">
                             <h4>{{error_message}}</h4>
                         </div> 
@@ -17,40 +18,47 @@
             </div> 
         {% endif %}
         {% if protocol_data %}
-            <div class="row row-space-4 margin-b-4">
+            <div class="row mt-2 mb-4">
                 <div class="col-sm-12" >
-                    <h3>These are the parameters defined for {{protocol_data.protocol_name}} Protocol</h3>
+                    <h3>Parameters defined for {{protocol_data.protocol_name}} Protocol</h3>
                     <div class="card ">
                         <div class="card-header"><h4>{{protocol_data.protocol_name}}</h4></div>
                         <div class="card-body">
-                            <div class="col-sm-11" >
-                                <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                            {% for value in protocol_data.parameter_heading %}
-                                                <th>{{value}}</th>
-                                            {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for  values in protocol_data.parameters %}
+                            <div class="row mt-2 horizontal-scroll">
+                                <div class="col-sm-11" >
+                                    <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            {% for value  in values %}
-                                                <td>{{ value }}</td>
-                                            {% endfor %}
+                                                {% for value in protocol_data.parameter_heading %}
+                                                    <th>{{value}}</th>
+                                                {% endfor %}
                                         </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div> <!--// end col-sm-11  -->
-                            <button class="btn btn-outline.primary float-end" onclick="window.location.href = '/wetlab/modifyProtocolFields={{protocol_data.protocol_id}}';">Modify Protocol Fields</button>
+                                    </thead>
+                                    <tbody>
+                                        {% for  values in protocol_data.parameters %}
+                                            <tr>
+                                                {% for value  in values %}
+                                                    <td>
+                                                        {% if value == 'Yes' or  value == "true" %}
+                                                            <i class="bi bi-check2-circle" style="font-size:20px;color:green"></i>
+                                                        {% elif value == 'No' or value == "false" %}
+                                                            <i class="bi bi-stop-circle" style="font-size:20px;color:red"></i>
+                                                        {% else %}
+                                                            {{ value }}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <input class="btn btn-outline-primary float-end my-3" type="submit" value="Modify Protocol Fields" onclick="window.location.href = '/wetlab/modifyProtocolFields={{protocol_data.protocol_id}}';">
                         </div>  
                     </div>
-
-                </div> <!--// end col-sm-12  -->
-
-            </div> <!--// end row -->
-
+                </div>
+            </div> 
         {% endif %}
 
         {% if kit_data %}

@@ -763,11 +763,17 @@
                                         <div class="tab-pane fade" id="chart" role="tabpanel" aria-labelledby="chart-tab">
                                             <div class="container">
                                                 <div class="row mt-4">
-                                                    {% for key, values in display_one_run.runGraphic %}
+                                                    {% for key, values, is_present in display_one_run.runGraphic %}
                                                         <div class="col-sm-6">
                                                             <div class="card">
                                                                 <p class="card-text text-center"> {{key}} </p>
-                                                                <img class ="img-thumbnail" style="height: 320px" src="{{ values }}" >
+                                                                {% if is_present %}
+                                                                    <img class ="img-thumbnail" style="height: 320px" src="{{ values }}" alt="{{ key }}">
+                                                                {% else %}
+                                                                    <div class="img-thumbnail d-flex align-items-center justify-content-center text-muted" style="height: 320px">
+                                                                        Image not present
+                                                                    </div>
+                                                                {% endif %}
                                                             </div>
                                                         </div> <!--  end of col-sm-5 -->
                                                     {% endfor %}

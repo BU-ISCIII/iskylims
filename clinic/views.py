@@ -253,9 +253,9 @@ def create_sample_projects(request):
 def define_extraction_molecules(request):
     extraction_molecules = {}
 
-    extraction_molecules[
-        "extract_molecule"
-    ] = core.utils.samples.get_sample_objs_in_state("defined", request.user)
+    extraction_molecules["extract_molecule"] = (
+        core.utils.samples.get_sample_objs_in_state("defined", request.user)
+    )
     if request.method == "POST" and request.POST["action"] == "continueWithMolecule":
         # processing the samples selected by user
         pass
@@ -790,32 +790,31 @@ def pending_to_update(request):
         request.user
     )
 
-    pending[
-        "patient_update"
-    ] = clinic.utils.samples.get_clinic_samples_patient_sequencing_state(
-        request.user, "Patient update"
+    pending["patient_update"] = (
+        clinic.utils.samples.get_clinic_samples_patient_sequencing_state(
+            request.user, "Patient update"
+        )
     )
 
-    pending[
-        "sequencing"
-    ] = clinic.utils.samples.get_clinic_samples_patient_sequencing_state(
-        request.user, "Sequencing"
+    pending["sequencing"] = (
+        clinic.utils.samples.get_clinic_samples_patient_sequencing_state(
+            request.user, "Sequencing"
+        )
     )
-    pending[
-        "pending_protocol"
-    ] = clinic.utils.samples.get_clinic_samples_pending_results(
-        request.user, "Pending protocol"
+    pending["pending_protocol"] = (
+        clinic.utils.samples.get_clinic_samples_pending_results(
+            request.user, "Pending protocol"
+        )
     )
-    pending[
-        "pending_results"
-    ] = clinic.utils.samples.get_clinic_samples_pending_results(
-        request.user, "Pending results"
+    pending["pending_results"] = (
+        clinic.utils.samples.get_clinic_samples_pending_results(
+            request.user, "Pending results"
+        )
     )
 
-    pending[
-        "graphic_pending_samples"
-    ] = clinic.utils.samples.pending_clinic_samples_for_grafic(pending).render()
-
+    pending["graphic_pending_samples"] = (
+        clinic.utils.samples.pending_clinic_samples_for_grafic(pending).render()
+    )
     return render(request, "clinic/pendingToUpdate.html", {"pending": pending})
 
 

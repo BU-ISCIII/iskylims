@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  apache:
+    container_name: iskylims_apache
+    restart: unless-stopped
+    image: registry.access.redhat.com/ubi9/httpd-24
+    depends_on:
+      - app
+    ports:
+      - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
+      - /var/log/local/iskylims/apache:/var/log/httpd:U
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:ro
+    networks:
+      - iskylims_net
+
+  app:
+    container_name: iskylims_app
+    restart: unless-stopped
+    build:
+      context: .
+      args:
+        INSTALL_TYPE: ${INSTALL_TYPE:-dep}
+        GIT_REVISION: ${GIT_REVISION:-main}
+        INSTALL_CONF: ${INSTALL_CONF:-conf/docker_production_settings.txt}
+        APP_UID: ${APP_UID:-1212}
+        APP_GID: ${APP_GID:-1212}
+        APP_SHELL: ${APP_SHELL:-/sbin/nologin}
+        APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+    expose:
+      - "${APP_PORT:-8001}"
+    environment:
+      DJANGO_SETTINGS_MODULE: iskylims.settings
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
+      APP_MODE: prod
+      APP_PORT: ${APP_PORT:-8001}
+      DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-60}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-300}
+      GUNICORN_KEEPALIVE: ${GUNICORN_KEEPALIVE:-5}
+      APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+    user: "${APP_UID:-1005}:${APP_GID:-1005}"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - /var/log/local/iskylims/apps/:${APP_INSTALL_PATH:-/opt/iskylims}/logs:U
+      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${APP_INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py:U
+      - iskylims_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents
+      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - iskylims_net
+
+networks:
+  iskylims_net:
+
+volumes:
+  iskylims_documents:
+  iskylims_static:

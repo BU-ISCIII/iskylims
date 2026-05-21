@@ -47,7 +47,7 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
     full_path_run = os.path.join(application_folder, run_folder)
 
     try:
-        get_full_list = conn.listPath(shared_folder, run_folder)
+        get_full_list = conn.listPath(shared_folder, full_path_run)
     except Exception:
         string_message = experiment_name + " : Unable to get the folder " + run_folder
         wetlab.utils.common.logging_errors(string_message, True, False)
@@ -70,7 +70,7 @@ def get_run_disk_utilization(conn, run_folder, experiment_name):
                 "%s : Starting getting disk space utilization for Data Folder",
                 experiment_name,
             )
-            dir_data = os.path.join(run_folder, "Data")
+            dir_data = os.path.join(full_path_run, "Data")
             data_dir_size = get_size_dir(dir_data, conn, shared_folder)
 
         elif item_list.filename == "Images":
@@ -299,9 +299,10 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
         experiment_name,
     )
     # check if NextSEq run have been successful completed
-    status_run = wetlab.utils.common.find_xml_tag_text(
-        l_run_completion, wetlab.config.COMPLETION_TAG
-    )
+    for xml_tag in wetlab.config.COMPLETION_TAG:
+        status_run = wetlab.utils.common.find_xml_tag_text(l_run_completion, xml_tag)
+        if status_run != "NOT FOUND":
+            break
     if status_run not in wetlab.config.COMPLETION_SUCCESS:
         logger.info(
             "%s : Run in sequencer was not completed but %s",
@@ -435,7 +436,7 @@ def check_sequencer_run_is_completed(
                 int(conversion_attributes.create_time)
             ).strftime("%Y-%m-%d %H:%M:%S")
             logger.debug(
-                "%s : End function for handling NextSeq run with exception",
+                "%s : End function for manage NextSeq run with exception",
                 experiment_name,
             )
             return "completed", run_completion_date
@@ -445,7 +446,7 @@ def check_sequencer_run_is_completed(
             "%s : End function check_sequencer_run_is_completed with exception",
             experiment_name,
         )
-        return "cancelled", ""
+        return "cancelled", None
     elif way_to_check == "txt_file":
         # l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_TXT_FILE)
         s_run_completion = os.path.join(
@@ -540,7 +541,7 @@ def copy_sample_sheet_to_remote_folder(
             + run_folder
         )
         wetlab.utils.common.logging_errors(string_message, True, False)
-        handling_errors_in_run(experiment_name, "23")
+        manage_errors_in_run(experiment_name, "23")
         logger.debug(
             "%s : End function for copy_sample_sheet_to_remote_folder with exception",
             experiment_name,
@@ -649,7 +650,7 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
             string_message = (
                 "Unable to fetch the " + local_file + " file on folder : " + run_dir
             )
-            wetlab.utils.common.logging_errors(string_message, True, False)
+            wetlab.utils.common.logging_warnings(string_message, False)
             os.remove(local_file)
             logger.debug(
                 "%s : End function for fetching remote file with Exception", run_dir
@@ -720,7 +721,7 @@ def get_latest_run_procesing_log(conn, log_folder, experiment_name):
             continue
         file_remote = sfh.filename
         if file_remote.endswith(".log"):
-            log_file = re.search(".*_Cycle(\d+)_.*", file_remote)
+            log_file = re.search(r".*_Cycle(\d+)_.*", file_remote)
 
             cycle_number = int(log_file.group(1))
             if cycle_number > max_cycle:
@@ -811,7 +812,7 @@ def get_remote_sample_sheet(conn, new_run, experiment_name):
         logger.info("%s : Sucessfully fetch of Sample Sheet file", experiment_name)
     except Exception:
         error_message = "Unable to fetch Sample Sheet file for folder :" + new_run
-        wetlab.utils.common.logging_errors(error_message, True, False)
+        wetlab.utils.common.logging_warnings(error_message, False)
         logger.debug("%s  : End function get_remote_sample_sheet", experiment_name)
         return None
 
@@ -869,6 +870,15 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
         ).last()
 
     else:
+        number_of_lanes = running_parameters["running_data"].get("NumLanes", "")
+        if not number_of_lanes:
+            flowcell_layout = running_parameters["running_data"].get(
+                "FlowcellLayout", {}
+            )
+            if isinstance(flowcell_layout, dict):
+                number_of_lanes = flowcell_layout.get(
+                    wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
+                )
         string_message = (
             experiment_name
             + " : "
@@ -878,7 +888,7 @@ def get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name
         wetlab.utils.common.logging_errors(string_message, True, False)
         sequencer_obj = create_new_sequencer_lab_not_defined(
             running_parameters["instrument"],
-            running_parameters["running_data"]["NumLanes"],
+            number_of_lanes,
             experiment_name,
         )
         logger.info(
@@ -915,7 +925,7 @@ def get_samba_shared_folder():
     )
 
 
-def handling_errors_in_run(experiment_name, error_code):
+def manage_errors_in_run(experiment_name, error_code):
     """
     Description:
         Function will manage the error situation where the run must be
@@ -927,7 +937,7 @@ def handling_errors_in_run(experiment_name, error_code):
         True
     """
     logger = logging.getLogger(__name__)
-    logger.debug("%s : Starting function handling_errors_in_run", experiment_name)
+    logger.debug("%s : Starting function manage_errors_in_run", experiment_name)
     logger.info("%s : Set run to ERROR state", experiment_name)
     if wetlab.models.RunProcess.objects.filter(
         run_name__exact=experiment_name
@@ -941,7 +951,7 @@ def handling_errors_in_run(experiment_name, error_code):
         logger.info(
             "%s : experiment name is not defined yet in database", experiment_name
         )
-    logger.debug("%s : End function handling_errors_in_run", experiment_name)
+    logger.debug("%s : End function manage_errors_in_run", experiment_name)
     return True
 
 
@@ -972,6 +982,21 @@ def parsing_run_info_and_parameter_information(
     running_data = {}
     parsing_data = {}
     image_channel = []
+
+    def get_xml_text_case_insensitive(root_element, tag_names):
+        if isinstance(tag_names, str):
+            tag_names = [tag_names]
+        lowered_tag_names = {tag_name.lower() for tag_name in tag_names}
+        for element in root_element.iter():
+            if element.tag.lower() in lowered_tag_names:
+                return element.text
+        return ""
+
+    def get_xml_child_case_insensitive(root_element, tag_name):
+        for element in root_element:
+            if element.tag.lower() == tag_name.lower():
+                return element
+        return None
 
     ############################
     # parsing RunInfo.xml file #
@@ -1013,44 +1038,33 @@ def parsing_run_info_and_parameter_information(
     parameter_data_root = parameter_data.getroot()
     # getting the common values NextSeq and MiSeq
     for field in wetlab.config.FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
-        try:
-            running_data[field] = parameter_data_root.find(field).text
-        except Exception:
-            # get the tags item for searching when tagas are in different Caps and lower combination
-            # because of new sintax in NovaSeq
-            try:
-                tag_found_in_case_insensitive = False
-                for element in parameter_data_root.iter():
-                    if field.lower() == element.tag.lower():
-                        running_data[field] = parameter_data_root.find(element.tag).text
-                        tag_found_in_case_insensitive = True
-                        break
-                if not tag_found_in_case_insensitive:
-                    running_data[field] = ""
-                    string_message = (
-                        experiment_name
-                        + " : Parameter "
-                        + field
-                        + " not found looking for case insensitive in RunParameter.xml"
-                    )
-                    wetlab.utils.common.logging_warnings(string_message, False)
-            except Exception:
-                running_data[field] = ""
-                string_message = (
-                    experiment_name
-                    + " : Parameter "
-                    + field
-                    + " unable to fetch in RunParameter.xml"
-                )
-                wetlab.utils.common.logging_warnings(string_message, False)
+        running_data[field] = get_xml_text_case_insensitive(parameter_data_root, field)
+        if running_data[field] == "":
+            string_message = (
+                experiment_name
+                + " : Parameter "
+                + field
+                + " not found looking for case insensitive in RunParameter.xml"
+            )
+            wetlab.utils.common.logging_warnings(string_message, False)
+
+    running_data[wetlab.config.APPLICATION_NAME_TAG] = get_xml_text_case_insensitive(
+        parameter_data_root, wetlab.config.APPLICATION_TAG_ALIASES
+    )
 
     # get the nuber of lanes in case sequencer lab is not defined
-    if parameter_data_root.find(wetlab.config.SETUP_TAG):
+    setup_element = get_xml_child_case_insensitive(
+        parameter_data_root, wetlab.config.SETUP_TAG
+    )
+    if setup_element is not None:
         param_in_setup = ["ApplicationVersion", "NumTilesPerSwath"]
         for i in range(len(param_in_setup)):
             try:
+                setup_child = get_xml_child_case_insensitive(
+                    setup_element, param_in_setup[i]
+                )
                 running_data[param_in_setup[i]] = (
-                    parameter_data_root.find("Setup").find(param_in_setup[i]).text
+                    setup_child.text if setup_child else ""
                 )
             except Exception:
                 string_message = (
@@ -1063,13 +1077,10 @@ def parsing_run_info_and_parameter_information(
                 continue
         # collect information for MiSeq and NextSeq
         for setup_field in wetlab.config.FIELDS_TO_FETCH_FROM_SETUP_TAG:
-            try:
-                running_data[setup_field] = (
-                    parameter_data_root.find(wetlab.config.SETUP_TAG)
-                    .find(setup_field)
-                    .text
-                )
-            except Exception:
+            setup_child = get_xml_child_case_insensitive(setup_element, setup_field)
+            if setup_child is not None and setup_child.text is not None:
+                running_data[setup_field] = setup_child.text
+            else:
                 running_data[setup_field] = ""
                 string_message = (
                     experiment_name
@@ -1078,56 +1089,93 @@ def parsing_run_info_and_parameter_information(
                     + " unable to fetch in RunParameter.xml"
                 )
                 wetlab.utils.common.logging_warnings(string_message, False)
-
-        if "MiSeq" in running_data[wetlab.config.APPLICATION_NAME_TAG]:
-            # initialize paramters in case there are not exists on runParameter file
-            for i in range(len(wetlab.config.READ_NUMBER_OF_CYCLES)):
-                running_data[wetlab.config.READ_NUMBER_OF_CYCLES[i]] = ""
-            # get the length index number for reads and indexes for MiSeq Runs
-            for run_info_read in parameter_data_root.iter(
-                wetlab.config.RUN_INFO_READ_TAG
-            ):
-                try:
-                    index_number = (
-                        int(run_info_read.attrib[wetlab.config.NUMBER_TAG]) - 1
-                    )
-                    running_data[
-                        wetlab.config.READ_NUMBER_OF_CYCLES[index_number]
-                    ] = run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
-                except Exception:
-                    string_message = (
-                        experiment_name
-                        + " : Parameter RunInfoRead: Read Number not found in RunParameter.xml"
-                    )
-                    wetlab.utils.common.logging_warnings(string_message, False)
-                    continue
     else:
-        # Collect information for NovaSeq
-        for novaseq_field in wetlab.config.FIELDS_NOVASEQ_TO_FETCH_TAG:
-            try:
-                running_data[novaseq_field] = parameter_data_root.find(
-                    novaseq_field
-                ).text
-            except Exception:
-                running_data[novaseq_field] = ""
+        for field_without_setup in wetlab.config.FIELDS_WITHOUT_SETUP_TAG:
+            running_data[field_without_setup] = get_xml_text_case_insensitive(
+                parameter_data_root, field_without_setup
+            )
+            if running_data[field_without_setup] == "":
                 string_message = (
                     experiment_name
-                    + " : Parameter in Setup -- "
-                    + novaseq_field
+                    + " : Parameter in root -- "
+                    + field_without_setup
                     + " unable to fetch in RunParameter.xml"
                 )
                 wetlab.utils.common.logging_warnings(string_message, False)
+
+    if not running_data.get("NumLanes") and isinstance(
+        running_data.get("FlowcellLayout"), dict
+    ):
+        running_data["NumLanes"] = running_data["FlowcellLayout"].get(
+            wetlab.config.RUN_INFO_FLOWCELL_LAYOUT_LANE_TAG, ""
+        )
+
+    for read_field in wetlab.config.READ_NUMBER_OF_CYCLES:
+        if read_field not in running_data or running_data[read_field] is None:
+            running_data[read_field] = ""
+
+    planned_reads_element = get_xml_child_case_insensitive(
+        parameter_data_root, wetlab.config.PLANNED_READS_TAG
+    )
+    if planned_reads_element is not None:
+        for planned_read in planned_reads_element.findall(
+            wetlab.config.PLANNED_READ_TAG
+        ):
+            read_name = planned_read.attrib.get(wetlab.config.READ_NAME_TAG)
+            if read_name not in wetlab.config.PLANNED_READ_FIELD_MAP:
+                continue
+            cycles_value = ""
+            for cycles_tag in wetlab.config.READ_CYCLES_FALLBACK_TAGS:
+                if cycles_tag in planned_read.attrib:
+                    cycles_value = planned_read.attrib[cycles_tag]
+                    break
+            running_data[wetlab.config.PLANNED_READ_FIELD_MAP[read_name]] = cycles_value
+    elif "MiSeq" in running_data.get(wetlab.config.APPLICATION_NAME_TAG, ""):
+        for run_info_read in parameter_data_root.iter(wetlab.config.RUN_INFO_READ_TAG):
+            try:
+                index_number = int(run_info_read.attrib[wetlab.config.NUMBER_TAG]) - 1
+                running_data[wetlab.config.READ_NUMBER_OF_CYCLES[index_number]] = (
+                    run_info_read.attrib[wetlab.config.NUMBER_CYCLES_TAG]
+                )
+            except Exception:
+                string_message = (
+                    experiment_name
+                    + " : Parameter RunInfoRead: Read Number not found in RunParameter.xml"
+                )
+                wetlab.utils.common.logging_warnings(string_message, False)
+                continue
     # get date for miSeq and NextSeq with the format yymmdd
     date = p_run.find("Date").text
-    try:
-        run_date = datetime.datetime.strptime(date, "%y%m%d")
-    except Exception:
-        # get date for novaseq sequencer
-        date = p_run.find("Date").text.split(" ")[0]
+    # Remove timestamp
+    date = date.split("T")[0]
+    run_date = ""
+    for date_format in wetlab.config.RUN_DATE_FORMATS:
         try:
-            run_date = datetime.datetime.strptime(date, "%m/%d/%Y")
+            run_date = datetime.datetime.strptime(date, date_format)
+            break
         except Exception:
-            run_date = ""
+            continue
+    if run_date == "":
+        date = p_run.find("Date").text.split(" ")[0]
+        for date_format in wetlab.config.RUN_DATE_FORMATS:
+            try:
+                run_date = datetime.datetime.strptime(date, date_format)
+                break
+            except Exception:
+                continue
+
+    logger.info(
+        "%s : Parsed RunParameters values run_id=%s app=%s lanes=%s reads=%s/%s/%s/%s run_date=%s",
+        experiment_name,
+        running_data.get("RunID", ""),
+        running_data.get(wetlab.config.APPLICATION_NAME_TAG, ""),
+        running_data.get("NumLanes", ""),
+        running_data.get("PlannedRead1Cycles", ""),
+        running_data.get("PlannedIndex1ReadCycles", ""),
+        running_data.get("PlannedIndex2ReadCycles", ""),
+        running_data.get("PlannedRead2Cycles", ""),
+        run_date,
+    )
 
     # updating the date fetched from the Date tag for run and project
     logger.debug("%s : Found date that was recorded the Run %s", experiment_name, date)
@@ -1335,6 +1383,13 @@ def create_run_metric_graphics(
     for graphic_file in graphic_files:
         old_file_name = os.path.join(run_graphic_dir, graphic_file)
         split_file_name = graphic_file.split("_")
+        if len(split_file_name) < 2:
+            logger.warning(
+                "%s : Unable to rename unexpected graphic file %s",
+                experiment_name,
+                old_file_name,
+            )
+            continue
         if not split_file_name[1].endswith(wetlab.config.PLOT_EXTENSION):
             split_file_name[1] = split_file_name[1] + wetlab.config.PLOT_EXTENSION
         new_file_name = os.path.join(run_graphic_dir, split_file_name[1])
@@ -1344,6 +1399,29 @@ def create_run_metric_graphics(
             experiment_name,
             old_file_name,
             new_file_name,
+        )
+
+    expected_graphics = [
+        "ClusterCount-by-lane.png",
+        "flowcell-Intensity.png",
+        "Intensity-by-cycle.png",
+        "q-heat-map.png",
+        "q-histogram.png",
+        "sample-qc.png",
+    ]
+    for expected_graphic in expected_graphics:
+        expected_graphic_path = os.path.join(run_graphic_dir, expected_graphic)
+        if not os.path.exists(expected_graphic_path):
+            logger.warning(
+                "%s : Graphic file was not generated: %s",
+                experiment_name,
+                expected_graphic_path,
+            )
+
+    if len(graphic_files) == 0:
+        logger.warning("%s : No graphic files were generated", experiment_name)
+        logger.debug(
+            "%s : End create_run_metric_graphics without graphics", experiment_name
         )
 
     # saving the graphic location in database
@@ -2094,6 +2172,77 @@ def parsing_run_metrics_files(
 #######################
 
 
+def _get_existing_stats_folder(conn, run_folder, experiment_name=""):
+    """
+    Description:
+        Return first available remote stats folder for a run.
+    Input:
+        conn                # samba connection instance
+        run_folder          # run folder on the remote server
+    Return:
+        statistics_folder   # absolute remote stats path or None
+    """
+    logger = logging.getLogger(__name__)
+    shared_folder = get_samba_shared_folder()
+    base_folder = get_samba_application_shared_folder()
+    stats_file_paths = getattr(
+        wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
+    )
+    base_folder = str(base_folder or "").strip().strip("/\\")
+    run_folder = str(run_folder or "").strip().strip("/\\")
+
+    def _join_remote_path(*parts):
+        return "/".join(
+            [str(part).strip("/\\") for part in parts if str(part).strip("/\\")]
+        )
+
+    run_roots = []
+    if run_folder:
+        if base_folder and run_folder.startswith(base_folder + "/"):
+            run_roots.append(run_folder)
+        else:
+            if base_folder:
+                run_roots.append(_join_remote_path(base_folder, run_folder))
+            run_roots.append(run_folder)
+    run_roots = list(dict.fromkeys(run_roots))
+    logger.debug(
+        "Resolving stats folder with shared=%s base=%s run_folder=%s candidates=%s",
+        shared_folder,
+        base_folder,
+        run_folder,
+        run_roots,
+    )
+
+    access_denied_paths = []
+
+    for run_root in run_roots:
+        for stats_path in stats_file_paths:
+            statistics_folder = _join_remote_path(run_root, stats_path)
+            conversion_stats_file = _join_remote_path(
+                statistics_folder, wetlab.config.CONVERSION_STATS_FILE
+            )
+            try:
+                conn.getAttributes(shared_folder, conversion_stats_file)
+                return statistics_folder
+            except Exception as ex:
+                error_text = str(ex).lower()
+                if "c0000022" in error_text or "access denied" in error_text:
+                    access_denied_paths.append(conversion_stats_file)
+                logger.debug(
+                    "Unable to access stats file at %s (%s)",
+                    conversion_stats_file,
+                    str(ex),
+                )
+    if access_denied_paths:
+        logger.warning(
+            "%s : SMB permission denied while checking stats files. "
+            "Verify read/execute permissions for samba user on: %s",
+            experiment_name or run_folder,
+            ", ".join(access_denied_paths),
+        )
+    return None
+
+
 def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
     """
     Description:
@@ -2103,7 +2252,7 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         run_folder          # run folder on the remote server
         experiment_name     # Experiment name
     Constants:
-        STATS_FILE_PATH
+        STATS_FILE_PATHS
         CONVERSION_STATS_FILE
     Functions:
         get_samba_application_shared_folder
@@ -2116,19 +2265,15 @@ def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
         "%s : Starting function check_demultiplexing_folder_exists", experiment_name
     )
     bcl2fastq_finish_date = ""
-    statistics_folder = os.path.join(
-        get_samba_application_shared_folder(),
-        run_folder,
-        wetlab.config.STATS_FILE_PATH,
-    )
-
-    try:
-        conn.listPath(get_samba_shared_folder(), statistics_folder)
-    except Exception:
+    statistics_folder = _get_existing_stats_folder(conn, run_folder, experiment_name)
+    if not statistics_folder:
+        stats_file_paths = getattr(
+            wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
+        )
         string_message = (
             experiment_name
-            + " : Unable to fetch folder demultiplexing at  "
-            + statistics_folder
+            + " : Unable to fetch folder demultiplexing at any of "
+            + ", ".join(stats_file_paths)
         )
         wetlab.utils.common.logging_warnings(string_message, True)
         logger.debug(
@@ -2239,7 +2384,7 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
         run_folder          # run folder on the remote server
         experiment_name     # Experiment name
     Constants:
-        STATS_FILE_PATH
+        STATS_FILE_PATHS
         CONVERSION_STATS_FILE
     Functions:
         get_samba_application_shared_folder
@@ -2250,16 +2395,15 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
     """
     logger = logging.getLogger(__name__)
     logger.debug("%s : Starting function get_demultiplexing_files", experiment_name)
-    statistics_folder = os.path.join(
-        get_samba_application_shared_folder(), run_folder, wetlab.config.STATS_FILE_PATH
-    )
-    try:
-        conn.listPath(get_samba_shared_folder(), statistics_folder)
-    except Exception:
+    statistics_folder = _get_existing_stats_folder(conn, run_folder, experiment_name)
+    if not statistics_folder:
+        stats_file_paths = getattr(
+            wetlab.config, "STATS_FILE_PATHS", [wetlab.config.STATS_FILE_PATH]
+        )
         string_message = (
             experiment_name
-            + " : Unable to fetch folder demultiplexing at  "
-            + statistics_folder
+            + " : Unable to fetch folder demultiplexing at any of "
+            + ", ".join(stats_file_paths)
         )
         wetlab.utils.common.logging_errors(string_message, True, False)
         logger.debug(
@@ -2871,9 +3015,9 @@ def process_and_store_raw_demux_project_data(
                 experiment_name
                 + " : Created  project name "
                 + project
-                + "Because it was not store"
+                + " because it's a new project and it was not store before."
             )
-            wetlab.utils.common.logging_warnings(string_message, True)
+            wetlab.utils.common.logging_warnings(string_message, False)
 
     logger.info("%s : Processing demultiplexing raw project data", experiment_name)
     for project in parsed_data.keys():
@@ -3047,7 +3191,7 @@ def process_and_store_unknown_barcode_data(
                     unknow_barcode["runprocess_id"] = run_process_obj
                     unknow_barcode["lane_number"] = str(un_lane + 1)
                     unknow_barcode["top_number"] = str(top_number)
-                    unknow_barcode["count"] = "{0:,}".format(int(barcode_line["count"]))
+                    unknow_barcode["count"] = int(barcode_line["count"])
                     unknow_barcode["sequence"] = barcode_line["sequence"]
                     top_number += 1
                     wetlab.models.RawTopUnknowBarcodes.objects.create_unknow_barcode(

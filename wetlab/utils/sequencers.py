@@ -165,9 +165,9 @@ def get_list_sequencer_configuration():
         sequencer_configuration
     """
     sequencer_configuration = {}
-    sequencer_configuration[
-        "platforms_used"
-    ] = get_platform_name_of_defined_sequencers()
+    sequencer_configuration["platforms_used"] = (
+        get_platform_name_of_defined_sequencers()
+    )
     if core.models.SequencingConfiguration.objects.all().exists():
         sequencer_data = {}
         seq_conf_objs = core.models.SequencingConfiguration.objects.all().order_by(

@@ -1,4 +1,5 @@
 from django.http import QueryDict
+from django.db.models.functions import Lower
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -12,11 +13,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 import core.models
+import core.core_config
 import wetlab.api.serializers
 import wetlab.api.utils.lab
 import wetlab.api.utils.sample
 import wetlab.models
 import wetlab.config
+import wetlab.utils.common
 
 sample_project_fields = openapi.Parameter(
     "project",
@@ -180,21 +183,71 @@ def create_sample_data(request):
         if isinstance(data, QueryDict):
             data = data.dict()
         if "sample_name" not in data or "sample_project" not in data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        if core.models.Samples.objects.filter(
-            sample_name__iexact=data["sample_name"]
-        ).exists():
+            return Response(
+                {
+                    "ERROR": "Missing fields `sample_name` or `sample_project` in data",
+                    "data": data,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        not_allowed_sample_names = []
+        allowed_sample_repeat = (
+            False
+            if wetlab.utils.common.get_configuration_from_database(
+                "ALLOW_REPEAT_SAMPLE_NAMES"
+            )
+            == "FALSE"
+            else True
+        )
+        if not allowed_sample_repeat:
+            if (
+                wetlab.utils.common.get_configuration_from_database(
+                    "ALLOW_REPEAT_USER_SAMPLE_NAMES"
+                )
+                == "FALSE"
+            ):
+                not_allowed_sample_names = list(
+                    core.models.Samples.objects.filter(
+                        sample_user__username__iexact=request.user.username
+                    ).values_list(Lower("sample_name"), flat=True)
+                )
+            else:
+                not_allowed_sample_names = list(
+                    core.models.Samples.objects.values_list(
+                        Lower("sample_name"), flat=True
+                    )
+                )
+        # get information it underscore is allowed in sample name
+        allow_underscore = (
+            False
+            if wetlab.utils.common.get_configuration_from_database(
+                "ALLOW_UNDERSCORE_SAMPLE_NAMES"
+            )
+            == "FALSE"
+            else True
+        )
+        if data["sample_name"].lower() in not_allowed_sample_names:
             error = {"ERROR": "sample already defined"}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        if not allow_underscore:
+            if "_" in data["sample_name"]:
+                error = {"ERROR": "sample name cannot have underscore"}
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = wetlab.api.utils.sample.split_sample_data(data)
         if not isinstance(split_data, dict):
-            return Response(split_data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"ERROR": "Error splitting data", "data": split_data},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         apps_name = __package__.split(".")[0]
         inst_req_sample = wetlab.api.utils.sample.include_instances_in_sample(
             split_data["s_data"], split_data["lab_data"], apps_name
         )
         if not isinstance(inst_req_sample, dict):
-            return Response(inst_req_sample, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"ERROR": "Error including data", "data": inst_req_sample},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         split_data["s_data"] = inst_req_sample
         split_data["s_data"]["sample_user"] = request.user.pk
         # Adding coding for sample
@@ -208,7 +261,11 @@ def create_sample_data(request):
         )
         if not sample_serializer.is_valid():
             return Response(
-                sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                {
+                    "ERROR": f"Error serializing sample {data['sample_name']}",
+                    "data": sample_serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
         new_sample_id = sample_serializer.save().get_sample_id()
         for d_field in split_data["p_data"]:
@@ -218,44 +275,23 @@ def create_sample_data(request):
             )
             if not s_project_serializer.is_valid():
                 return Response(
-                    s_project_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    {
+                        "ERROR": "Error serializing project",
+                        "data": s_project_serializer.errors,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             s_project_serializer.save()
 
-        return Response("Successful upload information", status=status.HTTP_201_CREATED)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-@swagger_auto_schema(
-    method="get",
-    operation_description="Get the stored Run information available in iSkyLIMS for the list of samples",
-    manual_parameters=[sample_in_run],
-)
-@api_view(["GET"])
-def fetch_run_information(request):
-    if "samples" in request.GET:
-        samples = request.GET["samples"]
-        # sample_run_info = get_run_info_for_sample(apps_name, samples)
-        s_list = samples.strip().split(",")
-        s_data = []
-        for sample in s_list:
-            sample = sample.strip()
-            if wetlab.models.SamplesInProject.objects.filter(
-                sample_name__iexact=sample
-            ).exists():
-                s_found_objs = wetlab.models.SamplesInProject.objects.filter(
-                    sample_name__iexact=sample
-                )
-                for s_found_obj in s_found_objs:
-                    s_data.append(
-                        wetlab.api.serializers.SampleRunInfoSerializers(
-                            s_found_obj, many=False
-                        ).data
-                    )
-            else:
-                s_data.append({"sample_name": sample, "Run data": "Not found"})
-        return Response(s_data, status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": "Successful upload information", "data": split_data["s_data"]},
+            status=status.HTTP_201_CREATED,
+        )
+    else:
+        return Response(
+            {"ERROR": f"Request method must be POST, received {request.method}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 @swagger_auto_schema(
@@ -265,7 +301,30 @@ def fetch_run_information(request):
 )
 @api_view(["GET"])
 def fetch_sample_information(request):
+    """This request is used to get the sample information from the database. If
+    sequencing is received in the request, the request will return the run
+    information for this sample.
+    If not then all infromation is related to the sample creation, which means
+    sample project, project fields.
+    """
     sample_data = {}
+    if "sequencing" in request.GET and "sample" in request.GET:
+        sample = request.GET["sample"].strip()
+        s_data = []
+        if wetlab.models.SamplesInProject.objects.filter(
+            sample_name__iexact=sample
+        ).exists():
+            sample_obj = wetlab.models.SamplesInProject.objects.filter(
+                sample_name__iexact=sample
+            )
+            s_data.append(
+                wetlab.api.serializers.SampleRunInfoSerializers(
+                    sample_obj, many=False
+                ).data
+            )
+        else:
+            s_data.append({"sample_name": sample, "Run data": "Not found"})
+        return Response(s_data, status=status.HTTP_200_OK)
     if "sample" in request.GET:
         sample = request.GET["sample"]
         if not core.models.Samples.objects.filter(sample_name__iexact=sample).exists():
@@ -375,6 +434,18 @@ def sample_project_fields(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method="get",
+    operation_description="Use this request to get the fields used to fill lab_request model",
+    manual_parameters=[laboratory],
+)
+@api_view(["GET"])
+def get_lab_request_mapping(request):
+    return Response(
+        {"data": core.core_config.LAB_REQUEST_ONTOLOGY_MAP}, status=status.HTTP_200_OK
+    )
+
+
 @swagger_auto_schema(method="get", manual_parameters=[laboratory])
 @api_view(["GET"])
 def get_lab_information_contact(request):
@@ -473,6 +544,35 @@ def statistic_information(request):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_lab(request):
+    """
+    Handles updating or creating a laboratory instance based on incoming PUT request data.
+
+    If a lab with the provided `lab_name` exists, it updates the existing record.
+    If the lab does not exist and the `create_if_missing` flag is set in request.data,
+    it attempts to create a new lab using the provided information.
+
+    Required key in request.data:
+        - lab_name (str): The name of the laboratory to update or create.
+
+    Optional required keys (if lab does not exist and `create_if_missing` is True):
+        - lab_contact_name (str) <- updates data if lab exists
+        - lab_phone (str) <- updates data if lab exists
+        - lab_email (str) <- updates data if lab exists
+        - apps_name (str)
+        - geo_loc_city (str)
+        - geo_loc_state (str)
+        - lab_name_coding (str)
+        - lab_unit (str)
+
+    Args:
+        request (HttpRequest): The incoming HTTP request containing PUT data.
+
+    Returns:
+        Response:
+            - 201 Created: If the lab is successfully created or updated.
+            - 406 Not Acceptable: If the lab is not found or cannot be created, or if the data is invalid.
+            - 400 Bad Request: If the HTTP method is not PUT.
+    """
     if request.method == "PUT":
         data = request.data
         if isinstance(data, QueryDict):
@@ -480,11 +580,33 @@ def update_lab(request):
         if "lab_name" in data:
             lab_obj = wetlab.api.utils.lab.get_laboratory_instance(data["lab_name"])
             if lab_obj is None:
-                error_message = wetlab.config.ERROR_LABORATORY_NOT_FOUND
-                return Response(error_message, status=status.HTTP_406_NOT_ACCEPTABLE)
-            wetlab.api.serializers.LabRequestSerializer.update(lab_obj, data)
-
+                if data.get("create_if_missing"):
+                    wetlab.api.utils.sample.create_new_laboratory(data)
+                    return Response(
+                        "Successful Creation of new laboratory",
+                        status=status.HTTP_201_CREATED,
+                    )
+                else:
+                    error_message = wetlab.config.ERROR_LABORATORY_NOT_FOUND
+                    return Response(
+                        error_message, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+            else:
+                serializer = wetlab.api.serializers.LabRequestSerializer(
+                    lab_obj, data=data, partial=True
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(
+                        "Successful Update information", status=status.HTTP_201_CREATED
+                    )
+                else:
+                    return Response(
+                        serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+        else:
             return Response(
-                "Successful Update information", status=status.HTTP_201_CREATED
+                "Missing 'lab_name' field in request data",
+                status=status.HTTP_406_NOT_ACCEPTABLE,
             )
     return Response(status=status.HTTP_400_BAD_REQUEST)

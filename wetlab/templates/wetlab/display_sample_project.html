@@ -95,12 +95,24 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% for name, order, used, search, type, option, descrp, classif in samples_project_data.fields %}
+                                                                {% for name, order, used, download, type, option, descrp, classif in samples_project_data.fields %}
                                                                     <tr>
                                                                         <td>{{ name }}</td>
                                                                         <td>{{ order }}</td>
-                                                                        <td>{{ used }}</td>
-                                                                        <td>{{ search }}</td>
+                                                                        <td>
+                                                                            {% if used == 'Yes' or used == "true" %}
+                                                                                <i class="bi bi-check2-circle" style="font-size:20px;color:green"></i>
+                                                                            {% else %}
+                                                                                <i class="bi bi-stop-circle" style="font-size:20px;color:red"></i>
+                                                                            {% endif %} 
+                                                                        </td>
+                                                                        <td>
+                                                                            {% if download == 'Yes' or download == "true" %}
+                                                                                <i class="bi bi-check2-circle" style="font-size:20px;color:green"></i>
+                                                                            {% else %}
+                                                                                <i class="bi bi-stop-circle" style="font-size:20px;color:red"></i>
+                                                                            {% endif %}    
+                                                                            </td>
                                                                         <td>{{ type }}</td>
                                                                         <td>
                                                                             {% if option != "" %}<a href="#" data-toggle="tooltip" title="{{ option }}">See options</a>{% endif %}

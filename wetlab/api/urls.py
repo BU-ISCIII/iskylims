@@ -5,7 +5,6 @@ app_name = "wetlab_api"
 
 
 urlpatterns = [
-    path("run-info", views.fetch_run_information, name="fetch_run_information"),
     path(
         "lab-data",
         views.get_lab_information_contact,
@@ -30,4 +29,9 @@ urlpatterns = [
         name="summarize_data_information",
     ),
     path("update-lab", views.update_lab, name="update_lab"),
+    path(
+        "lab-request-mapping",
+        views.get_lab_request_mapping,
+        name="get_lab_request_mapping",
+    ),
 ]

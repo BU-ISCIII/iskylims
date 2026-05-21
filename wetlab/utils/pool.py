@@ -39,10 +39,13 @@ def check_if_duplicated_index(lib_prep_ids):
     Input:
         lib_prep_ids  # library preparation id list
     Return:
-        True if unique indexes are used.
-        a dictionary with 'incompatible_index' as key and the list of samples names as value.
+        True if unique indexes are used and empty incompatible_samples
+        False and a dictionary with 'incompatible_index' as key and the list of samples names as value.
     """
     index_values = {}
+    incompatible_samples = {}
+    incompatible_index = []
+
     for lib_prep_id in lib_prep_ids:
         lib_prep_obj = wetlab.models.LibPrepare.objects.get(pk__exact=lib_prep_id)
         # lib_prep_count += 1
@@ -58,23 +61,18 @@ def check_if_duplicated_index(lib_prep_ids):
             index_values[combined_index] = []
         index_values[combined_index].append(lib_prep_id)
     if len(index_values) == len(lib_prep_ids):
-        return "True"
+        return True, incompatible_samples
     else:
-        incompatible_samples = {}
-        incompatible_index = []
         # check which index
         for key, values in index_values.items():
             if len(values) > 1:
-                s_name = []
                 for value in values:
-                    s_name.append(
-                        wetlab.models.LibPrepare.objects.get(
-                            pk__exact=value
-                        ).get_sample_name()
-                    )
-                incompatible_index.append([" and  ".join(s_name), key])
+                    s_name = wetlab.models.LibPrepare.objects.get(
+                        pk__exact=value
+                    ).get_sample_name()
+                    incompatible_index.append([s_name, key])
         incompatible_samples["incompatible_index"] = incompatible_index
-        return incompatible_samples
+        return False, incompatible_samples
 
 
 def get_single_paired(lib_prep_ids):
@@ -132,14 +130,14 @@ def define_new_pool(form_data, user_obj):
         heading_with_hidden, excel_json_data
     )
     for row in c_data:
-        if row["Include in Pool"] == "True":
+        if row["Include in Pool"] is True:
             lib_prep_ids.append(row["lib_prep_id"])
 
     if len(lib_prep_ids) == 0:
         error["ERROR"] = wetlab.config.ERROR_NOT_LIBRARY_PREPARATION_SELECTED
         return error
-    duplicated_index = check_if_duplicated_index(lib_prep_ids)
-    if "incompatible_index" in duplicated_index:
+    valid, duplicated_index = check_if_duplicated_index(lib_prep_ids)
+    if not valid:
         error["duplicated_index"] = duplicated_index
         return error
     # check that all library preparation use the same adapter
@@ -234,18 +232,18 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool = {}
     information_for_created_pool["data"] = pool_obj.get_info()
     information_for_created_pool["pool_name"] = pool_obj.get_pool_name()
-    information_for_created_pool[
-        "heading_pool"
-    ] = wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
+    information_for_created_pool["heading_pool"] = (
+        wetlab.config.HEADING_FOR_DISPLAY_CREATED_POOL
+    )
     lib_prep_data = []
     if wetlab.models.LibPrepare.objects.filter(pools=pool_obj).exists():
         lib_prep_ids = wetlab.models.LibPrepare.objects.filter(pools=pool_obj)
         for lib_prep_obj in lib_prep_ids:
             lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
     information_for_created_pool["lib_prep_data"] = lib_prep_data
-    information_for_created_pool[
-        "heading_library_pool"
-    ] = wetlab.config.HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
+    information_for_created_pool["heading_library_pool"] = (
+        wetlab.config.HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
+    )
 
     return information_for_created_pool
 

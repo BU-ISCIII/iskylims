@@ -1,0 +1,64 @@
+### Production specific installation config
+# Copy this file or edit the values below so they match the external
+# infrastructure you are connecting to before building the image.
+
+### Installation path and modules settings
+INSTALL_PATH='/opt/iskylims'
+REQUIRED_MODULES='core drylab wetlab clinic django_utils'
+MIGRATION_MODULES='core drylab wetlab django_utils'
+FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
+
+### Container build/runtime settings
+# Runtime installation root used by the app container.
+# Leave empty to reuse INSTALL_PATH. If you are not sure leave it empty.
+APP_INSTALL_PATH=''
+# Host directory for Apache bind-mounted configuration files.
+# Leave empty to use ${APP_INSTALL_PATH}/conf.
+# Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims_apache_conf'
+APACHE_CONF_PATH=''
+# Host path for the bind-mounted Django settings.py.
+# Leave empty to use ${APP_INSTALL_PATH}/iskylims/settings.py.
+# If this is a directory or ends with /, container_install.sh appends settings.py.
+# Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims_app_setting'
+DJANGO_SETTINGS_PATH=''
+# UID/GID for the non-root iskylims user inside the app container.
+APP_UID='1212'
+APP_GID='1212'
+# Shell assigned to the container runtime user during image build.
+APP_SHELL='/sbin/nologin'
+# Internal app port used by Gunicorn.
+APP_PORT='8001'
+# Django production debug flag. Keep disabled in production.
+DJANGO_DEBUG='false'
+# Django persistent database connection lifetime in seconds.
+DB_CONN_MAX_AGE='60'
+# Gunicorn runtime tuning.
+WEB_CONCURRENCY='2'
+GUNICORN_THREADS='2'
+GUNICORN_TIMEOUT='300'
+GUNICORN_KEEPALIVE='5'
+
+### (optional) Python installation path where pip and python executables are located
+PYTHON_BIN_PATH='python3.11'
+
+### Settings required to access database (external MySQL server)
+DB_USER='django'
+DB_PASS='djangopass'
+DB_NAME='iskylims'
+DB_SERVER_IP='host.docker.internal'  # hostname or IP of the production DB (use host.docker.internal for host DB)
+DB_PORT=3306
+
+### Settings required for sending emails
+EMAIL_HOST_SERVER='host.docker.internal'
+EMAIL_PORT='25'
+EMAIL_HOST_USER='bioinformatica@isciii.es'
+EMAIL_HOST_PASSWORD=''
+EMAIL_USE_TLS='False'
+
+### Settings required for accessing iSkyLIMS
+LOCAL_SERVER_IP='*'
+DNS_URL='*'
+
+### Logs settings
+LOG_TYPE="regular_folder"
+LOG_PATH=""

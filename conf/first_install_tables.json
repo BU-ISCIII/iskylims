@@ -258,6 +258,21 @@
     }
 },
 {
+    "model": "core.sequencerinlab",
+    "pk": 7,
+    "fields": {
+        "platform_id": 7,
+        "sequencer_name": "SH00752",
+        "sequencer_description": "MiSeqi100",
+        "sequencer_location": "Genomics Unit",
+        "sequencer_serial_number": null,
+        "sequencer_state": "In Use",
+        "sequencer_operation_start": null,
+        "sequencer_operation_end": null,
+        "sequencer_number_lanes": "1/2/4"
+    }
+},
+{
     "model": "core.statesforsample",
     "pk": 1,
     "fields": {
@@ -324,21 +339,32 @@
     "model": "core.statesformolecule",
     "pk": 3,
     "fields": {
-        "molecule_state_name": "Defined"
+        "molecule_state_name": "defined",
+        "molecule_state_display": "Defined"
     }
 },
 {
     "model": "core.statesformolecule",
     "pk": 4,
     "fields": {
-        "molecule_state_name": "Assigned Protocol"
+        "molecule_state_name": "assigned_parameters",
+        "molecule_state_display": "Assigned Parameters"
     }
 },
 {
     "model": "core.statesformolecule",
     "pk": 5,
     "fields": {
-        "molecule_state_name": "Completed"
+        "molecule_state_name": "completed",
+        "molecule_state_display": "Completed"
+    }
+},
+{
+    "model": "core.statesformolecule",
+    "pk": 6,
+    "fields": {
+        "molecule_state_name": "sent_external",
+        "molecule_state_display": "Sent to external service"
     }
 },
 {
@@ -1512,84 +1538,100 @@
     "model": "wetlab.runstates",
     "pk": 1,
     "fields": {
-        "run_state_name": "Pre-Recorded"
+        "run_state_name": "pre_recorded",
+        "state_display": "Pre Recorded",
+        "description": "Run name is defined but pending for input data.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 2,
     "fields": {
-        "run_state_name": "Recorded"
+        "run_state_name": "recorded",
+        "state_display": "Recorded",
+        "description": "Run name is defined.",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 3,
     "fields": {
-        "run_state_name": "Sample Sent"
+        "run_state_name": "sample_sent",
+        "state_display": "Sample Sent",
+        "description": "Run has copied sample sheet on remote server.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 4,
     "fields": {
-        "run_state_name": "Processing Run"
+        "run_state_name": "processing_run",
+        "state_display": "Processing Run",
+        "description": "Run is handled on the sequencer.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 5,
     "fields": {
-        "run_state_name": "Processed Run"
+        "run_state_name": "processed_run",
+        "state_display": "Processed Run",
+        "description": "Run is already processed on sequencer.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 6,
     "fields": {
-        "run_state_name": "Processing Bcl2fastq"
+        "run_state_name": "processing_bcl2fastq",
+        "state_display": "Processing Bcl2fastq",
+        "description": "Bcl2fastq is running",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 7,
     "fields": {
-        "run_state_name": "Processed Bcl2fastq"
+        "run_state_name": "processed_bcl2fastq",
+        "state_display": "Processed Bcl2fastq",
+        "description": "Bcl2fastq already completed",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 8,
     "fields": {
-        "run_state_name": "Completed"
+        "run_state_name": "completed",
+        "state_display": "Completed",
+        "description": "Run is completed and all processes are finished.",
+        "show_in_stats": false
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 9,
     "fields": {
-        "run_state_name": "Cancelled"
+        "run_state_name": "cancelled",
+        "state_display": "Cancelled",
+        "description": "Run was manually cancelled while running on sequencer.",
+        "show_in_stats": true
     }
 },
 {
     "model": "wetlab.runstates",
     "pk": 10,
     "fields": {
-        "run_state_name": "Error"
-    }
-},
-{
-    "model": "wetlab.runstates",
-    "pk": 11,
-    "fields": {
-        "run_state_name": "Processing Metrics"
-    }
-},
-{
-    "model": "wetlab.runstates",
-    "pk": 12,
-    "fields": {
-        "run_state_name": "Processing Demultiplexing"
+        "run_state_name": "error",
+        "state_display": "Error",
+        "description": "There was an issue while processing the run",
+        "show_in_stats": true
     }
 },
 {
@@ -1889,6 +1931,14 @@
     }
 },
 {
+    "model": "wetlab.runconfigurationtest",
+    "pk": 4,
+    "fields": {
+        "run_test_name": "MiSeqi100_Test",
+        "run_test_folder": "Miseqi100_Test"
+    }
+},
+{
     "model": "wetlab.configsetting",
     "pk": 1,
     "fields": {
@@ -1994,6 +2044,33 @@
         "configuration_name": "MAXIMUM_TIME_WAIT_RUN_PARAMETERS",
         "configuration_value": "1",
         "generated_at": "2021-01-28T22:59:03.042"
+    }
+},
+{
+    "model": "wetlab.configsetting",
+    "pk": 15,
+    "fields": {
+        "configuration_name": "ALLOW_REPEAT_SAMPLE_NAMES",
+        "configuration_value": "FALSE",
+        "generated_at": "2024-05-28T22:59:03.142"
+    }
+},
+{
+    "model": "wetlab.configsetting",
+    "pk": 16,
+    "fields": {
+        "configuration_name": "ALLOW_REPEAT_SAMPLE_NAMES_PER_RESEARCHER",
+        "configuration_value": "FALSE",
+        "generated_at": "2024-05-28T22:59:04.042"
+    }
+},
+{
+    "model": "wetlab.configsetting",
+    "pk": 17,
+    "fields": {
+        "configuration_name": "ALLOW_SAMPLE_NAMES_WITH_UNDERSCORE",
+        "configuration_value": "FALSE",
+        "generated_at": "2024-05-28T22:59:05.042"
     }
 },
 {
@@ -20087,6 +20164,16 @@
     "model": "drylab.servicestate",
     "pk": 2,
     "fields": {
+        "state_value": "archived",
+        "state_display": "Archived",
+        "description": null,
+        "show_in_stats": false
+    }
+},
+{
+    "model": "drylab.servicestate",
+    "pk": 3,
+    "fields": {
         "state_value": "approved",
         "state_display": "Approved",
         "description": "Service request has been accepted",
@@ -20095,27 +20182,7 @@
 },
 {
     "model": "drylab.servicestate",
-    "pk": 3,
-    "fields": {
-        "state_value": "rejected",
-        "state_display": "Rejected",
-        "description": "Service can not be handle because is not in porfoloio or for any other reason",
-        "show_in_stats": false
-    }
-},
-{
-    "model": "drylab.servicestate",
     "pk": 4,
-    "fields": {
-        "state_value": "queued",
-        "state_display": "Queued",
-        "description": "Service is the the list, waiting for a bioinformatic to be handled",
-        "show_in_stats": true
-    }
-},
-{
-    "model": "drylab.servicestate",
-    "pk": 5,
     "fields": {
         "state_value": "in_progress",
         "state_display": "In Progress",
@@ -20125,22 +20192,32 @@
 },
 {
     "model": "drylab.servicestate",
+    "pk": 5,
+    "fields": {
+        "state_value": "rejected",
+        "state_display": "Rejected",
+        "description": "Service can not be handle because is not in porfoloio or for any other reason",
+        "show_in_stats": false
+    }
+},
+{
+    "model": "drylab.servicestate",
     "pk": 6,
     "fields": {
         "state_value": "delivered",
         "state_display": "Delivered",
         "description": "Service wascompleted and results were sent to the user",
-        "show_in_stats": false
+        "show_in_stats": true
     }
 },
 {
     "model": "drylab.servicestate",
     "pk": 7,
     "fields": {
-        "state_value": "archived",
-        "state_display": "Archived",
-        "description": null,
-        "show_in_stats": false
+        "state_value": "queued",
+        "state_display": "Queued",
+        "description": "Service is the the list, waiting for a bioinformatic to be handled",
+        "show_in_stats": true
     }
 },
 {
@@ -20149,10 +20226,11 @@
     "fields": {
         "state_value": "on_hold",
         "state_display": "On hold",
-        "description": "Service is on hold, waiting for user provides more information",
+        "description": "Resolution is on hold, waiting for user provides more information",
         "show_in_stats": true
     }
-},
+}
+,
 {
     "model": "drylab.resolutionstates",
     "pk": 1,
@@ -20166,18 +20244,18 @@
     "model": "drylab.resolutionstates",
     "pk": 2,
     "fields": {
-        "state_value": "approved",
-        "state_display": "Approved",
-        "description": "Resolution request has been accepted"
+        "state_value": "in_progress",
+        "state_display": "In Progress",
+        "description": "Bioinformatic is working on the Resolution"
     }
 },
 {
     "model": "drylab.resolutionstates",
     "pk": 3,
     "fields": {
-        "state_value": "rejected",
-        "state_display": "Rejected",
-        "description": "Resolution can not be handle because is not in porfoloio or for any other reason"
+        "state_value": "delivered",
+        "state_display": "Delivered",
+        "description": "Resolution wascompleted and results were sent to the user"
     }
 },
 {
@@ -20193,18 +20271,18 @@
     "model": "drylab.resolutionstates",
     "pk": 5,
     "fields": {
-        "state_value": "in_progress",
-        "state_display": "In Progress",
-        "description": "Bioinformatic is working on the Resolution"
+        "state_value": "rejected",
+        "state_display": "Rejected",
+        "description": "Resolution can not be handle because is not in porfoloio or for any other reason"
     }
 },
 {
     "model": "drylab.resolutionstates",
     "pk": 6,
     "fields": {
-        "state_value": "delivered",
-        "state_display": "Delivered",
-        "description": "Resolution wascompleted and results were sent to the user"
+        "state_value": "approved",
+        "state_display": "Approved",
+        "description": "Resolution request has been accepted"
     }
 },
 {
@@ -20223,6 +20301,48 @@
         "state_value": "on_hold",
         "state_display": "On hold",
         "description": "Resolution is on hold, waiting for user provides more information"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 1,
+    "fields": {
+        "label": "collection_sample_date",
+        "ontology": "GENEPIO:0001174"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 2,
+    "fields": {
+        "label": "sample_entry_date",
+        "ontology": "NCIT:C93644"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 3,
+    "fields": {
+        "label": "sample_name",
+        "ontology": "NCIT:C70663"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 4,
+    "fields": {
+        "label": "species",
+        "ontology": "GENEPIO:0001386"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 5,
+    "fields": {
+        "label": "lab_request",
+        "ontology": "GENEPIO:0001153"
+    }
+},
+{   "model": "core.ontologymap",
+    "pk": 6,
+    "fields": {
+        "label": "sequencing_date",
+        "ontology": "GENEPIO:0001447"
     }
 }
 ]

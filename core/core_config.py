@@ -22,17 +22,17 @@ HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = [
 ]
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = [
     "Sample",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Lot Commercial Kit",
 ]
 
 
 # ########### Headings to confirm the sucessful recorded
-HEADING_CONFIRM_MOLECULE_RECORDED = ["Molecule Code ID", "Used Protocol"]
+HEADING_CONFIRM_MOLECULE_RECORDED = ["Extraction Code ID", "Used Protocol"]
 
-# ## Heading values when showing pending samples at handling molecules
+# ## Heading values when showing pending samples at manage molecules
 HEADING_FOR_DEFINED_SAMPLES = [
-    "Sample extraction date",
+    "Sample defined date",
     "Sample Code ID",
     "Sample",
     "To be included",
@@ -41,7 +41,7 @@ HEADING_FOR_DEFINED_SAMPLES = [
 # ## Heading values when showing pending samples
 HEADING_FOR_PENDING_MOLECULES = [
     "Sample",
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Used Protocol",
     "Molecule Extraction Date",
     "Select Molecule",
@@ -62,7 +62,7 @@ HEADING_FOR_SAMPLE_DEFINITION = [
 ]
 # ## Heading for display information on molecule definition
 HEADING_FOR_MOLECULE_DEFINITION = [
-    "Molecule CodeID",
+    "Extraction Code ID",
     "Molecule State",
     "Extraction Date",
     "Extraction Type",
@@ -74,8 +74,8 @@ HEADING_FOR_MOLECULE_DEFINITION = [
 
 HEADING_FOR_SELECTING_MOLECULE_USE = [
     "Sample Name",
-    "Molecule CodeID",
-    "Molecule use for",
+    "Extraction Code ID",
+    "Sample continues on",
 ]
 
 # ################ PROTOCOL PARAMETER SETTINGS ##############################
@@ -84,6 +84,7 @@ HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = [
     "Parameter name",
     "Order",
     "Used",
+    "Downloadable",
     "Parameter Type",
     "Option Values",
     "Min Value",
@@ -95,8 +96,11 @@ HEADING_FOR_MODIFY_PROTOCOL_FIELDS = [
     "New field name",
     "Order",
     "Used",
+    "Downloadable",
     "Parameter Type",
     "Option Values",
+    "Min Value",
+    "Max Value",
     "Description",
 ]
 
@@ -104,7 +108,7 @@ HEADING_FOR_SAMPLE_PROJECT_FIELDS = [
     "Field name",
     "Order",
     "Used",
-    "Searchable",
+    "Downloadable",
     "Field type",
     "Option Values",
     "Description",
@@ -116,7 +120,7 @@ HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS = [
     "Change field name",
     "Order",
     "Used",
-    "Searchable",
+    "Downloadable",
     "Field type",
     "Option Values",
     "Description",
@@ -188,7 +192,7 @@ HEADING_FOR_USER_LOT_SEARCH_RESULTS = [
 ]
 
 HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA = [
-    "Molecule Code ID",
+    "Extraction Code ID",
     "Lot number",
     "Commercial kit name",
     "Expiration Date",
@@ -236,6 +240,8 @@ ERROR_CITY_ALREADY_DEFINED = ["City is already defined"]
 ERROR_SAMPLE_NOT_FOUND = ["Sample was not found"]
 
 ERROR_SAMPLE_ALREADY_DEFINED = ["Sample", "already exist in the database"]
+
+ERROR_NO_USED_FIELD_ARE_ARE_SET = ["No field is set as used"]
 
 # ######################  Batch file ###############################################
 ERROR_EMPTY = [
@@ -328,3 +334,23 @@ ERROR_PROJECT_FIELD_NODATE = [
 ]
 ERROR_PROJECT_FIELD_NOOPTION = ["Project field", "only has the following options:"]
 ERROR_PROJECT_FIELD_EMPTY = ["Project field", "is empty"]
+
+LAB_REQUEST_ONTOLOGY_MAP = {
+    "GENEPIO:0001153": ("lab_name", "collecting_institution"),
+    "SNOMED:423901009": ("lab_code_1", "collecting_institution_code_1"),
+    "NCIT:C101703": ("lab_code_2", "collecting_institution_code_2"),
+    "OBI:0001890": ("lab_email", "collecting_institution_email"),
+    "NCIT:C40978": ("lab_phone", "collecting_institution_phone"),
+    "GENEPIO:0001158": ("address", "collecting_institution_address"),
+    "GENEPIO:0001803": ("autonom_cod", "autonom_cod"),
+    "GENEPIO:0001185": ("geo_loc_state", "geo_loc_state"),
+    "GENEPIO:0001189": ("geo_loc_city", "geo_loc_city"),
+    "NCIT:C25621": ("post_code", "post_code"),
+    "mesh:D009935": ("dep_func", "dep_func"),
+    "NCIT:C93878": ("center_class_code", "center_class_code"),
+    "NCIT:C188820": ("lab_function", "collecting_institution_function"),
+    "EFO:0005020": ("lab_geo_loc_latitude", "lab_geo_loc_latitude"),
+    "EFO:0005021": ("lab_geo_loc_longitude", "lab_geo_loc_longitude"),
+    "OBI:0001620": ("geo_loc_latitude", "geo_loc_latitude"),
+    "OBI:0001621": ("geo_loc_longitude", "geo_loc_longitude"),
+}

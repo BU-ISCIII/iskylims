@@ -69,13 +69,13 @@ def analyze_and_store_patient_data(user_post, user):
                 suspicion_data
             )
     if stored_samples:
-        analyze_data[
-            "stored_samples_heading"
-        ] = clinic.clinic_config.HEADING_FOR_STORED_PATIENT_DATA
+        analyze_data["stored_samples_heading"] = (
+            clinic.clinic_config.HEADING_FOR_STORED_PATIENT_DATA
+        )
     if incomplete_clinic_samples_ids:
-        analyze_data[
-            "heading"
-        ] = clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+        analyze_data["heading"] = (
+            clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+        )
         analyze_data["heading_length"] = len(
             clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
         )
@@ -175,9 +175,9 @@ def display_one_sample_info(id):
 
     sample_info["s_name"] = core_sample_obj.get_sample_name()
     sample_info["sample_core_info"] = clinic_sample_obj.get_sample_core_info()
-    sample_info[
-        "sample_core_heading"
-    ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
+    sample_info["sample_core_heading"] = (
+        clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
+    )
 
     p_main_info = clinic_sample_obj.get_patient_information()
 
@@ -211,9 +211,9 @@ def display_one_sample_info(id):
 
 def display_sample_list(sample_c_list):
     display_sample_list_info = {}
-    display_sample_list_info[
-        "heading"
-    ] = clinic.clinic_config.HEADING_SEARCH_LIST_SAMPLES_CLINIC
+    display_sample_list_info["heading"] = (
+        clinic.clinic_config.HEADING_SEARCH_LIST_SAMPLES_CLINIC
+    )
     sample_c_data = []
     for sample_c in sample_c_list:
         sample_c_obj = clinic.models.ClinicSampleRequest.objects.get(pk__exact=sample_c)
@@ -314,9 +314,9 @@ def get_clinic_samples_defined_state(user):
         for sample_obj in samples_obj:
             sample_information.append(sample_obj.get_info_for_defined_state())
         samples_in_state["sample_information"] = sample_information
-        samples_in_state[
-            "sample_heading"
-        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE
+        samples_in_state["sample_heading"] = (
+            clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE
+        )
         samples_in_state["length"] = len(sample_information)
         return samples_in_state
     else:
@@ -346,9 +346,9 @@ def get_clinic_samples_patient_sequencing_state(user, state):
                 sample_obj.get_info_for_patient_sequencing_state()
             )
         samples_in_state["sample_information"] = sample_information
-        samples_in_state[
-            "sample_heading"
-        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE
+        samples_in_state["sample_heading"] = (
+            clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE
+        )
         samples_in_state["length"] = len(sample_information)
         return samples_in_state
     else:
@@ -388,9 +388,9 @@ def get_clinic_samples_pending_results(user, state):
             c_sample.append(sample_obj.get_id())
             sample_information.append(c_sample)
         samples_in_state["sample_information"] = sample_information
-        samples_in_state[
-            "sample_heading"
-        ] = clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_PENDING_RESULT_STATE
+        samples_in_state["sample_heading"] = (
+            clinic.clinic_config.HEADING_FOR_DISPLAY_SAMPLE_PENDING_RESULT_STATE
+        )
         samples_in_state["length"] = len(sample_information)
         return samples_in_state
     else:
@@ -476,9 +476,9 @@ def get_samples_clinic_in_search(data_request):
 def prepare_patient_form(clinic_samples_ids):
     patient_info = {}
     patient_info["data"] = []
-    patient_info[
-        "heading"
-    ] = clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+    patient_info["heading"] = (
+        clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
+    )
     heading_length = len(clinic.clinic_config.ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES)
     for clinic_s_id in clinic_samples_ids:
         clinic_sample_obj = get_clinic_sample_obj_from_id(clinic_s_id)

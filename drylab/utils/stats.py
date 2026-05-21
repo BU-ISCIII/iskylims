@@ -39,9 +39,9 @@ def create_statistics_by_user(user_id, start_date=None, end_date=None):
     service_objs = service_objs.filter(service_user_id__pk__exact=user_id)
 
     if len(service_objs) == 0:
-        stats_info[
-            "ERROR"
-        ] = drylab.config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+        stats_info["ERROR"] = (
+            drylab.config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+        )
         return stats_info
 
     # create table of services
@@ -103,17 +103,17 @@ def create_statistics_by_user(user_id, start_date=None, end_date=None):
         "Percentage of services", "Research vs all", "ocean", service_user
     )
 
-    stats_info[
-        "research_vs_other_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "pie3d",
-        "research_vs_other_graph",
-        "580",
-        "300",
-        "research_vs_other_chart",
-        "json",
-        g_data,
-    ).render()
+    stats_info["research_vs_other_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "pie3d",
+            "research_vs_other_graph",
+            "580",
+            "300",
+            "research_vs_other_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     # getting statistics of the created services per week
     service_per_week = (
@@ -133,17 +133,17 @@ def create_statistics_by_user(user_id, start_date=None, end_date=None):
         "ocean",
         format_service_per_week,
     )
-    stats_info[
-        "research_service_weeks_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "column3d",
-        "research_service_weeks_graph",
-        "580",
-        "400",
-        "research_service_weeks_chart",
-        "json",
-        g_data,
-    ).render()
+    stats_info["research_service_weeks_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "column3d",
+            "research_service_weeks_graph",
+            "580",
+            "400",
+            "research_service_weeks_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     # create graphic for requested service on level 2
     avail_serv_level_2 = drylab.models.AvailableService.objects.filter(level=2)
@@ -164,16 +164,16 @@ def create_statistics_by_user(user_id, start_date=None, end_date=None):
         "value",
     )
 
-    stats_info[
-        "research_avail_services_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "column3d",
-        "research_avail_services_graph",
-        "580",
-        "400",
-        "research_avail_services_chart",
-        "json",
-        g_data,
-    ).render()
+    stats_info["research_avail_services_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "column3d",
+            "research_avail_services_graph",
+            "580",
+            "400",
+            "research_avail_services_chart",
+            "json",
+            g_data,
+        ).render()
+    )
 
     return stats_info

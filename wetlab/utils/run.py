@@ -34,11 +34,11 @@ def check_run_already_defined_by_crontab(exp_name, pool_ids):
     # experiment name already exists, check if samples are the same
     # to confirm the match
     run_obj = wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
-    sample_sheet = run_obj.get_sample_file()
-    f_name = os.path.join(settings.MEDIA_ROOT, sample_sheet)
+    sample_sheet_path = run_obj.get_sample_file()
+    f_name = os.path.join(settings.MEDIA_ROOT, sample_sheet_path)
     try:
-        with open(f_name, "r") as fh:
-            file_data = fh.readlines()
+        file_data = wetlab.utils.samplesheet.read_file_from_path(f_name)
+        samplesheet = wetlab.utils.samplesheet.file_read_to_dictionary(file_data)
     except FileNotFoundError:
         error_message = str(
             wetlab.config.ERROR_RUN_NAME_BY_CRONTAB_ALREADY_CREATED
@@ -46,7 +46,9 @@ def check_run_already_defined_by_crontab(exp_name, pool_ids):
             + wetlab.config.ERROR_SAMPLE_SHEET_NOT_FOUND_WHEN_CREATED_BY_CRONTAB
         )
         return {"ERROR": error_message}
-    sample_in_s_sheet = wetlab.utils.samplesheet.get_samples_in_sample_sheet(file_data)
+    sample_in_s_sheet = wetlab.utils.samplesheet.get_samples_in_sample_sheet(
+        samplesheet
+    )
     sample_in_pools = wetlab.utils.pool.get_sample_name_in_pools(pool_ids)
     if len(sample_in_pools) != len(sample_in_s_sheet["samples"]):
         return {"ERROR": wetlab.config.ERROR_EXISTING_RUN_WITH_DIF_SAMPLES_AS_IN_CRON}
@@ -124,7 +126,7 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
     new_run_obj = wetlab.models.RunProcess(
         run_name=form_data["experimentName"],
         sample_sheet="",
-        state=wetlab.models.RunStates.objects.get(run_state_name__exact="Pre-Recorded"),
+        state=wetlab.models.RunStates.objects.get(run_state_name__exact="pre_recorded"),
         center_requested_by=center_requested_by,
     )
     new_run_obj.save()
@@ -132,8 +134,8 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation(form_data, user_obj
         new_run_obj.reagent_kit.add(reagent_kit_obj)
 
     for pool in pool_ids:
-        pool_obj = get_pool_instance_from_id(pool)
-        pool_obj.update_run_name(new_run_obj)
+        # changed from version 3.1.0 the relation in pools
+        new_run_obj.set_library_pool(pool)
     display_sample_information["experiment_name"] = form_data["experimentName"]
     display_sample_information["run_process_id"] = new_run_obj.get_run_id()
     return display_sample_information
@@ -228,9 +230,9 @@ def collect_data_and_update_library_preparation_samples_for_run(data_form, user)
             ]
         projects.append(json_data[row_index][heading.index("Sample_Project")])
         # keep the old value of the user sample sheet and update the library prepation
-        confirmation_data[
-            "user_sample_sheet"
-        ] = lib_prep_obj.get_user_sample_sheet_obj()
+        confirmation_data["user_sample_sheet"] = (
+            lib_prep_obj.get_user_sample_sheet_obj()
+        )
         lib_prep_obj.update_library_preparation_with_indexes(confirmation_data)
         sample_sheet_data_field.append(json_data[row_index])
     if record_data["platform"] == "NextSeq":
@@ -684,41 +686,29 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     if platform_in_pool == "MiSeq":
         if single_read:
             if iem_version == "4":
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
                 )
             else:
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
                 )
         else:
             if iem_version == "4":
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
                 )
             else:
-                lib_data[
-                    "heading"
-                ] = (
+                lib_data["heading"] = (
                     wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
                 )
     else:
         if single_read:
-            lib_data[
-                "heading"
-            ] = (
+            lib_data["heading"] = (
                 wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
             )
         else:
-            lib_data[
-                "heading"
-            ] = (
+            lib_data["heading"] = (
                 wetlab.config.HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
             )
     return lib_data
@@ -779,11 +769,13 @@ def get_available_pools_for_run():
         pools_to_update
     """
     pools_to_update = {}
+
+    # get the pools that were selected
     if wetlab.models.LibraryPool.objects.filter(
-        pool_state__pool_state__exact="Selected", run_process_id=None
+        pool_state__pool_state__exact="Selected"
     ).exists():
         pool_objs = wetlab.models.LibraryPool.objects.filter(
-            pool_state__pool_state__exact="Selected", run_process_id=None
+            pool_state__pool_state__exact="Selected"
         ).order_by("platform")
         pools_to_update["pools_available"] = {}
         for pool_obj in pool_objs:
@@ -796,15 +788,15 @@ def get_available_pools_for_run():
         wetlab.models.LibraryPool.objects.filter(
             pool_state__pool_state__exact="Selected"
         )
-        .exclude(run_process_id=None)
+        .exclude(runprocess=None)
         .exists()
     ):
         pools_to_update["defined_runs"] = (
             wetlab.models.LibraryPool.objects.filter(
                 pool_state__pool_state__exact="Selected"
             )
-            .exclude(run_process_id=None)
-            .order_by("run_process_id")
+            .exclude(runprocess=None)
+            .order_by("runprocess")
         )
 
     return pools_to_update
@@ -823,7 +815,7 @@ def get_pool_info(pools_to_update):
         HEADING_FOR_SELECTING_POOLS
         HEADING_FOR_INCOMPLETED_SELECTION_POOLS
     Functions:
-        get_lot_reagent_commercial_kits # located at core/utils/handling_commercial_kits
+        get_lot_reagent_commercial_kits # located at core/utils/manage_commercial_kits
     Return:
         pool_info
     """
@@ -943,9 +935,9 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
     kit_data = {}
     kit_data["run_kits_from_sample"] = {}
     if wetlab.models.LibPrepare.objects.filter(sample_id__pk__exact=sample_id).exists():
-        kit_data[
-            "heading_run_kits"
-        ] = wetlab.config.HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
+        kit_data["heading_run_kits"] = (
+            wetlab.config.HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
+        )
         library_preparation_items = wetlab.models.LibPrepare.objects.filter(
             sample_id__pk__exact=sample_id
         ).order_by("protocol_id")
@@ -1025,5 +1017,5 @@ def link_pool_with_existing_run(exp_name, pool_ids):
     run_obj = wetlab.models.RunProcess.objects.filter(run_name__iexact=exp_name).last()
     for pool in pool_ids:
         pool_obj = get_pool_instance_from_id(pool)
-        pool_obj.update_run_name(run_obj)
+        run_obj.set_pool(pool_obj)
     return None

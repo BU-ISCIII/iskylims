@@ -1,0 +1,53 @@
+# Keep .git: install/build diagnostics use git metadata inside the image.
+
+# Local Python environments and caches
+.venv/
+venv/
+env/
+ENV/
+virtualenv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Local runtime/generated deployment files
+.env
+.env.*
+!.env.example
+.env.prod.file
+install_settings.txt
+wetlab/logging_config.ini
+logs/
+tmp/
+documents/
+outputs/
+catboost_info/
+
+# Build, package, and generated archives
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+*.log
+*.gz
+*.zip
+*.tar
+*.tgz
+
+# Generated Django/runtime files at repo root
+/manage.py
+/static/

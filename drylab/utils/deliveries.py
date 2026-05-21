@@ -1,5 +1,6 @@
 # Generic imports
 import datetime
+from smtplib import SMTPException
 
 import django.core.mail
 
@@ -29,15 +30,15 @@ def prepare_delivery_form(resolution_id):
         resolution_id, input="id"
     )
     if resolution_obj is not None:
-        delivery_data_form[
-            "available_services"
-        ] = resolution_obj.get_available_services_ids()
+        delivery_data_form["available_services"] = (
+            resolution_obj.get_available_services_ids()
+        )
         delivery_data_form["resolution_id"] = resolution_id
         delivery_data_form["resolution_number"] = resolution_obj.get_resolution_number()
 
-        delivery_data_form[
-            "pipelines_data"
-        ] = drylab.utils.pipelines.get_pipelines_for_resolution(resolution_obj)
+        delivery_data_form["pipelines_data"] = (
+            drylab.utils.pipelines.get_pipelines_for_resolution(resolution_obj)
+        )
 
     return delivery_data_form
 
@@ -133,6 +134,6 @@ def send_delivery_service_email(email_data):
     to_users = [email_data["user_email"], email_data["user_email"], notification_user]
     try:
         django.core.mail.send_mail(subject, body_message, from_user, to_users)
-    except Exception:
-        pass
+    except (SMTPException, ConnectionRefusedError):
+        raise
     return

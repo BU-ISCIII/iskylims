@@ -10,9 +10,18 @@ class StateInCountryManager(models.Manager):
         new_state = self.create(state_name=data["state"], apps_name=data["apps_name"])
         return new_state
 
+    def get_by_geo_code(self, code):
+        """
+        StateInCountry.objects.get_by_geo_code("ES-AN")
+        """
+        return self.get(geo_loc_state_cod=code)
+
 
 class StateInCountry(models.Model):
     state_name = models.CharField(max_length=80)
+    geo_loc_state_cod = models.CharField(
+        max_length=10, null=True, blank=True, help_text="Geographic code of the CCAA"
+    )
     apps_name = models.CharField(max_length=40, null=True)
 
     class Meta:
@@ -23,6 +32,9 @@ class StateInCountry(models.Model):
 
     def get_state_name(self):
         return "%s" % (self.state_name)
+
+    def get_geo_loc_state_cod(self):
+        return "%s" % (self.geo_loc_state_cod)
 
     def get_state_id(self):
         return "%s" % (self.pk)
@@ -55,7 +67,8 @@ class CityManager(models.Manager):
             state_obj = None
         new_city = self.create(
             belongs_to_state=state_obj,
-            city_name=data["cityName"],
+            city_name=data["city_name"],
+            geo_loc_city_cod=data.get("geo_loc_city_cod"),
             geo_loc_latitude=data["latitude"],
             geo_loc_longitude=data["longitude"],
             apps_name=data["apps_name"],
@@ -68,6 +81,7 @@ class City(models.Model):
         StateInCountry, on_delete=models.CASCADE, null=True, blank=True
     )
     city_name = models.CharField(max_length=80)
+    geo_loc_city_cod = models.CharField(max_length=10, null=True, blank=True)
     geo_loc_latitude = models.CharField(max_length=80)
     geo_loc_longitude = models.CharField(max_length=80)
     apps_name = models.CharField(max_length=40, null=True)
@@ -84,6 +98,9 @@ class City(models.Model):
     def get_city_id(self):
         return "%s" % (self.pk)
 
+    def get_geo_loc_city_cod(self):
+        return self.geo_loc_city_cod or ""
+
     def get_coordenates(self):
         return {"latitude": self.geo_loc_latitude, "longitude": self.geo_loc_longitude}
 
@@ -99,12 +116,21 @@ class LabRequestManager(models.Manager):
     def create_lab_request(self, data):
         city_obj = City.objects.filter(pk__exact=data["city"]).last()
         new_lab_request = self.create(
-            lab_name=data["labName"],
-            lab_name_coding=data["labNameCoding"],
-            lab_unit=data["labUnit"],
-            lab_contact_name=data["labContactName"],
-            lab_phone=data["labPhone"],
-            lab_email=data["labEmail"],
+            lab_name=data["lab_name"],
+            lab_name_coding=data["lab_name_coding"],
+            lab_code_1=data.get("lab_code_1"),
+            lab_code_2=data.get("lab_code_2"),
+            lab_geo_loc_latitude=data.get("lab_geo_loc_latitude"),
+            lab_geo_loc_longitude=data.get("lab_geo_loc_longitude"),
+            lab_unit=data["lab_unit"],
+            autonom_cod=data.get("autonom_cod"),
+            post_code=data.get("post_code"),
+            dep_func=data.get("dep_func"),
+            center_class_code=data.get("center_class_code"),
+            lab_function=data.get("lab_function"),
+            lab_contact_name=data["lab_contact_name"],
+            lab_phone=data["lab_phone"],
+            lab_email=data["lab_email"],
             address=data["address"],
             apps_name=data["apps_name"],
             lab_city=city_obj,
@@ -114,13 +140,28 @@ class LabRequestManager(models.Manager):
 
 class LabRequest(models.Model):
     lab_city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
-    lab_name = models.CharField(max_length=80)
+    lab_name = models.CharField(max_length=100)
     lab_name_coding = models.CharField(max_length=50)
     lab_unit = models.CharField(max_length=50)
     lab_contact_name = models.CharField(max_length=50)
     lab_phone = models.CharField(max_length=20)
     lab_email = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
+    lab_code_1 = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        unique=True,
+    )
+    lab_code_2 = models.CharField(max_length=20, null=True, blank=True)
+    autonom_cod = models.CharField(max_length=20, null=True, blank=True)
+    post_code = models.CharField(max_length=10, null=True, blank=True)
+    dep_func = models.CharField(max_length=80, null=True, blank=True)
+    center_class_code = models.CharField(max_length=20, null=True, blank=True)
+    lab_function = models.CharField(max_length=120, null=True, blank=True)
+    lab_geo_loc_latitude = models.CharField(max_length=30, null=True, blank=True)
+    lab_geo_loc_longitude = models.CharField(max_length=30, null=True, blank=True)
+
     apps_name = models.CharField(max_length=40, null=True)
 
     class Meta:
@@ -138,6 +179,12 @@ class LabRequest(models.Model):
     def get_lab_request_code(self):
         return "%s" % (self.lab_name_coding)
 
+    def get_lab_code_1(self):
+        return self.lab_code_1 or ""
+
+    def get_lab_code_2(self):
+        return self.lab_code_2 or ""
+
     def get_all_data(self):
         data = []
         data.append(self.lab_name)
@@ -147,6 +194,8 @@ class LabRequest(models.Model):
         data.append(self.lab_phone)
         data.append(self.lab_email)
         data.append(self.address)
+        data.append(self.lab_code_1)
+        data.append(self.lab_code_2)
         return data
 
     def get_fields_and_data(self):
@@ -278,6 +327,7 @@ class ProtocolParametersManager(models.Manager):
             parameter_min_value=prot_param_data["Min Value"],
             parameter_option_values=prot_param_data["Option Values"],
             parameter_type=prot_param_data["Parameter Type"],
+            parameter_download=prot_param_data["Downloadable"],
         )
         return new_prot_parameter
 
@@ -292,6 +342,7 @@ class ProtocolParameters(models.Model):
     parameter_option_values = models.CharField(max_length=400, null=True, blank=True)
     parameter_max_value = models.CharField(max_length=50, null=True, blank=True)
     parameter_min_value = models.CharField(max_length=50, null=True, blank=True)
+    parameter_download = models.BooleanField(default=False, null=True, blank=True)
 
     class Meta:
         db_table = "core_protocol_parameters"
@@ -312,10 +363,19 @@ class ProtocolParameters(models.Model):
         return "%s" % (self.parameter_type)
 
     def get_all_parameter_info(self):
+        if self.parameter_used:
+            used = "true"
+        else:
+            used = "false"
+        if self.parameter_download:
+            download = "true"
+        else:
+            download = "false"
         param_info = []
         param_info.append(self.parameter_name)
         param_info.append(self.parameter_order)
-        param_info.append(self.parameter_used)
+        param_info.append(used)
+        param_info.append(download)
         param_info.append(self.parameter_type)
         param_info.append(self.parameter_option_values)
         param_info.append(self.parameter_min_value)
@@ -328,17 +388,23 @@ class ProtocolParameters(models.Model):
             used = "true"
         else:
             used = "false"
+        if self.parameter_download:
+            download = "true"
+        else:
+            download = "false"
         if self.parameter_option_values is None:
             parameter_option_values = ""
         else:
             parameter_option_values = self.parameter_option_values
         field_data = []
         field_data.append(self.parameter_name)
-
         field_data.append(self.parameter_order)
         field_data.append(used)
+        field_data.append(download)
         field_data.append(self.parameter_type)
         field_data.append(parameter_option_values)
+        field_data.append(self.parameter_min_value)
+        field_data.append(self.parameter_max_value)
         field_data.append(self.parameter_description)
         return field_data
 
@@ -347,8 +413,11 @@ class ProtocolParameters(models.Model):
         self.parameter_description = prot_param_data["Description"]
         self.parameter_order = prot_param_data["Order"]
         self.parameter_used = prot_param_data["Used"]
+        self.parameter_download = prot_param_data["Downloadable"]
         self.parameter_option_values = prot_param_data["Option Values"]
         self.parameter_type = prot_param_data["Parameter Type"]
+        self.parameter_max_value = prot_param_data["Max Value"]
+        self.parameter_min_value = prot_param_data["Min Value"]
         self.save()
 
     objects = ProtocolParametersManager()
@@ -372,6 +441,7 @@ class StatesForSample(models.Model):
 
 class StatesForMolecule(models.Model):
     molecule_state_name = models.CharField(max_length=50)
+    molecule_state_display = models.CharField(max_length=80, null=True, blank=True)
 
     class Meta:
         db_table = "core_states_for_molecule"
@@ -928,7 +998,7 @@ class SampleProjectsFieldsManager(models.Manager):
             sample_project_field_order=project_field_data["Order"],
             sample_project_field_used=project_field_data["Used"],
             sample_project_field_type=project_field_data["Field type"],
-            sample_project_searchable=project_field_data["Searchable"],
+            sample_project_downloadable=project_field_data.get("Downloadable", False),
             # do not include optional values. Set to empty
             sample_project_option_list="",
         )
@@ -957,7 +1027,7 @@ class SampleProjectsFields(models.Model):
     sample_project_field_used = models.BooleanField()
     sample_project_field_type = models.CharField(max_length=20)
     sample_project_option_list = models.CharField(max_length=255, null=True, blank=True)
-    sample_project_searchable = models.BooleanField(default=False)
+    sample_project_downloadable = models.BooleanField(default=False)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1005,7 +1075,7 @@ class SampleProjectsFields(models.Model):
             used = "true"
         else:
             used = "false"
-        if self.sample_project_searchable:
+        if self.sample_project_downloadable:
             searchable = "true"
         else:
             searchable = "false"
@@ -1035,7 +1105,7 @@ class SampleProjectsFields(models.Model):
         self.sample_project_field_order = project_field_data["Order"]
         self.sample_project_field_used = project_field_data["Used"]
         self.sample_project_field_type = project_field_data["Field type"]
-        self.sample_project_searchable = project_field_data["Searchable"]
+        self.sample_project_downloadable = project_field_data["Downloadable"]
         self.sample_project_field_classification_id = project_field_data[
             "SampleProjectFieldClassificationID"
         ]
@@ -1286,7 +1356,7 @@ class Samples(models.Model):
         sample_info.append(self.sample_type.get_name())
         try:
             sample_info.append(self.species.get_name())
-        except KeyError:
+        except (KeyError, AttributeError):
             sample_info.append("Not defined")
         return sample_info
 
@@ -1307,7 +1377,10 @@ class Samples(models.Model):
         sample_info.append(collection_sample_date)
         sample_info.append(sample_entry_date)
         sample_info.append(self.sample_type.get_name())
-        sample_info.append(self.species.get_name())
+        try:
+            sample_info.append(self.species.get_name())
+        except (KeyError, AttributeError):
+            sample_info.append("Not defined")
         sample_info.append(self.reused_number)
         sample_info.append(self.sample_user.username)
         return sample_info
@@ -1376,7 +1449,11 @@ class Samples(models.Model):
         return "%s" % (self.sample_type.get_name())
 
     def get_species(self):
-        return "%s" % (self.species.get_name())
+        try:
+            species = self.species.get_name()
+        except (KeyError, AttributeError):
+            species = "Not defined"
+        return "%s" % (species)
 
     def get_register_user(self):
         if self.sample_user is None:
@@ -1465,7 +1542,7 @@ class MoleculeUsedFor(models.Model):
     massive_use = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "core_molecule_used_for"
+        db_table = "core_sample_continues_on"
 
     def __str__(self):
         return "%s" % (self.used_for)
@@ -1481,6 +1558,7 @@ class MoleculeUsedFor(models.Model):
 
 class MoleculePreparationManager(models.Manager):
     def create_molecule(self, molecule_data):
+        req_upd_sample_state = False
         molecule_used_obj = MoleculeType.objects.filter(
             molecule_type__exact=molecule_data["molecule_type"]
         ).last()
@@ -1491,17 +1569,27 @@ class MoleculePreparationManager(models.Manager):
         protocol_used_obj = Protocols.objects.filter(
             name__exact=molecule_data["protocol_used"], type__exact=protocol_type_obj
         ).last()
+        if ProtocolParameters.objects.filter(protocol_id=protocol_used_obj).exists():
+            m_state = StatesForMolecule.objects.get(
+                molecule_state_name__exact="defined"
+            )
+        else:
+            m_state = StatesForMolecule.objects.get(
+                molecule_state_name__exact="assigned_parameters"
+            )
+            req_upd_sample_state = True
         new_molecule = self.create(
             protocol_used=protocol_used_obj,
             sample=molecule_data["sample"],
             molecule_type=molecule_used_obj,
-            state=StatesForMolecule.objects.get(molecule_state_name__exact="Defined"),
+            state=m_state,
             molecule_code_id=molecule_data["molecule_code_id"],
             molecule_extraction_date=molecule_data["molecule_extraction_date"],
             extraction_type=molecule_data["extraction_type"],
             molecule_user=User.objects.get(username__exact=molecule_data["user"]),
         )
-
+        if req_upd_sample_state is True:
+            new_molecule.sample.set_state("Pending for use")
         return new_molecule
 
 
@@ -1518,7 +1606,7 @@ class MoleculePreparation(models.Model):
         UserLotCommercialKits, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    molecule_used_for = models.ForeignKey(
+    sample_continues_on = models.ForeignKey(
         MoleculeUsedFor, on_delete=models.CASCADE, null=True, blank=True
     )
 
@@ -1543,10 +1631,10 @@ class MoleculePreparation(models.Model):
         molecule_info.append(extraction_date)
         molecule_info.append(self.extraction_type)
         molecule_info.append(self.molecule_type.get_name())
-        if self.molecule_used_for is None:
+        if self.sample_continues_on is None:
             molecule_info.append("Not defined yet")
         else:
-            molecule_info.append(self.molecule_used_for.get_molecule_use_name())
+            molecule_info.append(self.sample_continues_on.get_molecule_use_name())
         molecule_info.append(self.protocol_used.get_name())
         molecule_info.append(self.reused_number)
         return molecule_info
@@ -1590,10 +1678,10 @@ class MoleculePreparation(models.Model):
         return self.user_lot_kit_id
 
     def set_molecule_use(self, use_for_molecule, app_name):
-        self.molecule_used_for_obj = MoleculeUsedFor.objects.filter(
+        self.sample_continues_on_obj = MoleculeUsedFor.objects.filter(
             used_for__exact=use_for_molecule, apps_name__exact=app_name
         ).last()
-        self.used_for_massive_sequencing = self.molecule_used_for_obj.get_massive()
+        self.used_for_massive_sequencing = self.sample_continues_on_obj.get_massive()
         self.save()
         return self
 
@@ -1703,7 +1791,7 @@ class SequencerInLabManager(models.Manager):
             platform_obj = SequencingPlatform.objects.get(
                 pk__exact=sequencer_value["platformID"]
             )
-        except models.SequencingPlatform.DoesNotExist:
+        except SequencingPlatform.DoesNotExist:
             platform_obj = None
         new_sequencer = self.create(
             platform_id=platform_obj,

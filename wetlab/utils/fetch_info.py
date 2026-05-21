@@ -206,15 +206,15 @@ def graphics_state(state):
         the index value of g_value and g_color [index]
     """
     state_list = [
-        "Error",
-        "Recorded",
-        "Sample Sent",
-        "Processing Run",
-        "Processed Run",
-        "Processing Bcl2fastq",
-        "Processed Bcl2fastq",
-        "Completed",
-        "Cancelled",
+        "error",
+        "recorded",
+        "sample_sent",
+        "processing_run",
+        "processed_run",
+        "processing_bcl2fastq",
+        "processed_bcl2fastq",
+        "completed",
+        "cancelled",
     ]
     g_value = [10, 15, 30, 45, 60, 75, 90, 100, 10]
     g_color = [
@@ -276,10 +276,18 @@ def get_run_graphics(run_object):
     ]
 
     for index_graph in range(len(graphics)):
+        graphic_relative_path = os.path.join(folder_graphic, graphics[index_graph])
+        graphic_absolute_path = os.path.join(
+            settings.MEDIA_ROOT,
+            wetlab.config.RUN_IMAGES_DIRECTORY,
+            run_graphics_object.get_folder_graphic(),
+            graphics[index_graph],
+        )
         run_graphics.append(
             [
                 graphic_text[index_graph],
-                os.path.join(folder_graphic, graphics[index_graph]),
+                graphic_relative_path,
+                os.path.exists(graphic_absolute_path),
             ]
         )
     return run_graphics
@@ -512,7 +520,7 @@ def get_information_for_incompleted_run():
     """
     Description:
         The function will get the information from the runs that are incompleted.
-        It creates a 4 groups. Recorded, Error, Canceled and rest of the states.
+        It creates a 4 groups. recorded, Error, Canceled and rest of the states.
         Creates a pie graphic
     Functions:
         graphic_3D_pie      # located at wetlab/utils/stats_graphics
@@ -522,11 +530,11 @@ def get_information_for_incompleted_run():
     run_information = {}
     today = datetime.today().date()
     if wetlab.models.RunProcess.objects.filter(
-        state__run_state_name="Recorded"
+        state__run_state_name="recorded"
     ).exists():
         run_information["recorded"] = []
         run_objs = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name="Recorded"
+            state__run_state_name="recorded"
         ).order_by("run_name")
         for run_obj in run_objs:
             data = []
@@ -537,10 +545,10 @@ def get_information_for_incompleted_run():
             data.append(str((today - recorded_date).days))
             run_information["recorded"].append(data)
 
-    if wetlab.models.RunProcess.objects.filter(state__run_state_name="Error").exists():
+    if wetlab.models.RunProcess.objects.filter(state__run_state_name="error").exists():
         run_information["error"] = []
         run_objs = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name="Error"
+            state__run_state_name="error"
         ).order_by("run_name")
         for run_obj in run_objs:
             data = []
@@ -557,11 +565,11 @@ def get_information_for_incompleted_run():
             run_information["error"].append(data)
 
     if wetlab.models.RunProcess.objects.filter(
-        state__run_state_name="Cancelled"
+        state__run_state_name="cancelled"
     ).exists():
         run_information["cancelled"] = []
         run_objs = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name="Cancelled"
+            state__run_state_name="cancelled"
         ).order_by("run_name")
         for run_obj in run_objs:
             data = []
@@ -577,7 +585,7 @@ def get_information_for_incompleted_run():
             data.append(str((today - run_date).days))
             run_information["cancelled"].append(data)
 
-    exclude_state = ["Recorded", "Error", "Cancelled", "Completed", "Pre-Recorded"]
+    exclude_state = ["recorded", "error", "cancelled", "completed", "pre_recorded"]
 
     if (
         wetlab.models.RunProcess.objects.all()
@@ -612,11 +620,11 @@ def get_information_for_incompleted_run():
         "Incomplete Runs", "", "", "", "fint", runs_in_state
     )
 
-    run_information[
-        "incompleted_graphic"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "pie3d", "ex1", "550", "400", "chart-1", "json", data_source
-    ).render()
+    run_information["incompleted_graphic"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "pie3d", "ex1", "550", "400", "chart-1", "json", data_source
+        ).render()
+    )
     return run_information
 
 
@@ -677,7 +685,7 @@ def get_information_run(run_object):
         "Processing Demultiplexing",
         "Processing test",
         "None",
-        "Pre-Recorded",
+        "pre_recorded",
         "Processing Metrics",
     ]
     if run_state in no_valid_information:
@@ -685,7 +693,7 @@ def get_information_run(run_object):
         return info_dict
 
     # allow to change the run name in case that run state was recorded or Sample Sent
-    if run_state == "Recorded" or run_state == "Sample Sent":
+    if run_state == "recorded" or run_state == "Sample Sent":
         info_dict["change_run_name"] = [
             [run_object.get_run_name(), run_object.get_run_id()]
         ]
@@ -728,8 +736,8 @@ def get_information_run(run_object):
             run_object.get_run_id(),
         ]
 
-    if run_state == "Cancelled":
-        run_state = "Sample Sent"
+    if run_state == "cancelled":
+        run_state = "sample_sent"
         info_dict["cancel_run"] = [
             run_object.get_run_name(),
             run_state,
@@ -856,11 +864,17 @@ def get_information_run(run_object):
         data_source = wetlab.utils.stats_graphs.column_graphic_simple(
             heading, sub_caption, x_axis_name, y_axis_name, theme, percent_projects
         )
-        info_dict[
-            "run_project_comparation"
-        ] = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d", "column1", "600", "400", "column_chart1", "json", data_source
-        ).render()
+        info_dict["run_project_comparation"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d",
+                "column1",
+                "600",
+                "400",
+                "column_chart1",
+                "json",
+                data_source,
+            ).render()
+        )
 
         fl_data_display = []
 
@@ -1022,9 +1036,9 @@ def get_information_project(project_id, request):
             fl_summary_obj = wetlab.models.StatsFlSummary.objects.filter(
                 project_id__exact=project_id, runprocess_id=run_obj
             ).last()
-            project_info_dict[
-                "fl_summary_heading"
-            ] = wetlab.config.HEADING_SINGLE_PROJECT_FL_SUMMARY
+            project_info_dict["fl_summary_heading"] = (
+                wetlab.config.HEADING_SINGLE_PROJECT_FL_SUMMARY
+            )
             # fl_data_display.append(fl_list)
             project_info_dict["fl_summary_data"] = fl_summary_obj.get_fl_summary()
 
@@ -1035,9 +1049,9 @@ def get_information_project(project_id, request):
             lane_summary_obj = wetlab.models.StatsLaneSummary.objects.filter(
                 project_id__exact=project_id, runprocess_id=run_obj
             )
-            project_info_dict[
-                "lane_summary_heading"
-            ] = wetlab.config.HEADING_SINGLE_PROJECT_STATS_LANE
+            project_info_dict["lane_summary_heading"] = (
+                wetlab.config.HEADING_SINGLE_PROJECT_STATS_LANE
+            )
             project_info_dict["lane_summary_data"] = []
             for lane_sum in lane_summary_obj:
                 project_info_dict["lane_summary_data"].append(
@@ -1051,9 +1065,9 @@ def get_information_project(project_id, request):
             sample_objs = wetlab.models.SamplesInProject.objects.filter(
                 project_id__exact=project_id, run_process_id=run_obj
             )
-            project_info_dict[
-                "sample_heading"
-            ] = wetlab.config.HEADING_SINGLE_PROJECT_SAMPLES
+            project_info_dict["sample_heading"] = (
+                wetlab.config.HEADING_SINGLE_PROJECT_SAMPLES
+            )
             project_info_dict["sample_data"] = []
             for sample_obj in sample_objs:
                 project_info_dict["sample_data"].append(
@@ -1201,12 +1215,12 @@ def get_sequencers_run_from_time_interval(sequencer, start_date, end_date):
                 used_sequencer=sequencer_obj, run_date__range=(start_date, end_date)
             )
             query_completed = run_objs_found.filter(
-                state__run_state_name__exact="Completed"
+                state__run_state_name__exact="completed"
             )
             for item in query_completed:
                 runs_using_sequencer["completed_run_objs"].append(item)
             query_not_completed = run_objs_found.exclude(
-                state__run_state_name__exact="Completed"
+                state__run_state_name__exact="completed"
             )
             for item in query_not_completed:
                 runs_using_sequencer["not_completed_run_objs"].append(item)
@@ -1294,9 +1308,9 @@ def get_stats_sequencer_data_from_selected_runs(
     sequencer_data["sequencer_name"] = sequencer
     sequencer_data["run_completed"] = []
     sequencer_data["not_run_completed"] = []
-    sequencer_data[
-        "run_name_heading"
-    ] = wetlab.config.HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+    sequencer_data["run_name_heading"] = (
+        wetlab.config.HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+    )
     # get the run completed and not completed for the sequencer
     for run_in_seq in runs_using_sequencer["completed_run_objs"]:
         sequencer_data["run_completed"].append(
@@ -1355,28 +1369,28 @@ def get_stats_sequencer_data_from_selected_runs(
     data_source = wetlab.utils.stats_graphs.column_graphic_tupla(
         heading, "", "", "Number of Runs", "ocean", run_time_tupla, None
     )
-    sequencer_data[
-        "sequencer_runs_per_month_graph"
-    ] = core.fusioncharts.fusioncharts.FusionCharts(
-        "column3d",
-        "run_per_month_graph",
-        "500",
-        "400",
-        "chart_seq_month",
-        "json",
-        data_source,
-    ).render()
+    sequencer_data["sequencer_runs_per_month_graph"] = (
+        core.fusioncharts.fusioncharts.FusionCharts(
+            "column3d",
+            "run_per_month_graph",
+            "500",
+            "400",
+            "chart_seq_month",
+            "json",
+            data_source,
+        ).render()
+    )
 
     # get the data for run executed in other sequencers per months
     if (
         wetlab.models.RunProcess.objects.filter(
-            state__run_state_name__exact="Completed"
+            state__run_state_name__exact="completed"
         )
         .exclude(used_sequencer__sequencer_name__exact=sequencer)
         .exists()
     ):
         runs_in_other_sequencers = wetlab.models.RunProcess.objects.filter(
-            state__run_state_name__exact="Completed"
+            state__run_state_name__exact="completed"
         ).exclude(used_sequencer__sequencer_name__exact=sequencer)
         run_time_dict = {}
         for run_in_other_seq in runs_in_other_sequencers:
@@ -1392,16 +1406,16 @@ def get_stats_sequencer_data_from_selected_runs(
         data_source = wetlab.utils.stats_graphs.column_graphic_tupla(
             heading, "", "", "Number of Runs", "fint", run_time_tupla, None
         )
-        sequencer_data[
-            "other_sequencers_runs_per_month_graph"
-        ] = core.fusioncharts.fusioncharts.FusionCharts(
-            "column3d",
-            "other_run_per_month_graph",
-            "500",
-            "400",
-            "chart_other_seq_month",
-            "json",
-            data_source,
-        ).render()
+        sequencer_data["other_sequencers_runs_per_month_graph"] = (
+            core.fusioncharts.fusioncharts.FusionCharts(
+                "column3d",
+                "other_run_per_month_graph",
+                "500",
+                "400",
+                "chart_other_seq_month",
+                "json",
+                data_source,
+            ).render()
+        )
 
     return sequencer_data

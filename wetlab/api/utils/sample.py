@@ -1,12 +1,20 @@
 from datetime import datetime
+from collections import defaultdict
 
+from django.db.models import Count
 import core.models
 import core.utils.samples
+import core.core_config
 import wetlab.api.serializers
 import wetlab.config
 
 
-def create_state(state, apps_name):
+def create_state_if_not_exists(state, apps_name):
+    # Check if state is defined in database
+    if core.models.StateInCountry.objects.filter(state_name__iexact=state).exists():
+        return core.models.StateInCountry.objects.filter(
+            state_name__iexact=state
+        ).last()
     """Create state instance"""
     data = {"state": state, "apps_name": apps_name}
     return core.models.StateInCountry.objects.create_new_state(data)
@@ -14,7 +22,9 @@ def create_state(state, apps_name):
 
 def create_city(data, apps_name):
     """Create a City instance"""
-    data["state"] = create_state(data["geo_loc_state"], apps_name).get_state_id()
+    data["state"] = create_state_if_not_exists(
+        data["geo_loc_state"], apps_name
+    ).get_state_id()
     data["city_name"] = data["geo_loc_city"]
     data["latitude"] = data["geo_loc_latitude"]
     data["longitude"] = data["geo_loc_longitude"]
@@ -25,7 +35,7 @@ def create_city(data, apps_name):
 def create_new_laboratory(lab_data):
     """Create new laboratory instance with the data collected in the request"""
     if core.models.City.objects.filter(
-        city_name__exact=lab_data["geo_loc_city"]
+        city_name__iexact=lab_data["geo_loc_city"]
     ).exists():
         city_id = (
             core.models.City.objects.filter(city_name__exact=lab_data["geo_loc_city"])
@@ -34,17 +44,17 @@ def create_new_laboratory(lab_data):
         )
     else:
         if core.models.StateInCountry.objects.filter(
-            state_name__exact=lab_data["geo_loc_state"]
+            state_name__iexact=lab_data["geo_loc_state"]
         ).exists():
             lab_data["state"] = (
                 core.models.StateInCountry.objects.filter(
-                    state_name__exact=lab_data["geo_loc_state"]
+                    state_name__iexact=lab_data["geo_loc_state"]
                 )
                 .last()
                 .get_state_id()
             )
         else:
-            lab_data["state"] = create_state(
+            lab_data["state"] = create_state_if_not_exists(
                 lab_data["geo_loc_state"], lab_data["apps_name"]
             ).get_state_id()
         city_id = create_city(lab_data, lab_data["apps_name"]).get_city_id()
@@ -60,7 +70,9 @@ def create_new_sample_type(sample_type, apps_name):
     data["optional_fields"] = "0,8"
     data["apps_name"] = apps_name
     data["sample_type"] = sample_type
-    sample_type_serializers = core.models.CreateSampleTypeSerializer(data=data)
+    sample_type_serializers = wetlab.api.serializers.CreateSampleTypeSerializer(
+        data=data
+    )
     if sample_type_serializers.is_valid():
         sample_type_obj = sample_type_serializers.save()
         return sample_type_obj
@@ -75,7 +87,7 @@ def get_sample_fields(apps_name):
         "Type of Sample": {"field_name": "sample_type"},
         "Species": {"field_name": "species"},
         "Project/Service": {"field_name": "sample_project"},
-        "Date sample reception": {"field_name": "smple_entry_date"},
+        "Date sample reception": {"field_name": "sample_entry_date"},
         "Collection Sample Date": {"field_name": "collection_sample_date"},
         "Sample Storage": {"field_name": "sample_location"},
         "Only recorded": {"field_name": "only_recorded"},
@@ -136,7 +148,7 @@ def get_sample_project_obj(project_name):
 
 def include_instances_in_sample(data, lab_data, apps_name):
     """Collect the instances before creating the sample instance
-    If laboratory will be created if it is not defined
+    Define laboratory if not defined yet
     """
     if core.models.LabRequest.objects.filter(
         lab_name__iexact=data["lab_request"]
@@ -344,31 +356,15 @@ def split_sample_data(data):
     lab_data["lab_unit"] = ""
     lab_data["lab_contact_name"] = ""
     lab_data["lab_phone"] = ""
-    lab_data_fields = [
-        ("lab_email", "collecting_institution_email"),
-        ("address", "collecting_institution_address"),
-        ("geo_loc_city", "geo_loc_city"),
-        ("geo_loc_state", "geo_loc_state"),
-        ("geo_loc_latitude", "geo_loc_latitude"),
-        ("geo_loc_longitude", "geo_loc_longitude"),
-    ]
+    lab_req_mapping = core.core_config.LAB_REQUEST_ONTOLOGY_MAP
+    lab_data_fields = lab_req_mapping.values()
     for l_data, i_data in lab_data_fields:
         try:
             lab_data[l_data] = data[i_data]
         except KeyError:
-            lab_data[l_data] = ""
-
-    """
-    lab_data["lab_email"] = data["collecting_institution_email"]
-    lab_data["address"] = data["collecting_institution_address"]
-    lab_data["geo_loc_city"] = data["geo_loc_city"]
-    lab_data["geo_loc_state"] = data["geo_loc_state"]
-    lab_data["geo_loc_latitude"] = data["geo_loc_latitude"]
-    lab_data["geo_loc_longitude"] = data["geo_loc_longitude"]
-    """
+            lab_data[l_data] = data.get(l_data, "")
 
     split_data["lab_data"] = lab_data
-
     return split_data
 
 
@@ -486,22 +482,22 @@ def summarize_samples(data):
                         .distinct()
                     )
                     for f_value in f_values:
-                        summarize["parameters"][p_name][
-                            f_value
-                        ] = core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_project_field_id=s_project_field_obj,
-                            sample_project_field_value__exact=f_value,
-                            sample_id__sample_name__in=sample_list,
-                        ).count()
+                        summarize["parameters"][p_name][f_value] = (
+                            core.models.SampleProjectsFieldsValue.objects.filter(
+                                sample_project_field_id=s_project_field_obj,
+                                sample_project_field_value__exact=f_value,
+                                sample_id__sample_name__in=sample_list,
+                            ).count()
+                        )
                 else:
                     summarize["parameters"][p_name]["value"] = 0
             else:
-                summarize["parameters"][p_name][
-                    "value"
-                ] = core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id=s_project_field_obj,
-                    sample_id__sample_name__in=sample_list,
-                ).count()
+                summarize["parameters"][p_name]["value"] = (
+                    core.models.SampleProjectsFieldsValue.objects.filter(
+                        sample_project_field_id=s_project_field_obj,
+                        sample_id__sample_name__in=sample_list,
+                    ).count()
+                )
             summarize["parameters"][p_name][
                 "classification"
             ] = s_project_field_obj.get_classification_name()
@@ -526,62 +522,45 @@ def collect_statistics_information(data):
 
             if len(query_params) > 2:
                 return {"ERROR": ""}
-            stats_data = {}
-            par1_values = (
-                core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id__sample_projects_id=s_project_obj,
+            base_values = core.models.SampleProjectsFieldsValue.objects.filter(
+                sample_project_field_id__sample_projects_id=s_project_obj
+            )
+            if len(query_params) == 2:
+                par1_rows = base_values.filter(
                     sample_project_field_id__sample_project_field_name__iexact=query_params[
                         0
-                    ],
-                )
-                .values_list("sample_project_field_value", flat=True)
-                .distinct()
-            )
+                    ]
+                ).values_list("sample_id", "sample_project_field_value")
+                par2_rows = base_values.filter(
+                    sample_project_field_id__sample_project_field_name__iexact=query_params[
+                        1
+                    ]
+                ).values_list("sample_id", "sample_project_field_value")
 
-            if len(query_params) == 2:
-                for par1_val in par1_values:
-                    stats_data[par1_val] = {}
+                par1_by_sample = defaultdict(list)
+                for sample_id, par1_val in par1_rows:
+                    par1_by_sample[sample_id].append(par1_val)
 
-                    samples = core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id__sample_projects_id=s_project_obj,
-                        sample_project_field_id__sample_project_field_name__iexact=query_params[
-                            0
-                        ],
-                        sample_project_field_value__exact=par1_val,
-                    ).values_list("sample_id", flat=True)
-                    par2_values = (
-                        core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_id__in=samples,
-                            sample_project_field_id__sample_project_field_name__iexact=query_params[
-                                1
-                            ],
+                stats_data = defaultdict(dict)
+                for sample_id, par2_val in par2_rows:
+                    for par1_val in par1_by_sample.get(sample_id, []):
+                        stats_data[par1_val][par2_val] = (
+                            stats_data[par1_val].get(par2_val, 0) + 1
                         )
-                        .values_list("sample_project_field_value", flat=True)
-                        .distinct()
-                    )
-                    for par2_val in par2_values:
-                        value = core.models.SampleProjectsFieldsValue.objects.filter(
-                            sample_id__in=samples,
-                            sample_project_field_id__sample_project_field_name=query_params[
-                                1
-                            ],
-                            sample_project_field_value__exact=par2_val,
-                        ).count()
-                        if value > 0:
-                            stats_data[par1_val][par2_val] = value
-            else:
-                for par1_val in par1_values:
-                    stats_data[
-                        par1_val
-                    ] = core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id__sample_projects_id=s_project_obj,
-                        sample_project_field_id__sample_project_field_name__iexact=query_params[
-                            0
-                        ],
-                        sample_project_field_value=par1_val,
-                    ).count()
+                return dict(stats_data)
 
-            return stats_data
+            counts = (
+                base_values.filter(
+                    sample_project_field_id__sample_project_field_name__iexact=query_params[
+                        0
+                    ]
+                )
+                .values("sample_project_field_value")
+                .annotate(count=Count("id"))
+            )
+            return {
+                item["sample_project_field_value"]: item["count"] for item in counts
+            }
         else:  # Collect info stats for all fields
             # Collect the fields utilization for sample projects
             stats_data = {
@@ -597,21 +576,30 @@ def collect_statistics_information(data):
             s_project_field_objs = core.models.SampleProjectsFields.objects.filter(
                 sample_projects_id=s_project_obj
             )
+            field_ids = list(s_project_field_objs.values_list("id", flat=True))
+            total_counts = dict(
+                core.models.SampleProjectsFieldsValue.objects.filter(
+                    sample_project_field_id__in=field_ids
+                )
+                .values_list("sample_project_field_id")
+                .annotate(total=Count("id"))
+            )
+            not_none_counts = dict(
+                core.models.SampleProjectsFieldsValue.objects.filter(
+                    sample_project_field_id__in=field_ids
+                )
+                .exclude(sample_project_field_value__in=["None", ""])
+                .values_list("sample_project_field_id")
+                .annotate(total=Count("id"))
+            )
             for s_project_field_obj in s_project_field_objs:
                 f_name = s_project_field_obj.get_field_name()
-                if not core.models.SampleProjectsFieldsValue.objects.filter(
-                    sample_project_field_id=s_project_field_obj
-                ).exists():
+                total_count = total_counts.get(s_project_field_obj.pk, 0)
+                if total_count == 0:
                     stats_data["never_used"].append(f_name)
                     stats_data["fields_value"][f_name] = 0
                     continue
-                count_not_none = (
-                    core.models.SampleProjectsFieldsValue.objects.filter(
-                        sample_project_field_id=s_project_field_obj
-                    )
-                    .exclude(sample_project_field_value__in=["None", ""])
-                    .count()
-                )
+                count_not_none = not_none_counts.get(s_project_field_obj.pk, 0)
                 stats_data["fields_value"][f_name] = count_not_none
                 if count_not_none == 0:
                     stats_data["always_none"].append(f_name)

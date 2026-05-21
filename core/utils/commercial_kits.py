@@ -137,14 +137,14 @@ def get_commercial_kit_basic_data(kit_obj):
     kit_data = {}
     if kit_obj.platform_kit_obj():
         kit_data["data"] = kit_obj.get_commercial_platform_basic_data()
-        kit_data[
-            "heading"
-        ] = core.core_config.HEADING_FOR_NEW_SAVED_COMMERCIAL_PLATFORM_KIT
+        kit_data["heading"] = (
+            core.core_config.HEADING_FOR_NEW_SAVED_COMMERCIAL_PLATFORM_KIT
+        )
     else:
         kit_data["data"] = kit_obj.get_commercial_protocol_basic_data()
-        kit_data[
-            "heading"
-        ] = core.core_config.HEADING_FOR_NEW_SAVED_COMMERCIAL_PROTOCOL_KIT
+        kit_data["heading"] = (
+            core.core_config.HEADING_FOR_NEW_SAVED_COMMERCIAL_PROTOCOL_KIT
+        )
         kit_data["protocol_kit"] = True
     return kit_data
 
@@ -259,18 +259,18 @@ def get_user_lot_kit_data(register_user_obj=None, expired=False):
     )
 
     if len(user_exp_kit_data["data"]) > 0:
-        user_exp_kit_data[
-            "heading"
-        ] = core.core_config.HEADING_FOR_USER_LOT_KIT_INVENTORY
+        user_exp_kit_data["heading"] = (
+            core.core_config.HEADING_FOR_USER_LOT_KIT_INVENTORY
+        )
     return user_exp_kit_data
 
 
 def get_lot_user_commercial_kit_basic_data(kit_obj):
     lot_kit_data = {}
     lot_kit_data["data"] = kit_obj.get_basic_data()
-    lot_kit_data[
-        "heading"
-    ] = core.core_config.HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    lot_kit_data["heading"] = (
+        core.core_config.HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    )
     return lot_kit_data
 
 
@@ -403,9 +403,9 @@ def get_molecule_lot_kit_in_sample(sample_id):
     if core.models.MoleculePreparation.objects.filter(
         sample__pk__exact=sample_id
     ).exists():
-        extraction_kits[
-            "molecule_heading_lot_kits"
-        ] = core.core_config.HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA
+        extraction_kits["molecule_heading_lot_kits"] = (
+            core.core_config.HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA
+        )
         molecule_objs = core.models.MoleculePreparation.objects.filter(
             sample__pk__exact=sample_id
         ).order_by("protocol_used")
@@ -433,18 +433,17 @@ def get_user_lot_kit_data_to_display(user_lot_kit_obj):
     """
     display_data = {}
     display_data["lot_kit_data"] = user_lot_kit_obj.get_basic_data()
-    display_data[
-        "lot_kit_heading"
-    ] = core.core_config.HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    display_data["lot_kit_heading"] = (
+        core.core_config.HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    )
     commercial_obj = user_lot_kit_obj.get_commercial_obj()
     commercial_data = commercial_obj.get_commercial_protocol_basic_data()
     commercial_data.append(commercial_obj.get_platform_name())
     commercial_data.append(commercial_obj.get_cat_number())
     display_data["commercial_data"] = [commercial_data]
-    display_data[
-        "commercial_heading"
-    ] = core.core_config.HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
-
+    display_data["commercial_heading"] = (
+        core.core_config.HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+    )
     return display_data
 
 
