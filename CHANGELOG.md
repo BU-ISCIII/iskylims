@@ -33,6 +33,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Refactored container installation flow to separate staged application install from runtime bootstrap tasks [#393](https://github.com/BU-ISCIII/iskylims/pull/393)
 - Updated Docker image build to stage application files at build time and run bootstrap tasks on container start/upgrade [#393](https://github.com/BU-ISCIII/iskylims/pull/393)
 - Replaced container cron runtime with supercronic and improved multi-container install configuration [#391](https://github.com/BU-ISCIII/iskylims/pull/391)
+- Added production container support for bind-mounted Django settings and generated Apache configuration files.
+- Added production compose environment file generation during container installation.
+- Added configurable ServerName and Apache log naming from installation settings.
+- Added dedicated Docker network configuration to the production compose file.
+- Added configuration examples for container bind mounts in installation settings templates.
 
 #### Fixes
 
@@ -77,6 +82,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed logger inconsistency that prevented exceptions and error messages from being written to the update crontab log. Closes [#390](https://github.com/BU-ISCIII/iskylims/issues/390) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
 - Fixed wetlab crontab processing for the new sequencer, including run discovery, completion checks, RunInfo/RunParameters parsing updates, and SampleSheet v2 handling. Closes [#387](https://github.com/BU-ISCIII/iskylims/issues/387) [#392](https://github.com/BU-ISCIII/iskylims/pull/392)
 - Improved Podman compatibility and adjusted SELinux bind mount handling in production compose setup [#393](https://github.com/BU-ISCIII/iskylims/pull/393)
+- Fixed production container Django settings rendering when settings are provided through bind mounts.
+- Fixed duplicate wetlab run configuration test logging.
+- Fixed wetlab run configuration tests, including run discovery and completion checks.
+- Fixed skipped wetlab run test states so they are displayed in the configuration test view.
+- Fixed Samba cron path validation in wetlab configuration checks.
+- Fixed Docker build cleanup so DNF cache cleanup only runs in the final DNF step.
 
 #### Changed
 
@@ -93,11 +104,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Refactored Docker runtime handling when path is outside repository [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Updated `docker_install.sh` to `container_install.sh` with multiple reliability improvements [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Updated upgrade scripts documentation to include execution order information and docker upgrade clarifications [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Improved wetlab API stats-info aggregation queries.
+- Improved supercronic download resilience in the Docker build.
+- Refreshed install fixtures during Docker upgrades.
+- Updated production container documentation for bind mounts and generated configuration files.
+- Normalized the Django settings bind path used by container installation.
+- Updated installation configuration templates with clearer container configuration guidance.
 
 #### Removed
 
 - Dummy fix in usage line [#271](https://github.com/BU-ISCIII/iskylims/pull/271)
 - Removed migrations from `.gitignore` and app-level `.gitignore` to ensure version control of schema changes [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
+- Removed runtime ownership fixes from container installation.
 
 #### Requirements
 
