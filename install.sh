@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP_VERSION="3.1.0dev"
+APP_VERSION="3.1.0"
 
 # usage: prints the command line help and usage examples.
 usage() {
