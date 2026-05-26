@@ -15,7 +15,7 @@ services:
       - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:ro
       - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
       - /var/log/local/iskylims/apache:/var/log/httpd:U
-      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:ro
+      - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static:ro
     networks:
       - iskylims_net
 
@@ -31,7 +31,7 @@ services:
         APP_UID: ${APP_UID:-1212}
         APP_GID: ${APP_GID:-1212}
         APP_SHELL: ${APP_SHELL:-/sbin/nologin}
-        APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+        INSTALL_PATH: ${INSTALL_PATH:-/opt/iskylims}
     expose:
       - "${APP_PORT:-8001}"
     environment:
@@ -44,15 +44,15 @@ services:
       GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
       GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-300}
       GUNICORN_KEEPALIVE: ${GUNICORN_KEEPALIVE:-5}
-      APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+      INSTALL_PATH: ${INSTALL_PATH:-/opt/iskylims}
     user: "${APP_UID:-1005}:${APP_GID:-1005}"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /var/log/local/iskylims/apps/:${APP_INSTALL_PATH:-/opt/iskylims}/logs:U
-      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${APP_INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py:U
-      - iskylims_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents
-      - iskylims_static:${APP_INSTALL_PATH:-/opt/iskylims}/static
+      - /var/log/local/iskylims/apps/:${INSTALL_PATH:-/opt/iskylims}/logs:U
+      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py:U
+      - iskylims_documents:${INSTALL_PATH:-/opt/iskylims}/documents
+      - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

@@ -235,7 +235,7 @@ normalize_settings_bind_path() {
     local value="$1"
 
     if [ -z "$value" ]; then
-        echo "$app_install_path/iskylims/settings.py"
+        echo "$install_path/iskylims/settings.py"
         return 0
     fi
 
@@ -256,7 +256,7 @@ render_apache_config() {
     sed \
         -e "s|__ISKYLIMS_SERVER_NAME__|$apache_server_name|g" \
         -e "s|__ISKYLIMS_LOG_NAME__|$apache_log_name|g" \
-        -e "s|__APP_INSTALL_PATH__|$app_install_path|g" \
+        -e "s|__INSTALL_PATH__|$install_path|g" \
         -e "s|__APP_PORT__|$app_port|g" \
         -e "s|__GUNICORN_TIMEOUT__|$gunicorn_timeout|g" \
         "$src" > "$tmp_file"
@@ -509,7 +509,7 @@ write_compose_env_file() {
 INSTALL_TYPE=dep
 GIT_REVISION=$git_revision
 INSTALL_CONF=$install_conf_container
-APP_INSTALL_PATH=$app_install_path
+INSTALL_PATH=$install_path
 APACHE_CONF_PATH=$apache_conf_path
 DJANGO_SETTINGS_PATH=$django_settings_path
 APP_UID=$app_uid
@@ -539,12 +539,11 @@ set_engine
 
 app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
 config_install_path="$(read_install_conf_value "INSTALL_PATH" "$host_install_conf_path")"
-config_app_install_path="$(read_install_conf_value "APP_INSTALL_PATH" "$host_install_conf_path")"
-app_install_path="${APP_INSTALL_PATH:-${config_app_install_path:-${config_install_path:-/opt/iskylims}}}"
+install_path="${config_install_path:-/opt/iskylims}"
 config_apache_conf_path="$(read_install_conf_value "APACHE_CONF_PATH" "$host_install_conf_path")"
 apache_conf_path="${APACHE_CONF_PATH:-${config_apache_conf_path:-}}"
 if [ -z "$apache_conf_path" ]; then
-    apache_conf_path="$app_install_path/conf"
+    apache_conf_path="$install_path/conf"
 fi
 config_django_settings_path="$(read_install_conf_value "DJANGO_SETTINGS_PATH" "$host_install_conf_path")"
 django_settings_path="$(normalize_settings_bind_path "${DJANGO_SETTINGS_PATH:-${config_django_settings_path:-}}")"
@@ -751,7 +750,10 @@ cleanup_stale_test_containers
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
-mkdir -p "$app_install_path/conf" "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"
+if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"; then
+    echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
+    exit 1
+fi
 prepare_django_settings_bind_mount "$django_settings_path"
 if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
     render_apache_config \
@@ -764,17 +766,17 @@ if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
         "$apache_conf_path/iskylims_apache_logs.conf"
 fi
 write_compose_env_file
-INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" \
+INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" INSTALL_PATH="$install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" \
     compose_with_env_exec -f "$compose_file" build --no-cache \
     --build-arg INSTALL_TYPE="dep" \
     --build-arg GIT_REVISION="$git_revision" \
     --build-arg INSTALL_CONF="$install_conf_container" \
-    --build-arg APP_INSTALL_PATH="$app_install_path" \
+    --build-arg INSTALL_PATH="$install_path" \
     --build-arg APP_UID="$app_uid" \
     --build-arg APP_GID="$app_gid" \
     --build-arg APP_SHELL="$app_shell"
 print_image_after_build
-APP_INSTALL_PATH="$app_install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" compose_with_env_exec -f "$compose_file" up -d
+INSTALL_PATH="$install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" compose_with_env_exec -f "$compose_file" up -d
 
 echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
@@ -815,8 +817,8 @@ fi
 
 print_container_source_diagnostics "Container diagnostics after bootstrap:"
 
-if ! engine_exec exec -it "$app_container" test -f "$app_install_path/manage.py"; then
-    echo "Error: $app_install_path/manage.py not found after bootstrap. Showing logs:"
+if ! engine_exec exec -it "$app_container" test -f "$install_path/manage.py"; then
+    echo "Error: $install_path/manage.py not found after bootstrap. Showing logs:"
     engine_exec logs --tail 200 "$app_container"
     exit 1
 fi

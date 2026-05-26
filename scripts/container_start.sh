@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="${APP_INSTALL_PATH:-/opt/iskylims}"
+APP_DIR="${INSTALL_PATH:-/opt/iskylims}"
 CRON_DIR="${APP_DIR}/cron"
 TMP_DIR="${APP_DIR}/tmp"
 CRON_FILE="${CRON_DIR}/iskylims"

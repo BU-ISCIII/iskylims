@@ -6,8 +6,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ARG APP_UID=1212
 ARG APP_GID=1212
 ARG APP_SHELL=/sbin/nologin
-ARG APP_INSTALL_PATH=/opt/iskylims
-ENV APP_INSTALL_PATH=${APP_INSTALL_PATH}
+ARG INSTALL_PATH=/opt/iskylims
+ENV INSTALL_PATH=${INSTALL_PATH}
 ENV PIP_NO_CACHE_DIR=1
 
 # Updates
@@ -84,16 +84,16 @@ RUN /bin/bash install.sh --install dep --git_revision $GIT_REVISION --conf $INST
 RUN /bin/bash install.sh --stage install --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
 # Use the virtualenv created by install.sh
-ENV PATH="${APP_INSTALL_PATH}/virtualenv/bin:${PATH}"
+ENV PATH="${INSTALL_PATH}/virtualenv/bin:${PATH}"
 
-WORKDIR ${APP_INSTALL_PATH}
+WORKDIR ${INSTALL_PATH}
 
 # Create non-root user and set ownership
 RUN groupadd -g ${APP_GID} iskylims && \
     useradd -m -u ${APP_UID} -g ${APP_GID} -s ${APP_SHELL} iskylims && \
-    mkdir -p ${APP_INSTALL_PATH}/cron ${APP_INSTALL_PATH}/tmp && \
-    chown -R ${APP_UID}:${APP_GID} ${APP_INSTALL_PATH} /srv/iskylims && \
-    chmod 700 ${APP_INSTALL_PATH}/cron ${APP_INSTALL_PATH}/tmp && \
+    mkdir -p ${INSTALL_PATH}/cron ${INSTALL_PATH}/tmp && \
+    chown -R ${APP_UID}:${APP_GID} ${INSTALL_PATH} /srv/iskylims && \
+    chmod 700 ${INSTALL_PATH}/cron ${INSTALL_PATH}/tmp && \
     git config --system --add safe.directory /srv/iskylims
 
 # Expose
