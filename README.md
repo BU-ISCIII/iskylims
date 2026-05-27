@@ -285,6 +285,14 @@ podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
 
 If you edit container runtime values in the install config, rerun `container_install.sh --install_conf <file>` so `.env.prod.file` and the running containers are regenerated consistently.
 
+If containers were recreated manually, persistent volumes were restored, bind mount ownership changed, or `APP_UID` / `APP_GID` changed, repair permissions before running bootstrap tasks:
+
+```bash
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+```
+
+This action does not rebuild images or run migrations. It refreshes `.env.prod.file` and fixes host bind mount permissions with `podman unshare` when needed. If `iskylims_app` is already running, it also fixes mounted app volumes from inside the container as root; otherwise, start the containers and rerun the same command to repair named volumes. For Docker, use `--engine docker`.
+
 ### Upgrade docker deployment
 
 Keep the same `APP_UID`/`APP_GID` values in the selected install config before running an upgrade.

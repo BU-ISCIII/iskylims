@@ -13,7 +13,7 @@ Usage : $0 [--demo_data] [--git_revision] [--compose_file] [--install_conf] [--a
     --compose_file      | Compose file to use (overrides default)
     --install_conf      | Settings file consumed during container image build (mandatory for production)
     --install_conf_map  | Service-specific settings file: service,path (can be repeated)
-    --action            | install (default) or upgrade, to control DB initialisation steps
+    --action            | install (default), upgrade, or fix-permissions
     --script            | Run a Django migration script after migrations (can be repeated)
     --script_before     | Run a Django migration script before migrations (can be repeated)
     --script_after      | Run a Django migration script after migrations (can be repeated)
@@ -31,6 +31,9 @@ Examples:
 
     Upgrade an existing production deployment using the same database:
     bash $0 --install_conf conf/my_prod_settings.txt --action upgrade
+
+    Repair production bind mount and volume permissions without rebuilding or bootstrapping:
+    bash $0 --install_conf conf/my_prod_settings.txt --action fix-permissions
 
     Install demo container system with local services
     bash $0 --test
@@ -355,8 +358,8 @@ while getopts $options opt; do
             ;;
         a)
             action=$OPTARG
-            if [[ "$action" != "install" && "$action" != "upgrade" ]]; then
-                echo "Invalid action '$action'. Use install or upgrade."
+            if [[ "$action" != "install" && "$action" != "upgrade" && "$action" != "fix-permissions" ]]; then
+                echo "Invalid action '$action'. Use install, upgrade, or fix-permissions."
                 exit 1
             fi
             ;;
@@ -673,6 +676,19 @@ resolve_app_container() {
     fi
 }
 
+try_resolve_app_container() {
+    local container_name
+    container_name="$(service_container_name "$app_service")"
+
+    if [ -n "$container_name" ] && engine_exec inspect -f '{{.Id}}' "$container_name" >/dev/null 2>&1; then
+        app_container="$container_name"
+        return 0
+    fi
+
+    app_container="$(engine_exec ps -a --filter "label=com.docker.compose.service=${app_service}" --format '{{.ID}}' | head -n 1)"
+    [ -n "$app_container" ]
+}
+
 # Ensure target app service container exists and is running.
 #
 # Errors:
@@ -789,6 +805,7 @@ prepare_host_bind_mount_permissions() {
         return 0
     fi
 
+    local apache_conf_file
     local django_settings_dir
 
     echo "Preparing host bind mount permissions..."
@@ -808,6 +825,14 @@ prepare_host_bind_mount_permissions() {
         chown_with_podman_fallback "$app_uid:$app_gid" "$django_settings_path"
         chmod_with_podman_fallback 0664 "$django_settings_path"
     fi
+
+    for apache_conf_file in \
+        "$apache_conf_path/iskylims_apache_reverse_proxy.conf" \
+        "$apache_conf_path/iskylims_apache_logs.conf"; do
+        if [ -f "$apache_conf_file" ]; then
+            chmod_with_podman_fallback 0664 "$apache_conf_file"
+        fi
+    done
 }
 
 # Remove stale test containers left over from previous runs.
@@ -836,6 +861,26 @@ cleanup_stale_test_containers() {
 }
 
 cleanup_stale_test_containers
+
+if [ "$action" = "fix-permissions" ]; then
+    echo "Repairing production container bind mount and volume permissions..."
+    if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"; then
+        echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
+        exit 1
+    fi
+    prepare_django_settings_bind_mount "$django_settings_path"
+    prepare_host_bind_mount_permissions
+    write_compose_env_file
+    if try_resolve_app_container && [ "$(engine_exec inspect -f '{{.State.Running}}' "$app_container" 2>/dev/null)" = "true" ]; then
+        prepare_app_mount_permissions
+        echo "Done repairing host bind mounts and mounted app volumes."
+    else
+        echo "Host bind mount permissions repaired."
+        echo "The app container is not running, so named volumes were not repaired."
+        echo "Start containers with Compose, then rerun this action to repair mounted app volumes."
+    fi
+    exit 0
+fi
 
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
