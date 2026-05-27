@@ -14,7 +14,7 @@ services:
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:ro
       - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
-      - /var/log/local/iskylims/apache:/var/log/httpd:U
+      - /var/log/local/iskylims/apache:/var/log/httpd
       - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static:ro
     networks:
       - iskylims_net
@@ -49,10 +49,10 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /var/log/local/iskylims/apps/:${INSTALL_PATH:-/opt/iskylims}/logs:U
-      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py:U
-      - iskylims_documents:${INSTALL_PATH:-/opt/iskylims}/documents:U
-      - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static:U
+      - /var/log/local/iskylims/apps/:${INSTALL_PATH:-/opt/iskylims}/logs
+      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py
+      - iskylims_documents:${INSTALL_PATH:-/opt/iskylims}/documents
+      - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

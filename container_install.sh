@@ -148,6 +148,42 @@ copy_with_podman_fallback() {
     return 1
 }
 
+chmod_with_podman_fallback() {
+    local mode="$1"
+    shift
+
+    if chmod "$mode" "$@" 2>/dev/null; then
+        return 0
+    fi
+
+    if [ "$engine" = "podman" ]; then
+        if podman unshare chmod "$mode" "$@"; then
+            return 0
+        fi
+    fi
+
+    echo "Failed to chmod $mode: $*" >&2
+    return 1
+}
+
+chown_with_podman_fallback() {
+    local owner="$1"
+    shift
+
+    if chown -R "$owner" "$@" 2>/dev/null; then
+        return 0
+    fi
+
+    if [ "$engine" = "podman" ]; then
+        if podman unshare chown -R "$owner" "$@"; then
+            return 0
+        fi
+    fi
+
+    echo "Failed to chown $owner: $*" >&2
+    return 1
+}
+
 normalize_apache_server_name() {
     local value="$1"
 
@@ -223,6 +259,10 @@ render_django_settings_file() {
         "$tmp_file"
 
     if copy_with_podman_fallback "$tmp_file" "$settings_path"; then
+        if ! chmod_with_podman_fallback 0664 "$settings_path"; then
+            rm -f "$tmp_file"
+            return 1
+        fi
         rm -f "$tmp_file"
         return 0
     fi
@@ -262,6 +302,10 @@ render_apache_config() {
         "$src" > "$tmp_file"
 
     if copy_with_podman_fallback "$tmp_file" "$dst"; then
+        if ! chmod_with_podman_fallback 0664 "$dst"; then
+            rm -f "$tmp_file"
+            return 1
+        fi
         rm -f "$tmp_file"
         return 0
     fi
@@ -287,6 +331,7 @@ prepare_django_settings_bind_mount() {
     if [ ! -f "$settings_path" ] || grep -Eq "SECRET_KEY[[:space:]]*=[[:space:]]*SECRET|emailhosttls|djangouser|djangopass|djangohost|djangodbname" "$settings_path"; then
         render_django_settings_file "$settings_path"
     fi
+    chmod_with_podman_fallback 0664 "$settings_path"
 }
 
 # PARSE VARIABLE ARGUMENTS WITH getopts
@@ -720,6 +765,51 @@ print_container_source_diagnostics() {
     " || true
 }
 
+prepare_app_mount_permissions() {
+    if [ "$mode" != "production" ]; then
+        return 0
+    fi
+
+    echo "Preparing writable app mount permissions..."
+    engine_exec exec --user 0 "$app_container" sh -lc "
+        set -e
+        mkdir -p '$install_path/logs' '$install_path/static' '$install_path/documents'
+        chown -R '$app_uid:$app_gid' '$install_path/logs' '$install_path/static' '$install_path/documents'
+        chmod -R u+rwX,g+rwX '$install_path/logs' '$install_path/static' '$install_path/documents'
+        if [ -f '$install_path/iskylims/settings.py' ]; then
+            chown '$app_uid:$app_gid' '$install_path/iskylims/settings.py'
+            chmod 0664 '$install_path/iskylims/settings.py'
+        fi
+        chmod -R o+rX '$install_path/static'
+    "
+}
+
+prepare_host_bind_mount_permissions() {
+    if [ "$mode" != "production" ]; then
+        return 0
+    fi
+
+    local django_settings_dir
+
+    echo "Preparing host bind mount permissions..."
+    chmod_with_podman_fallback 0755 "$apache_conf_path"
+
+    chown_with_podman_fallback "$app_uid:$app_gid" "/var/log/local/iskylims/apps"
+    chmod_with_podman_fallback 0775 "/var/log/local/iskylims/apps"
+
+    # UBI httpd runs as uid 1001 and group 0. This keeps the Apache log bind
+    # writable without relying on Podman's :U ownership mutation.
+    chown_with_podman_fallback "1001:0" "/var/log/local/iskylims/apache"
+    chmod_with_podman_fallback 0775 "/var/log/local/iskylims/apache"
+
+    if [ -f "$django_settings_path" ]; then
+        django_settings_dir="$(dirname "$django_settings_path")"
+        chmod_with_podman_fallback 0755 "$django_settings_dir"
+        chown_with_podman_fallback "$app_uid:$app_gid" "$django_settings_path"
+        chmod_with_podman_fallback 0664 "$django_settings_path"
+    fi
+}
+
 # Remove stale test containers left over from previous runs.
 #
 # This function will only be executed in "test" mode when the engine is "podman".
@@ -765,6 +855,7 @@ if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
         "$repo_root/conf/iskylims_apache_logs.conf" \
         "$apache_conf_path/iskylims_apache_logs.conf"
 fi
+prepare_host_bind_mount_permissions
 write_compose_env_file
 INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" INSTALL_PATH="$install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" \
     compose_with_env_exec -f "$compose_file" build --no-cache \
@@ -782,6 +873,7 @@ echo "Waiting 20 seconds for starting database and web services..."
 sleep 20
 ensure_app_running
 print_container_source_diagnostics "Container diagnostics after startup:"
+prepare_app_mount_permissions
 
 container_install_conf_path="$install_conf_container"
 if [[ "$container_install_conf_path" != /* ]]; then
