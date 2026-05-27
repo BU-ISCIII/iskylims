@@ -92,6 +92,9 @@ def file_read_to_dictionary(
         ERROR if any line was not in the proper format (tabular, comma-delimited)
         samplesheet as a dictionary
     """
+    if file_read is False:
+        return {"ERROR": "Unable to read SampleSheet file"}
+
     samplesheet = {}
     file_read = file_read.splitlines()
     for line in file_read:
@@ -476,6 +479,8 @@ def get_sample_with_user_owner(sample_sheet_path):
     sample_user = {}
     full_path = os.path.join(settings.MEDIA_ROOT, sample_sheet_path)
     file_read = read_file_from_path(full_path)
+    if file_read is False:
+        raise FileNotFoundError(f"Unable to read SampleSheet file: {full_path}")
     samplesheet = file_read_to_dictionary(file_read)
     # Retrieve tabular data with the iskylims user in the header
     data = get_tabular_data(samplesheet)

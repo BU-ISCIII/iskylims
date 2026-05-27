@@ -1275,10 +1275,24 @@ def store_sample_sheet_if_not_defined_in_run(
     os.rename(l_sample_sheet_path, new_sample_sheet_file)
     # Update the run with the sample sheet information  (full_path, relative_path, file_name)
     run_process_obj.update_sample_sheet(new_sample_sheet_file, new_sample_sheet_name)
+    saved_sample_sheet = run_process_obj.get_sample_file()
+    saved_sample_sheet_path = os.path.join(settings.MEDIA_ROOT, saved_sample_sheet)
+    if not saved_sample_sheet or not os.path.isfile(saved_sample_sheet_path):
+        error_message = (
+            experiment_name
+            + " : Unable to store Sample Sheet file at "
+            + saved_sample_sheet_path
+        )
+        wetlab.utils.common.logging_errors(error_message, False, False)
+        raise FileNotFoundError(error_message)
 
-    logger.info("%s : Updated runProccess table with the sample sheet", experiment_name)
+    logger.info(
+        "%s : Updated runProccess table with the sample sheet %s",
+        experiment_name,
+        saved_sample_sheet,
+    )
     logger.debug("%s : End function store_sample_sheet_in_run", experiment_name)
-    return sample_sheet_on_database
+    return saved_sample_sheet
 
 
 def waiting_time_expired(time_to_check, maximun_time, experiment_name):
