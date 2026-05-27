@@ -1,718 +1,384 @@
-# iSkyLIMS
+# Actualizacion de iSkyLIMS con Podman rootless
 
-[![Django](https://img.shields.io/static/v1?label=Django&message=4.2&color=azul?style=plastic&logo=django)](https://github.com/django/django)
-[![Python](https://img.shields.io/static/v1?label=Python&message=3.8.10&color=verde?style=plastic&logo=Python)](https://www.python.org/)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.0-azulvioleta?style=plastic&logo=Bootstrap)](https://getbootstrap.com)
-[![version](https://img.shields.io/badge/version-3.0.0-naranja?style=plastic&logo=GitHub)](https://github.com/BU-ISCIII/iskylims.git)
+Esta guia es para la actualizacion del despliegue institucional de iSkyLIMS usando Podman rootless. Se asume que iSkyLIMS ya existe en la institucion, que la base de datos de produccion ya esta creada y que el objetivo es actualizar o recrear los contenedores de aplicacion sin crear una base de datos desde cero.
 
-La introduccion de la secuenciacion masiva (MS) en las instalaciones de genomica ha significado un crecimiento exponencial en la generacion de datos, lo que requiere un sistema de seguimiento preciso, desde la preparacion de la biblioteca hasta la generacion de archivos fastq, el analisis y la entrega al investigador. El software disenado para manejar esas tareas se llama Sistemas de Gestion de Informacion de Laboratorio (LIMS), y su software debe adaptarse a las necesidades particulares de su laboratorio de genomica. iSkyLIMS nace con el objetivo de ayudar con las tareas de laboratorio humedo e implementar un flujo de trabajo que guie a los laboratorios de genomica en sus actividades, desde la preparacion de la biblioteca hasta la produccion de datos, reduciendo los posibles errores asociados a la tecnologia de alto rendimiento y facilitando el control de calidad de la secuenciacion. Ademas, iSkyLIMS conecta el laboratorio humedo con el laboratorio seco, facilitando el analisis de datos por parte de bioinformaticos.
+`container_install.sh` se encarga de construir la imagen, arrancar los contenedores, preparar permisos, actualizar configuracion, aplicar migraciones, refrescar estaticos y ejecutar los pasos necesarios de actualizacion.
 
-![Imagen](img/iskylims_scheme.png)
+## Indice
 
-De acuerdo con la infraestructura existente, la secuenciacion se realiza en un instrumento Illumina NextSeq. Los datos se almacenan en un dispositivo de almacenamiento masivo NetApp y los archivos fastq se generan (bcl2fastq) en un cluster de computo de alto rendimiento Sun Grid Engine (SGE-HPC). Los servidores de aplicaciones ejecutan aplicaciones web para el analisis bioinformatico (GALAXY), la aplicacion iSkyLIMS y alojan la capa de informacion de MySQL. El flujo de trabajo de iSkyLIMS WetLab se ocupa del seguimiento y las estadisticas de la ejecucion de la secuenciacion. El seguimiento de la ejecucion pasa por cinco estados: "registrado", el usuario de genomica registra la nueva ejecucion de la secuenciacion en el sistema, el proceso esperara hasta que la ejecucion se complete en la maquina y los datos se transfieran al dispositivo de almacenamiento masivo; "Envio de hoja de muestra", el archivo de hoja de muestra con la informacion de la ejecucion de la secuenciacion se copiara en la carpeta de ejecucion para el proceso de bcl2fastq; "Procesamiento de datos", se procesan los archivos de parametros de ejecucion y los datos se almacenan en la base de datos; "Estadisticas en ejecucion", los datos de desmultiplexacion generados en el proceso de bcl2fastq se procesan y almacenan en la base de datos, "Completado", todos los datos se procesan y almacenan correctamente. Se proporcionan estadisticas por muestra, por proyecto, por ejecucion y por investigacion, asi como informes anuales y mensuales. El flujo de trabajo de iSkyLIMS DryLab se encarga de la solicitud de servicios de bioinformatica y estadisticas. El usuario solicita servicios que pueden estar asociados con una ejecucion de secuenciacion. Se proporciona seguimiento de estadisticas y servicios.
+- [Actualizacion de iSkyLIMS con Podman rootless](#actualizacion-de-iskylims-con-podman-rootless)
+  - [Indice](#indice)
+  - [Requisitos](#requisitos)
+  - [Preparar directorios del host](#preparar-directorios-del-host)
+  - [Actualizar codigo](#actualizar-codigo)
+  - [Configurar `my_prod_settings.txt`](#configurar-my_prod_settingstxt)
+  - [Backup antes de actualizar](#backup-antes-de-actualizar)
+  - [Ejecutar la actualizacion](#ejecutar-la-actualizacion)
+  - [Caso especial: actualizacion desde 3.0.0 a 3.1.0](#caso-especial-actualizacion-desde-300-a-310)
+  - [Comprobaciones posteriores](#comprobaciones-posteriores)
+  - [Rollback](#rollback)
+  - [Reparar permisos](#reparar-permisos)
+  - [Operaciones utiles](#operaciones-utiles)
+  - [Notas de permisos](#notas-de-permisos)
 
-- [iSkyLIMS](#iskylims)
-  - [Obtener el codigo (obligatorio)](#obtener-el-codigo-obligatorio)
-  - [Elige tu ruta](#elige-tu-ruta)
-  - [Requisitos minimos](#requisitos-minimos)
-  - [Despliegue con Docker](#despliegue-con-docker)
-    - [Contenedor local de pruebas](#contenedor-local-de-pruebas)
-    - [Contenedor de produccion](#contenedor-de-produccion)
-      - [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host)
-      - [Proxy inverso con Apache (contenedor) + Gunicorn](#proxy-inverso-con-apache-contenedor--gunicorn)
-      - [Tareas cron dentro del contenedor](#tareas-cron-dentro-del-contenedor)
-    - [Gestionar contenedores despues de la instalacion](#gestionar-contenedores-despues-de-la-instalacion)
-    - [Actualizacion del despliegue Docker](#actualizacion-del-despliegue-docker)
-    - [Actualizacion del despliegue Docker v3.0.0 a 3.1.0](#actualizacion-del-despliegue-docker-v300-a-310)
-      - [Haz copia de seguridad](#haz-copia-de-seguridad)
-      - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes)
-  - [Despliegue bare-metal (Ubuntu/CentOS)](#despliegue-bare-metal-ubuntucentos)
-    - [Instalacion](#instalacion)
-      - [Requisitos previos](#requisitos-previos)
-      - [Clonar el repositorio](#clonar-el-repositorio)
-      - [Preparar la base de datos](#preparar-la-base-de-datos)
-      - [Configurar install\_settings.txt](#configurar-install_settingstxt)
-      - [Ejecutar install.sh](#ejecutar-installsh)
-    - [Actualizacion (3.0.x a 3.1.x)](#actualizacion-30x-a-31x)
-      - [Haz copia de seguridad](#haz-copia-de-seguridad-1)
-      - [Actualizar codigo y ajustes](#actualizar-codigo-y-ajustes-1)
-      - [Ejecutar pasos de actualizacion con root](#ejecutar-pasos-de-actualizacion-con-root)
-      - [Ejecutar pasos de actualizacion sin root](#ejecutar-pasos-de-actualizacion-sin-root)
-  - [Operaciones comunes (Docker + bare-metal)](#operaciones-comunes-docker--bare-metal)
-    - [Creacion de base de datos, usuarios y permisos](#creacion-de-base-de-datos-usuarios-y-permisos)
-    - [Copias de seguridad](#copias-de-seguridad)
-    - [Restauracion / rollback](#restauracion--rollback)
-  - [Que hacer si algo falla](#que-hacer-si-algo-falla)
-    - [Bare-metal](#bare-metal)
-    - [Docker](#docker)
-  - [Pasos finales de configuracion](#pasos-finales-de-configuracion)
-    - [Configuracion de SAMBA](#configuracion-de-samba)
-    - [Verificacion de correo electronico](#verificacion-de-correo-electronico)
-  - [Notas para desarrolladores](#notas-para-desarrolladores)
-    - [Flujo de migraciones Django](#flujo-de-migraciones-django)
-    - [Rutas persistentes en el host](#rutas-persistentes-en-el-host)
-    - [Configurar el servidor Apache](#configurar-el-servidor-apache)
-    - [Verificacion de la instalacion](#verificacion-de-la-instalacion)
-  - [Documentacion de iSkyLIMS](#documentacion-de-iskylims)
+## Requisitos
 
-Si tienes algun problema o deseas informar de algun error, por favor, publicalo en [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
+El despliegue usa:
 
-## Obtener el codigo (obligatorio)
+- Podman rootless ejecutado por un usuario normal del sistema.
+- `podman-compose` o `podman compose`.
+- `container_install.sh` desde el repositorio de iSkyLIMS.
+- `docker-compose.prod.yml`, lanzado con Podman.
+- Una base de datos MySQL/MariaDB externa ya existente.
+- Una configuracion Samba/storage ya existente o configurada desde la interfaz.
+- Bind mounts del host para logs, configuracion Apache y `settings.py`.
+- Volumenes Podman para `documents` y `static`.
 
-Todas las rutas de instalacion asumen que ya clonaste el repositorio:
+Instala herramientas si no existen:
 
 ```bash
-git clone https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git iskylims
-cd iskylims
+sudo dnf install -y podman podman-compose git
 ```
 
-## Elige tu ruta
-
-- **Docker (pruebas locales)**: levanta MySQL + Samba + iSkyLIMS con datos de demo para probar rapidamente.
-- **Docker (contenedor de produccion)**: despliega solo la aplicacion, apuntando a tu DB/Samba existente.
-- **Bare-metal**: instala o actualiza directamente en hosts Ubuntu/CentOS con `install.sh`.
-
-## Requisitos minimos
-
-Requisitos para despliegue en contenedor:
-
-- Docker Engine + Docker Compose v2, o Podman + `podman-compose`
-- git >= 2.34 para clonar/actualizar el repositorio
-- MySQL/MariaDB, Apache, Python y `lsb_release` en el host no son necesarios para el despliegue en contenedor
-- Para contenedores locales de prueba: MySQL y Samba se arrancan como contenedores con `container_install.sh --test`
-- Para contenedores de produccion: acceso a un servidor MySQL/MariaDB externo y a la carpeta Samba configurados en el fichero de instalacion seleccionado
-- Directorios y permisos en el host para logs, documentos y estaticos, como se describe en [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host)
-
-Requisitos para despliegue bare-metal:
-
-- **Privilegios sudo** para instalar dependencias
-- MySQL >= 8.0 o MariaDB > 10.4
-- Apache >= 2.4
-- git >= 2.34
-- Python >= 3.11
-- Servidor local configurado para enviar correos
-- Acceso a la carpeta Samba donde estan los run folders
-- Paquete `lsb_release`:
-  - RedHat/CentOS: `yum install redhat-lsb-core`
-  - Ubuntu: `apt install lsb-core lsb-release`
-
-## Despliegue con Docker
-
-### Contenedor local de pruebas
-
-Levanta el sistema completo (base de datos, Samba y app) con fixtures y datos de demo:
+En Ubuntu/Debian:
 
 ```bash
-bash container_install.sh --test
+sudo apt update
+sudo apt install -y podman podman-compose git
 ```
 
-Usa `--engine podman` para ejecutar el mismo flujo con Podman:
+Activa linger para el usuario que ejecuta Podman:
 
 ```bash
-bash container_install.sh --test --engine podman
+sudo loginctl enable-linger "$USER"
 ```
 
-Esto usa `docker-compose.test.yml` por defecto.
-
-Puedes personalizar los valores por defecto:
-
-- `--demo_data /ruta/a/iskylims_demo_data.tar.gz` para reutilizar un archivo local (si no, se descarga).
-- `--skip_demo_data` o `--skip_test_data` para evitar cargar datos extra.
-- `--install_type` (`full` por defecto) y `--git_revision` para controlar el build.
-- `--script` para ejecutar uno o mas scripts de migracion via `install.sh` (puedes repetir la opcion).
-
-Ejemplo de uso con un script de migracion en Docker:
+Comprueba que Podman funciona sin root:
 
 ```bash
-bash container_install.sh --test --script migrate_optional_values
+podman info
+podman ps
 ```
 
-Cuando el script termine, abre `http://localhost:8001` y crea el superusuario de Django cuando te lo pida.
+No ejecutes `container_install.sh` con `sudo`. El usuario que ejecuta Podman debe ser el mismo usuario que ejecuta `container_install.sh`.
 
-La imagen ahora incluye el arbol de la aplicacion ya preparado dentro de `${INSTALL_PATH}`. Por tanto, los contenedores de prueba pueden recrearse o reiniciarse sin volver a ejecutar la instalacion de ficheros; `container_install.sh` solo lanza las tareas de bootstrap de BD, scripts opcionales y estaticos.
+Los ejemplos usan `podman compose`. Si tu servidor solo tiene `podman-compose`, sustituye `podman compose` por `podman-compose`.
 
-### Contenedor de produccion
+## Preparar directorios del host
 
-Despliega el contenedor de iSkyLIMS contra servicios MySQL/Samba externos:
+Los bind mounts son rutas reales del host. Deben existir y pertenecer al usuario que ejecuta `container_install.sh`.
 
-1. Copia y edita la plantilla de produccion:
-
-    ```bash
-    cp conf/docker_production_settings.txt conf/my_prod_settings.txt
-    # edita conf/my_prod_settings.txt con tus datos de DB/Samba
-    ```
-
-2. Construye y ejecuta en modo produccion (usa `docker-compose.prod.yml` por defecto):
-
-    ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt
-    ```
-
-   Usa `--compose_file` para cambiar el compose o `--install_type`/`--git_revision` para variar el build.
-   Añade `--engine podman` para usar Podman en lugar de Docker.
-   Tip: captura logs para depuracion:
-
-    ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
-    ```
-
-3. Si es una instalacion nueva, crea el superusuario cuando se solicite y completa la configuracion de Samba en la UI.
-
-Las imagenes de produccion ahora incorporan la aplicacion iSkyLIMS ya preparada. Un reinicio del host o la recreacion del contenedor ya no requiere reinstalar la aplicacion; `container_install.sh` solo ejecuta tareas de bootstrap en runtime, como migraciones, refresco de fixtures, scripts opcionales, creacion del superusuario en la primera instalacion y `collectstatic`.
-
-Los valores de build/runtime del contenedor se configuran en el fichero de instalacion seleccionado, no exportando variables en la shell. Edita estos campos en `conf/my_prod_settings.txt` antes de ejecutar `container_install.sh`:
-
-- `INSTALL_PATH`: raiz de instalacion en runtime usada por el contenedor `app`, los estaticos/documentos y los scripts de instalacion. Valor por defecto: `/opt/iskylims`.
-- `APACHE_CONF_PATH`: directorio host usado para los ficheros de configuracion de Apache montados por bind mount. Dejalo vacio para usar `${INSTALL_PATH}/conf` como origen del bind mount; en despliegues rootless o endurecidos, define un path host escribible.
-- `DJANGO_SETTINGS_PATH`: path host usado para el `settings.py` de Django montado por bind mount. Dejalo vacio para usar `${INSTALL_PATH}/iskylims/settings.py` como origen del bind mount. Si el valor es un directorio o termina en `/`, `container_install.sh` anade `settings.py`.
-- `APP_UID` / `APP_GID`: UID/GID de ejecucion del usuario `iskylims` dentro del contenedor. Valor por defecto: `1212:1212`.
-- `APP_SHELL`: shell asignada al usuario de runtime durante la build. Valor por defecto: `/sbin/nologin`.
-- `APP_PORT`: puerto interno donde Gunicorn escucha dentro del servicio `app`. Valor por defecto: `8001`.
-- `DJANGO_DEBUG`: flag de debug de Django que se pasa al contenedor de produccion. Valor por defecto: `false`; mantenlo desactivado en produccion.
-- `DB_CONN_MAX_AGE`: tiempo de vida, en segundos, de las conexiones persistentes de Django a la BD. Valor por defecto: `60`.
-- `WEB_CONCURRENCY`: numero de workers de Gunicorn. Valor por defecto: `2`.
-- `GUNICORN_THREADS`: numero de hilos por worker de Gunicorn. Valor por defecto: `2`.
-- `GUNICORN_TIMEOUT`: timeout de peticiones Gunicorn en segundos. Valor por defecto: `300`.
-- `GUNICORN_KEEPALIVE`: keep-alive de Gunicorn en segundos. Valor por defecto: `5`.
-
-Durante una instalacion/actualizacion de produccion, `container_install.sh` escribe `.env.prod.file` en la raiz del repositorio. Este fichero esta ignorado por git y Compose lo usa para interpolar variables en `docker-compose.prod.yml`. Intencionadamente contiene metadatos de Compose/runtime, no passwords de base de datos ni de correo.
-
-#### Persistir logs/documentos en el host
-
-Si usas un compose personalizado, asegurate de mantener estos montajes para conservar logs y datos.
-
-El compose de produccion usa `INSTALL_PATH` del fichero de configuracion seleccionado como raiz de ejecucion de la app. Los origenes host de la configuracion de Apache y de settings de Django usan `APACHE_CONF_PATH` y `DJANGO_SETTINGS_PATH` cuando estan definidos.
-
-Persistencia actual:
-
-- `/var/log/local/iskylims/apps` -> `${INSTALL_PATH}/logs` dentro del contenedor `app`
-- `/var/log/local/iskylims/apache` -> `/var/log/httpd` dentro del contenedor `apache`
-- `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` dentro del contenedor `apache`
-- `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_logs.conf` -> `/etc/httpd/conf.d/logformat.conf` dentro del contenedor `apache`
-- `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}` -> `${INSTALL_PATH}/iskylims/settings.py` dentro del contenedor `app`
-- volumen nombrado `iskylims_documents` -> `${INSTALL_PATH}/documents`
-- volumen nombrado `iskylims_static` -> `${INSTALL_PATH}/static`
-
-Crea los directorios necesarios en el host:
+Ejemplo recomendado:
 
 ```bash
 sudo mkdir -p /var/log/local/iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
-sudo mkdir -p <APACHE_CONF_PATH>
-sudo mkdir -p <DJANGO_SETTINGS_PATH_PARENT>
-sudo chown -R <APP_UID>:<APP_GID> /var/log/local/iskylims/apps <APACHE_CONF_PATH> <DJANGO_SETTINGS_PATH_PARENT>
+sudo mkdir -p /srv/containers/bind/iskylims/apache_conf
+sudo mkdir -p /srv/containers/bind/iskylims/django_settings
+
+sudo chown -R "$USER:$USER" /var/log/local/iskylims
+sudo chown -R "$USER:$USER" /srv/containers/bind/iskylims
 ```
 
-En hosts Podman rootless o endurecidos, ejecuta el script de preparacion del host con el mismo usuario que arranca los contenedores. El script pre-crea los ficheros de log de Apache, ajusta la propiedad para el usuario UBI httpd en Podman rootless y aplica etiquetas SELinux de contenedor cuando SELinux esta activo:
+Si usas otras rutas para `APACHE_CONF_PATH` o `DJANGO_SETTINGS_PATH`, crea esas rutas y asignales la misma propiedad.
+
+`container_install.sh` ajustara despues los permisos internos con `podman unshare` y con `podman exec --user 0` cuando el contenedor este levantado.
+
+## Actualizar codigo
+
+Entra en el repositorio como el usuario que ejecuta Podman:
 
 ```bash
-bash hardening.sh
-```
-
-Si un administrador lo ejecuta como root, define `PODMAN_USER` con el usuario que arranca los contenedores rootless:
-
-```bash
-PODMAN_USER=bioinfo bash hardening.sh
-```
-
-#### Proxy inverso con Apache (contenedor) + Gunicorn
-
-En produccion, el contenedor `app` ejecuta `gunicorn` (no `manage.py runserver`) y el servicio `apache` de `docker-compose.prod.yml` hace de proxy inverso.
-
-Archivos estaticos:
-
-- La aplicacion genera los estaticos en `${INSTALL_PATH}/static`.
-- `docker-compose.prod.yml` comparte ese directorio con `apache` mediante el volumen nombrado `iskylims_static`.
-- La configuracion del proxy sirve `/static` directamente desde `${INSTALL_PATH}/static`.
-
-Durante `container_install.sh`, los ficheros `conf/iskylims_apache_reverse_proxy.conf` y `conf/iskylims_apache_logs.conf` se renderizan y se copian al host en `${APACHE_CONF_PATH}`. Si `APACHE_CONF_PATH` esta vacio, se copian a `${INSTALL_PATH}/conf`. El `ServerName`, el forwarded host y los nombres de logs access/error del proxy inverso se generan desde `DNS_URL` en el fichero de instalacion seleccionado. A partir de ese momento, los cambios de runtime deben hacerse sobre esas copias.
-
-`container_install.sh` prepara un fichero host `settings.py` de Django para el bind mount en `${DJANGO_SETTINGS_PATH}`, o en `${INSTALL_PATH}/iskylims/settings.py` si `DJANGO_SETTINGS_PATH` esta vacio. Durante el bootstrap, `install.sh` actualiza ese fichero montado a partir de `conf/template_settings.txt` y el fichero de configuracion seleccionado, conservando el `SECRET_KEY` si ya existe. Despues se pueden editar settings de runtime y reiniciar el contenedor sin reconstruir la imagen.
-
-Si necesitas otra raiz de instalacion, define `INSTALL_PATH` en el fichero de configuracion antes de ejecutar `container_install.sh`. Si necesitas que los ficheros de Apache o los settings de Django queden fuera de la raiz de runtime de la app, define `APACHE_CONF_PATH` o `DJANGO_SETTINGS_PATH` en el fichero de configuracion, o exportalos antes de ejecutar `container_install.sh`.
-
-`container_install.sh` crea `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}`, el directorio padre de `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}`, `/var/log/local/iskylims/apps` y `/var/log/local/iskylims/apache` antes de `compose up`, copia ahi los dos ficheros de configuracion de Apache, prepara el fichero de settings montado por bind mount si no existe, exporta `INSTALL_PATH`, `APACHE_CONF_PATH` y `DJANGO_SETTINGS_PATH` a Compose y despues ejecuta `install.sh --bootstrap ...` dentro del contenedor `app`. La imagen del contenedor ya contiene el proyecto Django y el virtualenv preparados dentro de `${INSTALL_PATH}`; el bootstrap actualiza settings, aplica migraciones, scripts/fixtures opcionales y refresca `${INSTALL_PATH}/static`, mientras que el contenedor `apache` sigue escribiendo sus logs en el path del host `/var/log/local/iskylims/apache`.
-
-Nota SELinux para pre-produccion y produccion:
-
-- Asegura que `/var/log/local/iskylims/apache` sea escribible por el runtime de contenedores y tenga una etiqueta valida para contenedores, por ejemplo `container_file_t`.
-- Si el path del host ya esta etiquetado como `container_file_t`, no anadas `:Z` al bind mount de logs de Apache. `:Z` fuerza un relabel y puede fallar con `lsetxattr(... container_file_t ...): operation not permitted`.
-- Comprobacion rapida:
-
-```bash
-ls -ldZ /var/log/local/iskylims/apache
-```
-
-- Ejemplo esperado:
-
-```text
-system_u:object_r:container_file_t:s0
-```
-
-- Si Apache falla al arrancar con `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, elimina cualquier fichero host obsoleto y recrea/reinicia el contenedor. En la practica, borrar `/var/log/local/iskylims/apache/modsec_debug.log` ha sido suficiente cuando el inode existente tenia permisos o contexto incorrectos.
-
-#### Tareas cron dentro del contenedor
-
-Cron se ejecuta mediante `supercronic`, lanzado por el script de arranque del contenedor. El script escribe las entradas de django-crontab en `${INSTALL_PATH}/cron/iskylims` y arranca `supercronic` como usuario no root.
-
-Si modificas `CRONJOBS`, reconstruye o reinicia el contenedor para regenerar el archivo de cron.
-
-### Gestionar contenedores despues de la instalacion
-
-Despues de una instalacion de produccion, usa el fichero generado `.env.prod.file` siempre que ejecutes Compose directamente. Asi las rutas, UID/GID, puertos y ajustes de Gunicorn siguen alineados con el fichero de instalacion.
-
-Ejemplos con Docker Compose:
-
-```bash
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml ps
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
-```
-
-Ejemplos con Podman Compose:
-
-```bash
-podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
-podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
-podman compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
-podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
-```
-
-Si editas valores de runtime del contenedor en el fichero de instalacion, vuelve a ejecutar `container_install.sh --install_conf <fichero>` para regenerar `.env.prod.file` y los contenedores de forma consistente.
-
-### Actualizacion del despliegue Docker
-
-Mantén los mismos valores de `APP_UID`/`APP_GID` en el fichero de instalacion seleccionado antes de actualizar.
-
-Re-despliega el contenedor de aplicacion contra una base de datos existente:
-
-```bash
-bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
-```
-
-La actualizacion reconstruye/reinicia el contenedor y ejecuta `install.sh --bootstrap upgrade --tables` dentro del contenedor. Los ficheros de la aplicacion ya van incorporados en la nueva imagen; la fase de bootstrap aplica migraciones con `--fake-initial`, refresca `conf/first_install_tables.json`, refresca los estaticos y evita cargar superusuario/datos demo/prueba.
-
-### Actualizacion del despliegue Docker v3.0.0 a 3.1.0
-
-#### Haz copia de seguridad
-
-Ejecuta primero los pasos de [Copias de seguridad](#copias-de-seguridad).
-
-Para 3.0.0 -> 3.1.0, exporta primero el mapeo de LibraryPool y luego ejecuta la actualizacion con scripts pre/post:
-
-```bash
-mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
-  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
-  > /tmp/library_pool_run_process.tsv
-```
-
-#### Actualizar codigo y ajustes
-
-```bash
-cd <tu directorio de trabajo>/iskylims
+cd /ruta/al/repositorio/iskylims
 git pull
-cp conf/docker_production_settings.txt myprod_settings.txt
-sudo nano myprod_settings.txt
 ```
 
-Si editas el archivo en Windows, asegurate de guardarlo con codificacion UTF-8/ASCII.
-
-Mantén los mismos valores de `APP_UID`/`APP_GID` en el fichero de instalacion seleccionado antes de ejecutar la actualizacion 3.0.0 -> 3.1.0.
-
-Ejecuta la actualizacion:
+Si todavia no existe el repositorio en el servidor:
 
 ```bash
-bash container_install.sh --engine podman --install_conf myprod_settings.txt --action upgrade \
-  --script_before convert_rawtop_counter_to_int \
-  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
-```
-
-## Despliegue bare-metal (Ubuntu/CentOS)
-
-### Instalacion
-
-#### Requisitos previos
-
-- **Privilegios sudo** para instalar dependencias
-- MySQL > 8.0 o MariaDB > 10.4
-- Apache 2.4
-- git > 2.34
-- Python > 3.11
-- Servidor local configurado para enviar correos
-- Acceso a la carpeta Samba donde estan los run folders
-- Paquete `lsb_release` (`yum install redhat-lsb-core` en RedHat/CentOS, `apt install lsb-core lsb-release` en Ubuntu)
-
-#### Clonar el repositorio
-
-```bash
-cd <tu directorio de trabajo>
 git clone https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-#### Preparar la base de datos
+## Configurar `my_prod_settings.txt`
 
-Crea la base de datos y el usuario de aplicacion siguiendo [Creacion de base de datos, usuarios y permisos](#creacion-de-base-de-datos-usuarios-y-permisos). Guarda host, puerto, usuario y password para `install_settings.txt`.
-
-#### Configurar install_settings.txt
+Si el fichero ya existe, revisalo y mantenlo. Si no existe, copialo desde la plantilla:
 
 ```bash
-cp conf/template_install_settings.txt install_settings.txt
-nano install_settings.txt
+cp conf/docker_production_settings.txt conf/my_prod_settings.txt
 ```
 
-Completa los valores de base de datos, email, IP/URL del servidor y logging.
-
-#### Ejecutar install.sh
-
-iSkyLIMS se instala en `/opt/iskylims` por defecto. El script `install.sh` gestiona dependencias y aplicacion; elige lo que necesitas con `--install`:
-
-- `dep`: instala dependencias del sistema y de Python (requiere sudo).
-- `app`: despliega el codigo, actualiza ajustes, ejecuta migraciones y collectstatic (sin sudo).
-- `full`: ejecuta ambos pasos.
-
-La separacion interna entre preparacion de ficheros y bootstrap se usa solo para las imagenes de contenedor. En bare-metal no cambian los comandos operativos: `--install` y `--upgrade` siguen ejecutando el flujo completo de dependencias, aplicacion y base de datos descrito aqui.
-
-Ejemplos:
+Edita:
 
 ```bash
-# solo dependencias del sistema
-sudo bash install.sh --install dep
-
-# solo aplicacion iSkyLIMS
-bash install.sh --install app --git_revision main --tables
-
-# dependencias + aplicacion
-sudo bash install.sh --install full --git_revision main --tables
+nano conf/my_prod_settings.txt
 ```
 
-- Añade `--tables` para cargar los datos iniciales en instalaciones nuevas, o `--skip_tables` si quieres omitirlos.
-- Captura logs para depuracion con `tee`:
-
-  ```bash
-  sudo bash install.sh --install full --git_revision main --tables 2>&1 | tee ./iskylims_install_$(date +%Y%m%d_%H%M%S).log
-  ```
-
-- Si Apache se gestiona desde otro sitio, omite el reinicio automatico con `--skip_apache_restart`.
-
-### Actualizacion (3.0.x a 3.1.x)
-
-Sigue estos pasos para pasar de la version 3.0.0 a la serie 3.1.x.
-
-#### Haz copia de seguridad
-
-- Ejecuta primero los pasos de [Copias de seguridad](#copias-de-seguridad).
-- Ademas, guarda una copia completa de la carpeta de instalacion (por ejemplo `/opt/iskylims`) para rollback bare-metal.
-- Si usas library pools, exportalos antes de actualizar:
-
-  ```bash
-  mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db_port> iskylims \
-    -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
-    > /tmp/library_pool_run_process.tsv
-  ```
-
-#### Actualizar codigo y ajustes
+Valores principales:
 
 ```bash
-cd <tu directorio de trabajo>/iskylims
-git pull
-cp conf/template_install_settings.txt install_settings.txt
-sudo nano install_settings.txt
+INSTALL_PATH='/opt/iskylims'
+
+APACHE_CONF_PATH='/srv/containers/bind/iskylims/apache_conf'
+DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/django_settings/settings.py'
+
+APP_UID='1212'
+APP_GID='1212'
+APP_SHELL='/sbin/nologin'
+APP_PORT='8001'
+
+DB_USER='<usuario_db>'
+DB_PASS='<password_db>'
+DB_NAME='iskylims'
+DB_SERVER_IP='<host_o_ip_mysql>'
+DB_PORT=3306
+
+EMAIL_HOST_SERVER='docker.container.internal'
+EMAIL_PORT='25'
+EMAIL_HOST_USER='<correo>'
+EMAIL_HOST_PASSWORD=''
+EMAIL_USE_TLS='False'
+
+LOCAL_SERVER_IP='*'
+DNS_URL='<dns_o_ip_de_iskylims>'
 ```
 
-Si editas el archivo en Windows, asegurate de guardarlo con codificacion UTF-8/ASCII.
+Notas:
 
-#### Ejecutar pasos de actualizacion con root
+- `INSTALL_PATH` es la ruta dentro del contenedor.
+- `APACHE_CONF_PATH` es una ruta del host donde se escriben los ficheros Apache renderizados.
+- `DJANGO_SETTINGS_PATH` es una ruta del host para el `settings.py` montado en el contenedor.
+- `DB_*` debe apuntar a la base de datos de produccion existente.
+- Mantener el mismo `APP_UID` y `APP_GID` en todas las actualizaciones evita problemas de permisos.
 
-Actualiza dependencias del sistema y de Python:
+## Backup antes de actualizar
+
+Haz siempre backup antes de ejecutar la actualizacion.
+
+Crea una carpeta de backup:
 
 ```bash
-sudo bash install.sh --upgrade dep 2>&1 | tee install_full.log
+BACKUP_DIR=~/iskylims_backup_$(date +%Y%m%d_%H%M%S)
+mkdir -p "$BACKUP_DIR"
 ```
 
-Asegura que los permisos permiten que el paso sin root escriba en `/opt/iskylims` (ajusta tu hardening si cambio la ruta).
-
-#### Ejecutar pasos de actualizacion sin root
-
-Actualiza el codigo y la base de datos:
+Backup de base de datos:
 
 ```bash
-# con restauracion de library pool
-bash install.sh --upgrade app --git_revision main \
+mysqldump --user=<usuario_db> --password --host=<host_db> --port=<puerto_db> iskylims > "$BACKUP_DIR/iskylims.sql"
+```
+
+Backup de volumenes Podman:
+
+```bash
+podman volume ls | grep iskylims
+podman volume export iskylims_iskylims_documents > "$BACKUP_DIR/iskylims_documents.tar"
+podman volume export iskylims_iskylims_static > "$BACKUP_DIR/iskylims_static.tar"
+```
+
+Backup de configuracion:
+
+```bash
+cp conf/my_prod_settings.txt "$BACKUP_DIR/"
+cp .env.prod.file "$BACKUP_DIR/" 2>/dev/null || true
+```
+
+## Ejecutar la actualizacion
+
+Para la mayoria de actualizaciones:
+
+```bash
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action upgrade 2>&1 | tee ./iskylims_podman_upgrade_$(date +%Y%m%d_%H%M%S).log
+```
+
+El script:
+
+- construye una nueva imagen;
+- arranca o recrea los contenedores necesarios;
+- genera `.env.prod.file`;
+- renderiza configuracion Apache;
+- prepara `settings.py`;
+- repara permisos de bind mounts y volumenes;
+- ejecuta `install.sh --bootstrap upgrade`;
+- aplica migraciones;
+- refresca `collectstatic`.
+
+No usa la accion `install` porque este procedimiento asume una base de datos institucional ya existente.
+
+## Caso especial: actualizacion desde 3.0.0 a 3.1.0
+
+La actualizacion desde 3.0.0 a 3.1.0 requiere pasos extra porque hay cambios de datos que necesitan scripts especificos:
+
+- `convert_rawtop_counter_to_int` antes de migraciones;
+- `library_pool_to_many_relation` despues de migraciones;
+- exportar antes la relacion `wetlab_library_pool.id -> run_process_id_id`.
+
+Exporta el fichero necesario:
+
+```bash
+mysql --user=<usuario_db> --password --host=<host_db> --port=<puerto_db> iskylims \
+  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
+  > /tmp/library_pool_run_process.tsv
+```
+
+Ejecuta la actualizacion especial:
+
+```bash
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
-  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv
+  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv \
+  2>&1 | tee ./iskylims_podman_upgrade_3_0_0_to_3_1_0_$(date +%Y%m%d_%H%M%S).log
 ```
 
-O ejecuta todo en un unico comando:
+Usa este comando solo para esa actualizacion concreta. Para actualizaciones posteriores, usa el comando generico de la seccion anterior.
+
+## Comprobaciones posteriores
+
+Comprueba contenedores:
 
 ```bash
-sudo bash install.sh --upgrade full --git_revision main --tables
-```
-
-Las actualizaciones regeneran las migraciones y las aplican con `--fake-initial` para conservar las tablas existentes, igual que en Docker.
-
-## Operaciones comunes (Docker + bare-metal)
-
-### Creacion de base de datos, usuarios y permisos
-
-Ejecuta como root de MySQL:
-
-```sql
-CREATE DATABASE IF NOT EXISTS iskylims CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-CREATE USER IF NOT EXISTS 'iskylims'@'%' IDENTIFIED BY 'djangopass';
-CREATE USER IF NOT EXISTS 'iskylims'@'localhost' IDENTIFIED BY 'djangopass';
-
-GRANT ALL PRIVILEGES ON iskylims.* TO 'iskylims'@'%';
-GRANT ALL PRIVILEGES ON iskylims.* TO 'iskylims'@'localhost';
-
-FLUSH PRIVILEGES;
-```
-
-Verificacion:
-
-```sql
-SHOW GRANTS FOR 'iskylims'@'%';
-```
-
-### Copias de seguridad
-
-Dump de base de datos:
-
-```bash
-mysqldump -h <db_host> -P <db_port> -u iskylims -p iskylims > iskylims_$(date +%Y%m%d_%H%M%S).sql
-```
-
-Archivo de logs:
-
-```bash
-tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apps .
-
-tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apache .
-```
-
-Archivo del volumen de documents:
-
-```bash
-docker run --rm -v iskylims_documents:/from -v "$PWD":/to alpine \
-  tar -czf /to/iskylims_documents_$(date +%Y%m%d_%H%M%S).tgz -C /from .
-```
-
-Con Podman, usa el mismo comando sustituyendo `docker` por `podman`.
-
-Orden recomendado antes de actualizar:
-
-1. Dump de BD
-2. Archivo del volumen de documents
-3. Archivo de logs
-
-### Restauracion / rollback
-
-Restaurar BD:
-
-```bash
-mysql -h <db_host> -P <db_port> -u iskylims -p iskylims < iskylims_YYYYMMDD_HHMMSS.sql
-```
-
-Restaurar volumen de documents:
-
-```bash
-docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
-  sh -lc "cd /to && tar -xzf /from/iskylims_documents_YYYYMMDD_HHMMSS.tgz"
-```
-
-Con Podman, usa el mismo comando sustituyendo `docker` por `podman`.
-
-Restaurar logs:
-
-```bash
-mkdir -p /var/log/local/iskylims/apps
-tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apps
-
-mkdir -p /var/log/local/iskylims/apache
-tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apache
-```
-
-Ejemplo de rollback completo bare-metal:
-
-```bash
-sudo rm -rf /opt/iskylims
-sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
-sudo /scripts/hardening.sh
-mysql -u iskylims -p -h <db_host> iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_YYYYMMDDHHMM.sql
-```
-
-## Que hacer si algo falla
-
-Cuando una instalacion o actualizacion falla, restaura el estado anterior y reintenta con logs activados.
-
-Diagnosticos rapidos:
-
-```bash
-# bare-metal
-cd /opt/iskylims
-python manage.py check
-
-# docker
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml ps
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
-
-# podman
 podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+```
+
+Revisa logs:
+
+```bash
 podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 apache
 ```
 
-Si sospechas que una imagen o cache de build de Docker esta corrupta:
+Comprueba la aplicacion:
+
+```text
+http://<servidor>:8080
+```
+
+Si se han cambiado parametros de runtime en `conf/my_prod_settings.txt`, vuelve a ejecutar `container_install.sh` para regenerar `.env.prod.file` y recrear los contenedores de forma coherente.
+
+## Rollback
+
+Si la actualizacion falla y necesitas volver atras:
+
+1. Deten contenedores:
+
+    ```bash
+    podman compose --env-file .env.prod.file -f docker-compose.prod.yml down
+    ```
+
+2. Vuelve al commit o tag anterior del codigo:
+
+    ```bash
+    git checkout <commit_o_tag_anterior>
+    ```
+
+3. Restaura la base de datos:
+
+    ```bash
+    mysql --user=<usuario_db> --password --host=<host_db> --port=<puerto_db> iskylims < "$BACKUP_DIR/iskylims.sql"
+    ```
+
+4. Restaura volumenes si es necesario:
+
+    ```bash
+    podman volume import iskylims_iskylims_documents "$BACKUP_DIR/iskylims_documents.tar"
+    podman volume import iskylims_iskylims_static "$BACKUP_DIR/iskylims_static.tar"
+    ```
+
+5. Restaura configuracion si cambio:
+
+    ```bash
+    cp "$BACKUP_DIR/my_prod_settings.txt" conf/my_prod_settings.txt
+    ```
+
+6. Repara permisos, arranca y vuelve a reparar volumenes montados:
+
+    ```bash
+    bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+    podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
+    bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+    ```
+
+7. Revisa logs:
+
+    ```bash
+    podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 app
+    podman compose --env-file .env.prod.file -f docker-compose.prod.yml logs --tail 200 apache
+    ```
+
+## Reparar permisos
+
+Ejecuta esta accion si:
+
+- se han recreado contenedores manualmente;
+- se han restaurado volumenes;
+- se han cambiado propietarios en el host;
+- se han cambiado `APP_UID` o `APP_GID`;
+- el contenedor no arranca por permisos de bind mounts.
 
 ```bash
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml build --no-cache app
-docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d --force-recreate app
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
 ```
 
-### Bare-metal
-
-Necesitamos copiar la carpeta completa `/opt/iskylims` de vuelta a `/opt/iskylims` (o tu ruta de instalacion), y restaurar la base de datos con algo como:
+Si el contenedor no esta arrancado, esta accion repara solo los bind mounts del host. Despues arranca los contenedores y repite la accion para reparar los volumenes montados:
 
 ```bash
-sudo rm -rf /opt/iskylims
-sudo cp -r /home/dadmin/backup_prod/iSkyLIMS/ /opt/
-sudo /scripts/hardening.sh
-mysql -u iskylims -p -h dmysqlps.isciiides.es
-# drop database iskylims;
-# create database iskylims;
-mysql -u iskylims -p -h dmysqlps.isciiides.es iskylims < /home/dadmin/backup_prod/bk_iSkyLIMS_202310160737.sql
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
 ```
 
-### Docker
+## Operaciones utiles
 
-1. Para el contenedor:
-
-    ```bash
-    docker compose --env-file .env.prod.file -f docker-compose.prod.yml down
-    ```
-
-2. Restaura la base de datos desde tu backup.
-
-3. Si sospechas que la imagen o la cache de build esta corrupta, elimina la imagen de la app y reconstruye:
-
-    ```bash
-    docker image ls | grep iskylims
-    docker rmi <iskylims_image_id>
-    ```
-
-4. Si los volumenes estan comprometidos, restauralos desde los tar:
+Usa siempre `.env.prod.file` al ejecutar Podman Compose directamente:
 
 ```bash
-mkdir -p /var/log/local/iskylims/apps
-tar -xzf iskylims_app_logs.tgz -C /var/log/local/iskylims/apps
-
-mkdir -p /var/log/local/iskylims/apache
-tar -xzf iskylims_apache_logs.tgz -C /var/log/local/iskylims/apache
-
-docker run --rm -v iskylims_documents:/to -v "$PWD":/from alpine \
-  tar -xzf /from/iskylims_documents.tgz -C /to
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml ps
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml restart app
+podman compose --env-file .env.prod.file -f docker-compose.prod.yml down
 ```
 
-5. Arranca el contenedor de nuevo:
+Entrar al contenedor:
 
-    ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade
-    ```
+```bash
+podman exec -it iskylims_app bash
+```
 
-## Pasos finales de configuracion
+Ejecutar `collectstatic` manualmente:
 
-### Configuracion de SAMBA
+```bash
+podman exec -it iskylims_app bash -lc 'cd /opt/iskylims && source virtualenv/bin/activate && python manage.py collectstatic --noinput'
+```
 
-- Inicia sesion con la cuenta admin.
-- Ve a Massive sequencing
-![go_to_wetlab](img/got_to_wetlab.png){width:50px}
-- Ve a Configuration -> Samba configuration
-- Rellena el formulario con los parametros apropiados para la carpeta compartida de Samba:
-![samba form](img/samba_form.png)
+Ejecutar manualmente el bootstrap de actualizacion:
 
-### Verificacion de correo electronico
+```bash
+podman exec -it iskylims_app bash -c 'cd /srv/iskylims && bash install.sh --bootstrap upgrade --git_revision main --conf conf/my_prod_settings.txt --tables --skip_apache_restart'
+```
 
-- Ve a Massive sequencing
-- Ve a Configuration -> Email configuration
-- Rellena el formulario con los parametros necesarios y prueba a enviar un correo.
+## Notas de permisos
 
-## Notas para desarrolladores
+Bind mounts:
 
-### Flujo de migraciones Django
+- Son rutas reales del host.
+- Deben existir antes de arrancar contenedores.
+- Deben pertenecer al usuario que ejecuta Podman rootless.
+- `container_install.sh` usa `podman unshare` para aplicar propietarios internos cuando hace falta.
 
-Las migraciones se versionan en el repositorio. No ejecutes `makemigrations` durante la instalacion o actualizacion.
+Volumenes Podman:
 
-Flujo base + actualizacion para nuevas releases:
+- Los gestiona Podman en el almacenamiento rootless del usuario.
+- Se reparan desde dentro del contenedor con `podman exec --user 0`.
+- Si cambias `APP_UID` o `APP_GID`, ejecuta `--action fix-permissions`.
 
-1. Genera las migraciones base desde el ultimo tag estable (por ejemplo 3.0.0).
-2. Versiona las migraciones base.
-3. Genera en `develop` las nuevas migraciones para cambios de esquema y versionalas.
-4. Las actualizaciones ejecutan una vez `migrate --fake-initial` para alinear tablas existentes, y despues `migrate` para aplicar los nuevos ficheros de migracion.
+Apache:
 
-### Rutas persistentes en el host
+- El contenedor Apache UBI usa UID `1001` y grupo `0`.
+- Los logs Apache se preparan para ese usuario.
+- Los ficheros Apache renderizados se dejan con permisos `0664`.
 
-Consulta [Persistir logs/documentos en el host](#persistir-logsdocumentos-en-el-host) en la seccion de despliegue de produccion.
+`settings.py`:
 
-### Configurar el servidor Apache
-
-Copia el archivo de configuracion de Apache segun tu distribucion dentro del directorio de configuracion de Apache y renombralo a iskylims.conf
-
-Ubicaciones tipicas:
-
-- Ubuntu/Debian: `/etc/apache2/sites-available/iskylims.conf` (habilitar con `a2ensite`)
-- CentOS/RHEL: `/etc/httpd/conf.d/iskylims.conf`
-
-Pasos sugeridos (Apache en el host como proxy inverso):
-
-Estos pasos aplican a instalaciones bare-metal con Apache en el host. En despliegues Docker de produccion se usa el contenedor `apache` y no hace falta copiar configuracion a `/etc/apache2` o `/etc/httpd`.
-
-1. Copia el ejemplo de configuracion:
-
-    ```bash
-    sudo cp conf/iskylims_apache_reverse_proxy.conf /etc/apache2/sites-available/iskylims.conf
-    # CentOS/RHEL:
-    # sudo cp conf/iskylims_apache_reverse_proxy.conf /etc/httpd/conf.d/iskylims.conf
-    ```
-
-2. Edita la configuracion:
-
-    - Ajusta `ServerName`
-    - Comprueba que `ProxyPass` apunte a `http://localhost:8001/`
-    - Comprueba `Alias /static/ /opt/iskylims/static/`
-
-3. Crea la carpeta de estaticos en el host:
-
-    ```bash
-    sudo mkdir -p /opt/iskylims/static
-    ```
-
-4. Habilita modulos necesarios (Ubuntu/Debian):
-
-    ```bash
-    sudo a2enmod proxy proxy_http headers
-    sudo a2ensite iskylims.conf
-    ```
-
-5. Recarga Apache:
-
-    ```bash
-    sudo systemctl reload apache2
-    # CentOS/RHEL:
-    # sudo systemctl reload httpd
-    ```
-
-### Verificacion de la instalacion
-
-Abre el navegador y escribe "localhost" o la IP local del servidor para comprobar que iSkyLIMS esta funcionando.
-
-Tambien puedes comprobar parte de la funcionalidad y las conexiones a Samba y base de datos usando:
-
-- Ve a [configuration test](https://iskylims.isciii.es/wetlab/configurationTest/)
-- Haz click en submit
-- Revisa todas las pestañas para confirmar que la conexion es correcta.
-- Ejecuta las 3 pruebas para cada maquina de secuenciacion: MiSeq, NextSeq y NovaSeq.
-
-## Documentacion de iSkyLIMS
-
-La documentacion de iSkyLIMS esta disponible en [https://iskylims.readthedocs.io/en/latest](https://iskylims.readthedocs.io/en/latest)
+- Se monta desde el host.
+- `container_install.sh` lo prepara con permisos `0664`.
+- Si editas el fichero a mano, ejecuta despues `--action fix-permissions`.
