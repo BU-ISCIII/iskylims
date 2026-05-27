@@ -140,7 +140,18 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
     # edit conf/my_prod_settings.txt with your DB/Samba details
     ```
 
-2. Build and run in production mode (uses `docker-compose.prod.yml` by default):
+2. Create the host directories used as bind mount sources and make them manageable by the account that will run `container_install.sh`.
+
+   At minimum, this includes `/var/log/local/iskylims/apps`, `/var/log/local/iskylims/apache`, and any custom `APACHE_CONF_PATH` or `DJANGO_SETTINGS_PATH` parent directory set in `conf/my_prod_settings.txt`.
+
+    ```bash
+    sudo mkdir -p /var/log/local/iskylims/apps /var/log/local/iskylims/apache
+    sudo chown -R "$USER:$USER" /var/log/local/iskylims
+    ```
+
+   For rootless Podman, `container_install.sh` uses `podman unshare` to apply container UID/GID ownership where needed. For Docker, normal host permissions apply, so the script runner must be able to create and adjust the bind mount paths.
+
+3. Build and run in production mode (uses `docker-compose.prod.yml` by default):
 
     ```bash
     bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
@@ -154,7 +165,7 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
     bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
     ```
 
-3. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
+4. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
 Production images now bake the staged iSkyLIMS application into the image itself. Host reboots or container recreation no longer require rerunning the app installation step; `container_install.sh` only performs runtime bootstrap tasks such as migrations, fixture refreshes, optional scripts, superuser creation on first install, and `collectstatic`.
 
