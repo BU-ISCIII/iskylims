@@ -73,11 +73,11 @@ Ejemplo recomendado:
 ```bash
 sudo mkdir -p /var/log/local/iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
-sudo mkdir -p /srv/containers/bind/iskylims/apache_conf
-sudo mkdir -p /srv/containers/bind/iskylims/django_settings
+sudo mkdir -p /srv/containers/bind/iskylims/iskylims_apache_conf
+sudo mkdir -p /srv/containers/bind/iskylims/iskylims_django_settings
 
-sudo chown -R "$USER:$USER" /var/log/local/iskylims
-sudo chown -R "$USER:$USER" /srv/containers/bind/iskylims
+sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /var/log/local/iskylims
+sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /srv/containers/bind/iskylims
 ```
 
 Si usas otras rutas para `APACHE_CONF_PATH` o `DJANGO_SETTINGS_PATH`, crea esas rutas y asignales la misma propiedad.
@@ -119,8 +119,8 @@ Valores principales:
 ```bash
 INSTALL_PATH='/opt/iskylims'
 
-APACHE_CONF_PATH='/srv/containers/bind/iskylims/apache_conf'
-DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/django_settings/settings.py'
+APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
+DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_settings/settings.py'
 
 APP_UID='1212'
 APP_GID='1212'

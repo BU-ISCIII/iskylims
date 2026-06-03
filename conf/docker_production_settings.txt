@@ -16,8 +16,8 @@ FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 APACHE_CONF_PATH=''
 # Host path for the bind-mounted Django settings.py.
 # Leave empty to use ${INSTALL_PATH}/iskylims/settings.py as the host bind source.
-# If this is a directory or ends with /, container_install.sh appends settings.py.
-# Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_app_setting'
+# If this is a directory, ends with /, or does not end with .py, container_install.sh appends settings.py.
+# Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_settings/settings.py'
 DJANGO_SETTINGS_PATH=''
 # UID/GID for the non-root iskylims user inside the app container.
 APP_UID='1212'

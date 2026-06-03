@@ -173,7 +173,7 @@ Container build/runtime values are configured in the selected install config, no
 
 - `INSTALL_PATH`: runtime install root used by the app container, static/documents mounts, and install scripts. Default: `/opt/iskylims`.
 - `APACHE_CONF_PATH`: host directory used for Apache bind-mounted config files. Leave empty to use `${INSTALL_PATH}/conf` as the host bind source; set this to a writable host path for rootless or hardened deployments.
-- `DJANGO_SETTINGS_PATH`: host path used for the bind-mounted Django `settings.py`. Leave empty to use `${INSTALL_PATH}/iskylims/settings.py` as the host bind source. If the value is a directory or ends with `/`, `container_install.sh` appends `settings.py`.
+- `DJANGO_SETTINGS_PATH`: host path used for the bind-mounted Django `settings.py`. Leave empty to use `${INSTALL_PATH}/iskylims/settings.py` as the host bind source. If the value is a directory, ends with `/`, or does not end with `.py`, `container_install.sh` appends `settings.py`.
 - `APP_UID` / `APP_GID`: runtime UID/GID for the `iskylims` user inside the container. Default: `1212:1212`.
 - `APP_SHELL`: shell assigned to the runtime user during image build. Default: `/sbin/nologin`.
 - `APP_PORT`: internal Gunicorn bind port for the `app` service. Default: `8001`.

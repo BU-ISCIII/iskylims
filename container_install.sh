@@ -282,7 +282,7 @@ normalize_settings_bind_path() {
         return 0
     fi
 
-    if [ -d "$value" ] || [[ "$value" = */ ]]; then
+    if [ -d "$value" ] || [[ "$value" = */ ]] || [[ "$value" != *.py ]]; then
         echo "${value%/}/settings.py"
         return 0
     fi
