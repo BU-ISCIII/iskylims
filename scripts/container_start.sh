@@ -52,9 +52,54 @@ if [ "$APP_MODE" = "dev" ]; then
 fi
 
 if command -v supercronic >/dev/null 2>&1; then
-    # Ensure django-crontab definitions are installed in user crontab first.
-    python "${APP_DIR}/manage.py" crontab add >/dev/null 2>&1 || true
-    crontab -l 2>/dev/null | sed '/^\s*#/d; /^\s*$/d' > "${CRON_FILE}" || true
+    # Build supercronic's crontab directly from Django settings. Avoid the
+    # system crontab command because it depends on PAM behavior that varies
+    # across rootless container hosts.
+    python - <<'PY' > "${CRON_FILE}"
+import os
+import shlex
+
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    os.environ.get("DJANGO_SETTINGS_MODULE", "iskylims.settings"),
+)
+
+import django
+django.setup()
+
+from django.conf import settings
+
+app_dir = os.environ.get("INSTALL_PATH", "/opt/iskylims")
+python_bin = os.path.join(app_dir, "virtualenv", "bin", "python")
+settings_module = os.environ.get("DJANGO_SETTINGS_MODULE", "iskylims.settings")
+command_suffix = getattr(settings, "CRONTAB_COMMAND_SUFFIX", "")
+
+for job in getattr(settings, "CRONJOBS", []):
+    if len(job) < 2:
+        continue
+
+    schedule = job[0]
+    dotted_path = job[1]
+    job_suffix = job[2] if len(job) > 2 else ""
+    module_name, function_name = dotted_path.rsplit(".", 1)
+    python_code = (
+        "import os; "
+        f"os.environ.setdefault('DJANGO_SETTINGS_MODULE', {settings_module!r}); "
+        "import django; django.setup(); "
+        f"from {module_name} import {function_name} as cron_job; "
+        "cron_job()"
+    )
+    command = (
+        f"cd {shlex.quote(app_dir)} && "
+        f"DJANGO_SETTINGS_MODULE={shlex.quote(settings_module)} "
+        f"{shlex.quote(python_bin)} -c {shlex.quote(python_code)}"
+    )
+    suffixes = " ".join(s for s in (job_suffix, command_suffix) if s)
+    if suffixes:
+        command = f"{command} {suffixes}"
+
+    print(f"{schedule} {command}")
+PY
     if [ -s "${CRON_FILE}" ]; then
         safe_chmod 600 "${CRON_FILE}"
         : > "${CRON_LOG}"

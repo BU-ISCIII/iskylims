@@ -268,7 +268,7 @@ system_u:object_r:container_file_t:s0
 
 #### Cron jobs inside the container
 
-Cron runs via `supercronic`, started by the container entrypoint script. The script writes the django-crontab entries to `${INSTALL_PATH}/cron/iskylims` and starts `supercronic` as the non-root app user.
+Cron runs via `supercronic`, started by the container entrypoint script. The script reads Django `CRONJOBS` directly, writes `${INSTALL_PATH}/cron/iskylims`, and starts `supercronic` as the non-root app user. It does not call `manage.py crontab` or the system `crontab` command during container startup.
 
 If you change `CRONJOBS`, rebuild or restart the container to regenerate the cron file.
 
