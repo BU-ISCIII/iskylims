@@ -74,7 +74,7 @@ Ejemplo recomendado:
 sudo mkdir -p /var/log/local/iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
 sudo mkdir -p /srv/containers/bind/iskylims/iskylims_apache_conf
-sudo mkdir -p /srv/containers/bind/iskylims/iskylims_django_settings
+sudo mkdir -p /srv/containers/bind/iskylims/iskylims_django_setting
 
 sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /var/log/local/iskylims
 sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /srv/containers/bind/iskylims
@@ -120,7 +120,7 @@ Valores principales:
 INSTALL_PATH='/opt/iskylims'
 
 APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
-DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_settings/settings.py'
+DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_setting/settings.py'
 
 APP_UID='1212'
 APP_GID='1212'
