@@ -5,7 +5,10 @@ import re
 import shutil
 import xml.etree.ElementTree as ET
 import datetime
+import io
+import shlex
 import sys
+import tempfile
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -661,21 +664,17 @@ def fetch_remote_file(conn, run_dir, remote_file, local_file):
 
 
 def get_crontab_status():
-    """Function uses the stdout to get the output about crontab show command.
-    Because if using stdout=out parameter in comandd does not return anything
-    """
+    """Return whether the run discovery cron job is active."""
     cron_status = {"active": "False"}
-    cron_tmp_file = os.path.join(settings.MEDIA_ROOT, "wetlab", "tmp", "test.crontab")
-    sys.stdout = open(cron_tmp_file, "w")
-    management.call_command("crontab", "show")
-    with open(cron_tmp_file, "r") as fh:
-        lines = fh.readlines()
-    for line in lines:
-        cron_match = re.search(r".*wetlab.cron.looking_for_new_runs.*", line)
-        if cron_match:
-            cron_status["active"] = "True"
-            break
-    os.remove(cron_tmp_file)
+    crontab_output = _get_django_crontab_output()
+
+    if _crontab_output_has_run_discovery_job(crontab_output):
+        cron_status["active"] = "True"
+        return cron_status
+
+    if _should_fallback_to_supercronic(crontab_output) and _is_supercronic_active():
+        cron_status["active"] = "True"
+
     return cron_status
 
 
@@ -686,12 +685,219 @@ def set_crontab_status(state):
 
     new_state = {}
     if state == "activate":
-        management.call_command("crontab", "add")
-        new_state["active"] = "True"
+        _call_django_crontab("add")
+        crontab_output = _get_django_crontab_output()
+        if _crontab_output_has_run_discovery_job(crontab_output):
+            new_state["active"] = "True"
+            return new_state
+
+        _enable_supercronic()
+        _start_supercronic()
+        new_state["active"] = "True" if _is_supercronic_active() else "False"
     else:
-        management.call_command("crontab", "remove")
+        _call_django_crontab("remove")
+        _disable_supercronic()
+        _stop_supercronic()
         new_state["active"] = "False"
     return new_state
+
+
+def _call_django_crontab(action):
+    success, _output = _run_django_crontab(action)
+    return success
+
+
+def _get_django_crontab_output():
+    _success, output = _run_django_crontab("show")
+    return output
+
+
+def _run_django_crontab(action):
+    output = io.StringIO()
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    saved_stdout_fd = os.dup(1)
+    saved_stderr_fd = os.dup(2)
+    success = True
+
+    with tempfile.TemporaryFile(mode="w+") as fd_output:
+        try:
+            sys.stdout = output
+            sys.stderr = output
+            os.dup2(fd_output.fileno(), 1)
+            os.dup2(fd_output.fileno(), 2)
+            try:
+                management.call_command("crontab", action)
+            except Exception as exc:
+                success = False
+                output.write(str(exc))
+            fd_output.flush()
+            fd_output.seek(0)
+            output.write(fd_output.read())
+        finally:
+            os.dup2(saved_stdout_fd, 1)
+            os.dup2(saved_stderr_fd, 2)
+            os.close(saved_stdout_fd)
+            os.close(saved_stderr_fd)
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+
+    return success, output.getvalue()
+
+
+def _crontab_output_has_run_discovery_job(output):
+    return "wetlab.cron" in output and "looking_for_new_runs" in output
+
+
+def _should_fallback_to_supercronic(crontab_output):
+    return (
+        "pam configuration" in crontab_output
+        or "not allowed to access to (crontab)" in crontab_output
+        or os.path.exists(_get_supercronic_cron_file())
+    )
+
+
+def _get_supercronic_cron_file():
+    return os.path.join(settings.BASE_DIR, "cron", "iskylims")
+
+
+def _get_supercronic_log_file():
+    return os.path.join(settings.BASE_DIR, "tmp", "supercronic.log")
+
+
+def _get_supercronic_disabled_file():
+    return os.path.join(settings.BASE_DIR, "cron", "disabled")
+
+
+def _is_supercronic_disabled():
+    return os.path.exists(_get_supercronic_disabled_file())
+
+
+def _enable_supercronic():
+    disabled_file = _get_supercronic_disabled_file()
+    if os.path.exists(disabled_file):
+        os.remove(disabled_file)
+
+
+def _disable_supercronic():
+    disabled_file = _get_supercronic_disabled_file()
+    os.makedirs(os.path.dirname(disabled_file), exist_ok=True)
+    with open(disabled_file, "w") as fh:
+        fh.write("disabled by web UI\n")
+
+
+def _supercronic_file_has_run_discovery_job():
+    cron_file = _get_supercronic_cron_file()
+    if not os.path.exists(cron_file):
+        return False
+
+    with open(cron_file, "r") as fh:
+        return _crontab_output_has_run_discovery_job(fh.read())
+
+
+def _iter_process_cmdlines():
+    proc_dir = "/proc"
+    if not os.path.isdir(proc_dir):
+        return
+
+    for pid in os.listdir(proc_dir):
+        if not pid.isdigit():
+            continue
+
+        cmdline_path = os.path.join(proc_dir, pid, "cmdline")
+        try:
+            with open(cmdline_path, "rb") as fh:
+                raw_cmdline = fh.read()
+        except OSError:
+            continue
+
+        if not raw_cmdline:
+            continue
+
+        yield int(pid), raw_cmdline.replace(b"\x00", b" ").decode(errors="replace")
+
+
+def _get_supercronic_pids():
+    cron_file = _get_supercronic_cron_file()
+    return [
+        pid
+        for pid, cmdline in _iter_process_cmdlines()
+        if "supercronic" in cmdline and cron_file in cmdline
+    ]
+
+
+def _is_supercronic_active():
+    return (
+        not _is_supercronic_disabled()
+        and _supercronic_file_has_run_discovery_job()
+        and bool(_get_supercronic_pids())
+    )
+
+
+def _render_supercronic_file():
+    cron_file = _get_supercronic_cron_file()
+    os.makedirs(os.path.dirname(cron_file), exist_ok=True)
+
+    with open(cron_file, "w") as fh:
+        for job in getattr(settings, "CRONJOBS", []):
+            if len(job) < 2:
+                continue
+
+            schedule = job[0]
+            dotted_path = job[1]
+            job_suffix = job[2] if len(job) > 2 else ""
+            module_name, function_name = dotted_path.rsplit(".", 1)
+            python_code = (
+                "import os; "
+                "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'iskylims.settings'); "
+                "import django; django.setup(); "
+                f"from {module_name} import {function_name} as cron_job; "
+                "cron_job()"
+            )
+            command = (
+                f"cd {shlex.quote(settings.BASE_DIR)} && "
+                f"{shlex.quote(sys.executable)} -c {shlex.quote(python_code)}"
+            )
+            suffixes = " ".join(
+                suffix
+                for suffix in (
+                    job_suffix,
+                    getattr(settings, "CRONTAB_COMMAND_SUFFIX", ""),
+                )
+                if suffix
+            )
+            if suffixes:
+                command = f"{command} {suffixes}"
+
+            fh.write(f"{schedule} {command}\n")
+
+    os.chmod(cron_file, 0o600)
+
+
+def _start_supercronic():
+    if _is_supercronic_disabled() or _is_supercronic_active() or shutil.which("supercronic") is None:
+        return
+
+    _render_supercronic_file()
+    log_file = _get_supercronic_log_file()
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
+    pid = os.fork()
+    if pid != 0:
+        return
+
+    with open(log_file, "ab", buffering=0) as log_fh:
+        os.dup2(log_fh.fileno(), 1)
+        os.dup2(log_fh.fileno(), 2)
+        os.execvp("supercronic", ["supercronic", _get_supercronic_cron_file()])
+
+
+def _stop_supercronic():
+    for pid in _get_supercronic_pids():
+        try:
+            os.kill(pid, 15)
+        except OSError:
+            continue
 
 
 def get_latest_run_procesing_log(conn, log_folder, experiment_name):

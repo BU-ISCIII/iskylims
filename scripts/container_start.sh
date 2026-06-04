@@ -6,6 +6,7 @@ CRON_DIR="${APP_DIR}/cron"
 TMP_DIR="${APP_DIR}/tmp"
 CRON_FILE="${CRON_DIR}/iskylims"
 CRON_LOG="${TMP_DIR}/supercronic.log"
+CRON_DISABLED_FILE="${CRON_DIR}/disabled"
 APP_MODE="${APP_MODE:-prod}"
 APP_PORT="${APP_PORT:-8001}"
 PROJECT_MODULE="${PROJECT_MODULE:-iskylims}"
@@ -51,7 +52,9 @@ if [ "$APP_MODE" = "dev" ]; then
     exec python "${APP_DIR}/manage.py" runserver "0.0.0.0:${APP_PORT}"
 fi
 
-if command -v supercronic >/dev/null 2>&1; then
+if [ -f "${CRON_DISABLED_FILE}" ]; then
+    echo "Cron is disabled by ${CRON_DISABLED_FILE}. Skipping supercronic start."
+elif command -v supercronic >/dev/null 2>&1; then
     # Build supercronic's crontab directly from Django settings. Avoid the
     # system crontab command because it depends on PAM behavior that varies
     # across rootless container hosts.
