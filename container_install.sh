@@ -789,9 +789,10 @@ prepare_app_mount_permissions() {
     echo "Preparing writable app mount permissions..."
     engine_exec exec --user 0 "$app_container" sh -lc "
         set -e
-        mkdir -p '$install_path/logs' '$install_path/static' '$install_path/documents'
-        chown -R '$app_uid:$app_gid' '$install_path/logs' '$install_path/static' '$install_path/documents'
+        mkdir -p '$install_path/logs' '$install_path/static' '$install_path/documents' '$install_path/cron' '$install_path/tmp'
+        chown -R '$app_uid:$app_gid' '$install_path/logs' '$install_path/static' '$install_path/documents' '$install_path/cron' '$install_path/tmp'
         chmod -R u+rwX,g+rwX '$install_path/logs' '$install_path/static' '$install_path/documents'
+        chmod 700 '$install_path/cron' '$install_path/tmp'
         if [ -f '$install_path/iskylims/settings.py' ]; then
             chown '$app_uid:$app_gid' '$install_path/iskylims/settings.py'
             chmod 0664 '$install_path/iskylims/settings.py'
