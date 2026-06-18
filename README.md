@@ -136,16 +136,17 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 1. Copy and edit the production settings template:
 
     ```bash
-    cp conf/docker_production_settings.txt conf/my_prod_settings.txt
-    # edit conf/my_prod_settings.txt with your DB/Samba details
+    cp conf/docker_production_settings.txt conf/my_prod_settings_iskylims.txt
+    # edit conf/my_prod_settings_iskylims.txt with your DB/Samba details
     ```
 
 2. Create the host directories used as bind mount sources and make them manageable by the account that will run `container_install.sh`.
 
-   At minimum, this includes `/var/log/local/iskylims/apps`, `/var/log/local/iskylims/apache`, and any custom `APACHE_CONF_PATH` or `DJANGO_SETTINGS_PATH` parent directory set in `conf/my_prod_settings.txt`.
+   At minimum, this includes `/var/log/local/relecov-iskylims/apps`, `/var/log/local/iskylims/apache`, and any custom `APACHE_CONF_PATH` or `DJANGO_SETTINGS_PATH` parent directory set in `conf/my_prod_settings_iskylims.txt`.
 
     ```bash
-    sudo mkdir -p /var/log/local/iskylims/apps /var/log/local/iskylims/apache
+    sudo mkdir -p /var/log/local/relecov-iskylims/apps /var/log/local/iskylims/apache
+    sudo chown -R "$USER:$USER" /var/log/local/relecov-iskylims
     sudo chown -R "$USER:$USER" /var/log/local/iskylims
     ```
 
@@ -154,7 +155,7 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 3. Build and run in production mode (uses `docker-compose.prod.yml` by default):
 
     ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+    bash container_install.sh --install_conf conf/my_prod_settings_iskylims.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
     ```
 
    Use `--compose_file` to override the compose file or `--install_type`/`--git_revision` to change the build.
@@ -162,20 +163,21 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
    Tip: capture logs for troubleshooting:
 
     ```bash
-    bash container_install.sh --install_conf conf/my_prod_settings.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+    bash container_install.sh --install_conf conf/my_prod_settings_iskylims.txt 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
     ```
 
 4. If this is a fresh install, create the Django superuser when prompted and complete the Samba configuration in the UI.
 
 Production images now bake the staged iSkyLIMS application into the image itself. Host reboots or container recreation no longer require rerunning the app installation step; `container_install.sh` only performs runtime bootstrap tasks such as migrations, fixture refreshes, optional scripts, superuser creation on first install, and `collectstatic`.
 
-Container build/runtime values are configured in the selected install config, not by exporting shell variables. Edit these fields in `conf/my_prod_settings.txt` before running `container_install.sh`:
+Container build/runtime values are configured in the selected install config, not by exporting shell variables. Edit these fields in `conf/my_prod_settings_iskylims.txt` before running `container_install.sh`:
 
 - `INSTALL_PATH`: runtime install root used by the app container, static/documents mounts, and install scripts. Default: `/opt/iskylims`.
 - `APACHE_CONF_PATH`: host directory used for Apache bind-mounted config files. Leave empty to use `${INSTALL_PATH}/conf` as the host bind source; set this to a writable host path for rootless or hardened deployments.
 - `SERVER_STATUS_SERVER_NAME`: Apache virtual host used for `/server-status`. Leave empty to use `DNS_URL`.
 - `SERVER_STATUS_ALIASES`: aliases accepted by the server-status virtual host. Default: `127.0.0.1 localhost`.
 - `SERVER_STATUS_ALLOW_FROM`: clients allowed to access `/server-status`. Default: `127.0.0.1 localhost`.
+- `APACHE_FORWARDED_PROTO` / `APACHE_FORWARDED_PORT`: forwarded request scheme and port sent by Apache. Defaults: `http` and `8081`.
 - `DJANGO_SETTINGS_PATH`: host path used for the bind-mounted Django `settings.py`. Leave empty to use `${INSTALL_PATH}/iskylims/settings.py` as the host bind source. If the value is a directory, ends with `/`, or does not end with `.py`, `container_install.sh` appends `settings.py`.
 - `APP_UID` / `APP_GID`: runtime UID/GID for the `iskylims` user inside the container. Default: `1212:1212`.
 - `APP_SHELL`: shell assigned to the runtime user during image build. Default: `/sbin/nologin`.
@@ -187,6 +189,8 @@ Container build/runtime values are configured in the selected install config, no
 - `GUNICORN_TIMEOUT`: Gunicorn request timeout in seconds. Default: `300`.
 - `GUNICORN_KEEPALIVE`: Gunicorn keep-alive in seconds. Default: `5`.
 
+The standalone iSkyLIMS Apache container renders `APACHE_FORWARDED_PROTO` and `APACHE_FORWARDED_PORT` from this settings file. When iSkyLIMS runs inside the integrated RELECOV stack, the shared `relecov_apache` proxy uses the corresponding values from `my_prod_settings_relecov.txt`.
+
 During production install/upgrade, `container_install.sh` writes `.env.prod.file` in the repository root. This file is ignored by git and is used by Compose for variable interpolation in `docker-compose.prod.yml`. It intentionally contains Compose/runtime metadata, not database or email passwords.
 
 Host directory and ownership preparation is described in [Persist logs/documents on the host](#persist-logsdocuments-on-the-host).
@@ -197,7 +201,7 @@ The production compose file uses `INSTALL_PATH` from the selected install config
 
 Persistence layout:
 
-- `/var/log/local/iskylims/apps` -> `${INSTALL_PATH}/logs` inside the `app` container
+- `/var/log/local/relecov-iskylims/apps` -> `${INSTALL_PATH}/logs` inside the `app` container
 - `/var/log/local/iskylims/apache` -> `/var/log/httpd` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_logs.conf` -> `/etc/httpd/conf.d/logformat.conf` inside the `apache` container
@@ -211,11 +215,11 @@ If you override the compose file, ensure these mounts exist to keep logs and doc
 Create host directories before the first deployment:
 
 ```bash
-sudo mkdir -p /var/log/local/iskylims/apps
+sudo mkdir -p /var/log/local/relecov-iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
 sudo mkdir -p <APACHE_CONF_PATH>
 sudo mkdir -p <DJANGO_SETTINGS_PATH_PARENT>
-sudo chown -R <APP_UID>:<APP_GID> /var/log/local/iskylims/apps <APACHE_CONF_PATH> <DJANGO_SETTINGS_PATH_PARENT>
+sudo chown -R <APP_UID>:<APP_GID> /var/log/local/relecov-iskylims/apps <APACHE_CONF_PATH> <DJANGO_SETTINGS_PATH_PARENT>
 ```
 
 For hardened/rootless Podman hosts, run the host preparation script as the same
@@ -250,7 +254,7 @@ During `container_install.sh`, `conf/iskylims_apache_reverse_proxy.conf`, `conf/
 
 If you need a different app container runtime root, set `INSTALL_PATH` in the install config file before running `container_install.sh`. If the runtime root is not writable on the host, set `APACHE_CONF_PATH` and `DJANGO_SETTINGS_PATH` to writable host paths in the install config file.
 
-`container_install.sh` creates `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}`, the parent directory for `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}`, `/var/log/local/iskylims/apps`, and `/var/log/local/iskylims/apache` before `compose up`, copies the three Apache config files there, prepares the bind-mounted Django settings file if it does not exist, passes runtime values into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${INSTALL_PATH}`; the bootstrap step updates settings, applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/iskylims/apache`.
+`container_install.sh` creates `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}`, the parent directory for `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}`, `/var/log/local/relecov-iskylims/apps`, and `/var/log/local/iskylims/apache` before `compose up`, copies the three Apache config files there, prepares the bind-mounted Django settings file if it does not exist, passes runtime values into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${INSTALL_PATH}`; the bootstrap step updates settings, applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/iskylims/apache`.
 
 SELinux note for pre-production and production:
 
@@ -303,7 +307,7 @@ If you edit container runtime values in the install config, rerun `container_ins
 If containers were recreated manually, persistent volumes were restored, bind mount ownership changed, or `APP_UID` / `APP_GID` changed, repair permissions before running bootstrap tasks:
 
 ```bash
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
 ```
 
 This action does not rebuild images or run migrations. It refreshes `.env.prod.file` and fixes host bind mount permissions with `podman unshare` when needed. If `iskylims_app` is already running, it also fixes mounted app volumes from inside the container as root; otherwise, start the containers and rerun the same command to repair named volumes. For Docker, use `--engine docker`.
@@ -315,7 +319,7 @@ Keep the same `APP_UID`/`APP_GID` values in the selected install config before r
 Re-deploy the application container against an existing production database:
 
 ```bash
-bash container_install.sh --install_conf conf/my_prod_settings.txt --action upgrade 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
+bash container_install.sh --install_conf conf/my_prod_settings_iskylims.txt --action upgrade 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
 
 The upgrade path rebuilds/restarts the container and runs `install.sh --bootstrap upgrade --tables` inside the app container. The app files are already baked into the rebuilt image; the bootstrap phase applies migrations with `--fake-initial`, refreshes `conf/first_install_tables.json`, refreshes static files, and skips superuser/demo/test data loading.
@@ -339,8 +343,8 @@ mysql --user=<db_user> --password=<db_password> --host=<db_server_ip> --port=<db
 ```bash
 cd <your working directory>/iskylims
 git pull
-cp conf/docker_production_settings.txt myprod_settings.txt
-sudo nano myprod_settings.txt
+cp conf/docker_production_settings.txt my_prod_settings_iskylims.txt
+sudo nano my_prod_settings_iskylims.txt
 ```
 
 Ensure the file uses Linux-friendly encoding (UTF-8/ASCII) if you edit it on Windows.
@@ -350,7 +354,7 @@ Keep the same `APP_UID`/`APP_GID` values in the selected install config before r
 Run upgrade command:
 
 ```bash
-bash container_install.sh --engine podman --install_conf my_prod_settings.txt --action upgrade \
+bash container_install.sh --engine podman --install_conf my_prod_settings_iskylims.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv 2>&1 | tee ./iskylims_docker_install_$(date +%Y%m%d_%H%M%S).log
 ```
@@ -497,7 +501,7 @@ mysqldump -h <db_host> -P <db_port> -u iskylims -p iskylims > iskylims_$(date +%
 Logs archive:
 
 ```bash
-tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apps .
+tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/relecov-iskylims/apps .
 
 tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apache .
 ```
@@ -537,8 +541,8 @@ With Podman, use the same command replacing `docker` with `podman`.
 Restore logs:
 
 ```bash
-mkdir -p /var/log/local/iskylims/apps
-tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apps
+mkdir -p /var/log/local/relecov-iskylims/apps
+tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/relecov-iskylims/apps
 
 mkdir -p /var/log/local/iskylims/apache
 tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apache

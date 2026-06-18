@@ -11,7 +11,7 @@ Esta guia es para la actualizacion del despliegue institucional de iSkyLIMS usan
   - [Requisitos](#requisitos)
   - [Preparar directorios del host](#preparar-directorios-del-host)
   - [Actualizar codigo](#actualizar-codigo)
-  - [Configurar `my_prod_settings.txt`](#configurar-my_prod_settingstxt)
+  - [Configurar `my_prod_settings_iskylims.txt`](#configurar-my_prod_settings_iskylimstxt)
   - [Backup antes de actualizar](#backup-antes-de-actualizar)
   - [Ejecutar la actualizacion](#ejecutar-la-actualizacion)
   - [Caso especial: actualizacion desde 3.0.0 a 3.1.0](#caso-especial-actualizacion-desde-300-a-310)
@@ -71,11 +71,12 @@ Los bind mounts son rutas reales del host. Deben existir y pertenecer al usuario
 Ejemplo recomendado:
 
 ```bash
-sudo mkdir -p /var/log/local/iskylims/apps
+sudo mkdir -p /var/log/local/relecov-iskylims/apps
 sudo mkdir -p /var/log/local/iskylims/apache
 sudo mkdir -p /srv/containers/bind/iskylims/iskylims_apache_conf
 sudo mkdir -p /srv/containers/bind/iskylims/iskylims_django_setting
 
+sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /var/log/local/relecov-iskylims
 sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /var/log/local/iskylims
 sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /srv/containers/bind/iskylims
 ```
@@ -100,18 +101,18 @@ git clone https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git iskylims
 cd iskylims
 ```
 
-## Configurar `my_prod_settings.txt`
+## Configurar `my_prod_settings_iskylims.txt`
 
 Si el fichero ya existe, revisalo y mantenlo. Si no existe, copialo desde la plantilla:
 
 ```bash
-cp conf/docker_production_settings.txt conf/my_prod_settings.txt
+cp conf/docker_production_settings.txt conf/my_prod_settings_iskylims.txt
 ```
 
 Edita:
 
 ```bash
-nano conf/my_prod_settings.txt
+nano conf/my_prod_settings_iskylims.txt
 ```
 
 Valores principales:
@@ -125,6 +126,9 @@ DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_setting/sett
 SERVER_STATUS_SERVER_NAME='<dns_server_status>'
 SERVER_STATUS_ALIASES='127.0.0.1 localhost'
 SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
+APACHE_FORWARDED_PROTO='http'
+APACHE_FORWARDED_PORT='8081'
 
 APP_UID='1212'
 APP_GID='1212'
@@ -183,7 +187,7 @@ podman volume export iskylims_iskylims_static > "$BACKUP_DIR/iskylims_static.tar
 Backup de configuracion:
 
 ```bash
-cp conf/my_prod_settings.txt "$BACKUP_DIR/"
+cp conf/my_prod_settings_iskylims.txt "$BACKUP_DIR/"
 cp .env.prod.file "$BACKUP_DIR/" 2>/dev/null || true
 ```
 
@@ -192,7 +196,7 @@ cp .env.prod.file "$BACKUP_DIR/" 2>/dev/null || true
 Para la mayoria de actualizaciones:
 
 ```bash
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action upgrade 2>&1 | tee ./iskylims_podman_upgrade_$(date +%Y%m%d_%H%M%S).log
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action upgrade 2>&1 | tee ./iskylims_podman_upgrade_$(date +%Y%m%d_%H%M%S).log
 ```
 
 El script:
@@ -228,7 +232,7 @@ mysql --user=<usuario_db> --password --host=<host_db> --port=<puerto_db> iskylim
 Ejecuta la actualizacion especial:
 
 ```bash
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action upgrade \
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action upgrade \
   --script_before convert_rawtop_counter_to_int \
   --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv \
   2>&1 | tee ./iskylims_podman_upgrade_3_0_0_to_3_1_0_$(date +%Y%m%d_%H%M%S).log
@@ -257,7 +261,7 @@ Comprueba la aplicacion:
 http://<servidor>:8080
 ```
 
-Si se han cambiado parametros de runtime en `conf/my_prod_settings.txt`, vuelve a ejecutar `container_install.sh` para regenerar `.env.prod.file` y recrear los contenedores de forma coherente.
+Si se han cambiado parametros de runtime en `conf/my_prod_settings_iskylims.txt`, vuelve a ejecutar `container_install.sh` para regenerar `.env.prod.file` y recrear los contenedores de forma coherente.
 
 ## Rollback
 
@@ -291,15 +295,15 @@ Si la actualizacion falla y necesitas volver atras:
 5. Restaura configuracion si cambio:
 
     ```bash
-    cp "$BACKUP_DIR/my_prod_settings.txt" conf/my_prod_settings.txt
+    cp "$BACKUP_DIR/my_prod_settings_iskylims.txt" conf/my_prod_settings_iskylims.txt
     ```
 
 6. Repara permisos, arranca y vuelve a reparar volumenes montados:
 
     ```bash
-    bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+    bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
     podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
-    bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+    bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
     ```
 
 7. Revisa logs:
@@ -320,15 +324,15 @@ Ejecuta esta accion si:
 - el contenedor no arranca por permisos de bind mounts.
 
 ```bash
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
 ```
 
 Si el contenedor no esta arrancado, esta accion repara solo los bind mounts del host. Despues arranca los contenedores y repite la accion para reparar los volumenes montados:
 
 ```bash
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
 podman compose --env-file .env.prod.file -f docker-compose.prod.yml up -d
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings.txt --action fix-permissions
+bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
 ```
 
 ## Operaciones utiles
@@ -357,7 +361,7 @@ podman exec -it iskylims_app bash -lc 'cd /opt/iskylims && source virtualenv/bin
 Ejecutar manualmente el bootstrap de actualizacion:
 
 ```bash
-podman exec -it iskylims_app bash -c 'cd /srv/iskylims && bash install.sh --bootstrap upgrade --git_revision main --conf conf/my_prod_settings.txt --tables --skip_apache_restart'
+podman exec -it iskylims_app bash -c 'cd /srv/iskylims && bash install.sh --bootstrap upgrade --git_revision main --conf conf/my_prod_settings_iskylims.txt --tables --skip_apache_restart'
 ```
 
 ## Notas de permisos
