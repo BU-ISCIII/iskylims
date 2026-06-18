@@ -176,7 +176,7 @@ Container build/runtime values are configured in the selected install config, no
 - `SERVER_STATUS_SERVER_NAME`: Apache virtual host used for `/server-status`. Leave empty to use `DNS_URL`.
 - `SERVER_STATUS_ALIASES`: aliases accepted by the server-status virtual host. Default: `127.0.0.1 localhost`.
 - `SERVER_STATUS_ALLOW_FROM`: clients allowed to access `/server-status`. Default: `127.0.0.1 localhost`.
-- `APACHE_FORWARDED_PROTO` / `APACHE_FORWARDED_PORT`: forwarded request scheme and port sent by Apache. Defaults: `http` and `8081`.
+- `APACHE_FORWARDED_PROTO` / `APACHE_FORWARDED_PORT`: forwarded request scheme and port sent by Apache. Production defaults: `https` and `443`.
 - `DJANGO_SETTINGS_PATH`: host path used for the bind-mounted Django `settings.py`. Leave empty to use `${INSTALL_PATH}/iskylims/settings.py` as the host bind source. If the value is a directory, ends with `/`, or does not end with `.py`, `container_install.sh` appends `settings.py`.
 - `APP_UID` / `APP_GID`: runtime UID/GID for the `iskylims` user inside the container. Default: `1212:1212`.
 - `APP_SHELL`: shell assigned to the runtime user during image build. Default: `/sbin/nologin`.
