@@ -50,7 +50,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /var/log/local/iskylims/apps/:${INSTALL_PATH:-/opt/iskylims}/logs
+      - /var/log/local/relecov-iskylims/apps/:${INSTALL_PATH:-/opt/iskylims}/logs
       - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py
       - iskylims_documents:${INSTALL_PATH:-/opt/iskylims}/documents
       - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static

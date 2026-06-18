@@ -19,6 +19,9 @@ APACHE_CONF_PATH=''
 SERVER_STATUS_SERVER_NAME=''
 SERVER_STATUS_ALIASES='127.0.0.1 localhost'
 SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+# Forwarded headers set by the RELECOV Apache endpoint exposed on port 8081.
+APACHE_FORWARDED_PROTO='http'
+APACHE_FORWARDED_PORT='8081'
 # Host path for the bind-mounted Django settings.py.
 # Leave empty to use ${INSTALL_PATH}/iskylims/settings.py as the host bind source.
 # If this is a directory, ends with /, or does not end with .py, container_install.sh appends settings.py.

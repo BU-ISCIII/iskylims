@@ -24,16 +24,16 @@ Usage : $0 [--demo_data] [--git_revision] [--compose_file] [--install_conf] [--a
 
 Examples:
     Deploy production container pointing to an external DB/Samba:
-    bash $0 --install_conf conf/my_prod_settings.txt
+    bash $0 --install_conf conf/my_prod_settings_iskylims.txt
 
     Deploy production with service-specific settings mapping:
     bash $0 --install_conf_map app,conf/docker_production_settings.txt
 
     Upgrade an existing production deployment using the same database:
-    bash $0 --install_conf conf/my_prod_settings.txt --action upgrade
+    bash $0 --install_conf conf/my_prod_settings_iskylims.txt --action upgrade
 
     Repair production bind mount and volume permissions without rebuilding or bootstrapping:
-    bash $0 --install_conf conf/my_prod_settings.txt --action fix-permissions
+    bash $0 --install_conf conf/my_prod_settings_iskylims.txt --action fix-permissions
 
     Install demo container system with local services
     bash $0 --test
@@ -301,6 +301,8 @@ render_apache_config() {
         -e "s|__ISKYLIMS_LOG_NAME__|$apache_log_name|g" \
         -e "s|__INSTALL_PATH__|$install_path|g" \
         -e "s|__APP_PORT__|$app_port|g" \
+        -e "s|__ISKYLIMS_FORWARDED_PROTO__|$(sed_replacement_escape "$apache_forwarded_proto")|g" \
+        -e "s|__ISKYLIMS_FORWARDED_PORT__|$(sed_replacement_escape "$apache_forwarded_port")|g" \
         -e "s|__GUNICORN_TIMEOUT__|$gunicorn_timeout|g" \
         -e "s|__SERVER_STATUS_SERVER_NAME__|$(sed_replacement_escape "$apache_status_server_name")|g" \
         -e "s|__SERVER_STATUS_ALIASES__|$(sed_replacement_escape "$apache_status_aliases")|g" \
@@ -576,6 +578,8 @@ GUNICORN_KEEPALIVE=$gunicorn_keepalive
 SERVER_STATUS_SERVER_NAME=$apache_status_server_name
 SERVER_STATUS_ALIASES=$apache_status_aliases
 SERVER_STATUS_ALLOW_FROM=$apache_status_allow_from
+APACHE_FORWARDED_PROTO=$apache_forwarded_proto
+APACHE_FORWARDED_PORT=$apache_forwarded_port
 EOF
 
     echo "Wrote Compose environment file: $compose_env_file"
@@ -617,6 +621,8 @@ apache_log_name="$(printf '%s' "$apache_server_name" | tr -c 'A-Za-z0-9._-' '_' 
 apache_status_server_name="$(normalize_apache_server_name "$(config_value_or_default SERVER_STATUS_SERVER_NAME "$apache_server_name")")"
 apache_status_aliases="$(config_value_or_default SERVER_STATUS_ALIASES "127.0.0.1 localhost")"
 apache_status_allow_from="$(config_value_or_default SERVER_STATUS_ALLOW_FROM "127.0.0.1 localhost")"
+apache_forwarded_proto="$(config_value_or_default APACHE_FORWARDED_PROTO http)"
+apache_forwarded_port="$(config_value_or_default APACHE_FORWARDED_PORT 8081)"
 compose_env_file="$repo_root/.env.prod.file"
 app_container=""
 local_head_hash=""
@@ -821,8 +827,8 @@ prepare_host_bind_mount_permissions() {
     echo "Preparing host bind mount permissions..."
     chmod_with_podman_fallback 0755 "$apache_conf_path"
 
-    chown_with_podman_fallback "$app_uid:$app_gid" "/var/log/local/iskylims/apps"
-    chmod_with_podman_fallback 0775 "/var/log/local/iskylims/apps"
+    chown_with_podman_fallback "$app_uid:$app_gid" "/var/log/local/relecov-iskylims/apps"
+    chmod_with_podman_fallback 0775 "/var/log/local/relecov-iskylims/apps"
 
     # UBI httpd runs as uid 1001 and group 0. This keeps the Apache log bind
     # writable without relying on Podman's :U ownership mutation.
@@ -875,7 +881,7 @@ cleanup_stale_test_containers
 
 if [ "$action" = "fix-permissions" ]; then
     echo "Repairing production container bind mount and volume permissions..."
-    if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"; then
+    if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/relecov-iskylims/apps"; then
         echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
         exit 1
     fi
@@ -896,7 +902,7 @@ fi
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
-if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"; then
+if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/relecov-iskylims/apps"; then
     echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
     exit 1
 fi
