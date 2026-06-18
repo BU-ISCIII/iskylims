@@ -4,7 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - 2026-05-21 : <https://github.com/BU-ISCIII/iskylims/releases/tag/3.1.0>
+## [3.1.1dev] - 2026-06-18 : <https://github.com/BU-ISCIII/iskylims/compare/3.1.0...develop>
+
+### Credits
+
+- [Sara Monzón](https://github.com/saramonzon)
+
+#### Added Enhancements
+
+- Added configurable Apache `/server-status` support, restricted to localhost by default.
+- Added generation of supercronic jobs directly from Django `CRONJOBS` settings.
+- Added supercronic-compatible cron status and fallback handling for wet-lab scheduled processes.
+
+#### Fixes
+
+- Fixed permission repair so cron directories are also prepared with the expected ownership and mode.
+- Fixed container cron status checks when the system `crontab` command is unavailable.
+- Fixed Django settings bind path naming in production configuration templates.
+
+#### Changed
+
+- Updated production configuration templates with clearer host-path and server-status settings.
+
+#### Removed
+
+#### Requirements
+
+## [3.1.0] - 2026-05-27 : <https://github.com/BU-ISCIII/iskylims/releases/tag/3.1.0>
 
 ### Credits
 
@@ -38,6 +64,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added configurable ServerName and Apache log naming from installation settings.
 - Added dedicated Docker network configuration to the production compose file.
 - Added configuration examples for container bind mounts in installation settings templates.
+- Added explicit preparation and ownership handling for production container bind mounts and named volumes. [2ee02a02](https://github.com/BU-ISCIII/iskylims/commit/2ee02a02c7948702e4f771e9ed6b72598880449e)
+- Added the `--action fix-permissions` container installer option to repair host bind mounts and mounted application volumes without rebuilding images or running migrations. [b27f9acc](https://github.com/BU-ISCIII/iskylims/commit/b27f9acc6f6a21f04ed8bc353162f4a9d09411e9)
+- Added Apache access to the iSkyLIMS documents volume.
 
 #### Fixes
 
@@ -88,6 +117,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed skipped wetlab run test states so they are displayed in the configuration test view.
 - Fixed Samba cron path validation in wetlab configuration checks.
 - Fixed Docker build cleanup so DNF cache cleanup only runs in the final DNF step.
+- Improved error handling and logging when a SampleSheet cannot be copied to the documents directory.
+- Fixed production container permissions for application logs, documents, static files, Django settings, temporary files, and Apache bind mounts.
 
 #### Changed
 
@@ -110,12 +141,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Updated production container documentation for bind mounts and generated configuration files.
 - Normalized the Django settings bind path used by container installation.
 - Updated installation configuration templates with clearer container configuration guidance.
+- Simplified container runtime path handling by consistently using `INSTALL_PATH`.
+- Updated production volume ownership handling for rootless Podman deployments.
+- Updated the Spanish production guide and README with container permissions, bind mounts, configuration, and recovery procedures.
 
 #### Removed
 
 - Dummy fix in usage line [#271](https://github.com/BU-ISCIII/iskylims/pull/271)
 - Removed migrations from `.gitignore` and app-level `.gitignore` to ensure version control of schema changes [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Removed runtime ownership fixes from container installation.
+- Removed the redundant `APP_INSTALL_PATH` container setting.
 
 #### Requirements
 
