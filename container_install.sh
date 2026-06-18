@@ -302,6 +302,9 @@ render_apache_config() {
         -e "s|__INSTALL_PATH__|$install_path|g" \
         -e "s|__APP_PORT__|$app_port|g" \
         -e "s|__GUNICORN_TIMEOUT__|$gunicorn_timeout|g" \
+        -e "s|__SERVER_STATUS_SERVER_NAME__|$(sed_replacement_escape "$apache_status_server_name")|g" \
+        -e "s|__SERVER_STATUS_ALIASES__|$(sed_replacement_escape "$apache_status_aliases")|g" \
+        -e "s|__SERVER_STATUS_ALLOW_FROM__|$(sed_replacement_escape "$apache_status_allow_from")|g" \
         "$src" > "$tmp_file"
 
     if copy_with_podman_fallback "$tmp_file" "$dst"; then
@@ -570,6 +573,9 @@ WEB_CONCURRENCY=$web_concurrency
 GUNICORN_THREADS=$gunicorn_threads
 GUNICORN_TIMEOUT=$gunicorn_timeout
 GUNICORN_KEEPALIVE=$gunicorn_keepalive
+SERVER_STATUS_SERVER_NAME=$apache_status_server_name
+SERVER_STATUS_ALIASES=$apache_status_aliases
+SERVER_STATUS_ALLOW_FROM=$apache_status_allow_from
 EOF
 
     echo "Wrote Compose environment file: $compose_env_file"
@@ -608,6 +614,9 @@ gunicorn_keepalive="$(config_value_or_default GUNICORN_KEEPALIVE 5)"
 config_dns_url="$(read_install_conf_value "DNS_URL" "$host_install_conf_path")"
 apache_server_name="$(normalize_apache_server_name "${APACHE_SERVER_NAME:-${config_dns_url:-localhost}}")"
 apache_log_name="$(printf '%s' "$apache_server_name" | tr -c 'A-Za-z0-9._-' '_' | sed 's/_$//')"
+apache_status_server_name="$(normalize_apache_server_name "$(config_value_or_default SERVER_STATUS_SERVER_NAME "$apache_server_name")")"
+apache_status_aliases="$(config_value_or_default SERVER_STATUS_ALIASES "127.0.0.1 localhost")"
+apache_status_allow_from="$(config_value_or_default SERVER_STATUS_ALLOW_FROM "127.0.0.1 localhost")"
 compose_env_file="$repo_root/.env.prod.file"
 app_container=""
 local_head_hash=""
@@ -829,7 +838,8 @@ prepare_host_bind_mount_permissions() {
 
     for apache_conf_file in \
         "$apache_conf_path/iskylims_apache_reverse_proxy.conf" \
-        "$apache_conf_path/iskylims_apache_logs.conf"; do
+        "$apache_conf_path/iskylims_apache_logs.conf" \
+        "$apache_conf_path/iskylims_apache_server-status.conf"; do
         if [ -f "$apache_conf_file" ]; then
             chmod_with_podman_fallback 0664 "$apache_conf_file"
         fi
@@ -900,6 +910,11 @@ if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
     render_apache_config \
         "$repo_root/conf/iskylims_apache_logs.conf" \
         "$apache_conf_path/iskylims_apache_logs.conf"
+fi
+if [ -f "$repo_root/conf/iskylims_apache_server-status.conf" ]; then
+    render_apache_config \
+        "$repo_root/conf/iskylims_apache_server-status.conf" \
+        "$apache_conf_path/iskylims_apache_server-status.conf"
 fi
 prepare_host_bind_mount_permissions
 write_compose_env_file

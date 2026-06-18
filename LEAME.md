@@ -122,6 +122,10 @@ INSTALL_PATH='/opt/iskylims'
 APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
 DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_setting/settings.py'
 
+SERVER_STATUS_SERVER_NAME='<dns_server_status>'
+SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
 APP_UID='1212'
 APP_GID='1212'
 APP_SHELL='/sbin/nologin'
