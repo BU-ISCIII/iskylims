@@ -142,12 +142,11 @@ Deploy the iSkyLIMS container against external MySQL/Samba services:
 
 2. Create the host directories used as bind mount sources and make them manageable by the account that will run `container_install.sh`.
 
-   At minimum, this includes `/var/log/local/relecov-iskylims/apps`, `/var/log/local/iskylims/apache`, and any custom `APACHE_CONF_PATH` or `DJANGO_SETTINGS_PATH` parent directory set in `conf/my_prod_settings_iskylims.txt`.
+   At minimum, this includes `/var/log/local/relecov-iskylims/apps`, `/var/log/local/relecov-iskylims/apache`, and any custom `APACHE_CONF_PATH` or `DJANGO_SETTINGS_PATH` parent directory set in `conf/my_prod_settings_iskylims.txt`.
 
     ```bash
-    sudo mkdir -p /var/log/local/relecov-iskylims/apps /var/log/local/iskylims/apache
+    sudo mkdir -p /var/log/local/relecov-iskylims/apps /var/log/local/relecov-iskylims/apache
     sudo chown -R "$USER:$USER" /var/log/local/relecov-iskylims
-    sudo chown -R "$USER:$USER" /var/log/local/iskylims
     ```
 
    For rootless Podman, `container_install.sh` uses `podman unshare` to apply container UID/GID ownership where needed. For Docker, normal host permissions apply, so the script runner must be able to create and adjust the bind mount paths.
@@ -202,7 +201,7 @@ The production compose file uses `INSTALL_PATH` from the selected install config
 Persistence layout:
 
 - `/var/log/local/relecov-iskylims/apps` -> `${INSTALL_PATH}/logs` inside the `app` container
-- `/var/log/local/iskylims/apache` -> `/var/log/httpd` inside the `apache` container
+- `/var/log/local/relecov-iskylims/apache` -> `/var/log/httpd` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_reverse_proxy.conf` -> `/etc/httpd/conf.d/iskylims.conf` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_logs.conf` -> `/etc/httpd/conf.d/logformat.conf` inside the `apache` container
 - `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}/iskylims_apache_server-status.conf` -> `/etc/httpd/conf.d/server-status.conf` inside the `apache` container
@@ -216,7 +215,7 @@ Create host directories before the first deployment:
 
 ```bash
 sudo mkdir -p /var/log/local/relecov-iskylims/apps
-sudo mkdir -p /var/log/local/iskylims/apache
+sudo mkdir -p /var/log/local/relecov-iskylims/apache
 sudo mkdir -p <APACHE_CONF_PATH>
 sudo mkdir -p <DJANGO_SETTINGS_PATH_PARENT>
 sudo chown -R <APP_UID>:<APP_GID> /var/log/local/relecov-iskylims/apps <APACHE_CONF_PATH> <DJANGO_SETTINGS_PATH_PARENT>
@@ -254,16 +253,16 @@ During `container_install.sh`, `conf/iskylims_apache_reverse_proxy.conf`, `conf/
 
 If you need a different app container runtime root, set `INSTALL_PATH` in the install config file before running `container_install.sh`. If the runtime root is not writable on the host, set `APACHE_CONF_PATH` and `DJANGO_SETTINGS_PATH` to writable host paths in the install config file.
 
-`container_install.sh` creates `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}`, the parent directory for `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}`, `/var/log/local/relecov-iskylims/apps`, and `/var/log/local/iskylims/apache` before `compose up`, copies the three Apache config files there, prepares the bind-mounted Django settings file if it does not exist, passes runtime values into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${INSTALL_PATH}`; the bootstrap step updates settings, applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/iskylims/apache`.
+`container_install.sh` creates `${APACHE_CONF_PATH:-${INSTALL_PATH}/conf}`, the parent directory for `${DJANGO_SETTINGS_PATH:-${INSTALL_PATH}/iskylims/settings.py}`, `/var/log/local/relecov-iskylims/apps`, and `/var/log/local/relecov-iskylims/apache` before `compose up`, copies the three Apache config files there, prepares the bind-mounted Django settings file if it does not exist, passes runtime values into Compose, and then runs `install.sh --bootstrap ...` inside the `app` container. The container image already contains the staged Django project and virtualenv under `${INSTALL_PATH}`; the bootstrap step updates settings, applies migrations, optional scripts/fixtures, and refreshes `${INSTALL_PATH}/static`, while the Apache container keeps using the host log path `/var/log/local/relecov-iskylims/apache`.
 
 SELinux note for pre-production and production:
 
-- Ensure `/var/log/local/iskylims/apache` is writable by the container runtime and labeled for containers, for example `container_file_t`.
+- Ensure `/var/log/local/relecov-iskylims/apache` is writable by the container runtime and labeled for containers, for example `container_file_t`.
 - If the host path is already labeled `container_file_t`, do not add `:Z` to the Apache log bind mount. `:Z` forces a relabel and may fail with `lsetxattr(... container_file_t ...): operation not permitted`.
 - A quick check is:
 
 ```bash
-ls -ldZ /var/log/local/iskylims/apache
+ls -ldZ /var/log/local/relecov-iskylims/apache
 ```
 
 - Expected example:
@@ -272,7 +271,7 @@ ls -ldZ /var/log/local/iskylims/apache
 system_u:object_r:container_file_t:s0
 ```
 
-- If Apache fails on startup with `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, remove any stale host file and recreate/restart the container. In practice, deleting `/var/log/local/iskylims/apache/modsec_debug.log` has been enough when the existing inode had bad permissions/label state.
+- If Apache fails on startup with `ModSecurity: Failed to open debug log file: /var/log/httpd/modsec_debug.log`, remove any stale host file and recreate/restart the container. In practice, deleting `/var/log/local/relecov-iskylims/apache/modsec_debug.log` has been enough when the existing inode had bad permissions/label state.
 
 #### Cron jobs inside the container
 
@@ -503,7 +502,7 @@ Logs archive:
 ```bash
 tar -czf iskylims_app_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/relecov-iskylims/apps .
 
-tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/iskylims/apache .
+tar -czf iskylims_apache_logs_$(date +%Y%m%d_%H%M%S).tgz -C /var/log/local/relecov-iskylims/apache .
 ```
 
 Documents volume archive:
@@ -544,8 +543,8 @@ Restore logs:
 mkdir -p /var/log/local/relecov-iskylims/apps
 tar -xzf iskylims_app_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/relecov-iskylims/apps
 
-mkdir -p /var/log/local/iskylims/apache
-tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/iskylims/apache
+mkdir -p /var/log/local/relecov-iskylims/apache
+tar -xzf iskylims_apache_logs_YYYYMMDD_HHMMSS.tgz -C /var/log/local/relecov-iskylims/apache
 ```
 
 Bare-metal full rollback example:

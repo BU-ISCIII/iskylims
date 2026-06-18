@@ -72,12 +72,11 @@ Ejemplo recomendado:
 
 ```bash
 sudo mkdir -p /var/log/local/relecov-iskylims/apps
-sudo mkdir -p /var/log/local/iskylims/apache
+sudo mkdir -p /var/log/local/relecov-iskylims/apache
 sudo mkdir -p /srv/containers/bind/iskylims/iskylims_apache_conf
 sudo mkdir -p /srv/containers/bind/iskylims/iskylims_django_setting
 
 sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /var/log/local/relecov-iskylims
-sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /var/log/local/iskylims
 sudo chown -R "_USER-RUNNING_PODMAN_:_USER-RUNNING_PODMAN_" /srv/containers/bind/iskylims
 ```
 

@@ -832,8 +832,8 @@ prepare_host_bind_mount_permissions() {
 
     # UBI httpd runs as uid 1001 and group 0. This keeps the Apache log bind
     # writable without relying on Podman's :U ownership mutation.
-    chown_with_podman_fallback "1001:0" "/var/log/local/iskylims/apache"
-    chmod_with_podman_fallback 0775 "/var/log/local/iskylims/apache"
+    chown_with_podman_fallback "1001:0" "/var/log/local/relecov-iskylims/apache"
+    chmod_with_podman_fallback 0775 "/var/log/local/relecov-iskylims/apache"
 
     if [ -f "$django_settings_path" ]; then
         django_settings_dir="$(dirname "$django_settings_path")"
@@ -881,7 +881,7 @@ cleanup_stale_test_containers
 
 if [ "$action" = "fix-permissions" ]; then
     echo "Repairing production container bind mount and volume permissions..."
-    if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/relecov-iskylims/apps"; then
+    if ! mkdir -p "$apache_conf_path" "/var/log/local/relecov-iskylims/apache" "/var/log/local/relecov-iskylims/apps"; then
         echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
         exit 1
     fi
@@ -902,7 +902,7 @@ fi
 print_local_source_diagnostics
 print_existing_artifact_diagnostics
 echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
-if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/relecov-iskylims/apps"; then
+if ! mkdir -p "$apache_conf_path" "/var/log/local/relecov-iskylims/apache" "/var/log/local/relecov-iskylims/apps"; then
     echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
     exit 1
 fi
