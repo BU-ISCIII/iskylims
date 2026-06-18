@@ -14,26 +14,33 @@ FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 # Set this to a writable host path for rootless or hardened deployments.
 # Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
 APACHE_CONF_PATH=''
+
 # Apache server-status virtual host and access control.
-# Leave SERVER_STATUS_SERVER_NAME empty to use DNS_URL.
+# Leave SERVER_STATUS_SERVER_NAME empty to use DNS_URL. Normally use vm hostname
 SERVER_STATUS_SERVER_NAME=''
 SERVER_STATUS_ALIASES='127.0.0.1 localhost'
 SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
 # Forwarded headers set by Apache in production.
 APACHE_FORWARDED_PROTO='https'
 APACHE_FORWARDED_PORT='443'
+
 # Host path for the bind-mounted Django settings.py.
 # Leave empty to use ${INSTALL_PATH}/iskylims/settings.py as the host bind source.
 # If this is a directory, ends with /, or does not end with .py, container_install.sh appends settings.py.
 # Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_setting/settings.py'
 DJANGO_SETTINGS_PATH=''
+
 # UID/GID for the non-root iskylims user inside the app container.
 APP_UID='1212'
 APP_GID='1212'
+
 # Shell assigned to the container runtime user during image build.
 APP_SHELL='/sbin/nologin'
+
 # Internal app port used by Gunicorn.
 APP_PORT='8001'
+
 # Django production debug flag. Keep disabled in production.
 DJANGO_DEBUG='false'
 # Django persistent database connection lifetime in seconds.
