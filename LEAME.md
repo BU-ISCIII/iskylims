@@ -34,25 +34,6 @@ El despliegue usa:
 - Bind mounts del host para logs, configuracion Apache y `settings.py`.
 - Volumenes Podman para `documents` y `static`.
 
-Instala herramientas si no existen:
-
-```bash
-sudo dnf install -y podman podman-compose git
-```
-
-En Ubuntu/Debian:
-
-```bash
-sudo apt update
-sudo apt install -y podman podman-compose git
-```
-
-Activa linger para el usuario que ejecuta Podman:
-
-```bash
-sudo loginctl enable-linger "$USER"
-```
-
 Comprueba que Podman funciona sin root:
 
 ```bash
