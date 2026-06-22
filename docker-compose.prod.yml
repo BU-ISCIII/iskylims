@@ -12,9 +12,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:ro
-      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
-      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_server-status.conf:/etc/httpd/conf.d/server-status.conf:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/01-iskylims.conf:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/00-logformat.conf:ro
+      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro
       - /var/log/local/iskylims/apache:/var/log/httpd
       - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static:ro
     networks:
