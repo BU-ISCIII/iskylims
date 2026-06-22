@@ -17,6 +17,7 @@ services:
       - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro
       - /var/log/local/iskylims/apache:/var/log/httpd
       - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static:ro
+      - iskylims_documents:${INSTALL_PATH:-/opt/iskylims}/documents:ro
     networks:
       - iskylims_net
 

@@ -324,6 +324,7 @@ render_apache_config() {
 
 prepare_django_settings_bind_mount() {
     local settings_path="$1"
+    local configured_db_host=""
 
     if [ "$mode" != "production" ]; then
         return 0
@@ -336,7 +337,10 @@ prepare_django_settings_bind_mount() {
     fi
 
     mkdir -p "$(dirname "$settings_path")"
-    if [ ! -f "$settings_path" ] || grep -Eq "SECRET_KEY[[:space:]]*=[[:space:]]*SECRET|emailhosttls|djangouser|djangopass|djangohost|djangodbname" "$settings_path"; then
+    configured_db_host="$(read_install_conf_value DB_SERVER_IP "$host_install_conf_path")"
+    if [ ! -f "$settings_path" ] \
+        || grep -Eq "SECRET_KEY[[:space:]]*=[[:space:]]*SECRET|emailhosttls|djangouser|djangopass|djangohost|djangodbname" "$settings_path" \
+        || ! grep -Fq -- "\"HOST\": \"$configured_db_host\"," "$settings_path"; then
         render_django_settings_file "$settings_path"
     fi
     chmod_with_podman_fallback 0664 "$settings_path"
