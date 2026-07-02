@@ -1457,10 +1457,9 @@ def store_sample_sheet_if_not_defined_in_run(
                                 a unique file name
         now     # Present time of the server
         run_updated # RunProcess object for miseq run
-        sample_sheet_on_database # sample sheet path used in database
         timestr     # Present time including 3 digits for miliseconds
     Return:
-        sample_sheet_on_database
+        saved_sample_sheet
     """
     logger = logging.getLogger(__name__)
     logger.debug(
@@ -1477,10 +1476,6 @@ def store_sample_sheet_if_not_defined_in_run(
         new_sample_sheet_name,
     )
     logger.info("%s : new sample sheet name %s", experiment_name, new_sample_sheet_file)
-    # Path to be included in database
-    sample_sheet_on_database = os.path.join(
-        wetlab.config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name
-    )
     # Move sample sheet to final folder
     os.rename(l_sample_sheet_path, new_sample_sheet_file)
     # Update the run with the sample sheet information  (full_path, relative_path, file_name)
