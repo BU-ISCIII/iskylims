@@ -1,4 +1,5 @@
 from django.http import QueryDict
+from django.db.models import Q
 from django.db.models.functions import Lower
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -103,6 +104,13 @@ sample_project_name = openapi.Parameter(
     "sample_project_name",
     openapi.IN_QUERY,
     description="Select the project to get all samples assigned to it",
+    type=openapi.TYPE_STRING,
+)
+
+sample_project_value_fields = openapi.Parameter(
+    "fields",
+    openapi.IN_QUERY,
+    description="Comma-separated sample project field names or descriptions to fetch",
     type=openapi.TYPE_STRING,
 )
 
@@ -292,6 +300,75 @@ def create_sample_data(request):
             {"ERROR": f"Request method must be POST, received {request.method}"},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_description="Get selected project values for multiple samples",
+    manual_parameters=[sample_list, sample_project_value_fields],
+)
+@api_view(["GET"])
+def fetch_sample_project_values_bulk(request):
+    """Return selected project values for a comma-separated list of samples."""
+    samples_param = request.GET.get("samples", "").strip()
+    if not samples_param:
+        return Response(
+            {"ERROR": "Missing 'samples' parameter"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    sample_names = [
+        sample.strip() for sample in samples_param.split(",") if sample.strip()
+    ]
+    if not sample_names:
+        return Response(
+            {"ERROR": "Missing 'samples' parameter"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    fields_param = request.GET.get("fields", "").strip()
+    requested_fields = [
+        field.strip() for field in fields_param.split(",") if field.strip()
+    ]
+
+    sample_objs = core.models.Samples.objects.filter(sample_name__in=sample_names)
+    sample_data = {
+        sample_obj.sample_name: {
+            "sample_project": (
+                sample_obj.sample_project.get_sample_project_name()
+                if sample_obj.sample_project
+                else ""
+            ),
+            "Project values": {},
+        }
+        for sample_obj in sample_objs.select_related("sample_project")
+    }
+
+    project_value_objs = core.models.SampleProjectsFieldsValue.objects.filter(
+        sample_id__sample_name__in=sample_names
+    ).select_related("sample_id", "sample_project_field_id")
+    if requested_fields:
+        project_value_objs = project_value_objs.filter(
+            Q(sample_project_field_id__sample_project_field_name__in=requested_fields)
+            | Q(
+                sample_project_field_id__sample_project_field_description__in=(
+                    requested_fields
+                )
+            )
+        )
+
+    for project_value_obj in project_value_objs:
+        sample_name = project_value_obj.sample_id.sample_name
+        field_obj = project_value_obj.sample_project_field_id
+        field_name = field_obj.sample_project_field_name
+        display_name = field_obj.sample_project_field_description or field_name
+        sample_data.setdefault(
+            sample_name, {"sample_project": "", "Project values": {}}
+        )["Project values"][display_name] = (
+            project_value_obj.sample_project_field_value or ""
+        )
+
+    return Response({"data": sample_data}, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(

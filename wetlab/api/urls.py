@@ -15,6 +15,11 @@ urlpatterns = [
         views.fetch_sample_information,
         name="fetch_sample_information",
     ),
+    path(
+        "sample-project-values-bulk",
+        views.fetch_sample_project_values_bulk,
+        name="fetch_sample_project_values_bulk",
+    ),
     path("create-sample", views.create_sample_data, name="create_sample_data"),
     path("sample-fields", views.sample_fields, name="sample_fields"),
     path("projects-fields", views.sample_project_fields, name="sample_project_fields"),
