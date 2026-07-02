@@ -875,7 +875,11 @@ def _render_supercronic_file():
 
 
 def _start_supercronic():
-    if _is_supercronic_disabled() or _is_supercronic_active() or shutil.which("supercronic") is None:
+    if (
+        _is_supercronic_disabled()
+        or _is_supercronic_active()
+        or shutil.which("supercronic") is None
+    ):
         return
 
     _render_supercronic_file()
