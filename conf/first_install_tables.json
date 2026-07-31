@@ -1939,6 +1939,14 @@
     }
 },
 {
+    "model": "wetlab.runconfigurationtest",
+    "pk": 5,
+    "fields": {
+        "run_test_name": "ProjectNameDash_Test",
+        "run_test_folder": "ProjectNameDash_Test"
+    }
+},
+{
     "model": "wetlab.configsetting",
     "pk": 1,
     "fields": {
