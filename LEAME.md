@@ -9,6 +9,7 @@ Esta guia es para la actualizacion del despliegue institucional de iSkyLIMS usan
 - [Actualizacion de iSkyLIMS con Podman rootless](#actualizacion-de-iskylims-con-podman-rootless)
   - [Indice](#indice)
   - [Requisitos](#requisitos)
+  - [Estructura de directorios en los servidores](#estructura-de-directorios-en-los-servidores)
   - [Preparar directorios del host](#preparar-directorios-del-host)
   - [Actualizar codigo](#actualizar-codigo)
   - [Configurar `my_prod_settings_iskylims.txt`](#configurar-my_prod_settings_iskylimstxt)
@@ -44,6 +45,48 @@ podman ps
 No ejecutes `container_install.sh` con `sudo`. El usuario que ejecuta Podman debe ser el mismo usuario que ejecuta `container_install.sh`.
 
 Los ejemplos usan `podman compose`. Si tu servidor solo tiene `podman-compose`, sustituye `podman compose` por `podman-compose`.
+
+## Estructura de directorios en los servidores
+
+Los servidores de desarrollo, preproduccion y produccion siguen la misma convencion de directorios. Cada tipo de informacion tiene una ubicacion concreta para separar el codigo y la configuracion del despliegue, los datos gestionados por Podman, los bind mounts y los logs. La estructura siguiente es orientativa: solo muestra una aplicacion como ejemplo y no pretende enumerar todos los directorios o ficheros existentes.
+
+```text
+/opt/containers_apps/
+└── iskylims/
+    ├── backup/                 # Opcional: backups propios del despliegue
+    └── iskylims/               # Clon Git, fuentes y configuracion de instalacion
+
+/srv/containers/
+├── backup/                     # Backups centralizados, si no estan junto al despliegue
+├── bind/
+│   └── iskylims/               # Bind mounts organizados por aplicacion
+│       ├── iskylims_apache_conf/
+│       ├── iskylims_app_setting/
+│       └── iskylims_django_setting/
+├── shared/                     # Datos compartidos entre aplicaciones, cuando proceda
+└── storage/
+    └── <usuario-podman>/       # Almacenamiento interno rootless de Podman
+        ├── overlay/
+        ├── overlay-containers/
+        ├── overlay-images/
+        └── volumes/            # Volumenes persistentes gestionados por Podman
+
+/var/log/local/
+└── iskylims/
+    ├── apache/                 # Logs del servidor web y de ModSecurity
+    └── apps/                   # Logs de aplicacion, cron y procesos auxiliares
+```
+
+Uso de cada ubicacion:
+
+- `/opt/containers_apps/<despliegue>/` agrupa una aplicacion o un conjunto de aplicaciones que se despliegan juntas. Contiene los clones Git, el codigo fuente y los ficheros de configuracion usados por la instalacion. La instalacion se ejecuta desde este directorio. Puede incluir un directorio `backup/` para backups propios del despliegue.
+- `/srv/containers/backup/` es la ubicacion alternativa para centralizar los distintos tipos de backup. Cada despliegue debe elegir de forma coherente entre esta ruta y su directorio `backup/` bajo `/opt/containers_apps/`.
+- `/srv/containers/bind/<aplicacion>/` contiene exclusivamente las rutas del host que se montan como bind mounts. Deben estar separadas por aplicacion y creadas con los propietarios y permisos requeridos antes de arrancar los contenedores. Estos permisos se gestionan mediante el script de instalación.
+- `/srv/containers/storage/<usuario-podman>/` contiene la estructura de almacenamiento rootless de Podman, incluidos sus metadatos, capas, imagenes y volumenes. Podman gestiona esta estructura; no se deben cambiar manualmente sus propietarios o permisos. En los servidores actuales, `<usuario-podman>` puede ser, por ejemplo, `bioinfo`.
+- `/srv/containers/shared/` se reserva para datos que deban compartir varias aplicaciones.
+- `/var/log/local/<aplicacion>/` centraliza los logs persistentes del host. Como norma general, `apache/` contiene los logs del servidor web y `apps/` los de la aplicacion y sus procesos auxiliares. Algunas aplicaciones pueden necesitar subdirectorios adicionales.
+
+Otros despliegues, como `beacon`, `localega` o `relecov-platform`, repiten esta misma separacion bajo su propio nombre. Esta convencion es importante al aplicar permisos: el codigo, los bind mounts, los volumenes gestionados por Podman y los logs no deben tratarse como si fueran el mismo tipo de almacenamiento.
 
 ## Preparar directorios del host
 
