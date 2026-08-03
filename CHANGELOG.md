@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Credits
 
 - [Sara Monzón](https://github.com/saramonzon)
+- [Enrique Sapena Ventura](https://github.com/ESapenaVentura)
 
 #### Added Enhancements
 
@@ -21,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed permission repair so cron directories are also prepared with the expected ownership and mode.
 - Fixed container cron status checks when the system `crontab` command is unavailable.
 - Fixed Django settings bind path naming in production configuration templates.
+- Fixed SampleSheet username resolution when dash-delimited user IDs must match database usernames containing dots. [#396](https://github.com/BU-ISCIII/iskylims/pull/396)
+- Fixed website file downloads in production by mounting the shared documents volume read-only in the Apache container. [3bf30dfd](https://github.com/BU-ISCIII/iskylims/commit/3bf30dfd9f65f2760c07f8a2a6da9eded41200db)
 
 #### Changed
 
