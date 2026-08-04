@@ -1,6 +1,8 @@
 # Upgrade scripts
 
 This file lists data migration scripts and the version range they apply to.
+For complete operator procedures, prerequisites, and container or bare-metal commands, see the [version-specific upgrade guides](docs/upgrades/README.md).
+
 Run them with:
 
 ```bash
