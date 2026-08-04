@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-ISKYLIMS_VERSION="3.1.0"
+ISKYLIMS_VERSION="3.1.1"
 
 usage() {
 cat << EOF
