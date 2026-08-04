@@ -10,12 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - [Sara Monzón](https://github.com/saramonzon)
 - [Enrique Sapena Ventura](https://github.com/ESapenaVentura)
+- [Sarai Varona](https://github.com/svarona)
 
 #### Added Enhancements
 
 - Added configurable Apache `/server-status` support, restricted to localhost by default.
 - Added generation of supercronic jobs directly from Django `CRONJOBS` settings.
 - Added supercronic-compatible cron status and fallback handling for wet-lab scheduled processes.
+- Added the `sample-project-values-bulk` API endpoint to retrieve selected project values for multiple RELECOV samples. [#401](https://github.com/BU-ISCIII/iskylims/pull/401)
 
 #### Fixes
 
@@ -24,14 +26,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed Django settings bind path naming in production configuration templates.
 - Fixed SampleSheet username resolution when dash-delimited user IDs must match database usernames containing dots. [#396](https://github.com/BU-ISCIII/iskylims/pull/396)
 - Fixed website file downloads in production by mounting the shared documents volume read-only in the Apache container. [3bf30dfd](https://github.com/BU-ISCIII/iskylims/commit/3bf30dfd9f65f2760c07f8a2a6da9eded41200db)
+- Fixed Apache configuration loading order by assigning explicit ordering prefixes to the generated configuration files.
 
 #### Changed
 
 - Updated production configuration templates with clearer host-path and server-status settings.
+- Changed production forwarded-header defaults to HTTPS on port 443.
+- Separated Apache and application log paths, including the dedicated RELECOV iSkyLIMS application log path.
+- Added local production settings files to `.gitignore`.
 
 #### Removed
 
 #### Requirements
+
+| Package      | Last release Version | New release Version |
+|:-------------|:---------------------|:--------------------|
+| biopython    | 1.84                 | 1.87                |
+| cryptography | 44.0.3               | 48.0.1              |
+| Django       | 4.2.28               | 4.2.30              |
+| paramiko     | 3.4.1                | 5.0.0               |
 
 ## [3.1.0] - 2026-05-27 : <https://github.com/BU-ISCIII/iskylims/releases/tag/3.1.0>
 
