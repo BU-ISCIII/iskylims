@@ -15,7 +15,6 @@ Esta guia es para la actualizacion del despliegue institucional de iSkyLIMS usan
   - [Configurar `my_prod_settings_iskylims.txt`](#configurar-my_prod_settings_iskylimstxt)
   - [Backup antes de actualizar](#backup-antes-de-actualizar)
   - [Ejecutar la actualizacion](#ejecutar-la-actualizacion)
-  - [Caso especial: actualizacion desde 3.0.0 a 3.1.0](#caso-especial-actualizacion-desde-300-a-310)
   - [Comprobaciones posteriores](#comprobaciones-posteriores)
   - [Rollback](#rollback)
   - [Reparar permisos](#reparar-permisos)
@@ -236,32 +235,7 @@ El script:
 
 No usa la accion `install` porque este procedimiento asume una base de datos institucional ya existente.
 
-## Caso especial: actualizacion desde 3.0.0 a 3.1.0
-
-La actualizacion desde 3.0.0 a 3.1.0 requiere pasos extra porque hay cambios de datos que necesitan scripts especificos:
-
-- `convert_rawtop_counter_to_int` antes de migraciones;
-- `library_pool_to_many_relation` despues de migraciones;
-- exportar antes la relacion `wetlab_library_pool.id -> run_process_id_id`.
-
-Exporta el fichero necesario:
-
-```bash
-mysql --user=<usuario_db> --password --host=<host_db> --port=<puerto_db> iskylims \
-  -e "SELECT id, run_process_id_id FROM wetlab_library_pool" \
-  > /tmp/library_pool_run_process.tsv
-```
-
-Ejecuta la actualizacion especial:
-
-```bash
-bash container_install.sh --engine podman --install_conf conf/my_prod_settings_iskylims.txt --action upgrade \
-  --script_before convert_rawtop_counter_to_int \
-  --script_after library_pool_to_many_relation,/tmp/library_pool_run_process.tsv \
-  2>&1 | tee ./iskylims_podman_upgrade_3_0_0_to_3_1_0_$(date +%Y%m%d_%H%M%S).log
-```
-
-Usa este comando solo para esa actualizacion concreta. Para actualizaciones posteriores, usa el comando generico de la seccion anterior.
+Si la version instalada necesita scripts de migracion de datos, sigue la [guia de actualizacion especifica para esa version](docs/upgrades/README.md) en lugar de ejecutar solamente el comando generico.
 
 ## Comprobaciones posteriores
 
