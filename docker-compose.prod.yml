@@ -22,6 +22,7 @@ services:
       - iskylims_net
 
   app:
+    image: ${APP_IMAGE_NAME:-relecov-iskylims:local}
     container_name: iskylims_app
     restart: unless-stopped
     build:
@@ -30,6 +31,10 @@ services:
         INSTALL_TYPE: ${INSTALL_TYPE:-dep}
         GIT_REVISION: ${GIT_REVISION:-main}
         INSTALL_CONF: ${INSTALL_CONF:-conf/docker_production_settings.txt}
+        # Production settings are read from an ephemeral build-secret mount and
+        # rendered on the host, never retained in the image.
+        USE_INSTALL_CONF_SECRET: "true"
+        RENDER_DJANGO_SETTINGS: "false"
         APP_UID: ${APP_UID:-1212}
         APP_GID: ${APP_GID:-1212}
         APP_SHELL: ${APP_SHELL:-/sbin/nologin}

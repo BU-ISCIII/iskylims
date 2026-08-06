@@ -29,6 +29,13 @@ htmlcov/
 !.env.example
 .env.prod.file
 install_settings.txt
+# Configuration files under conf are excluded by default. Only templates and
+# the explicitly non-sensitive test profiles are safe to COPY into an image.
+conf/*settings*.txt
+!conf/docker_test_settings.txt
+!conf/template_install_settings.txt
+!conf/template_settings.txt
+.tmp_docker_install_conf_*.txt
 wetlab/logging_config.ini
 logs/
 tmp/
