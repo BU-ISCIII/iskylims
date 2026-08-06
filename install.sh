@@ -1,5 +1,11 @@
 #!/bin/bash
 
+install_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$install_script_dir/deployment/lib/container/common.sh"
+# shellcheck disable=SC1091
+source "$install_script_dir/deployment/lib/container/django.sh"
+
 APP_VERSION="3.1.1"
 
 # usage: prints the command line help and usage examples.
@@ -13,6 +19,8 @@ usage : $0 --upgrade --git_revision --conf
     --upgrade       | Upgrade iskylims full/dep/app
     --stage         | Stage app files only (install/upgrade) without DB work. Internal/container use.
     --bootstrap     | Run DB/bootstrap steps only (install/upgrade) against an existing staged app. Internal/container use.
+    --render-settings | Render settings.py while staging (enabled automatically for non-container installs).
+    --settings-output | Override the rendered settings.py destination.
     --git_revision  | Git revision name to run (branch, tag, commit SHA, or 'current' to use copied local sources as-is)
     --conf          | Select custom configuration file. Default: ./install_settings.txt
     --tables        | Load the first inital tables (from conf folder)
@@ -37,8 +45,8 @@ Examples:
     Upgrade running migration script and update initial tables
     $0 --upgrade full --script <migration_script> --tables
 
-    Stage application files during a container image build
-    $0 --stage install --git_revision main --conf conf/docker_production_settings.txt
+    Stage and render application files for a non-sensitive test image
+    $0 --stage install --git_revision main --conf conf/docker_test_settings.txt --render-settings
 
     Bootstrap database/static using an already staged container image
     $0 --bootstrap upgrade --git_revision main --conf conf/docker_production_settings.txt
@@ -151,50 +159,21 @@ root_check(){
     fi
 }
 
-generate_django_secret_key(){
-    "$PYTHON_BIN_PATH" -c "import secrets; print(''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for _ in range(50)))"
-}
-
-sed_replacement_escape(){
-    printf '%s' "$1" | sed -e 's/[\&|]/\\&/g'
-}
-
-# update_settings_and_urls: rewrite Django settings and urls with deployment values.
+# update_settings_and_urls: install URL configuration and optionally render settings.
+# Image staging skips production rendering unless --render-settings is explicit;
+# production container_install.sh renders the persistent host bind source.
 update_settings_and_urls(){
     log "INFO" "Updating settings.py and urls.py with deployment values"
     local project_dir="$INSTALL_PATH/$PROJECT_NAME"
-    local secret_line=""
-    local tmp_settings=""
-
-    if [ -f "$project_dir/settings.py" ]; then
-        secret_line="$(grep -E "^SECRET_KEY[[:space:]]*=" "$project_dir/settings.py" | tail -n 1)"
-    fi
-    if [ -z "$secret_line" ] || [[ "$secret_line" =~ SECRET_KEY[[:space:]]*=[[:space:]]*SECRET ]]; then
-        secret_line="SECRET_KEY = '$(generate_django_secret_key)'"
-    fi
-
-    tmp_settings="$(mktemp)"
-    cp conf/template_settings.txt "$tmp_settings"
     cp conf/urls.py "$project_dir"
-
-    sed -i \
-        -e "s|^SECRET_KEY.*|$(sed_replacement_escape "$secret_line")|" \
-        -e "s|djangouser|$(sed_replacement_escape "$DB_USER")|g" \
-        -e "s|djangopass|$(sed_replacement_escape "$DB_PASS")|g" \
-        -e "s|djangohost|$(sed_replacement_escape "$DB_SERVER_IP")|g" \
-        -e "s|djangoport|$(sed_replacement_escape "$DB_PORT")|g" \
-        -e "s|djangodbname|$(sed_replacement_escape "$DB_NAME")|g" \
-        -e "s|emailhostserver|$(sed_replacement_escape "$EMAIL_HOST_SERVER")|g" \
-        -e "s|emailport|$(sed_replacement_escape "$EMAIL_PORT")|g" \
-        -e "s|emailhostuser|$(sed_replacement_escape "$EMAIL_HOST_USER")|g" \
-        -e "s|emailhostpassword|$(sed_replacement_escape "$EMAIL_HOST_PASSWORD")|g" \
-        -e "s|emailhosttls|$(sed_replacement_escape "$EMAIL_USE_TLS")|g" \
-        -e "s|localserverip|$(sed_replacement_escape "$LOCAL_SERVER_IP")|g" \
-        -e "s|localhost|$(sed_replacement_escape "$DNS_URL")|g" \
-        "$tmp_settings"
-
-    cp "$tmp_settings" "$project_dir/settings.py"
-    rm -f "$tmp_settings"
+    if [ "$render_settings" = true ]; then
+        render_django_settings_file \
+            "$install_script_dir/conf/template_settings.txt" \
+            "${settings_output:-$project_dir/settings.py}" \
+            "$conf"
+    else
+        log "INFO" "Skipping settings.py rendering for staged production image"
+    fi
 }
 
 # restore_git_ref: reset repository to branch/tag/commit active before script ran.
@@ -917,6 +896,8 @@ do
         --upgrade)      set -- "$@" -u ;;
         --stage)        set -- "$@" -j ;;
         --bootstrap)    set -- "$@" -l ;;
+        --render-settings|--render_settings) set -- "$@" -q ;;
+        --settings-output|--settings_output) set -- "$@" -y ;;
         --script)       set -- "$@" -s ;;
         --script_before) set -- "$@" -p ;;
         --script_after) set -- "$@" -o ;;
@@ -956,9 +937,11 @@ run_script_before=false
 migration_script=()
 migration_script_before=()
 skip_tables=false
+render_settings="auto"
+settings_output=""
 
 # PARSE VARIABLE ARGUMENTS WITH getops
-options=":c:s:i:u:j:l:r:g:tdbkvhao:p:"
+options=":c:s:i:u:j:l:r:g:tdbkvhaqo:p:y:"
 while getopts $options opt; do
     case $opt in
         i ) 
@@ -1036,6 +1019,12 @@ while getopts $options opt; do
         a )
             restart_apache=false
             ;;
+        q )
+            render_settings=true
+            ;;
+        y )
+            settings_output=$OPTARG
+            ;;
         h )
             usage
             exit 1
@@ -1072,11 +1061,21 @@ if [ "$workflow" != "standard" ]; then
     operation_scope="app"
 fi
 
+# Traditional installs keep their historical rendering behavior. Container
+# image staging must opt in, which only the non-secret test build does.
+if [ "$render_settings" = "auto" ]; then
+    if [ "$workflow" = "standard" ]; then render_settings=true; else render_settings=false; fi
+fi
+
 # Default to loading initial tables on installs unless explicitly skipped.
 if [ "$operation" = "install" ] && [ "$skip_tables" = false ] && [ "$tables" = false ]; then
     tables=true
 fi
 
+# Keep the configuration addressable after staging functions change directory.
+if [[ "$conf" != /* ]]; then
+    conf="$(cd "$(dirname "$conf")" && pwd)/$(basename "$conf")"
+fi
 load_install_config
 PROJECT_NAME="${PROJECT_NAME:-iskylims}"
 checkout_git_revision

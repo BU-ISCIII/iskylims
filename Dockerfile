@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 FROM registry.access.redhat.com/ubi9/ubi
 ENV TZ=Europe/Madrid
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -75,13 +76,29 @@ RUN chmod +x /srv/iskylims/scripts/container_start.sh
 ARG INSTALL_TYPE=dep
 ARG GIT_REVISION=main
 ARG INSTALL_CONF=conf/docker_test_settings.txt
+ARG USE_INSTALL_CONF_SECRET=false
+ARG RENDER_DJANGO_SETTINGS=false
 
 # Prepare dependencies and stage the application tree in the image so the
 # container can restart without rerunning install-time file generation.
 ENV SKIP_SYSTEM_PACKAGES=1
-RUN /bin/bash install.sh --install dep --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart \
+# Production reads the operator configuration through an ephemeral build-secret
+# mount so COPY and image layers never retain it. Test builds use the bundled
+# non-sensitive configuration and explicitly render test settings into the image.
+RUN --mount=type=secret,id=install_conf \
+    conf_path="$INSTALL_CONF"; \
+    if [ "$USE_INSTALL_CONF_SECRET" = "true" ]; then \
+        conf_path=/run/secrets/install_conf; \
+        test -f "$conf_path" || { echo "Required install_conf build secret is missing" >&2; exit 1; }; \
+    fi; \
+    /bin/bash install.sh --install dep --git_revision "$GIT_REVISION" --conf "$conf_path" --skip_apache_restart \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
-RUN /bin/bash install.sh --stage install --git_revision $GIT_REVISION --conf $INSTALL_CONF --skip_apache_restart \
+RUN --mount=type=secret,id=install_conf \
+    conf_path="$INSTALL_CONF"; \
+    if [ "$USE_INSTALL_CONF_SECRET" = "true" ]; then conf_path=/run/secrets/install_conf; fi; \
+    render_args=""; \
+    if [ "$RENDER_DJANGO_SETTINGS" = "true" ]; then render_args="--render-settings"; fi; \
+    /bin/bash install.sh --stage install --git_revision "$GIT_REVISION" --conf "$conf_path" --skip_apache_restart $render_args \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
 # Use the virtualenv created by install.sh
 ENV PATH="${INSTALL_PATH}/virtualenv/bin:${PATH}"
