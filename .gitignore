@@ -1,124 +1,15 @@
-## Custom
-*.xml
-*.bin
-*.gz
-*_BAK
-tmp/
-logs/
-/static/
-install_settings.txt
+# Local deployment configuration and generated synchronization candidates
+.env
+.env.*.file
+conf/production_settings.txt
+# Legacy/application-specific production settings must remain local.
 my_prod_settings*.txt
-wetlab/logging_config.ini
-#--- updates introduced for iSkyLIMS in submodules packaging ---
-virtualenv/
-iSkyLIMS/
-*iskylims/
-documents/
-manage.py
-logs/
-logs
-.vscode/
+*.bu-isciii-update
 
-
-# Byte-compiled / optimized / DLL files
+# Python and runtime artifacts
 __pycache__/
 *.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# dotenv
-.env
-.env.prod.file
-
-# virtualenv
-.venv
-venv/
-ENV/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
+.venv/
+virtualenv/
+logs/
+documents/

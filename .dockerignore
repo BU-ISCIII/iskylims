@@ -1,60 +1,30 @@
-# Keep .git: install/build diagnostics use git metadata inside the image.
-
-# Local Python environments and caches
-.venv/
-venv/
-env/
-ENV/
-virtualenv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
-.coverage
-.coverage.*
-htmlcov/
-.tox/
-
-# Local editor and OS files
-.vscode/
-.idea/
-.DS_Store
-*.swp
-*.swo
-
-# Local runtime/generated deployment files
-.env
-.env.*
-!.env.example
-.env.prod.file
+# Production installation settings are passed through a build secret. Exclude
+# all local settings and allow only committed, non-sensitive templates/tests.
 install_settings.txt
-# Configuration files under conf are excluded by default. Only templates and
-# the explicitly non-sensitive test profiles are safe to COPY into an image.
 conf/*settings*.txt
 !conf/docker_test_settings.txt
 !conf/template_install_settings.txt
 !conf/template_settings.txt
 .tmp_docker_install_conf_*.txt
-wetlab/logging_config.ini
+.env
+.env.*
+!.env.example
+.env.prod.file
+
+.venv/
+venv/
+virtualenv/
+node_modules/
+.npm/
+.vite/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.vscode/
+.idea/
 logs/
 tmp/
 documents/
-outputs/
-catboost_info/
-
-# Build, package, and generated archives
 build/
 dist/
 *.egg-info/
-.eggs/
-*.egg
-*.log
-*.gz
-*.zip
-*.tar
-*.tgz
-
-# Generated Django/runtime files at repo root
-/manage.py
-/static/
