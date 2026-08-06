@@ -1,0 +1,27 @@
+{
+  "APP_NAME": "iSkyLIMS",
+  "APP_SLUG": "iskylims",
+  "DESCRIPTION": "Laboratory information management system for wet-lab and dry-lab sequencing workflows.",
+  "REPOSITORY_URL": "https://github.com/BU-ISCIII/iSkyLIMS.git",
+  "DEFAULT_BRANCH": "main",
+  "PYTHON_VERSION": "3.11",
+  "TIMEZONE": "Europe/Madrid",
+  "SERVICES": {
+    "app": {
+      "PROFILE": "django",
+      "BUILD_CONTEXT": ".",
+      "DOCKERFILE": "Dockerfile",
+      "IMAGE": "relecov-iskylims:local",
+      "INSTALL_CONF": "conf/docker_production_settings.txt",
+      "TEST_INSTALL_CONF": "conf/docker_test_settings.txt",
+      "PROJECT_MODULE": "iskylims"
+    }
+  },
+  "ADDONS": {
+    "apache": {
+      "VIRTUAL_HOSTS": {
+        "localhost": "app"
+      }
+    }
+  }
+}

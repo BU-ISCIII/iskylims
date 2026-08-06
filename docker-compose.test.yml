@@ -1,71 +1,105 @@
-version: '3.4'
-
 services:
-    db:
-        image: docker.io/library/mysql:8.0
-        container_name: db
-        command: --default-authentication-plugin=mysql_native_password
-        restart: always
-        healthcheck:
-          test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="djangopass" --silent']
-          interval: 3s
-          retries: 5
-          start_period: 30s
-        environment:
-            MYSQL_DATABASE: iskylims_docker
-            MYSQL_USER: django
-            MYSQL_PASSWORD: djangopass
-            MYSQL_ROOT_PASSWORD: root
-
-        ports:
-            - 6606:3306
-        networks:
-            - develop_net
-        volumes:
-            - db_data_vol:/var/lib/mysql
-            - /etc/localtime:/etc/localtime:ro
-            - /usr/share/zoneinfo:/usr/share/zoneinfo
-    
-    samba:
-        image: docker.io/dperson/samba
-        container_name: samba
-        networks:
-        - develop_net
-        volumes:
-            - /etc/localtime:/etc/localtime:ro
-            - /usr/share/zoneinfo:/usr/share/zoneinfo
-            - ngs_data_vol:/mnt
-        command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
-    
-    app:
-        build:
-          context: .
-          args:
-            INSTALL_TYPE: ${INSTALL_TYPE:-dep}
-            GIT_REVISION: ${GIT_REVISION:-main}
-            INSTALL_CONF: ${INSTALL_CONF:-conf/docker_test_settings.txt}
-            # Test settings are intentionally non-secret and may be included in
-            # the disposable test image. Production uses an ephemeral secret.
-            RENDER_DJANGO_SETTINGS: "true"
-            USE_INSTALL_CONF_SECRET: "false"
-            APP_SHELL: ${APP_SHELL:-/bin/bash}
-        container_name: iskylims_app
-        ports:
-            - "8001:8001"
-        environment:
-            APP_MODE: dev
-        networks:
-            - develop_net
-        depends_on:
-            db:
-                condition: service_healthy
-        volumes:
-            - /etc/localtime:/etc/localtime:ro
-            - /usr/share/zoneinfo:/usr/share/zoneinfo
+  # BEGIN BU-ISCIII SERVICE: app (django)
+  app:
+    image: ${APP_IMAGE:-relecov-iskylims:local}
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+      args:
+        GIT_REVISION: ${GIT_REVISION:-current}
+        INSTALL_CONF: "conf/docker_test_settings.txt"
+        USE_INSTALL_CONF_SECRET: "false"
+        RENDER_DJANGO_SETTINGS: "true"
+        APP_UID: ${APP_APP_UID:-1212}
+        APP_GID: ${APP_APP_GID:-1212}
+        APP_PORT: ${APP_APP_PORT:-8000}
+        APP_REPO_PATH: ${APP_REPO_PATH:-/srv/iskylims}
+        APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+    restart: unless-stopped
+    user: "${APP_APP_UID:-1212}:${APP_APP_GID:-1212}"
+    environment:
+      APP_MODE: dev
+      INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+      APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+      APP_PORT: ${APP_APP_PORT:-8000}
+      PROJECT_MODULE: "iskylims"
+      DB_HOST: app_db
+      DB_PORT: ${APP_DB_PORT:-3306}
+      DB_NAME: ${APP_DB_NAME:-iskylims}
+      DB_USER: ${APP_DB_USER:-django}
+      DB_PASSWORD: ${APP_DB_PASSWORD:-djangopass}
+      DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:-test-only-change-me}
+      DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+    depends_on:
+      app_db:
+        condition: service_healthy
+    volumes:
+      - app_test_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents:z
+      - app_test_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:z
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "127.0.0.1:${APP_APP_PORT:-8000}:${APP_APP_PORT:-8000}"
+    networks: [deployment_net]
+  # END BU-ISCIII SERVICE: app
+  # BEGIN BU-ISCIII ADDON: apache
+  apache:
+    image: registry.access.redhat.com/ubi9/httpd-24:latest
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      # Keep proxy behavior equivalent to production while using local HTTP.
+      APACHE_FORWARDED_PROTO: ${APACHE_FORWARDED_PROTO:-http}
+      APACHE_FORWARDED_PORT: ${APACHE_FORWARDED_PORT:-8088}
+      APACHE_LIMIT_REQUEST_BODY: ${APACHE_LIMIT_REQUEST_BODY:-52428800}
+      # REQUIRED application ports used by the generated proxy configuration.
+      APP_APP_PORT: ${APP_APP_PORT:-8000}
+    ports:
+      - "127.0.0.1:${APACHE_PORT:-8088}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec '</dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    volumes:
+      # Test uses the same generated configuration contract as production.
+      - ./deployment/apache/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
+      - ./deployment/apache/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
+      - ./deployment/apache/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
+      # Disposable log volume avoids writing test logs into production paths.
+      - apache_test_logs:/var/log/httpd:z
+      # GENERATED MULTI-APP MOUNTS: disposable test static/document volumes.
+      - app_test_static:/var/www/app/static:ro,z
+      - app_test_documents:/var/www/app/documents:ro,z
+      # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS.
+    networks: [deployment_net]
+  # END BU-ISCIII ADDON: apache
+  app_db:
+    image: docker.io/library/mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${APP_DB_NAME:-iskylims}
+      MYSQL_USER: ${APP_DB_USER:-django}
+      MYSQL_PASSWORD: ${APP_DB_PASSWORD:-djangopass}
+      MYSQL_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD:-root}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes: [app_test_db:/var/lib/mysql]
+    networks: [deployment_net]
 
 networks:
-  develop_net:
+  deployment_net:
 
 volumes:
-  db_data_vol:
-  ngs_data_vol:
+  app_test_db:
+  app_test_documents:
+  app_test_static:
+  apache_test_logs:
