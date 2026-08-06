@@ -44,6 +44,10 @@ services:
             INSTALL_TYPE: ${INSTALL_TYPE:-dep}
             GIT_REVISION: ${GIT_REVISION:-main}
             INSTALL_CONF: ${INSTALL_CONF:-conf/docker_test_settings.txt}
+            # Test settings are intentionally non-secret and may be included in
+            # the disposable test image. Production uses an ephemeral secret.
+            RENDER_DJANGO_SETTINGS: "true"
+            USE_INSTALL_CONF_SECRET: "false"
             APP_SHELL: ${APP_SHELL:-/bin/bash}
         container_name: iskylims_app
         ports:

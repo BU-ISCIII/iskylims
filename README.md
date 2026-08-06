@@ -185,6 +185,18 @@ The standalone iSkyLIMS Apache container renders `APACHE_FORWARDED_PROTO` and `A
 
 During production install/upgrade, `container_install.sh` writes `.env.prod.file` in the repository root. This file is ignored by git and is used by Compose for variable interpolation in `docker-compose.prod.yml`. It intentionally contains Compose/runtime metadata, not database or email passwords.
 
+The selected installation file remains the single configuration source. For
+image construction, `container_install.sh` mounts it ephemerally with the
+selected container engine at
+`/run/secrets/install_conf`; it is not copied into an image layer.
+`.dockerignore` excludes production and temporary settings files from `COPY`.
+Test builds use the committed non-sensitive test profile and explicitly render
+`settings.py` into the test image. Production settings are rendered on the host
+and bind-mounted when the container starts.
+Production configuration filenames must match `*settings*.txt`; this lets
+`.dockerignore` exclude custom configurations without excluding dependency files
+such as `conf/requirements.txt`.
+
 Host directory and ownership preparation is described in [Persist logs/documents on the host](#persist-logsdocuments-on-the-host).
 
 #### Persist logs/documents on the host
@@ -533,6 +545,24 @@ docker compose --env-file .env.prod.file -f docker-compose.prod.yml up -d --forc
 
 ## Developer notes
 
+### Shared container installer library
+
+`container_install.sh` sources
+`deployment/lib/container/common.sh`, vendored from the BU-ISCIII deployment
+standards repository. This shared file owns container-engine selection, Compose
+execution, rootless Podman filesystem fallbacks, configuration reads, service
+resolution, and running-state diagnostics.
+
+Do not edit the vendored library in this repository. Keep iSkyLIMS-specific
+settings rendering, Apache configuration, bind mounts, Samba/demo data, and
+bootstrap behavior in `container_install.sh`. Check or update the shared copy
+from the standards repository with:
+
+```bash
+python3 scripts/scaffold.py check-lib /path/to/relecov-iskylims
+python3 scripts/scaffold.py sync-lib /path/to/relecov-iskylims
+```
+
 ### Django migrations workflow
 
 Migrations are committed to the repo. Do not run `makemigrations` during install/upgrade.
@@ -597,6 +627,28 @@ Suggested steps (host Apache as reverse proxy):
     ```
 
 ### Verification of the installation
+
+Run the automated smoke test after every clean installation, upgrade, restore,
+or rollback. For the standalone local test stack:
+
+```bash
+bash scripts/smoke_test.sh --test --engine docker
+```
+
+Use `--engine podman` for Podman. The script validates the Compose model,
+application, database and Samba container state, Django checks, migration state,
+the application root, and Swagger.
+
+For the standalone production Compose deployment:
+
+```bash
+bash scripts/smoke_test.sh --engine podman --env_file .env.prod.file \
+  --host iskylims.example.org
+```
+
+Override `--base_url` if Apache is published on another address. Use
+`--skip_http` only for diagnostics; production acceptance requires the complete
+HTTP checks.
 
 Open the navigator and type "localhost" or the "server local IP" and check that iSkyLIMs is running.
 
