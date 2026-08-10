@@ -25,7 +25,7 @@ HOST_LOG_PATH='/tmp/relecov-iskylims/logs'
 DJANGO_SETTINGS_PATH='/tmp/relecov-iskylims/data/settings/iskylims/settings.py'
 
 ### Compose test database
-DB_HOST='db'
+DB_HOST='app_db'
 DB_PORT='3306'
 DB_NAME='iskylims'
 DB_USER='django'
