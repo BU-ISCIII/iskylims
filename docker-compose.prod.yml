@@ -1,47 +1,48 @@
 services:
   # BEGIN BU-ISCIII SERVICE: app (django)
   app:
-    image: ${APP_IMAGE:-relecov-iskylims:local}
+    image: "${APP_IMAGE:-relecov-iskylims:local}"
     build:
       context: "."
       dockerfile: "Dockerfile"
       args:
         GIT_REVISION: ${GIT_REVISION:-current}
+        # Fixed internal path used only while install.sh reads the build secret.
         INSTALL_CONF: "conf/.runtime_install_settings.txt"
         USE_INSTALL_CONF_SECRET: "true"
         RENDER_DJANGO_SETTINGS: "false"
-        APP_UID: ${APP_APP_UID:-1212}
-        APP_GID: ${APP_APP_GID:-1212}
-        APP_PORT: ${APP_APP_PORT:-8000}
-        APP_REPO_PATH: ${APP_REPO_PATH:-/srv/iskylims}
-        APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+        APP_UID: ${APP_APP_UID:?APP_APP_UID is required}
+        APP_GID: ${APP_APP_GID:?APP_APP_GID is required}
+        APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
+        APP_REPO_PATH: ${APP_REPO_PATH:?APP_REPO_PATH is required}
+        APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
     restart: unless-stopped
-    user: "${APP_APP_UID:-1212}:${APP_APP_GID:-1212}"
+    user: "${APP_APP_UID:?APP_APP_UID is required}:${APP_APP_GID:?APP_APP_GID is required}"
     environment:
       APP_MODE: prod
-      INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
-      APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
-      APP_PORT: ${APP_APP_PORT:-8000}
+      INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
+      APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
+      APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
       PROJECT_MODULE: "iskylims"
       DB_HOST: ${APP_DB_HOST:?APP_DB_HOST is required}
-      DB_PORT: ${APP_DB_PORT:-3306}
+      DB_PORT: ${APP_DB_PORT:?APP_DB_PORT is required}
       DB_NAME: ${APP_DB_NAME:?APP_DB_NAME is required}
       DB_USER: ${APP_DB_USER:?APP_DB_USER is required}
       DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
       DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:?APP_DJANGO_SECRET_KEY is required}
       DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:?APP_DJANGO_ALLOWED_HOSTS is required}
     volumes:
-      - ${APP_HOST_DATA_PATH:?APP_HOST_DATA_PATH is required}/documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents:Z
-      - ${APP_HOST_LOG_PATH:?APP_HOST_LOG_PATH is required}:${APP_INSTALL_PATH:-/opt/iskylims}/logs:Z
-      - ${APP_DJANGO_SETTINGS_PATH:?APP_DJANGO_SETTINGS_PATH is required}:${APP_INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py:Z
-      - app_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:z
+      - ${APP_HOST_DATA_PATH:?APP_HOST_DATA_PATH is required}/documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:Z
+      - ${APP_HOST_LOG_PATH:?APP_HOST_LOG_PATH is required}:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/logs:Z
+      - ${APP_DJANGO_SETTINGS_PATH:?APP_DJANGO_SETTINGS_PATH is required}:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/iskylims/settings.py:Z
+      - app_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:z
     healthcheck:
       test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
       interval: 10s
       timeout: 5s
       retries: 12
     ports:
-      - "127.0.0.1:${APP_APP_PORT:-8000}:${APP_APP_PORT:-8000}"
+      - "127.0.0.1:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
     networks: [deployment_net]
   # END BU-ISCIII SERVICE: app
   # BEGIN BU-ISCIII ADDON: apache
@@ -51,17 +52,10 @@ services:
     depends_on:
       app:
         condition: service_healthy
-    environment:
-      # REQUIRED reverse-proxy contract consumed by the generated Apache conf.
-      APACHE_FORWARDED_PROTO: ${APACHE_FORWARDED_PROTO:-https}
-      APACHE_FORWARDED_PORT: ${APACHE_FORWARDED_PORT:-443}
-      APACHE_LIMIT_REQUEST_BODY: ${APACHE_LIMIT_REQUEST_BODY:-52428800}
-      # REQUIRED application ports used by the generated proxy configuration.
-      APP_APP_PORT: ${APP_APP_PORT:-8000}
     ports:
       # Public binding can be restricted to loopback when another host proxy
       # terminates TLS before forwarding traffic to this container.
-      - "${APACHE_BIND_HOST:-0.0.0.0}:${APACHE_PORT:-80}:8080"
+      - "${APACHE_BIND_HOST:?APACHE_BIND_HOST is required}:${APACHE_PORT:?APACHE_PORT is required}:8080"
     expose:
       - "8080"
     healthcheck:
@@ -71,19 +65,19 @@ services:
       retries: 30
       start_period: 30s
     volumes:
-      # REQUIRED generated read-only configuration bind sources.
+      # REQUIRED runtime-rendered read-only configuration bind sources.
       - ./deployment/apache/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
       - ./deployment/apache/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
       - ./deployment/apache/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
       # REQUIRED persistent host log bind. Back it up/rotate per host policy.
-      - ${APACHE_LOG_PATH:-/var/log/local/iskylims/apache}:/var/log/httpd:z
+      - ${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}:/var/log/httpd:z
       # REQUIRED when container and host timezone must agree in log records.
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       # GENERATED MULTI-APP MOUNTS: one read-only static/documents pair for
       # every Django service. React assets remain inside the React image.
-      - app_static:/var/www/app/static:ro,z
-      - ${APP_HOST_DATA_PATH:?APP_HOST_DATA_PATH is required}/documents:/var/www/app/documents:ro,Z
+      - app_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:ro,z
+      - ${APP_HOST_DATA_PATH:?APP_HOST_DATA_PATH is required}/documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:ro,Z
       # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS. Examples:
       # - reports_data:/var/www/reports:ro,z
       # - /srv/public-downloads:/var/www/downloads:ro,Z

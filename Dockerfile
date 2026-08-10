@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 ARG APP_UID=1212
 ARG APP_GID=1212
-ARG APP_PORT=8000
+ARG APP_PORT=8001
 ARG APP_REPO_PATH=/srv/iskylims
 ARG APP_INSTALL_PATH=/opt/iskylims
 ARG GIT_REVISION=current
@@ -22,7 +22,7 @@ ENV APP_REPO_PATH=${APP_REPO_PATH} \
 
 RUN microdnf -y update && \
     microdnf -y install python3.11 python3.11-pip \
-      python3.11-devel gcc git rsync wget mariadb-connector-c-devel shadow-utils && \
+      python3.11-devel tar gcc git rsync wget mariadb-connector-c-devel shadow-utils && \
     microdnf clean all
 
 ARG SUPERCRONIC_VERSION=v0.2.38

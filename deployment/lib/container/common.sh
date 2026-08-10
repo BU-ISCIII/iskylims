@@ -512,7 +512,7 @@ render_config_template() {
         shift 2
         escaped_token="$(sed_search_escape "$token")"
         escaped_value="$(sed_replacement_escape "$value")"
-        sed -i "s|$escaped_token|$escaped_value|g" "$tmp_file"
+        sed -E -i "s|$escaped_token|$escaped_value|g" "$tmp_file"
     done
     if copy_with_podman_fallback "$tmp_file" "$dst" \
         && chmod_with_podman_fallback "$file_mode" "$dst"; then
@@ -521,6 +521,36 @@ render_config_template() {
     fi
     rm -f "$tmp_file"
     return 1
+}
+
+# Render every ${UPPER_CASE_VARIABLE} found in a repository-owned configuration
+# source from the already loaded deployment environment. This keeps application
+# topology editable in normal configuration files while ensuring Compose mounts
+# completed files with no unresolved deployment placeholders.
+# Arguments: source configuration, destination file, destination mode.
+render_environment_config_template() {
+    local src="$1"
+    local dst="$2"
+    local file_mode="$3"
+    local token variable
+    local -a replacements=()
+
+    [ -f "$src" ] || {
+        echo "Configuration source not found: $src" >&2
+        return 1
+    }
+    while IFS= read -r token; do
+        [ -n "$token" ] || continue
+        variable="${token#\$\{}"
+        variable="${variable%\}}"
+        if ! [[ -v "$variable" ]]; then
+            echo "Required template variable $variable is not set for $src" >&2
+            return 1
+        fi
+        replacements+=("$token" "${!variable}")
+    done < <(grep -oE '\$\{[A-Z][A-Z0-9_]*\}' "$src" | sort -u || true)
+
+    render_config_template "$src" "$dst" "$file_mode" "${replacements[@]}"
 }
 
 # Quote one value for literal use in a Compose environment file. Single-quoted
@@ -742,7 +772,10 @@ service_exists() {
 }
 
 # Resolve a service to a container name/ID, supporting application legacy names
-# first and standard Compose service labels as the portable fallback.
+# first. Otherwise inspect every container returned by the selected Compose
+# project and match its service label. Listing the project first avoids both a
+# cross-project "app" collision and the unsupported `ps -q SERVICE` syntax in
+# podman-compose 1.0.x.
 resolve_service_container() {
     local service_name="$1"
     local service_container=""
@@ -756,7 +789,22 @@ resolve_service_container() {
     if [ -n "$container_name" ] \
         && engine_exec inspect -f '{{.Id}}' "$container_name" >/dev/null 2>&1; then
         service_container="$container_name"
-    else
+    elif [ -n "${compose_file:-}" ]; then
+        local candidate candidate_service
+        while IFS= read -r candidate; do
+            [ -n "$candidate" ] || continue
+            candidate_service="$(engine_exec inspect -f \
+                '{{ index .Config.Labels "com.docker.compose.service" }}' \
+                "$candidate" 2>/dev/null || true)"
+            if [ "$candidate_service" = "$service_name" ]; then
+                service_container="$candidate"
+                break
+            fi
+        done < <(compose_with_env_exec -f "$compose_file" ps -q 2>/dev/null || true)
+    fi
+    # Retain the label query as a compatibility fallback for callers that do
+    # not have a Compose file in scope (including older application wrappers).
+    if [ -z "$service_container" ]; then
         service_container="$(engine_exec ps -a \
             --filter "label=com.docker.compose.service=${service_name}" \
             --format '{{.ID}}' | head -n 1)"
