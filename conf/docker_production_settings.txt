@@ -3,56 +3,136 @@
 # The same file drives the ephemeral image build secret, host settings render,
 # Compose environment and temporary bootstrap copy.
 
-### Application layout and runtime identity
-REPO_PATH='/srv/iskylims'
-INSTALL_PATH='/opt/iskylims'
+### Application layout and Django project
+# Source repository staged in the image and final application installation.
+REPO_PATH='/srv/relecov-iskylims'
+INSTALL_PATH='/opt/relecov-iskylims'
+# Python package containing settings.py, urls.py and wsgi.py. This is generated
+# from project.json and normally should not be changed in this file.
 PROJECT_MODULE='iskylims'
+# Python executable used to create the application virtual environment.
 PYTHON_BIN_PATH='python3.11'
+
+### Application-specific installation modules
+# Optional space-separated Django applications consumed by installers that
+# support dependency, migration and fake-initial module lists. Leave empty when
+# the application install.sh does not implement the corresponding behavior.
+# iSkyLIMS example: REQUIRED_MODULES='core drylab wetlab django_utils'
+REQUIRED_MODULES='core drylab wetlab django_utils'
+MIGRATION_MODULES='core drylab wetlab django_utils'
+FAKEINITIAL_MODULES='core drylab wetlab django_utils'
+
+### Container runtime identity
+# UID/GID must own every writable bind mount and named volume.
 APP_UID='1212'
 APP_GID='1212'
-APP_PORT='8000'
+# Production services should normally use a non-login shell.
+APP_SHELL='/sbin/nologin'
+# Internal application port used by Gunicorn and the reverse proxy.
+APP_PORT='8001'
 
 ### Persistent host sources
-# Documents live below HOST_DATA_PATH; application logs use HOST_LOG_PATH.
-HOST_DATA_PATH='/srv/containers/bind/iskylims'
-HOST_LOG_PATH='/var/log/local/iskylims/apps'
-# Host bind source rendered by container_install.sh before Compose startup.
-DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/settings/iskylims/settings.py'
+# Documents are stored below HOST_DATA_PATH; application logs use
+# HOST_LOG_PATH. Both paths must exist or be creatable by container_install.sh.
+HOST_DATA_PATH='/srv/containers/bind/relecov-iskylims'
+HOST_LOG_PATH='/var/log/local/relecov-iskylims/apps'
+# Host bind source rendered before Compose starts. It must be a file path, not
+# a directory; the parent directory is created and protected by the installer.
+DJANGO_SETTINGS_PATH='/srv/containers/bind/relecov-iskylims/settings/iskylims/settings.py'
 
 ### External production database
+# Use a host name or IP reachable from inside the application container.
 DB_HOST='CHANGE_ME'
 DB_PORT='3306'
 DB_NAME='CHANGE_ME'
 DB_USER='CHANGE_ME'
 DB_PASSWORD='CHANGE_ME'
+# install.sh derives its legacy aliases from DB_HOST and DB_PASSWORD.
 
 ### Django security and public URLs
+# Production debug must remain disabled.
 DJANGO_DEBUG='false'
+# Preserve this value across upgrades; changing it invalidates signed data.
 DJANGO_SECRET_KEY='CHANGE_ME'
+# Comma-separated host names accepted by Django, without URL schemes.
 DJANGO_ALLOWED_HOSTS='CHANGE_ME'
+# Comma-separated complete HTTPS origins, including their schemes.
 DJANGO_CSRF_TRUSTED_ORIGINS='https://CHANGE_ME'
+# Persistent database connection lifetime in seconds.
+DB_CONN_MAX_AGE='60'
+
+### Application access compatibility
+# Legacy application templates may still consume these values. Use the server
+# address/host name expected in ALLOWED_HOSTS and the public DNS name used by
+# the reverse proxy. Replace them while the legacy renderer remains in use.
+LOCAL_SERVER_IP='CHANGE_ME'
+DNS_URL='CHANGE_ME'
 
 ### Email
+# SMTP endpoint reachable from the application container.
 EMAIL_HOST='CHANGE_ME'
-EMAIL_PORT='587'
+EMAIL_PORT='25'
 EMAIL_HOST_USER='CHANGE_ME'
 EMAIL_HOST_PASSWORD='CHANGE_ME'
-EMAIL_USE_TLS='true'
+# Python boolean spelling is retained because legacy settings rendering writes
+# this value directly into settings.py.
+EMAIL_USE_TLS='False'
+# Compatibility alias used by the current RELECOV/iSkyLIMS install.sh.
+EMAIL_HOST_SERVER='CHANGE_ME'
 
 ### Gunicorn and startup tuning
 WEB_CONCURRENCY='2'
 GUNICORN_THREADS='2'
-GUNICORN_TIMEOUT='120'
+GUNICORN_TIMEOUT='300'
 GUNICORN_KEEPALIVE='5'
+# Maximum time container_start.sh waits for staged application files.
 APP_START_WAIT_TIMEOUT_SECONDS='100'
+
+### Application log policy compatibility
+# regular_folder stores logs below INSTALL_PATH. symbolic_link links that
+# directory to LOG_PATH, which must already exist and be writable.
+LOG_TYPE='regular_folder'
+LOG_PATH=''
 
 ### Selected infrastructure add-ons
 # Apache add-on
 # Used only when ADDONS.apache selects this application as CONFIG_SERVICE.
-APACHE_LOG_PATH='/var/log/local/iskylims/apache'
+
+# Repository-owned sources live under <repository>/conf/apache. The installer
+# renders them to <repository>/deployment/apache and mounts those final files;
+# APACHE_CONF_PATH is not used by the standard lifecycle. Keep it empty unless
+# legacy application code explicitly consumes a different host directory.
+# Example legacy override: APACHE_CONF_PATH='/srv/containers/bind/apache-conf'
+APACHE_CONF_PATH=''
+
+# Persistent host directory mounted as the Apache log destination.
+APACHE_LOG_PATH='/var/log/local/relecov-iskylims/apache'
+
+# Public host interface and port. Use 127.0.0.1 when another host reverse proxy
+# is the only component that should reach this Apache container.
 APACHE_BIND_HOST='0.0.0.0'
-APACHE_PORT='80'
+APACHE_PORT='8080'
+
+# Default VirtualHost rendered from conf/apache/01-reverse-proxy.conf.
+# Customize that repository-owned file directly for additional DNS names,
+# services, static aliases, or path-based routes. Empty upstream values are
+# derived from ADDONS.apache.CONFIG_SERVICE by container_install.sh.
+APACHE_SERVER_NAME='CHANGE_ME_DNS_NAME'
+APACHE_UPSTREAM_SERVICE=''
+APACHE_UPSTREAM_PORT=''
+APACHE_PROXY_TIMEOUT=''
+APACHE_LOG_STEM=''
+
+# Server-status stays restricted by default. Use a local-only diagnostic name;
+# aliases and allow-list accept Apache-compatible values.
+SERVER_STATUS_SERVER_NAME='localhost'
+SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
+# Forwarded headers received by Django behind the production proxy.
 APACHE_FORWARDED_PROTO='https'
 APACHE_FORWARDED_PORT='443'
-# 50 MiB; increase only when an application endpoint requires it.
+
+# 50 MiB. The reverse-proxy template applies this value to Apache and, when
+# loaded, ModSecurity. Increase it only for endpoints that require larger data.
 APACHE_LIMIT_REQUEST_BODY='52428800'

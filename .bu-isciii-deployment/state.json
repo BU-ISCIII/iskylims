@@ -2,9 +2,8 @@
   "config": {
     "ADDONS": {
       "apache": {
-        "VIRTUAL_HOSTS": {
-          "localhost": "app"
-        }
+        "CONFIG_SERVICE": "app",
+        "MOUNTS": []
       }
     },
     "APP_NAME": "iSkyLIMS",
@@ -27,24 +26,28 @@
     "TIMEZONE": "Europe/Madrid"
   },
   "files": {
-    ".dockerignore": "461fb3f0597cc936bc0e6f9a4b50bf5e5a06fb03b12293725f57850ec1184eed",
-    ".gitignore": "8b93d5b7cd43c8c6cfeb8b1a9b3b0a1ef70c02b08c33859940a5f2ef86b19631",
-    "Dockerfile": "70c53323ca533bfc62e56a5fb3f116155757e9dafa5e33d9556257e80d70abb5",
+    ".dockerignore": "49a5b2223fb2a4f4201c19a833c60ba91f3e979632b6ae45fd4aca4cf22abb32",
+    ".gitignore": "5f08b2eb5e81fa7a1f4d5bc73df8ba6741e4a3f78925890c3fd1018f2188545b",
+    "Dockerfile": "805c9c06010f3f77d168071abef30df02cda65cb85740d5f6a87bee5a3c1efc5",
     "LEAME.md": "56279a4c2102a7ed42e34afe7c85055f6279fd9e67ee0df8a5d31c81c7ff9fb5",
-    "README.md": "7eeaaef44d091288de6285a306d0684b5b0e7aaab724f4a8fd9d2e48915a0d03",
-    "conf/INSTALL_SETTINGS.md": "9bd0fd353311652474a5b15feff79746e84732f193a7a469694a67fea71cb405",
-    "conf/docker_production_settings.txt": "39696a9cf4986529eb054b8f104b9956ebba9e5fd09601809706826e61e57c12",
-    "conf/docker_test_settings.txt": "af8db8079d135be9b95272c5d54821bdf5ad312ffd9e3047e96a391be4bd2c02",
-    "conf/template_settings.py": "5e286696097d51c662b6b79fbd9599bb4efa3c04f2f30b0a076686ac6583b8db",
-    "container_install.sh": "8f3104560fd39131bc51444ed9a72fdd0514bef177ab24f16e209211d27d68c3",
-    "deployment/apache/00-logs.conf": "f94afa73a965ce3c8b25796a9891bb52603f02155f75eb71bba41e9f54873438",
-    "deployment/apache/01-reverse-proxy.conf": "1cb982a49e14af9369c2d08f806102433eeb0a0ad8097f9dd6704043be18a797",
-    "deployment/apache/02-server-status.conf": "2dabf0ebe1b5a69c05cba8fc31490a15d82c89556fd22c4f85219bf752321613",
-    "docker-compose.prod.yml": "4e9f2a53099f626659302bcf313ff895cffdf0fa7555e0fd0ffb80441f928ab4",
-    "docker-compose.test.yml": "5a9c543d95b05e67205591c4ec0d6b6ab82d2dded01ddcaa2357c76c040ece8d",
-    "install.sh": "8ed305fd4f2c251bc02db4775ec47fc0e81b809bd5186b5e0ff33c7e99517bf5",
-    "scripts/container_start.sh": "7d1e7c015c5f95d25ee762493bf051b7c132d4cc10b91bf63f3fe1c5ed443d94",
-    "scripts/smoke_test.sh": "0a3c21b64674f9bc2178205b2a112d8e9f4a3da5603f33b97c3b20575eaff57b"
+    "README.md": "2adeeefd761f55a2e23c6a78ee05a70ee1badb56bb4ffbd198631480dfcfb04b",
+    "conf/INSTALL_SETTINGS.md": "edde8933e93c82460c430bdfb2ef95a0413f977a30d5128a93f280673b364cd2",
+    "conf/apache/00-logs.conf": "3c2ab4e693e528d2cad37c0c5bb0bc4511803a7f206b339182de192d4e398092",
+    "conf/apache/01-reverse-proxy.conf": "5b8262212bef24ac9606861270dc6b6de63206e8d2b567e2cb09da33e84f683d",
+    "conf/apache/02-server-status.conf": "c3b5d26f9b551083faf0d85b188bfa9c577ff0bd3b805f0ec104fe4f7d5101cb",
+    "conf/docker_production_settings.txt": "e2c77474effacb8d9a460116c0467bf626777d96534386157c1c273e1f747f48",
+    "conf/docker_test_settings.txt": "b097040f09530d1c00f066fb99ad9d63b2c5e84ab0e6cad6b7cdacdd8e28542c",
+    "conf/template_settings.py": "590369c8b3db2e18b35deb04b2a4abf05e60f65d41ba0983b3b4af8ef20e5039",
+    "container_install.sh": "e2c2a45d5b9ab5c5a7756620cd941fec35f5561eea8840a509f3aeb422714d8b",
+    "deployment_health/README.md": "3d7c4295938708813369deeac9edc0eb8fe2153c77d03f9138febf3aed715aa5",
+    "deployment_health/__init__.py": "bedcff132309f8970b1ca72fcea20c7cb38bb727d48f82d96dbf7104922abda0",
+    "deployment_health/urls.py": "8d274b44d326f26d71b05021a34969c742478efbe47691aadd8c3a90ba16f340",
+    "deployment_health/views.py": "d19cc3e8fef8519bae2b7fbdc25d17f6ae7df02479aa8890f4b4d250bb07f2e4",
+    "docker-compose.prod.yml": "fccf8f382a57a4333a061710009021dad43ec3298c4ef487e82e3dc1f2eb6244",
+    "docker-compose.test.yml": "4e528d06fd480271e78990a296a341263b71b01b80601a7f74b805955e57f539",
+    "install.sh": "4ca3fe301fe7fefa5882d982dde97bb81a34396c054fe64660fc21fddb63f84b",
+    "scripts/container_start.sh": "5e7c07c03fd1b3b468dc8b2c4eaf6d9f63fb881cbad18f45c942dc39756a96da",
+    "scripts/smoke_test.sh": "04604071e36355a1cb2f6fda8c0161c2a09b393938c010264a7aac06f7d972ee"
   },
   "source": "BU-ISCIII deployment standards",
   "standard_version": "0.1.0"
