@@ -5,6 +5,8 @@ conf/production_settings.txt
 # Legacy/application-specific production settings must remain local.
 my_prod_settings*.txt
 *.bu-isciii-update
+# Final add-on bind sources are regenerated from repository-owned conf files.
+deployment/apache/*.conf
 
 # Python and runtime artifacts
 __pycache__/

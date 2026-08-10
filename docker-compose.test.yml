@@ -1,48 +1,49 @@
 services:
   # BEGIN BU-ISCIII SERVICE: app (django)
   app:
-    image: ${APP_IMAGE:-relecov-iskylims:local}
+    image: "${APP_IMAGE:-relecov-iskylims:local}"
     build:
       context: "."
       dockerfile: "Dockerfile"
       args:
         GIT_REVISION: ${GIT_REVISION:-current}
+        # Safe committed test settings are available inside the build context.
         INSTALL_CONF: "conf/docker_test_settings.txt"
         USE_INSTALL_CONF_SECRET: "false"
         RENDER_DJANGO_SETTINGS: "true"
-        APP_UID: ${APP_APP_UID:-1212}
-        APP_GID: ${APP_APP_GID:-1212}
-        APP_PORT: ${APP_APP_PORT:-8000}
-        APP_REPO_PATH: ${APP_REPO_PATH:-/srv/iskylims}
-        APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
+        APP_UID: ${APP_APP_UID:?APP_APP_UID is required}
+        APP_GID: ${APP_APP_GID:?APP_APP_GID is required}
+        APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
+        APP_REPO_PATH: ${APP_REPO_PATH:?APP_REPO_PATH is required}
+        APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
     restart: unless-stopped
-    user: "${APP_APP_UID:-1212}:${APP_APP_GID:-1212}"
+    user: "${APP_APP_UID:?APP_APP_UID is required}:${APP_APP_GID:?APP_APP_GID is required}"
     environment:
       APP_MODE: dev
-      INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
-      APP_INSTALL_PATH: ${APP_INSTALL_PATH:-/opt/iskylims}
-      APP_PORT: ${APP_APP_PORT:-8000}
+      INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
+      APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
+      APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
       PROJECT_MODULE: "iskylims"
       DB_HOST: app_db
-      DB_PORT: ${APP_DB_PORT:-3306}
-      DB_NAME: ${APP_DB_NAME:-iskylims}
-      DB_USER: ${APP_DB_USER:-django}
-      DB_PASSWORD: ${APP_DB_PASSWORD:-djangopass}
-      DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:-test-only-change-me}
-      DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+      DB_PORT: ${APP_DB_PORT:?APP_DB_PORT is required}
+      DB_NAME: ${APP_DB_NAME:?APP_DB_NAME is required}
+      DB_USER: ${APP_DB_USER:?APP_DB_USER is required}
+      DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
+      DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:?APP_DJANGO_SECRET_KEY is required}
+      DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:?APP_DJANGO_ALLOWED_HOSTS is required}
     depends_on:
       app_db:
         condition: service_healthy
     volumes:
-      - app_test_documents:${APP_INSTALL_PATH:-/opt/iskylims}/documents:z
-      - app_test_static:${APP_INSTALL_PATH:-/opt/iskylims}/static:z
+      - app_test_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:z
+      - app_test_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:z
     healthcheck:
       test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
       interval: 10s
       timeout: 5s
       retries: 12
     ports:
-      - "127.0.0.1:${APP_APP_PORT:-8000}:${APP_APP_PORT:-8000}"
+      - "127.0.0.1:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
     networks: [deployment_net]
   # END BU-ISCIII SERVICE: app
   # BEGIN BU-ISCIII ADDON: apache
@@ -52,15 +53,8 @@ services:
     depends_on:
       app:
         condition: service_healthy
-    environment:
-      # Keep proxy behavior equivalent to production while using local HTTP.
-      APACHE_FORWARDED_PROTO: ${APACHE_FORWARDED_PROTO:-http}
-      APACHE_FORWARDED_PORT: ${APACHE_FORWARDED_PORT:-8088}
-      APACHE_LIMIT_REQUEST_BODY: ${APACHE_LIMIT_REQUEST_BODY:-52428800}
-      # REQUIRED application ports used by the generated proxy configuration.
-      APP_APP_PORT: ${APP_APP_PORT:-8000}
     ports:
-      - "127.0.0.1:${APACHE_PORT:-8088}:8080"
+      - "${APACHE_BIND_HOST:?APACHE_BIND_HOST is required}:${APACHE_PORT:?APACHE_PORT is required}:8080"
     healthcheck:
       test: ["CMD-SHELL", "bash -ec '</dev/tcp/127.0.0.1/8080'"]
       interval: 10s
@@ -68,25 +62,25 @@ services:
       retries: 30
       start_period: 30s
     volumes:
-      # Test uses the same generated configuration contract as production.
+      # Test uses the same runtime-rendered configuration as production.
       - ./deployment/apache/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
       - ./deployment/apache/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
       - ./deployment/apache/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
       # Disposable log volume avoids writing test logs into production paths.
       - apache_test_logs:/var/log/httpd:z
       # GENERATED MULTI-APP MOUNTS: disposable test static/document volumes.
-      - app_test_static:/var/www/app/static:ro,z
-      - app_test_documents:/var/www/app/documents:ro,z
+      - app_test_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:ro,z
+      - app_test_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:ro,z
       # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS.
     networks: [deployment_net]
   # END BU-ISCIII ADDON: apache
   app_db:
     image: docker.io/library/mysql:8.0
     environment:
-      MYSQL_DATABASE: ${APP_DB_NAME:-iskylims}
-      MYSQL_USER: ${APP_DB_USER:-django}
-      MYSQL_PASSWORD: ${APP_DB_PASSWORD:-djangopass}
-      MYSQL_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${APP_DB_NAME:?APP_DB_NAME is required}
+      MYSQL_USER: ${APP_DB_USER:?APP_DB_USER is required}
+      MYSQL_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD:?APP_DB_ROOT_PASSWORD is required}
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 5s

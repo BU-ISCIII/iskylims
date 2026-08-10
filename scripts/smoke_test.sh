@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/.." && pwd)"
+# Reuse exactly the same engine and Compose frontend selection as the outer
+# installer. In particular, Podman prefers podman-compose when it is installed
+# instead of delegating `podman compose` to an unrelated Docker Compose plugin.
+# shellcheck disable=SC1091
+source "$repo_root/deployment/lib/container/common.sh"
+
+install_services=(app)
 engine="docker"; mode="production"; compose_file=""; env_file=""
 while (($#)); do
     case "$1" in
@@ -13,8 +22,8 @@ while (($#)); do
     esac
 done
 compose_file="${compose_file:-docker-compose.$([ "$mode" = test ] && echo test || echo prod).yml}"
-if [ "$engine" = docker ]; then compose=(docker compose); else compose=(podman compose); fi
-args=(-f "$compose_file"); [ -z "$env_file" ] || args=(--env-file "$env_file" "${args[@]}")
+compose_env_file="$env_file"
+set_engine
 # The generated dotenv file is mode 0600 and contains shell-safe quoted values.
 # Source it so direct host checks use the same service ports as Compose.
 if [ -n "$env_file" ]; then
@@ -23,12 +32,13 @@ if [ -n "$env_file" ]; then
     source "$env_file"
     set +a
 fi
-compose_run() { "${compose[@]}" "${args[@]}" "$@"; }
+compose_run() { compose_with_env_exec -f "$compose_file" "$@"; }
 fail() { echo "FAIL: $*" >&2; exit 1; }
-compose_run config --quiet
-    container_id="$(compose_run ps -q app)"
+compose_run config >/dev/null
+    container_id="$(resolve_service_container app)"
     [ -n "$container_id" ] || fail "Service app has no container"
-    compose_run exec -T app bash -lc 'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py check && ! python manage.py showmigrations --plan | grep -F '"'"'[ ]'"'"''
+    ensure_service_running app "$container_id" >/dev/null
+    engine_exec exec "$container_id" bash -lc 'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py check && ! python manage.py showmigrations --plan | grep -F '"'"'[ ]'"'"''
     echo "PASS: app Django checks and migrations"
 check_url() {
     local service="$1" url="$2"
@@ -36,5 +46,12 @@ check_url() {
         || { echo "FAIL: $service health endpoint: $url" >&2; return 1; }
     echo "PASS: $service health endpoint"
 }
-    check_url app "http://127.0.0.1:${APP_APP_PORT:-8000}/health/"
-echo "iSkyLIMS deployment smoke test passed."
+for service in "${install_services[@]}"; do
+    prefix="${service^^}"
+    prefix="${prefix//-/_}"
+    port_variable="${prefix}_APP_PORT"
+    port="${!port_variable:-}"
+    [ -n "$port" ] || fail "$port_variable is required in the rendered service settings"
+    check_url "$service" "http://127.0.0.1:${port}/health/"
+done
+echo "Example Application deployment smoke test passed."

@@ -30,6 +30,7 @@ render_django_settings_file() {
     local install_conf_path="$3"
     local secret_line=""
     local template_secret_line=""
+    local django_debug=""
 
     if [ -f "$settings_path" ]; then
         secret_line="$(grep -E "^SECRET_KEY[[:space:]]*=" "$settings_path" | tail -n 1 || true)"
@@ -43,21 +44,31 @@ render_django_settings_file() {
         echo "Django template '$template_path' has no SECRET_KEY assignment." >&2
         return 1
     fi
+    django_debug="$(config_value_or_default DJANGO_DEBUG "$install_conf_path" false)"
+    case "${django_debug,,}" in
+        true|1|yes|on) django_debug=True ;;
+        false|0|no|off) django_debug=False ;;
+        *)
+            echo "DJANGO_DEBUG must be a boolean value." >&2
+            return 1
+            ;;
+    esac
     render_config_template "$template_path" "$settings_path" 0664 \
         "$template_secret_line" "$secret_line" \
         djangouser "$(read_install_conf_first "$install_conf_path" DB_USER)" \
-        djangopass "$(read_install_conf_first "$install_conf_path" DB_PASS DB_PASSWORD)" \
-        djangohost "$(read_install_conf_first "$install_conf_path" DB_SERVER_IP DB_HOST)" \
+        djangopass "$(read_install_conf_value DB_PASSWORD "$install_conf_path")" \
+        djangohost "$(read_install_conf_value DB_HOST "$install_conf_path")" \
         djangoport "$(read_install_conf_value DB_PORT "$install_conf_path")" \
         djangodbname "$(read_install_conf_value DB_NAME "$install_conf_path")" \
-        emailhostserver "$(read_install_conf_first "$install_conf_path" EMAIL_HOST_SERVER EMAIL_HOST)" \
+        emailhostserver "$(read_install_conf_value EMAIL_HOST "$install_conf_path")" \
         emailport "$(read_install_conf_value EMAIL_PORT "$install_conf_path")" \
         emailhostuser "$(read_install_conf_value EMAIL_HOST_USER "$install_conf_path")" \
         emailhostpassword "$(read_install_conf_value EMAIL_HOST_PASSWORD "$install_conf_path")" \
         emailhosttls "$(read_install_conf_value EMAIL_USE_TLS "$install_conf_path")" \
+        djangodebug "$django_debug" \
         djangoallowedhosts "$(read_install_conf_value DJANGO_ALLOWED_HOSTS "$install_conf_path")" \
-        localserverip "$(read_install_conf_value LOCAL_SERVER_IP "$install_conf_path")" \
-        localhost "$(read_install_conf_first "$install_conf_path" DNS_URL DJANGO_ALLOWED_HOSTS)"
+        djangocsrftrustedorigins "$(read_install_conf_value DJANGO_CSRF_TRUSTED_ORIGINS "$install_conf_path")" \
+        dbconnmaxage "$(config_value_or_default DB_CONN_MAX_AGE "$install_conf_path" 0)"
 }
 
 # Ensure the production settings bind source exists and reflects the selected
@@ -67,7 +78,6 @@ prepare_django_settings_bind_mount() {
     local template_path="$1"
     local settings_path="$2"
     local install_conf_path="$3"
-    local configured_db_host=""
 
     [ "${mode:-production}" = "production" ] || return 0
     if [ -d "$settings_path" ]; then
@@ -76,12 +86,10 @@ prepare_django_settings_bind_mount() {
     fi
 
     mkdir -p "$(dirname "$settings_path")"
-    configured_db_host="$(read_install_conf_first "$install_conf_path" DB_SERVER_IP DB_HOST)"
-    if [ ! -f "$settings_path" ] \
-        || grep -Eq "SECRET_KEY[[:space:]]*=[[:space:]]*SECRET|emailhosttls|djangouser|djangopass|djangohost|djangodbname" "$settings_path" \
-        || ! grep -Fq -- "\"HOST\": \"$configured_db_host\"," "$settings_path"; then
-        render_django_settings_file "$template_path" "$settings_path" "$install_conf_path"
-    fi
+    # Always rerender so application-template and deployment-setting changes
+    # reach upgrades. render_django_settings_file preserves the existing
+    # non-placeholder SECRET_KEY, and render_config_template installs atomically.
+    render_django_settings_file "$template_path" "$settings_path" "$install_conf_path"
     chmod_with_podman_fallback 0664 "$settings_path"
 }
 
