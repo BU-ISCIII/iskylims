@@ -8,7 +8,7 @@ source "$script_dir/deployment/lib/container/common.sh"
 source "$script_dir/deployment/lib/container/django.sh"
 
 APP_VERSION="0.1.0"
-APPLICATION_NAME="iSkyLIMS"
+APPLICATION_NAME="Example Application"
 
 # ============================================================================
 # GENERATED SERVICE/ADD-ON CUSTOMIZATION
@@ -32,28 +32,28 @@ service_build_context_dir() {
     esac
 }
 service_environment_prefix() {
-    case "$1" in
-        app) echo APP ;;
-        *) return 1 ;;
-    esac
+    local prefix
+    array_contains "$1" "${install_services[@]}" || return 1
+    prefix="${1^^}"
+    printf '%s\n' "${prefix//-/_}"
 }
 service_environment_value() {
     local prefix variable
     prefix="$(service_environment_prefix "$1")" || return 1
     variable="${prefix}_$2"
-    printf '%s\n' "${!variable:-${3:-}}"
+    if [ -n "${!variable:-}" ]; then
+        printf '%s\n' "${!variable}"
+    elif [ "$#" -ge 3 ]; then
+        printf '%s\n' "$3"
+    else
+        die "$variable is required in the rendered service settings"
+    fi
 }
 service_repo_path() {
-    case "$1" in
-        app) service_environment_value "$1" REPO_PATH /srv/iskylims ;;
-        *) return 1 ;;
-    esac
+    service_environment_value "$1" REPO_PATH
 }
 service_install_path() {
-    case "$1" in
-        app) service_environment_value "$1" INSTALL_PATH /opt/iskylims ;;
-        *) return 1 ;;
-    esac
+    service_environment_value "$1" INSTALL_PATH
 }
 service_readiness_path() {
     case "$1" in
@@ -86,16 +86,10 @@ service_container_install_conf() {
     esac
 }
 service_uid() {
-    case "$1" in
-        app) service_environment_value "$1" APP_UID 1212 ;;
-        *) return 1 ;;
-    esac
+    service_environment_value "$1" APP_UID
 }
 service_gid() {
-    case "$1" in
-        app) service_environment_value "$1" APP_GID 1212 ;;
-        *) return 1 ;;
-    esac
+    service_environment_value "$1" APP_GID
 }
 
 prepare_compose_environment() {
@@ -105,13 +99,21 @@ prepare_compose_environment() {
     local -a deployment_values=(
         "GIT_REVISION|$git_revision"
         "APP_IMAGE|relecov-iskylims:local"
-        "APP_INSTALL_CONF_PATH|${install_conf_host_by_service[app]}"
-        "APACHE_LOG_PATH|$(config_value_or_default APACHE_LOG_PATH "${install_conf_host_by_service[app]}" /var/log/local/iskylims/apache)"
-        "APACHE_BIND_HOST|$(config_value_or_default APACHE_BIND_HOST "${install_conf_host_by_service[app]}" 0.0.0.0)"
-        "APACHE_PORT|$(config_value_or_default APACHE_PORT "${install_conf_host_by_service[app]}" 80)"
-        "APACHE_FORWARDED_PROTO|$(config_value_or_default APACHE_FORWARDED_PROTO "${install_conf_host_by_service[app]}" https)"
-        "APACHE_FORWARDED_PORT|$(config_value_or_default APACHE_FORWARDED_PORT "${install_conf_host_by_service[app]}" 443)"
-        "APACHE_LIMIT_REQUEST_BODY|$(config_value_or_default APACHE_LIMIT_REQUEST_BODY "${install_conf_host_by_service[app]}" 52428800)"
+        "APACHE_CONF_PATH|$(config_value_or_default APACHE_CONF_PATH "${install_conf_host_by_service[app]}" '')"
+        "APACHE_LOG_PATH|$(config_value_or_default APACHE_LOG_PATH "${install_conf_host_by_service[app]}" '')"
+        "APACHE_BIND_HOST|$(config_value_or_default APACHE_BIND_HOST "${install_conf_host_by_service[app]}" '')"
+        "APACHE_PORT|$(config_value_or_default APACHE_PORT "${install_conf_host_by_service[app]}" '')"
+        "APACHE_SERVER_NAME|$(config_value_or_default APACHE_SERVER_NAME "${install_conf_host_by_service[app]}" '')"
+        "APACHE_UPSTREAM_SERVICE|$(config_value_or_default APACHE_UPSTREAM_SERVICE "${install_conf_host_by_service[app]}" '')"
+        "APACHE_UPSTREAM_PORT|$(config_value_or_default APACHE_UPSTREAM_PORT "${install_conf_host_by_service[app]}" '')"
+        "APACHE_PROXY_TIMEOUT|$(config_value_or_default APACHE_PROXY_TIMEOUT "${install_conf_host_by_service[app]}" '')"
+        "APACHE_LOG_STEM|$(config_value_or_default APACHE_LOG_STEM "${install_conf_host_by_service[app]}" '')"
+        "SERVER_STATUS_SERVER_NAME|$(config_value_or_default SERVER_STATUS_SERVER_NAME "${install_conf_host_by_service[app]}" '')"
+        "SERVER_STATUS_ALIASES|$(config_value_or_default SERVER_STATUS_ALIASES "${install_conf_host_by_service[app]}" '')"
+        "SERVER_STATUS_ALLOW_FROM|$(config_value_or_default SERVER_STATUS_ALLOW_FROM "${install_conf_host_by_service[app]}" '')"
+        "APACHE_FORWARDED_PROTO|$(config_value_or_default APACHE_FORWARDED_PROTO "${install_conf_host_by_service[app]}" '')"
+        "APACHE_FORWARDED_PORT|$(config_value_or_default APACHE_FORWARDED_PORT "${install_conf_host_by_service[app]}" '')"
+        "APACHE_LIMIT_REQUEST_BODY|$(config_value_or_default APACHE_LIMIT_REQUEST_BODY "${install_conf_host_by_service[app]}" '')"
     )
     compose_env_file="$script_dir/.env.${mode}.file"
     write_compose_environment_file "$compose_env_file" settings_sources deployment_values
@@ -123,7 +125,7 @@ deployment_compose() {
     compose_exec --env-file "$compose_env_file" "$@"
 }
 current_service_container() {
-    deployment_compose -f "$compose_file" ps -q "$1" | tail -n 1
+    resolve_service_container "$1"
 }
 
 # Each Django service renders its own protected host settings bind. React
@@ -136,9 +138,43 @@ prepare_application_host_sources() {
         mkdir -p "$(dirname "$settings_output")"
         prepare_django_settings_bind_mount ./conf/template_settings.py "$settings_output" "${install_conf_host_by_service[app]}"
     fi
+    # conf/apache contains the application-owned Apache sources. Render every
+    # deployment value only after the protected settings environment is loaded,
+    # then expose the completed files as Compose bind sources.
+    local apache_source_dir="$script_dir/conf/apache"
+    local apache_output_dir="$script_dir/deployment/apache"
+    local apache_conf_name apache_config_service apache_log_path
+    apache_config_service=app
+    [ -d "$apache_source_dir" ] || {
+        echo "Apache source configuration directory not found: $apache_source_dir" >&2
+        return 1
+    }
+    mkdir -p "$apache_output_dir"
+
+    export APACHE_SERVER_NAME="${APACHE_SERVER_NAME:?APACHE_SERVER_NAME is required}"
+    export APACHE_UPSTREAM_SERVICE="${APACHE_UPSTREAM_SERVICE:-$apache_config_service}"
+    export APACHE_UPSTREAM_PORT="${APACHE_UPSTREAM_PORT:-$(service_environment_value "$apache_config_service" APP_PORT)}"
+    # For the default route, INSTALL_PATH means the service selected by
+    # ADDONS.apache.CONFIG_SERVICE. Multi-service routes use their explicit
+    # API_INSTALL_PATH, WEB_INSTALL_PATH, etc. values instead.
+    export INSTALL_PATH="$(service_install_path "$apache_config_service")"
+    export APACHE_PROXY_TIMEOUT="${APACHE_PROXY_TIMEOUT:-$(service_environment_value "$apache_config_service" GUNICORN_TIMEOUT 120)}"
+    export APACHE_LOG_STEM="${APACHE_LOG_STEM:-$(normalize_apache_server_name "$APACHE_SERVER_NAME")}"
+
+    for apache_conf_name in 00-logs.conf 01-reverse-proxy.conf 02-server-status.conf; do
+        [ -f "$apache_source_dir/$apache_conf_name" ] || {
+            echo "Apache source configuration not found: $apache_source_dir/$apache_conf_name" >&2
+            return 1
+        }
+        render_environment_config_template \
+            "$apache_source_dir/$apache_conf_name" \
+            "$apache_output_dir/$apache_conf_name" 0644 || return 1
+    done
+
+    # Production bind-mounts Apache logs from the host; tests use a named volume.
     if [ "$mode" = production ]; then
-        apache_log_path="${APACHE_LOG_PATH:-/var/log/local/iskylims/apache}"
-        mkdir -p "$script_dir/deployment/apache" "$apache_log_path"
+        apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
+        mkdir -p "$apache_log_path"
     fi
 }
 
@@ -162,7 +198,9 @@ prepare_host_bind_source_permissions() {
         "$settings_path|$uid:$gid|0664"
     )
     apply_host_permission_spec "${app_host_bind_permission_spec[@]}"
-    apache_log_path="${APACHE_LOG_PATH:-/var/log/local/iskylims/apache}"
+    # Generated proxy configuration is read-only in Apache. Its host files need
+    # traversal/read permissions, while the production log bind must be writable.
+    apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
     local -a apache_host_bind_permission_spec=(
         "$script_dir/deployment/apache|-|0755"
         "$script_dir/deployment/apache/00-logs.conf|-|0644"
@@ -190,6 +228,8 @@ prepare_running_container_mount_permissions() {
             prepare_django_container_settings_permissions "$container_id" "$install_path/iskylims/settings.py" "$uid" "$gid"
             ;;
         apache)
+            # Apache currently needs no ownership repair inside its running
+            # container. Keep an explicit add-on policy ready for future mounts.
             local -a apache_running_mount_permission_spec=()
             apply_container_directory_permission_spec "$container_id" "${apache_running_mount_permission_spec[@]}"
             ;;
@@ -204,6 +244,7 @@ bootstrap_service() {
     case "$service_name" in
         app)
             repo_path="$(service_repo_path "$service_name")"
+            # Fixed temporary in-container path; this is not operator configuration.
             runtime_conf=conf/.runtime_install_settings.txt
             [[ "$runtime_conf" == /* ]] || runtime_conf="$repo_path/$runtime_conf"
             uid="$(service_uid "$service_name")"; gid="$(service_gid "$service_name")"
@@ -306,7 +347,7 @@ prepare_compose_environment
 load_compose_environment_file "$compose_env_file"
 prepare_application_host_sources
 prepare_host_bind_source_permissions
-deployment_compose -f "$compose_file" config --quiet \
+deployment_compose -f "$compose_file" config \
     || die "Compose configuration validation failed: $compose_file"
 
 # 5. Dispatch permission-only repair without building or bootstrapping.
@@ -340,7 +381,7 @@ for service_name in "${install_services[@]}"; do
             --build-arg RENDER_DJANGO_SETTINGS=false \
             --build-arg APP_REPO_PATH="$(service_repo_path "$service_name")" \
             --build-arg APP_INSTALL_PATH="$(service_install_path "$service_name")" \
-            --build-arg APP_PORT="$(service_environment_value "$service_name" APP_PORT 8000)" \
+            --build-arg APP_PORT="$(service_environment_value "$service_name" APP_PORT)" \
             --build-arg APP_UID="$(service_uid "$service_name")" \
             --build-arg APP_GID="$(service_gid "$service_name")" \
             --tag "$(service_image_name "$service_name")" "$context"
@@ -352,8 +393,11 @@ for service_name in "${install_services[@]}"; do
             --tag "$(service_image_name "$service_name")" "$context"
     fi
 done
-# 7. Start the complete topology from one Compose file.
-deployment_compose -f "$compose_file" up -d
+# 7. Start the complete topology from one Compose file. Recreate containers so
+# a freshly built image is actually deployed; podman-compose 1.0.x may otherwise
+# restart an existing named container that still references the previous image.
+# Named volumes and bind-mounted persistent data are preserved.
+deployment_compose -f "$compose_file" up -d --force-recreate
 
 # 8. Wait for every application service readiness contract.
 for service_name in "${install_services[@]}"; do
