@@ -19,9 +19,8 @@
   },
   "ADDONS": {
     "apache": {
-      "VIRTUAL_HOSTS": {
-        "localhost": "app"
-      }
+      "CONFIG_SERVICE": "app",
+      "MOUNTS": []
     }
   }
 }

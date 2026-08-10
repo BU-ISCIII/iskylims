@@ -14,7 +14,7 @@ Profile behavior:
 
 Selected add-ons:
 
-- Apache generates either DNS virtual hosts from `ADDONS.apache.VIRTUAL_HOSTS` or prefix routes from `ADDONS.apache.ROUTES`.
+- Apache source configuration lives under `conf/apache/`; customize its virtual hosts and routes there. The installer renders final bind sources under `deployment/apache/`.
 
 All selected services and add-ons are assembled into one
 `docker-compose.prod.yml` and one `docker-compose.test.yml`.
