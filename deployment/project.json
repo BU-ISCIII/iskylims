@@ -1,6 +1,6 @@
 {
   "APP_NAME": "iSkyLIMS",
-  "APP_SLUG": "iskylims",
+  "APP_SLUG": "relecov-iskylims",
   "DESCRIPTION": "Laboratory information management system for wet-lab and dry-lab sequencing workflows.",
   "REPOSITORY_URL": "https://github.com/BU-ISCIII/iSkyLIMS.git",
   "DEFAULT_BRANCH": "main",
@@ -19,8 +19,7 @@
   },
   "ADDONS": {
     "apache": {
-      "CONFIG_SERVICE": "app",
-      "MOUNTS": []
+      "CONFIG_SERVICE": "app"
     }
   }
 }

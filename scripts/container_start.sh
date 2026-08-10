@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # Shared RELECOV Platform/iSkyLIMS runtime pattern, parameterized per project.
-APP_DIR="${APP_INSTALL_PATH:-${INSTALL_PATH:-/opt/iskylims}}"
+APP_DIR="${APP_INSTALL_PATH:-${INSTALL_PATH:-/opt/relecov-iskylims}}"
 CRON_DIR="${APP_DIR}/cron"
 TMP_DIR="${APP_DIR}/tmp"
-CRON_FILE="${CRON_DIR}/iskylims"
+CRON_FILE="${CRON_DIR}/relecov-iskylims"
 CRON_LOG="${TMP_DIR}/supercronic.log"
 CRON_DISABLED_FILE="${CRON_DIR}/disabled"
 APP_MODE="${APP_MODE:-prod}"
