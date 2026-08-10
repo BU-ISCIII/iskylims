@@ -8,9 +8,9 @@ PYTHON_BIN_PATH='python3.11'
 
 ### Application-specific installation modules
 # Optional lists used only when install.sh implements these operations.
-REQUIRED_MODULES=''
-MIGRATION_MODULES=''
-FAKEINITIAL_MODULES=''
+REQUIRED_MODULES='core drylab wetlab clinic django_utils'
+MIGRATION_MODULES='core drylab wetlab django_utils'
+FAKEINITIAL_MODULES='core drylab wetlab django_utils'
 
 ### Container runtime identity
 APP_UID='1212'
@@ -31,7 +31,6 @@ DB_NAME='iskylims'
 DB_USER='django'
 DB_PASSWORD='djangopass'
 DB_ROOT_PASSWORD='root'
-# install.sh derives its legacy aliases from DB_HOST and DB_PASSWORD.
 
 ### Django and local email defaults
 DJANGO_DEBUG='false'
@@ -39,8 +38,6 @@ DJANGO_SECRET_KEY='test-only-change-me'
 DJANGO_ALLOWED_HOSTS='localhost,127.0.0.1,0.0.0.0'
 DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8001,http://127.0.0.1:8001'
 DB_CONN_MAX_AGE='60'
-LOCAL_SERVER_IP='*'
-DNS_URL='*'
 
 ### Local email defaults
 EMAIL_HOST='host.docker.internal'
@@ -48,7 +45,12 @@ EMAIL_PORT='25'
 EMAIL_HOST_USER='bioinformatica@isciii.es'
 EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
-EMAIL_HOST_SERVER='host.docker.internal'
+
+### Initial administrator (bootstrap install only)
+CREATE_INITIAL_SUPERUSER='true'
+DJANGO_SUPERUSER_USERNAME='admin'
+DJANGO_SUPERUSER_EMAIL='admin@example.test'
+DJANGO_SUPERUSER_PASSWORD='test-only-admin-password'
 
 ### Gunicorn and startup tuning
 WEB_CONCURRENCY='2'
@@ -75,12 +77,24 @@ APACHE_LOG_PATH='/tmp/relecov-iskylims/apache-logs'
 APACHE_BIND_HOST='127.0.0.1'
 APACHE_PORT='8081'
 
-# Default local VirtualHost. Empty upstream values are derived from the
-# add-on's CONFIG_SERVICE by container_install.sh.
+# Host name handled by the local test VirtualHost.
 APACHE_SERVER_NAME='localhost'
+
+# Compose service receiving proxied requests. Leave empty to use the service
+# selected by ADDONS.apache.CONFIG_SERVICE (normally app for a single service).
 APACHE_UPSTREAM_SERVICE=''
+
+# Internal application port used by ProxyPass. Leave empty to use APP_PORT from
+# the selected service's test settings.
 APACHE_UPSTREAM_PORT=''
+
+# Maximum proxy request duration in seconds. Leave empty to use the selected
+# service's GUNICORN_TIMEOUT, falling back to 120 seconds when it is undefined.
 APACHE_PROXY_TIMEOUT=''
+
+# Prefix for the generated <stem>-apache.access.log and
+# <stem>-apache.error.log files. Leave empty to derive it from
+# APACHE_SERVER_NAME, with URL schemes, paths and ports removed.
 APACHE_LOG_STEM=''
 
 # Local server-status defaults.
