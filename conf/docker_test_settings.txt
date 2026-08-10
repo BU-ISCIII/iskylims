@@ -1,18 +1,28 @@
 # Safe local/test values. Never use these credentials in production.
-### Application layout and runtime identity
-REPO_PATH='/srv/iskylims'
-INSTALL_PATH='/opt/iskylims'
+
+### Application layout and Django project
+REPO_PATH='/srv/relecov-iskylims'
+INSTALL_PATH='/opt/relecov-iskylims'
 PROJECT_MODULE='iskylims'
 PYTHON_BIN_PATH='python3.11'
+
+### Application-specific installation modules
+# Optional lists used only when install.sh implements these operations.
+REQUIRED_MODULES=''
+MIGRATION_MODULES=''
+FAKEINITIAL_MODULES=''
+
+### Container runtime identity
 APP_UID='1212'
 APP_GID='1212'
-APP_PORT='8000'
+APP_SHELL='/bin/bash'
+APP_PORT='8001'
 
 ### Disposable persistence paths
-HOST_DATA_PATH='/tmp/iskylims/data'
-HOST_LOG_PATH='/tmp/iskylims/logs'
+HOST_DATA_PATH='/tmp/relecov-iskylims/data'
+HOST_LOG_PATH='/tmp/relecov-iskylims/logs'
 # Test images render settings during build and do not mount this host path.
-DJANGO_SETTINGS_PATH='/tmp/iskylims/data/settings/iskylims/settings.py'
+DJANGO_SETTINGS_PATH='/tmp/relecov-iskylims/data/settings/iskylims/settings.py'
 
 ### Compose test database
 DB_HOST='db'
@@ -21,25 +31,64 @@ DB_NAME='iskylims'
 DB_USER='django'
 DB_PASSWORD='djangopass'
 DB_ROOT_PASSWORD='root'
+# install.sh derives its legacy aliases from DB_HOST and DB_PASSWORD.
 
 ### Django and local email defaults
-DJANGO_DEBUG='true'
+DJANGO_DEBUG='false'
 DJANGO_SECRET_KEY='test-only-change-me'
 DJANGO_ALLOWED_HOSTS='localhost,127.0.0.1,0.0.0.0'
-EMAIL_HOST='localhost'
-EMAIL_PORT='1025'
-EMAIL_HOST_USER=''
+DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8001,http://127.0.0.1:8001'
+DB_CONN_MAX_AGE='60'
+LOCAL_SERVER_IP='*'
+DNS_URL='*'
+
+### Local email defaults
+EMAIL_HOST='host.docker.internal'
+EMAIL_PORT='25'
+EMAIL_HOST_USER='bioinformatica@isciii.es'
 EMAIL_HOST_PASSWORD=''
-EMAIL_USE_TLS='false'
+EMAIL_USE_TLS='False'
+EMAIL_HOST_SERVER='host.docker.internal'
+
+### Gunicorn and startup tuning
+WEB_CONCURRENCY='2'
+GUNICORN_THREADS='2'
+GUNICORN_TIMEOUT='300'
 GUNICORN_KEEPALIVE='5'
 APP_START_WAIT_TIMEOUT_SECONDS='100'
+
+### Application log policy compatibility
+# Set LOG_PATH when LOG_TYPE='symbolic_link'.
+LOG_TYPE='regular_folder'
+LOG_PATH=''
 
 ### Selected infrastructure add-ons
 # Apache add-on
 # Used only when ADDONS.apache selects this application as CONFIG_SERVICE.
-APACHE_LOG_PATH='/tmp/iskylims/apache-logs'
+
+# Sources under <repository>/conf/apache are rendered into deployment/apache.
+# This compatibility value is unused unless application code consumes it.
+APACHE_CONF_PATH=''
+
+# Disposable test logs and a loopback-only public endpoint.
+APACHE_LOG_PATH='/tmp/relecov-iskylims/apache-logs'
 APACHE_BIND_HOST='127.0.0.1'
-APACHE_PORT='8088'
+APACHE_PORT='8081'
+
+# Default local VirtualHost. Empty upstream values are derived from the
+# add-on's CONFIG_SERVICE by container_install.sh.
+APACHE_SERVER_NAME='localhost'
+APACHE_UPSTREAM_SERVICE=''
+APACHE_UPSTREAM_PORT=''
+APACHE_PROXY_TIMEOUT=''
+APACHE_LOG_STEM=''
+
+# Local server-status defaults.
+SERVER_STATUS_SERVER_NAME='localhost'
+SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
+# Test proxy headers and request-body limit.
 APACHE_FORWARDED_PROTO='http'
-APACHE_FORWARDED_PORT='8088'
+APACHE_FORWARDED_PORT='8081'
 APACHE_LIMIT_REQUEST_BODY='52428800'
