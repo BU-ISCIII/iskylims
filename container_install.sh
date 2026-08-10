@@ -393,11 +393,13 @@ for service_name in "${install_services[@]}"; do
             --tag "$(service_image_name "$service_name")" "$context"
     fi
 done
-# 7. Start the complete topology from one Compose file. Recreate containers so
-# a freshly built image is actually deployed; podman-compose 1.0.x may otherwise
-# restart an existing named container that still references the previous image.
-# Named volumes and bind-mounted persistent data are preserved.
-deployment_compose -f "$compose_file" up -d --force-recreate
+# 7. Force-recreate only the application services whose images were rebuilt.
+# Recreating the complete topology needlessly stops persistent support services
+# such as databases and can wedge older rootless Podman/runc combinations. A
+# second normal convergence starts or updates add-ons without forcing healthy
+# support services to restart. Named volumes and bind mounts are preserved.
+deployment_compose -f "$compose_file" up -d --force-recreate "${install_services[@]}"
+deployment_compose -f "$compose_file" up -d
 
 # 8. Wait for every application service readiness contract.
 for service_name in "${install_services[@]}"; do
