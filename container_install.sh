@@ -8,7 +8,7 @@ source "$script_dir/deployment/lib/container/common.sh"
 source "$script_dir/deployment/lib/container/django.sh"
 
 APP_VERSION="0.1.0"
-APPLICATION_NAME="Example Application"
+APPLICATION_NAME="iSkyLIMS"
 
 # ============================================================================
 # GENERATED SERVICE/ADD-ON CUSTOMIZATION

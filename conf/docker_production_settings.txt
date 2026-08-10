@@ -17,8 +17,8 @@ PYTHON_BIN_PATH='python3.11'
 # Optional space-separated Django applications consumed by installers that
 # support dependency, migration and fake-initial module lists. Leave empty when
 # the application install.sh does not implement the corresponding behavior.
-# iSkyLIMS example: REQUIRED_MODULES='core drylab wetlab django_utils'
-REQUIRED_MODULES='core drylab wetlab django_utils'
+# iSkyLIMS example: REQUIRED_MODULES='core drylab wetlab clinic django_utils'
+REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
 FAKEINITIAL_MODULES='core drylab wetlab django_utils'
 
@@ -47,7 +47,6 @@ DB_PORT='3306'
 DB_NAME='CHANGE_ME'
 DB_USER='CHANGE_ME'
 DB_PASSWORD='CHANGE_ME'
-# install.sh derives its legacy aliases from DB_HOST and DB_PASSWORD.
 
 ### Django security and public URLs
 # Production debug must remain disabled.
@@ -61,24 +60,23 @@ DJANGO_CSRF_TRUSTED_ORIGINS='https://CHANGE_ME'
 # Persistent database connection lifetime in seconds.
 DB_CONN_MAX_AGE='60'
 
-### Application access compatibility
-# Legacy application templates may still consume these values. Use the server
-# address/host name expected in ALLOWED_HOSTS and the public DNS name used by
-# the reverse proxy. Replace them while the legacy renderer remains in use.
-LOCAL_SERVER_IP='CHANGE_ME'
-DNS_URL='CHANGE_ME'
-
 ### Email
 # SMTP endpoint reachable from the application container.
 EMAIL_HOST='CHANGE_ME'
 EMAIL_PORT='25'
 EMAIL_HOST_USER='CHANGE_ME'
 EMAIL_HOST_PASSWORD='CHANGE_ME'
-# Python boolean spelling is retained because legacy settings rendering writes
-# this value directly into settings.py.
+# Python boolean spelling is used because settings rendering writes this value
+# directly into settings.py.
 EMAIL_USE_TLS='False'
-# Compatibility alias used by the current RELECOV/iSkyLIMS install.sh.
-EMAIL_HOST_SERVER='CHANGE_ME'
+
+### Initial administrator (bootstrap install only)
+# Set to true only when a fresh installation should create its first Django
+# administrator. Keep the protected production settings file mode at 0600.
+CREATE_INITIAL_SUPERUSER='true'
+DJANGO_SUPERUSER_USERNAME='admin'
+DJANGO_SUPERUSER_EMAIL=''
+DJANGO_SUPERUSER_PASSWORD='CHANGE_ME'
 
 ### Gunicorn and startup tuning
 WEB_CONCURRENCY='2'
@@ -113,14 +111,25 @@ APACHE_LOG_PATH='/var/log/local/relecov-iskylims/apache'
 APACHE_BIND_HOST='0.0.0.0'
 APACHE_PORT='8080'
 
-# Default VirtualHost rendered from conf/apache/01-reverse-proxy.conf.
-# Customize that repository-owned file directly for additional DNS names,
-# services, static aliases, or path-based routes. Empty upstream values are
-# derived from ADDONS.apache.CONFIG_SERVICE by container_install.sh.
+# Public host name handled by the default VirtualHost. Use localhost for a
+# workstation deployment or the externally visible DNS name in production.
 APACHE_SERVER_NAME='CHANGE_ME_DNS_NAME'
+
+# Compose service receiving proxied requests. Leave empty to use the service
+# selected by ADDONS.apache.CONFIG_SERVICE (normally app for a single service).
 APACHE_UPSTREAM_SERVICE=''
+
+# Internal application port used by ProxyPass. Leave empty to use APP_PORT from
+# the selected service's production settings.
 APACHE_UPSTREAM_PORT=''
+
+# Maximum proxy request duration in seconds. Leave empty to use the selected
+# service's GUNICORN_TIMEOUT, falling back to 120 seconds when it is undefined.
 APACHE_PROXY_TIMEOUT=''
+
+# Prefix for the generated <stem>-apache.access.log and
+# <stem>-apache.error.log files. Leave empty to derive it from
+# APACHE_SERVER_NAME, with URL schemes, paths and ports removed.
 APACHE_LOG_STEM=''
 
 # Server-status stays restricted by default. Use a local-only diagnostic name;

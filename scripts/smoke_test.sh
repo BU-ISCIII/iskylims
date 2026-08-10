@@ -54,4 +54,4 @@ for service in "${install_services[@]}"; do
     [ -n "$port" ] || fail "$port_variable is required in the rendered service settings"
     check_url "$service" "http://127.0.0.1:${port}/health/"
 done
-echo "Example Application deployment smoke test passed."
+echo "iSkyLIMS deployment smoke test passed."

@@ -49,6 +49,13 @@ Email settings are required when the application sends operational or account
 messages. Document whether failed email blocks the user workflow and add an SMTP
 test to production acceptance.
 
+## Initial administrator
+
+`CREATE_INITIAL_SUPERUSER=true` creates the first Django administrator only
+during `--bootstrap install`. Set `DJANGO_SUPERUSER_USERNAME`, optional
+`DJANGO_SUPERUSER_EMAIL`, and secret `DJANGO_SUPERUSER_PASSWORD` in the
+protected settings file. Bootstrap retries never reset an existing account.
+
 ## Project-specific settings
 
 Add every application setting here before declaring installation complete.

@@ -2,12 +2,11 @@
   "config": {
     "ADDONS": {
       "apache": {
-        "CONFIG_SERVICE": "app",
-        "MOUNTS": []
+        "CONFIG_SERVICE": "app"
       }
     },
     "APP_NAME": "iSkyLIMS",
-    "APP_SLUG": "iskylims",
+    "APP_SLUG": "relecov-iskylims",
     "DEFAULT_BRANCH": "main",
     "DESCRIPTION": "Laboratory information management system for wet-lab and dry-lab sequencing workflows.",
     "PYTHON_VERSION": "3.11",
@@ -28,15 +27,15 @@
   "files": {
     ".dockerignore": "49a5b2223fb2a4f4201c19a833c60ba91f3e979632b6ae45fd4aca4cf22abb32",
     ".gitignore": "5f08b2eb5e81fa7a1f4d5bc73df8ba6741e4a3f78925890c3fd1018f2188545b",
-    "Dockerfile": "805c9c06010f3f77d168071abef30df02cda65cb85740d5f6a87bee5a3c1efc5",
+    "Dockerfile": "1a3f8ccccfd84f0a59efda8446f53954fade8b200738a630420564eb8c6e7d5f",
     "LEAME.md": "56279a4c2102a7ed42e34afe7c85055f6279fd9e67ee0df8a5d31c81c7ff9fb5",
     "README.md": "2adeeefd761f55a2e23c6a78ee05a70ee1badb56bb4ffbd198631480dfcfb04b",
-    "conf/INSTALL_SETTINGS.md": "edde8933e93c82460c430bdfb2ef95a0413f977a30d5128a93f280673b364cd2",
+    "conf/INSTALL_SETTINGS.md": "bea1f3d22896ad7d8b13c3afc829c1d90f6453771b4c5a90a44a95b0084dc4d2",
     "conf/apache/00-logs.conf": "3c2ab4e693e528d2cad37c0c5bb0bc4511803a7f206b339182de192d4e398092",
-    "conf/apache/01-reverse-proxy.conf": "5b8262212bef24ac9606861270dc6b6de63206e8d2b567e2cb09da33e84f683d",
+    "conf/apache/01-reverse-proxy.conf": "7d22c5d707efe6190d799fd75d08114dd67ef9077548cd34d5df1f174bd45677",
     "conf/apache/02-server-status.conf": "c3b5d26f9b551083faf0d85b188bfa9c577ff0bd3b805f0ec104fe4f7d5101cb",
-    "conf/docker_production_settings.txt": "e2c77474effacb8d9a460116c0467bf626777d96534386157c1c273e1f747f48",
-    "conf/docker_test_settings.txt": "b097040f09530d1c00f066fb99ad9d63b2c5e84ab0e6cad6b7cdacdd8e28542c",
+    "conf/docker_production_settings.txt": "7676e176102c7cec75b5a07897eed4210178965da7b3fdc0f2b33a5feac6baab",
+    "conf/docker_test_settings.txt": "401665b86ab23a7eb4c35d75e7187794b628aee5adcebb5f0fa64aefae5f9f08",
     "conf/template_settings.py": "590369c8b3db2e18b35deb04b2a4abf05e60f65d41ba0983b3b4af8ef20e5039",
     "container_install.sh": "e2c2a45d5b9ab5c5a7756620cd941fec35f5561eea8840a509f3aeb422714d8b",
     "deployment_health/README.md": "3d7c4295938708813369deeac9edc0eb8fe2153c77d03f9138febf3aed715aa5",
@@ -45,8 +44,8 @@
     "deployment_health/views.py": "d19cc3e8fef8519bae2b7fbdc25d17f6ae7df02479aa8890f4b4d250bb07f2e4",
     "docker-compose.prod.yml": "fccf8f382a57a4333a061710009021dad43ec3298c4ef487e82e3dc1f2eb6244",
     "docker-compose.test.yml": "4e528d06fd480271e78990a296a341263b71b01b80601a7f74b805955e57f539",
-    "install.sh": "4ca3fe301fe7fefa5882d982dde97bb81a34396c054fe64660fc21fddb63f84b",
-    "scripts/container_start.sh": "5e7c07c03fd1b3b468dc8b2c4eaf6d9f63fb881cbad18f45c942dc39756a96da",
+    "install.sh": "6d68766e042e068e2aad8a3cf69e5bbee0542d36c587bc12bd8d64d80a64404a",
+    "scripts/container_start.sh": "53c2989579848ef1a821d3be84df862ac1cb7aa157ad85b641023a6ea15e06e0",
     "scripts/smoke_test.sh": "04604071e36355a1cb2f6fda8c0161c2a09b393938c010264a7aac06f7d972ee"
   },
   "source": "BU-ISCIII deployment standards",

@@ -59,6 +59,12 @@ EMAIL_HOST_USER='bioinformatica@isciii.es'
 EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
 
+### Initial administrator (bootstrap install only)
+CREATE_INITIAL_SUPERUSER='true'
+DJANGO_SUPERUSER_USERNAME='admin'
+DJANGO_SUPERUSER_EMAIL='<admin_email>'
+DJANGO_SUPERUSER_PASSWORD='<admin_password>'
+
 ### Settings required for accessing iSkyLIMS
 # example: 172.0.0.1
 LOCAL_SERVER_IP='<Relecov_IP>' 
