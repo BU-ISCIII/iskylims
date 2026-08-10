@@ -6,6 +6,12 @@ source "$install_script_dir/deployment/lib/container/common.sh"
 # shellcheck disable=SC1091
 source "$install_script_dir/deployment/lib/container/django.sh"
 
+# All repository-relative inputs (conf, application modules and requirements)
+# belong to the source tree containing this script. Container bootstrap invokes
+# this file by absolute path while its working directory is INSTALL_PATH, so
+# normalize the working directory before resolving any of those inputs.
+cd "$install_script_dir"
+
 APP_VERSION="3.1.1"
 
 # usage: prints the command line help and usage examples.
@@ -89,13 +95,17 @@ db_check(){
         exit 1
     fi
 
-    "$mysqladmin_bin" -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null
+    MYSQL_PWD="$DB_PASSWORD" "$mysqladmin_bin" \
+        --host="$DB_HOST" --user="$DB_USER" --port="$DB_PORT" \
+        processlist > /dev/null
 
     if ! [ $? -eq 0 ]; then
         log "ERROR" "Unable to connect to database. Check if your database is running and accessible"
         exit 1
     fi
-    RESULT=`"$mysqlshow_bin" --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
+    RESULT="$(MYSQL_PWD="$DB_PASSWORD" "$mysqlshow_bin" \
+        --user="$DB_USER" --host="$DB_HOST" --port="$DB_PORT" \
+        | grep -o "$DB_NAME")"
 
     if  ! [ "$RESULT" == "$DB_NAME" ] ; then
         log "ERROR" "iskylims database is not defined yet"
@@ -168,7 +178,7 @@ update_settings_and_urls(){
     cp conf/urls.py "$project_dir"
     if [ "$render_settings" = true ]; then
         render_django_settings_file \
-            "$install_script_dir/conf/template_settings.txt" \
+            "$install_script_dir/conf/template_settings.py" \
             "${settings_output:-$project_dir/settings.py}" \
             "$conf"
     else
@@ -178,8 +188,9 @@ update_settings_and_urls(){
 
 # restore_git_ref: reset repository to branch/tag/commit active before script ran.
 restore_git_ref() {
+    [ -n "${initial_git_ref:-}" ] || return 0
     echo "Restoring to initial git reference: $initial_git_ref"
-    git checkout "$initial_git_ref" --quiet
+    git -C "$install_script_dir" checkout "$initial_git_ref" --quiet
 }
 
 # load_tables: wrapper to call Django loaddata with optional verbosity.
@@ -224,10 +235,16 @@ ensure_git_safe_directory() {
     fi
 }
 
-# Ensure to recover current git branch/tag/SHA on script exit
-ensure_git_safe_directory
-initial_git_ref=$(git rev-parse --abbrev-ref HEAD || git rev-parse HEAD)
-trap restore_git_ref EXIT
+# A staged container image intentionally excludes .git. Git state is therefore
+# optional: source staging may select a revision in a real checkout, whereas
+# runtime bootstrap operates only on the immutable files already in the image.
+initial_git_ref=""
+if git -C "$install_script_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    ensure_git_safe_directory
+    initial_git_ref="$(git -C "$install_script_dir" rev-parse --abbrev-ref HEAD \
+        || git -C "$install_script_dir" rev-parse HEAD)"
+    trap restore_git_ref EXIT
+fi
 
 #================================================================
 #SET TEMINAL COLORS
@@ -300,15 +317,18 @@ checkout_git_revision() {
         printf "${YELLOW}Using copied local working tree without git checkout.${NC}\n"
         return 0
     fi
-    if git rev-parse --verify "$git_branch" >/dev/null 2>&1; then
+    if [ -z "$initial_git_ref" ]; then
+        abort_install "Git revision $git_branch cannot be selected because the staged source contains no .git metadata."
+    fi
+    if git -C "$install_script_dir" rev-parse --verify "$git_branch" >/dev/null 2>&1; then
         if [[ $git_branch != $initial_git_ref ]]; then
             local local_changes
-            local_changes=$(git status --porcelain)
+            local_changes=$(git -C "$install_script_dir" status --porcelain)
             if [[ -n $local_changes ]]; then
                 abort_install "Unable to switch to $git_branch. Commit or stash local changes first."
             fi
             printf "${YELLOW}Switching to revision %s.${NC}\n" "$git_branch"
-            git checkout "$git_branch" --quiet
+            git -C "$install_script_dir" checkout "$git_branch" --quiet
         else
             printf "${YELLOW}Using current revision: '%s'.${NC}\n" "$git_branch"
         fi
@@ -507,6 +527,7 @@ install_system_packages() {
         apt-get install -y \
             apt-utils wget \
             libmysqlclient-dev \
+            default-mysql-client \
             python3-venv  \
             libpq-dev \
             python3-dev python3-pip python3-wheel \
@@ -514,12 +535,59 @@ install_system_packages() {
             gnuplot
 
     elif [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" || $linux_distribution == "centos" || $linux_distribution == "rhel" || $linux_distribution == "fedora" ]]; then
-        echo "Software installation for Centos/RedHat"
-        yum groupinstall "Development tools"
-        yum install zlib-devel bzip2-devel openssl-devel \
-                    wget httpd-devel mysql-libs sqlite sqlite-devel \
-                    mariadb-devel libffi-devel \
-                    gnuplot cifs-utils
+        set -euo pipefail
+
+    echo "Installing OS dependencies"
+        # Enable EPEL 9 for packages not provided by UBI repositories
+        echo "Installing EPEL repository"
+
+        wget -O /tmp/epel-release.rpm \
+            https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+        rpm -Uvh /tmp/epel-release.rpm
+        rm -f /tmp/epel-release.rpm
+
+        microdnf repolist
+
+        cat >/etc/yum.repos.d/centos-stream-baseos.repo <<'EOF'
+[centos-stream-baseos]
+name=CentOS Stream 9 - BaseOS
+baseurl=https://mirror.stream.centos.org/9-stream/BaseOS/$basearch/os/
+enabled=1
+gpgcheck=0
+
+[centos-stream-appstream]
+name=CentOS Stream 9 - AppStream
+baseurl=https://mirror.stream.centos.org/9-stream/AppStream/$basearch/os/
+enabled=1
+gpgcheck=0
+
+[centos-stream-crb]
+name=CentOS Stream 9 - CRB
+baseurl=https://mirror.stream.centos.org/9-stream/CRB/$basearch/os/
+enabled=1
+gpgcheck=0
+EOF
+
+        microdnf install -y \
+            gcc \
+            gcc-c++ \
+            make \
+            tar \
+            zlib-devel \
+            bzip2-devel \
+            openssl-devel \
+            wget \
+            httpd-devel \
+            sqlite \
+            sqlite-devel \
+            mariadb \
+            mariadb-connector-c-devel \
+            libffi-devel \
+            gnuplot \
+            cifs-utils
+
+        microdnf clean all
     fi
 }
 
@@ -721,7 +789,11 @@ run_dependency_stage() {
         fi
         install_system_packages
         mkdir -p $INSTALL_PATH
-        linux_distribution=$(lsb_release -i | cut -f 2-)
+        if command -v lsb_release >/dev/null 2>&1; then
+            linux_distribution=$(lsb_release -i | cut -f 2-)
+        else
+            linux_distribution=$(awk -F= '/^ID=/{gsub(/"/,""); print $2}' /etc/os-release)
+        fi
         if [[ $linux_distribution == "Ubuntu" ]]; then
             apache_group="www-data"
         else
@@ -768,7 +840,7 @@ stage_upgrade_application_files() {
     rsync -rlv conf/ $INSTALL_PATH/conf/
     rsync -rlv --fuzzy --delay-updates --delete-delay \
           --exclude "logs" --exclude "documents" --exclude "__pycache__" \
-          README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
+          README.md LICENSE test conf deployment_health $REQUIRED_MODULES $INSTALL_PATH
 
     cd $INSTALL_PATH
     ensure_virtualenv_ready
@@ -799,8 +871,8 @@ install_application_files() {
 stage_install_application_files() {
     log_section "Starting iSkyLIMS install version: ${APP_VERSION}"
 
-    user=${SUDO_USER:-$USER}
-    group=$(groups | cut -d" " -f1)
+    user="${SUDO_USER:-$(id -un)}"
+    group="$(id -gn)"
 
     if command -v lsb_release >/dev/null 2>&1; then
         linux_distribution=$(lsb_release -i | cut -f 2-)
@@ -839,7 +911,7 @@ stage_install_application_files() {
             fi
         fi
 
-        rsync -rlv README.md LICENSE test conf $REQUIRED_MODULES $INSTALL_PATH
+        rsync -rlv README.md LICENSE test conf deployment_health $REQUIRED_MODULES $INSTALL_PATH
 
         cd $INSTALL_PATH
 
@@ -921,7 +993,7 @@ done
 # SETTING DEFAULT VALUES
 ren_app=false
 tables=false
-git_branch=$initial_git_ref
+git_branch=${initial_git_ref:-current}
 conf="./install_settings.txt"
 install=true
 install_type="full"
@@ -1077,12 +1149,29 @@ if [[ "$conf" != /* ]]; then
     conf="$(cd "$(dirname "$conf")" && pwd)/$(basename "$conf")"
 fi
 load_install_config
+
+# Keep one canonical database host and password in deployment configuration.
+# Legacy iSkyLIMS functions still use DB_SERVER_IP and DB_PASS internally, so
+# derive those aliases here instead of asking operators to duplicate secrets.
+DB_HOST="${DB_HOST:-${DB_SERVER_IP:-}}"
+DB_PASSWORD="${DB_PASSWORD:-${DB_PASS:-}}"
+: "${DB_HOST:?DB_HOST is required}"
+: "${DB_PASSWORD:?DB_PASSWORD is required}"
+DB_SERVER_IP="$DB_HOST"
+DB_PASS="$DB_PASSWORD"
+
 PROJECT_NAME="${PROJECT_NAME:-iskylims}"
-checkout_git_revision
+# Bootstrap consumes the application staged during image build. It must not
+# attempt to inspect or change a Git checkout, which is deliberately absent
+# from the production image.
+if [ "$workflow" != "bootstrap" ]; then
+    checkout_git_revision
+fi
 user=${SUDO_USER:-$USER}
 
 if [ "$workflow" = "stage" ]; then
     check_stage_requirements
+    run_dependency_stage "$operation"
     if [ "$workflow_mode" = "install" ]; then
         stage_install_application_files
     else

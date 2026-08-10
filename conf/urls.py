@@ -26,6 +26,9 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
+    # Stable unauthenticated endpoint consumed by Compose and deployment smoke
+    # tests. Database readiness is verified separately during bootstrap.
+    path("health/", include("deployment_health.urls")),
     path("", include("core.urls")),
     path(
         "background",
