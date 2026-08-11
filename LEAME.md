@@ -138,18 +138,6 @@ install -m 0600 conf/samba/samba_production_settings.txt deployment/settings/sam
 Editar unicamente las copias bajo `deployment/settings/`. Los comandos de
 instalacion y actualizacion usan estas rutas protegidas.
 
-Para una instalacion bare-metal de la aplicacion principal:
-
-```bash
-bash install.sh --stage install --git_revision <revision-aprobada> \
-  --conf deployment/settings/app_production_settings.txt
-bash install.sh --bootstrap install \
-  --conf deployment/settings/app_production_settings.txt
-```
-
-En una actualizacion bare-metal, realizar primero el backup y sustituir
-`install` por `upgrade` en ambos comandos.
-
 Valores que requieren decision del responsable de la aplicacion:
 
 - hostnames publicos, TLS y proxy;
