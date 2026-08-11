@@ -32,7 +32,7 @@ services:
       DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:?APP_DJANGO_SECRET_KEY is required}
       DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:?APP_DJANGO_ALLOWED_HOSTS is required}
     volumes:
-      - ${APP_HOST_DATA_PATH:?APP_HOST_DATA_PATH is required}/documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:Z
+      - app_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:z
       - ${APP_HOST_LOG_PATH:?APP_HOST_LOG_PATH is required}:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/logs:Z
       - ${APP_DJANGO_SETTINGS_PATH:?APP_DJANGO_SETTINGS_PATH is required}:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/iskylims/settings.py:Z
       - app_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:z
@@ -77,7 +77,7 @@ services:
       # GENERATED MULTI-APP MOUNTS: one read-only static/documents pair for
       # every Django service. React assets remain inside the React image.
       - app_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:ro,z
-      - ${APP_HOST_DATA_PATH:?APP_HOST_DATA_PATH is required}/documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:ro,Z
+      - app_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:ro,z
       # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS. Examples:
       # - reports_data:/var/www/reports:ro,z
       # - /srv/public-downloads:/var/www/downloads:ro,Z
@@ -88,4 +88,5 @@ networks:
   deployment_net:
 
 volumes:
+  app_documents:
   app_static:

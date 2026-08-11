@@ -45,7 +45,7 @@ workflow. Record `compose ps`, image IDs and deployed revisions.
 | Asset | Production location | Recovery requirement |
 |---|---|---|
 | `app` database | External production database | Database backup before migration |
-| `app` documents | `HOST_DATA_PATH/documents` | Filesystem backup |
+| `app` documents | `app_documents` named volume | Volume backup |
 | `app` static | `app_static` named volume | Replaceable through collectstatic |
 | Samba test data | `samba_test_data` named volume | Disposable test/demo files |
 
