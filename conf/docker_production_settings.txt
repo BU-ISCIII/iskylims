@@ -41,6 +41,8 @@ DJANGO_SETTINGS_PATH='/srv/containers/bind/relecov-iskylims/settings/iskylims/se
 
 ### External production database
 # Use a host name or IP reachable from inside the application container.
+# For a database running on the container host with either Docker or Podman,
+# use host.docker.internal; the production Compose profile maps that alias.
 DB_HOST='CHANGE_ME'
 DB_PORT='3306'
 DB_NAME='CHANGE_ME'

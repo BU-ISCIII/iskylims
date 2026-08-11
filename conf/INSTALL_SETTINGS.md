@@ -26,7 +26,9 @@ production secrets. Operators copy it to an ignored, permission-restricted file.
 | `DB_ROOT_PASSWORD` | test only | yes | Root password for disposable Compose MySQL |
 
 Production uses an external database. The production Compose file deliberately
-contains no database service and publishes no database port.
+contains no database service and publishes no database port. When that database
+runs on the container host, use `host.docker.internal` with either Docker or
+Podman; the production service maps it to the host gateway.
 
 ## Django and HTTP
 

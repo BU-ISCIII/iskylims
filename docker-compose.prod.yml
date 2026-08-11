@@ -43,6 +43,11 @@ services:
       retries: 12
     ports:
       - "127.0.0.1:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
+    # Docker Engine on Linux needs this explicit mapping. Podman also supports
+    # host-gateway and conventionally exposes host.docker.internal itself, so
+    # host-based dependencies can use one hostname with either engine.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks: [deployment_net]
   # END BU-ISCIII SERVICE: app
   # BEGIN BU-ISCIII ADDON: apache
