@@ -418,8 +418,8 @@ stage_application_files() {
     [[ -d "$INSTALL_PATH/virtualenv" ]] \
         || die "virtualenv not found at $INSTALL_PATH; install dependencies first"
     rsync -rl --delete \
-        --exclude .git --exclude .env --exclude logs --exclude documents \
-        --exclude static --exclude tmp --exclude virtualenv \
+        --exclude .git --exclude .env --exclude /logs --exclude /documents \
+        --exclude /static --exclude /tmp --exclude /virtualenv \
         ./ "$INSTALL_PATH/"
     mkdir -p "$INSTALL_PATH/logs" "$INSTALL_PATH/documents" \
         "$INSTALL_PATH/static" "$INSTALL_PATH/cron" "$INSTALL_PATH/tmp"
