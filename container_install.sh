@@ -205,7 +205,10 @@ prepare_host_bind_source_permissions() {
         "$script_dir/deployment/apache/00-logs.conf|-|0644"
         "$script_dir/deployment/apache/01-reverse-proxy.conf|-|0644"
         "$script_dir/deployment/apache/02-server-status.conf|-|0644"
-        "$apache_log_path|-|0775"
+        # registry.access.redhat.com/ubi9/httpd-24 runs as UID 1001 with GID 0.
+        # The shared helper applies these IDs directly for Docker and through
+        # podman unshare when the bind source belongs to a rootless userns.
+        "$apache_log_path|1001:0|0775"
     )
     apply_host_permission_spec "${apache_host_bind_permission_spec[@]}"
 }
