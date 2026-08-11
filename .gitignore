@@ -7,6 +7,7 @@ my_prod_settings*.txt
 *.bu-isciii-update
 # Final add-on bind sources are regenerated from repository-owned conf files.
 deployment/apache/*.conf
+deployment/settings/
 
 # Python and runtime artifacts
 __pycache__/
