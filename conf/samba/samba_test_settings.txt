@@ -1,0 +1,4 @@
+
+# Samba test/demo data add-on
+SAMBA_USER='samba_user'
+SAMBA_PASSWORD='sambapasswd'
