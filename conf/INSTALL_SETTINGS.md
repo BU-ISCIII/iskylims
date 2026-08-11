@@ -14,7 +14,6 @@ production secrets. Operators copy it to an ignored, permission-restricted file.
 | `PYTHON_BIN_PATH` | yes | no | Python used to create the virtual environment |
 | `APP_UID`, `APP_GID` | yes | no | Runtime identity and rootless volume ownership |
 | `APP_PORT` | yes | no | Internal Gunicorn and host-loopback port |
-| `HOST_DATA_PATH` | production | no | Persistent documents root on the host |
 | `HOST_LOG_PATH` | production | no | Persistent application logs on the host |
 
 ## Database

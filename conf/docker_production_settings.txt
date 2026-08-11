@@ -32,9 +32,8 @@ APP_SHELL='/sbin/nologin'
 APP_PORT='8001'
 
 ### Persistent host sources
-# Documents are stored below HOST_DATA_PATH; application logs use
-# HOST_LOG_PATH. Both paths must exist or be creatable by container_install.sh.
-HOST_DATA_PATH='/srv/containers/bind/relecov-iskylims'
+# Documents use the Compose-managed app_documents named volume.
+# Application logs remain on the host and must be creatable by the installer.
 HOST_LOG_PATH='/var/log/local/relecov-iskylims/apps'
 # Host bind source rendered before Compose starts. It must be a file path, not
 # a directory; the parent directory is created and protected by the installer.

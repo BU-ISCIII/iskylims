@@ -185,16 +185,13 @@ prepare_application_host_sources() {
 # that add-on declares writable bind sources.
 prepare_host_bind_source_permissions() {
     [ "$mode" = production ] || return 0
-    local data_path log_path settings_path uid gid
-    data_path="$(service_environment_value app HOST_DATA_PATH)"
+    local log_path settings_path uid gid
     log_path="$(service_environment_value app HOST_LOG_PATH)"
     settings_path="$(service_environment_value app DJANGO_SETTINGS_PATH)"
-    [ -n "$data_path" ] || { echo "HOST_DATA_PATH is required for app" >&2; return 1; }
     [ -n "$log_path" ] || { echo "HOST_LOG_PATH is required for app" >&2; return 1; }
     [ -n "$settings_path" ] || { echo "DJANGO_SETTINGS_PATH is required for app" >&2; return 1; }
     uid="$(service_uid app)"; gid="$(service_gid app)"
     local -a app_host_bind_permission_spec=(
-        "$data_path/documents|$uid:$gid|0775"
         "$log_path|$uid:$gid|0775"
         "$(dirname "$settings_path")|-|0755"
         "$settings_path|$uid:$gid|0664"
