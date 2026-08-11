@@ -88,6 +88,11 @@ Developer review checklist:
 
 ## Selected infrastructure add-ons
 
+Add-ons use independent settings below `conf/<addon>/`. For production, copy
+the required add-on templates to protected files and pass them through the same
+repeatable `--install_conf_map <component>,<path>` option used by application
+services.
+
 ### Apache
 
 `APACHE_LOG_PATH`, `APACHE_BIND_HOST`, `APACHE_PORT`,
