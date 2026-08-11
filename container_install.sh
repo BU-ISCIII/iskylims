@@ -278,7 +278,8 @@ load_test_deployment_data() {
     if [ "$skip_test_data" = false ]; then
         echo "Loading iSkyLIMS test fixtures"
         engine_exec exec -w "$app_install_path" "$app_container" \
-            python manage.py loaddata test/test_data.json
+            "$app_install_path/virtualenv/bin/python" manage.py \
+            loaddata test/test_data.json
         admin_groups_code=$(cat <<'PY'
 from django.contrib.auth.models import Group, User
 
@@ -291,7 +292,8 @@ print("admin groups:", list(admin.groups.values_list("name", flat=True)))
 PY
 )
         engine_exec exec -w "$app_install_path" "$app_container" \
-            python manage.py shell -c "$admin_groups_code"
+            "$app_install_path/virtualenv/bin/python" manage.py \
+            shell -c "$admin_groups_code"
     else
         echo "Skipping iSkyLIMS test fixtures as requested"
     fi
