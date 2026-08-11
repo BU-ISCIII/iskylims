@@ -114,6 +114,8 @@ prepare_compose_environment() {
         "APACHE_FORWARDED_PROTO|$(config_value_or_default APACHE_FORWARDED_PROTO "${install_conf_host_by_service[app]}" '')"
         "APACHE_FORWARDED_PORT|$(config_value_or_default APACHE_FORWARDED_PORT "${install_conf_host_by_service[app]}" '')"
         "APACHE_LIMIT_REQUEST_BODY|$(config_value_or_default APACHE_LIMIT_REQUEST_BODY "${install_conf_host_by_service[app]}" '')"
+        "SAMBA_USER|$(config_value_or_default SAMBA_USER "${install_conf_host_by_service[app]}" '')"
+        "SAMBA_PASSWORD|$(config_value_or_default SAMBA_PASSWORD "${install_conf_host_by_service[app]}" '')"
     )
     compose_env_file="$script_dir/.env.${mode}.file"
     write_compose_environment_file "$compose_env_file" settings_sources deployment_values
@@ -260,6 +262,75 @@ bootstrap_service() {
     esac
 }
 
+# Applications with disposable fixtures or demo files customize this callback
+# in their generated wrapper and set application_supports_test_data=true. Keep
+# application-specific fixture names, users/groups, downloads, and data-service
+# layout here so the complete test installation remains readable in one file.
+application_supports_test_data=true
+load_test_deployment_data() {
+    local app_container app_repo_path samba_container archive downloaded_archive
+    local admin_groups_code
+
+    app_container="$(current_service_container app)" \
+        || die "Unable to resolve the app container for test-data loading"
+    app_repo_path="$(service_repo_path app)"
+
+    if [ "$skip_test_data" = false ]; then
+        echo "Loading iSkyLIMS test fixtures"
+        engine_exec exec -w "$app_repo_path" "$app_container" \
+            python manage.py loaddata test/test_data.json
+        admin_groups_code=$(cat <<'PY'
+from django.contrib.auth.models import Group, User
+
+admin = User.objects.get(username="admin")
+admin.groups.add(
+    Group.objects.get(name="WetlabManager"),
+    Group.objects.get(name="ServiceManager"),
+)
+print("admin groups:", list(admin.groups.values_list("name", flat=True)))
+PY
+)
+        engine_exec exec -w "$app_repo_path" "$app_container" \
+            python manage.py shell -c "$admin_groups_code"
+    else
+        echo "Skipping iSkyLIMS test fixtures as requested"
+    fi
+
+    if [ "$skip_demo_data" = true ]; then
+        echo "Skipping Samba demo-data load as requested"
+        return 0
+    fi
+
+    samba_container="$(current_service_container samba)" \
+        || die "The iSkyLIMS test-data workflow requires the Samba service"
+    archive="$demo_data"
+    downloaded_archive=""
+    if [ -z "$archive" ]; then
+        command -v wget >/dev/null 2>&1 \
+            || die "wget is required to download iSkyLIMS demo data"
+        downloaded_archive="$(mktemp /tmp/iskylims_demo_data.XXXXXX.tar.gz)"
+        archive="$downloaded_archive"
+        wget -O "$archive" \
+            https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
+    fi
+    [ -f "$archive" ] || die "Demo-data archive not found: $archive"
+
+    echo "Copying and extracting iSkyLIMS demo data in Samba"
+    engine_exec cp "$archive" "$samba_container:/mnt/iskylims_demo_data.tar.gz"
+    engine_exec exec "$samba_container" \
+        tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
+    engine_exec exec "$samba_container" sh -lc '
+        for root in /mnt/test_ngs_data /mnt/Runs; do
+            if [ -d "$root" ]; then
+                find "$root" -type d -exec chmod o+rx {} +
+                find "$root" -type f -exec chmod o+r {} +
+            fi
+        done
+    '
+    engine_exec exec "$samba_container" rm /mnt/iskylims_demo_data.tar.gz
+    [ -z "$downloaded_archive" ] || rm -f "$downloaded_archive"
+}
+
 action="install"; mode="production"; engine="docker"; git_revision="current"
 install_conf=""; compose_file=""; compose_env_file=""
 install_conf_map_entries=(); migration_script_before=(); migration_script_after=()
@@ -313,7 +384,17 @@ done
 # 2. Validate arguments before modifying deployment state.
 [[ "$action" =~ ^(install|upgrade|fix-permissions)$ ]] || die "Invalid action: $action"
 [[ "$engine" =~ ^(docker|podman)$ ]] || die "Invalid engine: $engine"
-[ -z "$demo_data" ] || die "--demo_data requires an application-owned deployment hook"
+if [ -n "$demo_data" ] && [ "$application_supports_test_data" != true ]; then
+    die "--demo_data is not implemented for $APPLICATION_NAME"
+fi
+if [ "$mode" = test ] && [ "$action" = install ] \
+    && [ "$application_supports_test_data" = true ]; then
+    skip_demo_data="${skip_demo_data:-false}"
+    skip_test_data="${skip_test_data:-false}"
+else
+    skip_demo_data=true
+    skip_test_data=true
+fi
 
 # 3. Resolve one protected configuration source per configured component.
 cd "$script_dir"
@@ -393,13 +474,10 @@ for service_name in "${install_services[@]}"; do
             --tag "$(service_image_name "$service_name")" "$context"
     fi
 done
-# 7. Force-recreate only the application services whose images were rebuilt.
-# Recreating the complete topology needlessly stops persistent support services
-# such as databases and can wedge older rootless Podman/runc combinations. A
-# second normal convergence starts or updates add-ons without forcing healthy
-# support services to restart. Named volumes and bind mounts are preserved.
-deployment_compose -f "$compose_file" up -d --force-recreate "${install_services[@]}"
-deployment_compose -f "$compose_file" up -d
+# 7. Recreate and start the complete topology from one Compose invocation so
+# freshly built images and the current configuration are deployed consistently.
+# Named volumes and bind-mounted persistent data are preserved.
+deployment_compose -f "$compose_file" up -d --force-recreate
 
 # 8. Wait for every application service readiness contract.
 for service_name in "${install_services[@]}"; do
@@ -426,7 +504,13 @@ for service_name in "${install_services[@]}"; do
     bootstrap_service "$service_name" "$container_id" "$action" || die "$service_name bootstrap failed"
 done
 
-# 11. Execute the common smoke dispatcher with generated profile checks.
+# 11. Load application-owned fixtures/demo files only for a fresh test install.
+if [ "$mode" = test ] && [ "$action" = install ] \
+    && [ "$application_supports_test_data" = true ]; then
+    load_test_deployment_data
+fi
+
+# 12. Execute the common smoke dispatcher with generated profile checks.
 smoke_args=(--engine "$engine" --compose_file "$compose_file" --env_file "$compose_env_file")
 [ "$mode" = test ] && smoke_args+=(--test)
 bash "$script_dir/scripts/smoke_test.sh" "${smoke_args[@]}"

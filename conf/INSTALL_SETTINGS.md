@@ -87,3 +87,9 @@ hosts, routes, and aliases. During installation they are rendered with the
 protected deployment environment into `deployment/apache/`; only those final
 files are bind-mounted. `APACHE_LOG_PATH` is the writable persistent host log
 source.
+
+
+### Samba test data
+
+`SAMBA_USER` and `SAMBA_PASSWORD` configure the disposable Samba service used
+only by the test Compose profile. The add-on creates no production service.
