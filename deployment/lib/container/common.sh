@@ -227,10 +227,19 @@ print_container_repository_diagnostics() {
 copy_with_podman_fallback() {
     local src="$1"
     local dst="$2"
+    local tmp_dst=""
 
-    if cp "$src" "$dst" 2>/dev/null; then
+    # Replace the destination through its parent directory instead of opening
+    # an existing bind-mounted file in place. Containers may have changed that
+    # file's ownership to an unmapped/root identity, while the operator still
+    # owns the parent directory and is therefore allowed to replace it. The
+    # same-directory rename also prevents readers from seeing a partial file.
+    if tmp_dst="$(mktemp "${dst}.tmp.XXXXXX" 2>/dev/null)" \
+        && cp "$src" "$tmp_dst" 2>/dev/null \
+        && mv -f "$tmp_dst" "$dst" 2>/dev/null; then
         return 0
     fi
+    [ -z "$tmp_dst" ] || rm -f "$tmp_dst" 2>/dev/null || true
     if [ "$engine" = "podman" ] && podman unshare cp "$src" "$dst"; then
         return 0
     fi
