@@ -4,6 +4,12 @@
 `docker_production_settings.txt` is a template and MUST NOT contain real
 production secrets. Operators copy it to an ignored, permission-restricted file.
 
+Values already rendered from `project.json` (application name, module, Python
+version and default paths) provide a runnable baseline. Operators customize
+environment-dependent values. Application developers add domain settings to
+both settings templates, this matrix, and `template_settings.py`; adding an
+undocumented environment variable alone does not configure Django.
+
 ## Application and filesystem
 
 | Variable | Required | Secret | Meaning |
@@ -12,9 +18,14 @@ production secrets. Operators copy it to an ignored, permission-restricted file.
 | `INSTALL_PATH` | yes | no | Application runtime root inside the container |
 | `PROJECT_MODULE` | generated | no | Django package declared by `project.json`; do not customize independently |
 | `PYTHON_BIN_PATH` | yes | no | Python used to create the virtual environment |
+| `REQUIRED_MODULES` | application | no | Import checks required before bootstrap |
+| `MIGRATION_MODULES` | application | no | Modules whose committed migrations are applied |
+| `FAKEINITIAL_MODULES` | upgrade only | no | Reviewed legacy modules allowed to use `--fake-initial` |
 | `APP_UID`, `APP_GID` | yes | no | Runtime identity and rootless volume ownership |
+| `APP_SHELL` | yes | no | Runtime account shell; normally `/sbin/nologin` in production |
 | `APP_PORT` | yes | no | Internal Gunicorn and host-loopback port |
 | `HOST_LOG_PATH` | production | no | Persistent application logs on the host |
+| `DJANGO_SETTINGS_PATH` | production | no | Protected rendered `settings.py` bind source on the host |
 
 ## Database
 
@@ -38,17 +49,22 @@ Podman; the production service maps it to the host gateway.
 | `DJANGO_SECRET_KEY` | yes | yes | Stable Django signing key; preserve on upgrade |
 | `DJANGO_ALLOWED_HOSTS` | yes | no | Exact production hostnames |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | production | no | Exact HTTPS origins |
+| `DB_CONN_MAX_AGE` | yes | no | Django persistent database connection lifetime |
 | `WEB_CONCURRENCY` | production | no | Gunicorn workers |
 | `GUNICORN_THREADS` | production | no | Threads per worker |
 | `GUNICORN_TIMEOUT` | production | no | Request timeout in seconds |
 | `GUNICORN_KEEPALIVE` | production | no | Keep-alive time in seconds |
 | `APP_START_WAIT_TIMEOUT_SECONDS` | yes | no | Maximum wait for staged application files |
+| `LOG_TYPE`, `LOG_PATH` | application | no | Application logging backend and optional location |
 
 ## Email
 
-Email settings are required when the application sends operational or account
-messages. Document whether failed email blocks the user workflow and add an SMTP
-test to production acceptance.
+`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and
+`EMAIL_USE_TLS` configure SMTP. The password is secret; the remaining values
+are operational unless the username is sensitive locally. Email settings are
+required when the application sends operational or account messages. Document
+whether failed email blocks the user workflow and add an SMTP test to
+production acceptance.
 
 ## Initial administrator
 
@@ -62,6 +78,14 @@ protected settings file. Bootstrap retries never reset an existing account.
 Add every application setting here before declaring installation complete.
 Classify secrets and identify cross-service values that must match an identity
 provider, proxy, worker, or frontend.
+
+Developer review checklist:
+
+- map every project-specific token in `template_settings.py`;
+- provide safe disposable test values and `CHANGE_ME` production placeholders;
+- state validation rules, owner, restart/rebuild impact, and secret status;
+- add acceptance checks for email, identity, storage, workers, and scheduled
+  jobs used by real workflows.
 
 ## Selected infrastructure add-ons
 
