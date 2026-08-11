@@ -20,6 +20,10 @@
   "ADDONS": {
     "apache": {
       "CONFIG_SERVICE": "app"
+    },
+    "samba": {
+      "CONFIG_SERVICE": "app",
+      "MODES": ["test"]
     }
   }
 }

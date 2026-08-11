@@ -58,10 +58,6 @@ safe_chmod() {
 
 safe_chmod 700 "${CRON_DIR}" "${TMP_DIR}"
 
-if [[ "$APP_MODE" == "dev" ]]; then
-    exec python "${APP_DIR}/manage.py" runserver "0.0.0.0:${APP_PORT}"
-fi
-
 if [[ -f "$CRON_DISABLED_FILE" ]]; then
     echo "Cron is disabled by ${CRON_DISABLED_FILE}. Skipping supercronic start."
 elif command -v supercronic >/dev/null 2>&1; then
@@ -120,6 +116,13 @@ PY
     fi
 else
     echo "supercronic not found. Scheduled jobs are disabled."
+fi
+
+if [[ "$APP_MODE" == "dev" ]]; then
+    # Disable Django's reloader so it cannot duplicate the cron worker that
+    # was started above. Test settings enable Django's static/media serving.
+    exec python "${APP_DIR}/manage.py" runserver \
+        --noreload "0.0.0.0:${APP_PORT}"
 fi
 
 if [[ -n "${WEB_CONCURRENCY:-}" ]]; then

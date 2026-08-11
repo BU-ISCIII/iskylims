@@ -15,6 +15,7 @@ Profile behavior:
 Selected add-ons:
 
 - Apache source configuration lives under `conf/apache/`; customize its virtual hosts and routes there. The installer renders final bind sources under `deployment/apache/`.
+- The Samba add-on provides disposable NGS demo storage only in `--test` mode.
 
 All selected services and add-ons are assembled into one
 `docker-compose.prod.yml` and one `docker-compose.test.yml`.
@@ -74,6 +75,7 @@ immutable browser bundle and do not run Django bootstrap.
 | `app` database | External production database | Database backup before migration |
 | `app` documents | `HOST_DATA_PATH/documents` | Filesystem backup |
 | `app` static | `app_static` named volume | Replaceable through collectstatic |
+| Samba test data | `samba_test_data` named volume | Disposable test/demo files |
 
 Run permission repair without building or migrating:
 

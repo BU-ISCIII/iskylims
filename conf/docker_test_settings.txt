@@ -33,10 +33,10 @@ DB_PASSWORD='djangopass'
 DB_ROOT_PASSWORD='root'
 
 ### Django and local email defaults
-DJANGO_DEBUG='false'
+DJANGO_DEBUG='true'
 DJANGO_SECRET_KEY='test-only-change-me'
-DJANGO_ALLOWED_HOSTS='localhost,127.0.0.1,0.0.0.0'
-DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8001,http://127.0.0.1:8001'
+DJANGO_ALLOWED_HOSTS='*'
+DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8001,http://127.0.0.1:8001,http://0.0.0.0:8001'
 DB_CONN_MAX_AGE='60'
 
 ### Local email defaults
@@ -72,9 +72,9 @@ LOG_PATH=''
 # This compatibility value is unused unless application code consumes it.
 APACHE_CONF_PATH=''
 
-# Disposable test logs and a loopback-only public endpoint.
+# Disposable test logs and a public test endpoint.
 APACHE_LOG_PATH='/tmp/relecov-iskylims/apache-logs'
-APACHE_BIND_HOST='127.0.0.1'
+APACHE_BIND_HOST='0.0.0.0'
 APACHE_PORT='8081'
 
 # Host name handled by the local test VirtualHost.
@@ -106,3 +106,7 @@ SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
 APACHE_FORWARDED_PROTO='http'
 APACHE_FORWARDED_PORT='8081'
 APACHE_LIMIT_REQUEST_BODY='52428800'
+
+# Samba test/demo data add-on
+SAMBA_USER='samba_user'
+SAMBA_PASSWORD='sambapasswd'
