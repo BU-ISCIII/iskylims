@@ -1,0 +1,2 @@
+
+# Samba demo storage is intentionally unavailable in production.

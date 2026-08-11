@@ -16,12 +16,15 @@ APPLICATION_NAME="iSkyLIMS"
 # lifecycle mechanics below unchanged.
 # ============================================================================
 install_services=(app)
+addon_build_services=()
 permission_services=(app apache)
-configured_services=(app)
+configured_services=(app apache samba)
 
 default_service_install_conf() {
     case "$1" in
         app) [ "$mode" = test ] && echo conf/docker_test_settings.txt || echo conf/docker_production_settings.txt ;;
+        apache) [ "$mode" = test ] && echo conf/apache/apache_test_settings.txt || echo conf/apache/apache_production_settings.txt ;;
+        samba) [ "$mode" = test ] && echo conf/samba/samba_test_settings.txt || echo conf/samba/samba_production_settings.txt ;;
         *) return 1 ;;
     esac
 }
@@ -95,27 +98,12 @@ service_gid() {
 prepare_compose_environment() {
     local -a settings_sources=(
         "APP|${install_conf_host_by_service[app]}"
+        "|${install_conf_host_by_service[apache]}"
+        "|${install_conf_host_by_service[samba]}"
     )
     local -a deployment_values=(
         "GIT_REVISION|$git_revision"
         "APP_IMAGE|relecov-iskylims:local"
-        "APACHE_CONF_PATH|$(config_value_or_default APACHE_CONF_PATH "${install_conf_host_by_service[app]}" '')"
-        "APACHE_LOG_PATH|$(config_value_or_default APACHE_LOG_PATH "${install_conf_host_by_service[app]}" '')"
-        "APACHE_BIND_HOST|$(config_value_or_default APACHE_BIND_HOST "${install_conf_host_by_service[app]}" '')"
-        "APACHE_PORT|$(config_value_or_default APACHE_PORT "${install_conf_host_by_service[app]}" '')"
-        "APACHE_SERVER_NAME|$(config_value_or_default APACHE_SERVER_NAME "${install_conf_host_by_service[app]}" '')"
-        "APACHE_UPSTREAM_SERVICE|$(config_value_or_default APACHE_UPSTREAM_SERVICE "${install_conf_host_by_service[app]}" '')"
-        "APACHE_UPSTREAM_PORT|$(config_value_or_default APACHE_UPSTREAM_PORT "${install_conf_host_by_service[app]}" '')"
-        "APACHE_PROXY_TIMEOUT|$(config_value_or_default APACHE_PROXY_TIMEOUT "${install_conf_host_by_service[app]}" '')"
-        "APACHE_LOG_STEM|$(config_value_or_default APACHE_LOG_STEM "${install_conf_host_by_service[app]}" '')"
-        "SERVER_STATUS_SERVER_NAME|$(config_value_or_default SERVER_STATUS_SERVER_NAME "${install_conf_host_by_service[app]}" '')"
-        "SERVER_STATUS_ALIASES|$(config_value_or_default SERVER_STATUS_ALIASES "${install_conf_host_by_service[app]}" '')"
-        "SERVER_STATUS_ALLOW_FROM|$(config_value_or_default SERVER_STATUS_ALLOW_FROM "${install_conf_host_by_service[app]}" '')"
-        "APACHE_FORWARDED_PROTO|$(config_value_or_default APACHE_FORWARDED_PROTO "${install_conf_host_by_service[app]}" '')"
-        "APACHE_FORWARDED_PORT|$(config_value_or_default APACHE_FORWARDED_PORT "${install_conf_host_by_service[app]}" '')"
-        "APACHE_LIMIT_REQUEST_BODY|$(config_value_or_default APACHE_LIMIT_REQUEST_BODY "${install_conf_host_by_service[app]}" '')"
-        "SAMBA_USER|$(config_value_or_default SAMBA_USER "${install_conf_host_by_service[app]}" '')"
-        "SAMBA_PASSWORD|$(config_value_or_default SAMBA_PASSWORD "${install_conf_host_by_service[app]}" '')"
     )
     compose_env_file="$script_dir/.env.${mode}.file"
     write_compose_environment_file "$compose_env_file" settings_sources deployment_values
@@ -348,7 +336,7 @@ Options:
   --engine docker|podman
   --git_revision <branch|tag|commit|current>
   --install_conf <path>              First application service only.
-  --install_conf_map <service,path>  Repeat for every service override.
+  --install_conf_map <component,path>  Repeat for application and add-on overrides.
   --compose_file <path>
   --script_before <name[,args]>
   --script_after <name[,args]>
@@ -408,7 +396,7 @@ if [ -n "$install_conf" ]; then install_conf_host_by_service["${install_services
 for mapping in "${install_conf_map_entries[@]}"; do
     [[ "$mapping" == *,* ]] || die "Invalid --install_conf_map: $mapping"
     service_name="${mapping%%,*}"; path="${mapping#*,}"
-    array_contains "$service_name" "${configured_services[@]}" || die "Unknown mapped service: $service_name"
+    array_contains "$service_name" "${configured_services[@]}" || die "Unknown mapped component: $service_name"
     install_conf_host_by_service["$service_name"]="$path"
 done
 for service_name in "${configured_services[@]}"; do
@@ -475,6 +463,11 @@ for service_name in "${install_services[@]}"; do
             --build-arg VITE_API_BASE_URL="$vite_api_url" \
             --tag "$(service_image_name "$service_name")" "$context"
     fi
+done
+# Build add-on images through Compose so their declared build arguments and
+# add-on-owned Dockerfiles remain the single source of truth.
+for service_name in "${addon_build_services[@]}"; do
+    deployment_compose -f "$compose_file" build --no-cache "$service_name"
 done
 # 7. Recreate and start the complete topology from one Compose invocation so
 # freshly built images and the current configuration are deployed consistently.

@@ -1,0 +1,41 @@
+# Apache add-on
+# Used only when ADDONS.apache selects this application as CONFIG_SERVICE.
+
+# Sources under <repository>/conf/apache are rendered into deployment/apache.
+# This compatibility value is unused unless application code consumes it.
+APACHE_CONF_PATH=''
+
+# Disposable test logs and a public test endpoint.
+APACHE_LOG_PATH='/tmp/relecov-iskylims/apache-logs'
+APACHE_BIND_HOST='0.0.0.0'
+APACHE_PORT='8081'
+
+# Host name handled by the local test VirtualHost.
+APACHE_SERVER_NAME='localhost'
+
+# Compose service receiving proxied requests. Leave empty to use the service
+# selected by ADDONS.apache.CONFIG_SERVICE (normally app for a single service).
+APACHE_UPSTREAM_SERVICE=''
+
+# Internal application port used by ProxyPass. Leave empty to use APP_PORT from
+# the selected service's test settings.
+APACHE_UPSTREAM_PORT=''
+
+# Maximum proxy request duration in seconds. Leave empty to use the selected
+# service's GUNICORN_TIMEOUT, falling back to 120 seconds when it is undefined.
+APACHE_PROXY_TIMEOUT=''
+
+# Prefix for the generated <stem>-apache.access.log and
+# <stem>-apache.error.log files. Leave empty to derive it from
+# APACHE_SERVER_NAME, with URL schemes, paths and ports removed.
+APACHE_LOG_STEM=''
+
+# Local server-status defaults.
+SERVER_STATUS_SERVER_NAME='localhost'
+SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
+# Test proxy headers and request-body limit.
+APACHE_FORWARDED_PROTO='http'
+APACHE_FORWARDED_PORT='8081'
+APACHE_LIMIT_REQUEST_BODY='52428800'
