@@ -103,7 +103,7 @@ instalador. No modificar el arbol `/srv/containers/storage/` manualmente.
 
 ```bash
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,/protected/app_production_settings.txt
+  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
 ```
 
 ## Actualizar codigo
@@ -190,7 +190,7 @@ Primera instalacion:
 ```bash
 bash container_install.sh --action install --engine podman \
   --git_revision <revision-aprobada> \
-  --install_conf_map app,/protected/app_production_settings.txt
+  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
 ```
 
 Actualizacion:
@@ -198,7 +198,7 @@ Actualizacion:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <nueva-revision-aprobada> \
-  --install_conf_map app,/protected/app_production_settings.txt
+  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
 ```
 
 Durante `--action upgrade`, `container_install.sh`:
@@ -237,7 +237,7 @@ la revision anterior registrada y repetir las pruebas:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <revision-anterior> \
-  --install_conf_map app,/protected/app_production_settings.txt
+  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
 ```
 
 Si no son compatibles, detener escrituras y restaurar el punto completo:
@@ -273,7 +273,7 @@ Primera fase, incluso con los contenedores detenidos:
 
 ```bash
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,/protected/app_production_settings.txt
+  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
 ```
 
 Esta accion no construye imagenes, no migra la base de datos y no borra datos.
@@ -283,7 +283,7 @@ Arrancar y repetirla para reparar tambien los volumenes montados:
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml up -d
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,/protected/app_production_settings.txt
+  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
 ```
 
 ## Operaciones utiles
