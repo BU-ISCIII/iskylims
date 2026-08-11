@@ -15,12 +15,11 @@ PYTHON_BIN_PATH='python3.11'
 
 ### Application-specific installation modules
 # Optional space-separated Django applications consumed by installers that
-# support dependency, migration and fake-initial module lists. Leave empty when
+# support dependency and migration module lists. Leave empty when
 # the application install.sh does not implement the corresponding behavior.
 # iSkyLIMS example: REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
-FAKEINITIAL_MODULES='core drylab wetlab django_utils'
 
 ### Container runtime identity
 # UID/GID must own every writable bind mount and named volume.

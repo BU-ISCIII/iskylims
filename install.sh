@@ -467,9 +467,6 @@ bootstrap_application() {
     local hook
     for hook in "${SCRIPT_BEFORE[@]}"; do run_hook "$hook"; done
     before_django_migrate "$ACTION" "$MIGRATION_MODULES"
-    if [[ "$ACTION" == "upgrade" ]]; then
-        python manage.py migrate --noinput --fake-initial
-    fi
     python manage.py migrate --noinput
     if [[ "$LOAD_TABLES" == "true" && "$SKIP_TABLES" == "false" ]]; then
         [[ -f conf/first_install_tables.json ]] \

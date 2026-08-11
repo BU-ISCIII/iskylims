@@ -10,7 +10,6 @@ PYTHON_BIN_PATH='python3.11'
 # Optional lists used only when install.sh implements these operations.
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
-FAKEINITIAL_MODULES='core drylab wetlab django_utils'
 
 ### Container runtime identity
 APP_UID='1212'
