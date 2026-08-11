@@ -2,7 +2,6 @@
 INSTALL_PATH='/opt/iskylims'
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
-FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 
 ### Container runtime settings
 # Host directory for Apache bind-mounted configuration files.
