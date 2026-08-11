@@ -1,0 +1,52 @@
+# Apache add-on
+# Used only when ADDONS.apache selects this application as CONFIG_SERVICE.
+
+# Repository-owned sources live under <repository>/conf/apache. The installer
+# renders them to <repository>/deployment/apache and mounts those final files;
+# APACHE_CONF_PATH is not used by the standard lifecycle. Keep it empty unless
+# legacy application code explicitly consumes a different host directory.
+# Example legacy override: APACHE_CONF_PATH='/srv/containers/bind/apache-conf'
+APACHE_CONF_PATH=''
+
+# Persistent host directory mounted as the Apache log destination.
+APACHE_LOG_PATH='/var/log/local/relecov-iskylims/apache'
+
+# Public host interface and port. Use 127.0.0.1 when another host reverse proxy
+# is the only component that should reach this Apache container.
+APACHE_BIND_HOST='0.0.0.0'
+APACHE_PORT='8080'
+
+# Public host name handled by the default VirtualHost. Use localhost for a
+# workstation deployment or the externally visible DNS name in production.
+APACHE_SERVER_NAME='CHANGE_ME_DNS_NAME'
+
+# Compose service receiving proxied requests. Leave empty to use the service
+# selected by ADDONS.apache.CONFIG_SERVICE (normally app for a single service).
+APACHE_UPSTREAM_SERVICE=''
+
+# Internal application port used by ProxyPass. Leave empty to use APP_PORT from
+# the selected service's production settings.
+APACHE_UPSTREAM_PORT=''
+
+# Maximum proxy request duration in seconds. Leave empty to use the selected
+# service's GUNICORN_TIMEOUT, falling back to 120 seconds when it is undefined.
+APACHE_PROXY_TIMEOUT=''
+
+# Prefix for the generated <stem>-apache.access.log and
+# <stem>-apache.error.log files. Leave empty to derive it from
+# APACHE_SERVER_NAME, with URL schemes, paths and ports removed.
+APACHE_LOG_STEM=''
+
+# Server-status stays restricted by default. Use a local-only diagnostic name;
+# aliases and allow-list accept Apache-compatible values.
+SERVER_STATUS_SERVER_NAME='localhost'
+SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+
+# Forwarded headers received by Django behind the production proxy.
+APACHE_FORWARDED_PROTO='https'
+APACHE_FORWARDED_PORT='443'
+
+# 50 MiB. The reverse-proxy template applies this value to Apache and, when
+# loaded, ModSecurity. Increase it only for endpoints that require larger data.
+APACHE_LIMIT_REQUEST_BODY='52428800'
