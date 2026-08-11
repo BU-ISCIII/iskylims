@@ -20,7 +20,6 @@ undocumented environment variable alone does not configure Django.
 | `PYTHON_BIN_PATH` | yes | no | Python used to create the virtual environment |
 | `REQUIRED_MODULES` | application | no | Import checks required before bootstrap |
 | `MIGRATION_MODULES` | application | no | Modules whose committed migrations are applied |
-| `FAKEINITIAL_MODULES` | upgrade only | no | Reviewed legacy modules allowed to use `--fake-initial` |
 | `APP_UID`, `APP_GID` | yes | no | Runtime identity and rootless volume ownership |
 | `APP_SHELL` | yes | no | Runtime account shell; normally `/sbin/nologin` in production |
 | `APP_PORT` | yes | no | Internal Gunicorn and host-loopback port |
