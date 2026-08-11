@@ -105,6 +105,8 @@ fi
 source "$INSTALL_CONF"
 : "${INSTALL_PATH:?INSTALL_PATH is required}"
 : "${PROJECT_MODULE:?PROJECT_MODULE is required}"
+[[ "$PROJECT_MODULE" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] \
+    || die "PROJECT_MODULE must be a valid Python package name"
 : "${PYTHON_BIN_PATH:?PYTHON_BIN_PATH is required}"
 : "${DB_HOST:?DB_HOST is required}"
 : "${DB_PORT:?DB_PORT is required}"
@@ -148,10 +150,11 @@ check_python() {
 
 check_required_modules() {
     local module
+    [[ -f "$install_script_dir/conf/urls.py" ]] \
+        || die "Django URL configuration is missing: conf/urls.py"
     for module in $REQUIRED_MODULES; do
         [[ -e "$install_script_dir/$module" ]] || die "Required application module is missing: $module"
     done
-    [[ -f "$install_script_dir/conf/urls.py" ]] || die "iSkyLIMS URL configuration is missing"
 }
 
 check_database() {
@@ -282,15 +285,10 @@ prepare_application_directories() {
 
 stage_application_custom_files() {
     # Arguments: source directory, final INSTALL_PATH, action (install|upgrade).
-    # Copy files that intentionally live outside the normal rsync set.
-    # Example: [[ -f "$1/conf/routing.py" ]] &&
-    #          install -m 0644 "$1/conf/routing.py" "$2/$PROJECT_MODULE/routing.py"
+    # Copy application-owned files that intentionally need extra processing;
+    # the standard already installs the Django URL and optional routing files.
     local source_dir="$1" install_path="$2"
     local template
-
-    [[ -f "$install_path/manage.py" ]] ||
-        "$install_path/virtualenv/bin/python" -m django startproject "$PROJECT_MODULE" "$install_path"
-    install -m 0644 "$source_dir/conf/urls.py" "$install_path/$PROJECT_MODULE/urls.py"
 
     for template in "$source_dir"/conf/*_template.csv "$source_dir"/conf/samples_template.xlsx; do
         [[ -e "$template" ]] || continue
@@ -417,13 +415,26 @@ stage_application_files() {
     checkout_git_revision
     [[ -d "$INSTALL_PATH/virtualenv" ]] \
         || die "virtualenv not found at $INSTALL_PATH; install dependencies first"
+    # The Django wrapper is deployment-generated and must never be inherited
+    # from an ignored local source tree or a previous staged installation.
+    rm -rf "$INSTALL_PATH/$PROJECT_MODULE"
+    rm -f "$INSTALL_PATH/manage.py"
     rsync -rl --delete \
         --exclude .git --exclude .env --exclude /logs --exclude /documents \
-        --exclude /static --exclude /tmp --exclude /virtualenv \
+        --exclude /static --exclude /cron --exclude /tmp --exclude /virtualenv \
+        --exclude /manage.py --exclude "/$PROJECT_MODULE" \
         ./ "$INSTALL_PATH/"
     mkdir -p "$INSTALL_PATH/logs" "$INSTALL_PATH/documents" \
         "$INSTALL_PATH/static" "$INSTALL_PATH/cron" "$INSTALL_PATH/tmp"
     prepare_application_directories "$INSTALL_PATH"
+    "$INSTALL_PATH/virtualenv/bin/python" -m django startproject \
+        "$PROJECT_MODULE" "$INSTALL_PATH"
+    install -m 0644 "$install_script_dir/conf/urls.py" \
+        "$INSTALL_PATH/$PROJECT_MODULE/urls.py"
+    if [[ -f "$install_script_dir/conf/routing.py" ]]; then
+        install -m 0644 "$install_script_dir/conf/routing.py" \
+            "$INSTALL_PATH/$PROJECT_MODULE/routing.py"
+    fi
     stage_application_custom_files "$install_script_dir" "$INSTALL_PATH" "$ACTION"
     printf '%s\n' "$GIT_REVISION" > "$INSTALL_PATH/.deployed_revision"
     if [[ "$RENDER_SETTINGS" == "true" ]]; then
