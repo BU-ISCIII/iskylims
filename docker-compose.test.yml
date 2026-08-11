@@ -43,7 +43,7 @@ services:
       timeout: 5s
       retries: 12
     ports:
-      - "127.0.0.1:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
+      - "0.0.0.0:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
     networks: [deployment_net]
   # END BU-ISCIII SERVICE: app
   # BEGIN BU-ISCIII ADDON: apache
@@ -74,6 +74,15 @@ services:
       # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS.
     networks: [deployment_net]
   # END BU-ISCIII ADDON: apache
+  # BEGIN BU-ISCIII ADDON: samba (test only)
+  samba:
+    image: docker.io/dperson/samba:latest
+    restart: unless-stopped
+    command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;${SAMBA_USER:?SAMBA_USER is required};none;none;ngs data samba share" -u "${SAMBA_USER:?SAMBA_USER is required};${SAMBA_PASSWORD:?SAMBA_PASSWORD is required}" -p'
+    volumes:
+      - samba_test_data:/mnt:z
+    networks: [deployment_net]
+  # END BU-ISCIII ADDON: samba
   app_db:
     image: docker.io/library/mysql:8.0
     environment:
@@ -97,3 +106,4 @@ volumes:
   app_test_documents:
   app_test_static:
   apache_test_logs:
+  samba_test_data:
