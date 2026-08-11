@@ -602,18 +602,14 @@ For a legacy application entering the standard:
 
 1. Generate and commit baseline migrations from the last supported stable tag.
 2. Generate and commit new migrations for later model changes.
-3. Identify only legacy application labels whose existing tables match the
-   committed initial migrations exactly.
-4. Document and run `migrate <app-label> --fake-initial` once through a reviewed
-   application migration callback or version-specific upgrade step. The common
-   bootstrap does not apply `FAKEINITIAL_MODULES` automatically.
-5. Put ordered data transformations in version-specific upgrade guides and run
+3. Verify the committed migration history matches the supported production
+   database before deploying it.
+4. Put ordered data transformations in version-specific upgrade guides and run
    them through `--script_before`, `--script_after`, or `--script`.
-6. Verify `showmigrations --plan` has no unapplied entries after bootstrap.
+5. Verify `showmigrations --plan` has no unapplied entries after bootstrap.
 
-Never use `--fake` to conceal a failed or partially applied migration. Normal
-new installations and subsequent upgrades use the committed migration graph
-without `--fake-initial`.
+Never use `--fake` to conceal a failed or partially applied migration. New
+installations and upgrades use the committed migration graph.
 
 ### Persistent host paths
 
