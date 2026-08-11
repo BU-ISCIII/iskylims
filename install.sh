@@ -158,8 +158,8 @@ check_required_modules() {
 }
 
 check_database() {
-    # The MySQL client is used by RELECOV/iSkyLIMS; PyMySQL fallback supports
-    # minimal Patho Core-style containers without the client package.
+    # Prefer the MySQL CLI when available; container images use mysqlclient's
+    # MySQLdb module from the application virtual environment.
     if command -v mysql >/dev/null 2>&1; then
         MYSQL_PWD="$DB_PASSWORD" mysql --host="$DB_HOST" --port="$DB_PORT" \
             --user="$DB_USER" --database="$DB_NAME" --execute='SELECT 1' >/dev/null \
@@ -168,9 +168,9 @@ check_database() {
     fi
     "$INSTALL_PATH/virtualenv/bin/python" - "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASSWORD" "$DB_NAME" <<'PY'
 import sys
-import pymysql
-connection = pymysql.connect(host=sys.argv[1], port=int(sys.argv[2]),
-    user=sys.argv[3], password=sys.argv[4], database=sys.argv[5])
+import MySQLdb
+connection = MySQLdb.connect(host=sys.argv[1], port=int(sys.argv[2]),
+    user=sys.argv[3], passwd=sys.argv[4], db=sys.argv[5])
 connection.close()
 PY
 }
