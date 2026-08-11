@@ -15,7 +15,7 @@ MIGRATION_MODULES='core drylab wetlab django_utils'
 APP_UID='1212'
 APP_GID='1212'
 APP_SHELL='/bin/bash'
-APP_PORT='8001'
+APP_PORT='8201'
 
 ### Disposable persistence paths
 HOST_LOG_PATH='/tmp/relecov-iskylims/logs'
@@ -34,7 +34,7 @@ DB_ROOT_PASSWORD='root'
 DJANGO_DEBUG='true'
 DJANGO_SECRET_KEY='test-only-change-me'
 DJANGO_ALLOWED_HOSTS='*'
-DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8001,http://127.0.0.1:8001,http://0.0.0.0:8001'
+DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8201,http://127.0.0.1:8201,http://0.0.0.0:8201'
 DB_CONN_MAX_AGE='60'
 
 ### Local email defaults
