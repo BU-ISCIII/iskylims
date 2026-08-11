@@ -113,6 +113,19 @@ ignored file, set mode `0600`, and replace every `CHANGE_ME` value. The exact
 meaning and security classification of settings is in
 [`conf/INSTALL_SETTINGS.md`](conf/INSTALL_SETTINGS.md).
 
+Create the ignored deployment settings directory and copy every production
+template used by this deployment:
+
+```bash
+install -d -m 0700 deployment/settings
+install -m 0600 conf/docker_production_settings.txt deployment/settings/app_production_settings.txt
+install -m 0600 conf/apache/apache_production_settings.txt deployment/settings/apache_production_settings.txt
+install -m 0600 conf/samba/samba_production_settings.txt deployment/settings/samba_production_settings.txt
+```
+
+Edit only the copies under `deployment/settings/`, replace every `CHANGE_ME`,
+and keep their mode at `0600`.
+
 ## Docker deployment
 
 Both engines use the same lifecycle and Compose files. Do not invoke Compose
@@ -180,7 +193,7 @@ Docker:
 ```bash
 bash container_install.sh --action install --engine docker \
   --git_revision <reviewed-tag-or-commit> \
-  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Podman:
@@ -188,7 +201,7 @@ Podman:
 ```bash
 bash container_install.sh --action install --engine podman \
   --git_revision <reviewed-tag-or-commit> \
-  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 The installer creates `.env.production.file`; use it for later direct Compose
@@ -250,7 +263,7 @@ notes:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <new-reviewed-tag-or-commit> \
-  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Replace `podman` with `docker` for a Docker-managed deployment. Stop on build,
@@ -287,11 +300,11 @@ after the application developer documents and tests those integrations.
 ```bash
 # Stage application files and dependencies.
 bash install.sh --stage install --git_revision current \
-  --conf conf/docker_production_settings.txt
+  --conf deployment/settings/app_production_settings.txt
 
 # Bootstrap the prepared runtime (settings, migrations and static files).
 bash install.sh --bootstrap install \
-  --conf conf/docker_production_settings.txt
+  --conf deployment/settings/app_production_settings.txt
 ```
 
 For upgrades, take a backup and replace both `install` actions with `upgrade`.
@@ -378,7 +391,7 @@ settings files, and backup identifiers.
 
 ```bash
 BACKUP_DIR="/srv/containers/backup/relecov-iskylims/$(date +%Y%m%d_%H%M%S)"
-SETTINGS_FILE='/protected/app_production_settings.txt'
+SETTINGS_FILE='deployment/settings/app_production_settings.txt'
 DOCUMENTS_VOLUME='CHANGE_ME'
 DB_HOST='CHANGE_ME'
 DB_PORT='3306'
@@ -424,7 +437,7 @@ Compatible application-only rollback:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <previous-reviewed-revision> \
-  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Full restore when schema or persistent-file formats are incompatible:
@@ -442,7 +455,7 @@ mysql --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --password \
 podman volume import "$DOCUMENTS_VOLUME" "$BACKUP_DIR/documents.tar"
 tar -C /srv/containers/bind -xzf "$BACKUP_DIR/bind-mounts.tar.gz"
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Then deploy the revision recorded in `git-revision.txt`, start the deployment,
@@ -459,7 +472,7 @@ volume at `/data` and extracting `/backup/documents.tar` there.
 
    ```bash
    bash container_install.sh --action fix-permissions --engine podman \
-     --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+     --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
    ```
 
 5. Do not fake migrations, delete volumes, or rebuild from an unrecorded
@@ -525,7 +538,7 @@ be replaced, move it to a timestamped backup instead of deleting evidence:
 sudo mv /var/log/local/relecov-iskylims/apache/modsec_debug.log \
   /var/log/local/relecov-iskylims/apache/modsec_debug.log.blocked
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,/protected/app_production_settings.txt --install_conf_map apache,/protected/apache_production_settings.txt --install_conf_map samba,/protected/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 podman compose --env-file .env.production.file -f docker-compose.prod.yml restart apache
 ```
 
