@@ -12,6 +12,7 @@ conf/*settings*.txt
 .env.prod.file
 # Runtime-rendered add-on bind sources are not image build inputs.
 deployment/apache/*.conf
+deployment/settings/
 
 .venv/
 venv/
