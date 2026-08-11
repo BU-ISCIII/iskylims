@@ -268,16 +268,16 @@ bootstrap_service() {
 # layout here so the complete test installation remains readable in one file.
 application_supports_test_data=true
 load_test_deployment_data() {
-    local app_container app_repo_path samba_container archive downloaded_archive
+    local app_container app_install_path samba_container archive downloaded_archive
     local admin_groups_code
 
     app_container="$(current_service_container app)" \
         || die "Unable to resolve the app container for test-data loading"
-    app_repo_path="$(service_repo_path app)"
+    app_install_path="$(service_install_path app)"
 
     if [ "$skip_test_data" = false ]; then
         echo "Loading iSkyLIMS test fixtures"
-        engine_exec exec -w "$app_repo_path" "$app_container" \
+        engine_exec exec -w "$app_install_path" "$app_container" \
             python manage.py loaddata test/test_data.json
         admin_groups_code=$(cat <<'PY'
 from django.contrib.auth.models import Group, User
@@ -290,7 +290,7 @@ admin.groups.add(
 print("admin groups:", list(admin.groups.values_list("name", flat=True)))
 PY
 )
-        engine_exec exec -w "$app_repo_path" "$app_container" \
+        engine_exec exec -w "$app_install_path" "$app_container" \
             python manage.py shell -c "$admin_groups_code"
     else
         echo "Skipping iSkyLIMS test fixtures as requested"
