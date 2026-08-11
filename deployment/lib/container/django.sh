@@ -90,7 +90,7 @@ prepare_django_settings_bind_mount() {
     # reach upgrades. render_django_settings_file preserves the existing
     # non-placeholder SECRET_KEY, and render_config_template installs atomically.
     render_django_settings_file "$template_path" "$settings_path" "$install_conf_path"
-    chmod_with_podman_fallback 0664 "$settings_path"
+    chmod_with_engine_fallback 0664 "$settings_path"
 }
 
 # Apply ownership and mode to a Django settings file visible inside a running

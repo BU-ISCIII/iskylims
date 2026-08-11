@@ -247,8 +247,32 @@ copy_with_podman_fallback() {
     return 1
 }
 
-# Change host-path modes, using Podman unshare for rootless mapped paths.
-chmod_with_podman_fallback() {
+# Run one ownership/mode operation through rootful Docker. Every bind source is
+# resolved first and the host root is always rejected.
+docker_host_path_operation() {
+    local operation="$1"
+    local value="$2"
+    shift 2
+    local path resolved_path
+
+    [[ "$operation" =~ ^(chown|chmod)$ ]] || return 2
+    for path in "$@"; do
+        resolved_path="$(readlink -f -- "$path" 2>/dev/null || true)"
+        if [ -z "$resolved_path" ] || [ "$resolved_path" = / ]; then
+            echo "Refusing Docker $operation fallback for unsafe path: $path" >&2
+            return 1
+        fi
+        engine_exec run --rm --user 0 \
+            --volume "$resolved_path:/target:z" \
+            --entrypoint "/usr/bin/$operation" \
+            registry.access.redhat.com/ubi9/ubi-minimal:latest \
+            -R "$value" /target || return 1
+    done
+}
+
+# Change host-path modes, entering the selected engine's ownership context when
+# an ordinary host operation is not permitted.
+chmod_with_engine_fallback() {
     local mode_value="$1"
     shift
 
@@ -258,12 +282,21 @@ chmod_with_podman_fallback() {
     if [ "$engine" = "podman" ] && podman unshare chmod "$mode_value" "$@"; then
         return 0
     fi
+    if [ "$engine" = "docker" ]; then
+        [[ "$mode_value" =~ ^[0-7]{3,4}$ ]] || {
+            echo "Docker mode fallback requires a numeric mode: $mode_value" >&2
+            return 1
+        }
+        docker_host_path_operation chmod "$mode_value" "$@" && return 0
+    fi
     echo "Failed to chmod $mode_value: $*" >&2
     return 1
 }
 
-# Change host-path ownership recursively, using Podman unshare when required.
-chown_with_podman_fallback() {
+# Change host-path ownership recursively. Rootless Podman can operate on mapped
+# IDs through its user namespace. Rootful Docker can perform the same change
+# through a tightly scoped bind mount without requiring host sudo access.
+chown_with_engine_fallback() {
     local owner="$1"
     shift
 
@@ -272,6 +305,13 @@ chown_with_podman_fallback() {
     fi
     if [ "$engine" = "podman" ] && podman unshare chown -R "$owner" "$@"; then
         return 0
+    fi
+    if [ "$engine" = "docker" ]; then
+        [[ "$owner" =~ ^[0-9]+(:[0-9]+)?$ ]] || {
+            echo "Docker ownership fallback requires a numeric UID or UID:GID: $owner" >&2
+            return 1
+        }
+        docker_host_path_operation chown "$owner" "$@" && return 0
     fi
     echo "Failed to chown $owner: $*" >&2
     return 1
@@ -292,10 +332,10 @@ apply_host_permission_spec() {
         fi
         [ -e "$path" ] || continue
         if [ "$owner" != "-" ]; then
-            chown_with_podman_fallback "$owner" "$path" || return 1
+            chown_with_engine_fallback "$owner" "$path" || return 1
         fi
         if [ "$mode" != "-" ]; then
-            chmod_with_podman_fallback "$mode" "$path" || return 1
+            chmod_with_engine_fallback "$mode" "$path" || return 1
         fi
     done
 }
@@ -524,7 +564,7 @@ render_config_template() {
         sed -E -i "s|$escaped_token|$escaped_value|g" "$tmp_file"
     done
     if copy_with_podman_fallback "$tmp_file" "$dst" \
-        && chmod_with_podman_fallback "$file_mode" "$dst"; then
+        && chmod_with_engine_fallback "$file_mode" "$dst"; then
         rm -f "$tmp_file"
         return 0
     fi
