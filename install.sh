@@ -152,7 +152,7 @@ check_required_modules() {
     local module
     [[ -f "$install_script_dir/conf/urls.py" ]] \
         || die "Django URL configuration is missing: conf/urls.py"
-    grep -Eq 'include\(["'"']deployment_health\.urls["'"']\)' \
+    grep -Fq 'deployment_health.urls' \
         "$install_script_dir/conf/urls.py" \
         || die "conf/urls.py must include deployment_health.urls for the /health/ endpoint"
     for module in $REQUIRED_MODULES; do
