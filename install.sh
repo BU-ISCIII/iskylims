@@ -437,8 +437,13 @@ stage_application_files() {
     mkdir -p "$INSTALL_PATH/logs" "$INSTALL_PATH/documents" \
         "$INSTALL_PATH/static" "$INSTALL_PATH/cron" "$INSTALL_PATH/tmp"
     prepare_application_directories "$INSTALL_PATH"
-    "$INSTALL_PATH/virtualenv/bin/python" -m django startproject \
-        "$PROJECT_MODULE" "$INSTALL_PATH"
+    # Run from the clean staged tree so a source directory such as conf/ cannot
+    # be mistaken for an importable module that conflicts with PROJECT_MODULE.
+    (
+        cd "$INSTALL_PATH"
+        PYTHONPATH= "$INSTALL_PATH/virtualenv/bin/python" -m django startproject \
+            "$PROJECT_MODULE" .
+    )
     install -m 0644 "$install_script_dir/conf/urls.py" \
         "$INSTALL_PATH/$PROJECT_MODULE/urls.py"
     if [[ -f "$install_script_dir/conf/routing.py" ]]; then
