@@ -341,7 +341,7 @@ Options:
   --script_before <name[,args]>
   --script_after <name[,args]>
   --script <name[,args]>
-  --demo_data <path>
+  --demo_data <path>                 Import application demo data on install.
   --skip_demo_data
   --skip_test_data
   --help
@@ -377,10 +377,18 @@ done
 if [ -n "$demo_data" ] && [ "$application_supports_test_data" != true ]; then
     die "--demo_data is not implemented for $APPLICATION_NAME"
 fi
+if [ -n "$demo_data" ]; then
+    [ -f "$demo_data" ] || die "Demo-data file not found: $demo_data"
+    demo_data="$(cd "$(dirname "$demo_data")" && pwd)/$(basename "$demo_data")"
+fi
 if [ "$mode" = test ] && [ "$action" = install ] \
     && [ "$application_supports_test_data" = true ]; then
     skip_demo_data="${skip_demo_data:-false}"
     skip_test_data="${skip_test_data:-false}"
+elif [ "$action" = install ] && [ -n "$demo_data" ] \
+    && [ "$application_supports_test_data" = true ]; then
+    skip_demo_data="${skip_demo_data:-false}"
+    skip_test_data=true
 else
     skip_demo_data=true
     skip_test_data=true
@@ -499,9 +507,11 @@ for service_name in "${install_services[@]}"; do
     bootstrap_service "$service_name" "$container_id" "$action" || die "$service_name bootstrap failed"
 done
 
-# 11. Load application-owned fixtures/demo files only for a fresh test install.
-if [ "$mode" = test ] && [ "$action" = install ] \
-    && [ "$application_supports_test_data" = true ]; then
+# 11. Load application-owned data for a fresh test install, or for an explicit
+# production --demo_data request. Production never imports data implicitly.
+if [ "$action" = install ] \
+    && [ "$application_supports_test_data" = true ] \
+    && { [ "$mode" = test ] || [ -n "$demo_data" ]; }; then
     load_test_deployment_data
 fi
 
