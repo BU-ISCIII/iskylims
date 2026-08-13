@@ -118,6 +118,12 @@ current_service_container() {
     resolve_service_container "$1"
 }
 
+print_service_summary() {
+    echo
+    echo "Running services and published ports:"
+    deployment_compose -f "$compose_file" ps
+}
+
 # Each Django service renders its own protected host settings bind. React
 # services and add-ons have no Django settings source.
 prepare_application_host_sources() {
@@ -520,3 +526,4 @@ smoke_args=(--engine "$engine" --compose_file "$compose_file" --env_file "$compo
 [ "$mode" = test ] && smoke_args+=(--test)
 bash "$script_dir/scripts/smoke_test.sh" "${smoke_args[@]}"
 echo "$action completed successfully for $APPLICATION_NAME."
+print_service_summary
