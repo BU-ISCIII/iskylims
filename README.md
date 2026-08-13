@@ -174,6 +174,9 @@ bash container_install.sh --test --action install --engine docker \
 standard interface. A project that supplies fixtures or demo files must set
 `application_supports_test_data=true` and implement `load_test_deployment_data`
 in its wrapper; otherwise `--demo_data` is rejected explicitly.
+The same explicit `--demo_data <path>` input may be used on a fresh production
+install when an application needs a controlled seed import. Production never
+selects or loads demo data by default, and upgrades never reload it.
 
 For an automatic first administrator, set `CREATE_INITIAL_SUPERUSER=true` and
 the `DJANGO_SUPERUSER_*` values in the selected test settings before install.
