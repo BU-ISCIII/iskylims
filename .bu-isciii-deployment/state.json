@@ -47,7 +47,7 @@
     "conf/samba/samba_production_settings.txt": "f19da30ab0890a79254e22c571629b34de2d37ad9c12449607158bff9a9188a1",
     "conf/samba/samba_test_settings.txt": "c383b88d43de8d65886cdd2b45bf9f27d91f5f3fe290f8f82378578fbeeff0b2",
     "conf/template_settings.py": "ed15033d4c3ccd3de585cea8679976b1c108f1ecfd4453cb77d5af606c984b3a",
-    "container_install.sh": "35f02681397cf10d42f7b4e5e1c2b8a4e65d2d518db7eb2ba3b62230ce203938",
+    "container_install.sh": "dc8ab9b25ade9fb255dba1d323959e988cf9252240f5c9f8664960e09ac2ee0b",
     "deployment_health/README.md": "3d7c4295938708813369deeac9edc0eb8fe2153c77d03f9138febf3aed715aa5",
     "deployment_health/__init__.py": "bedcff132309f8970b1ca72fcea20c7cb38bb727d48f82d96dbf7104922abda0",
     "deployment_health/urls.py": "8d274b44d326f26d71b05021a34969c742478efbe47691aadd8c3a90ba16f340",
