@@ -98,14 +98,6 @@ sudo chown -R <usuario-podman>:<usuario-podman> \
   /var/log/local/relecov-iskylims
 ```
 
-Aplicar despues UID/GID internos, modos y etiquetas SELinux mediante el
-instalador. No modificar el arbol `/srv/containers/storage/` manualmente.
-
-```bash
-bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
-```
-
 ## Actualizar codigo
 
 Para un checkout nuevo:
@@ -145,6 +137,16 @@ Valores que requieren decision del responsable de la aplicacion:
 - rutas persistentes, UID/GID, SELinux y politica de backup;
 - correo, identidad, almacenamiento y ajustes propios de la aplicacion;
 - administrador inicial y transferencia segura de sus credenciales.
+
+Solo despues de crear y completar todos los ficheros bajo
+`deployment/settings/`, aplicar UID/GID internos, modos y etiquetas SELinux
+mediante el instalador. No modificar el arbol `/srv/containers/storage/`
+manualmente.
+
+```bash
+bash container_install.sh --action fix-permissions --engine podman \
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+```
 
 ## Backup antes de actualizar
 
