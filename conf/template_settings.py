@@ -17,9 +17,7 @@ ALLOWED_HOSTS = [
     host.strip() for host in "djangoallowedhosts".split(",") if host.strip()
 ]
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in "djangocsrftrustedorigins".split(",")
-    if origin.strip()
+    origin.strip() for origin in "djangocsrftrustedorigins".split(",") if origin.strip()
 ]
 
 # iSkyLIMS local applications. Add new applications here when their models,
