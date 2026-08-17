@@ -1,9 +1,9 @@
 # Actualizacion de iSkyLIMS con Podman rootless
 
 Esta guia es la lista de ejecucion para instalar, actualizar y recuperar el
-despliegue de produccion. Los comandos generados son reutilizables; antes de la
-aprobacion, el responsable de la aplicacion debe completar los campos marcados
-`<REVISAR>` con valores o referencias institucionales verificadas.
+despliegue de produccion. Los comandos generados son reutilizables. Antes de la
+aprobacion, el responsable debe registrar las entradas de despliegue indicadas
+abajo con valores o referencias institucionales verificadas.
 
 ## Indice
 
@@ -24,10 +24,15 @@ aprobacion, el responsable de la aplicacion debe completar los campos marcados
 
 - Podman rootless y un proveedor de Compose funcionales.
 - El mismo usuario sin privilegios para el instalador y Podman.
-- Revision aprobada: `<REVISAR: tag o commit>`.
-- DNS/TLS, base de datos, almacenamiento, correo e identidad: `<REVISAR>`.
-- Responsable operativo y contacto de escalado: `<REVISAR>`.
-- Objetivos RPO/RTO y ubicacion de backups: `<REVISAR>`.
+Entradas de despliegue que deben quedar registradas antes de ejecutar:
+
+| Entrada | Evidencia requerida |
+|---|---|
+| Revision aprobada | Tag o commit inmutable y aprobacion asociada |
+| Exposicion publica | URL, DNS, propietario de TLS y reglas de proxy |
+| Dependencias | Base de datos, almacenamiento, correo e identidad aplicables |
+| Operacion | Responsable del servicio y contacto de escalado |
+| Recuperacion | RPO, RTO, retencion y ubicacion de backups |
 
 ```bash
 podman info
@@ -162,7 +167,9 @@ git rev-parse HEAD > "$BACKUP_DIR/git-revision.txt"
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
   images > "$BACKUP_DIR/images.txt"
 cp .env.production.file "$BACKUP_DIR/"
-cp <fichero-ajustes-protegido> "$BACKUP_DIR/"
+cp deployment/settings/app_production_settings.txt "$BACKUP_DIR/"
+cp deployment/settings/apache_production_settings.txt "$BACKUP_DIR/"
+cp deployment/settings/samba_production_settings.txt "$BACKUP_DIR/"
 chmod -R go-rwx "$BACKUP_DIR"
 ```
 
@@ -232,9 +239,15 @@ podman compose --env-file .env.production.file -f docker-compose.prod.yml logs -
 bash scripts/smoke_test.sh --engine podman
 ```
 
-Verificar tambien `<REVISAR: URL publica>`, autenticacion, correo, tareas
-programadas y un flujo real de lectura. Registrar estado, imagenes, revision y
-resultado de aceptacion.
+Completar las comprobaciones que corresponden a la topologia seleccionada:
+
+- `app`: confirmar `/health/` y un flujo real de iSkyLIMS.
+- Apache: confirmar la URL publica, DNS/TLS, proxy y cabeceras reenviadas.
+- Samba: en los modos habilitados, confirmar acceso autenticado y un flujo de
+  lectura/escritura desde un cliente aprobado.
+
+Verificar tambien correo y tareas programadas. Registrar URL y resultados junto
+con estado, imagenes y revision desplegada.
 
 ## Rollback
 
@@ -256,7 +269,10 @@ mysql --host=<db-host> --port=<db-port> --user=<db-user> --password \
 podman volume import <volumen-documents> "$BACKUP_DIR/documents.tar"
 podman volume import <volumen-static> "$BACKUP_DIR/static.tar"
 tar -C /srv/containers/bind -xzf "$BACKUP_DIR/bind-mounts.tar.gz"
-cp "$BACKUP_DIR/<fichero-ajustes-protegido>" <ruta-configuracion-protegida>/
+install -d -m 0700 deployment/settings
+install -m 0600 "$BACKUP_DIR/app_production_settings.txt" deployment/settings/app_production_settings.txt
+install -m 0600 "$BACKUP_DIR/apache_production_settings.txt" deployment/settings/apache_production_settings.txt
+install -m 0600 "$BACKUP_DIR/samba_production_settings.txt" deployment/settings/samba_production_settings.txt
 ```
 
 Restaurar el fichero de ajustes protegido, desplegar la revision anotada en
