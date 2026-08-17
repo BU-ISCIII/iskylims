@@ -7,7 +7,7 @@
 # host before the application container can start. The inner installer cannot
 # create or repair that host path because it runs after mounts are established.
 
-BU_ISCIII_DJANGO_CONTAINER_LIB_VERSION="0.1.0"
+BU_ISCIII_DJANGO_CONTAINER_LIB_VERSION="0.2.0"
 
 # Generate a cryptographically random Django-compatible SECRET_KEY without
 # requiring Django itself to be installed on the deployment host. It belongs in
@@ -31,6 +31,8 @@ render_django_settings_file() {
     local secret_line=""
     local template_secret_line=""
     local django_debug=""
+    local token variable value python_literal
+    local -a application_replacements=()
 
     if [ -f "$settings_path" ]; then
         secret_line="$(grep -E "^SECRET_KEY[[:space:]]*=" "$settings_path" | tail -n 1 || true)"
@@ -53,6 +55,14 @@ render_django_settings_file() {
             return 1
             ;;
     esac
+    while IFS= read -r token; do
+        [ -n "$token" ] || continue
+        variable="${token#settingsconf_}"
+        value="$(read_install_conf_value "$variable" "$install_conf_path")" || return 1
+        python_literal="$(python3 -c \
+            'import json, sys; print(json.dumps(sys.argv[1]))' "$value")" || return 1
+        application_replacements+=("$token" "$python_literal")
+    done < <(grep -oE 'settingsconf_[A-Z][A-Z0-9_]*' "$template_path" | sort -u || true)
     render_config_template "$template_path" "$settings_path" 0664 \
         "$template_secret_line" "$secret_line" \
         djangouser "$(read_install_conf_first "$install_conf_path" DB_USER)" \
@@ -68,7 +78,8 @@ render_django_settings_file() {
         djangodebug "$django_debug" \
         djangoallowedhosts "$(read_install_conf_value DJANGO_ALLOWED_HOSTS "$install_conf_path")" \
         djangocsrftrustedorigins "$(read_install_conf_value DJANGO_CSRF_TRUSTED_ORIGINS "$install_conf_path")" \
-        dbconnmaxage "$(config_value_or_default DB_CONN_MAX_AGE "$install_conf_path" 0)"
+        dbconnmaxage "$(config_value_or_default DB_CONN_MAX_AGE "$install_conf_path" 0)" \
+        "${application_replacements[@]}"
 }
 
 # Ensure the production settings bind source exists and reflects the selected
