@@ -212,7 +212,7 @@ install_application_system_packages() {
                 apt-utils wget tar gcc g++ make \
                 libmysqlclient-dev default-mysql-client \
                 python3-venv libpq-dev python3-dev python3-pip python3-wheel \
-                apache2-dev cifs-utils gnuplot
+                apache2-dev cifs-utils gnuplot tzdata
             ;;
         rhel|centos|fedora|ubi)
             command_required microdnf
@@ -243,6 +243,9 @@ install_application_system_packages() {
                 python3.11-devel httpd-devel sqlite sqlite-devel mariadb \
                 mariadb-connector-c-devel libffi-devel gnuplot cifs-utils \
                 git rsync shadow-utils
+            # UBI minimal can record tzdata as installed without its zoneinfo
+            # payload. Reinstall it so Python can resolve Django TIME_ZONE values.
+            microdnf reinstall -y tzdata
             microdnf clean all
             ;;
         *)
