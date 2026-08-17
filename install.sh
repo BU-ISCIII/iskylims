@@ -470,6 +470,13 @@ run_hook() {
     python "${args[@]}"
 }
 
+check_for_missing_migrations() {
+    # Deployment must never invent schema history. Fail when model changes need
+    # migration files that have not been generated and committed by developers.
+    python manage.py makemigrations --check --dry-run --noinput \
+        || die "Model changes detected without committed Django migrations"
+}
+
 bootstrap_application() {
     [[ -f "$INSTALL_PATH/manage.py" ]] || die "manage.py not found; run --stage first"
     [[ -x "$INSTALL_PATH/virtualenv/bin/python" ]] || die "virtualenv not found; run --stage first"
@@ -481,6 +488,7 @@ bootstrap_application() {
     python manage.py check --deploy
     local hook
     for hook in "${SCRIPT_BEFORE[@]}"; do run_hook "$hook"; done
+    check_for_missing_migrations
     before_django_migrate "$ACTION" "$MIGRATION_MODULES"
     python manage.py migrate --noinput
     if [[ "$LOAD_TABLES" == "true" && "$SKIP_TABLES" == "false" ]]; then
