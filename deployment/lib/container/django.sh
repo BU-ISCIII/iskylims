@@ -21,6 +21,22 @@ generate_django_secret_key() {
     fi
 }
 
+# Convert conventional configuration boolean spellings to a Python literal.
+# Arguments: setting name and raw value.
+django_python_boolean() {
+    local setting_name="$1"
+    local value="$2"
+
+    case "${value,,}" in
+        true|1|yes|on) printf 'True\n' ;;
+        false|0|no|off) printf 'False\n' ;;
+        *)
+            echo "$setting_name must be a boolean value." >&2
+            return 1
+            ;;
+    esac
+}
+
 # Render a Django settings template from the standard BU-ISCIII installation
 # keys while preserving an existing non-placeholder SECRET_KEY.
 # Arguments: template path, destination settings path, install-conf path.
@@ -31,6 +47,7 @@ render_django_settings_file() {
     local secret_line=""
     local template_secret_line=""
     local django_debug=""
+    local email_use_tls=""
     local token variable value python_literal
     local -a application_replacements=()
 
@@ -46,15 +63,12 @@ render_django_settings_file() {
         echo "Django template '$template_path' has no SECRET_KEY assignment." >&2
         return 1
     fi
-    django_debug="$(config_value_or_default DJANGO_DEBUG "$install_conf_path" false)"
-    case "${django_debug,,}" in
-        true|1|yes|on) django_debug=True ;;
-        false|0|no|off) django_debug=False ;;
-        *)
-            echo "DJANGO_DEBUG must be a boolean value." >&2
-            return 1
-            ;;
-    esac
+    django_debug="$(django_python_boolean DJANGO_DEBUG \
+        "$(config_value_or_default DJANGO_DEBUG "$install_conf_path" false)")" \
+        || return 1
+    email_use_tls="$(django_python_boolean EMAIL_USE_TLS \
+        "$(read_install_conf_value EMAIL_USE_TLS "$install_conf_path")")" \
+        || return 1
     while IFS= read -r token; do
         [ -n "$token" ] || continue
         variable="${token#settingsconf_}"
@@ -74,7 +88,7 @@ render_django_settings_file() {
         emailport "$(read_install_conf_value EMAIL_PORT "$install_conf_path")" \
         emailhostuser "$(read_install_conf_value EMAIL_HOST_USER "$install_conf_path")" \
         emailhostpassword "$(read_install_conf_value EMAIL_HOST_PASSWORD "$install_conf_path")" \
-        emailhosttls "$(read_install_conf_value EMAIL_USE_TLS "$install_conf_path")" \
+        emailhosttls "$email_use_tls" \
         djangodebug "$django_debug" \
         djangoallowedhosts "$(read_install_conf_value DJANGO_ALLOWED_HOSTS "$install_conf_path")" \
         djangocsrftrustedorigins "$(read_install_conf_value DJANGO_CSRF_TRUSTED_ORIGINS "$install_conf_path")" \
