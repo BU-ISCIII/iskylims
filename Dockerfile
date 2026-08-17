@@ -23,7 +23,7 @@ ENV APP_REPO_PATH=${APP_REPO_PATH} \
 
 RUN microdnf -y update && \
     microdnf -y install python3.11 python3.11-pip \
-      tar gcc git rsync wget && \
+      tar gcc git rsync wget tzdata && \
     microdnf clean all
 
 ARG SUPERCRONIC_VERSION=v0.2.38
