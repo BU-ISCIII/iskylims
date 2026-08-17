@@ -83,7 +83,7 @@ Persistencia declarada por el despliegue:
 ## Preparar directorios del host
 
 Crear la estructura comun antes de la primera instalacion. Sustituir
-`<usuario-podman>` por la cuenta que ejecutara siempre Podman y el instalador.
+`<usuario-podman>` por la cuenta que ejecutara siempre Podman y el instalador. Es decir, normalmente la cuenta con la que estás conectado a la máquina virtual.
 
 ```bash
 sudo mkdir -p /opt/containers_apps/relecov-iskylims
@@ -197,20 +197,12 @@ de restauracion.
 
 ## Ejecutar la actualizacion
 
-Primera instalacion:
-
-```bash
-bash container_install.sh --action install --engine podman \
-  --git_revision <revision-aprobada> \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
-```
-
-Actualizacion:
+Ejecutar el comando de instalación/upgrade:
 
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <nueva-revision-aprobada> \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt 2>&1 | tee "${date +%Y%m%d_%H%M%S}_prod_install.log"
 ```
 
 Durante `--action upgrade`, `container_install.sh`:
