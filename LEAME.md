@@ -99,29 +99,6 @@ sudo chown -R <usuario-podman>:<usuario-podman> \
   /srv/containers/backup/relecov-iskylims
 ```
 
-Despues de copiar y completar todos los ficheros protegidos en
-`deployment/settings/`, crear los binds exactamente donde indica cada servicio:
-
-```bash
-PODMAN_USER='<usuario-podman>'
-(
-  source deployment/settings/app_production_settings.txt
-  : "${HOST_LOG_PATH:?HOST_LOG_PATH is required for app}"
-  : "${DJANGO_SETTINGS_PATH:?DJANGO_SETTINGS_PATH is required for app}"
-  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" \
-    "$HOST_LOG_PATH" "$(dirname "$DJANGO_SETTINGS_PATH")"
-)
-(
-  source deployment/settings/apache_production_settings.txt
-  : "${APACHE_LOG_PATH:?APACHE_LOG_PATH is required for apache}"
-  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" "$APACHE_LOG_PATH"
-)
-```
-
-Los ficheros se cargan como el usuario actual dentro de subshells; solo
-`install -d` usa privilegios. Revisar antes las rutas y no ejecutar los
-ficheros completos con `sudo`.
-
 ## Actualizar codigo
 
 Para un checkout nuevo:
@@ -156,6 +133,28 @@ install -m 0600 conf/samba/samba_production_settings.txt deployment/settings/sam
 
 Editar unicamente las copias bajo `deployment/settings/`. Los comandos de
 instalacion y actualizacion usan estas rutas protegidas.
+
+Despues de completar y revisar esos ficheros, crear los binds exactamente donde
+indica cada servicio:
+
+```bash
+PODMAN_USER='<usuario-podman>'
+(
+  source deployment/settings/app_production_settings.txt
+  : "${HOST_LOG_PATH:?HOST_LOG_PATH is required for app}"
+  : "${DJANGO_SETTINGS_PATH:?DJANGO_SETTINGS_PATH is required for app}"
+  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" \
+    "$HOST_LOG_PATH" "$(dirname "$DJANGO_SETTINGS_PATH")"
+)
+(
+  source deployment/settings/apache_production_settings.txt
+  : "${APACHE_LOG_PATH:?APACHE_LOG_PATH is required for apache}"
+  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" "$APACHE_LOG_PATH"
+)
+```
+
+Los ficheros se cargan como el usuario actual dentro de subshells; solo
+`install -d` usa privilegios. No ejecutar los ficheros completos con `sudo`.
 
 Valores que requieren decision del responsable de la aplicacion:
 
