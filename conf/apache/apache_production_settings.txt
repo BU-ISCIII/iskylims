@@ -9,44 +9,69 @@
 APACHE_CONF_PATH=''
 
 # Persistent host directory mounted as the Apache log destination.
+# Example: /var/log/local/relecov-iskylims/apache
 APACHE_LOG_PATH='/var/log/local/relecov-iskylims/apache'
 
 # Public host interface and port. Use 127.0.0.1 when another host reverse proxy
 # is the only component that should reach this Apache container.
+# Examples: APACHE_BIND_HOST='0.0.0.0', APACHE_PORT='8080'.
 APACHE_BIND_HOST='0.0.0.0'
 APACHE_PORT='8080'
 
 # Public host name handled by the default VirtualHost. Use localhost for a
 # workstation deployment or the externally visible DNS name in production.
+# Example: api.example.org
 APACHE_SERVER_NAME='CHANGE_ME_DNS_NAME'
 
 # Compose service receiving proxied requests. Leave empty to use the service
 # selected by ADDONS.apache.CONFIG_SERVICE (normally app for a single service).
+# Example override: app
 APACHE_UPSTREAM_SERVICE=''
 
 # Internal application port used by ProxyPass. Leave empty to use APP_PORT from
-# the selected service's production settings.
+# the selected service's production settings. Example override: 8001
 APACHE_UPSTREAM_PORT=''
 
 # Maximum proxy request duration in seconds. Leave empty to use the selected
 # service's GUNICORN_TIMEOUT, falling back to 120 seconds when it is undefined.
+# Example override: 300
 APACHE_PROXY_TIMEOUT=''
 
 # Prefix for the generated <stem>-apache.access.log and
 # <stem>-apache.error.log files. Leave empty to derive it from
 # APACHE_SERVER_NAME, with URL schemes, paths and ports removed.
+# Example override: mepram-api
 APACHE_LOG_STEM=''
 
 # Server-status stays restricted by default. Use a local-only diagnostic name;
 # aliases and allow-list accept Apache-compatible values.
+# Example diagnostic host: localhost
 SERVER_STATUS_SERVER_NAME='localhost'
+# Space-separated aliases. Example: 127.0.0.1 localhost
 SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+# Apache Require ip/host values. Example: 127.0.0.1 localhost
 SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
 
-# Forwarded headers received by Django behind the production proxy.
+# Forwarded scheme received by Django. Example: https
 APACHE_FORWARDED_PROTO='https'
+# Forwarded public port received by Django. Example: 443
 APACHE_FORWARDED_PORT='443'
 
 # 50 MiB. The reverse-proxy template applies this value to Apache and, when
 # loaded, ModSecurity. Increase it only for endpoints that require larger data.
+# Example: 52428800 (50 MiB)
 APACHE_LIMIT_REQUEST_BODY='52428800'
+
+# Optional additional VirtualHosts are application-owned and are not generated
+# automatically when another add-on (for example Keycloak) is selected. For
+# every enabled extra vhost, define one uniquely prefixed set matching every
+# variable referenced by its block in conf/apache/01-reverse-proxy.conf.
+# Duplicate and rename this complete example for each additional public DNS:
+# APACHE_SECOND_SERVER_NAME='CHANGE_ME_SECOND_DNS_NAME'
+# APACHE_SECOND_UPSTREAM_SERVICE='CHANGE_ME_COMPOSE_SERVICE'
+# APACHE_SECOND_UPSTREAM_PORT='CHANGE_ME_INTERNAL_PORT'
+# APACHE_SECOND_PROXY_TIMEOUT='120'
+# APACHE_SECOND_LOG_STEM='CHANGE_ME_LOG_STEM'
+# APACHE_SECOND_FORWARDED_PROTO='https'
+# APACHE_SECOND_FORWARDED_PORT='443'
+# APACHE_SECOND_LIMIT_REQUEST_BODY='52428800'
