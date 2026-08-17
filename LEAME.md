@@ -87,21 +87,40 @@ Persistencia declarada por el despliegue:
 
 ## Preparar directorios del host
 
-Crear la estructura comun antes de la primera instalacion. Sustituir
-`<usuario-podman>` por la cuenta que ejecutara siempre Podman y el instalador. Es decir, normalmente la cuenta con la que estás conectado a la máquina virtual.
+Crear primero la estructura comun. Sustituir `<usuario-podman>` por la cuenta
+que ejecutara siempre Podman y el instalador; normalmente es la cuenta de la
+sesion actual.
 
 ```bash
 sudo mkdir -p /opt/containers_apps/relecov-iskylims
 sudo mkdir -p /srv/containers/backup/relecov-iskylims
-sudo mkdir -p /srv/containers/bind/relecov-iskylims/settings
-sudo mkdir -p /var/log/local/relecov-iskylims/apps
-sudo mkdir -p /var/log/local/relecov-iskylims/apache
 sudo chown -R <usuario-podman>:<usuario-podman> \
   /opt/containers_apps/relecov-iskylims \
-  /srv/containers/backup/relecov-iskylims \
-  /srv/containers/bind/relecov-iskylims \
-  /var/log/local/relecov-iskylims
+  /srv/containers/backup/relecov-iskylims
 ```
+
+Despues de copiar y completar todos los ficheros protegidos en
+`deployment/settings/`, crear los binds exactamente donde indica cada servicio:
+
+```bash
+PODMAN_USER='<usuario-podman>'
+(
+  source deployment/settings/app_production_settings.txt
+  : "${HOST_LOG_PATH:?HOST_LOG_PATH is required for app}"
+  : "${DJANGO_SETTINGS_PATH:?DJANGO_SETTINGS_PATH is required for app}"
+  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" \
+    "$HOST_LOG_PATH" "$(dirname "$DJANGO_SETTINGS_PATH")"
+)
+(
+  source deployment/settings/apache_production_settings.txt
+  : "${APACHE_LOG_PATH:?APACHE_LOG_PATH is required for apache}"
+  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" "$APACHE_LOG_PATH"
+)
+```
+
+Los ficheros se cargan como el usuario actual dentro de subshells; solo
+`install -d` usa privilegios. Revisar antes las rutas y no ejecutar los
+ficheros completos con `sudo`.
 
 ## Actualizar codigo
 
