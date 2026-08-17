@@ -9,9 +9,10 @@ abajo con valores o referencias institucionales verificadas.
 
 - [Requisitos](#requisitos)
 - [Estructura de directorios en los servidores](#estructura-de-directorios-en-los-servidores)
-- [Preparar directorios del host](#preparar-directorios-del-host)
+- [Preparar checkout y backup](#preparar-checkout-y-backup)
 - [Actualizar codigo](#actualizar-codigo)
 - [Configurar los ajustes de produccion](#configurar-los-ajustes-de-produccion)
+- [Preparar directorios persistentes del host](#preparar-directorios-persistentes-del-host)
 - [Backup antes de actualizar](#backup-antes-de-actualizar)
 - [Ejecutar la actualizacion](#ejecutar-la-actualizacion)
 - [Comprobaciones posteriores](#comprobaciones-posteriores)
@@ -85,11 +86,11 @@ Persistencia declarada por el despliegue:
 | Rendered Apache configuration | `deployment/apache/` in the deployment checkout | Rebuildable; preserve reviewed source configuration |
 | Samba test data | `samba_test_data` named volume | Disposable test/demo files |
 
-## Preparar directorios del host
+## Preparar checkout y backup
 
-Crear primero la estructura comun. Sustituir `<usuario-podman>` por la cuenta
-que ejecutara siempre Podman y el instalador; normalmente es la cuenta de la
-sesion actual.
+Crear solo las ubicaciones necesarias para obtener el codigo y guardar backups.
+Sustituir `<usuario-podman>` por la cuenta que ejecutara siempre Podman y el
+instalador. Los binds y logs se crean despues de completar los ajustes.
 
 ```bash
 sudo mkdir -p /opt/containers_apps/relecov-iskylims
@@ -134,8 +135,20 @@ install -m 0600 conf/samba/samba_production_settings.txt deployment/settings/sam
 Editar unicamente las copias bajo `deployment/settings/`. Los comandos de
 instalacion y actualizacion usan estas rutas protegidas.
 
-Despues de completar y revisar esos ficheros, crear los binds exactamente donde
-indica cada servicio:
+Valores que requieren decision del responsable de la aplicacion:
+
+- hostnames publicos, TLS y proxy;
+- base de datos y credenciales de minimo privilegio;
+- rutas persistentes, UID/GID, SELinux y politica de backup;
+- correo, identidad, almacenamiento y ajustes propios de la aplicacion;
+- administrador inicial y transferencia segura de sus credenciales.
+
+Completar todas esas decisiones y resolver cada `CHANGE_ME` antes de continuar.
+
+## Preparar directorios persistentes del host
+
+Solo despues de completar y revisar esos ficheros, crear los binds exactamente
+donde indica cada servicio:
 
 ```bash
 PODMAN_USER='<usuario-podman>'
@@ -156,17 +169,8 @@ PODMAN_USER='<usuario-podman>'
 Los ficheros se cargan como el usuario actual dentro de subshells; solo
 `install -d` usa privilegios. No ejecutar los ficheros completos con `sudo`.
 
-Valores que requieren decision del responsable de la aplicacion:
-
-- hostnames publicos, TLS y proxy;
-- base de datos y credenciales de minimo privilegio;
-- rutas persistentes, UID/GID, SELinux y politica de backup;
-- correo, identidad, almacenamiento y ajustes propios de la aplicacion;
-- administrador inicial y transferencia segura de sus credenciales.
-
-Solo despues de crear y completar todos los ficheros bajo
-`deployment/settings/`, aplicar UID/GID internos, modos y etiquetas SELinux
-mediante el instalador. No modificar el arbol `/srv/containers/storage/`
+Con los directorios preparados, aplicar UID/GID internos, modos y etiquetas
+SELinux mediante el instalador. No modificar `/srv/containers/storage/`
 manualmente.
 
 ```bash
