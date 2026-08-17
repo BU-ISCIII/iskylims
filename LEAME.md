@@ -117,8 +117,11 @@ Registrar el commit exacto con `git rev-parse HEAD`.
 
 Crear un fichero ignorado y con modo `0600` por servicio a partir de su
 `conf/docker_production_settings.txt`. Resolver todos los `CHANGE_ME` y revisar
-la matriz [`conf/INSTALL_SETTINGS.md`](conf/INSTALL_SETTINGS.md). No guardar
-secretos en `.env.production.file`, Compose, Git ni argumentos de proceso.
+la matriz [`conf/INSTALL_SETTINGS.md`](conf/INSTALL_SETTINGS.md). El instalador
+genera `.env.production.file` con valores runtime, incluidos secretos copiados
+desde estos ficheros protegidos. Mantenerlo con modo `0600`, fuera de Git y
+dentro del backup protegido de configuracion. Ninguno de estos ficheros se
+copia en las capas de las imagenes.
 
 ```bash
 install -d -m 0700 deployment/settings
@@ -202,7 +205,7 @@ Ejecutar el comando de instalación/upgrade:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <nueva-revision-aprobada> \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt 2>&1 | tee "${date +%Y%m%d_%H%M%S}_prod_install.log"
+  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt 2>&1 | tee "$(date +%Y%m%d_%H%M%S)_prod_install.log"
 ```
 
 Durante `--action upgrade`, `container_install.sh`:

@@ -211,9 +211,11 @@ bash container_install.sh --action install --engine podman \
   --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
-The installer creates `.env.production.file`; use it for later direct Compose
-operations. Production secrets stay in the protected settings files and are
-not copied into image layers.
+The installer creates `.env.production.file` for later direct Compose
+operations. It contains generated runtime values, including secrets copied
+from the protected settings sources, so keep it mode `0600`, excluded from Git,
+and inside the protected configuration backup. Neither the protected settings
+nor this generated environment file is copied into image layers.
 
 #### Persist logs/documents on the host
 
