@@ -170,6 +170,10 @@ bash container_install.sh --test --action install --engine docker \
   --script migrate_optional_values
 ```
 
+Fresh installs automatically load `conf/first_install_tables.json` when the
+application provides it. Use `--skip_tables` for an exceptional fresh install
+without that fixture, or `--tables` to load it explicitly during an upgrade.
+
 `--demo_data`, `--skip_demo_data`, and `--skip_test_data` are part of the
 standard interface. A project that supplies fixtures or demo files must set
 `application_supports_test_data=true` and implement `load_test_deployment_data`
