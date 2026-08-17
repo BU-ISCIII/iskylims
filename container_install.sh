@@ -246,6 +246,8 @@ bootstrap_service() {
             uid="$(service_uid "$service_name")"; gid="$(service_gid "$service_name")"
             stage_container_runtime_config "$container_id" "${install_conf_host_by_service[$service_name]}" "$runtime_conf" "$uid" "$gid"
             args=(--bootstrap "$deployment_action" --git_revision "$git_revision" --conf "$runtime_conf" --skip_apache_restart)
+            [ "$load_tables" = false ] || args+=(--tables)
+            [ "$skip_tables" = false ] || args+=(--skip_tables)
             for hook in "${migration_script_before[@]}"; do args+=(--script_before "$hook"); done
             for hook in "${migration_script_after[@]}"; do args+=(--script_after "$hook"); done
             status=0; engine_exec exec "$container_id" bash "$repo_path/install.sh" "${args[@]}" || status=$?
@@ -331,6 +333,7 @@ action="install"; mode="production"; engine="docker"; git_revision="current"
 install_conf=""; compose_file=""; compose_env_file=""
 install_conf_map_entries=(); migration_script_before=(); migration_script_after=()
 demo_data=""; skip_demo_data=""; skip_test_data=""
+load_tables=false; skip_tables=false
 
 usage() {
     cat <<'EOF'
@@ -347,6 +350,8 @@ Options:
   --script_before <name[,args]>
   --script_after <name[,args]>
   --script <name[,args]>
+  --tables                          Load initial tables; opt-in on upgrades.
+  --skip_tables                     Skip initial tables on a fresh install.
   --demo_data <path>                 Import application demo data on install.
   --skip_demo_data
   --skip_test_data
@@ -368,6 +373,8 @@ while (($#)); do
         --compose_file) compose_file="${2:-}"; shift 2 ;;
         --script_before) migration_script_before+=("${2:-}"); shift 2 ;;
         --script_after|--script) migration_script_after+=("${2:-}"); shift 2 ;;
+        --tables) load_tables=true; skip_tables=false; shift ;;
+        --skip_tables) skip_tables=true; load_tables=false; shift ;;
         --demo_data) demo_data="${2:-}"; shift 2 ;;
         --skip_demo_data) skip_demo_data=true; shift ;;
         --skip_test_data) skip_test_data=true; shift ;;

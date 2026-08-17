@@ -86,9 +86,11 @@ while (($#)); do
     esac
 done
 
-# iSkyLIMS ships its reference catalog as part of a fresh installation. Keep
-# upgrades opt-in so existing operator-managed data is never reloaded.
-if [[ "$ACTION" == "install" && "$SKIP_TABLES" == "false" ]]; then
+# A fresh installation loads an application-owned initial fixture by default.
+# Upgrades remain opt-in through --tables; --skip_tables is an explicit escape
+# hatch for recovery or externally restored databases.
+if [[ "$ACTION" == "install" && "$SKIP_TABLES" == "false" \
+    && -f "$install_script_dir/conf/first_install_tables.json" ]]; then
     LOAD_TABLES="true"
 fi
 
