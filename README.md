@@ -174,12 +174,12 @@ Fresh installs automatically load `conf/first_install_tables.json` when the
 application provides it. Use `--skip_tables` for an exceptional fresh install
 without that fixture, or `--tables` to load it explicitly during an upgrade.
 
-`--demo_data`, `--skip_demo_data`, and `--skip_test_data` are part of the
-standard interface. A project that supplies fixtures or demo files must set
+`--demo_data_map <service,path>`, `--skip_demo_data`, `--skip_test_data`, and
+`--skip_test_data_service <service>` are part of the standard interface.
+`--demo_data <path>` remains a single-service compatibility option. A project
+that supplies fixtures or demo files must set
 `application_supports_test_data=true` and implement `load_test_deployment_data`
-in its wrapper; otherwise `--demo_data` is rejected explicitly.
-The same explicit `--demo_data <path>` input may be used on a fresh production
-install when an application needs a controlled seed import. Production never
+in its wrapper; otherwise explicit demo data is rejected. Production never
 selects or loads demo data by default, and upgrades never reload it.
 
 For an automatic first administrator, set `CREATE_INITIAL_SUPERUSER=true` and

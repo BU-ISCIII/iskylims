@@ -164,20 +164,29 @@ check_required_modules() {
 
 check_database() {
     # Prefer the MySQL CLI when available; container images use mysqlclient's
-    # MySQLdb module from the application virtual environment.
-    if command -v mysql >/dev/null 2>&1; then
-        MYSQL_PWD="$DB_PASSWORD" mysql --host="$DB_HOST" --port="$DB_PORT" \
-            --user="$DB_USER" --database="$DB_NAME" --execute='SELECT 1' >/dev/null \
-            || die "Unable to connect to database $DB_NAME at $DB_HOST:$DB_PORT"
-        return
-    fi
-    "$INSTALL_PATH/virtualenv/bin/python" - "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASSWORD" "$DB_NAME" <<'PY'
+    # MySQLdb module from the application virtual environment. Podman network
+    # aliases can become resolvable shortly after the container process starts,
+    # so retry this existing readiness check for up to 60 seconds.
+    local deadline=$((SECONDS + 60))
+    while true; do
+        if command -v mysql >/dev/null 2>&1; then
+            MYSQL_PWD="$DB_PASSWORD" mysql --host="$DB_HOST" --port="$DB_PORT" \
+                --user="$DB_USER" --database="$DB_NAME" --execute='SELECT 1' \
+                >/dev/null 2>&1 && return 0
+        elif "$INSTALL_PATH/virtualenv/bin/python" - "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASSWORD" "$DB_NAME" >/dev/null 2>&1 <<'PY'
 import sys
 import MySQLdb
 connection = MySQLdb.connect(host=sys.argv[1], port=int(sys.argv[2]),
     user=sys.argv[3], passwd=sys.argv[4], db=sys.argv[5])
 connection.close()
 PY
+        then
+            return 0
+        fi
+        ((SECONDS < deadline)) \
+            || die "Unable to connect to database $DB_NAME at $DB_HOST:$DB_PORT after 60 seconds"
+        sleep 2
+    done
 }
 
 # ============================================================================

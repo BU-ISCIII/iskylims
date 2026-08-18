@@ -332,7 +332,8 @@ PY
 action="install"; mode="production"; engine="docker"; git_revision="current"
 install_conf=""; compose_file=""; compose_env_file=""
 install_conf_map_entries=(); migration_script_before=(); migration_script_after=()
-demo_data=""; skip_demo_data=""; skip_test_data=""
+demo_data=""; demo_data_service=""; demo_data_map_entries=()
+skip_demo_data=""; skip_test_data=""; skip_test_data_services=()
 load_tables=false; skip_tables=false
 
 usage() {
@@ -352,9 +353,11 @@ Options:
   --script <name[,args]>
   --tables                          Load initial tables; opt-in on upgrades.
   --skip_tables                     Skip initial tables on a fresh install.
-  --demo_data <path>                 Import application demo data on install.
+  --demo_data <path>                 Single-service compatibility option.
+  --demo_data_map <service,path>     Repeat for service-specific data imports.
   --skip_demo_data
   --skip_test_data
+  --skip_test_data_service <service>  Repeat to skip one service's test fixtures.
   --help
   --version
 EOF
@@ -376,8 +379,10 @@ while (($#)); do
         --tables) load_tables=true; skip_tables=false; shift ;;
         --skip_tables) skip_tables=true; load_tables=false; shift ;;
         --demo_data) demo_data="${2:-}"; shift 2 ;;
+        --demo_data_map) demo_data_map_entries+=("${2:-}"); shift 2 ;;
         --skip_demo_data) skip_demo_data=true; shift ;;
         --skip_test_data) skip_test_data=true; shift ;;
+        --skip_test_data_service) skip_test_data_services+=("${2:-}"); shift 2 ;;
         --help) usage; exit 0 ;;
         --version) echo "$APP_VERSION"; exit 0 ;;
         *) die "Unknown option: $1" ;;
@@ -387,18 +392,37 @@ done
 # 2. Validate arguments before modifying deployment state.
 [[ "$action" =~ ^(install|upgrade|fix-permissions)$ ]] || die "Invalid action: $action"
 [[ "$engine" =~ ^(docker|podman)$ ]] || die "Invalid engine: $engine"
-if [ -n "$demo_data" ] && [ "$application_supports_test_data" != true ]; then
-    die "--demo_data is not implemented for $APPLICATION_NAME"
-fi
+declare -A demo_data_by_service=()
 if [ -n "$demo_data" ]; then
-    [ -f "$demo_data" ] || die "Demo-data file not found: $demo_data"
-    demo_data="$(cd "$(dirname "$demo_data")" && pwd)/$(basename "$demo_data")"
+    [ "${#install_services[@]}" -eq 1 ] || die "--demo_data is valid only for a single-service deployment; use --demo_data_map service,path"
+    demo_data_map_entries+=("${install_services[0]},$demo_data")
+fi
+for mapping in "${demo_data_map_entries[@]}"; do
+    [[ "$mapping" == *,* ]] || die "Invalid --demo_data_map: $mapping"
+    service_name="${mapping%%,*}"; path="${mapping#*,}"
+    array_contains "$service_name" "${install_services[@]}" || die "Unknown demo-data service: $service_name"
+    [ -z "${demo_data_by_service[$service_name]+present}" ] || die "Duplicate --demo_data_map service: $service_name"
+    [ -n "$path" ] || die "Empty demo-data path for $service_name"
+    [ -f "$path" ] || die "Demo-data file not found for $service_name: $path"
+    demo_data_by_service["$service_name"]="$(cd "$(dirname "$path")" && pwd)/$(basename "$path")"
+done
+for service_name in "${skip_test_data_services[@]}"; do
+    array_contains "$service_name" "${install_services[@]}" || die "Unknown --skip_test_data_service: $service_name"
+done
+if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "$application_supports_test_data" != true ]; then
+    die "--demo_data_map is not implemented for $APPLICATION_NAME"
+fi
+if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "$action" != install ]; then
+    die "--demo_data_map is supported only with --action install"
+fi
+if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "${skip_demo_data:-false}" = true ]; then
+    die "--demo_data_map cannot be combined with --skip_demo_data"
 fi
 if [ "$mode" = test ] && [ "$action" = install ] \
     && [ "$application_supports_test_data" = true ]; then
     skip_demo_data="${skip_demo_data:-false}"
     skip_test_data="${skip_test_data:-false}"
-elif [ "$action" = install ] && [ -n "$demo_data" ] \
+elif [ "$action" = install ] && [ "${#demo_data_by_service[@]}" -gt 0 ] \
     && [ "$application_supports_test_data" = true ]; then
     skip_demo_data="${skip_demo_data:-false}"
     skip_test_data=true
@@ -521,11 +545,21 @@ for service_name in "${install_services[@]}"; do
 done
 
 # 11. Load application-owned data for a fresh test install, or for an explicit
-# production --demo_data request. Production never imports data implicitly.
+# production --demo_data_map request. Production never imports data implicitly.
 if [ "$action" = install ] \
     && [ "$application_supports_test_data" = true ] \
-    && { [ "$mode" = test ] || [ -n "$demo_data" ]; }; then
-    load_test_deployment_data
+    && { [ "$mode" = test ] || [ "${#demo_data_by_service[@]}" -gt 0 ]; }; then
+    if [ "${#demo_data_by_service[@]}" -gt 0 ]; then
+        for service_name in "${install_services[@]}"; do
+            [ -n "${demo_data_by_service[$service_name]+present}" ] || continue
+            demo_data_service="$service_name"; demo_data="${demo_data_by_service[$service_name]}"; skip_test_data=true
+            load_test_deployment_data "$demo_data_service" "$demo_data"
+        done
+    else
+        demo_data_service="${install_services[0]}"; demo_data=""
+        array_contains "$demo_data_service" "${skip_test_data_services[@]}" && skip_test_data=true
+        load_test_deployment_data "$demo_data_service" "$demo_data"
+    fi
 fi
 
 # 12. Execute the common smoke dispatcher with generated profile checks.

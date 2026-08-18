@@ -19,6 +19,7 @@ venv/
 virtualenv/
 node_modules/
 .npm/
+.next/
 .vite/
 __pycache__/
 *.py[cod]
