@@ -92,7 +92,7 @@ DATABASES = {
         "PASSWORD": "djangopass",
         "PORT": "djangoport",
         "NAME": "djangodbname",
-        "HOST": "djangohost",
+        "HOST": os.getenv("DB_HOST", "djangohost"),
         "CONN_MAX_AGE": dbconnmaxage,
         "TEST": {
             "NAME": "iSkyLIMS_test",
