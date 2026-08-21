@@ -20307,14 +20307,14 @@
     "pk": 1,
     "fields": {
         "label": "collection_sample_date",
-        "ontology": "GENEPIO:0001174"
+        "ontology": "SNOMED:399445004"
     }
 },
 {   "model": "core.ontologymap",
     "pk": 2,
     "fields": {
         "label": "sample_entry_date",
-        "ontology": "NCIT:C93644"
+        "ontology": "SNOMED:281271004"
     }
 },
 {   "model": "core.ontologymap",
