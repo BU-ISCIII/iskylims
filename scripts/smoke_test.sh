@@ -9,7 +9,7 @@ repo_root="$(cd "$script_dir/.." && pwd)"
 # shellcheck disable=SC1091
 source "$repo_root/deployment/lib/container/common.sh"
 
-install_services=(app)
+install_services=(relecov-iskylims)
 engine="docker"; mode="production"; compose_file=""; env_file=""
 while (($#)); do
     case "$1" in
@@ -35,11 +35,11 @@ fi
 compose_run() { compose_with_env_exec -f "$compose_file" "$@"; }
 fail() { echo "FAIL: $*" >&2; exit 1; }
 compose_run config >/dev/null
-    container_id="$(resolve_service_container app)"
-    [ -n "$container_id" ] || fail "Service app has no container"
-    ensure_service_running app "$container_id" >/dev/null
+    container_id="$(resolve_service_container relecov-iskylims)"
+    [ -n "$container_id" ] || fail "Service relecov-iskylims has no container"
+    ensure_service_running relecov-iskylims "$container_id" >/dev/null
     engine_exec exec "$container_id" bash -lc 'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py check && ! python manage.py showmigrations --plan | grep -F '"'"'[ ]'"'"''
-    echo "PASS: app Django checks and migrations"
+    echo "PASS: relecov-iskylims Django checks and migrations"
 check_url() {
     local service="$1" url="$2"
     curl --fail --silent --show-error --location --max-time 20 --output /dev/null "$url" \

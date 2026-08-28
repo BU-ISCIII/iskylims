@@ -1,7 +1,7 @@
 services:
-  # BEGIN BU-ISCIII SERVICE: app (django)
-  app:
-    image: "${APP_IMAGE:-relecov-iskylims:local}"
+  # BEGIN BU-ISCIII SERVICE: relecov-iskylims (django)
+  relecov-iskylims:
+    image: "${RELECOV_ISKYLIMS_IMAGE:-relecov-iskylims:local}"
     build:
       context: "."
       dockerfile: "Dockerfile"
@@ -11,47 +11,47 @@ services:
         INSTALL_CONF: "conf/docker_test_settings.txt"
         USE_INSTALL_CONF_SECRET: "false"
         RENDER_DJANGO_SETTINGS: "true"
-        APP_UID: ${APP_APP_UID:?APP_APP_UID is required}
-        APP_GID: ${APP_APP_GID:?APP_APP_GID is required}
-        APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
-        APP_REPO_PATH: ${APP_REPO_PATH:?APP_REPO_PATH is required}
-        APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
+        APP_UID: ${RELECOV_ISKYLIMS_APP_UID:?RELECOV_ISKYLIMS_APP_UID is required}
+        APP_GID: ${RELECOV_ISKYLIMS_APP_GID:?RELECOV_ISKYLIMS_APP_GID is required}
+        APP_PORT: ${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}
+        APP_REPO_PATH: ${RELECOV_ISKYLIMS_REPO_PATH:?RELECOV_ISKYLIMS_REPO_PATH is required}
+        APP_INSTALL_PATH: ${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}
     restart: unless-stopped
-    user: "${APP_APP_UID:?APP_APP_UID is required}:${APP_APP_GID:?APP_APP_GID is required}"
+    user: "${RELECOV_ISKYLIMS_APP_UID:?RELECOV_ISKYLIMS_APP_UID is required}:${RELECOV_ISKYLIMS_APP_GID:?RELECOV_ISKYLIMS_APP_GID is required}"
     environment:
       APP_MODE: dev
-      INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
-      APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
-      APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
+      INSTALL_PATH: ${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}
+      APP_INSTALL_PATH: ${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}
+      APP_PORT: ${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}
       PROJECT_MODULE: "iskylims"
-      DB_HOST: app_db
-      DB_PORT: ${APP_DB_PORT:?APP_DB_PORT is required}
-      DB_NAME: ${APP_DB_NAME:?APP_DB_NAME is required}
-      DB_USER: ${APP_DB_USER:?APP_DB_USER is required}
-      DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
-      DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:?APP_DJANGO_SECRET_KEY is required}
-      DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:?APP_DJANGO_ALLOWED_HOSTS is required}
+      DB_HOST: relecov-iskylims-db
+      DB_PORT: ${RELECOV_ISKYLIMS_DB_PORT:?RELECOV_ISKYLIMS_DB_PORT is required}
+      DB_NAME: ${RELECOV_ISKYLIMS_DB_NAME:?RELECOV_ISKYLIMS_DB_NAME is required}
+      DB_USER: ${RELECOV_ISKYLIMS_DB_USER:?RELECOV_ISKYLIMS_DB_USER is required}
+      DB_PASSWORD: ${RELECOV_ISKYLIMS_DB_PASSWORD:?RELECOV_ISKYLIMS_DB_PASSWORD is required}
+      DJANGO_SECRET_KEY: ${RELECOV_ISKYLIMS_DJANGO_SECRET_KEY:?RELECOV_ISKYLIMS_DJANGO_SECRET_KEY is required}
+      DJANGO_ALLOWED_HOSTS: ${RELECOV_ISKYLIMS_DJANGO_ALLOWED_HOSTS:?RELECOV_ISKYLIMS_DJANGO_ALLOWED_HOSTS is required}
     depends_on:
-      app_db:
+      relecov-iskylims-db:
         condition: service_healthy
     volumes:
-      - app_test_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:z
-      - app_test_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:z
+      - relecov-iskylims_test_documents:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/documents:z
+      - relecov-iskylims_test_static:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/static:z
     healthcheck:
       test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
       interval: 10s
       timeout: 5s
       retries: 12
     ports:
-      - "0.0.0.0:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
+      - "0.0.0.0:${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}:${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}"
     networks: [deployment_net]
-  # END BU-ISCIII SERVICE: app
+  # END BU-ISCIII SERVICE: relecov-iskylims
   # BEGIN BU-ISCIII ADDON: apache
-  apache:
+  relecov-iskylims-apache:
     image: registry.access.redhat.com/ubi9/httpd-24:latest
     restart: unless-stopped
     depends_on:
-      app:
+      relecov-iskylims:
         condition: service_healthy
     ports:
       - "${APACHE_BIND_HOST:?APACHE_BIND_HOST is required}:${APACHE_PORT:?APACHE_PORT is required}:8080"
@@ -69,13 +69,13 @@ services:
       # Disposable log volume avoids writing test logs into production paths.
       - apache_test_logs:/var/log/httpd:z
       # GENERATED MULTI-APP MOUNTS: disposable test static/document volumes.
-      - app_test_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:ro,z
-      - app_test_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:ro,z
+      - relecov-iskylims_test_static:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/static:ro,z
+      - relecov-iskylims_test_documents:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/documents:ro,z
       # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS.
     networks: [deployment_net]
   # END BU-ISCIII ADDON: apache
   # BEGIN BU-ISCIII ADDON: samba (test only)
-  samba:
+  relecov-iskylims-samba:
     image: docker.io/dperson/samba:latest
     restart: unless-stopped
     command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;${SAMBA_USER:?SAMBA_USER is required};none;none;ngs data samba share" -u "${SAMBA_USER:?SAMBA_USER is required};${SAMBA_PASSWORD:?SAMBA_PASSWORD is required}" -p'
@@ -83,27 +83,27 @@ services:
       - samba_test_data:/mnt:z
     networks: [deployment_net]
   # END BU-ISCIII ADDON: samba
-  app_db:
+  relecov-iskylims-db:
     image: docker.io/library/mysql:8.0
     environment:
-      MYSQL_DATABASE: ${APP_DB_NAME:?APP_DB_NAME is required}
-      MYSQL_USER: ${APP_DB_USER:?APP_DB_USER is required}
-      MYSQL_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
-      MYSQL_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD:?APP_DB_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${RELECOV_ISKYLIMS_DB_NAME:?RELECOV_ISKYLIMS_DB_NAME is required}
+      MYSQL_USER: ${RELECOV_ISKYLIMS_DB_USER:?RELECOV_ISKYLIMS_DB_USER is required}
+      MYSQL_PASSWORD: ${RELECOV_ISKYLIMS_DB_PASSWORD:?RELECOV_ISKYLIMS_DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${RELECOV_ISKYLIMS_DB_ROOT_PASSWORD:?RELECOV_ISKYLIMS_DB_ROOT_PASSWORD is required}
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 5s
       timeout: 5s
       retries: 20
-    volumes: [app_test_db:/var/lib/mysql]
+    volumes: [relecov-iskylims_test_db:/var/lib/mysql]
     networks: [deployment_net]
 
 networks:
   deployment_net:
 
 volumes:
-  app_test_db:
-  app_test_documents:
-  app_test_static:
+  relecov-iskylims_test_db:
+  relecov-iskylims_test_documents:
+  relecov-iskylims_test_static:
   apache_test_logs:
   samba_test_data:
