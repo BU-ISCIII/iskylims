@@ -1,7 +1,7 @@
 services:
-  # BEGIN BU-ISCIII SERVICE: app (django)
-  app:
-    image: "${APP_IMAGE:-relecov-iskylims:local}"
+  # BEGIN BU-ISCIII SERVICE: relecov-iskylims (django)
+  relecov-iskylims:
+    image: "${RELECOV_ISKYLIMS_IMAGE:-relecov-iskylims:local}"
     build:
       context: "."
       dockerfile: "Dockerfile"
@@ -11,51 +11,51 @@ services:
         INSTALL_CONF: "conf/.runtime_install_settings.txt"
         USE_INSTALL_CONF_SECRET: "true"
         RENDER_DJANGO_SETTINGS: "false"
-        APP_UID: ${APP_APP_UID:?APP_APP_UID is required}
-        APP_GID: ${APP_APP_GID:?APP_APP_GID is required}
-        APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
-        APP_REPO_PATH: ${APP_REPO_PATH:?APP_REPO_PATH is required}
-        APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
+        APP_UID: ${RELECOV_ISKYLIMS_APP_UID:?RELECOV_ISKYLIMS_APP_UID is required}
+        APP_GID: ${RELECOV_ISKYLIMS_APP_GID:?RELECOV_ISKYLIMS_APP_GID is required}
+        APP_PORT: ${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}
+        APP_REPO_PATH: ${RELECOV_ISKYLIMS_REPO_PATH:?RELECOV_ISKYLIMS_REPO_PATH is required}
+        APP_INSTALL_PATH: ${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}
     restart: unless-stopped
-    user: "${APP_APP_UID:?APP_APP_UID is required}:${APP_APP_GID:?APP_APP_GID is required}"
+    user: "${RELECOV_ISKYLIMS_APP_UID:?RELECOV_ISKYLIMS_APP_UID is required}:${RELECOV_ISKYLIMS_APP_GID:?RELECOV_ISKYLIMS_APP_GID is required}"
     environment:
       APP_MODE: prod
-      INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
-      APP_INSTALL_PATH: ${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}
-      APP_PORT: ${APP_APP_PORT:?APP_APP_PORT is required}
+      INSTALL_PATH: ${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}
+      APP_INSTALL_PATH: ${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}
+      APP_PORT: ${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}
       PROJECT_MODULE: "iskylims"
-      DB_HOST: ${APP_DB_HOST:?APP_DB_HOST is required}
-      DB_PORT: ${APP_DB_PORT:?APP_DB_PORT is required}
-      DB_NAME: ${APP_DB_NAME:?APP_DB_NAME is required}
-      DB_USER: ${APP_DB_USER:?APP_DB_USER is required}
-      DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}
-      DJANGO_SECRET_KEY: ${APP_DJANGO_SECRET_KEY:?APP_DJANGO_SECRET_KEY is required}
-      DJANGO_ALLOWED_HOSTS: ${APP_DJANGO_ALLOWED_HOSTS:?APP_DJANGO_ALLOWED_HOSTS is required}
+      DB_HOST: ${RELECOV_ISKYLIMS_DB_HOST:?RELECOV_ISKYLIMS_DB_HOST is required}
+      DB_PORT: ${RELECOV_ISKYLIMS_DB_PORT:?RELECOV_ISKYLIMS_DB_PORT is required}
+      DB_NAME: ${RELECOV_ISKYLIMS_DB_NAME:?RELECOV_ISKYLIMS_DB_NAME is required}
+      DB_USER: ${RELECOV_ISKYLIMS_DB_USER:?RELECOV_ISKYLIMS_DB_USER is required}
+      DB_PASSWORD: ${RELECOV_ISKYLIMS_DB_PASSWORD:?RELECOV_ISKYLIMS_DB_PASSWORD is required}
+      DJANGO_SECRET_KEY: ${RELECOV_ISKYLIMS_DJANGO_SECRET_KEY:?RELECOV_ISKYLIMS_DJANGO_SECRET_KEY is required}
+      DJANGO_ALLOWED_HOSTS: ${RELECOV_ISKYLIMS_DJANGO_ALLOWED_HOSTS:?RELECOV_ISKYLIMS_DJANGO_ALLOWED_HOSTS is required}
     volumes:
-      - app_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:z
-      - ${APP_HOST_LOG_PATH:?APP_HOST_LOG_PATH is required}:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/logs:Z
-      - ${APP_DJANGO_SETTINGS_PATH:?APP_DJANGO_SETTINGS_PATH is required}:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/iskylims/settings.py:Z
-      - app_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:z
+      - relecov-iskylims_documents:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/documents:z
+      - ${RELECOV_ISKYLIMS_HOST_LOG_PATH:?RELECOV_ISKYLIMS_HOST_LOG_PATH is required}:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/logs:Z
+      - ${RELECOV_ISKYLIMS_DJANGO_SETTINGS_PATH:?RELECOV_ISKYLIMS_DJANGO_SETTINGS_PATH is required}:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/iskylims/settings.py:Z
+      - relecov-iskylims_static:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/static:z
     healthcheck:
       test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
       interval: 10s
       timeout: 5s
       retries: 12
     ports:
-      - "127.0.0.1:${APP_APP_PORT:?APP_APP_PORT is required}:${APP_APP_PORT:?APP_APP_PORT is required}"
+      - "127.0.0.1:${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}:${RELECOV_ISKYLIMS_APP_PORT:?RELECOV_ISKYLIMS_APP_PORT is required}"
     # Docker Engine on Linux needs this explicit mapping. Podman also supports
     # host-gateway and conventionally exposes host.docker.internal itself, so
     # host-based dependencies can use one hostname with either engine.
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks: [deployment_net]
-  # END BU-ISCIII SERVICE: app
+  # END BU-ISCIII SERVICE: relecov-iskylims
   # BEGIN BU-ISCIII ADDON: apache
-  apache:
+  relecov-iskylims-apache:
     image: registry.access.redhat.com/ubi9/httpd-24:latest
     restart: unless-stopped
     depends_on:
-      app:
+      relecov-iskylims:
         condition: service_healthy
     ports:
       # Public binding can be restricted to loopback when another host proxy
@@ -81,8 +81,8 @@ services:
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
       # GENERATED MULTI-APP MOUNTS: one read-only static/documents pair for
       # every Django service. React assets remain inside the React image.
-      - app_static:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/static:ro,z
-      - app_documents:${APP_INSTALL_PATH:?APP_INSTALL_PATH is required}/documents:ro,z
+      - relecov-iskylims_static:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/static:ro,z
+      - relecov-iskylims_documents:${RELECOV_ISKYLIMS_INSTALL_PATH:?RELECOV_ISKYLIMS_INSTALL_PATH is required}/documents:ro,z
       # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS. Examples:
       # - reports_data:/var/www/reports:ro,z
       # - /srv/public-downloads:/var/www/downloads:ro,Z
@@ -93,5 +93,5 @@ networks:
   deployment_net:
 
 volumes:
-  app_documents:
-  app_static:
+  relecov-iskylims_documents:
+  relecov-iskylims_static:

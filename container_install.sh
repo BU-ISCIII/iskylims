@@ -15,14 +15,14 @@ APPLICATION_NAME="iSkyLIMS"
 # Regenerate these callbacks from the descriptor; keep application-neutral
 # lifecycle mechanics below unchanged.
 # ============================================================================
-install_services=(app)
+install_services=(relecov-iskylims)
 addon_build_services=()
-permission_services=(app apache)
-configured_services=(app apache samba)
+permission_services=(relecov-iskylims relecov-iskylims-apache)
+configured_services=(relecov-iskylims apache samba)
 
 default_service_install_conf() {
     case "$1" in
-        app) [ "$mode" = test ] && echo conf/docker_test_settings.txt || echo conf/docker_production_settings.txt ;;
+        relecov-iskylims) [ "$mode" = test ] && echo conf/docker_test_settings.txt || echo conf/docker_production_settings.txt ;;
         apache) [ "$mode" = test ] && echo conf/apache/apache_test_settings.txt || echo conf/apache/apache_production_settings.txt ;;
         samba) [ "$mode" = test ] && echo conf/samba/samba_test_settings.txt || echo conf/samba/samba_production_settings.txt ;;
         *) return 1 ;;
@@ -30,7 +30,7 @@ default_service_install_conf() {
 }
 service_build_context_dir() {
     case "$1" in
-        app) echo . ;;
+        relecov-iskylims) echo . ;;
         *) return 1 ;;
     esac
 }
@@ -60,31 +60,31 @@ service_install_path() {
 }
 service_readiness_path() {
     case "$1" in
-        app) echo "$(service_install_path "$1")/manage.py" ;;
+        relecov-iskylims) echo "$(service_install_path "$1")/manage.py" ;;
         *) return 1 ;;
     esac
 }
 service_image_name() {
     case "$1" in
-        app) echo relecov-iskylims:local ;;
+        relecov-iskylims) echo relecov-iskylims:local ;;
         *) return 1 ;;
     esac
 }
 service_profile() {
     case "$1" in
-        app) echo django ;;
+        relecov-iskylims) echo django ;;
         *) return 1 ;;
     esac
 }
 service_dockerfile() {
     case "$1" in
-        app) echo Dockerfile ;;
+        relecov-iskylims) echo Dockerfile ;;
         *) return 1 ;;
     esac
 }
 service_container_install_conf() {
     case "$1" in
-        app) echo conf/.runtime_install_settings.txt ;;
+        relecov-iskylims) echo conf/.runtime_install_settings.txt ;;
         *) return 1 ;;
     esac
 }
@@ -97,13 +97,13 @@ service_gid() {
 
 prepare_compose_environment() {
     local -a settings_sources=(
-        "APP|${install_conf_host_by_service[app]}"
+        "RELECOV_ISKYLIMS|${install_conf_host_by_service[relecov-iskylims]}"
         "|${install_conf_host_by_service[apache]}"
         "|${install_conf_host_by_service[samba]}"
     )
     local -a deployment_values=(
         "GIT_REVISION|$git_revision"
-        "APP_IMAGE|relecov-iskylims:local"
+        "RELECOV_ISKYLIMS_IMAGE|relecov-iskylims:local"
     )
     compose_env_file="$script_dir/.env.${mode}.file"
     write_compose_environment_file "$compose_env_file" settings_sources deployment_values
@@ -129,10 +129,10 @@ print_service_summary() {
 prepare_application_host_sources() {
     local settings_output
     if [ "$mode" = production ]; then
-        settings_output="$(service_environment_value app DJANGO_SETTINGS_PATH)"
-        [ -n "$settings_output" ] || { echo "DJANGO_SETTINGS_PATH is required for app" >&2; return 1; }
+        settings_output="$(service_environment_value relecov-iskylims DJANGO_SETTINGS_PATH)"
+        [ -n "$settings_output" ] || { echo "DJANGO_SETTINGS_PATH is required for relecov-iskylims" >&2; return 1; }
         mkdir -p "$(dirname "$settings_output")"
-        prepare_django_settings_bind_mount ./conf/template_settings.py "$settings_output" "${install_conf_host_by_service[app]}"
+        prepare_django_settings_bind_mount ./conf/template_settings.py "$settings_output" "${install_conf_host_by_service[relecov-iskylims]}"
     fi
     # conf/apache contains the application-owned Apache sources. Render every
     # deployment value only after the protected settings environment is loaded,
@@ -140,7 +140,7 @@ prepare_application_host_sources() {
     local apache_source_dir="$script_dir/conf/apache"
     local apache_output_dir="$script_dir/deployment/apache"
     local apache_conf_name apache_config_service apache_log_path
-    apache_config_service=app
+    apache_config_service=relecov-iskylims
     [ -d "$apache_source_dir" ] || {
         echo "Apache source configuration directory not found: $apache_source_dir" >&2
         return 1
@@ -180,17 +180,17 @@ prepare_application_host_sources() {
 prepare_host_bind_source_permissions() {
     [ "$mode" = production ] || return 0
     local log_path settings_path uid gid
-    log_path="$(service_environment_value app HOST_LOG_PATH)"
-    settings_path="$(service_environment_value app DJANGO_SETTINGS_PATH)"
-    [ -n "$log_path" ] || { echo "HOST_LOG_PATH is required for app" >&2; return 1; }
-    [ -n "$settings_path" ] || { echo "DJANGO_SETTINGS_PATH is required for app" >&2; return 1; }
-    uid="$(service_uid app)"; gid="$(service_gid app)"
-    local -a app_host_bind_permission_spec=(
+    log_path="$(service_environment_value relecov-iskylims HOST_LOG_PATH)"
+    settings_path="$(service_environment_value relecov-iskylims DJANGO_SETTINGS_PATH)"
+    [ -n "$log_path" ] || { echo "HOST_LOG_PATH is required for relecov-iskylims" >&2; return 1; }
+    [ -n "$settings_path" ] || { echo "DJANGO_SETTINGS_PATH is required for relecov-iskylims" >&2; return 1; }
+    uid="$(service_uid relecov-iskylims)"; gid="$(service_gid relecov-iskylims)"
+    local -a relecov_iskylims_host_bind_permission_spec=(
         "$log_path|$uid:$gid|0775"
         "$(dirname "$settings_path")|-|0755"
         "$settings_path|$uid:$gid|0664"
     )
-    apply_host_permission_spec "${app_host_bind_permission_spec[@]}"
+    apply_host_permission_spec "${relecov_iskylims_host_bind_permission_spec[@]}"
     # Generated proxy configuration is read-only in Apache. Its host files need
     # traversal/read permissions, while the production log bind must be writable.
     apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
@@ -212,18 +212,18 @@ prepare_running_container_mount_permissions() {
     local service_name="$1" container_id="$2"
     local install_path uid gid
     case "$service_name" in
-        app)
+        relecov-iskylims)
             install_path="$(service_install_path "$service_name")"
             uid="$(service_uid "$service_name")"; gid="$(service_gid "$service_name")"
-            local -a app_running_mount_permission_spec=(
+            local -a relecov_iskylims_running_mount_permission_spec=(
                 "$install_path/logs|$uid:$gid|u+rwX,g+rwX"
                 "$install_path/documents|$uid:$gid|u+rwX,g+rwX"
                 "$install_path/static|$uid:$gid|u+rwX,g+rwX,o+rX"
             )
-            apply_container_directory_permission_spec "$container_id" "${app_running_mount_permission_spec[@]}"
+            apply_container_directory_permission_spec "$container_id" "${relecov_iskylims_running_mount_permission_spec[@]}"
             prepare_django_container_settings_permissions "$container_id" "$install_path/iskylims/settings.py" "$uid" "$gid"
             ;;
-        apache)
+        relecov-iskylims-apache)
             # Apache currently needs no ownership repair inside its running
             # container. Keep an explicit add-on policy ready for future mounts.
             local -a apache_running_mount_permission_spec=()
@@ -238,7 +238,7 @@ bootstrap_service() {
     local repo_path runtime_conf uid gid status
     local -a args
     case "$service_name" in
-        app)
+        relecov-iskylims)
             repo_path="$(service_repo_path "$service_name")"
             # Fixed temporary in-container path; this is not operator configuration.
             runtime_conf=conf/.runtime_install_settings.txt
@@ -264,17 +264,17 @@ bootstrap_service() {
 # layout here so the complete test installation remains readable in one file.
 application_supports_test_data=true
 load_test_deployment_data() {
-    local app_container app_install_path samba_container archive downloaded_archive
+    local relecov_iskylims_container relecov_iskylims_install_path samba_container archive downloaded_archive
     local admin_groups_code
 
-    app_container="$(current_service_container app)" \
-        || die "Unable to resolve the app container for test-data loading"
-    app_install_path="$(service_install_path app)"
+    relecov_iskylims_container="$(current_service_container relecov-iskylims)" \
+        || die "Unable to resolve the relecov-iskylims container for test-data loading"
+    relecov_iskylims_install_path="$(service_install_path relecov-iskylims)"
 
     if [ "$skip_test_data" = false ]; then
         echo "Loading iSkyLIMS test fixtures"
-        engine_exec exec -w "$app_install_path" "$app_container" \
-            "$app_install_path/virtualenv/bin/python" manage.py \
+        engine_exec exec -w "$relecov_iskylims_install_path" "$relecov_iskylims_container" \
+            "$relecov_iskylims_install_path/virtualenv/bin/python" manage.py \
             loaddata test/test_data.json
         admin_groups_code=$(cat <<'PY'
 from django.contrib.auth.models import Group, User
@@ -287,8 +287,8 @@ admin.groups.add(
 print("admin groups:", list(admin.groups.values_list("name", flat=True)))
 PY
 )
-        engine_exec exec -w "$app_install_path" "$app_container" \
-            "$app_install_path/virtualenv/bin/python" manage.py \
+        engine_exec exec -w "$relecov_iskylims_install_path" "$relecov_iskylims_container" \
+            "$relecov_iskylims_install_path/virtualenv/bin/python" manage.py \
             shell -c "$admin_groups_code"
     else
         echo "Skipping iSkyLIMS test fixtures as requested"

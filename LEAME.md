@@ -78,11 +78,11 @@ Persistencia declarada por el despliegue:
 
 | Activo | Ubicacion de produccion | Requisito de recuperacion |
 |---|---|---|
-| `app` database | External production database | Database backup before migration |
-| `app` documents | `app_documents` named volume | Volume backup |
-| `app` static | `app_static` named volume | Replaceable through collectstatic |
-| `app` logs | Host bind configured by `HOST_LOG_PATH` in `app_production_settings.txt` | Retain/rotate per institutional log policy |
-| `app` rendered settings | Host bind configured by `DJANGO_SETTINGS_PATH` in `app_production_settings.txt` | Protected configuration backup |
+| `relecov-iskylims` database | External production database | Database backup before migration |
+| `relecov-iskylims` documents | `relecov-iskylims_documents` named volume | Volume backup |
+| `relecov-iskylims` static | `relecov-iskylims_static` named volume | Replaceable through collectstatic |
+| `relecov-iskylims` logs | Host bind configured by `HOST_LOG_PATH` in `app_production_settings.txt` | Retain/rotate per institutional log policy |
+| `relecov-iskylims` rendered settings | Host bind configured by `DJANGO_SETTINGS_PATH` in `app_production_settings.txt` | Protected configuration backup |
 | Apache logs | `/var/log/local/relecov-iskylims/apache` host bind | Retain/rotate per institutional log policy |
 | Rendered Apache configuration | `deployment/apache/` in the deployment checkout | Rebuildable; preserve reviewed source configuration |
 | Samba test data | `samba_test_data` named volume | Disposable test/demo files |
@@ -156,8 +156,8 @@ actual dentro de subshells; solo `install -d` usa privilegios.
 PODMAN_USER='<usuario-podman>'
 (
   source deployment/settings/app_production_settings.txt
-  : "${HOST_LOG_PATH:?HOST_LOG_PATH is required for app}"
-  : "${DJANGO_SETTINGS_PATH:?DJANGO_SETTINGS_PATH is required for app}"
+  : "${HOST_LOG_PATH:?HOST_LOG_PATH is required for relecov-iskylims}"
+  : "${DJANGO_SETTINGS_PATH:?DJANGO_SETTINGS_PATH is required for relecov-iskylims}"
   sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" \
     "$HOST_LOG_PATH" "$(dirname "$DJANGO_SETTINGS_PATH")"
 )
@@ -175,7 +175,7 @@ instalador. No modificar `/srv/containers/storage/` manualmente.
 
 ```bash
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 ## Backup antes de actualizar
@@ -234,7 +234,7 @@ Ejecutar el comando de instalación/upgrade:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <nueva-revision-aprobada> \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt 2>&1 | tee "$(date +%Y%m%d_%H%M%S)_prod_install.log"
+  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt 2>&1 | tee "$(date +%Y%m%d_%H%M%S)_prod_install.log"
 ```
 
 Durante `--action upgrade`, `container_install.sh`:
@@ -263,7 +263,7 @@ bash scripts/smoke_test.sh --engine podman
 
 Completar las comprobaciones que corresponden a la topologia seleccionada:
 
-- `app`: confirmar `/health/` y un flujo real de iSkyLIMS.
+- `relecov-iskylims`: confirmar `/health/` y un flujo real de iSkyLIMS.
 - Apache: confirmar la URL publica, DNS/TLS, proxy y cabeceras reenviadas.
 - Samba: en los modos habilitados, confirmar acceso autenticado y un flujo de
   lectura/escritura desde un cliente aprobado.
@@ -279,7 +279,7 @@ la revision anterior registrada y repetir las pruebas:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <revision-anterior> \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Si no son compatibles, detener escrituras y restaurar el punto completo:
@@ -296,7 +296,7 @@ install -m 0600 "$BACKUP_DIR/app_production_settings.txt" deployment/settings/ap
 install -m 0600 "$BACKUP_DIR/apache_production_settings.txt" deployment/settings/apache_production_settings.txt
 install -m 0600 "$BACKUP_DIR/samba_production_settings.txt" deployment/settings/samba_production_settings.txt
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Restaurar todos los ficheros de ajustes protegidos y desplegar la revision
@@ -321,7 +321,7 @@ Primera fase, incluso con los contenedores detenidos:
 
 ```bash
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Esta accion no construye imagenes, no migra la base de datos y no borra datos.
@@ -331,7 +331,7 @@ Arrancar y repetirla para reparar tambien los volumenes montados:
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml up -d
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map app,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 ## Operaciones utiles
@@ -344,25 +344,25 @@ podman compose --env-file .env.production.file -f docker-compose.prod.yml restar
 podman compose --env-file .env.production.file -f docker-compose.prod.yml down
 ```
 
-### Servicio Django `app`
+### Servicio Django `relecov-iskylims`
 
 ```bash
 # Logs separados del servicio.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  logs --tail 200 app
+  logs --tail 200 relecov-iskylims
 
 # Entrar al contenedor.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec app bash
+  exec relecov-iskylims bash
 
 # Regenerar static sin ejecutar migraciones.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec app bash -lc \
+  exec relecov-iskylims bash -lc \
   'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py collectstatic --noinput'
 
 # Diagnostico previo a una recuperacion de bootstrap.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec app bash -lc \
+  exec relecov-iskylims bash -lc \
   'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py check --deploy && python manage.py showmigrations --plan'
 ```
 
@@ -373,7 +373,7 @@ autoriza un bootstrap manual despues del backup:
 
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec app bash -lc \
+  exec relecov-iskylims bash -lc \
   'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py migrate --noinput && python manage.py collectstatic --noinput'
 ```
 
@@ -384,9 +384,9 @@ Registrar este procedimiento excepcional y ejecutar despues el smoke test.
 ```bash
 # Logs separados de Apache y validacion de configuracion.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  logs --tail 200 apache
+  logs --tail 200 relecov-iskylims-apache
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec apache httpd -t
+  exec relecov-iskylims-apache httpd -t
 
 # Estado restringido; usar valores del fichero protegido.
 APACHE_PORT='CHANGE_ME'

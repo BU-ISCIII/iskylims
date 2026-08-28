@@ -7,7 +7,7 @@
   "PYTHON_VERSION": "3.11",
   "TIMEZONE": "Europe/Madrid",
   "SERVICES": {
-    "app": {
+    "relecov-iskylims": {
       "PROFILE": "django",
       "BUILD_CONTEXT": ".",
       "DOCKERFILE": "Dockerfile",
@@ -19,11 +19,13 @@
   },
   "ADDONS": {
     "apache": {
-      "CONFIG_SERVICE": "app"
+      "CONFIG_SERVICE": "relecov-iskylims"
     },
     "samba": {
-      "CONFIG_SERVICE": "app",
-      "MODES": ["test"]
+      "CONFIG_SERVICE": "relecov-iskylims",
+      "MODES": [
+        "test"
+      ]
     }
   }
 }
