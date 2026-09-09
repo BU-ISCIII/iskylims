@@ -1002,3 +1002,13 @@ HEADING_COMPARATION_SAMPLE_INFORMATION = [
 
 # ############# Crontab ###############################
 SUCCESSFUL_CRONTAB_STATUS_CHANGED = "Crontab has successful changed"
+
+ALLOWED_SAMPLE_FETCH_FIELDS = {
+    "sample_name",
+    "sample_state",
+    "sample_type",
+    "species",
+    "collection_sample_date",
+    "sample_entry_date",
+    "sample_location",
+}
