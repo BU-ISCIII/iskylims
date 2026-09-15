@@ -194,8 +194,7 @@ class SampleParameterSerializer(serializers.ModelSerializer):
     def parameter_value(self, obj):
         param = self.context["parameter"]
         if param:
-            req_parameter = "obj." + param
-            value = eval(req_parameter)
+            value = getattr(obj, param)
             if "date" in param.lower():
                 if value is not None:
                     return value.strftime("%Y-%m-%d")

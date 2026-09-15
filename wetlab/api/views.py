@@ -1,4 +1,5 @@
 from django.http import QueryDict
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Q
 from django.db.models.functions import Lower
 from drf_yasg import openapi
@@ -455,8 +456,8 @@ def fetch_sample_information(request):
             error_data = wetlab.config.ERROR_PARAMETER_NOT_DEFINED
             return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         try:
-            getattr(sample_objs[0], param)
-        except AttributeError:
+            core.models.Samples._meta.get_field(param)
+        except FieldDoesNotExist:
             error_data = wetlab.config.ERROR_PARAMETER_NOT_DEFINED
             return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         sample_data = wetlab.api.serializers.SampleParameterSerializer(
