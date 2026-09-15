@@ -1002,4 +1002,3 @@ HEADING_COMPARATION_SAMPLE_INFORMATION = [
 
 # ############# Crontab ###############################
 SUCCESSFUL_CRONTAB_STATUS_CHANGED = "Crontab has successful changed"
-
