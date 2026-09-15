@@ -452,9 +452,6 @@ def fetch_sample_information(request):
             return Response(sample_data, status=status.HTTP_200_OK)
         # check if parameter is defined in Samples and is an allowed parameter to fetch.
         sample_objs = core.models.Samples.objects.all()
-        if param not in wetlab.config.ALLOWED_SAMPLE_FETCH_FIELDS:
-            error_data = wetlab.config.ERROR_PARAMETER_NOT_DEFINED
-            return Response(error_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         try:
             core.models.Samples._meta.get_field(param)
         except FieldDoesNotExist:
