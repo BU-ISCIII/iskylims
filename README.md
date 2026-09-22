@@ -66,8 +66,8 @@ plus the reviewed Django bare-metal procedure. For issues, use the
 ## Get the code (required)
 
 ```bash
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git relecov-iskylims
-cd relecov-iskylims
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
+cd iskylims
 ```
 
 For an orchestrated deployment, every external build context in the service
@@ -90,7 +90,7 @@ Services:
 
 | Service | Profile | Build context | Internal port |
 |---|---|---|---:|
-| `relecov-iskylims` | `django` | `.` | settings: `APP_PORT` |
+| `iskylims` | `django` | `.` | settings: `APP_PORT` |
 
 - Django services build with an ephemeral settings secret, render protected host settings, and run controlled migration/bootstrap steps.
 
@@ -118,7 +118,7 @@ template used by this deployment:
 
 ```bash
 install -d -m 0700 deployment/settings
-install -m 0600 conf/docker_production_settings.txt deployment/settings/app_production_settings.txt
+install -m 0600 conf/docker_production_settings.txt deployment/settings/iskylims_production_settings.txt
 install -m 0600 conf/apache/apache_production_settings.txt deployment/settings/apache_production_settings.txt
 install -m 0600 conf/samba/samba_production_settings.txt deployment/settings/samba_production_settings.txt
 ```
@@ -200,7 +200,7 @@ Docker:
 ```bash
 bash container_install.sh --action install --engine docker \
   --git_revision <reviewed-tag-or-commit> \
-  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Podman:
@@ -208,7 +208,7 @@ Podman:
 ```bash
 bash container_install.sh --action install --engine podman \
   --git_revision <reviewed-tag-or-commit> \
-  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 The installer creates `.env.production.file` for later direct Compose
@@ -221,17 +221,17 @@ nor this generated environment file is copied into image layers.
 
 | Asset | Production location | Backup/rebuild policy |
 |---|---|---|
-| `relecov-iskylims` database | External production database | Database backup before migration |
-| `relecov-iskylims` documents | `relecov-iskylims_documents` named volume | Volume backup |
-| `relecov-iskylims` static | `relecov-iskylims_static` named volume | Replaceable through collectstatic |
-| `relecov-iskylims` logs | `/var/log/local/relecov-iskylims/apps` host bind | Retain/rotate per institutional log policy |
-| `relecov-iskylims` rendered settings | `/srv/containers/bind/relecov-iskylims/settings/` host bind | Protected configuration backup |
-| Apache logs | `/var/log/local/relecov-iskylims/apache` host bind | Retain/rotate per institutional log policy |
+| `iskylims` database | External production database | Database backup before migration |
+| `iskylims` documents | `iskylims_documents` named volume | Volume backup |
+| `iskylims` static | `iskylims_static` named volume | Replaceable through collectstatic |
+| `iskylims` logs | Host bind configured by `HOST_LOG_PATH` in `iskylims_production_settings.txt` | Retain/rotate per institutional log policy |
+| `iskylims` rendered settings | Host bind configured by `DJANGO_SETTINGS_PATH` in `iskylims_production_settings.txt` | Protected configuration backup |
+| Apache logs | `/var/log/local/iskylims/apache` host bind | Retain/rotate per institutional log policy |
 | Rendered Apache configuration | `deployment/apache/` in the deployment checkout | Rebuildable; preserve reviewed source configuration |
 | Samba test data | `samba_test_data` named volume | Disposable test/demo files |
 
-The standard fixes application binds below `/srv/containers/bind/relecov-iskylims`
-and logs below `/var/log/local/relecov-iskylims`. The operator must still record the
+The standard fixes application binds below `/srv/containers/bind/iskylims`
+and logs below `/var/log/local/iskylims`. The operator must still record the
 backup owner, retention, actual engine volume names, and restore-test evidence
 for every non-rebuildable asset. Never treat a container writable layer as
 persistent storage.
@@ -272,7 +272,7 @@ notes:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <new-reviewed-tag-or-commit> \
-  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Replace `podman` with `docker` for a Docker-managed deployment. Stop on build,
@@ -309,11 +309,11 @@ after the application developer documents and tests those integrations.
 ```bash
 # Stage application files and dependencies.
 bash install.sh --stage install --git_revision current \
-  --conf deployment/settings/app_production_settings.txt
+  --conf deployment/settings/iskylims_production_settings.txt
 
 # Bootstrap the prepared runtime (settings, migrations and static files).
 bash install.sh --bootstrap install \
-  --conf deployment/settings/app_production_settings.txt
+  --conf deployment/settings/iskylims_production_settings.txt
 ```
 
 For upgrades, take a backup and replace both `install` actions with `upgrade`.
@@ -328,9 +328,9 @@ paths, runtime user, TLS ownership, and log locations.
 Ubuntu/Debian baseline:
 
 ```bash
-sudo cp <reviewed-apache-vhost.conf> /etc/apache2/sites-available/relecov-iskylims.conf
+sudo cp <reviewed-apache-vhost.conf> /etc/apache2/sites-available/iskylims.conf
 sudo a2enmod proxy proxy_http headers
-sudo a2ensite relecov-iskylims.conf
+sudo a2ensite iskylims.conf
 sudo apache2ctl configtest
 sudo systemctl reload apache2
 ```
@@ -338,7 +338,7 @@ sudo systemctl reload apache2
 CentOS/RHEL baseline:
 
 ```bash
-sudo cp <reviewed-apache-vhost.conf> /etc/httpd/conf.d/relecov-iskylims.conf
+sudo cp <reviewed-apache-vhost.conf> /etc/httpd/conf.d/iskylims.conf
 sudo httpd -t
 sudo systemctl reload httpd
 ```
@@ -399,7 +399,7 @@ recovery point before installation or upgrade. Record the revision, image IDs,
 settings files, and backup identifiers.
 
 ```bash
-BACKUP_DIR="/srv/containers/backup/relecov-iskylims/$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="/srv/containers/backup/iskylims/$(date +%Y%m%d_%H%M%S)"
 DOCUMENTS_VOLUME='CHANGE_ME'
 DB_HOST='CHANGE_ME'
 DB_PORT='3306'
@@ -408,7 +408,7 @@ DB_USER='CHANGE_ME'
 mkdir -p "$BACKUP_DIR"
 git rev-parse HEAD > "$BACKUP_DIR/git-revision.txt"
 cp .env.production.file "$BACKUP_DIR/"
-cp deployment/settings/app_production_settings.txt "$BACKUP_DIR/"
+cp deployment/settings/iskylims_production_settings.txt "$BACKUP_DIR/"
 cp deployment/settings/apache_production_settings.txt "$BACKUP_DIR/"
 cp deployment/settings/samba_production_settings.txt "$BACKUP_DIR/"
 chmod -R go-rwx "$BACKUP_DIR"
@@ -417,9 +417,10 @@ mysqldump --single-transaction --routines --triggers \
   --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --password \
   "$DB_NAME" > "$BACKUP_DIR/database.sql"
 
-podman volume ls | grep 'relecov-iskylims'
+podman volume ls | grep 'iskylims'
 podman volume export "$DOCUMENTS_VOLUME" > "$BACKUP_DIR/documents.tar"
-tar -C /srv/containers/bind -czf "$BACKUP_DIR/bind-mounts.tar.gz" relecov-iskylims
+
+tar -C /srv/containers/bind -czf "$BACKUP_DIR/bind-mounts.tar.gz" iskylims
 sha256sum "$BACKUP_DIR"/* > "$BACKUP_DIR/SHA256SUMS"
 ```
 
@@ -448,13 +449,13 @@ Compatible application-only rollback:
 ```bash
 bash container_install.sh --action upgrade --engine podman \
   --git_revision <previous-reviewed-revision> \
-  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
 
 Full restore when schema or persistent-file formats are incompatible:
 
 ```bash
-BACKUP_DIR='/srv/containers/backup/relecov-iskylims/CHANGE_ME'
+BACKUP_DIR='/srv/containers/backup/iskylims/CHANGE_ME'
 DOCUMENTS_VOLUME='CHANGE_ME'
 DB_HOST='CHANGE_ME'
 DB_PORT='3306'
@@ -466,11 +467,12 @@ mysql --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --password \
 podman volume import "$DOCUMENTS_VOLUME" "$BACKUP_DIR/documents.tar"
 tar -C /srv/containers/bind -xzf "$BACKUP_DIR/bind-mounts.tar.gz"
 install -d -m 0700 deployment/settings
-install -m 0600 "$BACKUP_DIR/app_production_settings.txt" deployment/settings/app_production_settings.txt
+install -m 0600 "$BACKUP_DIR/iskylims_production_settings.txt" deployment/settings/iskylims_production_settings.txt
 install -m 0600 "$BACKUP_DIR/apache_production_settings.txt" deployment/settings/apache_production_settings.txt
 install -m 0600 "$BACKUP_DIR/samba_production_settings.txt" deployment/settings/samba_production_settings.txt
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+
 ```
 
 Then deploy the revision recorded in `git-revision.txt`, start the deployment,
@@ -487,7 +489,7 @@ volume at `/data` and extracting `/backup/documents.tar` there.
 
    ```bash
    bash container_install.sh --action fix-permissions --engine podman \
-     --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+     --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
    ```
 
 5. Do not fake migrations, delete volumes, or rebuild from an unrecorded
@@ -495,23 +497,23 @@ volume at `/data` and extracting `/backup/documents.tar` there.
 
 ### Service-specific operational commands
 
-#### Django service `relecov-iskylims`
+#### Django service `iskylims`
 
 ```bash
 # Logs and an interactive shell (replace podman with docker when applicable).
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  logs --tail 200 relecov-iskylims
+  logs --tail 200 iskylims
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec relecov-iskylims bash
+  exec iskylims bash
 
 # Rebuild static assets without running migrations.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec relecov-iskylims bash -lc \
+  exec iskylims bash -lc \
   'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py collectstatic --noinput'
 
 # Inspect Django and migration state before deciding whether to recover.
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec relecov-iskylims bash -lc \
+  exec iskylims bash -lc \
   'cd "$INSTALL_PATH" && source virtualenv/bin/activate && python manage.py check --deploy && python manage.py showmigrations --plan'
 ```
 
@@ -525,9 +527,9 @@ diagnostic last resort and must use the same backup and release procedure.
 
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  logs --tail 200 relecov-iskylims-apache
+  logs --tail 200 iskylims-apache
 podman compose --env-file .env.production.file -f docker-compose.prod.yml \
-  exec relecov-iskylims-apache httpd -t
+  exec iskylims-apache httpd -t
 
 APACHE_PORT='CHANGE_ME'
 SERVER_STATUS_SERVER_NAME='localhost'
@@ -541,7 +543,7 @@ is enabled, inspect the persistent log bind and confirm a container-compatible
 label before restarting:
 
 ```bash
-ls -ldZ /var/log/local/relecov-iskylims/apache
+ls -ldZ /var/log/local/iskylims/apache
 ```
 
 An Apache failure containing `ModSecurity: Failed to open debug log file` often
@@ -550,11 +552,11 @@ Preserve it for diagnosis, run `fix-permissions`, and restart Apache. If it must
 be replaced, move it to a timestamped backup instead of deleting evidence:
 
 ```bash
-sudo mv /var/log/local/relecov-iskylims/apache/modsec_debug.log \
-  /var/log/local/relecov-iskylims/apache/modsec_debug.log.blocked
+sudo mv /var/log/local/iskylims/apache/modsec_debug.log \
+  /var/log/local/iskylims/apache/modsec_debug.log.blocked
 bash container_install.sh --action fix-permissions --engine podman \
-  --install_conf_map relecov-iskylims,deployment/settings/app_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
-podman compose --env-file .env.production.file -f docker-compose.prod.yml restart relecov-iskylims-apache
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+podman compose --env-file .env.production.file -f docker-compose.prod.yml restart iskylims-apache
 ```
 
 ## Final configuration steps

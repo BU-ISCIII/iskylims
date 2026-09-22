@@ -1,8 +1,8 @@
 # Safe local/test values. Never use these credentials in production.
 
 ### Application layout and Django project
-REPO_PATH='/srv/relecov-iskylims'
-INSTALL_PATH='/opt/relecov-iskylims'
+REPO_PATH='/srv/iskylims'
+INSTALL_PATH='/opt/iskylims'
 PROJECT_MODULE='iskylims'
 PYTHON_BIN_PATH='python3.11'
 
@@ -18,12 +18,12 @@ APP_SHELL='/bin/bash'
 APP_PORT='8201'
 
 ### Disposable persistence paths
-HOST_LOG_PATH='/tmp/relecov-iskylims/logs'
+HOST_LOG_PATH='/tmp/iskylims/logs'
 # Test images render settings during build and do not mount this host path.
-DJANGO_SETTINGS_PATH='/tmp/relecov-iskylims/data/settings/iskylims/settings.py'
+DJANGO_SETTINGS_PATH='/tmp/iskylims/data/settings/iskylims/settings.py'
 
 ### Compose test database
-DB_HOST='app_db'
+DB_HOST='iskylims-db'
 DB_PORT='3306'
 DB_NAME='iskylims'
 DB_USER='django'

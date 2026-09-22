@@ -4,9 +4,10 @@
 # Compose environment and temporary bootstrap copy.
 
 ### Application layout and Django project
-# Source repository staged in the image and final application installation.
-REPO_PATH='/srv/relecov-iskylims'
-INSTALL_PATH='/opt/relecov-iskylims'
+# Source repository staged in the image. Example: /srv/iskylims
+REPO_PATH='/srv/iskylims'
+# Final application runtime path. Example: /opt/iskylims
+INSTALL_PATH='/opt/iskylims'
 # Python package containing settings.py, urls.py and wsgi.py. This is generated
 # from project.json and normally should not be changed in this file.
 PROJECT_MODULE='iskylims'
@@ -31,12 +32,14 @@ APP_SHELL='/sbin/nologin'
 APP_PORT='8001'
 
 ### Persistent host sources
-# Documents use the Compose-managed app_documents named volume.
+# Documents use the Compose-managed iskylims_documents named volume.
 # Application logs remain on the host and must be creatable by the installer.
-HOST_LOG_PATH='/var/log/local/relecov-iskylims/apps'
+# Example: /var/log/local/iskylims/apps
+HOST_LOG_PATH='/var/log/local/iskylims/apps'
 # Host bind source rendered before Compose starts. It must be a file path, not
 # a directory; the parent directory is created and protected by the installer.
-DJANGO_SETTINGS_PATH='/srv/containers/bind/relecov-iskylims/settings/iskylims/settings.py'
+# Example: /srv/containers/bind/iskylims/settings/iskylims/settings.py
+DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/settings/iskylims/settings.py'
 
 ### External production database
 # Use a host name or IP reachable from inside the application container.
@@ -90,4 +93,5 @@ APP_START_WAIT_TIMEOUT_SECONDS='100'
 # regular_folder stores logs below INSTALL_PATH. symbolic_link links that
 # directory to LOG_PATH, which must already exist and be writable.
 LOG_TYPE='regular_folder'
+# Example for symbolic_link: /var/log/local/iskylims/apps; otherwise empty.
 LOG_PATH=''

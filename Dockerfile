@@ -4,8 +4,8 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal
 ARG APP_UID=1212
 ARG APP_GID=1212
 ARG APP_PORT=8001
-ARG APP_REPO_PATH=/srv/relecov-iskylims
-ARG APP_INSTALL_PATH=/opt/relecov-iskylims
+ARG APP_REPO_PATH=/srv/iskylims
+ARG APP_INSTALL_PATH=/opt/iskylims
 ARG GIT_REVISION=current
 ARG INSTALL_CONF=conf/docker_test_settings.txt
 ARG USE_INSTALL_CONF_SECRET=false
