@@ -6,7 +6,7 @@
 APACHE_CONF_PATH=''
 
 # Disposable test logs and a public test endpoint.
-APACHE_LOG_PATH='/tmp/relecov-iskylims/apache-logs'
+APACHE_LOG_PATH='/tmp/iskylims/apache-logs'
 APACHE_BIND_HOST='0.0.0.0'
 APACHE_PORT='8081'
 

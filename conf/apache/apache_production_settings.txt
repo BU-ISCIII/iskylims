@@ -9,8 +9,8 @@
 APACHE_CONF_PATH=''
 
 # Persistent host directory mounted as the Apache log destination.
-# Example: /var/log/local/relecov-iskylims/apache
-APACHE_LOG_PATH='/var/log/local/relecov-iskylims/apache'
+# Example: /var/log/local/iskylims/apache
+APACHE_LOG_PATH='/var/log/local/iskylims/apache'
 
 # Public host interface and port. Use 127.0.0.1 when another host reverse proxy
 # is the only component that should reach this Apache container.
