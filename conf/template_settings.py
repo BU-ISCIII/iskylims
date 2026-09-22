@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # The renderer replaces this complete line and preserves the generated secret
 # during upgrades. Never put a real production secret in this repository.
 SECRET_KEY = "PLACEHOLDER"
-DEBUG = djangodebug
+DEBUG = djangodebug  # noqa: F821 - replaced by the deployment renderer
 ALLOWED_HOSTS = [
     host.strip() for host in "djangoallowedhosts".split(",") if host.strip()
 ]
@@ -93,7 +93,7 @@ DATABASES = {
         "PORT": "djangoport",
         "NAME": "djangodbname",
         "HOST": os.getenv("DB_HOST", "djangohost"),
-        "CONN_MAX_AGE": dbconnmaxage,
+        "CONN_MAX_AGE": dbconnmaxage,  # noqa: F821 - deployment placeholder
         "TEST": {
             "NAME": "iSkyLIMS_test",
         },
@@ -139,7 +139,7 @@ EMAIL_HOST = "emailhostserver"
 EMAIL_PORT = "emailport"
 EMAIL_HOST_USER = "emailhostuser"
 EMAIL_HOST_PASSWORD = "emailhostpassword"
-EMAIL_USE_TLS = emailhosttls
+EMAIL_USE_TLS = emailhosttls  # noqa: F821 - replaced by the deployment renderer
 ALLOWED_EMAIL_DOMAINS = ["isciii.es", "externos.isciii.es"]
 
 # django-crontab writes into the persistent application log directory. Add new
