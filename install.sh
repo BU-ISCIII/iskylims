@@ -8,7 +8,7 @@ source "$install_script_dir/deployment/lib/container/common.sh"
 # shellcheck disable=SC1091
 source "$install_script_dir/deployment/lib/container/django.sh"
 
-APP_VERSION="3.1.1"
+APP_VERSION="0.2.0"
 ACTION="install"
 OPERATION_SCOPE="full"
 WORKFLOW="standard"
@@ -189,6 +189,7 @@ PY
     done
 }
 
+# BEGIN BU-ISCIII APPLICATION: install-hooks
 # ============================================================================
 # APPLICATION CUSTOMIZATION POINTS
 #
@@ -419,6 +420,7 @@ restart_application_server() {
 }
 
 # ========================= END APPLICATION CUSTOMIZATION =====================
+# END BU-ISCIII APPLICATION: install-hooks
 
 stage_dependencies() {
     checkout_git_revision

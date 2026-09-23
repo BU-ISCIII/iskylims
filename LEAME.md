@@ -25,6 +25,7 @@ abajo con valores o referencias institucionales verificadas.
 
 - Podman rootless y un proveedor de Compose funcionales.
 - El mismo usuario sin privilegios para el instalador y Podman.
+
 Entradas de despliegue que deben quedar registradas antes de ejecutar:
 
 | Entrada | Evidencia requerida |
@@ -48,9 +49,9 @@ completo. La libreria compartida detecta ambos proveedores automaticamente.
 ## Estructura de directorios en los servidores
 
 Todos los despliegues usan esta estructura institucional. El despliegue separa
-sus fuentes, binds, logs y backups; las rutas protegidas pueden definir un
-namespace distinto. Podman administra su propio storage y no debe modificarse
-manualmente.
+sus fuentes, binds, logs y backups; un servicio externo puede conservar un
+namespace distinto, definido por sus rutas protegidas. Podman administra su
+propio storage y no debe modificarse manualmente.
 
 ```text
 /opt/containers_apps/
@@ -62,14 +63,14 @@ manualmente.
 ├── backup/
 │   └── iskylims/               # Backup central recomendado
 ├── bind/
-│   └── relecov-iskylims/
+│   └── <namespace-configurado>/
 │       └── settings/                   # settings.py renderizado por servicio
 ├── shared/                             # Datos compartidos entre aplicaciones
 └── storage/
     └── <usuario-podman>/               # Storage rootless gestionado por Podman
 
 /var/log/local/
-└── relecov-iskylims/
+└── <namespace-configurado>/
     ├── apache/
     └── apps/
 ```
@@ -92,7 +93,7 @@ Persistencia declarada por el despliegue:
 Crear solo las ubicaciones necesarias para obtener el codigo y guardar backups.
 Sustituir `<usuario-podman>` por la cuenta que ejecutara siempre Podman y el
 instalador; normalmente es la cuenta de la sesion actual. Los binds y logs se
-crean despues de completar los ajustes protegidos.
+crean mas adelante, despues de completar los ajustes protegidos.
 
 ```bash
 sudo mkdir -p /opt/containers_apps/iskylims
@@ -119,7 +120,7 @@ Registrar el commit exacto con `git rev-parse HEAD`.
 
 ## Configurar los ajustes de produccion
 
-Crear un fichero ignorado y con modo `0600` por servicio a partir de su
+Este codigo va a crear un fichero ignorado y con modo `0600` por servicio a partir de su
 `conf/docker_production_settings.txt`. Resolver todos los `CHANGE_ME` y revisar
 la matriz [`conf/INSTALL_SETTINGS.md`](conf/INSTALL_SETTINGS.md). El instalador
 genera `.env.production.file` con valores runtime, incluidos secretos copiados
@@ -150,7 +151,8 @@ instalacion y actualizacion usan estas rutas protegidas.
 
 Solo despues de completar y revisar todos los ajustes, crear los binds
 exactamente donde indica cada servicio. Los ficheros se cargan como el usuario
-actual dentro de subshells; solo `install -d` usa privilegios.
+actual dentro de subshells; solo `install -d` usa privilegios. Esto incluye
+servicios con un namespace de host distinto al despliegue principal.
 
 ```bash
 PODMAN_USER='<usuario-podman>'
@@ -164,7 +166,8 @@ PODMAN_USER='<usuario-podman>'
 (
   source deployment/settings/apache_production_settings.txt
   : "${APACHE_LOG_PATH:?APACHE_LOG_PATH is required for apache}"
-  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" "$APACHE_LOG_PATH"
+  sudo install -d -o "$PODMAN_USER" -g "$PODMAN_USER" \
+    "$APACHE_LOG_PATH"
 )
 ```
 
@@ -177,6 +180,11 @@ instalador. No modificar `/srv/containers/storage/` manualmente.
 bash container_install.sh --action fix-permissions --engine podman \
   --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
 ```
+
+<!-- BEGIN BU-ISCIII APPLICATION: production-runbook -->
+No se han definido procedimientos adicionales propios de iSkyLIMS antes del
+backup o de la primera instalacion de produccion.
+<!-- END BU-ISCIII APPLICATION: production-runbook -->
 
 ## Backup antes de actualizar
 
@@ -209,6 +217,7 @@ Localizar y exportar cada volumen no reconstruible declarado en la tabla:
 podman volume ls | grep 'iskylims'
 podman volume export <volumen-documents> > "$BACKUP_DIR/documents.tar"
 podman volume export <volumen-static> > "$BACKUP_DIR/static.tar"
+
 ```
 
 Exportar `documents` y `static` por cada servicio Django que los declare;
@@ -267,8 +276,9 @@ Completar las comprobaciones que corresponden a la topologia seleccionada:
 - Apache: confirmar la URL publica registrada, DNS/TLS, proxy, cabeceras reenviadas y el endpoint restringido de server-status.
 - Samba: en cada modo habilitado, confirmar acceso autenticado y un flujo representativo de lectura/escritura desde un cliente aprobado.
 
-Verificar tambien correo y tareas programadas. Registrar URL y resultados junto
-con estado, imagenes y revision desplegada.
+Verificar tambien correo, tareas programadas y los flujos propios documentados
+por la aplicacion. Registrar URL y resultados junto con estado, imagenes y
+revision desplegada.
 
 ## Rollback
 

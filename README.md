@@ -1,5 +1,6 @@
 # iSkyLIMS
 
+<!-- BEGIN BU-ISCIII APPLICATION: overview -->
 iSkyLIMS is a laboratory information management system for genomics facilities.
 It tracks massive-sequencing work from library preparation and sequencing-run
 registration through FASTQ generation, quality control, bioinformatics service
@@ -43,9 +44,8 @@ services and persistent data:
 The same lifecycle supports Docker and Podman for local testing and production,
 plus the reviewed Django bare-metal procedure. For issues, use the
 [iSkyLIMS issue tracker](https://github.com/BU-ISCIII/iSkyLIMS/issues).
+<!-- END BU-ISCIII APPLICATION: overview -->
 
-- [What is iSkyLIMS?](#what-is-iskylims)
-- [Infrastructure](#infrastructure)
 - [Get the code (required)](#get-the-code-required)
 - [Choose your path](#choose-your-path)
 - [Minimum requirements](#minimum-requirements)
@@ -57,9 +57,6 @@ plus the reviewed Django bare-metal procedure. For issues, use the
 - [Bare-metal deployment (Ubuntu/CentOS)](#bare-metal-deployment-ubuntucentos)
 - [Common operations (Docker + bare-metal)](#common-operations-docker--bare-metal)
 - [Final configuration steps](#final-configuration-steps)
-  - [Configure Samba](#configure-samba)
-  - [Verify email](#verify-email)
-  - [Run the iSkyLIMS configuration tests](#run-the-iskylims-configuration-tests)
 - [Developer notes](#developer-notes)
 - [Application documentation](#application-documentation)
 
@@ -104,17 +101,17 @@ Selected add-ons:
 - Git and access to every declared build context.
 - Docker Engine with Compose v2, or Podman with a Compose provider.
 - Enough disk and memory for image builds and persistent application data.
-- A protected production settings file for every application service.
+- A protected production settings file for every application and selected add-on.
 - Production DNS, TLS termination, database, storage, email, identity, backup,
   and monitoring services required by the selected profiles.
 
-Copy each service's `conf/docker_production_settings.txt` to a protected,
-ignored file, set mode `0600`, and replace every `CHANGE_ME` value. The exact
+Copy each application's settings and each `conf/<addon>/*_production_settings.txt`
+to protected ignored files, set mode `0600`, and replace every `CHANGE_ME`. The exact
 meaning and security classification of settings is in
 [`conf/INSTALL_SETTINGS.md`](conf/INSTALL_SETTINGS.md).
 
 Create the ignored deployment settings directory and copy every production
-template used by this deployment:
+template that this topology consumes:
 
 ```bash
 install -d -m 0700 deployment/settings
@@ -124,7 +121,8 @@ install -m 0600 conf/samba/samba_production_settings.txt deployment/settings/sam
 ```
 
 Edit only the copies under `deployment/settings/`, replace every `CHANGE_ME`,
-and keep their mode at `0600`.
+and keep their mode at `0600`. Both installation workflows below point to
+these protected copies.
 
 ## Docker deployment
 
@@ -561,6 +559,7 @@ podman compose --env-file .env.production.file -f docker-compose.prod.yml restar
 
 ## Final configuration steps
 
+<!-- BEGIN BU-ISCIII APPLICATION: final-configuration -->
 Sign in with the administrator account after the first installation. The
 installer creates that account only when `CREATE_INITIAL_SUPERUSER=true` and
 the protected `DJANGO_SUPERUSER_*` settings are provided.
@@ -613,8 +612,15 @@ After every clean installation, upgrade, restore or Samba/email change:
    MiSeq, NextSeq and NovaSeq where enabled.
 6. Confirm a representative WetLab read workflow and record the result with the
    deployed revision.
+<!-- END BU-ISCIII APPLICATION: final-configuration -->
 
 ## Developer notes
+
+<!-- BEGIN BU-ISCIII APPLICATION: developer-notes -->
+After the generated baseline smoke test succeeds, complete the
+application-specific Samba, email and sequencing checks documented in
+[Final configuration steps](#final-configuration-steps).
+<!-- END BU-ISCIII APPLICATION: developer-notes -->
 
 ### Shared container installer library
 
@@ -654,12 +660,13 @@ manually changing engine storage.
 bash scripts/smoke_test.sh --engine podman
 ```
 
-Complete the application-specific Samba, email and sequencing checks in
-[Final configuration steps](#final-configuration-steps) after the generated
-baseline succeeds.
+Application developers must extend the baseline smoke test with authenticated
+and domain-specific read workflows without removing the generated checks.
 
 ## Application documentation
 
+<!-- BEGIN BU-ISCIII APPLICATION: documentation-links -->
 - [User and administrator documentation](https://iskylims.readthedocs.io/en/latest/)
 - [Version-specific upgrade guides](docs/upgrades/README.md)
 - [Issue tracker](https://github.com/BU-ISCIII/iSkyLIMS/issues)
+<!-- END BU-ISCIII APPLICATION: documentation-links -->

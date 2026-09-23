@@ -1,4 +1,8 @@
+"""Root URL configuration with the standard deployment health endpoint."""
+
 from django.urls import include, path
+
+# BEGIN BU-ISCIII APPLICATION: django-url-imports
 from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from drf_yasg.views import get_schema_view
@@ -24,11 +28,12 @@ schema_view = get_schema_view(
     public=True,
 )
 
+# END BU-ISCIII APPLICATION: django-url-imports
 
 urlpatterns = [
-    # Stable unauthenticated endpoint consumed by Compose and deployment smoke
-    # tests. Database readiness is verified separately during bootstrap.
+    # Required by Compose health checks and deployment smoke tests.
     path("health/", include("deployment_health.urls")),
+    # BEGIN BU-ISCIII APPLICATION: django-url-routes
     path("", include("core.urls")),
     path(
         "background",
@@ -48,4 +53,5 @@ urlpatterns = [
     path("drylab/api/", include("drylab.api.urls")),
     path("wetlab/api/", include("wetlab.api.urls")),
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0)),
+    # END BU-ISCIII APPLICATION: django-url-routes
 ]

@@ -86,12 +86,18 @@ Developer review checklist:
 - add acceptance checks for email, identity, storage, workers, and scheduled
   jobs used by real workflows.
 
+<!-- BEGIN BU-ISCIII APPLICATION: installation-settings -->
+Document application-only installation variables and their validation,
+security classification, and operational impact here.
+<!-- END BU-ISCIII APPLICATION: installation-settings -->
+
 ## Selected infrastructure add-ons
 
 Add-ons use independent settings below `conf/<addon>/`. For production, copy
 the required add-on templates to protected files and pass them through the same
 repeatable `--install_conf_map <component>,<path>` option used by application
-services.
+services. Do not add add-on credentials or deployment values to the Django
+application settings file.
 
 ### Apache
 
@@ -122,3 +128,7 @@ source.
 
 `SAMBA_USER` and `SAMBA_PASSWORD` configure the disposable Samba service used
 only by the test Compose profile. The add-on creates no production service.
+
+<!-- BEGIN BU-ISCIII APPLICATION: addon-settings-notes -->
+Document application-specific add-on topology and cross-service values here.
+<!-- END BU-ISCIII APPLICATION: addon-settings-notes -->

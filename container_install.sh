@@ -10,10 +10,128 @@ source "$script_dir/deployment/lib/container/django.sh"
 APP_VERSION="0.1.0"
 APPLICATION_NAME="iSkyLIMS"
 
+# Applications with disposable fixtures or demo files customize this callback
+# and set application_supports_test_data=true. Keep application-specific
+# fixture names, users/groups, downloads, and data-service layout here.
+# BEGIN BU-ISCIII APPLICATION: deployment-hooks
+application_supports_test_data=true
+load_test_deployment_data() {
+    local iskylims_container iskylims_install_path samba_container archive downloaded_archive
+    local admin_groups_code
+
+    iskylims_container="$(current_service_container iskylims)" \
+        || die "Unable to resolve the iskylims container for test-data loading"
+    iskylims_install_path="$(service_install_path iskylims)"
+
+    if [ "$skip_test_data" = false ]; then
+        echo "Loading iSkyLIMS test fixtures"
+        engine_exec exec -w "$iskylims_install_path" "$iskylims_container" \
+            "$iskylims_install_path/virtualenv/bin/python" manage.py \
+            loaddata test/test_data.json
+        admin_groups_code=$(cat <<'PY'
+from django.contrib.auth.models import Group, User
+
+admin = User.objects.get(username="admin")
+admin.groups.add(
+    Group.objects.get(name="WetlabManager"),
+    Group.objects.get(name="ServiceManager"),
+)
+print("admin groups:", list(admin.groups.values_list("name", flat=True)))
+PY
+)
+        engine_exec exec -w "$iskylims_install_path" "$iskylims_container" \
+            "$iskylims_install_path/virtualenv/bin/python" manage.py \
+            shell -c "$admin_groups_code"
+    else
+        echo "Skipping iSkyLIMS test fixtures as requested"
+    fi
+
+    if [ "$skip_demo_data" = true ]; then
+        echo "Skipping Samba demo-data load as requested"
+        return 0
+    fi
+
+    samba_container="$(current_service_container samba)" \
+        || die "The iSkyLIMS test-data workflow requires the Samba service"
+    archive="$demo_data"
+    downloaded_archive=""
+    if [ -z "$archive" ]; then
+        command -v wget >/dev/null 2>&1 \
+            || die "wget is required to download iSkyLIMS demo data"
+        downloaded_archive="$(mktemp /tmp/iskylims_demo_data.XXXXXX.tar.gz)"
+        archive="$downloaded_archive"
+        wget -O "$archive" \
+            https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
+    fi
+    [ -f "$archive" ] || die "Demo-data archive not found: $archive"
+
+    echo "Copying and extracting iSkyLIMS demo data in Samba"
+    engine_exec cp "$archive" "$samba_container:/mnt/iskylims_demo_data.tar.gz"
+    engine_exec exec "$samba_container" \
+        tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
+    engine_exec exec "$samba_container" sh -lc '
+        for root in /mnt/test_ngs_data /mnt/Runs; do
+            if [ -d "$root" ]; then
+                find "$root" -type d -exec chmod o+rx {} +
+                find "$root" -type f -exec chmod o+r {} +
+            fi
+        done
+    '
+    engine_exec exec "$samba_container" rm /mnt/iskylims_demo_data.tar.gz
+    [ -z "$downloaded_archive" ] || rm -f "$downloaded_archive"
+}
+
+# Add application-only host bind paths that profiles/add-ons cannot describe.
+set_application_host_bind_permissions() {
+    :
+}
+
+# Arguments: service name and running container ID. Add application-only
+# writable paths; profile/add-on permissions have already been applied.
+set_application_running_mount_permissions() {
+    :
+}
+# END BU-ISCIII APPLICATION: deployment-hooks
+
+action="install"; mode="production"; engine="docker"; git_revision="current"
+install_conf=""; compose_file=""; compose_env_file=""
+install_conf_map_entries=(); migration_script_before=(); migration_script_after=()
+demo_data=""; demo_data_service=""; demo_data_map_entries=()
+skip_demo_data=""; skip_test_data=""; skip_test_data_services=()
+load_tables=false; skip_tables=false
+
+usage() {
+    cat <<'EOF'
+Install, upgrade, or repair the application deployment.
+
+Options:
+  --action install|upgrade|fix-permissions
+  --test
+  --engine docker|podman
+  --git_revision <branch|tag|commit|current>
+  --install_conf <path>              First application service only.
+  --install_conf_map <component,path>  Repeat for application and add-on overrides.
+  --compose_file <path>
+  --script_before <name[,args]>
+  --script_after <name[,args]>
+  --script <name[,args]>
+  --tables                          Load initial tables; opt-in on upgrades.
+  --skip_tables                     Skip initial tables on a fresh install.
+  --demo_data <path>                 Single-service compatibility option.
+  --demo_data_map <service,path>     Repeat for service-specific data imports.
+  --skip_demo_data
+  --skip_test_data
+  --skip_test_data_service <service>  Repeat to skip one service's test fixtures.
+  --help
+  --version
+EOF
+}
+die() { echo "ERROR: $*" >&2; exit 1; }
+
 # ============================================================================
-# GENERATED SERVICE/ADD-ON CUSTOMIZATION
-# Regenerate these callbacks from the descriptor; keep application-neutral
-# lifecycle mechanics below unchanged.
+# GENERATED SERVICE/ADD-ON IMPLEMENTATION
+# Everything below usage() is managed by the descriptor, profiles, add-ons, or
+# common lifecycle. Put application behavior only in the block above.
 # ============================================================================
 install_services=(iskylims)
 addon_build_services=()
@@ -174,11 +292,10 @@ prepare_application_host_sources() {
     fi
 }
 
-# Keep one independently reviewable host permission specification per
-# application and per selected add-on. Empty add-on specs are intentional until
-# that add-on declares writable bind sources.
+# Apply the same permission workflow in test and production. Keep one
+# independently reviewable specification per application and selected add-on;
+# the shared helper skips paths that are not used by the active mode.
 prepare_host_bind_source_permissions() {
-    [ "$mode" = production ] || return 0
     local log_path settings_path uid gid
     log_path="$(service_environment_value iskylims HOST_LOG_PATH)"
     settings_path="$(service_environment_value iskylims DJANGO_SETTINGS_PATH)"
@@ -192,7 +309,7 @@ prepare_host_bind_source_permissions() {
     )
     apply_host_permission_spec "${iskylims_host_bind_permission_spec[@]}"
     # Generated proxy configuration is read-only in Apache. Its host files need
-    # traversal/read permissions, while the production log bind must be writable.
+    # traversal/read permissions, while the configured log source must be writable.
     apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
     local -a apache_host_bind_permission_spec=(
         "$script_dir/deployment/apache|-|0755"
@@ -205,6 +322,7 @@ prepare_host_bind_source_permissions() {
         "$apache_log_path|1001:0|0775"
     )
     apply_host_permission_spec "${apache_host_bind_permission_spec[@]}"
+    set_application_host_bind_permissions
 }
 
 # Keep a separate running-mount specification in every service/add-on case.
@@ -229,8 +347,9 @@ prepare_running_container_mount_permissions() {
             local -a apache_running_mount_permission_spec=()
             apply_container_directory_permission_spec "$container_id" "${apache_running_mount_permission_spec[@]}"
             ;;
-        *) return 0 ;;
+        *) : ;;
     esac
+    set_application_running_mount_permissions "$service_name" "$container_id"
 }
 
 bootstrap_service() {
@@ -279,112 +398,6 @@ build_production_service() {
     esac
 }
 
-# Applications with disposable fixtures or demo files customize this callback
-# in their generated wrapper and set application_supports_test_data=true. Keep
-# application-specific fixture names, users/groups, downloads, and data-service
-# layout here so the complete test installation remains readable in one file.
-application_supports_test_data=true
-load_test_deployment_data() {
-    local relecov_iskylims_container relecov_iskylims_install_path samba_container archive downloaded_archive
-    local admin_groups_code
-
-    relecov_iskylims_container="$(current_service_container relecov-iskylims)" \
-        || die "Unable to resolve the relecov-iskylims container for test-data loading"
-    relecov_iskylims_install_path="$(service_install_path relecov-iskylims)"
-
-    if [ "$skip_test_data" = false ]; then
-        echo "Loading iSkyLIMS test fixtures"
-        engine_exec exec -w "$relecov_iskylims_install_path" "$relecov_iskylims_container" \
-            "$relecov_iskylims_install_path/virtualenv/bin/python" manage.py \
-            loaddata test/test_data.json
-        admin_groups_code=$(cat <<'PY'
-from django.contrib.auth.models import Group, User
-
-admin = User.objects.get(username="admin")
-admin.groups.add(
-    Group.objects.get(name="WetlabManager"),
-    Group.objects.get(name="ServiceManager"),
-)
-print("admin groups:", list(admin.groups.values_list("name", flat=True)))
-PY
-)
-        engine_exec exec -w "$relecov_iskylims_install_path" "$relecov_iskylims_container" \
-            "$relecov_iskylims_install_path/virtualenv/bin/python" manage.py \
-            shell -c "$admin_groups_code"
-    else
-        echo "Skipping iSkyLIMS test fixtures as requested"
-    fi
-
-    if [ "$skip_demo_data" = true ]; then
-        echo "Skipping Samba demo-data load as requested"
-        return 0
-    fi
-
-    samba_container="$(current_service_container samba)" \
-        || die "The iSkyLIMS test-data workflow requires the Samba service"
-    archive="$demo_data"
-    downloaded_archive=""
-    if [ -z "$archive" ]; then
-        command -v wget >/dev/null 2>&1 \
-            || die "wget is required to download iSkyLIMS demo data"
-        downloaded_archive="$(mktemp /tmp/iskylims_demo_data.XXXXXX.tar.gz)"
-        archive="$downloaded_archive"
-        wget -O "$archive" \
-            https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
-    fi
-    [ -f "$archive" ] || die "Demo-data archive not found: $archive"
-
-    echo "Copying and extracting iSkyLIMS demo data in Samba"
-    engine_exec cp "$archive" "$samba_container:/mnt/iskylims_demo_data.tar.gz"
-    engine_exec exec "$samba_container" \
-        tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
-    engine_exec exec "$samba_container" sh -lc '
-        for root in /mnt/test_ngs_data /mnt/Runs; do
-            if [ -d "$root" ]; then
-                find "$root" -type d -exec chmod o+rx {} +
-                find "$root" -type f -exec chmod o+r {} +
-            fi
-        done
-    '
-    engine_exec exec "$samba_container" rm /mnt/iskylims_demo_data.tar.gz
-    [ -z "$downloaded_archive" ] || rm -f "$downloaded_archive"
-}
-
-action="install"; mode="production"; engine="docker"; git_revision="current"
-install_conf=""; compose_file=""; compose_env_file=""
-install_conf_map_entries=(); migration_script_before=(); migration_script_after=()
-demo_data=""; demo_data_service=""; demo_data_map_entries=()
-skip_demo_data=""; skip_test_data=""; skip_test_data_services=()
-load_tables=false; skip_tables=false
-
-usage() {
-    cat <<'EOF'
-Install, upgrade, or repair the application deployment.
-
-Options:
-  --action install|upgrade|fix-permissions
-  --test
-  --engine docker|podman
-  --git_revision <branch|tag|commit|current>
-  --install_conf <path>              First application service only.
-  --install_conf_map <component,path>  Repeat for application and add-on overrides.
-  --compose_file <path>
-  --script_before <name[,args]>
-  --script_after <name[,args]>
-  --script <name[,args]>
-  --tables                          Load initial tables; opt-in on upgrades.
-  --skip_tables                     Skip initial tables on a fresh install.
-  --demo_data <path>                 Single-service compatibility option.
-  --demo_data_map <service,path>     Repeat for service-specific data imports.
-  --skip_demo_data
-  --skip_test_data
-  --skip_test_data_service <service>  Repeat to skip one service's test fixtures.
-  --help
-  --version
-EOF
-}
-die() { echo "ERROR: $*" >&2; exit 1; }
-
 # 1. Parse the canonical outer-installer interface.
 while (($#)); do
     case "$1" in
@@ -415,22 +428,27 @@ done
 [[ "$engine" =~ ^(docker|podman)$ ]] || die "Invalid engine: $engine"
 declare -A demo_data_by_service=()
 if [ -n "$demo_data" ]; then
-    [ "${#install_services[@]}" -eq 1 ] || die "--demo_data is valid only for a single-service deployment; use --demo_data_map service,path"
+    [ "${#install_services[@]}" -eq 1 ] \
+        || die "--demo_data is valid only for a single-service deployment; use --demo_data_map service,path"
     demo_data_map_entries+=("${install_services[0]},$demo_data")
 fi
 for mapping in "${demo_data_map_entries[@]}"; do
     [[ "$mapping" == *,* ]] || die "Invalid --demo_data_map: $mapping"
     service_name="${mapping%%,*}"; path="${mapping#*,}"
-    array_contains "$service_name" "${install_services[@]}" || die "Unknown demo-data service: $service_name"
-    [ -z "${demo_data_by_service[$service_name]+present}" ] || die "Duplicate --demo_data_map service: $service_name"
+    array_contains "$service_name" "${install_services[@]}" \
+        || die "Unknown demo-data service: $service_name"
+    [ -z "${demo_data_by_service[$service_name]+present}" ] \
+        || die "Duplicate --demo_data_map service: $service_name"
     [ -n "$path" ] || die "Empty demo-data path for $service_name"
     [ -f "$path" ] || die "Demo-data file not found for $service_name: $path"
     demo_data_by_service["$service_name"]="$(cd "$(dirname "$path")" && pwd)/$(basename "$path")"
 done
 for service_name in "${skip_test_data_services[@]}"; do
-    array_contains "$service_name" "${install_services[@]}" || die "Unknown --skip_test_data_service: $service_name"
+    array_contains "$service_name" "${install_services[@]}" \
+        || die "Unknown --skip_test_data_service: $service_name"
 done
-if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "$application_supports_test_data" != true ]; then
+if [ "${#demo_data_by_service[@]}" -gt 0 ] \
+    && [ "$application_supports_test_data" != true ]; then
     die "--demo_data_map is not implemented for $APPLICATION_NAME"
 fi
 if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "$action" != install ]; then
@@ -439,6 +457,9 @@ fi
 if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "${skip_demo_data:-false}" = true ]; then
     die "--demo_data_map cannot be combined with --skip_demo_data"
 fi
+# Test installs may use application defaults. Production remains strictly
+# opt-in, loads only an explicitly supplied demo file, and never enables test
+# fixtures alongside it.
 if [ "$mode" = test ] && [ "$action" = install ] \
     && [ "$application_supports_test_data" = true ]; then
     skip_demo_data="${skip_demo_data:-false}"
@@ -497,10 +518,10 @@ if [ "$action" = fix-permissions ]; then
     exit 0
 fi
 
-# 6. Build application services in declared order. Production builds use the
-# engine directly: Django receives its settings as
-# an ephemeral build secret, while React receives only its public VITE value.
-# This avoids requiring Compose implementations to support build.secrets.
+# 6. Build application services in declared order. Production builds use
+# profile-owned callbacks so each framework receives only its supported build
+# inputs. This avoids requiring Compose implementations to support
+# build.secrets.
 for service_name in "${install_services[@]}"; do
     if [ "$mode" = test ]; then
         deployment_compose -f "$compose_file" build --no-cache "$service_name"
@@ -508,27 +529,7 @@ for service_name in "${install_services[@]}"; do
     fi
     context="$(service_build_context_dir "$service_name")"
     dockerfile="$(service_dockerfile "$service_name")"
-    profile="$(service_profile "$service_name")"
-    if [ "$profile" = django ]; then
-        engine_build --no-cache --file "$context/$dockerfile" \
-            --secret "id=install_conf,src=${install_conf_host_by_service[$service_name]}" \
-            --build-arg GIT_REVISION="$git_revision" \
-            --build-arg INSTALL_CONF="$(service_container_install_conf "$service_name")" \
-            --build-arg USE_INSTALL_CONF_SECRET=true \
-            --build-arg RENDER_DJANGO_SETTINGS=false \
-            --build-arg APP_REPO_PATH="$(service_repo_path "$service_name")" \
-            --build-arg APP_INSTALL_PATH="$(service_install_path "$service_name")" \
-            --build-arg APP_PORT="$(service_environment_value "$service_name" APP_PORT)" \
-            --build-arg APP_UID="$(service_uid "$service_name")" \
-            --build-arg APP_GID="$(service_gid "$service_name")" \
-            --tag "$(service_image_name "$service_name")" "$context"
-    else
-        vite_api_url="$(service_environment_value "$service_name" VITE_API_BASE_URL)"
-        engine_build --no-cache --file "$context/$dockerfile" \
-            --build-arg GIT_REVISION="$git_revision" \
-            --build-arg VITE_API_BASE_URL="$vite_api_url" \
-            --tag "$(service_image_name "$service_name")" "$context"
-    fi
+    build_production_service "$service_name" "$context" "$dockerfile"
 done
 # Build add-on images through Compose so their declared build arguments and
 # add-on-owned Dockerfiles remain the single source of truth.
@@ -573,12 +574,20 @@ if [ "$action" = install ] \
     if [ "${#demo_data_by_service[@]}" -gt 0 ]; then
         for service_name in "${install_services[@]}"; do
             [ -n "${demo_data_by_service[$service_name]+present}" ] || continue
-            demo_data_service="$service_name"; demo_data="${demo_data_by_service[$service_name]}"; skip_test_data=true
+            demo_data_service="$service_name"
+            demo_data="${demo_data_by_service[$service_name]}"
+            skip_test_data=true
             load_test_deployment_data "$demo_data_service" "$demo_data"
         done
     else
-        demo_data_service="${install_services[0]}"; demo_data=""
-        array_contains "$demo_data_service" "${skip_test_data_services[@]}" && skip_test_data=true
+        # Preserve existing test-loader behavior. Multi-service applications
+        # should dispatch internally using demo_data_service when they need
+        # service-specific default fixtures.
+        demo_data_service="${install_services[0]}"
+        demo_data=""
+        if array_contains "$demo_data_service" "${skip_test_data_services[@]}"; then
+            skip_test_data=true
+        fi
         load_test_deployment_data "$demo_data_service" "$demo_data"
     fi
 fi
