@@ -10,6 +10,7 @@ deployment/apache/*.conf
 deployment/settings/
 
 # Python and runtime artifacts
+*.log
 __pycache__/
 *.py[cod]
 .venv/

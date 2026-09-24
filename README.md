@@ -354,10 +354,12 @@ and review of the version-specific guide.
 
 ### Database creation, users and grants
 
-Production databases are externally managed unless the application documents a
-different supported topology. Create a dedicated schema and least-privilege
-account, verify connectivity from the application container, and keep DBA
-commands and credentials outside this repository.
+Each Django service declares `DATABASE` as `external` or `compose`. A Compose-managed
+database is initialized from that service's protected `DB_NAME`, `DB_USER`, and
+`DB_PASSWORD` values and persists in its `<service>_db_data` volume. For an
+external database, create a dedicated schema and least-privilege account, verify
+connectivity from the application container, and keep DBA credentials outside
+this repository.
 
 Connect as an authorized database administrator without putting the password
 on the command line:
@@ -411,6 +413,12 @@ cp deployment/settings/apache_production_settings.txt "$BACKUP_DIR/"
 cp deployment/settings/samba_production_settings.txt "$BACKUP_DIR/"
 chmod -R go-rwx "$BACKUP_DIR"
 
+# For each Compose-managed application database:
+podman compose --env-file .env.production.file -f docker-compose.prod.yml \
+  exec -T <service>-db sh -c 'exec mysqldump --single-transaction --routines --triggers -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
+  > "$BACKUP_DIR/<service>-database.sql"
+
+# For each external application database:
 mysqldump --single-transaction --routines --triggers \
   --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --password \
   "$DB_NAME" > "$BACKUP_DIR/database.sql"
@@ -460,6 +468,8 @@ DB_PORT='3306'
 DB_NAME='CHANGE_ME'
 DB_USER='CHANGE_ME'
 podman compose --env-file .env.production.file -f docker-compose.prod.yml down
+# Restore external databases directly. For Compose-managed databases, start
+# <service>-db, wait for its healthcheck, and import through that service.
 mysql --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --password \
   "$DB_NAME" < "$BACKUP_DIR/database.sql"
 podman volume import "$DOCUMENTS_VOLUME" "$BACKUP_DIR/documents.tar"
@@ -631,21 +641,17 @@ from the standards repository with `scaffold.py check-lib` or `sync-lib`.
 ### Schema migration workflow
 
 Django migrations MUST be generated, reviewed, tested, and committed with the
-release. Installation and production upgrade run `migrate --noinput`; they
-MUST NOT run `makemigrations` or silently manufacture schema history.
+release. Installation and upgrade use `container_install.sh`; deployment MUST
+NOT run `makemigrations` or silently manufacture schema history.
 
-For a legacy application entering the standard:
+`--test` selects the test topology but does not guarantee an empty database:
+its named database volume survives container recreation. Use `--action install`
+only with an empty database and `--action upgrade` only with a recognized,
+committed migration history.
 
-1. Generate and commit baseline migrations from the last supported stable tag.
-2. Generate and commit new migrations for later model changes.
-3. Verify the committed migration history matches the supported production
-   database before deploying it.
-4. Put ordered data transformations in version-specific upgrade guides and run
-   them through `--script_before`, `--script_after`, or `--script`.
-5. Verify `showmigrations --plan` has no unapplied entries after bootstrap.
-
-Never use `--fake` to conceal a failed or partially applied migration. New
-installations and upgrades use the committed migration graph.
+See the [Django schema migration workflow](.github/DJANGO_MIGRATIONS.md) for
+legacy adoption, development-only migrations, release consolidation, container
+commands, production-like testing, and migration squashing.
 
 ### Persistent host paths
 

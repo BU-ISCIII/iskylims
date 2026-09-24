@@ -103,8 +103,29 @@ fi
 if [[ "$WORKFLOW" != "stage" ]] && grep -Eq "^[A-Z0-9_]+=.*CHANGE_ME" "$INSTALL_CONF"; then
     die "Configuration still contains CHANGE_ME values"
 fi
+
+# A staged service's installation file supplies standalone defaults. During
+# container bootstrap, Compose owns the runtime database endpoint and may
+# rename a dependency as part of a larger orchestration topology. Preserve
+# explicitly exported database values so sourcing the defaults cannot replace
+# the orchestrator's service-specific connection details.
+bootstrap_database_variables=()
+bootstrap_database_values=()
+if [[ "$WORKFLOW" == "bootstrap" ]]; then
+    for variable in DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD; do
+        if [[ -v "$variable" ]]; then
+            bootstrap_database_variables+=("$variable")
+            bootstrap_database_values+=("${!variable}")
+        fi
+    done
+fi
 # shellcheck disable=SC1090
 source "$INSTALL_CONF"
+for index in "${!bootstrap_database_variables[@]}"; do
+    variable="${bootstrap_database_variables[$index]}"
+    printf -v "$variable" '%s' "${bootstrap_database_values[$index]}"
+    export "$variable"
+done
 : "${INSTALL_PATH:?INSTALL_PATH is required}"
 : "${PROJECT_MODULE:?PROJECT_MODULE is required}"
 [[ "$PROJECT_MODULE" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] \

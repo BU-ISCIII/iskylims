@@ -17,6 +17,7 @@ services:
         APP_REPO_PATH: ${ISKYLIMS_REPO_PATH:?ISKYLIMS_REPO_PATH is required}
         APP_INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
     restart: unless-stopped
+
     user: "${ISKYLIMS_APP_UID:?ISKYLIMS_APP_UID is required}:${ISKYLIMS_APP_GID:?ISKYLIMS_APP_GID is required}"
     environment:
       APP_MODE: prod

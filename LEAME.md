@@ -203,9 +203,16 @@ cp deployment/settings/samba_production_settings.txt "$BACKUP_DIR/"
 chmod -R go-rwx "$BACKUP_DIR"
 ```
 
-Exportar la base de datos externa desde un punto coherente:
+Para cada base gestionada por Compose, exportar un dump logico desde su servicio;
+para cada base externa, exportarlo desde un punto coherente:
 
 ```bash
+# Base gestionada por Compose:
+podman compose --env-file .env.production.file -f docker-compose.prod.yml \
+  exec -T <servicio>-db sh -c 'exec mysqldump --single-transaction --routines --triggers -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
+  > "$BACKUP_DIR/<servicio>-database.sql"
+
+# Base externa:
 mysqldump --single-transaction --routines --triggers \
   --host=<db-host> --port=<db-port> --user=<db-user> --password \
   <db-name> > "$BACKUP_DIR/database.sql"
@@ -295,6 +302,8 @@ Si no son compatibles, detener escrituras y restaurar el punto completo:
 
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml down
+# Restaurar directamente las bases externas. Para una base gestionada por
+# Compose, arrancar <servicio>-db, esperar su healthcheck e importar desde él.
 mysql --host=<db-host> --port=<db-port> --user=<db-user> --password \
   <db-name> < "$BACKUP_DIR/database.sql"
 podman volume import <volumen-documents> "$BACKUP_DIR/documents.tar"
