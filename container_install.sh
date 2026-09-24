@@ -51,7 +51,7 @@ PY
         return 0
     fi
 
-    samba_container="$(current_service_container samba)" \
+    samba_container="$(current_service_container iskylims-samba)" \
         || die "The iSkyLIMS test-data workflow requires the Samba service"
     archive="$demo_data"
     downloaded_archive=""
