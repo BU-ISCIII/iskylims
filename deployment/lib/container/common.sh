@@ -98,6 +98,27 @@ validate_compose_configuration() {
     fi
 }
 
+# Cross-check service wiring that Compose cannot validate: proxy targets and
+# ports, database hosts, Django allowed hosts and Keycloak URLs/realms. The
+# rules live in check_config.sh beside this library. Production findings fail;
+# test findings are printed as warnings.
+# Arguments: mode, Compose environment file, Compose file, rendered Apache
+# configuration directory (ignored when absent), then one `service=profile`
+# entry per application service.
+check_deployment_configuration() {
+    local check_mode="$1" env_file="$2" compose_path="$3" apache_dir="$4"
+    shift 4
+    local checker entry
+    local -a checker_args
+    checker="$(dirname "${BASH_SOURCE[0]}")/check_config.sh"
+    checker_args=(--mode "$check_mode" --env-file "$env_file" --compose-file "$compose_path")
+    [ ! -d "$apache_dir" ] || checker_args+=(--apache-config-dir "$apache_dir")
+    for entry in "$@"; do
+        checker_args+=(--service "$entry")
+    done
+    bash "$checker" "${checker_args[@]}"
+}
+
 # Return a repository's full or short HEAD without printing diagnostics.
 # Arguments: repository path, optional format (`full` or `short`).
 repository_revision() {
@@ -468,7 +489,7 @@ read_install_conf_value() {
 }
 
 # Return the first non-empty value among compatible setting names. This allows
-# the shared renderer to bridge established RELECOV names and the standard
+# the shared renderer to bridge established legacy names and the standard
 # scaffold names without duplicating application configuration files.
 read_install_conf_first() {
     local file="$1"
@@ -597,6 +618,44 @@ render_environment_config_template() {
             return 1
         fi
         replacements+=("$token" "${!variable}")
+    done < <(grep -oE '\$\{[A-Z][A-Z0-9_]*\}' "$src" | sort -u || true)
+
+    render_config_template "$src" "$dst" "$file_mode" "${replacements[@]}"
+}
+
+# Render ${UPPER_CASE_VARIABLE} placeholders used as JSON string content.
+# Values are escaped before substitution so quotes and backslashes cannot
+# produce malformed JSON. Numeric and boolean properties remain declarative in
+# the source JSON instead of being injected as untyped environment strings.
+# Arguments: source JSON template, destination JSON file, destination mode.
+render_json_environment_template() {
+    local src="$1"
+    local dst="$2"
+    local file_mode="$3"
+    local token variable value
+    local -a replacements=()
+
+    [ -f "$src" ] || {
+        echo "JSON configuration source not found: $src" >&2
+        return 1
+    }
+    while IFS= read -r token; do
+        [ -n "$token" ] || continue
+        variable="${token#\$\{}"
+        variable="${variable%\}}"
+        if ! [[ -v "$variable" ]]; then
+            echo "Required JSON template variable $variable is not set for $src" >&2
+            return 1
+        fi
+        value="${!variable}"
+        if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]] \
+            || printf '%s' "$value" | LC_ALL=C grep -q '[[:cntrl:]]'; then
+            echo "JSON template variable $variable must not contain control characters." >&2
+            return 1
+        fi
+        value="${value//\\/\\\\}"
+        value="${value//\"/\\\"}"
+        replacements+=("$token" "$value")
     done < <(grep -oE '\$\{[A-Z][A-Z0-9_]*\}' "$src" | sort -u || true)
 
     render_config_template "$src" "$dst" "$file_mode" "${replacements[@]}"

@@ -447,7 +447,7 @@ stage_dependencies() {
     checkout_git_revision
     check_python
     check_required_modules
-    install_application_system_packages
+    install_system_packages
     mkdir -p "$INSTALL_PATH"
     [[ -d "$INSTALL_PATH/virtualenv" ]] \
         || "$PYTHON_BIN_PATH" -m venv "$INSTALL_PATH/virtualenv"
