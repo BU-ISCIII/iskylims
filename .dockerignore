@@ -32,7 +32,3 @@ documents/
 build/
 dist/
 *.egg-info/
-
-# BEGIN BU-ISCIII APPLICATION: additional-dockerignore
-# Add application-specific build-context exclusions here.
-# END BU-ISCIII APPLICATION: additional-dockerignore

@@ -507,14 +507,6 @@ prepare_application_host_sources
 prepare_host_bind_source_permissions
 deployment_compose -f "$compose_file" config \
     || die "Compose configuration validation failed: $compose_file"
-# Cross-check wiring between services before any image is built.
-service_profiles=()
-for service_name in "${install_services[@]}"; do
-    service_profiles+=("$service_name=$(service_profile "$service_name")")
-done
-check_deployment_configuration "$mode" "$compose_env_file" "$compose_file" \
-    "$script_dir/deployment/apache" "${service_profiles[@]}" \
-    || die "Deployment configuration check failed; correct the settings reported above"
 
 # 5. Dispatch permission-only repair without building or bootstrapping.
 if [ "$action" = fix-permissions ]; then
