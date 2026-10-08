@@ -20,3 +20,7 @@ node_modules/
 .npm/
 logs/
 documents/
+
+# BEGIN BU-ISCIII APPLICATION: additional-gitignore
+# Add application-specific untracked paths here.
+# END BU-ISCIII APPLICATION: additional-gitignore

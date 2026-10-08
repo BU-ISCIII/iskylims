@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Shared RELECOV Platform/iSkyLIMS runtime pattern, parameterized per project.
+# Shared Django runtime pattern, parameterized per project.
 APP_DIR="${APP_INSTALL_PATH:-${INSTALL_PATH:-/opt/iskylims}}"
 CRON_DIR="${APP_DIR}/cron"
 TMP_DIR="${APP_DIR}/tmp"
