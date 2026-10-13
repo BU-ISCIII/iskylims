@@ -147,6 +147,13 @@ Editar unicamente las copias bajo `deployment/settings/`, completar todas esas
 decisiones y resolver cada `CHANGE_ME` antes de continuar. Los comandos de
 instalacion y actualizacion usan estas rutas protegidas.
 
+Las actualizaciones Django conservan automaticamente `SECRET_KEY` del fichero
+de settings existente en el host, indicado por `DJANGO_SETTINGS_PATH`. No hace
+falta configurar la clave manualmente. Si el fichero no existe, el instalador
+genera una clave nueva. Al restaurar o mover el despliegue a otra ruta de
+settings, restaurar alli el fichero antiguo antes de instalar si se necesita
+conservar la clave de firma original.
+
 ## Preparar directorios persistentes del host
 
 Solo despues de completar y revisar todos los ajustes, crear los binds

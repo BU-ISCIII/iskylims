@@ -32,7 +32,6 @@ DB_ROOT_PASSWORD='root'
 
 ### Django and local email defaults
 DJANGO_DEBUG='true'
-DJANGO_SECRET_KEY='test-only-change-me'
 DJANGO_ALLOWED_HOSTS='*'
 DJANGO_CSRF_TRUSTED_ORIGINS='http://localhost:8201,http://127.0.0.1:8201,http://0.0.0.0:8201'
 DB_CONN_MAX_AGE='60'

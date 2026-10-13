@@ -54,8 +54,6 @@ DB_PASSWORD='CHANGE_ME'
 ### Django security and public URLs
 # Production debug must remain disabled.
 DJANGO_DEBUG='false'
-# Preserve this value across upgrades; changing it invalidates signed data.
-DJANGO_SECRET_KEY='CHANGE_ME'
 # Comma-separated host names accepted by Django, without URL schemes.
 DJANGO_ALLOWED_HOSTS='CHANGE_ME'
 # Comma-separated complete HTTPS origins, including their schemes.

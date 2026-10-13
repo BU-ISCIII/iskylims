@@ -264,6 +264,12 @@ podman compose --env-file .env.production.file -f docker-compose.prod.yml restar
 
 ### Upgrade docker deployment
 
+Django upgrades automatically preserve `SECRET_KEY` from the existing host
+settings file at `DJANGO_SETTINGS_PATH`. No manual key configuration is needed.
+If that file does not exist, the installer generates a new key. When restoring
+or moving the deployment to a different settings path, restore the old settings
+file there before installation if the original signing key must be preserved.
+
 After taking a consistent backup and reading the version-specific upgrade
 notes:
 

@@ -46,7 +46,6 @@ generates a private `<service>-db` MySQL service and persistent
 | Variable | Required | Secret | Meaning |
 |---|---:|---:|---|
 | `DJANGO_DEBUG` | yes | no | MUST be `false` in production |
-| `DJANGO_SECRET_KEY` | yes | yes | Stable Django signing key; preserve on upgrade |
 | `DJANGO_ALLOWED_HOSTS` | yes | no | Exact production hostnames |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | production | no | Exact HTTPS origins |
 | `DB_CONN_MAX_AGE` | yes | no | Django persistent database connection lifetime |
