@@ -120,7 +120,7 @@ Keep its allow-list limited to trusted diagnostic hosts.
 
 Edit the source files under `conf/apache/` to define the application's virtual
 hosts, routes, and aliases. During installation they are rendered with the
-protected deployment environment into `deployment/apache/`; only those final
+protected deployment environment into `APACHE_CONF_PATH` (or `deployment/apache/` when empty); only those final
 files are bind-mounted. `APACHE_LOG_PATH` is the writable persistent host log
 source.
 

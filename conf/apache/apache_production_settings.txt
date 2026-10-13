@@ -1,12 +1,10 @@
 # Apache add-on
 # Used only when ADDONS.apache selects this application as CONFIG_SERVICE.
 
-# Repository-owned sources live under <repository>/conf/apache. The installer
-# renders them to <repository>/deployment/apache and mounts those final files;
-# APACHE_CONF_PATH is not used by the standard lifecycle. Keep it empty unless
-# legacy application code explicitly consumes a different host directory.
-# Example legacy override: APACHE_CONF_PATH='/srv/containers/bind/apache-conf'
-APACHE_CONF_PATH=''
+# Host directory for rendered Apache configuration, mounted read-only by Compose.
+# Sources stay under <repository>/conf/apache. Leave empty to render and mount
+# <repository>/deployment/apache instead.
+APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
 
 # Persistent host directory mounted as the Apache log destination.
 # Example: /var/log/local/iskylims/apache

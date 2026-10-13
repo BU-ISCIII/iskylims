@@ -63,9 +63,9 @@ services:
       start_period: 30s
     volumes:
       # Test uses the same runtime-rendered configuration as production.
-      - ./deployment/apache/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
-      - ./deployment/apache/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
-      - ./deployment/apache/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
       # Disposable log volume avoids writing test logs into production paths.
       - apache_test_logs:/var/log/httpd:z
       # GENERATED MULTI-APP MOUNTS: disposable test static/document volumes.

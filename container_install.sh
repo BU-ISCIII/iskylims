@@ -256,7 +256,7 @@ prepare_application_host_sources() {
     # deployment value only after the protected settings environment is loaded,
     # then expose the completed files as Compose bind sources.
     local apache_source_dir="$script_dir/conf/apache"
-    local apache_output_dir="$script_dir/deployment/apache"
+    local apache_output_dir="${APACHE_CONF_PATH:-$script_dir/deployment/apache}"
     local apache_conf_name apache_config_service apache_log_path
     apache_config_service=iskylims
     [ -d "$apache_source_dir" ] || {
@@ -311,11 +311,12 @@ prepare_host_bind_source_permissions() {
     # Generated proxy configuration is read-only in Apache. Its host files need
     # traversal/read permissions, while the configured log source must be writable.
     apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
+    local apache_output_dir="${APACHE_CONF_PATH:-$script_dir/deployment/apache}"
     local -a apache_host_bind_permission_spec=(
-        "$script_dir/deployment/apache|-|0755"
-        "$script_dir/deployment/apache/00-logs.conf|-|0644"
-        "$script_dir/deployment/apache/01-reverse-proxy.conf|-|0644"
-        "$script_dir/deployment/apache/02-server-status.conf|-|0644"
+        "$apache_output_dir|-|0755"
+        "$apache_output_dir/00-logs.conf|-|0644"
+        "$apache_output_dir/01-reverse-proxy.conf|-|0644"
+        "$apache_output_dir/02-server-status.conf|-|0644"
         # registry.access.redhat.com/ubi9/httpd-24 runs as UID 1001 with GID 0.
         # The shared helper applies these IDs directly for Docker and through
         # podman unshare when the bind source belongs to a rootless userns.
@@ -513,7 +514,7 @@ for service_name in "${install_services[@]}"; do
     service_profiles+=("$service_name=$(service_profile "$service_name")")
 done
 check_deployment_configuration "$mode" "$compose_env_file" "$compose_file" \
-    "$script_dir/deployment/apache" "${service_profiles[@]}" \
+    "${APACHE_CONF_PATH:-$script_dir/deployment/apache}" "${service_profiles[@]}" \
     || die "Deployment configuration check failed; correct the settings reported above"
 
 # 5. Dispatch permission-only repair without building or bootstrapping.

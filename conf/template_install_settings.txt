@@ -7,7 +7,7 @@ MIGRATION_MODULES='core drylab wetlab django_utils'
 # Host directory for Apache bind-mounted configuration files.
 # Leave empty to use ${INSTALL_PATH}/conf as the host bind source.
 # Set this to a writable host path for rootless or hardened deployments.
-# Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims_apache_conf'
+# Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
 APACHE_CONF_PATH=''
 # Apache server-status virtual host and access control.
 # Leave SERVER_STATUS_SERVER_NAME empty to use DNS_URL.

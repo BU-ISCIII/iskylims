@@ -1,8 +1,8 @@
 # Apache add-on
 # Used only when ADDONS.apache selects this application as CONFIG_SERVICE.
 
-# Sources under <repository>/conf/apache are rendered into deployment/apache.
-# This compatibility value is unused unless application code consumes it.
+# Host directory for rendered Apache configuration, mounted read-only by Compose.
+# Leave empty to use <repository>/deployment/apache for disposable tests.
 APACHE_CONF_PATH=''
 
 # Disposable test logs and a public test endpoint.

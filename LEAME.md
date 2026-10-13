@@ -85,7 +85,7 @@ Persistencia declarada por el despliegue:
 | `iskylims` logs | Host bind configured by `HOST_LOG_PATH` in `iskylims_production_settings.txt` | Retain/rotate per institutional log policy |
 | `iskylims` rendered settings | Host bind configured by `DJANGO_SETTINGS_PATH` in `iskylims_production_settings.txt` | Protected configuration backup |
 | Apache logs | `/var/log/local/iskylims/apache` host bind | Retain/rotate per institutional log policy |
-| Rendered Apache configuration | `deployment/apache/` in the deployment checkout | Rebuildable; preserve reviewed source configuration |
+| Rendered Apache configuration | `APACHE_CONF_PATH` (or `deployment/apache/` when empty) | Rebuildable; preserve reviewed source configuration |
 | Samba test data | `samba_test_data` named volume | Disposable test/demo files |
 
 ## Preparar checkout y backup
