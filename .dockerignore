@@ -2,6 +2,7 @@
 # all local settings and allow only committed, non-sensitive templates/tests.
 install_settings.txt
 conf/*settings*.txt
+!conf/docker_production_settings.txt
 !conf/docker_test_settings.txt
 !conf/template_install_settings.txt
 !conf/template_settings.txt

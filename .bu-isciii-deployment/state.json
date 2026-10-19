@@ -32,7 +32,7 @@
     "TIMEZONE": "Europe/Madrid"
   },
   "files": {
-    ".dockerignore": "fe30ca2a87248d561ac8bc0e12d9b7ee234ce9567d2eba408c4ec36a5d47c881",
+    ".dockerignore": "34f4bac3b5110774b4bc5d3830d8dff71a1c23c71ce292854b36963ba9f24c07",
     ".github/DJANGO_MIGRATIONS.md": "812f598c85b7f6766773819b42ba1dda4015388d34ce6f021e37d98f1238ada5",
     ".gitignore": "30a0833eacc410ff35ab77bed07f86d650f7d4081c530c63205fb36f186317aa",
     "Dockerfile": "95d77c59cec771592957755e699c19401f70e631eb42bd6a9ac73c2024786de1",
@@ -44,8 +44,8 @@
     "conf/apache/02-server-status.conf": "c3b5d26f9b551083faf0d85b188bfa9c577ff0bd3b805f0ec104fe4f7d5101cb",
     "conf/apache/apache_production_settings.txt": "ae687da48236ba2c81eed15cf0bc1333b598675ac19c2b889d18b71d403ae1cd",
     "conf/apache/apache_test_settings.txt": "8f563b51e25f498da64f2585a3ca3fddb9ab616a1ef178fc8b5fdbf6fa1976bb",
-    "conf/docker_production_settings.txt": "c3069006ad53335a9e903fa2430ca601e363601219406bba5012bcc6be59e29a",
-    "conf/docker_test_settings.txt": "683435516258e49b2aaa4ea09be0e74645878b7a6d14e39fec7cacb50c6c8bf3",
+    "conf/docker_production_settings.txt": "839fbbf6693dede1fc9d5fc388fd4032e11f560c8dd82c10db81271d0ccb0b1c",
+    "conf/docker_test_settings.txt": "e23d198444d24a2cd8d2bf33443313f6719d1b953139c4a353bc48b35e93653a",
     "conf/samba/samba_production_settings.txt": "f19da30ab0890a79254e22c571629b34de2d37ad9c12449607158bff9a9188a1",
     "conf/samba/samba_test_settings.txt": "c383b88d43de8d65886cdd2b45bf9f27d91f5f3fe290f8f82378578fbeeff0b2",
     "conf/template_settings.py": "af539ad10729a371e0c735c121e6e62dfece96afce77fb86e3a0820df2e9dd2f",
@@ -62,6 +62,6 @@
     "scripts/smoke_test.sh": "24aabe5c89c2ede2d373d282f1c3d17ed4a19f3c8e73b07a148e8472869bf17f"
   },
   "source": "BU-ISCIII deployment standards",
-  "standard_revision": "8020daeb01fa50aa94b103459a869bb4bdabdc51",
+  "standard_revision": "9f02e44366842a82c2ebf85baa580673132681e5",
   "standard_version": "0.1.0"
 }
