@@ -1,5 +1,6 @@
 {
   "APP_NAME": "iSkyLIMS",
+  "APP_VERSION": "3.1.1",
   "APP_SLUG": "iskylims",
   "DESCRIPTION": "Laboratory information management system for wet-lab and dry-lab sequencing workflows.",
   "REPOSITORY_URL": "https://github.com/BU-ISCIII/iSkyLIMS.git",

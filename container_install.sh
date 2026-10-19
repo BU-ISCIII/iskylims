@@ -7,8 +7,9 @@ source "$script_dir/deployment/lib/container/common.sh"
 # shellcheck disable=SC1091
 source "$script_dir/deployment/lib/container/django.sh"
 
-APP_VERSION="0.1.0"
+APP_VERSION="3.1.1"
 APPLICATION_NAME="iSkyLIMS"
+CONTAINER_INSTALL_VERSION="0.1.0"
 
 # Applications with disposable fixtures or demo files customize this callback
 # and set application_supports_test_data=true. Keep application-specific
@@ -419,7 +420,7 @@ while (($#)); do
         --skip_test_data) skip_test_data=true; shift ;;
         --skip_test_data_service) skip_test_data_services+=("${2:-}"); shift 2 ;;
         --help) usage; exit 0 ;;
-        --version) echo "$APP_VERSION"; exit 0 ;;
+        --version) echo "$CONTAINER_INSTALL_VERSION"; exit 0 ;;
         *) die "Unknown option: $1" ;;
     esac
 done
