@@ -233,7 +233,7 @@ Check the package-manager output above for details. Possible causes
 include repository availability, incompatible package versions,
 network access, or subscription configuration."
 }
-¨
+
 install_application_system_packages() {
     # iSkyLIMS owns these dependencies rather than its Dockerfile so the same
     # lifecycle works in UBI containers and supported bare-metal deployments.
