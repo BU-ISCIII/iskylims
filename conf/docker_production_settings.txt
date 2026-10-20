@@ -54,8 +54,10 @@ DB_PASSWORD='CHANGE_ME'
 ### Django security and public URLs
 # Production debug must remain disabled.
 DJANGO_DEBUG='false'
-# Comma-separated host names accepted by Django, without URL schemes.
-DJANGO_ALLOWED_HOSTS='CHANGE_ME'
+# Comma-separated host names accepted by Django, without URL schemes. Keep
+# localhost and 127.0.0.1 because the container healthcheck connects locally;
+# replace only CHANGE_ME_DNS_NAME with the public application DNS name.
+DJANGO_ALLOWED_HOSTS='localhost,127.0.0.1,CHANGE_ME_DNS_NAME'
 # Comma-separated complete HTTPS origins, including their schemes.
 DJANGO_CSRF_TRUSTED_ORIGINS='https://CHANGE_ME'
 # Persistent database connection lifetime in seconds.

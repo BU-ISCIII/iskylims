@@ -278,6 +278,15 @@ cualquier fallo de build, readiness, bootstrap, migracion o smoke test.
 
 ## Comprobaciones posteriores
 
+Con los contenedores levantados despues de una instalacion o actualizacion,
+repetir la reparacion para aplicar propietarios y modos dentro de todos los
+volumenes montados:
+
+```bash
+bash container_install.sh --action fix-permissions --engine podman \
+  --install_conf_map iskylims,deployment/settings/iskylims_production_settings.txt --install_conf_map apache,deployment/settings/apache_production_settings.txt --install_conf_map samba,deployment/settings/samba_production_settings.txt
+```
+
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml ps
 podman compose --env-file .env.production.file -f docker-compose.prod.yml logs --tail 200

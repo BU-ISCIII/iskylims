@@ -46,7 +46,7 @@ generates a private `<service>-db` MySQL service and persistent
 | Variable | Required | Secret | Meaning |
 |---|---:|---:|---|
 | `DJANGO_DEBUG` | yes | no | MUST be `false` in production |
-| `DJANGO_ALLOWED_HOSTS` | yes | no | Exact production hostnames |
+| `DJANGO_ALLOWED_HOSTS` | yes | no | Local healthcheck hosts plus exact production DNS names |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | production | no | Exact HTTPS origins |
 | `DB_CONN_MAX_AGE` | yes | no | Django persistent database connection lifetime |
 | `WEB_CONCURRENCY` | production | no | Gunicorn workers |
