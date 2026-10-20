@@ -62,5 +62,6 @@
     "scripts/smoke_test.sh": "466509428696a3ed92cf76e14963a71baa95ee5d5b5a9b6c390081907f34ac4e"
   },
   "source": "BU-ISCIII deployment standards",
+  "standard_revision": "985652744d68f3c0d57ee9caf311140754a4a481",
   "standard_version": "0.1.0"
 }
