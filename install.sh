@@ -210,6 +210,21 @@ PY
     done
 }
 
+install_system_packages() {
+    # Run the application hook in a subshell outside any `||`/`if` test:
+    # Bash disables errexit inside functions called from a tested context,
+    # which would let a failed package install continue silently.
+    local status
+    set +e
+    ( set -e; install_application_system_packages )
+    status=$?
+    set -e
+    (( status == 0 )) || die "System dependency installation failed during the container build.
+Check the package-manager output above for details. Possible causes
+include repository availability, incompatible package versions,
+network access, or subscription configuration."
+}
+
 # BEGIN BU-ISCIII APPLICATION: install-hooks
 # ============================================================================
 # APPLICATION CUSTOMIZATION POINTS

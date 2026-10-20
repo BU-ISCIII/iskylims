@@ -98,17 +98,37 @@ validate_compose_configuration() {
     fi
 }
 
+# Print `name<TAB>ports` for running containers outside this Compose project
+# that publish ports. A redeploy is checked while its previous containers still
+# hold their ports, so the project's own containers are excluded. Rootless
+# Podman lists only the invoking user's containers, and neither engine reports
+# ports held by host processes.
+# Arguments: Compose environment file, Compose file.
+list_other_published_ports() {
+    local env_file="$1" compose_path="$2" deployment_ids listing id name ports
+    deployment_ids="$(compose_exec --env-file "$env_file" -f "$compose_path" ps -q 2>/dev/null)" \
+        || deployment_ids=""
+    listing="$(engine_exec ps --format $'{{.ID}}\t{{.Names}}\t{{.Ports}}')" || return 1
+    while IFS=$'\t' read -r id name ports; do
+        [ -n "$id" ] && [ -n "$ports" ] || continue
+        # Docker Compose prints full IDs and podman-compose short ones.
+        [[ "$deployment_ids" != *"${id:0:12}"* ]] || continue
+        printf '%s\t%s\n' "$name" "$ports"
+    done <<< "$listing"
+}
+
 # Cross-check service wiring that Compose cannot validate: proxy targets and
-# ports, database hosts, Django allowed hosts and Keycloak URLs/realms. The
-# rules live in check_config.sh beside this library. Production findings fail;
-# test findings are printed as warnings.
+# ports, database hosts, Django allowed hosts, Keycloak URLs/realms and host
+# ports already published by other deployments. The rules live in
+# check_config.sh beside this library. Production findings fail; test findings
+# are printed as warnings.
 # Arguments: mode, Compose environment file, Compose file, rendered Apache
 # configuration directory (ignored when absent), then one `service=profile`
 # entry per application service.
 check_deployment_configuration() {
     local check_mode="$1" env_file="$2" compose_path="$3" apache_dir="$4"
     shift 4
-    local checker entry
+    local checker entry running_ports=""
     local -a checker_args
     checker="$(dirname "${BASH_SOURCE[0]}")/check_config.sh"
     checker_args=(--mode "$check_mode" --env-file "$env_file" --compose-file "$compose_path")
@@ -116,7 +136,12 @@ check_deployment_configuration() {
     for entry in "$@"; do
         checker_args+=(--service "$entry")
     done
-    bash "$checker" "${checker_args[@]}"
+    if running_ports="$(list_other_published_ports "$env_file" "$compose_path")"; then
+        bash "$checker" "${checker_args[@]}" --running-ports <(printf '%s\n' "$running_ports")
+    else
+        echo "Warning: cannot list running containers; skipping the port-in-use check" >&2
+        bash "$checker" "${checker_args[@]}"
+    fi
 }
 
 # Return a repository's full or short HEAD without printing diagnostics.

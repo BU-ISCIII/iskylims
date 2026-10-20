@@ -6,12 +6,15 @@
 # `container_install.sh` calls this checker after Compose validation. It reads
 # only generated artifacts: the protected Compose environment file, the Compose
 # file and, when the Apache add-on is selected, the rendered Apache
-# configuration. Each finding names a rule and the setting to change. Values
-# are printed only for URL and host settings, never for other settings.
+# configuration. With --running-ports it also reads the published ports of
+# running containers that belong to other deployments, one `NAME<TAB>PORTS`
+# line per container in the engine's `ps` Ports format. Each finding names a
+# rule and the setting to change. Values are printed only for URL, host and
+# port settings, never for other settings.
 #
 # Usage: check_config.sh --mode {production,test} --env-file FILE
 #            --compose-file FILE [--apache-config-dir DIR]
-#            [--service NAME=PROFILE]...
+#            [--running-ports FILE] [--service NAME=PROFILE]...
 #
 # Rules:
 #   unresolved-placeholder  a CHANGE_ME marker remains in a setting
@@ -26,6 +29,7 @@
 #   keycloak-realm          Keycloak realms disagree across settings
 #   keycloak-vhost          Keycloak public URL is not routed to Keycloak by Apache
 #   canonical-url           AUTH_URL and NEXTAUTH_URL disagree
+#   port-in-use             a published host port is already used by another deployment
 #
 # Production findings are errors and fail the installation. Test findings are
 # reported as warnings because test settings intentionally use shortcuts.
@@ -60,6 +64,11 @@ ENV_KEYS=()
 # Compose services in file order. Names and ports are newline-delimited sets.
 SERVICES=()
 declare -A SERVICE_NAMES=() SERVICE_PORTS=()
+# Raw Compose `ports:` entries, interpolated only when they are checked.
+PUBLISHED_SERVICES=() PUBLISHED_SPECS=()
+# Host port bindings of running containers outside this deployment.
+RUNNING_NAMES=() RUNNING_BINDINGS=() RUNNING_ADDRESSES=() RUNNING_PROTOCOLS=()
+RUNNING_LOW=() RUNNING_HIGH=()
 # Application services and their profiles in command-line order.
 declare -A PROFILES=()
 PROFILE_ORDER=()
@@ -86,7 +95,8 @@ print_help() {
 
 usage_error() {
     echo "usage: check_config.sh --mode {production,test} --env-file FILE" \
-        "--compose-file FILE [--apache-config-dir DIR] [--service NAME=PROFILE]..." >&2
+        "--compose-file FILE [--apache-config-dir DIR] [--running-ports FILE]" \
+        "[--service NAME=PROFILE]..." >&2
     echo "check_config.sh: error: $1" >&2
     exit 2
 }
@@ -298,9 +308,17 @@ yaml_scalar() {
     REPLY="$value"
 }
 
-# Arguments: service, list key (`expose`, `aliases` or `container_name`), value.
+# Arguments: service, list key (`expose`, `ports`, `aliases` or
+# `container_name`), value.
 add_compose_value() {
     local service="$1" key="$2" value="$3"
+    if [ "$key" = "ports" ]; then
+        if [ -n "$value" ]; then
+            PUBLISHED_SERVICES+=("$service")
+            PUBLISHED_SPECS+=("$value")
+        fi
+        return 0
+    fi
     if [ -z "$value" ] || [[ "$value" == *'$'* ]]; then return 0; fi
     if [ "$key" = "expose" ]; then
         if [[ "$value" =~ ^([0-9]+) ]]; then
@@ -314,9 +332,10 @@ add_compose_value() {
     fi
 }
 
-# Read service names, network aliases, container names and exposed ports.
-# Generated Compose files use conventional block indentation, so a small line
-# scanner is sufficient and keeps the checker free of YAML tools.
+# Read service names, network aliases, container names, exposed ports and
+# short-syntax published ports. Generated Compose files use conventional block
+# indentation, so a small line scanner is sufficient and keeps the checker free
+# of YAML tools.
 read_compose_services() {
     local raw text indent in_services=0 current="" list_key="" key rest inner item
     local quote="[\"']"
@@ -360,7 +379,7 @@ read_compose_services() {
         if [ "$key" = "container_name" ]; then
             yaml_scalar "$rest"
             add_compose_value "$current" "$key" "$REPLY"
-        elif [ "$key" = "aliases" ] || [ "$key" = "expose" ]; then
+        elif [ "$key" = "aliases" ] || [ "$key" = "expose" ] || [ "$key" = "ports" ]; then
             if [[ "$rest" == "["* ]]; then
                 inner="$rest"
                 while [[ "$inner" == [][]* ]]; do inner="${inner:1}"; done
@@ -414,6 +433,49 @@ read_apache_routes() {
             fi
         done < "$conf"
     done
+}
+
+# Parse a port or port range. Sets PORT_LOW and PORT_HIGH; fails for an empty
+# (ephemeral) or malformed value.
+port_range() {
+    if [[ "$1" =~ ^([0-9]+)(-([0-9]+))?$ ]]; then
+        PORT_LOW=$((10#${BASH_REMATCH[1]}))
+        PORT_HIGH=$((10#${BASH_REMATCH[3]:-${BASH_REMATCH[1]}}))
+        return 0
+    fi
+    return 1
+}
+
+# Read the published ports of running containers from other deployments, as
+# `NAME<TAB>PORTS` lines such as `web<TAB>0.0.0.0:8080->80/tcp, [::]:8080->80/tcp`.
+# Exposed but unpublished entries such as `80/tcp` are skipped.
+read_running_ports() {
+    local line name item binding target address protocol
+    local -a items
+    while IFS= read -r line || [ -n "$line" ]; do
+        [[ "$line" == *"$TAB"* ]] || continue
+        name="${line%%"$TAB"*}"
+        IFS=, read -ra items <<< "${line#*"$TAB"}"
+        for item in "${items[@]}"; do
+            trim "$item"
+            item="$REPLY"
+            [[ "$item" == *"->"* ]] || continue
+            binding="${item%%"->"*}"
+            target="${item#*"->"}"
+            protocol="tcp"
+            [[ "$target" != */* ]] || protocol="${target##*/}"
+            port_range "${binding##*:}" || continue
+            address=""
+            [[ "$binding" != *:* ]] || address="${binding%:*}"
+            address="${address#"["}"
+            RUNNING_NAMES+=("$name")
+            RUNNING_BINDINGS+=("$binding")
+            RUNNING_ADDRESSES+=("${address%"]"}")
+            RUNNING_PROTOCOLS+=("${protocol,,}")
+            RUNNING_LOW+=("$PORT_LOW")
+            RUNNING_HIGH+=("$PORT_HIGH")
+        done
+    done < "$1"
 }
 
 # Resolve a host to the Compose service that owns it (REPLY; empty if none).
@@ -513,6 +575,75 @@ check_internal_host() {
         done < <(sort -n <<< "${SERVICE_PORTS[$port_target]}")
         add_finding upstream-port "$label=$shown: $port_target listens on $expected, not ${port:-None}"
     fi
+}
+
+# Split a short-syntax Compose port entry at colons outside `${...}` and
+# `[...]`, so interpolation defaults and IPv6 addresses stay intact. Sets
+# PORT_FIELDS.
+split_port_spec() {
+    local spec="$1" field="" char index depth=0
+    PORT_FIELDS=()
+    for ((index = 0; index < ${#spec}; index++)); do
+        char="${spec:index:1}"
+        case "$char" in
+            '{'|'[') depth=$((depth + 1)) ;;
+            '}'|']') depth=$((depth - 1)) ;;
+            ':')
+                if [ "$depth" -eq 0 ]; then
+                    PORT_FIELDS+=("$field")
+                    field=""
+                    continue
+                fi
+                ;;
+        esac
+        field+="$char"
+    done
+    PORT_FIELDS+=("$field")
+}
+
+# Interpolate a Compose value from the environment file (REPLY). Supports the
+# `$VAR`, `${VAR}`, `${VAR-default}`, `${VAR:-default}`, `${VAR?message}` and
+# `${VAR:?message}` forms used by generated Compose files. Fails when a value
+# cannot be resolved; Compose validation reports those cases itself.
+interpolate_compose_value() {
+    local rest="$1" result="" name operator default
+    local braced='^\{([A-Za-z_][A-Za-z0-9_]*)(:?[-?])?([^}]*)\}'
+    local plain='^[A-Za-z_][A-Za-z0-9_]*'
+    while [[ "$rest" == *'$'* ]]; do
+        result+="${rest%%\$*}"
+        rest="${rest#*\$}"
+        if [[ "$rest" == '$'* ]]; then
+            result+='$'
+            rest="${rest:1}"
+            continue
+        fi
+        if [[ "$rest" =~ $braced ]]; then
+            name="${BASH_REMATCH[1]}" operator="${BASH_REMATCH[2]}" default="${BASH_REMATCH[3]}"
+        elif [[ "$rest" =~ $plain ]]; then
+            name="${BASH_REMATCH[0]}" operator="" default=""
+        else
+            return 1
+        fi
+        rest="${rest:${#BASH_REMATCH[0]}}"
+        if [ -n "${ENV[$name]+set}" ] && { [ -n "${ENV[$name]}" ] || [[ "$operator" != :* ]]; }; then
+            result+="${ENV[$name]}"
+        elif [[ "$operator" == *- ]]; then
+            result+="$default"
+        else
+            return 1
+        fi
+    done
+    REPLY="$result$rest"
+}
+
+# Bindings collide when they share an address or either listens on all
+# addresses. A wildcard is treated as covering both address families, which
+# may over-report an IPv4-only/IPv6-only pair but never misses a collision.
+bind_addresses_overlap() {
+    local first="${1,,}" second="${2,,}"
+    case "$first" in ""|0.0.0.0|::) return 0 ;; esac
+    case "$second" in ""|0.0.0.0|::) return 0 ;; esac
+    [ "$first" = "$second" ]
 }
 
 check_placeholders() {
@@ -834,6 +965,54 @@ check_canonical_urls() {
     done
 }
 
+# Compare every published host port with ports held by other deployments.
+# The Compose `up` would otherwise fail only after all images were built.
+check_published_ports() {
+    local index service host_field label address protocol low high running port shown
+    local -A reported
+    [ "${#RUNNING_NAMES[@]}" -gt 0 ] || return 0
+    for index in "${!PUBLISHED_SPECS[@]}"; do
+        service="${PUBLISHED_SERVICES[$index]}"
+        split_port_spec "${PUBLISHED_SPECS[$index]}"
+        case "${#PORT_FIELDS[@]}" in
+            2) address="" ;;
+            3)
+                interpolate_compose_value "${PORT_FIELDS[0]}" || continue
+                address="${REPLY#"["}"
+                address="${address%"]"}"
+                ;;
+            *) continue ;;
+        esac
+        host_field="${PORT_FIELDS[-2]}"
+        interpolate_compose_value "${PORT_FIELDS[-1]}" || continue
+        protocol="tcp"
+        [[ "$REPLY" != */* ]] || protocol="${REPLY##*/}"
+        interpolate_compose_value "$host_field" || continue
+        port_range "$REPLY" || continue
+        low="$PORT_LOW" high="$PORT_HIGH"
+        py_repr "$REPLY"
+        if [[ "$host_field" =~ \$\{?([A-Za-z_][A-Za-z0-9_]*) ]]; then
+            label="${BASH_REMATCH[1]}=$REPLY"
+        else
+            py_repr "${PUBLISHED_SPECS[$index]}"
+            label="$service ports entry $REPLY"
+        fi
+        reported=()
+        for running in "${!RUNNING_NAMES[@]}"; do
+            [ "${RUNNING_PROTOCOLS[$running]}" = "${protocol,,}" ] || continue
+            ((RUNNING_LOW[running] <= high && low <= RUNNING_HIGH[running])) || continue
+            bind_addresses_overlap "$address" "${RUNNING_ADDRESSES[$running]}" || continue
+            # Engines list IPv4 and IPv6 bindings separately; report each container once.
+            [ -z "${reported[${RUNNING_NAMES[$running]}]+set}" ] || continue
+            reported["${RUNNING_NAMES[$running]}"]=1
+            port=$((low > RUNNING_LOW[running] ? low : RUNNING_LOW[running]))
+            py_repr "${RUNNING_NAMES[$running]}"
+            shown="$REPLY"
+            add_finding port-in-use "$label: $service publishes host port $port, which running container $shown already publishes on ${RUNNING_BINDINGS[$running]}; choose a free port or stop that container"
+        done
+    done
+}
+
 run_checks() {
     local mode="$1"
     apply_application_ports
@@ -845,17 +1024,18 @@ run_checks() {
     check_keycloak
     check_keycloak_vhost
     check_canonical_urls
+    check_published_ports
 }
 
 main() {
-    local mode="" env_file="" compose_file="" apache_dir="" option value
+    local mode="" env_file="" compose_file="" apache_dir="" running_ports="" option value
     local name profile errors=0 warnings=0 level index
     while [ "$#" -gt 0 ]; do
         option="$1"
         case "$option" in
             -h|--help) print_help; exit 0 ;;
             --*=*) value="${option#*=}"; option="${option%%=*}"; shift ;;
-            --mode|--env-file|--compose-file|--apache-config-dir|--service)
+            --mode|--env-file|--compose-file|--apache-config-dir|--running-ports|--service)
                 [ "$#" -ge 2 ] || usage_error "argument $option: expected one argument"
                 value="$2"
                 shift 2
@@ -867,6 +1047,7 @@ main() {
             --env-file) env_file="$value" ;;
             --compose-file) compose_file="$value" ;;
             --apache-config-dir) apache_dir="$value" ;;
+            --running-ports) running_ports="$value" ;;
             --service)
                 name="${value%%=*}"
                 profile="${value#*=}"
@@ -894,12 +1075,19 @@ main() {
         fi
     done
 
+    # The running-ports list may be a pipe from process substitution.
+    if [ -n "$running_ports" ] && [ ! -r "$running_ports" ]; then
+        echo "Error: cannot read $running_ports" >&2
+        exit 2
+    fi
+
     COMPOSE_FILE="$compose_file"
     read_environment "$env_file"
     read_compose_services "$compose_file"
     if [ -n "$apache_dir" ] && [ -d "$apache_dir" ]; then
         read_apache_routes "$apache_dir"
     fi
+    [ -z "$running_ports" ] || read_running_ports "$running_ports"
 
     run_checks "$mode"
     for index in "${!FINDING_RULES[@]}"; do

@@ -36,7 +36,7 @@
     ".github/DJANGO_MIGRATIONS.md": "812f598c85b7f6766773819b42ba1dda4015388d34ce6f021e37d98f1238ada5",
     ".gitignore": "30a0833eacc410ff35ab77bed07f86d650f7d4081c530c63205fb36f186317aa",
     "Dockerfile": "95d77c59cec771592957755e699c19401f70e631eb42bd6a9ac73c2024786de1",
-    "LEAME.md": "8c1c966d8b7aa7ca14fe3ca4876bd6a706ebd16327665c609e9eeb6a3343f5cf",
+    "LEAME.md": "a42f2a2530bce7a2c2701708aea025464d761b989ef694ffc6fbc2263e70d560",
     "README.md": "bd9cd9c2c182033f6727d51685dc8603b4e8299f75bca299fbc79f2ee9b5c798",
     "conf/INSTALL_SETTINGS.md": "6838bf1a797fd64e031e64ec3827ea0865933c9f27e37389fff7aec362a50574",
     "conf/apache/00-logs.conf": "3c2ab4e693e528d2cad37c0c5bb0bc4511803a7f206b339182de192d4e398092",
@@ -57,10 +57,11 @@
     "deployment_health/views.py": "d19cc3e8fef8519bae2b7fbdc25d17f6ae7df02479aa8890f4b4d250bb07f2e4",
     "docker-compose.prod.yml": "1f3a3b417404a7b2bd6ed09b0b0a6077a0ffc449f253ca53cc77de66c9e7bbd4",
     "docker-compose.test.yml": "6bae9a531d4e3e669cdd96627384d94b566c45149b40288798d06f02f9f85433",
-    "install.sh": "3d8ffd807968a288c33e72de46f5154f287feefcf3a68f339d4559c648d1ceea",
+    "install.sh": "0ae3999a5db1fbe9a4cef1d7e6acee16765f5d0b002f55064bf19f7de436c41e",
     "scripts/container_start.sh": "a954a399d875955276582708ee15a0b261c5cfbb2781e2d8256c4cf6c895585c",
     "scripts/smoke_test.sh": "24aabe5c89c2ede2d373d282f1c3d17ed4a19f3c8e73b07a148e8472869bf17f"
   },
   "source": "BU-ISCIII deployment standards",
+  "standard_revision": "2f83f97871fd9bb0be56ec8827753833e1c74384",
   "standard_version": "0.1.0"
 }

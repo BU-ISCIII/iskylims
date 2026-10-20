@@ -290,7 +290,7 @@ bash container_install.sh --action fix-permissions --engine podman \
 ```bash
 podman compose --env-file .env.production.file -f docker-compose.prod.yml ps
 podman compose --env-file .env.production.file -f docker-compose.prod.yml logs --tail 200
-bash scripts/smoke_test.sh --engine podman
+bash scripts/smoke_test.sh --engine podman --env_file .env.production.file
 ```
 
 Completar las comprobaciones que corresponden a la topologia seleccionada:
