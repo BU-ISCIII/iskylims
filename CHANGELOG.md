@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Fixes
 
+- Fixed a security vulnerability in the sample-information API by removing
+  request-controlled `eval()` calls, validating requested fields through the
+  Django model metadata API and using safe attribute access.
 - Fixed standalone deployment identities and internal service names so Apache,
   Django and database services resolve consistently inside Compose networks.
 - Fixed production and test healthchecks, including local Django allowed hosts,

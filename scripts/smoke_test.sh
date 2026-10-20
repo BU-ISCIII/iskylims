@@ -17,23 +17,18 @@ while (($#)); do
         --engine) engine="${2:-}"; shift 2 ;;
         --compose_file) compose_file="${2:-}"; shift 2 ;;
         --env_file) env_file="${2:-}"; shift 2 ;;
-        --help) echo "Usage: $0 [--test] [--engine docker|podman]"; exit 0 ;;
+        --help) echo "Usage: $0 [--test] [--engine docker|podman] [--compose_file PATH] [--env_file PATH]"; exit 0 ;;
         *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
 done
-compose_file="${compose_file:-docker-compose.$([ "$mode" = test ] && echo test || echo prod).yml}"
-compose_env_file="$env_file"
-set_engine
-# The generated dotenv file is mode 0600 and contains shell-safe quoted values.
-# Source it so direct host checks use the same service ports as Compose.
-if [ -n "$env_file" ]; then
-    set -a
-    # shellcheck disable=SC1090
-    source "$env_file"
-    set +a
-fi
-compose_run() { compose_with_env_exec -f "$compose_file" "$@"; }
 fail() { echo "FAIL: $*" >&2; exit 1; }
+compose_file="${compose_file:-$repo_root/docker-compose.$([ "$mode" = test ] && echo test || echo prod).yml}"
+env_file="${env_file:-$repo_root/.env.${mode}.file}"
+[ -f "$env_file" ] || fail "Compose environment file not found: $env_file. Run container_install.sh first or supply --env_file PATH."
+compose_env_file="$env_file"
+load_compose_environment_file "$env_file"
+set_engine
+compose_run() { compose_with_env_exec -f "$compose_file" "$@"; }
 compose_run config >/dev/null
     container_id="$(resolve_service_container iskylims)"
     [ -n "$container_id" ] || fail "Service iskylims has no container"
