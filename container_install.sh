@@ -1,990 +1,76 @@
-#!/usr/bin/bash
-
-ISKYLIMS_VERSION="3.1.0"
-
-usage() {
-cat << EOF
-This script installs and upgrades the iskylims app.
-
-Usage : $0 [--demo_data] [--git_revision] [--compose_file] [--install_conf] [--action] [--script] [--script_before] [--script_after] [--engine] [--test]
-    Optional input data:
-    --demo_data         | Provide already downloaded demo data from Zenodo
-    --git_revision      | Specify the Git revision to install (default: main, or 'current' to use copied local sources)
-    --compose_file      | Compose file to use (overrides default)
-    --install_conf      | Settings file consumed during container image build (mandatory for production)
-    --install_conf_map  | Service-specific settings file: service,path (can be repeated)
-    --action            | install (default), upgrade, or fix-permissions
-    --script            | Run a Django migration script after migrations (can be repeated)
-    --script_before     | Run a Django migration script before migrations (can be repeated)
-    --script_after      | Run a Django migration script after migrations (can be repeated)
-    --skip_demo_data    | Skip downloading/copying demo data to samba container
-    --skip_test_data    | Skip loading test fixtures (test/test_data.json)
-    --engine            | Container engine to use: docker (default) or podman
-    --test              | Use development/test compose file and sample data
-
-Examples:
-    Deploy production container pointing to an external DB/Samba:
-    bash $0 --install_conf conf/my_prod_settings.txt
-
-    Deploy production with service-specific settings mapping:
-    bash $0 --install_conf_map app,conf/docker_production_settings.txt
-
-    Upgrade an existing production deployment using the same database:
-    bash $0 --install_conf conf/my_prod_settings.txt --action upgrade
-
-    Repair production bind mount and volume permissions without rebuilding or bootstrapping:
-    bash $0 --install_conf conf/my_prod_settings.txt --action fix-permissions
-
-    Install demo container system with local services
-    bash $0 --test
-
-    Install test stack from current local committed sources without checking out a branch in-container
-    bash $0 --test --git_revision current
-
-    Provide already downloaded data from Zenodo (compressed) for test environment
-    bash $0 --demo_data /path/to/iskylims_demo_data.tar.gz
-
-EOF
-}
-
-# translate long options to short
-reset=true
-
-for arg in "$@"
-do
-    if [ -n "$reset" ]; then
-      unset reset
-      set --      # this resets the "$@" array so we can rebuild it
-    fi
-    case "$arg" in
-        # OPTIONAL
-        --demo_data)         set -- "$@" -d ;;
-        --git_revision)      set -- "$@" -g ;;
-        --compose_file)      set -- "$@" -c ;;
-        --install_conf)      set -- "$@" -s ;;
-        --install_conf_map)  set -- "$@" -j ;;
-        --action)            set -- "$@" -a ;;
-        --script)            set -- "$@" -m ;;
-        --script_before)     set -- "$@" -b ;;
-        --script_after)      set -- "$@" -f ;;
-        --skip_demo_data)    set -- "$@" -n ;;
-        --skip_test_data)    set -- "$@" -t ;;
-        --test)              set -- "$@" -p ;;
-        --engine)            set -- "$@" -e ;;
-
-        # ADDITIONAL
-        --help)              set -- "$@" -h ;;
-        --version)           set -- "$@" -v ;;
-        # PASSING VALUE IN PARAMETER
-        *)                   set -- "$@" "$arg" ;;
-    esac
-done
-
-# SETTING DEFAULT VALUES
-demo_data=false
-git_revision="main"
-compose_file=""
-install_conf=""
-install_conf_container=""
-install_conf_map_entries=()
-skip_demo_data=""
-skip_test_data=""
-mode="production"
-action="install"
-run_script=false
-run_script_before=false
-migration_script=()
-migration_script_before=()
-engine="docker"
-
-ENGINE_CMD=()
-COMPOSE_CMD=()
-
-set_engine() {
-    if [ "$engine" = "docker" ]; then
-        if ! command -v docker >/dev/null 2>&1; then
-            echo "docker not found. Install docker or use --engine podman."
-            exit 1
-        fi
-        ENGINE_CMD=("docker")
-        COMPOSE_CMD=("docker" "compose")
-    else
-        if ! command -v podman >/dev/null 2>&1; then
-            echo "podman not found. Install podman or use --engine docker."
-            exit 1
-        fi
-        ENGINE_CMD=("podman")
-        if command -v podman-compose >/dev/null 2>&1; then
-            COMPOSE_CMD=("podman-compose")
-        elif podman compose version >/dev/null 2>&1; then
-            COMPOSE_CMD=("podman" "compose")
-        else
-            echo "podman compose not available. Install podman-compose or use --engine docker."
-            exit 1
-        fi
-    fi
-}
-
-engine_exec() {
-    "${ENGINE_CMD[@]}" "$@"
-}
-
-compose_exec() {
-    "${COMPOSE_CMD[@]}" "$@"
-}
-
-copy_with_podman_fallback() {
-    local src="$1"
-    local dst="$2"
-
-    if cp "$src" "$dst" 2>/dev/null; then
-        return 0
-    fi
-
-    if [ "$engine" = "podman" ]; then
-        if podman unshare cp "$src" "$dst"; then
-            return 0
-        fi
-    fi
-
-    echo "Failed to copy '$src' to '$dst'" >&2
-    return 1
-}
-
-chmod_with_podman_fallback() {
-    local mode="$1"
-    shift
-
-    if chmod "$mode" "$@" 2>/dev/null; then
-        return 0
-    fi
-
-    if [ "$engine" = "podman" ]; then
-        if podman unshare chmod "$mode" "$@"; then
-            return 0
-        fi
-    fi
-
-    echo "Failed to chmod $mode: $*" >&2
-    return 1
-}
-
-chown_with_podman_fallback() {
-    local owner="$1"
-    shift
-
-    if chown -R "$owner" "$@" 2>/dev/null; then
-        return 0
-    fi
-
-    if [ "$engine" = "podman" ]; then
-        if podman unshare chown -R "$owner" "$@"; then
-            return 0
-        fi
-    fi
-
-    echo "Failed to chown $owner: $*" >&2
-    return 1
-}
-
-normalize_apache_server_name() {
-    local value="$1"
-
-    value="${value#http://}"
-    value="${value#https://}"
-    value="${value%%/*}"
-    value="${value%%:*}"
-
-    if [ -z "$value" ] || [ "$value" = "*" ]; then
-        value="localhost"
-    fi
-
-    echo "$value"
-}
-
-generate_django_secret_key() {
-    if command -v python3 >/dev/null 2>&1; then
-        python3 -c "import secrets; print(''.join(secrets.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for _ in range(50)))"
-    else
-        LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c 50
-        printf "\n"
-    fi
-}
-
-sed_replacement_escape() {
-    printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
-}
-
-render_django_settings_file() {
-    local settings_path="$1"
-    local secret_line=""
-    local tmp_file=""
-    local db_user db_pass db_name db_host db_port
-    local email_host email_port email_user email_pass email_tls
-    local local_server_ip dns_url
-
-    if [ -f "$settings_path" ]; then
-        secret_line="$(grep -E "^SECRET_KEY[[:space:]]*=" "$settings_path" | tail -n 1)"
-    fi
-    if [ -z "$secret_line" ] || [[ "$secret_line" =~ SECRET_KEY[[:space:]]*=[[:space:]]*SECRET ]]; then
-        secret_line="SECRET_KEY = '$(generate_django_secret_key)'"
-    fi
-
-    db_user="$(read_install_conf_value DB_USER "$host_install_conf_path")"
-    db_pass="$(read_install_conf_value DB_PASS "$host_install_conf_path")"
-    db_name="$(read_install_conf_value DB_NAME "$host_install_conf_path")"
-    db_host="$(read_install_conf_value DB_SERVER_IP "$host_install_conf_path")"
-    db_port="$(read_install_conf_value DB_PORT "$host_install_conf_path")"
-    email_host="$(read_install_conf_value EMAIL_HOST_SERVER "$host_install_conf_path")"
-    email_port="$(read_install_conf_value EMAIL_PORT "$host_install_conf_path")"
-    email_user="$(read_install_conf_value EMAIL_HOST_USER "$host_install_conf_path")"
-    email_pass="$(read_install_conf_value EMAIL_HOST_PASSWORD "$host_install_conf_path")"
-    email_tls="$(read_install_conf_value EMAIL_USE_TLS "$host_install_conf_path")"
-    local_server_ip="$(read_install_conf_value LOCAL_SERVER_IP "$host_install_conf_path")"
-    dns_url="$(read_install_conf_value DNS_URL "$host_install_conf_path")"
-
-    tmp_file="$(mktemp)"
-    cp "$repo_root/conf/template_settings.txt" "$tmp_file"
-    sed -i \
-        -e "s|^SECRET_KEY.*|$(sed_replacement_escape "$secret_line")|" \
-        -e "s|djangouser|$(sed_replacement_escape "$db_user")|g" \
-        -e "s|djangopass|$(sed_replacement_escape "$db_pass")|g" \
-        -e "s|djangohost|$(sed_replacement_escape "$db_host")|g" \
-        -e "s|djangoport|$(sed_replacement_escape "$db_port")|g" \
-        -e "s|djangodbname|$(sed_replacement_escape "$db_name")|g" \
-        -e "s|emailhostserver|$(sed_replacement_escape "$email_host")|g" \
-        -e "s|emailport|$(sed_replacement_escape "$email_port")|g" \
-        -e "s|emailhostuser|$(sed_replacement_escape "$email_user")|g" \
-        -e "s|emailhostpassword|$(sed_replacement_escape "$email_pass")|g" \
-        -e "s|emailhosttls|$(sed_replacement_escape "$email_tls")|g" \
-        -e "s|localserverip|$(sed_replacement_escape "$local_server_ip")|g" \
-        -e "s|localhost|$(sed_replacement_escape "$dns_url")|g" \
-        "$tmp_file"
-
-    if copy_with_podman_fallback "$tmp_file" "$settings_path"; then
-        if ! chmod_with_podman_fallback 0664 "$settings_path"; then
-            rm -f "$tmp_file"
-            return 1
-        fi
-        rm -f "$tmp_file"
-        return 0
-    fi
-
-    rm -f "$tmp_file"
-    return 1
-}
-
-normalize_settings_bind_path() {
-    local value="$1"
-
-    if [ -z "$value" ]; then
-        echo "$install_path/iskylims/settings.py"
-        return 0
-    fi
-
-    if [ -d "$value" ] || [[ "$value" = */ ]]; then
-        echo "${value%/}/settings.py"
-        return 0
-    fi
-
-    echo "$value"
-}
-
-render_apache_config() {
-    local src="$1"
-    local dst="$2"
-    local tmp_file=""
-
-    tmp_file="$(mktemp)"
-    sed \
-        -e "s|__ISKYLIMS_SERVER_NAME__|$apache_server_name|g" \
-        -e "s|__ISKYLIMS_LOG_NAME__|$apache_log_name|g" \
-        -e "s|__INSTALL_PATH__|$install_path|g" \
-        -e "s|__APP_PORT__|$app_port|g" \
-        -e "s|__GUNICORN_TIMEOUT__|$gunicorn_timeout|g" \
-        "$src" > "$tmp_file"
-
-    if copy_with_podman_fallback "$tmp_file" "$dst"; then
-        if ! chmod_with_podman_fallback 0664 "$dst"; then
-            rm -f "$tmp_file"
-            return 1
-        fi
-        rm -f "$tmp_file"
-        return 0
-    fi
-
-    rm -f "$tmp_file"
-    return 1
-}
-
-prepare_django_settings_bind_mount() {
-    local settings_path="$1"
-
-    if [ "$mode" != "production" ]; then
-        return 0
-    fi
-
-    if [ -d "$settings_path" ]; then
-        echo "DJANGO_SETTINGS_PATH must resolve to a file path, but '$settings_path' is a directory." >&2
-        echo "Use a full path like '$settings_path/settings.py' or remove the directory and rerun." >&2
-        return 1
-    fi
-
-    mkdir -p "$(dirname "$settings_path")"
-    if [ ! -f "$settings_path" ] || grep -Eq "SECRET_KEY[[:space:]]*=[[:space:]]*SECRET|emailhosttls|djangouser|djangopass|djangohost|djangodbname" "$settings_path"; then
-        render_django_settings_file "$settings_path"
-    fi
-    chmod_with_podman_fallback 0664 "$settings_path"
-}
-
-# PARSE VARIABLE ARGUMENTS WITH getopts
-options=":d:g:c:s:j:a:m:b:f:e:vhntp"
-while getopts $options opt; do
-    case $opt in
-        d)
-            demo_data=$OPTARG
-            ;;
-        g)
-            git_revision=$OPTARG
-            ;;
-        c)
-            compose_file=$OPTARG
-            ;;
-        s)
-            install_conf=$OPTARG
-            ;;
-        j)
-            install_conf_map_entries+=("$OPTARG")
-            ;;
-        a)
-            action=$OPTARG
-            if [[ "$action" != "install" && "$action" != "upgrade" && "$action" != "fix-permissions" ]]; then
-                echo "Invalid action '$action'. Use install, upgrade, or fix-permissions."
-                exit 1
-            fi
-            ;;
-        m)
-            run_script=true
-            migration_script+=("$OPTARG")
-            ;;
-        b)
-            run_script_before=true
-            migration_script_before+=("$OPTARG")
-            ;;
-        e)
-            engine=$OPTARG
-            if [[ "$engine" != "docker" && "$engine" != "podman" ]]; then
-                echo "Invalid engine '$engine'. Use docker or podman."
-                exit 1
-            fi
-            ;;
-        f)
-            run_script=true
-            migration_script+=("$OPTARG")
-            ;;
-        n)
-            skip_demo_data=true
-            ;;
-        t)
-            skip_test_data=true
-            ;;
-        p)
-            mode="test"
-            ;;
-        h)
-            usage
-            exit 1
-            ;;
-        v)
-            echo $ISKYLIMS_VERSION
-            exit 1
-            ;;
-        \?)
-            echo "Invalid Option: -$OPTARG" 1>&2
-            usage
-            exit 1
-            ;;
-        : )
-            echo "Option -$OPTARG requires an argument." >&2
-            exit 1
-            ;;
-        * )
-            echo "Unimplemented option: -$OPTARG" >&2;
-            exit 1
-            ;;
-    esac
-done
-shift $((OPTIND-1))
-
-if [ "$mode" = "test" ]; then
-    if [ -z "$compose_file" ]; then
-        compose_file="docker-compose.test.yml"
-    fi
-else
-    if [ -z "$compose_file" ]; then
-        compose_file="docker-compose.prod.yml"
-    fi
-fi
-
-app_service="${APP_SERVICE:-app}"
-selected_install_conf="$install_conf"
-for map_entry in "${install_conf_map_entries[@]}"; do
-    svc_name="${map_entry%%,*}"
-    conf_name="${map_entry#*,}"
-    if [ -z "$svc_name" ] || [ -z "$conf_name" ] || [ "$svc_name" = "$map_entry" ]; then
-        echo "Invalid --install_conf_map value '$map_entry'. Expected format: service,path"
-        exit 1
-    fi
-    if [ "$svc_name" != "app" ]; then
-        echo "Unknown service '$svc_name' in --install_conf_map. Valid service: app"
-        exit 1
-    fi
-    selected_install_conf="$conf_name"
-done
-
-if [ "$mode" = "test" ] && [ -z "$selected_install_conf" ]; then
-    selected_install_conf="conf/docker_test_settings.txt"
-fi
-install_conf="$selected_install_conf"
-
-if [ "$mode" = "production" ] && [ -z "$install_conf" ]; then
-    echo "Production deployments require --install_conf or --install_conf_map app,<path>."
-    exit 1
-fi
-
-if [ -z "$skip_demo_data" ]; then
-    if [ "$mode" = "test" ]; then
-        skip_demo_data=false
-    else
-        skip_demo_data=true
-    fi
-fi
-
-if [ -z "$skip_test_data" ]; then
-    if [ "$mode" = "test" ]; then
-        skip_test_data=false
-    else
-        skip_test_data=true
-    fi
-fi
-
-if [ "$action" = "upgrade" ]; then
-    skip_demo_data=true
-    skip_test_data=true
-fi
-
-if [ ! -f "$compose_file" ]; then
-    echo "Compose file '$compose_file' not found"
-    exit 1
-fi
-
-if [ ! -f "$install_conf" ]; then
-    echo "Install configuration '$install_conf' not found"
-    exit 1
-fi
-
-repo_root="$(pwd)"
-build_context_dir="$repo_root"
-if [ ! -d "$build_context_dir" ]; then
-    echo "Build context directory '$build_context_dir' not found"
-    exit 1
-fi
-
-temp_install_conf=""
-if [[ "$install_conf" = /* ]] && [[ "$install_conf" != "$build_context_dir/"* ]]; then
-    temp_install_conf="$build_context_dir/.tmp_docker_install_conf_app_$$.txt"
-    echo "Copying $install_conf into temporary file $temp_install_conf for Docker build/runtime."
-    cp "$install_conf" "$temp_install_conf"
-    install_conf="$temp_install_conf"
-    cleanup_temp_conf() {
-        if [ -n "$temp_install_conf" ] && [ -f "$temp_install_conf" ]; then
-            rm -f "$temp_install_conf"
-        fi
-    }
-    trap cleanup_temp_conf EXIT
-fi
-
-if [[ "$install_conf" = "$build_context_dir/"* ]]; then
-    install_conf_container="${install_conf#$build_context_dir/}"
-else
-    install_conf_container="$install_conf"
-fi
-
-host_install_conf_path="$install_conf"
-if [[ "$host_install_conf_path" != /* ]]; then
-    host_install_conf_path="$repo_root/$host_install_conf_path"
-fi
-
-read_install_conf_value() {
-    local key="$1"
-    local file="$2"
-
-    bash -c '
-        set -a
-        . "$1"
-        key="$2"
-        printf "%s" "${!key-}"
-    ' _ "$file" "$key"
-}
-
-config_value_or_default() {
-    local key="$1"
-    local default_value="$2"
-    local config_value=""
-    local env_value="${!key:-}"
-
-    if [ -n "$env_value" ]; then
-        echo "$env_value"
-        return 0
-    fi
-
-    config_value="$(read_install_conf_value "$key" "$host_install_conf_path")"
-    if [ -n "$config_value" ]; then
-        echo "$config_value"
-    else
-        echo "$default_value"
-    fi
-}
-
-write_compose_env_file() {
-    if [ "$mode" != "production" ]; then
-        return 0
-    fi
-
-    cat > "$compose_env_file" << EOF
-# Generated by container_install.sh from $install_conf_container.
-# Used by Docker Compose/Podman Compose for docker-compose.prod.yml interpolation.
-INSTALL_TYPE=dep
-GIT_REVISION=$git_revision
-INSTALL_CONF=$install_conf_container
-INSTALL_PATH=$install_path
-APACHE_CONF_PATH=$apache_conf_path
-DJANGO_SETTINGS_PATH=$django_settings_path
-APP_UID=$app_uid
-APP_GID=$app_gid
-APP_SHELL=$app_shell
-APP_PORT=$app_port
-DJANGO_DEBUG=$django_debug
-DB_CONN_MAX_AGE=$db_conn_max_age
-WEB_CONCURRENCY=$web_concurrency
-GUNICORN_THREADS=$gunicorn_threads
-GUNICORN_TIMEOUT=$gunicorn_timeout
-GUNICORN_KEEPALIVE=$gunicorn_keepalive
-EOF
-
-    echo "Wrote Compose environment file: $compose_env_file"
-}
-
-compose_with_env_exec() {
-    if [ "$mode" = "production" ] && [ -f "$compose_env_file" ]; then
-        compose_exec --env-file "$compose_env_file" "$@"
-    else
-        compose_exec "$@"
-    fi
-}
-
-set_engine
-
-app_repo_path="${APP_REPO_PATH:-/srv/iskylims}"
-config_install_path="$(read_install_conf_value "INSTALL_PATH" "$host_install_conf_path")"
-install_path="${config_install_path:-/opt/iskylims}"
-config_apache_conf_path="$(read_install_conf_value "APACHE_CONF_PATH" "$host_install_conf_path")"
-apache_conf_path="${APACHE_CONF_PATH:-${config_apache_conf_path:-}}"
-if [ -z "$apache_conf_path" ]; then
-    apache_conf_path="$install_path/conf"
-fi
-config_django_settings_path="$(read_install_conf_value "DJANGO_SETTINGS_PATH" "$host_install_conf_path")"
-django_settings_path="$(normalize_settings_bind_path "${DJANGO_SETTINGS_PATH:-${config_django_settings_path:-}}")"
-app_uid="$(config_value_or_default APP_UID 1212)"
-app_gid="$(config_value_or_default APP_GID 1212)"
-app_shell="$(config_value_or_default APP_SHELL /sbin/nologin)"
-app_port="$(config_value_or_default APP_PORT 8001)"
-django_debug="$(config_value_or_default DJANGO_DEBUG false)"
-db_conn_max_age="$(config_value_or_default DB_CONN_MAX_AGE 60)"
-web_concurrency="$(config_value_or_default WEB_CONCURRENCY 2)"
-gunicorn_threads="$(config_value_or_default GUNICORN_THREADS 2)"
-gunicorn_timeout="$(config_value_or_default GUNICORN_TIMEOUT 300)"
-gunicorn_keepalive="$(config_value_or_default GUNICORN_KEEPALIVE 5)"
-config_dns_url="$(read_install_conf_value "DNS_URL" "$host_install_conf_path")"
-apache_server_name="$(normalize_apache_server_name "${APACHE_SERVER_NAME:-${config_dns_url:-localhost}}")"
-apache_log_name="$(printf '%s' "$apache_server_name" | tr -c 'A-Za-z0-9._-' '_' | sed 's/_$//')"
-compose_env_file="$repo_root/.env.prod.file"
-app_container=""
-local_head_hash=""
-local_head_short=""
-app_image_name="${APP_IMAGE_NAME:-iskylims_app}"
-image_id_before_build=""
-image_id_after_build=""
-
-# Check if a service exists in the compose file
-#
-# Parameters:
-#   $1 - Service name to check
-#
-# Returns:
-#   0 if the service exists, 1 otherwise
-service_exists() {
-    compose_with_env_exec -f "$compose_file" ps --services 2>/dev/null | grep -Fxq "$1"
-}
-
-# Return the name of the container for a given service name.
-# The container name is different based on whether we are in test mode or not.
-#
-# Parameters:
-#   $1 - Service name to return the container name for
-#
-# Returns:
-#   The name of the container for the given service name
-service_container_name() {
-    local service_name="$1"
-    if [ "$mode" = "test" ]; then
-        case "$service_name" in
-            db) echo "db" ;;
-            samba) echo "samba" ;;
-            app) echo "iskylims_app" ;;
-            *) echo "" ;;
-        esac
-    else
-        case "$service_name" in
-            app) echo "iskylims_app" ;;
-            samba) echo "samba" ;;
-            *) echo "" ;;
-        esac
-    fi
-}
-
-# Resolve the container ID for the target app service.
-#
-# Returns:
-#   Sets global variable `app_container` to a valid container name/ID.
-#
-# Errors:
-#   Exits if unable to resolve a container for `app_service`.
-resolve_app_container() {
-    local container_name
-    container_name="$(service_container_name "$app_service")"
-
-    if [ -n "$container_name" ] && engine_exec inspect -f '{{.Id}}' "$container_name" >/dev/null 2>&1; then
-        app_container="$container_name"
-    else
-        app_container="$(engine_exec ps -a --filter "label=com.docker.compose.service=${app_service}" --format '{{.ID}}' | head -n 1)"
-    fi
-
-    if [ -z "$app_container" ]; then
-        echo "Error: unable to resolve container ID for service '$app_service'." >&2
-        exit 1
-    fi
-}
-
-try_resolve_app_container() {
-    local container_name
-    container_name="$(service_container_name "$app_service")"
-
-    if [ -n "$container_name" ] && engine_exec inspect -f '{{.Id}}' "$container_name" >/dev/null 2>&1; then
-        app_container="$container_name"
-        return 0
-    fi
-
-    app_container="$(engine_exec ps -a --filter "label=com.docker.compose.service=${app_service}" --format '{{.ID}}' | head -n 1)"
-    [ -n "$app_container" ]
-}
-
-# Ensure target app service container exists and is running.
-#
-# Errors:
-#   Exits if container does not exist or is not running.
-ensure_app_running() {
-    resolve_app_container
-    if ! engine_exec inspect -f '{{.State.Running}}' "$app_container" >/dev/null 2>&1; then
-        echo "Error: service '$app_service' container does not exist."
-        exit 1
-    fi
-    if [ "$(engine_exec inspect -f '{{.State.Running}}' "$app_container")" != "true" ]; then
-        echo "Error: service '$app_service' container is not running. Showing logs:"
-        engine_exec logs --tail 200 "$app_container"
-        exit 1
-    fi
-}
-
-print_local_source_diagnostics() {
-    echo "Local source diagnostics:"
-    if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        local_head_hash="$(git -C "$repo_root" rev-parse HEAD)"
-        local_head_short="$(git -C "$repo_root" rev-parse --short HEAD)"
-        echo "  local HEAD: $(git -C "$repo_root" log -1 --oneline)"
-        echo "  local HEAD hash: $local_head_hash"
-    else
-        echo "  local git metadata unavailable"
-    fi
-}
-
-print_existing_artifact_diagnostics() {
-    echo "Image diagnostics before build:"
-    if engine_exec image inspect "$app_image_name" >/dev/null 2>&1; then
-        image_id_before_build="$(engine_exec image inspect -f '{{.Id}}' "$app_image_name" 2>/dev/null || true)"
-        echo "  image before build: $image_id_before_build"
-    else
-        image_id_before_build=""
-        echo "  image before build: none"
-    fi
-}
-
-print_image_after_build() {
-    echo "Image diagnostics after build:"
-    if engine_exec image inspect "$app_image_name" >/dev/null 2>&1; then
-        image_id_after_build="$(engine_exec image inspect -f '{{.Id}}' "$app_image_name" 2>/dev/null || true)"
-        echo "  image after build: $image_id_after_build"
-        if [ -n "$image_id_before_build" ] && [ "$image_id_before_build" = "$image_id_after_build" ]; then
-            echo "  image id check: unchanged"
-        elif [ -n "$image_id_before_build" ] && [ "$image_id_before_build" != "$image_id_after_build" ]; then
-            echo "  image id check: changed"
-        else
-            echo "  image id check: created"
-        fi
-    else
-        echo "  image after build: not found"
-    fi
-}
-
-print_container_source_diagnostics() {
-    local label="$1"
-    local container_repo_head_hash=""
-    local container_repo_head_short=""
-    echo "$label"
-    container_repo_head_hash="$(engine_exec exec "$app_container" sh -lc "
-        if [ -d '$app_repo_path/.git' ]; then
-            cd '$app_repo_path' && git rev-parse HEAD
-        fi
-    " 2>/dev/null | tail -n 1)"
-    container_repo_head_short="$(engine_exec exec "$app_container" sh -lc "
-        if [ -d '$app_repo_path/.git' ]; then
-            cd '$app_repo_path' && git rev-parse --short HEAD
-        fi
-    " 2>/dev/null | tail -n 1)"
-    if [ -n "$container_repo_head_hash" ]; then
-        echo "  container /srv HEAD hash: $container_repo_head_hash"
-    fi
-    if [ -n "$local_head_hash" ] && [ -n "$container_repo_head_hash" ]; then
-        if [ "$local_head_hash" = "$container_repo_head_hash" ]; then
-            echo "  HEAD check: OK local=$local_head_short container=$container_repo_head_short"
-        else
-            echo "  HEAD check: MISMATCH local=$local_head_short container=$container_repo_head_short"
-        fi
-    fi
-    engine_exec exec "$app_container" sh -lc "
-        echo '  /srv/iskylims HEAD:'
-        if [ -d '$app_repo_path/.git' ]; then
-            cd '$app_repo_path' && git log -1 --oneline
-        else
-            echo 'not a git checkout'
-        fi
-    " || true
-}
-
-prepare_app_mount_permissions() {
-    if [ "$mode" != "production" ]; then
-        return 0
-    fi
-
-    echo "Preparing writable app mount permissions..."
-    engine_exec exec --user 0 "$app_container" sh -lc "
-        set -e
-        mkdir -p '$install_path/logs' '$install_path/static' '$install_path/documents'
-        chown -R '$app_uid:$app_gid' '$install_path/logs' '$install_path/static' '$install_path/documents'
-        chmod -R u+rwX,g+rwX '$install_path/logs' '$install_path/static' '$install_path/documents'
-        if [ -f '$install_path/iskylims/settings.py' ]; then
-            chown '$app_uid:$app_gid' '$install_path/iskylims/settings.py'
-            chmod 0664 '$install_path/iskylims/settings.py'
-        fi
-        chmod -R o+rX '$install_path/static'
-    "
-}
-
-prepare_host_bind_mount_permissions() {
-    if [ "$mode" != "production" ]; then
-        return 0
-    fi
-
-    local apache_conf_file
-    local django_settings_dir
-
-    echo "Preparing host bind mount permissions..."
-    chmod_with_podman_fallback 0755 "$apache_conf_path"
-
-    chown_with_podman_fallback "$app_uid:$app_gid" "/var/log/local/iskylims/apps"
-    chmod_with_podman_fallback 0775 "/var/log/local/iskylims/apps"
-
-    # UBI httpd runs as uid 1001 and group 0. This keeps the Apache log bind
-    # writable without relying on Podman's :U ownership mutation.
-    chown_with_podman_fallback "1001:0" "/var/log/local/iskylims/apache"
-    chmod_with_podman_fallback 0775 "/var/log/local/iskylims/apache"
-
-    if [ -f "$django_settings_path" ]; then
-        django_settings_dir="$(dirname "$django_settings_path")"
-        chmod_with_podman_fallback 0755 "$django_settings_dir"
-        chown_with_podman_fallback "$app_uid:$app_gid" "$django_settings_path"
-        chmod_with_podman_fallback 0664 "$django_settings_path"
-    fi
-
-    for apache_conf_file in \
-        "$apache_conf_path/iskylims_apache_reverse_proxy.conf" \
-        "$apache_conf_path/iskylims_apache_logs.conf"; do
-        if [ -f "$apache_conf_file" ]; then
-            chmod_with_podman_fallback 0664 "$apache_conf_file"
-        fi
-    done
-}
-
-# Remove stale test containers left over from previous runs.
-#
-# This function will only be executed in "test" mode when the engine is "podman".
-# It only removes known test container names and never removes volumes.
-cleanup_stale_test_containers() {
-    if [ "$mode" != "test" ] || [ "$engine" != "podman" ]; then
-        return 0
-    fi
-
-    local svc cname cstate
-    for svc in db app samba; do
-        cname="$(service_container_name "$svc")"
-        if [ -z "$cname" ]; then
-            continue
-        fi
-        if engine_exec inspect -f '{{.Id}}' "$cname" >/dev/null 2>&1; then
-            cstate="$(engine_exec inspect -f '{{.State.Status}}' "$cname" 2>/dev/null || true)"
-            if [ "$cstate" != "running" ]; then
-                echo "Removing stale test container '$cname' (state: ${cstate:-unknown})"
-                engine_exec rm -f "$cname" >/dev/null 2>&1 || true
-            fi
-        fi
-    done
-}
-
-cleanup_stale_test_containers
-
-if [ "$action" = "fix-permissions" ]; then
-    echo "Repairing production container bind mount and volume permissions..."
-    if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"; then
-        echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
-        exit 1
-    fi
-    prepare_django_settings_bind_mount "$django_settings_path"
-    prepare_host_bind_mount_permissions
-    write_compose_env_file
-    if try_resolve_app_container && [ "$(engine_exec inspect -f '{{.State.Running}}' "$app_container" 2>/dev/null)" = "true" ]; then
-        prepare_app_mount_permissions
-        echo "Done repairing host bind mounts and mounted app volumes."
-    else
-        echo "Host bind mount permissions repaired."
-        echo "The app container is not running, so named volumes were not repaired."
-        echo "Start containers with Compose, then rerun this action to repair mounted app volumes."
-    fi
-    exit 0
-fi
-
-print_local_source_diagnostics
-print_existing_artifact_diagnostics
-echo "Deploying containers (compose file: $compose_file) with a pre-staged app image and GIT_REVISION=$git_revision..."
-if ! mkdir -p "$apache_conf_path" "/var/log/local/iskylims/apache" "/var/log/local/iskylims/apps"; then
-    echo "Error: unable to create required host bind/log directories. Check APACHE_CONF_PATH and log directory permissions." >&2
-    exit 1
-fi
-prepare_django_settings_bind_mount "$django_settings_path"
-if [ -f "$repo_root/conf/iskylims_apache_reverse_proxy.conf" ]; then
-    render_apache_config \
-        "$repo_root/conf/iskylims_apache_reverse_proxy.conf" \
-        "$apache_conf_path/iskylims_apache_reverse_proxy.conf"
-fi
-if [ -f "$repo_root/conf/iskylims_apache_logs.conf" ]; then
-    render_apache_config \
-        "$repo_root/conf/iskylims_apache_logs.conf" \
-        "$apache_conf_path/iskylims_apache_logs.conf"
-fi
-prepare_host_bind_mount_permissions
-write_compose_env_file
-INSTALL_TYPE="dep" GIT_REVISION="$git_revision" INSTALL_CONF="$install_conf_container" INSTALL_PATH="$install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" \
-    compose_with_env_exec -f "$compose_file" build --no-cache \
-    --build-arg INSTALL_TYPE="dep" \
-    --build-arg GIT_REVISION="$git_revision" \
-    --build-arg INSTALL_CONF="$install_conf_container" \
-    --build-arg INSTALL_PATH="$install_path" \
-    --build-arg APP_UID="$app_uid" \
-    --build-arg APP_GID="$app_gid" \
-    --build-arg APP_SHELL="$app_shell"
-print_image_after_build
-INSTALL_PATH="$install_path" APACHE_CONF_PATH="$apache_conf_path" DJANGO_SETTINGS_PATH="$django_settings_path" APP_UID="$app_uid" APP_GID="$app_gid" APP_SHELL="$app_shell" APP_PORT="$app_port" DJANGO_DEBUG="$django_debug" DB_CONN_MAX_AGE="$db_conn_max_age" WEB_CONCURRENCY="$web_concurrency" GUNICORN_THREADS="$gunicorn_threads" GUNICORN_TIMEOUT="$gunicorn_timeout" GUNICORN_KEEPALIVE="$gunicorn_keepalive" compose_with_env_exec -f "$compose_file" up -d
-
-echo "Waiting 20 seconds for starting database and web services..."
-sleep 20
-ensure_app_running
-print_container_source_diagnostics "Container diagnostics after startup:"
-prepare_app_mount_permissions
-
-container_install_conf_path="$install_conf_container"
-if [[ "$container_install_conf_path" != /* ]]; then
-    container_install_conf_path="$app_repo_path/$container_install_conf_path"
-fi
-
-if ! engine_exec exec -it "$app_container" test -f "$container_install_conf_path"; then
-    echo "Copying install configuration into container at $container_install_conf_path"
-    engine_exec cp "$host_install_conf_path" "${app_container}:$container_install_conf_path"
-fi
-
-script_args_before=""
-if [ "$run_script_before" = true ]; then
-    for val in "${migration_script_before[@]}"; do
-        script_args_before+=" --script_before $(printf '%q' "$val")"
-    done
-fi
-
-script_args_after=""
-if [ "$run_script" = true ]; then
-    for val in "${migration_script[@]}"; do
-        script_args_after+=" --script_after $(printf '%q' "$val")"
-    done
-fi
-
-if [ "$action" = "upgrade" ]; then
-    echo "Running install.sh bootstrap inside the container (upgrade mode)"
-    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap upgrade --git_revision \"$git_revision\" --conf \"$install_conf_container\" --tables --skip_apache_restart$script_args_before$script_args_after"
-else
-    echo "Running install.sh bootstrap inside the container (install mode)"
-    engine_exec exec -it "$app_container" bash -c "cd $app_repo_path && bash install.sh --bootstrap install --git_revision \"$git_revision\" --conf \"$install_conf_container\" --skip_apache_restart$script_args_before$script_args_after"
-fi
-
-print_container_source_diagnostics "Container diagnostics after bootstrap:"
-
-if ! engine_exec exec -it "$app_container" test -f "$install_path/manage.py"; then
-    echo "Error: $install_path/manage.py not found after bootstrap. Showing logs:"
-    engine_exec logs --tail 200 "$app_container"
-    exit 1
-fi
-
-if [ "$skip_test_data" = false ]; then
-    engine_exec exec -it "$app_container" python3 manage.py loaddata test/test_data.json
-    engine_exec exec -it "$app_container" python3 manage.py shell -c "
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$script_dir/deployment/lib/container/common.sh"
+# shellcheck disable=SC1091
+source "$script_dir/deployment/lib/container/django.sh"
+
+APP_VERSION="3.1.1"
+APPLICATION_NAME="iSkyLIMS"
+CONTAINER_INSTALL_VERSION="0.1.0"
+
+# Applications with disposable fixtures or demo files customize this callback
+# and set application_supports_test_data=true. Keep application-specific
+# fixture names, users/groups, downloads, and data-service layout here.
+# BEGIN BU-ISCIII APPLICATION: deployment-hooks
+application_supports_test_data=true
+load_test_deployment_data() {
+    local iskylims_container iskylims_install_path samba_container archive downloaded_archive
+    local admin_groups_code
+
+    iskylims_container="$(current_service_container iskylims)" \
+        || die "Unable to resolve the iskylims container for test-data loading"
+    iskylims_install_path="$(service_install_path iskylims)"
+
+    if [ "$skip_test_data" = false ]; then
+        echo "Loading iSkyLIMS test fixtures"
+        engine_exec exec -w "$iskylims_install_path" "$iskylims_container" \
+            "$iskylims_install_path/virtualenv/bin/python" manage.py \
+            loaddata test/test_data.json
+        admin_groups_code=$(cat <<'PY'
 from django.contrib.auth.models import Group, User
-admin = User.objects.get(username='admin')
-admin.groups.add(
-    Group.objects.get(name='WetlabManager'),
-    Group.objects.get(name='ServiceManager'),
-)
-print('admin groups:', list(admin.groups.values_list('name', flat=True)))
-"
-else
-    echo "Skipping test data fixtures as requested"
-fi
 
-if [ "$skip_demo_data" = false ] && service_exists "samba"; then
-    echo "Downloading and copying test files to the Samba container"
-    if [ "$demo_data" == "false" ]; then
-        wget https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
-        demo_data="./iskylims_demo_data.tar.gz"
+admin = User.objects.get(username="admin")
+admin.groups.add(
+    Group.objects.get(name="WetlabManager"),
+    Group.objects.get(name="ServiceManager"),
+)
+print("admin groups:", list(admin.groups.values_list("name", flat=True)))
+PY
+)
+        engine_exec exec -w "$iskylims_install_path" "$iskylims_container" \
+            "$iskylims_install_path/virtualenv/bin/python" manage.py \
+            shell -c "$admin_groups_code"
+    else
+        echo "Skipping iSkyLIMS test fixtures as requested"
     fi
-    engine_exec cp "$demo_data" samba:/mnt
-    engine_exec exec -it samba tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
-    # Ensure extracted demo data can be traversed/read through SMB by non-owner users.
-    engine_exec exec -it samba sh -lc '
+
+    if [ "$skip_demo_data" = true ]; then
+        echo "Skipping Samba demo-data load as requested"
+        return 0
+    fi
+
+    samba_container="$(current_service_container iskylims-samba)" \
+        || die "The iSkyLIMS test-data workflow requires the Samba service"
+    archive="$demo_data"
+    downloaded_archive=""
+    if [ -z "$archive" ]; then
+        command -v wget >/dev/null 2>&1 \
+            || die "wget is required to download iSkyLIMS demo data"
+        downloaded_archive="$(mktemp /tmp/iskylims_demo_data.XXXXXX.tar.gz)"
+        archive="$downloaded_archive"
+        wget -O "$archive" \
+            https://zenodo.org/record/8091169/files/iskylims_demo_data.tar.gz
+    fi
+    [ -f "$archive" ] || die "Demo-data archive not found: $archive"
+
+    echo "Copying and extracting iSkyLIMS demo data in Samba"
+    engine_exec cp "$archive" "$samba_container:/mnt/iskylims_demo_data.tar.gz"
+    engine_exec exec "$samba_container" \
+        tar -xf /mnt/iskylims_demo_data.tar.gz -C /mnt
+    engine_exec exec "$samba_container" sh -lc '
         for root in /mnt/test_ngs_data /mnt/Runs; do
             if [ -d "$root" ]; then
                 find "$root" -type d -exec chmod o+rx {} +
@@ -992,35 +78,533 @@ if [ "$skip_demo_data" = false ] && service_exists "samba"; then
             fi
         done
     '
+    engine_exec exec "$samba_container" rm /mnt/iskylims_demo_data.tar.gz
+    [ -z "$downloaded_archive" ] || rm -f "$downloaded_archive"
+}
 
-    echo "Deleting compressed test file"
-    engine_exec exec -it samba rm /mnt/iskylims_demo_data.tar.gz
+# Add application-only host bind paths that profiles/add-ons cannot describe.
+set_application_host_bind_permissions() {
+    :
+}
 
-    if [ "$demo_data" == "false" ]; then
-        rm -f "$demo_data"
+# Arguments: service name and running container ID. Add application-only
+# writable paths; profile/add-on permissions have already been applied.
+set_application_running_mount_permissions() {
+    :
+}
+# END BU-ISCIII APPLICATION: deployment-hooks
+
+action="install"; mode="production"; engine="docker"; git_revision="current"
+install_conf=""; compose_file=""; compose_env_file=""
+install_conf_map_entries=(); migration_script_before=(); migration_script_after=()
+demo_data=""; demo_data_service=""; demo_data_map_entries=()
+skip_demo_data=""; skip_test_data=""; skip_test_data_services=()
+load_tables=false; skip_tables=false
+
+usage() {
+    cat <<'EOF'
+Install, upgrade, or repair the application deployment.
+
+Options:
+  --action install|upgrade|fix-permissions
+  --test
+  --engine docker|podman
+  --git_revision <branch|tag|commit|current>
+  --install_conf <path>              First application service only.
+  --install_conf_map <component,path>  Repeat for application and add-on overrides.
+  --compose_file <path>
+  --script_before <name[,args]>
+  --script_after <name[,args]>
+  --script <name[,args]>
+  --tables                          Load initial tables; opt-in on upgrades.
+  --skip_tables                     Skip initial tables on a fresh install.
+  --demo_data <path>                 Single-service compatibility option.
+  --demo_data_map <service,path>     Repeat for service-specific data imports.
+  --skip_demo_data
+  --skip_test_data
+  --skip_test_data_service <service>  Repeat to skip one service's test fixtures.
+  --help
+  --version
+EOF
+}
+die() { echo "ERROR: $*" >&2; exit 1; }
+
+# ============================================================================
+# GENERATED SERVICE/ADD-ON IMPLEMENTATION
+# Everything below usage() is managed by the descriptor, profiles, add-ons, or
+# common lifecycle. Put application behavior only in the block above.
+# ============================================================================
+install_services=(iskylims)
+addon_build_services=()
+permission_services=(iskylims iskylims-apache)
+configured_services=(iskylims apache samba)
+
+default_service_install_conf() {
+    case "$1" in
+        iskylims) [ "$mode" = test ] && echo conf/docker_test_settings.txt || echo conf/docker_production_settings.txt ;;
+        apache) [ "$mode" = test ] && echo conf/apache/apache_test_settings.txt || echo conf/apache/apache_production_settings.txt ;;
+        samba) [ "$mode" = test ] && echo conf/samba/samba_test_settings.txt || echo conf/samba/samba_production_settings.txt ;;
+        *) return 1 ;;
+    esac
+}
+service_build_context_dir() {
+    case "$1" in
+        iskylims) echo . ;;
+        *) return 1 ;;
+    esac
+}
+service_environment_prefix() {
+    local prefix
+    array_contains "$1" "${install_services[@]}" || return 1
+    prefix="${1^^}"
+    printf '%s\n' "${prefix//-/_}"
+}
+service_environment_value() {
+    local prefix variable
+    prefix="$(service_environment_prefix "$1")" || return 1
+    variable="${prefix}_$2"
+    if [ -n "${!variable:-}" ]; then
+        printf '%s\n' "${!variable}"
+    elif [ "$#" -ge 3 ]; then
+        printf '%s\n' "$3"
+    else
+        die "$variable is required in the rendered service settings"
     fi
+}
+service_repo_path() {
+    service_environment_value "$1" REPO_PATH
+}
+service_install_path() {
+    service_environment_value "$1" INSTALL_PATH
+}
+service_readiness_path() {
+    case "$1" in
+        iskylims) echo "$(service_install_path "$1")/manage.py" ;;
+        *) return 1 ;;
+    esac
+}
+service_image_name() {
+    case "$1" in
+        iskylims) echo iskylims:local ;;
+        *) return 1 ;;
+    esac
+}
+service_profile() {
+    case "$1" in
+        iskylims) echo django ;;
+        *) return 1 ;;
+    esac
+}
+service_dockerfile() {
+    case "$1" in
+        iskylims) echo Dockerfile ;;
+        *) return 1 ;;
+    esac
+}
+service_container_install_conf() {
+    case "$1" in
+        iskylims) echo conf/.runtime_install_settings.txt ;;
+        *) return 1 ;;
+    esac
+}
+service_uid() {
+    service_environment_value "$1" APP_UID
+}
+service_gid() {
+    service_environment_value "$1" APP_GID
+}
+
+prepare_compose_environment() {
+    local -a settings_sources=(
+        "ISKYLIMS|${install_conf_host_by_service[iskylims]}"
+        "|${install_conf_host_by_service[apache]}"
+        "|${install_conf_host_by_service[samba]}"
+    )
+    local -a deployment_values=(
+        "GIT_REVISION|$git_revision"
+        "ISKYLIMS_IMAGE|iskylims:local"
+    )
+    compose_env_file="$script_dir/.env.${mode}.file"
+    write_compose_environment_file "$compose_env_file" settings_sources deployment_values
+}
+
+# Every project uses the generated interpolation file in both modes because it
+# combines service-specific settings sources with collision-safe prefixes.
+deployment_compose() {
+    compose_exec --env-file "$compose_env_file" "$@"
+}
+current_service_container() {
+    resolve_service_container "$1"
+}
+
+print_service_summary() {
+    echo
+    echo "Running services and published ports:"
+    deployment_compose -f "$compose_file" ps
+}
+
+# Each Django service renders its own protected host settings bind. React
+# services and add-ons have no Django settings source.
+prepare_application_host_sources() {
+    local settings_output
+    if [ "$mode" = production ]; then
+        settings_output="$(service_environment_value iskylims DJANGO_SETTINGS_PATH)"
+        [ -n "$settings_output" ] || { echo "DJANGO_SETTINGS_PATH is required for iskylims" >&2; return 1; }
+        mkdir -p "$(dirname "$settings_output")"
+        prepare_django_settings_bind_mount ./conf/template_settings.py "$settings_output" "${install_conf_host_by_service[iskylims]}"
+    fi
+    # conf/apache contains the application-owned Apache sources. Render every
+    # deployment value only after the protected settings environment is loaded,
+    # then expose the completed files as Compose bind sources.
+    local apache_source_dir="$script_dir/conf/apache"
+    local apache_output_dir="${APACHE_CONF_PATH:-$script_dir/deployment/apache}"
+    local apache_conf_name apache_config_service apache_log_path
+    apache_config_service=iskylims
+    [ -d "$apache_source_dir" ] || {
+        echo "Apache source configuration directory not found: $apache_source_dir" >&2
+        return 1
+    }
+    mkdir -p "$apache_output_dir"
+
+    export APACHE_SERVER_NAME="${APACHE_SERVER_NAME:?APACHE_SERVER_NAME is required}"
+    export APACHE_UPSTREAM_SERVICE="${APACHE_UPSTREAM_SERVICE:-$apache_config_service}"
+    export APACHE_UPSTREAM_PORT="${APACHE_UPSTREAM_PORT:-$(service_environment_value "$apache_config_service" APP_PORT)}"
+    # For the default route, INSTALL_PATH means the service selected by
+    # ADDONS.apache.CONFIG_SERVICE. Multi-service routes use their explicit
+    # API_INSTALL_PATH, WEB_INSTALL_PATH, etc. values instead.
+    export INSTALL_PATH="$(service_install_path "$apache_config_service")"
+    export APACHE_PROXY_TIMEOUT="${APACHE_PROXY_TIMEOUT:-$(service_environment_value "$apache_config_service" GUNICORN_TIMEOUT 120)}"
+    export APACHE_LOG_STEM="${APACHE_LOG_STEM:-$(normalize_apache_server_name "$APACHE_SERVER_NAME")}"
+
+    for apache_conf_name in 00-logs.conf 01-reverse-proxy.conf 02-server-status.conf; do
+        [ -f "$apache_source_dir/$apache_conf_name" ] || {
+            echo "Apache source configuration not found: $apache_source_dir/$apache_conf_name" >&2
+            return 1
+        }
+        render_environment_config_template \
+            "$apache_source_dir/$apache_conf_name" \
+            "$apache_output_dir/$apache_conf_name" 0644 || return 1
+    done
+
+    # Production bind-mounts Apache logs from the host; tests use a named volume.
+    if [ "$mode" = production ]; then
+        apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
+        mkdir -p "$apache_log_path"
+    fi
+}
+
+# Apply the same permission workflow in test and production. Keep one
+# independently reviewable specification per application and selected add-on;
+# the shared helper skips paths that are not used by the active mode.
+prepare_host_bind_source_permissions() {
+    local log_path settings_path uid gid
+    log_path="$(service_environment_value iskylims HOST_LOG_PATH)"
+    settings_path="$(service_environment_value iskylims DJANGO_SETTINGS_PATH)"
+    [ -n "$log_path" ] || { echo "HOST_LOG_PATH is required for iskylims" >&2; return 1; }
+    [ -n "$settings_path" ] || { echo "DJANGO_SETTINGS_PATH is required for iskylims" >&2; return 1; }
+    uid="$(service_uid iskylims)"; gid="$(service_gid iskylims)"
+    local -a iskylims_host_bind_permission_spec=(
+        "$log_path|$uid:$gid|0775"
+        "$(dirname "$settings_path")|-|0755"
+        "$settings_path|$uid:$gid|0664"
+    )
+    apply_host_permission_spec "${iskylims_host_bind_permission_spec[@]}"
+    # Generated proxy configuration is read-only in Apache. Its host files need
+    # traversal/read permissions, while the configured log source must be writable.
+    apache_log_path="${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}"
+    local apache_output_dir="${APACHE_CONF_PATH:-$script_dir/deployment/apache}"
+    local -a apache_host_bind_permission_spec=(
+        "$apache_output_dir|-|0755"
+        "$apache_output_dir/00-logs.conf|-|0644"
+        "$apache_output_dir/01-reverse-proxy.conf|-|0644"
+        "$apache_output_dir/02-server-status.conf|-|0644"
+        # registry.access.redhat.com/ubi9/httpd-24 runs as UID 1001 with GID 0.
+        # The shared helper applies these IDs directly for Docker and through
+        # podman unshare when the bind source belongs to a rootless userns.
+        "$apache_log_path|1001:0|0775"
+    )
+    apply_host_permission_spec "${apache_host_bind_permission_spec[@]}"
+    set_application_host_bind_permissions
+}
+
+# Keep a separate running-mount specification in every service/add-on case.
+prepare_running_container_mount_permissions() {
+    local service_name="$1" container_id="$2"
+    local install_path uid gid
+    case "$service_name" in
+        iskylims)
+            install_path="$(service_install_path "$service_name")"
+            uid="$(service_uid "$service_name")"; gid="$(service_gid "$service_name")"
+            local -a iskylims_running_mount_permission_spec=(
+                "$install_path/logs|$uid:$gid|u+rwX,g+rwX"
+                "$install_path/documents|$uid:$gid|u+rwX,g+rwX"
+                "$install_path/static|$uid:$gid|u+rwX,g+rwX,o+rX"
+            )
+            apply_container_directory_permission_spec "$container_id" "${iskylims_running_mount_permission_spec[@]}"
+            prepare_django_container_settings_permissions "$container_id" "$install_path/iskylims/settings.py" "$uid" "$gid"
+            ;;
+        iskylims-apache)
+            # Apache currently needs no ownership repair inside its running
+            # container. Keep an explicit add-on policy ready for future mounts.
+            local -a apache_running_mount_permission_spec=()
+            apply_container_directory_permission_spec "$container_id" "${apache_running_mount_permission_spec[@]}"
+            ;;
+        *) : ;;
+    esac
+    set_application_running_mount_permissions "$service_name" "$container_id"
+}
+
+bootstrap_service() {
+    local service_name="$1" container_id="$2" deployment_action="$3"
+    local repo_path runtime_conf uid gid status
+    local -a args
+    case "$service_name" in
+        iskylims)
+            repo_path="$(service_repo_path "$service_name")"
+            # Fixed temporary in-container path; this is not operator configuration.
+            runtime_conf=conf/.runtime_install_settings.txt
+            [[ "$runtime_conf" == /* ]] || runtime_conf="$repo_path/$runtime_conf"
+            uid="$(service_uid "$service_name")"; gid="$(service_gid "$service_name")"
+            stage_container_runtime_config "$container_id" "${install_conf_host_by_service[$service_name]}" "$runtime_conf" "$uid" "$gid"
+            args=(--bootstrap "$deployment_action" --git_revision "$git_revision" --conf "$runtime_conf" --skip_apache_restart)
+            [ "$load_tables" = false ] || args+=(--tables)
+            [ "$skip_tables" = false ] || args+=(--skip_tables)
+            for hook in "${migration_script_before[@]}"; do args+=(--script_before "$hook"); done
+            for hook in "${migration_script_after[@]}"; do args+=(--script_after "$hook"); done
+            status=0; engine_exec exec "$container_id" bash "$repo_path/install.sh" "${args[@]}" || status=$?
+            [ "$mode" = test ] || remove_container_runtime_config "$container_id" "$runtime_conf" || true
+            return "$status"
+            ;;
+        *) return 0 ;;
+    esac
+}
+
+build_production_service() {
+    local service_name="$1" context="$2" dockerfile="$3"
+    case "$service_name" in
+        iskylims)
+            engine_build --no-cache --file "$context/$dockerfile" \
+                --secret "id=install_conf,src=${install_conf_host_by_service[$service_name]}" \
+                --build-arg GIT_REVISION="$git_revision" \
+                --build-arg INSTALL_CONF="$(service_container_install_conf "$service_name")" \
+                --build-arg USE_INSTALL_CONF_SECRET=true \
+                --build-arg RENDER_DJANGO_SETTINGS=false \
+                --build-arg APP_REPO_PATH="$(service_repo_path "$service_name")" \
+                --build-arg APP_INSTALL_PATH="$(service_install_path "$service_name")" \
+                --build-arg APP_PORT="$(service_environment_value "$service_name" APP_PORT)" \
+                --build-arg APP_UID="$(service_uid "$service_name")" \
+                --build-arg APP_GID="$(service_gid "$service_name")" \
+                --tag "$(service_image_name "$service_name")" "$context"
+            ;;
+        *) die "Unsupported production build service: $service_name" ;;
+    esac
+}
+
+# 1. Parse the canonical outer-installer interface.
+while (($#)); do
+    case "$1" in
+        --action) action="${2:-}"; shift 2 ;;
+        --test) mode="test"; shift ;;
+        --engine) engine="${2:-}"; shift 2 ;;
+        --git_revision) git_revision="${2:-}"; shift 2 ;;
+        --install_conf) install_conf="${2:-}"; shift 2 ;;
+        --install_conf_map) install_conf_map_entries+=("${2:-}"); shift 2 ;;
+        --compose_file) compose_file="${2:-}"; shift 2 ;;
+        --script_before) migration_script_before+=("${2:-}"); shift 2 ;;
+        --script_after|--script) migration_script_after+=("${2:-}"); shift 2 ;;
+        --tables) load_tables=true; skip_tables=false; shift ;;
+        --skip_tables) skip_tables=true; load_tables=false; shift ;;
+        --demo_data) demo_data="${2:-}"; shift 2 ;;
+        --demo_data_map) demo_data_map_entries+=("${2:-}"); shift 2 ;;
+        --skip_demo_data) skip_demo_data=true; shift ;;
+        --skip_test_data) skip_test_data=true; shift ;;
+        --skip_test_data_service) skip_test_data_services+=("${2:-}"); shift 2 ;;
+        --help) usage; exit 0 ;;
+        --version) echo "$CONTAINER_INSTALL_VERSION"; exit 0 ;;
+        *) die "Unknown option: $1" ;;
+    esac
+done
+
+# 2. Validate arguments before modifying deployment state.
+[[ "$action" =~ ^(install|upgrade|fix-permissions)$ ]] || die "Invalid action: $action"
+[[ "$engine" =~ ^(docker|podman)$ ]] || die "Invalid engine: $engine"
+declare -A demo_data_by_service=()
+if [ -n "$demo_data" ]; then
+    [ "${#install_services[@]}" -eq 1 ] \
+        || die "--demo_data is valid only for a single-service deployment; use --demo_data_map service,path"
+    demo_data_map_entries+=("${install_services[0]},$demo_data")
+fi
+for mapping in "${demo_data_map_entries[@]}"; do
+    [[ "$mapping" == *,* ]] || die "Invalid --demo_data_map: $mapping"
+    service_name="${mapping%%,*}"; path="${mapping#*,}"
+    array_contains "$service_name" "${install_services[@]}" \
+        || die "Unknown demo-data service: $service_name"
+    [ -z "${demo_data_by_service[$service_name]+present}" ] \
+        || die "Duplicate --demo_data_map service: $service_name"
+    [ -n "$path" ] || die "Empty demo-data path for $service_name"
+    [ -f "$path" ] || die "Demo-data file not found for $service_name: $path"
+    demo_data_by_service["$service_name"]="$(cd "$(dirname "$path")" && pwd)/$(basename "$path")"
+done
+for service_name in "${skip_test_data_services[@]}"; do
+    array_contains "$service_name" "${install_services[@]}" \
+        || die "Unknown --skip_test_data_service: $service_name"
+done
+if [ "${#demo_data_by_service[@]}" -gt 0 ] \
+    && [ "$application_supports_test_data" != true ]; then
+    die "--demo_data_map is not implemented for $APPLICATION_NAME"
+fi
+if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "$action" != install ]; then
+    die "--demo_data_map is supported only with --action install"
+fi
+if [ "${#demo_data_by_service[@]}" -gt 0 ] && [ "${skip_demo_data:-false}" = true ]; then
+    die "--demo_data_map cannot be combined with --skip_demo_data"
+fi
+# Test installs may use application defaults. Production remains strictly
+# opt-in, loads only an explicitly supplied demo file, and never enables test
+# fixtures alongside it.
+if [ "$mode" = test ] && [ "$action" = install ] \
+    && [ "$application_supports_test_data" = true ]; then
+    skip_demo_data="${skip_demo_data:-false}"
+    skip_test_data="${skip_test_data:-false}"
+elif [ "$action" = install ] && [ "${#demo_data_by_service[@]}" -gt 0 ] \
+    && [ "$application_supports_test_data" = true ]; then
+    skip_demo_data="${skip_demo_data:-false}"
+    skip_test_data=true
 else
-    echo "Skipping Samba demo data load (flag enabled or service not present)"
+    skip_demo_data=true
+    skip_test_data=true
 fi
 
-echo "Skipping crontab add/start (cron is managed by the container entrypoint)"
+# 3. Resolve one protected configuration source per configured component.
+cd "$script_dir"
+declare -A install_conf_host_by_service=()
+for service_name in "${configured_services[@]}"; do
+    install_conf_host_by_service["$service_name"]="$(default_service_install_conf "$service_name")"
+done
+if [ -n "$install_conf" ]; then install_conf_host_by_service["${install_services[0]}"]="$install_conf"; fi
+for mapping in "${install_conf_map_entries[@]}"; do
+    [[ "$mapping" == *,* ]] || die "Invalid --install_conf_map: $mapping"
+    service_name="${mapping%%,*}"; path="${mapping#*,}"
+    array_contains "$service_name" "${configured_services[@]}" || die "Unknown mapped component: $service_name"
+    install_conf_host_by_service["$service_name"]="$path"
+done
+for service_name in "${configured_services[@]}"; do
+    path="${install_conf_host_by_service[$service_name]}"
+    [[ "$path" = /* ]] || path="$script_dir/$path"
+    [ -f "$path" ] || die "Configuration for $service_name not found: $path"
+    if [ "$mode" = production ] \
+        && grep -Eq '^[A-Z0-9_]+=.*CHANGE_ME' "$path"; then
+        die "Production configuration for $service_name contains CHANGE_ME: $path"
+    fi
+    install_conf_host_by_service["$service_name"]="$(cd "$(dirname "$path")" && pwd)/$(basename "$path")"
+done
 
-dns_url=""
-local_ip=""
-if [ -f "$host_install_conf_path" ]; then
-    dns_url=$(grep -E "^DNS_URL=" "$host_install_conf_path" | tail -n 1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
-    local_ip=$(grep -E "^LOCAL_SERVER_IP=" "$host_install_conf_path" | tail -n 1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+# 4. Select the engine, prepare host sources and validate the final Compose model.
+set_engine "$engine"
+compose_file="${compose_file:-docker-compose.$([ "$mode" = test ] && echo test || echo prod).yml}"
+require_compose_file "$compose_file"
+prepare_compose_environment
+load_compose_environment_file "$compose_env_file"
+prepare_application_host_sources
+prepare_host_bind_source_permissions
+deployment_compose -f "$compose_file" config \
+    || die "Compose configuration validation failed: $compose_file"
+# Cross-check wiring between services before any image is built.
+service_profiles=()
+for service_name in "${install_services[@]}"; do
+    service_profiles+=("$service_name=$(service_profile "$service_name")")
+done
+check_deployment_configuration "$mode" "$compose_env_file" "$compose_file" \
+    "${APACHE_CONF_PATH:-$script_dir/deployment/apache}" "${service_profiles[@]}" \
+    || die "Deployment configuration check failed; correct the settings reported above"
+
+# 5. Dispatch permission-only repair without building or bootstrapping.
+if [ "$action" = fix-permissions ]; then
+    for service_name in "${permission_services[@]}"; do
+        container_id="$(current_service_container "$service_name" 2>/dev/null || true)"
+        [ -z "$container_id" ] || prepare_running_container_mount_permissions "$service_name" "$container_id"
+    done
+    echo "Permissions repaired without build or bootstrap."
+    exit 0
 fi
 
-access_urls=()
-if [ -n "$dns_url" ] && [ "$dns_url" != "*" ]; then
-    access_urls+=("http://${dns_url}:${app_port}")
-fi
-if [ -n "$local_ip" ] && [ "$local_ip" != "*" ]; then
-    access_urls+=("http://${local_ip}:${app_port}")
-fi
-if [ ${#access_urls[@]} -eq 0 ]; then
-    access_urls+=("http://localhost:${app_port}")
+# 6. Build application services in declared order. Production builds use
+# profile-owned callbacks so each framework receives only its supported build
+# inputs. This avoids requiring Compose implementations to support
+# build.secrets.
+for service_name in "${install_services[@]}"; do
+    if [ "$mode" = test ]; then
+        deployment_compose -f "$compose_file" build --no-cache "$service_name"
+        continue
+    fi
+    context="$(service_build_context_dir "$service_name")"
+    dockerfile="$(service_dockerfile "$service_name")"
+    build_production_service "$service_name" "$context" "$dockerfile"
+done
+# Build add-on images through Compose so their declared build arguments and
+# add-on-owned Dockerfiles remain the single source of truth.
+for service_name in "${addon_build_services[@]}"; do
+    deployment_compose -f "$compose_file" build --no-cache "$service_name"
+done
+# 7. Recreate and start the complete topology from one Compose invocation so
+# freshly built images and the current configuration are deployed consistently.
+# Named volumes and bind-mounted persistent data are preserved.
+deployment_compose -f "$compose_file" up -d --force-recreate
+
+# 8. Wait for every application service readiness contract.
+for service_name in "${install_services[@]}"; do
+    container_id="$(current_service_container "$service_name")"
+    [ -n "$container_id" ] || die "Unable to resolve $service_name container"
+    ensure_service_running "$service_name" "$container_id" >/dev/null
+    readiness_path="$(service_readiness_path "$service_name")"
+    deadline=$((SECONDS + 120))
+    until engine_exec exec "$container_id" test -f "$readiness_path"; do
+        ((SECONDS < deadline)) || { engine_exec logs --tail 200 "$container_id"; die "$service_name readiness timeout"; }
+        sleep 2
+    done
+done
+
+# 9. Repair running mounts for applications and selected add-ons.
+for service_name in "${permission_services[@]}"; do
+    container_id="$(current_service_container "$service_name")"
+    prepare_running_container_mount_permissions "$service_name" "$container_id"
+done
+
+# 10. Bootstrap only application profiles that require runtime bootstrap.
+for service_name in "${install_services[@]}"; do
+    container_id="$(current_service_container "$service_name")"
+    bootstrap_service "$service_name" "$container_id" "$action" || die "$service_name bootstrap failed"
+done
+
+# 11. Load application-owned data for a fresh test install, or for an explicit
+# production --demo_data_map request. Production never imports data implicitly.
+if [ "$action" = install ] \
+    && [ "$application_supports_test_data" = true ] \
+    && { [ "$mode" = test ] || [ "${#demo_data_by_service[@]}" -gt 0 ]; }; then
+    if [ "${#demo_data_by_service[@]}" -gt 0 ]; then
+        for service_name in "${install_services[@]}"; do
+            [ -n "${demo_data_by_service[$service_name]+present}" ] || continue
+            demo_data_service="$service_name"
+            demo_data="${demo_data_by_service[$service_name]}"
+            skip_test_data=true
+            load_test_deployment_data "$demo_data_service" "$demo_data"
+        done
+    else
+        # Preserve existing test-loader behavior. Multi-service applications
+        # should dispatch internally using demo_data_service when they need
+        # service-specific default fixtures.
+        demo_data_service="${install_services[0]}"
+        demo_data=""
+        if array_contains "$demo_data_service" "${skip_test_data_services[@]}"; then
+            skip_test_data=true
+        fi
+        load_test_deployment_data "$demo_data_service" "$demo_data"
+    fi
 fi
 
-echo "You can now access iSkyLIMS via: ${access_urls[*]}"
+# 12. Execute the common smoke dispatcher with generated profile checks.
+smoke_args=(--engine "$engine" --compose_file "$compose_file" --env_file "$compose_env_file")
+[ "$mode" = test ] && smoke_args+=(--test)
+bash "$script_dir/scripts/smoke_test.sh" "${smoke_args[@]}"
+echo "$action completed successfully for $APPLICATION_NAME."
+print_service_summary

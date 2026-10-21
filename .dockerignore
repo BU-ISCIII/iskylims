@@ -1,53 +1,39 @@
-# Keep .git: install/build diagnostics use git metadata inside the image.
-
-# Local Python environments and caches
-.venv/
-venv/
-env/
-ENV/
-virtualenv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
-.coverage
-.coverage.*
-htmlcov/
-.tox/
-
-# Local editor and OS files
-.vscode/
-.idea/
-.DS_Store
-*.swp
-*.swo
-
-# Local runtime/generated deployment files
+# Production installation settings are passed through a build secret. Exclude
+# all local settings and allow only committed, non-sensitive templates/tests.
+install_settings.txt
+conf/*settings*.txt
+!conf/docker_production_settings.txt
+!conf/docker_test_settings.txt
+!conf/template_install_settings.txt
+!conf/template_settings.txt
+.tmp_docker_install_conf_*.txt
 .env
 .env.*
 !.env.example
 .env.prod.file
-install_settings.txt
-wetlab/logging_config.ini
+# Runtime-rendered add-on bind sources are not image build inputs.
+deployment/apache/*.conf
+deployment/settings/
+
+.venv/
+venv/
+virtualenv/
+node_modules/
+.npm/
+.next/
+.vite/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.vscode/
+.idea/
 logs/
 tmp/
 documents/
-outputs/
-catboost_info/
-
-# Build, package, and generated archives
 build/
 dist/
 *.egg-info/
-.eggs/
-*.egg
-*.log
-*.gz
-*.zip
-*.tar
-*.tgz
 
-# Generated Django/runtime files at repo root
-/manage.py
-/static/
+# BEGIN BU-ISCIII APPLICATION: additional-dockerignore
+# Add application-specific build-context exclusions here.
+# END BU-ISCIII APPLICATION: additional-dockerignore

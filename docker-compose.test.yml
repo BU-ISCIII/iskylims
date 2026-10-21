@@ -1,67 +1,108 @@
-version: '3.4'
-
 services:
-    db:
-        image: docker.io/library/mysql:8.0
-        container_name: db
-        command: --default-authentication-plugin=mysql_native_password
-        restart: always
-        healthcheck:
-          test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="djangopass" --silent']
-          interval: 3s
-          retries: 5
-          start_period: 30s
-        environment:
-            MYSQL_DATABASE: iskylims_docker
-            MYSQL_USER: django
-            MYSQL_PASSWORD: djangopass
-            MYSQL_ROOT_PASSWORD: root
-
-        ports:
-            - 6606:3306
-        networks:
-            - develop_net
-        volumes:
-            - db_data_vol:/var/lib/mysql
-            - /etc/localtime:/etc/localtime:ro
-            - /usr/share/zoneinfo:/usr/share/zoneinfo
-    
-    samba:
-        image: docker.io/dperson/samba
-        container_name: samba
-        networks:
-        - develop_net
-        volumes:
-            - /etc/localtime:/etc/localtime:ro
-            - /usr/share/zoneinfo:/usr/share/zoneinfo
-            - ngs_data_vol:/mnt
-        command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;samba_user;none;none;ngs data samba share" -u "samba_user;sambapasswd" -p'
-    
-    app:
-        build:
-          context: .
-          args:
-            INSTALL_TYPE: ${INSTALL_TYPE:-dep}
-            GIT_REVISION: ${GIT_REVISION:-main}
-            INSTALL_CONF: ${INSTALL_CONF:-conf/docker_test_settings.txt}
-            APP_SHELL: ${APP_SHELL:-/bin/bash}
-        container_name: iskylims_app
-        ports:
-            - "8001:8001"
-        environment:
-            APP_MODE: dev
-        networks:
-            - develop_net
-        depends_on:
-            db:
-                condition: service_healthy
-        volumes:
-            - /etc/localtime:/etc/localtime:ro
-            - /usr/share/zoneinfo:/usr/share/zoneinfo
+  # BEGIN BU-ISCIII SERVICE: iskylims (django)
+  iskylims:
+    image: "${ISKYLIMS_IMAGE:-iskylims:local}"
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+      args:
+        GIT_REVISION: ${GIT_REVISION:-current}
+        # Safe committed test settings are available inside the build context.
+        INSTALL_CONF: "conf/docker_test_settings.txt"
+        USE_INSTALL_CONF_SECRET: "false"
+        RENDER_DJANGO_SETTINGS: "true"
+        APP_UID: ${ISKYLIMS_APP_UID:?ISKYLIMS_APP_UID is required}
+        APP_GID: ${ISKYLIMS_APP_GID:?ISKYLIMS_APP_GID is required}
+        APP_PORT: ${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}
+        APP_REPO_PATH: ${ISKYLIMS_REPO_PATH:?ISKYLIMS_REPO_PATH is required}
+        APP_INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
+    restart: unless-stopped
+    user: "${ISKYLIMS_APP_UID:?ISKYLIMS_APP_UID is required}:${ISKYLIMS_APP_GID:?ISKYLIMS_APP_GID is required}"
+    environment:
+      APP_MODE: dev
+      INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
+      APP_INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
+      APP_PORT: ${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}
+      PROJECT_MODULE: "iskylims"
+      DB_HOST: iskylims-db
+      DB_PORT: ${ISKYLIMS_DB_PORT:?ISKYLIMS_DB_PORT is required}
+      DB_NAME: ${ISKYLIMS_DB_NAME:?ISKYLIMS_DB_NAME is required}
+      DB_USER: ${ISKYLIMS_DB_USER:?ISKYLIMS_DB_USER is required}
+      DB_PASSWORD: ${ISKYLIMS_DB_PASSWORD:?ISKYLIMS_DB_PASSWORD is required}
+      DJANGO_ALLOWED_HOSTS: ${ISKYLIMS_DJANGO_ALLOWED_HOSTS:?ISKYLIMS_DJANGO_ALLOWED_HOSTS is required}
+    depends_on:
+      iskylims-db:
+        condition: service_healthy
+    volumes:
+      - iskylims_test_documents:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/documents:z
+      - iskylims_test_static:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/static:z
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "0.0.0.0:${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}:${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}"
+    networks: [deployment_net]
+  # END BU-ISCIII SERVICE: iskylims
+  # BEGIN BU-ISCIII ADDON: apache
+  iskylims-apache:
+    image: registry.access.redhat.com/ubi9/httpd-24:latest
+    restart: unless-stopped
+    depends_on:
+      iskylims:
+        condition: service_healthy
+    ports:
+      - "${APACHE_BIND_HOST:?APACHE_BIND_HOST is required}:${APACHE_PORT:?APACHE_PORT is required}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec '</dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    volumes:
+      # Test uses the same runtime-rendered configuration as production.
+      - ${APACHE_CONF_PATH:-./deployment/apache}/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
+      # Disposable log volume avoids writing test logs into production paths.
+      - apache_test_logs:/var/log/httpd:z
+      # GENERATED MULTI-APP MOUNTS: disposable test static/document volumes.
+      - iskylims_test_static:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/static:ro,z
+      - iskylims_test_documents:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/documents:ro,z
+      # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS.
+    networks: [deployment_net]
+  # END BU-ISCIII ADDON: apache
+  # BEGIN BU-ISCIII ADDON: samba (test only)
+  iskylims-samba:
+    image: docker.io/dperson/samba:latest
+    restart: unless-stopped
+    command: '-S -s "ngs_data;/mnt/test_ngs_data;yes;yes;no;${SAMBA_USER:?SAMBA_USER is required};none;none;ngs data samba share" -u "${SAMBA_USER:?SAMBA_USER is required};${SAMBA_PASSWORD:?SAMBA_PASSWORD is required}" -p'
+    volumes:
+      - samba_test_data:/mnt:z
+    networks: [deployment_net]
+  # END BU-ISCIII ADDON: samba
+  iskylims-db:
+    image: docker.io/library/mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${ISKYLIMS_DB_NAME:?ISKYLIMS_DB_NAME is required}
+      MYSQL_USER: ${ISKYLIMS_DB_USER:?ISKYLIMS_DB_USER is required}
+      MYSQL_PASSWORD: ${ISKYLIMS_DB_PASSWORD:?ISKYLIMS_DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${ISKYLIMS_DB_ROOT_PASSWORD:?ISKYLIMS_DB_ROOT_PASSWORD is required}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes: [iskylims_test_db:/var/lib/mysql]
+    networks: [deployment_net]
 
 networks:
-  develop_net:
+  deployment_net:
 
 volumes:
-  db_data_vol:
-  ngs_data_vol:
+  iskylims_test_db:
+  iskylims_test_documents:
+  iskylims_test_static:
+  apache_test_logs:
+  samba_test_data:

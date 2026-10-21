@@ -1,0 +1,67 @@
+{
+  "config": {
+    "ADDONS": {
+      "apache": {
+        "CONFIG_SERVICE": "iskylims"
+      },
+      "samba": {
+        "CONFIG_SERVICE": "iskylims",
+        "MODES": [
+          "test"
+        ]
+      }
+    },
+    "APP_NAME": "iSkyLIMS",
+    "APP_SLUG": "iskylims",
+    "APP_VERSION": "3.1.1",
+    "DEFAULT_BRANCH": "main",
+    "DESCRIPTION": "Laboratory information management system for wet-lab and dry-lab sequencing workflows.",
+    "PYTHON_VERSION": "3.11",
+    "REPOSITORY_URL": "https://github.com/BU-ISCIII/iSkyLIMS.git",
+    "SERVICES": {
+      "iskylims": {
+        "BUILD_CONTEXT": ".",
+        "DOCKERFILE": "Dockerfile",
+        "IMAGE": "iskylims:local",
+        "INSTALL_CONF": "conf/docker_production_settings.txt",
+        "PROFILE": "django",
+        "PROJECT_MODULE": "iskylims",
+        "TEST_INSTALL_CONF": "conf/docker_test_settings.txt"
+      }
+    },
+    "TIMEZONE": "Europe/Madrid"
+  },
+  "files": {
+    ".dockerignore": "34f4bac3b5110774b4bc5d3830d8dff71a1c23c71ce292854b36963ba9f24c07",
+    ".github/DJANGO_MIGRATIONS.md": "812f598c85b7f6766773819b42ba1dda4015388d34ce6f021e37d98f1238ada5",
+    ".gitignore": "30a0833eacc410ff35ab77bed07f86d650f7d4081c530c63205fb36f186317aa",
+    "Dockerfile": "95d77c59cec771592957755e699c19401f70e631eb42bd6a9ac73c2024786de1",
+    "LEAME.md": "a42f2a2530bce7a2c2701708aea025464d761b989ef694ffc6fbc2263e70d560",
+    "README.md": "bd9cd9c2c182033f6727d51685dc8603b4e8299f75bca299fbc79f2ee9b5c798",
+    "conf/INSTALL_SETTINGS.md": "6838bf1a797fd64e031e64ec3827ea0865933c9f27e37389fff7aec362a50574",
+    "conf/apache/00-logs.conf": "3c2ab4e693e528d2cad37c0c5bb0bc4511803a7f206b339182de192d4e398092",
+    "conf/apache/01-reverse-proxy.conf": "37c333e900533ac113dc0dfd4ff31e535592f1a7ba970936ab415aac4c5c1fdc",
+    "conf/apache/02-server-status.conf": "c3b5d26f9b551083faf0d85b188bfa9c577ff0bd3b805f0ec104fe4f7d5101cb",
+    "conf/apache/apache_production_settings.txt": "ae687da48236ba2c81eed15cf0bc1333b598675ac19c2b889d18b71d403ae1cd",
+    "conf/apache/apache_test_settings.txt": "8f563b51e25f498da64f2585a3ca3fddb9ab616a1ef178fc8b5fdbf6fa1976bb",
+    "conf/docker_production_settings.txt": "b8956c855ba9a29d6e7b1bbb8fd4f6aef86866abc86630367ac5dc6688903127",
+    "conf/docker_test_settings.txt": "e23d198444d24a2cd8d2bf33443313f6719d1b953139c4a353bc48b35e93653a",
+    "conf/samba/samba_production_settings.txt": "f19da30ab0890a79254e22c571629b34de2d37ad9c12449607158bff9a9188a1",
+    "conf/samba/samba_test_settings.txt": "c383b88d43de8d65886cdd2b45bf9f27d91f5f3fe290f8f82378578fbeeff0b2",
+    "conf/template_settings.py": "af539ad10729a371e0c735c121e6e62dfece96afce77fb86e3a0820df2e9dd2f",
+    "conf/urls.py": "836683eca11607a8e719f8f80b5554d356c0cbbfc97da3208c9f70a8bba2c931",
+    "container_install.sh": "8168ce1cf2d823d2010b8cc352f0a310b9dd791e0bb281fc6bbf71ac61935b2d",
+    "deployment_health/README.md": "3d7c4295938708813369deeac9edc0eb8fe2153c77d03f9138febf3aed715aa5",
+    "deployment_health/__init__.py": "bedcff132309f8970b1ca72fcea20c7cb38bb727d48f82d96dbf7104922abda0",
+    "deployment_health/urls.py": "07e650212769881297faa2ad3b3f6569f3fd527ef57286f3877f15135efd7ad1",
+    "deployment_health/views.py": "d19cc3e8fef8519bae2b7fbdc25d17f6ae7df02479aa8890f4b4d250bb07f2e4",
+    "docker-compose.prod.yml": "1f3a3b417404a7b2bd6ed09b0b0a6077a0ffc449f253ca53cc77de66c9e7bbd4",
+    "docker-compose.test.yml": "6bae9a531d4e3e669cdd96627384d94b566c45149b40288798d06f02f9f85433",
+    "install.sh": "0ae3999a5db1fbe9a4cef1d7e6acee16765f5d0b002f55064bf19f7de436c41e",
+    "scripts/container_start.sh": "a954a399d875955276582708ee15a0b261c5cfbb2781e2d8256c4cf6c895585c",
+    "scripts/smoke_test.sh": "466509428696a3ed92cf76e14963a71baa95ee5d5b5a9b6c390081907f34ac4e"
+  },
+  "source": "BU-ISCIII deployment standards",
+  "standard_revision": "985652744d68f3c0d57ee9caf311140754a4a481",
+  "standard_version": "0.1.0"
+}

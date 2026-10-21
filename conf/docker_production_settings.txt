@@ -1,62 +1,97 @@
-### Production specific installation config
-# Copy this file or edit the values below so they match the external
-# infrastructure you are connecting to before building the image.
+# Production configuration for this application service.
+# Copy to a protected ignored file, chmod 0600, and replace every CHANGE_ME.
+# The same file drives the ephemeral image build secret, host settings render,
+# Compose environment and temporary bootstrap copy.
 
-### Installation path and modules settings
-INSTALL_PATH='/opt/iskylims' # container path for installation
+### Application layout and Django project
+# Source repository staged in the image. Example: /srv/iskylims
+REPO_PATH='/srv/iskylims'
+# Final application runtime path. Example: /opt/iskylims
+INSTALL_PATH='/opt/iskylims'
+# Python package containing settings.py, urls.py and wsgi.py. This is generated
+# from project.json and normally should not be changed in this file.
+PROJECT_MODULE='iskylims'
+# Python executable used to create the application virtual environment.
+PYTHON_BIN_PATH='python3.11'
+
+### Application-specific installation modules
+# Optional space-separated Django applications consumed by installers that
+# support dependency and migration module lists. Leave empty when
+# the application install.sh does not implement the corresponding behavior.
+# iSkyLIMS example: REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
-FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 
-### Container runtime settings
-# Host directory for Apache bind-mounted configuration files.
-# Leave empty to use ${INSTALL_PATH}/conf as the host bind source.
-# Set this to a writable host path for rootless or hardened deployments.
-# Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
-APACHE_CONF_PATH=''
-# Host path for the bind-mounted Django settings.py.
-# Leave empty to use ${INSTALL_PATH}/iskylims/settings.py as the host bind source.
-# If this is a directory or ends with /, container_install.sh appends settings.py.
-# Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_app_setting'
-DJANGO_SETTINGS_PATH=''
-# UID/GID for the non-root iskylims user inside the app container.
+### Container runtime identity
+# UID/GID must own every writable bind mount and named volume.
 APP_UID='1212'
 APP_GID='1212'
-# Shell assigned to the container runtime user during image build.
+# Production services should normally use a non-login shell.
 APP_SHELL='/sbin/nologin'
-# Internal app port used by Gunicorn.
+# Internal application port used by Gunicorn and the reverse proxy.
 APP_PORT='8001'
-# Django production debug flag. Keep disabled in production.
+
+### Persistent host sources
+# Documents use the Compose-managed iskylims_documents named volume.
+# Application logs remain on the host and must be creatable by the installer.
+# Example: /var/log/local/iskylims/apps
+HOST_LOG_PATH='/var/log/local/iskylims/apps'
+# Host bind source rendered before Compose starts. It must be a file path, not
+# a directory; the parent directory is created and protected by the installer.
+# Example: /srv/containers/bind/iskylims/settings/iskylims/settings.py
+DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/settings/iskylims/settings.py'
+
+### External production database
+# Use a host name or IP reachable from inside the application container.
+# For a database running on the container host with either Docker or Podman,
+# use host.docker.internal; the production Compose profile maps that alias.
+DB_HOST='CHANGE_ME'
+DB_PORT='3306'
+DB_NAME='CHANGE_ME'
+DB_USER='CHANGE_ME'
+DB_PASSWORD='CHANGE_ME'
+
+### Django security and public URLs
+# Production debug must remain disabled.
 DJANGO_DEBUG='false'
-# Django persistent database connection lifetime in seconds.
+# Comma-separated host names accepted by Django, without URL schemes. Keep
+# localhost and 127.0.0.1 because the container healthcheck connects locally;
+# replace only CHANGE_ME_DNS_NAME with the public application DNS name.
+DJANGO_ALLOWED_HOSTS='localhost,127.0.0.1,CHANGE_ME_DNS_NAME'
+# Comma-separated complete HTTPS origins, including their schemes.
+DJANGO_CSRF_TRUSTED_ORIGINS='https://CHANGE_ME'
+# Persistent database connection lifetime in seconds.
 DB_CONN_MAX_AGE='60'
-# Gunicorn runtime tuning.
+
+### Email
+# SMTP endpoint reachable from the application container.
+EMAIL_HOST='CHANGE_ME'
+EMAIL_PORT='25'
+EMAIL_HOST_USER='CHANGE_ME'
+EMAIL_HOST_PASSWORD='CHANGE_ME'
+# Python boolean spelling is used because settings rendering writes this value
+# directly into settings.py.
+EMAIL_USE_TLS='False'
+
+### Initial administrator (bootstrap install only)
+# Set to true only when a fresh installation should create its first Django
+# administrator. Keep the protected production settings file mode at 0600.
+CREATE_INITIAL_SUPERUSER='true'
+DJANGO_SUPERUSER_USERNAME='admin'
+DJANGO_SUPERUSER_EMAIL=''
+DJANGO_SUPERUSER_PASSWORD='CHANGE_ME'
+
+### Gunicorn and startup tuning
 WEB_CONCURRENCY='2'
 GUNICORN_THREADS='2'
 GUNICORN_TIMEOUT='300'
 GUNICORN_KEEPALIVE='5'
+# Maximum time container_start.sh waits for staged application files.
+APP_START_WAIT_TIMEOUT_SECONDS='100'
 
-### (optional) Python installation path where pip and python executables are located
-PYTHON_BIN_PATH='python3.11'
-
-### Settings required to access database (external MySQL server)
-DB_USER='django'
-DB_PASS='djangopass'
-DB_NAME='iskylims'
-DB_SERVER_IP='host.docker.internal'  # hostname or IP of the production DB (use host.docker.internal for host DB)
-DB_PORT=3306
-
-### Settings required for sending emails
-EMAIL_HOST_SERVER='host.docker.internal'
-EMAIL_PORT='25'
-EMAIL_HOST_USER='bioinformatica@isciii.es'
-EMAIL_HOST_PASSWORD=''
-EMAIL_USE_TLS='False'
-
-### Settings required for accessing iSkyLIMS
-LOCAL_SERVER_IP='*'
-DNS_URL='*'
-
-### Logs settings
-LOG_TYPE="regular_folder"
-LOG_PATH=""
+### Application log policy compatibility
+# regular_folder stores logs below INSTALL_PATH. symbolic_link links that
+# directory to LOG_PATH, which must already exist and be writable.
+LOG_TYPE='regular_folder'
+# Example for symbolic_link: /var/log/local/iskylims/apps; otherwise empty.
+LOG_PATH=''

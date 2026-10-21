@@ -2,18 +2,25 @@
 INSTALL_PATH='/opt/iskylims'
 REQUIRED_MODULES='core drylab wetlab clinic django_utils'
 MIGRATION_MODULES='core drylab wetlab django_utils'
-FAKEINITIAL_MODULES='django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab'
 
 ### Container runtime settings
 # Host directory for Apache bind-mounted configuration files.
 # Leave empty to use ${INSTALL_PATH}/conf as the host bind source.
 # Set this to a writable host path for rootless or hardened deployments.
-# Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims_apache_conf'
+# Example: APACHE_CONF_PATH='/srv/containers/bind/iskylims/iskylims_apache_conf'
 APACHE_CONF_PATH=''
+# Apache server-status virtual host and access control.
+# Leave SERVER_STATUS_SERVER_NAME empty to use DNS_URL.
+SERVER_STATUS_SERVER_NAME=''
+SERVER_STATUS_ALIASES='127.0.0.1 localhost'
+SERVER_STATUS_ALLOW_FROM='127.0.0.1 localhost'
+# Forwarded headers set by Apache in production.
+APACHE_FORWARDED_PROTO='https'
+APACHE_FORWARDED_PORT='443'
 # Host path for the bind-mounted Django settings.py.
 # Leave empty to use ${INSTALL_PATH}/iskylims/settings.py as the host bind source.
-# If this is a directory or ends with /, container_install.sh appends settings.py.
-# Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims_app_setting'
+# If this is a directory, ends with /, or does not end with .py, container_install.sh appends settings.py.
+# Example: DJANGO_SETTINGS_PATH='/srv/containers/bind/iskylims/iskylims_django_setting/settings.py'
 DJANGO_SETTINGS_PATH=''
 # UID/GID for the non-root iskylims user inside the app container.
 APP_UID='1212'
@@ -50,6 +57,12 @@ EMAIL_PORT='25'
 EMAIL_HOST_USER='bioinformatica@isciii.es'
 EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
+
+### Initial administrator (bootstrap install only)
+CREATE_INITIAL_SUPERUSER='true'
+DJANGO_SUPERUSER_USERNAME='admin'
+DJANGO_SUPERUSER_EMAIL='<admin_email>'
+DJANGO_SUPERUSER_PASSWORD='<admin_password>'
 
 ### Settings required for accessing iSkyLIMS
 # example: 172.0.0.1

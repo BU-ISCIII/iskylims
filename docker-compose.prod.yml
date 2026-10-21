@@ -1,65 +1,96 @@
-version: '3.8'
-
 services:
-  apache:
-    container_name: iskylims_apache
-    restart: unless-stopped
-    image: registry.access.redhat.com/ubi9/httpd-24
-    depends_on:
-      - app
-    ports:
-      - "8080:8080"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_reverse_proxy.conf:/etc/httpd/conf.d/iskylims.conf:ro
-      - ${APACHE_CONF_PATH:-/opt/iskylims/conf}/iskylims_apache_logs.conf:/etc/httpd/conf.d/logformat.conf:ro
-      - /var/log/local/iskylims/apache:/var/log/httpd
-      - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static:ro
-    networks:
-      - iskylims_net
-
-  app:
-    container_name: iskylims_app
-    restart: unless-stopped
+  # BEGIN BU-ISCIII SERVICE: iskylims (django)
+  iskylims:
+    image: "${ISKYLIMS_IMAGE:-iskylims:local}"
     build:
-      context: .
+      context: "."
+      dockerfile: "Dockerfile"
       args:
-        INSTALL_TYPE: ${INSTALL_TYPE:-dep}
-        GIT_REVISION: ${GIT_REVISION:-main}
-        INSTALL_CONF: ${INSTALL_CONF:-conf/docker_production_settings.txt}
-        APP_UID: ${APP_UID:-1212}
-        APP_GID: ${APP_GID:-1212}
-        APP_SHELL: ${APP_SHELL:-/sbin/nologin}
-        INSTALL_PATH: ${INSTALL_PATH:-/opt/iskylims}
-    expose:
-      - "${APP_PORT:-8001}"
+        GIT_REVISION: ${GIT_REVISION:-current}
+        # Fixed internal path used only while install.sh reads the build secret.
+        INSTALL_CONF: "conf/.runtime_install_settings.txt"
+        USE_INSTALL_CONF_SECRET: "true"
+        RENDER_DJANGO_SETTINGS: "false"
+        APP_UID: ${ISKYLIMS_APP_UID:?ISKYLIMS_APP_UID is required}
+        APP_GID: ${ISKYLIMS_APP_GID:?ISKYLIMS_APP_GID is required}
+        APP_PORT: ${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}
+        APP_REPO_PATH: ${ISKYLIMS_REPO_PATH:?ISKYLIMS_REPO_PATH is required}
+        APP_INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
+    restart: unless-stopped
+
+    user: "${ISKYLIMS_APP_UID:?ISKYLIMS_APP_UID is required}:${ISKYLIMS_APP_GID:?ISKYLIMS_APP_GID is required}"
     environment:
-      DJANGO_SETTINGS_MODULE: iskylims.settings
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
       APP_MODE: prod
-      APP_PORT: ${APP_PORT:-8001}
-      DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-60}
-      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
-      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
-      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-300}
-      GUNICORN_KEEPALIVE: ${GUNICORN_KEEPALIVE:-5}
-      INSTALL_PATH: ${INSTALL_PATH:-/opt/iskylims}
-    user: "${APP_UID:-1005}:${APP_GID:-1005}"
+      INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
+      APP_INSTALL_PATH: ${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}
+      APP_PORT: ${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}
+      PROJECT_MODULE: "iskylims"
+      DB_HOST: ${ISKYLIMS_DB_HOST:?ISKYLIMS_DB_HOST is required}
+      DB_PORT: ${ISKYLIMS_DB_PORT:?ISKYLIMS_DB_PORT is required}
+      DB_NAME: ${ISKYLIMS_DB_NAME:?ISKYLIMS_DB_NAME is required}
+      DB_USER: ${ISKYLIMS_DB_USER:?ISKYLIMS_DB_USER is required}
+      DB_PASSWORD: ${ISKYLIMS_DB_PASSWORD:?ISKYLIMS_DB_PASSWORD is required}
+      DJANGO_ALLOWED_HOSTS: ${ISKYLIMS_DJANGO_ALLOWED_HOSTS:?ISKYLIMS_DJANGO_ALLOWED_HOSTS is required}
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /var/log/local/iskylims/apps/:${INSTALL_PATH:-/opt/iskylims}/logs
-      - ${DJANGO_SETTINGS_PATH:-/opt/iskylims/iskylims/settings.py}:${INSTALL_PATH:-/opt/iskylims}/iskylims/settings.py
-      - iskylims_documents:${INSTALL_PATH:-/opt/iskylims}/documents
-      - iskylims_static:${INSTALL_PATH:-/opt/iskylims}/static
+      - iskylims_documents:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/documents:z
+      - ${ISKYLIMS_HOST_LOG_PATH:?ISKYLIMS_HOST_LOG_PATH is required}:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/logs:Z
+      - ${ISKYLIMS_DJANGO_SETTINGS_PATH:?ISKYLIMS_DJANGO_SETTINGS_PATH is required}:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/iskylims/settings.py:Z
+      - iskylims_static:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/static:z
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['APP_PORT'] + '/health/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "127.0.0.1:${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}:${ISKYLIMS_APP_PORT:?ISKYLIMS_APP_PORT is required}"
+    # Docker Engine on Linux needs this explicit mapping. Podman also supports
+    # host-gateway and conventionally exposes host.docker.internal itself, so
+    # host-based dependencies can use one hostname with either engine.
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    networks:
-      - iskylims_net
+    networks: [deployment_net]
+  # END BU-ISCIII SERVICE: iskylims
+  # BEGIN BU-ISCIII ADDON: apache
+  iskylims-apache:
+    image: registry.access.redhat.com/ubi9/httpd-24:latest
+    restart: unless-stopped
+    depends_on:
+      iskylims:
+        condition: service_healthy
+    ports:
+      # Public binding can be restricted to loopback when another host proxy
+      # terminates TLS before forwarding traffic to this container.
+      - "${APACHE_BIND_HOST:?APACHE_BIND_HOST is required}:${APACHE_PORT:?APACHE_PORT is required}:8080"
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -ec '</dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    volumes:
+      # REQUIRED runtime-rendered read-only configuration bind sources.
+      - ${APACHE_CONF_PATH:-./deployment/apache}/00-logs.conf:/etc/httpd/conf.d/00-logs.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/01-reverse-proxy.conf:/etc/httpd/conf.d/01-reverse-proxy.conf:ro,z
+      - ${APACHE_CONF_PATH:-./deployment/apache}/02-server-status.conf:/etc/httpd/conf.d/02-server-status.conf:ro,z
+      # REQUIRED persistent host log bind. Back it up/rotate per host policy.
+      - ${APACHE_LOG_PATH:?APACHE_LOG_PATH is required}:/var/log/httpd:z
+      # REQUIRED when container and host timezone must agree in log records.
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      # GENERATED MULTI-APP MOUNTS: one read-only static/documents pair for
+      # every Django service. React assets remain inside the React image.
+      - iskylims_static:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/static:ro,z
+      - iskylims_documents:${ISKYLIMS_INSTALL_PATH:?ISKYLIMS_INSTALL_PATH is required}/documents:ro,z
+      # OPTIONAL APP MOUNTS belong in ADDONS.apache.MOUNTS. Examples:
+      # - reports_data:/var/www/reports:ro,z
+      # - /srv/public-downloads:/var/www/downloads:ro,Z
+    networks: [deployment_net]
+  # END BU-ISCIII ADDON: apache
 
 networks:
-  iskylims_net:
+  deployment_net:
 
 volumes:
   iskylims_documents:

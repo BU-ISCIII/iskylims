@@ -1,9 +1,9 @@
 wheel==0.46.2
 asn1crypto==1.5.1
 bcrypt==4.2.0
-biopython==1.84
-cryptography==44.0.3
-Django==4.2.28
+biopython==1.87
+cryptography==48.0.1
+Django==4.2.30
 django-crispy-forms==2.3
 crispy-bootstrap5==0.7
 django-crontab==0.7.1
@@ -15,7 +15,7 @@ interop>1.1.22
 mod_wsgi==5.0.0
 gunicorn==22.0.0
 mysqlclient==2.2.6
-paramiko==3.4.1
+paramiko==5.0.0
 jsonschema==4.23.0
 pysmb==1.2.9.1
 django_extensions==3.2.3

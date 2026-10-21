@@ -4,7 +4,85 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - 2026-05-21 : <https://github.com/BU-ISCIII/iskylims/releases/tag/3.1.0>
+## [3.1.1] - 2026-10-20 : <https://github.com/BU-ISCIII/iskylims/compare/3.1.0...3.1.1>
+
+### Credits
+
+- [Sara Monzón](https://github.com/saramonzon)
+- [Enrique Sapena Ventura](https://github.com/ESapenaVentura)
+- [Sarai Varona](https://github.com/svarona)
+
+#### Added Enhancements
+
+- Adopted the BU-ISCIII deployment standard for reproducible Docker and Podman
+  installations, upgrades, configuration validation and synchronization.
+- Added production and test container lifecycles with immutable image staging,
+  runtime bootstrap, readiness checks and deployment smoke tests.
+- Added protected per-service deployment settings, generated Compose
+  environments and bind-mounted Django settings outside the container image.
+- Added persistent named volumes for documents and static files, including
+  rootless Podman ownership and permission repair support.
+- Added production runbooks covering backup, restore, rollback, migration
+  verification, permissions and version-specific upgrades.
+- Added configurable Apache `/server-status` support, restricted to localhost by default.
+- Added generation of supercronic jobs directly from Django `CRONJOBS` settings.
+- Added supercronic-compatible cron status and fallback handling for wet-lab scheduled processes.
+- Added the `sample-project-values-bulk` API endpoint to retrieve selected project values for multiple RELECOV samples. [#401](https://github.com/BU-ISCIII/iskylims/pull/401)
+
+#### Fixes
+
+- Fixed a security vulnerability in the sample-information API by removing
+  request-controlled `eval()` calls, validating requested fields through the
+  Django model metadata API and using safe attribute access.
+- Fixed standalone deployment identities and internal service names so Apache,
+  Django and database services resolve consistently inside Compose networks.
+- Fixed production and test healthchecks, including local Django allowed hosts,
+  virtualenv access and shell-safe response validation.
+- Fixed rootless Podman permissions for logs, documents, static files, Django
+  settings and Apache bind mounts.
+- Fixed container database bootstrap, fixture loading, timezone availability and
+  host-database access through `host.docker.internal`.
+- Fixed upgrades so persistent support services and application data are
+  retained while application containers are rebuilt and recreated.
+- Fixed permission repair so cron directories are also prepared with the expected ownership and mode.
+- Fixed container cron status checks when the system `crontab` command is unavailable.
+- Fixed Django settings bind path naming in production configuration templates.
+- Fixed SampleSheet username resolution when dash-delimited user IDs must match database usernames containing dots. [#396](https://github.com/BU-ISCIII/iskylims/pull/396)
+- Fixed website file downloads in production by mounting the shared documents volume read-only in the Apache container. [3bf30dfd](https://github.com/BU-ISCIII/iskylims/commit/3bf30dfd9f65f2760c07f8a2a6da9eded41200db)
+- Fixed Apache configuration loading order by assigning explicit ordering prefixes to the generated configuration files.
+
+#### Changed
+
+- Refactored installation into separate image-staging and runtime-bootstrap
+  phases, with committed migration validation before database migration.
+- Standardized the standalone service identity as `iskylims` and scoped related
+  Apache, database, volume and configuration names to the deployment.
+- Changed Apache configuration to render from protected deployment settings and
+  use ordered bind-mounted configuration files.
+- Changed production upgrades to preserve the existing Django signing key from
+  the protected settings bind and to avoid implicit fixture or demo-data loads.
+- Reorganized deployment and migration documentation around fresh installation,
+  upgrade, recovery and production verification workflows.
+- Updated production configuration templates with clearer host-path and server-status settings.
+- Changed production forwarded-header defaults to HTTPS on port 443.
+- Separated Apache and application log paths, including the dedicated RELECOV iSkyLIMS application log path.
+- Added local production settings files to `.gitignore`.
+
+#### Removed
+
+- Removed legacy container and Apache configuration paths superseded by the
+  synchronized deployment scaffold.
+
+#### Requirements
+
+| Package      | Last release Version | New release Version |
+|:-------------|:---------------------|:--------------------|
+| biopython    | 1.84                 | 1.87                |
+| cryptography | 44.0.3               | 48.0.1              |
+| Django       | 4.2.28               | 4.2.30              |
+| paramiko     | 3.4.1                | 5.0.0               |
+
+## [3.1.0] - 2026-05-27 : <https://github.com/BU-ISCIII/iskylims/releases/tag/3.1.0>
 
 ### Credits
 
@@ -38,6 +116,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added configurable ServerName and Apache log naming from installation settings.
 - Added dedicated Docker network configuration to the production compose file.
 - Added configuration examples for container bind mounts in installation settings templates.
+- Added explicit preparation and ownership handling for production container bind mounts and named volumes. [2ee02a02](https://github.com/BU-ISCIII/iskylims/commit/2ee02a02c7948702e4f771e9ed6b72598880449e)
+- Added the `--action fix-permissions` container installer option to repair host bind mounts and mounted application volumes without rebuilding images or running migrations. [b27f9acc](https://github.com/BU-ISCIII/iskylims/commit/b27f9acc6f6a21f04ed8bc353162f4a9d09411e9)
+- Added Apache access to the iSkyLIMS documents volume.
 
 #### Fixes
 
@@ -88,6 +169,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed skipped wetlab run test states so they are displayed in the configuration test view.
 - Fixed Samba cron path validation in wetlab configuration checks.
 - Fixed Docker build cleanup so DNF cache cleanup only runs in the final DNF step.
+- Improved error handling and logging when a SampleSheet cannot be copied to the documents directory.
+- Fixed production container permissions for application logs, documents, static files, Django settings, temporary files, and Apache bind mounts.
 
 #### Changed
 
@@ -110,12 +193,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Updated production container documentation for bind mounts and generated configuration files.
 - Normalized the Django settings bind path used by container installation.
 - Updated installation configuration templates with clearer container configuration guidance.
+- Simplified container runtime path handling by consistently using `INSTALL_PATH`.
+- Updated production volume ownership handling for rootless Podman deployments.
+- Updated the Spanish production guide and README with container permissions, bind mounts, configuration, and recovery procedures.
 
 #### Removed
 
 - Dummy fix in usage line [#271](https://github.com/BU-ISCIII/iskylims/pull/271)
 - Removed migrations from `.gitignore` and app-level `.gitignore` to ensure version control of schema changes [#389](https://github.com/BU-ISCIII/iskylims/pull/389)
 - Removed runtime ownership fixes from container installation.
+- Removed the redundant `APP_INSTALL_PATH` container setting.
 
 #### Requirements
 
