@@ -105,18 +105,38 @@ sudo chown -R <usuario-podman>:<usuario-podman> \
 
 ## Actualizar codigo
 
+Para las instalaciones ISCIII, usar el repositorio institucional de GitLab.
 Para un checkout nuevo:
 
 ```bash
 cd /opt/containers_apps/iskylims
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iskylims
+git clone https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git iskylims
 cd iskylims
 git checkout <revision-aprobada>
 ```
 
-En un checkout existente, verificar primero que no haya cambios locales y
-cambiar a la revision entregada mediante el procedimiento Git de la institucion.
-Registrar el commit exacto con `git rev-parse HEAD`.
+En un checkout existente, verificar con `git status --short` que no haya cambios
+locales antes de continuar. Configurar el remoto institucional y obtener las
+revisiones disponibles:
+
+```bash
+cd /opt/containers_apps/iskylims/iskylims
+git remote set-url origin https://gitlab.isciii.es/bu-isciii/iSkyLIMS.git
+git fetch origin --tags
+git checkout <revision-aprobada>
+```
+
+Si la revision aprobada es la rama `main`, actualizarla sin crear commits de
+merge locales:
+
+```bash
+git switch main
+git pull --ff-only origin main
+```
+
+Para una etiqueta o un commit aprobado, no ejecutar `git pull`; el checkout ya
+selecciona esa revision exacta. Registrar el commit desplegado con
+`git rev-parse HEAD`.
 
 ## Configurar los ajustes de produccion
 
